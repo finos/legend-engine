@@ -25,6 +25,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 
 import java.util.Collections;
 import java.util.List;
@@ -90,6 +93,24 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
             persistencePlatform instanceof DefaultPersistencePlatform
                     ? ""
                     : null);
+    }
+
+    @Override
+    public List<Function3<Trigger, Integer, PureGrammarComposerContext, String>> getExtraTriggerComposers()
+    {
+        return Collections.singletonList((trigger, indentLevel, context) ->
+                {
+                    if (trigger instanceof ManualTrigger)
+                    {
+                        return "Manual";
+                    }
+                    else if (trigger instanceof CronTrigger)
+                    {
+                        //TODO: ledav -- implement cron render
+                        return null;
+                    }
+                    return null;
+                });
     }
 
     private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)

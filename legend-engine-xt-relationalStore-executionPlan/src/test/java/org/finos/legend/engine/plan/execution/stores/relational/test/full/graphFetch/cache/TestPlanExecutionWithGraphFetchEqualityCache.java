@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.full.graphFetch.cache;
 
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.eclipse.collections.api.factory.Sets;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheByEqualityKeys;
+import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKey;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
@@ -33,6 +36,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServer
 {
@@ -221,6 +225,26 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         String expectedSubTree = "{legalName,employeeByLastName(['Smith']){firstName,lastName,address{name}},employeesByCityOrManager(['New York'],['']){firstName,lastName,address{name}}}";
 
         assertCachingForAllObjects(plan, params, firmCache, expectedRes, expectedSubTree, 1);
+    }
+
+    @Test
+    public void testCacheKeyIdentifiers() throws IOException, JavaCompileException
+    {
+        SingleExecutionPlan plan = readPlan("org/finos/legend/engine/plan/execution/stores/relational/test/cache/graphFetch/equalityCachePlanWithComplexQualifiers.json");
+        Map<String, ?> params = Collections.emptyMap();
+
+        Cache<GraphFetchCacheKey, Object> guavaCache = CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build();
+        GraphFetchCacheByEqualityKeys firmCache = ExecutionCacheBuilder.buildGraphFetchCacheByEqualityKeysFromGuavaCache(
+                guavaCache,
+                "meta::relational::tests::simpleRelationalMappingInc",
+                "meta_pure_tests_model_simple_Firm"
+        );
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employeeByLastName('Smith')\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"address\":{\"name\":\"Hoboken\"}},\"employeesByCityOrManager('New York', '')\":[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"address\":{\"name\":\"New York\"}}]}}";
+        String expectedSubTree = "{legalName,employeeByLastName(['Smith']){firstName,lastName,address{name}},employeesByCityOrManager(['New York'],['']){firstName,lastName,address{name}}}";
+
+        assertCachingForAllObjects(plan, params, firmCache, expectedRes, expectedSubTree, 1);
+        Assert.assertEquals(Sets.mutable.with("RelationalObjectGraphFetchCacheKey{1}"), guavaCache.asMap().keySet().stream().map(GraphFetchCacheKey::getStringIdentifier).collect(Collectors.toSet()));
     }
 
     private void assertCachingForAllObjects(

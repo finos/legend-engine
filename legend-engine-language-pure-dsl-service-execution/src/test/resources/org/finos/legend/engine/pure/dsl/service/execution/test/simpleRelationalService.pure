@@ -25,7 +25,13 @@ Database test::DB
     SALARY FLOAT,
     DOB DATE,
     EMPLOYMENT_DATETIME TIMESTAMP,
-    ACTIVE_EMPLOYMENT VARCHAR(100)
+    ACTIVE_EMPLOYMENT VARCHAR(100),
+    YEAR_OF_START INT
+  )
+  Table fiscalCalendarTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FISCAL_YEAR_VALUE INT
   )
 )
 
@@ -41,6 +47,18 @@ Class test::Person
   dob : Date[0..1];
   employmentDateTime : DateTime[0..1];
   activeEmployment : Boolean[1];
+  yearOfStart : Integer[1];
+}
+
+Class test::FiscalCalendar
+{
+   calendarID: Integer[1];
+   fiscalYear: test::FiscalYear[1];
+}
+
+Class test::FiscalYear
+{
+  value: Integer[1];
 }
 
 function test::fetch(ip: String[*]): String[1]
@@ -90,6 +108,12 @@ function test::fetchWithUserId(): String[1]
    test::Person.all()->filter(p|$p.firstName->toLower() == $currentUser)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
 }
 
+function test::testMultiExpressionQueryWithPropertyPath(): Any[*]
+{
+    let endDateCalendar = test::FiscalCalendar.all()->filter(x|$x.fiscalYear.value == 2015)->toOne()->graphFetch(#{test::FiscalCalendar{fiscalYear{value}}}#);
+    test::Person.all()->filter(x|$x.yearOfStart == $endDateCalendar->toOne().fiscalYear.value)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
+}
+
 ###Mapping
 Mapping test::Map
 (
@@ -107,8 +131,23 @@ Mapping test::Map
     salary : [test::DB]personTable.SALARY,
     dob : [test::DB]personTable.DOB,
     employmentDateTime : [test::DB]personTable.EMPLOYMENT_DATETIME,
-    activeEmployment : case(equal([test::DB]personTable.ACTIVE_EMPLOYMENT,'Y'),'true','false')
+    activeEmployment : case(equal([test::DB]personTable.ACTIVE_EMPLOYMENT,'Y'),'true','false'),
+    yearOfStart : [test::DB]personTable.YEAR_OF_START
+
   }
+
+  *test::FiscalCalendar: Relational
+    {
+      ~primaryKey
+      (
+        [test::DB]fiscalCalendarTable.ID
+      )
+      ~mainTable [test::DB]fiscalCalendarTable
+      fiscalYear
+      (
+        value: [test::DB]fiscalCalendarTable.FISCAL_YEAR_VALUE
+      )
+    }
 )
 
 ###Runtime
@@ -130,7 +169,7 @@ Runtime test::Runtime
           type: H2;
           specification: LocalH2
           {
-            testDataSetupCSV: 'default\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y\n---';
+            testDataSetupCSV: 'default\nfiscalCalendarTable\nID,FISCAL_YEAR_VALUE\n111,2015\n222,2005\n333,2010\n---\ndefault\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT,YEAR_OF_START\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,,2015\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N,2005\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y,2010\n---';
           };
           auth: DefaultH2;
         }

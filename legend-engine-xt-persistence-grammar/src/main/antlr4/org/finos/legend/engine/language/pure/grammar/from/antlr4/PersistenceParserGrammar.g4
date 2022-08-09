@@ -14,7 +14,6 @@ identifier:                                 VALID_STRING | STRING
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
                                             | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_PLATFORM | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
-                                            | TRIGGER_MANUAL | TRIGGER_CRON
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_DATABASE | SINK_BINDING
@@ -113,13 +112,22 @@ persistence:                                PERSISTENCE qualifiedName
 ;
 documentation:                              PERSISTENCE_DOC COLON STRING SEMI_COLON
 ;
-trigger:                                    PERSISTENCE_TRIGGER COLON
-                                                (
-                                                    TRIGGER_MANUAL
-                                                    | TRIGGER_CRON
-                                                )
-                                            SEMI_COLON
+
+// -------------------------------------- TRIGGER --------------------------------------
+
+trigger:                                    PERSISTENCE_TRIGGER COLON triggerSpecification SEMI_COLON
 ;
+triggerSpecification:                       triggerType (triggerValue)?
+;
+triggerType:                                identifier
+;
+triggerValue:                               ISLAND_OPEN (triggerValueContent)* ISLAND_END
+;
+triggerValueContent:                        ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
+;
+
+// -------------------------------------- SERVICE --------------------------------------
+
 service:                                    PERSISTENCE_SERVICE COLON qualifiedName SEMI_COLON
 ;
 

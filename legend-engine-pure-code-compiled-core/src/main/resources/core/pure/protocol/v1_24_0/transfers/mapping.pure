@@ -1,0 +1,224 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::relational::tests::csv::mapping::*;
+import meta::flatten::metamodel::*;
+import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::modelToModel::*;
+import meta::pure::mapping::xStore::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::*;
+import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::csv::*;
+import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::*;
+import meta::pure::mapping::*;
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::transformMapping(mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::Mapping[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::mapping::Mapping
+   (
+      _type = 'mapping',
+      includedMappings = $mapping.includes->map(m|let sourceDatabasePath = if($m.storeSubstitutions->isEmpty(),|[],|$m.storeSubstitutions.original->toOne()->elementToPath());
+                                                  let targetDatabasePath = if($m.storeSubstitutions->isEmpty(),|[],|$m.storeSubstitutions.substitute->toOne()->elementToPath());
+                                                  ^meta::protocols::pure::v1_24_0::metamodel::mapping::MappingInclude(includedMapping = if(!$m.included.package->isEmpty(), | $m.included.package->toOne()->elementToPath() + '::' + $m.included.name->toOne(), | $m.included.name->toOne()),
+                                                                                                                     sourceDatabasePath = $sourceDatabasePath,
+                                                                                                                     targetDatabasePath = $targetDatabasePath);),
+      name = $mapping.name->toOne(),
+      package = if($mapping.package->isEmpty(),|[],|$mapping.package->toOne()->elementToPath()),
+      classMappings = $mapping.classMappings->filter(x|$extensions.serializerExtension('v1_24_0')->cast(@meta::protocols::pure::v1_24_0::extension::SerializerExtension_v1_24_0).transfers_mapping_transformMapping->fold({a,b|$a->eval($x) && $b}, true))
+                                            ->map(cm|$cm->transformSetImplementation($mapping, $extensions)),
+      associationMappings = $mapping.associationMappings->map(cm|$cm->transformAssociationImplementation($mapping, $extensions)),
+      enumerationMappings = $mapping.enumerationMappings->map(e|$e->transformEnumerationMapping())
+   )
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformMappingClass(class:	meta::pure::mapping::MappingClass<Any>[1],mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::domain::MappingClass[1]
+{
+   let properties = $class.properties->meta::pure::milestoning::reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>);
+   let qualifiedProperties = $class.qualifiedProperties->meta::pure::milestoning::reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>);
+
+   ^meta::protocols::pure::v1_24_0::metamodel::domain::MappingClass
+   (
+      _type = 'mappingClass',
+      name = $class.name->toOne(),
+      package = if($class.package->isEmpty(),|[],|$class.package->toOne()->elementToPath()),
+      superTypes = $class.generalizations->map(g | $g.general.rawType->toOne()->elementToPath()),
+      properties = $properties->map(p | $p->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformProperty($extensions)),
+      qualifiedProperties = $qualifiedProperties->map(q|$q->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformQualifiedProperty($extensions)),
+      stereotypes = $class.stereotypes->map(s|$s->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformStereotype()),
+      taggedValues = $class.taggedValues->map(t|$t->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformTaggedValue()),
+      setImplementation = $class.setImplementation->map(s|$s->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::transformSetImplementation($mapping, $extensions)),
+      rootClass = $class.class->map(c|$c->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformClass($extensions)),
+      localProperties = $class.localProperties->map(p | $p->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformProperty($extensions))
+   );
+}
+
+function <<access.public>> meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::transformSetImplementation(si:SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::ClassMapping[1]
+{
+   $si->match($extensions.serializerExtension('v1_24_0')->cast(@meta::protocols::pure::v1_24_0::extension::SerializerExtension_v1_24_0).transfers_mapping_transformSetImplementation->map(f|$f->eval($mapping))->concatenate(
+              $extensions.serializerExtension('v1_24_0')->cast(@meta::protocols::pure::v1_24_0::extension::SerializerExtension_v1_24_0).transfers_mapping_transformSetImplementation2->map(f|$f->eval($mapping, $extensions)))->concatenate([
+      o:OperationSetImplementation[1]| $o->transformOperationSetImplementation($mapping,$extensions),
+      p:PureInstanceSetImplementation[1]| $p->transformPureInstanceSetImplementation($mapping, $extensions)
+      ])->toOneMany()
+   );
+}
+
+function <<access.private>> meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::transformAssociationImplementation(s:AssociationImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::AssociationMapping[1]
+{
+   $s->match(
+      $extensions.serializerExtension('v1_24_0')->cast(@meta::protocols::pure::v1_24_0::extension::SerializerExtension_v1_24_0).transfers_mapping_transformAssociationImplementation->map(f|$f->eval($mapping, $extensions))->concatenate([
+         x:XStoreAssociationImplementation[1]     | $x->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::xStore::transformXStoreAssociationImplementation($mapping, $extensions)
+      ])->toOneMany()
+   );
+}
+
+function <<access.private>> meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::transformEnumerationMapping(em:EnumerationMapping<Any>[1]):meta::protocols::pure::v1_24_0::metamodel::mapping::EnumerationMapping[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::mapping::EnumerationMapping
+   (
+      id = $em.name,
+      enumeration = $em.enumeration->elementToPath(),
+      enumValueMappings = $em.enumValueMappings->map(e|
+                                                     ^meta::protocols::pure::v1_24_0::metamodel::mapping::EnumValueMapping(
+                                                        enumValue=$e.enum.name,
+                                                        sourceValues=$e.sourceValues->map(s|$s->match([
+                                                           s: String[1] | ^meta::protocols::pure::v1_24_0::metamodel::mapping::EnumValueMappingStringSourceValue(
+                                                              _type = 'stringSourceValue',
+                                                              value = $s
+                                                           ),
+                                                           i: Integer[1] | ^meta::protocols::pure::v1_24_0::metamodel::mapping::EnumValueMappingIntegerSourceValue(
+                                                              _type = 'integerSourceValue',
+                                                              value = $i
+                                                           ),
+                                                           e: Enum[1] | ^meta::protocols::pure::v1_24_0::metamodel::mapping::EnumValueMappingEnumSourceValue(
+                                                              _type = 'enumSourceValue',
+                                                              enumeration = $e->type()->elementToPath(),
+                                                              value = $e->cast(@Enum)->id()
+                                                           )
+                                                        ]))
+                                                     ))
+   );
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::transformOperationSetImplementation(r:OperationSetImplementation[1], mapping:Mapping[1],extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::OperationClassMapping[1]
+{
+   let operation = if ($r.operation.name->startsWith('special_union'),
+       | meta::protocols::pure::v1_24_0::metamodel::mapping::MappingOperation.ROUTER_UNION,
+       | if ($r.operation.name->startsWith('inheritance'),
+             |meta::protocols::pure::v1_24_0::metamodel::mapping::MappingOperation.INHERITANCE,
+             |if($r.operation.name->startsWith('union'),
+                  | meta::protocols::pure::v1_24_0::metamodel::mapping::MappingOperation.STORE_UNION,
+                  | if($r.operation.name->startsWith('merge'),
+                      |meta::protocols::pure::v1_24_0::metamodel::mapping::MappingOperation.MERGE,
+                      | fail('Mapping operation not supported: '+$r.operation.name->toOne());
+                        meta::protocols::pure::v1_24_0::metamodel::mapping::MappingOperation.ROUTER_UNION;
+                       )
+              )
+         )
+   );
+   
+   if($operation == meta::protocols::pure::v1_24_0::metamodel::mapping::MappingOperation.MERGE,
+        |   ^meta::protocols::pure::v1_24_0::metamodel::mapping::MergeOperationClassMapping
+               (
+                  id = $r.id,
+                  class = $r.class->elementToPath(),
+                  _type = 'mergeOperation',
+                  root = $r.root,
+                  parameters = $r.parameters.id,
+                  operation = $operation,
+                  validationFunction = $r->cast(@MergeOperationSetImplementation).validationFunction->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::transformLambda($extensions)
+               );,
+
+       | ^meta::protocols::pure::v1_24_0::metamodel::mapping::OperationClassMapping
+               (
+                  id = $r.id,
+                  class = $r.class->elementToPath(),
+                  _type = 'operation',
+                  root = $r.root,
+                  parameters = $r.parameters.id,
+                  operation = $operation
+               );
+      );
+
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::modelToModel::transformPureInstanceSetImplementation(p:PureInstanceSetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::modelToModel::PureInstanceClassMapping[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::mapping::modelToModel::PureInstanceClassMapping
+   (
+      id = $p.id,
+      _type = 'pureInstance',
+      class = $p.class->elementToPath(),
+      root = $p.root,
+      propertyMappings = $p.propertyMappings->map(pm|$pm->transformPropertyMapping($mapping, $extensions))->cast(@meta::protocols::pure::v1_24_0::metamodel::mapping::modelToModel::PurePropertyMapping),
+      srcClass = if($p.srcClass->isEmpty(),|[],|$p.srcClass->toOne()->elementToPath()),
+      filter = $p.filter->map(f|$f->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::transformLambda($extensions))
+   )
+}
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::xStore::transformXStoreAssociationImplementation(r:meta::pure::mapping::xStore::XStoreAssociationImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::xStore::XStoreAssociationMapping[1]
+{
+   ^meta::protocols::pure::v1_24_0::metamodel::mapping::xStore::XStoreAssociationMapping
+   (
+      _type = 'xStore',
+      id = $r.id,
+      stores = $r.stores->map(s | $mapping.resolveStore($s)->elementToPath()),
+      association = $r.association->elementToPath(),
+      propertyMappings = $r.allPropertyMappings()->meta::pure::milestoning::excludeRangeMilestoningPropertyMapping()->map(pm | $pm->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions))
+   );
+}
+
+function <<access.public>> meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::modelToModel::transformPropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::PropertyMapping[1]
+{
+   $pm->match([p:PurePropertyMapping[1]| ^meta::protocols::pure::v1_24_0::metamodel::mapping::modelToModel::PurePropertyMapping
+                                            (
+                                               _type = 'purePropertyMapping',
+                                               explodeProperty = $p.explodeProperty,
+                                               property = ^meta::protocols::pure::v1_24_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+                                               source = $p.sourceSetImplementationId,
+                                               target = $p.targetSetImplementationId,
+                                               enumMappingId = $p.transformer->cast(@EnumerationMapping<Any>).name,
+                                               transform = meta::protocols::pure::v1_24_0::transformation::fromPureGraph::transformLambda($p.transform, true, $extensions),
+                                               localMappingProperty = if ($p.localMappingProperty->isNotEmpty() && $p.localMappingProperty->toOne(),
+                                                                          | ^meta::protocols::pure::v1_24_0::metamodel::mapping::LocalMappingPropertyInfo
+                                                                            (
+                                                                               type = $p.localMappingPropertyType->toOne()->elementToPath(),
+                                                                               multiplicity = $p.localMappingPropertyMultiplicity->toOne()->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::domain::transformMultiplicity()
+                                                                            ),
+                                                                          | []
+                                                                      )
+                                             ),
+               a:meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping[1]| ^meta::protocols::pure::v1_24_0::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping
+                                                      (
+                                                         _type = 'AggregationAwarePropertyMapping',
+                                                         property = ^meta::protocols::pure::v1_24_0::metamodel::domain::PropertyPtr(class=$a.property->genericType().typeArguments->at(0).rawType->toOne()->elementToPath(), property=$a.property.name->toOne()),
+                                                         source = $a.sourceSetImplementationId,
+                                                         target = $a.targetSetImplementationId
+                                             )
+               ]);
+}
+
+
+function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping(pm:PropertyMapping[1], mapping : Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_24_0::metamodel::mapping::xStore::XStorePropertyMapping[1]
+{
+   $pm->match([p:meta::pure::mapping::xStore::XStorePropertyMapping[1]|
+      ^meta::protocols::pure::v1_24_0::metamodel::mapping::xStore::XStorePropertyMapping
+       (
+          _type = 'xStorePropertyMapping',
+          property = ^meta::protocols::pure::v1_24_0::metamodel::domain::PropertyPtr(class=$pm.property->genericType().typeArguments->filter(l| $l->isNotEmpty())->at(0).rawType->toOne()->elementToPath(), property=$pm.property.name->toOne()),
+          source = $p.sourceSetImplementationId,
+          target = $p.targetSetImplementationId,
+          crossExpression = meta::protocols::pure::v1_24_0::transformation::fromPureGraph::transformLambda($p.crossExpression, $extensions)
+       )
+   ]);
+}
