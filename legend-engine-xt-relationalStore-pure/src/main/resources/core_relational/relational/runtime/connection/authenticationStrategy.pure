@@ -71,3 +71,19 @@ Class meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentity
     serviceAccountEmail : String[1];
     additionalGcpScopes: String[*];
 }
+
+Class 
+{doc.doc = 'Private key based authentication on AWS'}
+meta::external::persistence::aws::authentication::AwsPKAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    secretArn: String[1];
+    user: String[1];
+}
+
+Class 
+{doc.doc = 'OAuth-based authentication on AWS'}
+meta::external::persistence::aws::authentication::AwsOAuthAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    secretArn: String[1];
+    discoveryUrl: String[1];
+}

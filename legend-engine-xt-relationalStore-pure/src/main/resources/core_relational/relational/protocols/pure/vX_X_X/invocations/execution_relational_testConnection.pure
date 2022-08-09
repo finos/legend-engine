@@ -64,6 +64,8 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
                                                             pair('apiToken', 'ApiTokenAuthenticationStrategy'),
                                                             pair('gcpWorkloadIdentityFederationWithAWS','GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy'),
+                                                            pair('awsOAuthAuthenticationStrategy', 'AwsOAuthAuthenticationStrategy'),
+                                                            pair('awsPKAuthenticationStrategy', 'AwsPKAuthenticationStrategy'),
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
@@ -151,7 +153,19 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             // _type = 'gcpWorkloadIdentityFederationWithAWS',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
-         )
+         ),
+      a:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AwsPKAuthenticationStrategy[1] |
+        ^meta::pure::alloy::connections::alloy::authentication::AwsPKAuthenticationStrategy(
+            // _type = 'awsPKAuthenticationStrategy',
+            secretArn = $a.secretArn,
+            user = $a.user
+        ),
+      a:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AwsOAuthAuthenticationStrategy[1] |
+        ^meta::pure::alloy::connections::alloy::authentication::AwsOAuthAuthenticationStrategy(
+            // _type = 'awsOAuthAuthenticationStrategy',
+            secretArn = $a.secretArn,
+            discoveryUrl = $a.discoveryUrl
+        )
    ]);
 }
 

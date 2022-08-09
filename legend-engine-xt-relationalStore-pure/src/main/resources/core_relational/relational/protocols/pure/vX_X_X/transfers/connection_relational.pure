@@ -170,7 +170,19 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             _type = 'gcpWorkloadIdentityFederation',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
-         )
+         ),
+      a:meta::pure::alloy::connections::alloy::authentication::AwsPKAuthenticationStrategy[1] |
+         ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AwsPKAuthenticationStrategy(
+            _type = 'awsPKAuthenticationStrategy',
+            secretArn = $a.secretArn,
+            user = $a.user
+        ),
+      a:meta::pure::alloy::connections::alloy::authentication::AwsOAuthAuthenticationStrategy[1] |
+         ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AwsOAuthAuthenticationStrategy(
+            _type = 'awsOAuthAuthenticationStrategy',
+            secretArn = $a.secretArn,
+            discoveryUrl = $a.discoveryUrl
+        )
    ])->toOneMany())
 }
 
