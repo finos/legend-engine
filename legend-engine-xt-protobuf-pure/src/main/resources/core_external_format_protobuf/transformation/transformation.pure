@@ -215,7 +215,9 @@ function meta::external::format::protobuf::binding::fromPure::classToMessage(cla
         ->filter(t|$t->instanceOf(MessagePtr))->cast(@MessagePtr)
         ->filter(m | $m.package != $thePackage)
         ->map(p| if ( $p.package == 'google.protobuf', | 'google/protobuf/' + $p.name->toLower() + '.proto'
-                                                                    , | $p.package->protoPackageToFileName()))
+               , | if ( $p.package == 'google.type', | 'google/type/' + $p.name->toLower() + '.proto'
+               , | $p.package->protoPackageToFileName()))
+               )
         ->removeDuplicates()->sort()->map(s | ^ProtoImport(name=$s));
         
       ^ProtoFile(syntax=Syntax.proto3, package=$thePackage, 
