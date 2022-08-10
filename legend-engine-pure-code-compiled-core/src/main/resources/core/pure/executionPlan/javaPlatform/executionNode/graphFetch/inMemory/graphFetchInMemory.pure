@@ -135,6 +135,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
             let graphImpl      = $node->graphImplClass($path, $context);
             let currentSet     = $graphFetchTree.sets->toOne()->cast(@InstanceSetImplementation);
             let input          = j_parameter(javaObject(), 'input');
+            let globalObject   = j_parameter(javaObject(), 'input');
 
             let executeClassWithImports = $context.conventions->planNodeClass('public', $path, 'Execute')
                ->usingKnownPackages($conventions->knownPackages())
