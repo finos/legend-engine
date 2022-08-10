@@ -42,7 +42,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
     {
         return Lists.immutable.of(
                 new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
-                new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration),
+                new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration.getAwsConfig(), databaseAuthenticationFlowProviderConfiguration.getGcpWorkloadConfig()),
                 new DatabricksWithApiTokenFlow(),
                 new H2StaticWithTestUserPasswordFlow(),
                 new SnowflakeWithKeyPairFlow(),
