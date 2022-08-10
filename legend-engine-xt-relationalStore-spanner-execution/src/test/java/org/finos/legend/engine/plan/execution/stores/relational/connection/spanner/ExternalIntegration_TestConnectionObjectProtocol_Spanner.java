@@ -32,7 +32,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Spanner extends Db
     }
 
     @Test
-    public void testSpannerEmulatorPublicConnection_subject() throws Exception
+    public void testSpannerPublicConnection_subject() throws Exception
     {
         SpannerDataSourceSpecification ds = new SpannerDataSourceSpecification(
                 new SpannerDataSourceSpecificationKey(
