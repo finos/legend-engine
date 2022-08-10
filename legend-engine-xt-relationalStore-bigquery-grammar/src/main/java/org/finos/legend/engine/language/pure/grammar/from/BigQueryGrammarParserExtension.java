@@ -14,8 +14,8 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.BigQueryLexerGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.BigQueryParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.BigQueryLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.BigQueryParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
