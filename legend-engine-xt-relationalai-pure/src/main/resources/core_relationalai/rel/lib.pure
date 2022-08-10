@@ -3,6 +3,10 @@ import meta::rel::lib::*;
 import meta::rel::metamodel::render::*;
 import meta::rel::utils::*;
 
+function meta::rel::lib::enumerate(expr: Expr[1]): Expr[1] {
+  rel('enumerate')->appl($expr);
+}
+
 function meta::rel::lib::count(expr: Expr[1]): Expr[1] {
   rel('count')->appl($expr);
 }

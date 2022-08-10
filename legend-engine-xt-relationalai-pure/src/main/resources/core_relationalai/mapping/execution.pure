@@ -53,7 +53,7 @@ function <<access.private>> meta::rel::mapping::execution(
 ): meta::pure::mapping::Result<Any|*>[1] {
   let state = CompilationState($debug);
   // TODO: safe cast
-  let connection = $runtime.connections->at(0)->cast(@meta::rel::runtime::RAIConnection);
+  let connection = $runtime.connections->at(0);
 
   let result = $query
     ->intoPExpr()
@@ -153,8 +153,8 @@ function <<access.private>> meta::rel::mapping::execution(
                             ->with([
                               rel('output')
                                 ->appl(label('query'))
-                                ->headAtom(var('x'))
-                                ->def($expr->atom(var('x')))
+                                ->headAtom([var('i'), var('x')])
+                                ->def($expr->atom([var('i'), var('x')]))
                             ])
                             ->with($rules.second)
                         );
@@ -226,7 +226,7 @@ function <<access.private>> meta::rel::mapping::execution(
   ^meta::pure::mapping::Result<Any|*>(values=[$output]);
 }
 
-function <<access.private>> meta::rel::mapping::doRAIExecute(connection: meta::rel::runtime::RAIConnection[1], rel: String[1]): RAIResult[1] {
+function <<access.private>> meta::rel::mapping::doRAIExecute(connection: meta::pure::runtime::Connection[1], rel: String[1]): RAIResult[1] {
   println(format('Executing program:\n-------------------\n%s', $rel));
   let result = 
     measure(| $connection->RAIExecute($rel));
@@ -287,12 +287,15 @@ function <<access.private>> meta::rel::mapping::propertyOutputs(
             ->pair(
               rel('output')
                 ->appl($pair.first)
+                ->appl(var('i'))
                 ->def(
                   $pair.second
                     ->appl(var('x'))
-                    ->for(var('x')
-                      ->in(
-                        rel('output')->appl(label('query'))
+                    ->from(var('x')
+                      ->where(
+                        rel('output')
+                          ->appl(label('query'))
+                          ->atom([var('i'), var('x')])
                       )
                     )
                 )

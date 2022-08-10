@@ -133,6 +133,27 @@ function meta::rel::execute::toMapped(result: RAIResult[1]): MappedRAIResult[1] 
     }, ^MappedRAIResult(attributes=^Map<String, Map<Any, Values<Any>>>()));
 }
 
+/*function meta::rel::execute::execute(connection: meta::pure::runtime::Connection[1], source: String[1]): RAIResult[1] {
+  $connection->match([
+    conn: meta::rel::runtime::RAIConnection[1] | $conn->RAIExecute($source),
+    other: meta::pure::runtime::Connection[1] | ^RAIResult()
+  ]);
+}*/
+
+function meta::rel::execute::RAIExecute(connection: meta::pure::runtime::Connection[1], source: String[1]): RAIResult[1] {
+  $connection->match([
+    conn: RAIConnection[1] | $conn->RAIExecute($source),
+    {conn: TestConnection[1] | 
+      $conn.onExecute
+        ->map({fn | 
+          let result = $fn->eval($source);
+          if ($result->size() == 1 && $result->toOne()->instanceOf(RAIResult), | $result->toOne()->cast(@RAIResult), | []);
+        })
+        ->else(| ^RAIResult());
+    }
+  ]);
+}
+
 native function meta::rel::execute::RAIExecute(connection: RAIConnection[1], source: String[1]): RAIResult[1];
 
 
