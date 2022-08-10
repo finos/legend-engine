@@ -7,6 +7,9 @@ options
     tokenVocab = BigQueryLexerGrammar;
 }
 
+identifier:                                 VALID_STRING
+;
+
 bigQueryDatasourceSpecification:            BIGQUERY_DSP
                                                 BRACE_OPEN
                                                     (
