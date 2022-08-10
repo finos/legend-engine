@@ -1,0 +1,119 @@
+import meta::rel::metamodel::*;
+import meta::rel::metamodel::syntactic::*;
+import meta::rel::metamodel::render::*;
+import meta::rel::utils::*;
+
+Class meta::rel::metamodel::syntactic::Occurrence<T> {
+  <<equality.Key>> object: T[1];
+  /// Occurrences are represented as nesting positions.
+  <<equality.Key>> position: Integer[*];
+}
+
+function meta::rel::metamodel::syntactic::occurrence<T>(object: T[1], position: Integer[*]): Occurrence<T>[1] {
+  ^Occurrence<T>(object=$object, position=$position);
+}
+
+function meta::rel::metamodel::syntactic::prefix<T|n>(prefix: Integer[*], others: Occurrence<T>[n]): Occurrence<T>[n] {
+  $others->map(o | ^$o(position=$prefix->concatenate($o.position)));
+}
+
+function meta::rel::metamodel::syntactic::prefix<T|n>(prefix: Occurrence<T>[1], others: Occurrence<T>[n]): Occurrence<T>[n] {
+  $prefix.position->prefix($others);
+}
+
+function meta::rel::metamodel::syntactic::toString(occurrence: Occurrence<Variable>[1]): String[1] {
+  $occurrence.object->render() + ' at ' + $occurrence.position->stringify(pos | $pos->toString(), ',');
+}
+
+function meta::rel::metamodel::syntactic::toString(occurrences: Occurrence<Variable>[*]): String[1] {
+  $occurrences->stringify(occ | $occ->toString(), ';');
+}
+
+function meta::rel::metamodel::syntactic::variables(element: ProgramElement[1]): Occurrence<Variable>[*] {
+  $element->match([
+    comment: Comment[1] | [],
+    rule: Rule[1] | $rule->variables()
+  ]);
+}
+
+function meta::rel::metamodel::syntactic::variables(rule: Rule[1]): Occurrence<Variable>[*] {
+  [0]
+    ->prefix($rule.head->variables())
+    ->concatenate(
+      $rule.body->variables(1)
+    );
+}
+
+function meta::rel::metamodel::syntactic::variables(expr: Expr[1]): Occurrence<Variable>[*] {
+  $expr->match([
+    dontCare: DontCare[1] | [],
+    head: HeadExpr[1] | $head->variables(),
+    product: Product[1] | $product.exprs->variables(),
+    variable: Variable[1] | occurrence($variable, []),
+    constant: Constant[1] | [],
+    tuple: Tuple[1] | $tuple.arguments->variables(),
+    cons: RelationCons[1] | $cons.arguments->variables(),
+    application: Application[1] | $application->variables(),
+    composition: Composition[1] | $composition->variables(),
+    named: NamedApplication[1] | $named->variables(),
+    from: From[1] | $from.expr->variables(),
+    abstraction: Abstraction[1] | $abstraction.body->variables(),
+    and: And[1] | $and.conjuncts->variables(),
+    or: Or[1] | $or.disjuncts->variables(),
+    implies: Implies[1] |   [$implies.antecedence, $implies.consequence]->variables(),
+    exists: Exists[1] | $exists.inner->variables(),
+    forAll: ForAll[1] | $forAll.inner->variables(),
+    equals: Equals[1] | [$equals.left, $equals.right]->variables(),
+    atom: NamedAtom[1] | $atom->variables(),
+    atom: Atom[1] | $atom->variables()
+  ]);
+}
+
+function meta::rel::metamodel::syntactic::variables(composition: Composition[1]): Occurrence<Variable>[*] {
+  [$composition.from, $composition.to]->variables();
+}
+
+function meta::rel::metamodel::syntactic::variables(head: HeadExpr[1]): Occurrence<Variable>[*] {
+  $head->match([
+    rel: RelationName[1] | $rel->variables(),
+    app: NamedApplication[1] | $app->variables()
+  ]);
+}
+
+function meta::rel::metamodel::syntactic::variables(rel: RelationName[1]): Occurrence<Variable>[*] {
+  [];
+}
+
+function meta::rel::metamodel::syntactic::variables(app: NamedApplication[1]): Occurrence<Variable>[*] {
+  $app.head
+    ->variables()
+    ->concatenate(
+      $app.arguments->variables()
+    );
+}
+
+function meta::rel::metamodel::syntactic::variables(app: Application[1]): Occurrence<Variable>[*] {
+  $app.head
+    ->variables()
+    ->concatenate(
+      $app.arguments->variables()
+    );
+}
+
+function meta::rel::metamodel::syntactic::variables(equals: Equals[1]): Occurrence<Variable>[*] {  
+  [$equals.left, $equals.right]->variables();
+}
+
+function meta::rel::metamodel::syntactic::variables(exprs: Expr[*], offset: Integer[1]): Occurrence<Variable>[*] {
+  $exprs
+    ->toNumbered()
+    ->map({pair: Pair<Integer, Expr>[1] | 
+      let pos = $pair.first - 1 + $offset;
+      [$pos]->prefix($pair.second->variables());
+    });
+}
+
+function meta::rel::metamodel::syntactic::variables(exprs: Expr[*]): Occurrence<Variable>[*] {
+  $exprs->variables(0);
+}
+

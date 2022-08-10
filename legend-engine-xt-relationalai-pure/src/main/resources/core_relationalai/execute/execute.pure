@@ -1,0 +1,141 @@
+import meta::rel::execute::*;
+import meta::rel::runtime::*;
+import meta::rel::utils::*;
+import meta::rel::utils::collection::*;
+
+Class meta::rel::execute::Column {
+  values: Any[*];
+}
+
+Class meta::rel::execute::RelKey {
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> keys: String[*];
+  <<equality.Key>> values: String[*];
+}
+
+Class meta::rel::execute::Output {
+  columns: Column[*];
+  relKey: RelKey[1];
+}
+
+Class meta::rel::execute::Problem {
+  type: String[1];
+  errorCode: String[1];
+  isError: Boolean[1];
+  isException: Boolean[1];
+  message: String[1];
+  report: String[1];
+}
+
+Class meta::rel::execute::RAIResult {
+  output: Output[*];
+  problems: Problem[*];
+}
+
+Class meta::rel::execute::IndexedRAIResult extends RAIResult {
+  trie: Trie<Any>[1];
+}
+
+Class meta::rel::execute::Row {
+  values: Any[*];
+}
+
+function meta::rel::execute::rowAt(output: Output[1], index: Integer[1]): Row[0..1] {
+  let values = 
+    $output
+      .columns
+      ->map(c | $c.values->maybeAt($index));
+
+  if ($values->isEmpty(), | [], | ^Row(values=$values));
+}
+
+function meta::rel::execute::rows(output: Output[1]): Row[*] {
+  let num = $output
+    .columns
+    ->maybeAt(0)
+    .values
+    ->size()
+    ->orElse(0);
+
+  range($num)
+    ->map(index | $output->rowAt($index));
+}
+
+function meta::rel::execute::toIndexed(result: RAIResult[1]): IndexedRAIResult[1] {
+  let trie = 
+    $result.output
+      ->fold({output, accum |
+        let numCols = $output.columns->size();
+        let numKeys = $output.relKey.keys->size();
+        let numKeyValues = $output.relKey.values->size();
+        let prefix = $output.relKey.keys->slice(0, $numKeys + $numKeyValues - $numCols);
+
+        $output
+          ->rows()
+          ->fold({row, accum |
+            $accum->insert($prefix->concatenate($row.values));
+          }, $accum);
+      }, Trie(@Any));
+
+  ^IndexedRAIResult(trie=$trie, problems=$result.problems, output=$result.output);
+}
+
+function meta::rel::execute::values(indexed: IndexedRAIResult[1], prefix: Any[*]): TrieWord<Any>[*] {
+  $indexed
+    .trie
+    ->entries($prefix);
+}
+
+Class meta::rel::execute::Values<T> {
+  inner: T[*];
+}
+
+Class meta::rel::execute::MappedRAIResult {
+  ids: Any[*];
+  attributes: Map<String, Map<Any, Values<Any>>>[1];
+}
+
+function meta::rel::execute::toMapped(result: RAIResult[1]): MappedRAIResult[1] {
+  $result.output
+    ->fold({output, accum |
+      let prefix = $output.relKey.keys->at(0);
+
+      if ($prefix == ':query', {|
+        ^$accum(ids=$output.columns->at(0).values)
+      }, {|
+        let col = $output.columns->at(0);
+        //let list = list($col.values);
+        println($col.values->size());
+        /*let list = ^Column(values=range($col.values->size()));
+        range(1800)->map({i | 
+          $list.values->at(0)
+        });*/
+        
+        /*let attribute = $output
+          ->map({r: Row[1] | pair($r.values->at(0), $r.values->at(1))})
+          ->fold({pair, accum | 
+            let values = $accum
+              ->get($pair.first)
+              ->orElse(^Values<Any>());
+
+            $accum->put(
+              $pair.first, 
+              //^$values(inner=$values.inner->concatenate($pair.second))
+              ^Values<Any>(inner=$pair.second)
+            );
+
+          }, ^Map<Any, Values<Any>>());
+
+        ^$accum(attributes=$accum.attributes->put($prefix, $attribute));*/
+        $accum;
+      });
+
+    }, ^MappedRAIResult(attributes=^Map<String, Map<Any, Values<Any>>>()));
+}
+
+native function meta::rel::execute::RAIExecute(connection: RAIConnection[1], source: String[1]): RAIResult[1];
+
+
+function meta::rel::execute::toString(problem: Problem[1]): String[1] {
+  format('%s (code %s): %s\n%s', [$problem.type, $problem.errorCode, $problem.message, $problem.report]);
+}

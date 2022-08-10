@@ -1,0 +1,51 @@
+import meta::rel::utils::*;
+
+
+function meta::rel::utils::unlessEmpty<S, T|n>(values: T[*], logic: FunctionDefinition<{T[1..*]->S[n]}>[1], else: S[n]): S[n] {
+  if ($values->size() == 0, | $else, | $logic->eval($values->toOneMany()));
+}
+
+function meta::rel::utils::isSome<T|m>(value: T[m]): Boolean[1] {
+  $value->size() != 0;
+}
+
+function meta::rel::utils::unwrap<T>(value: T[0..1]): T[1] {
+  $value->expect('Call of `unwrap` on empty object.');
+}
+
+function meta::rel::utils::expect<T>(value: T[0..1], message: String[1]): T[1] {
+  if ($value->isEmpty(), 
+    | fail($message),
+    | $value->toOne()
+  );
+}
+
+function meta::rel::utils::expect<T>(value: T[0..1], message: FunctionDefinition<{->String[1]}>[1]): T[1] {
+  if ($value->isEmpty(), 
+    | fail(error($message)),
+    | $value->toOne()
+  );
+}
+
+function meta::rel::utils::error(message: FunctionDefinition<{->String[1]}>[1]): String[1] {
+  let source = $message
+    ->evaluateAndDeactivate()
+    ->sourceInformation()
+    ->toOne();
+  
+  let m = $source.source + ' at ' + $source.line->toString()->toOne() + ':';
+  $m + $source.column->toString() + ': ' + $message->eval();
+}
+
+function meta::rel::utils::else<T>(value: T[0..1], or: FunctionDefinition<{->T[1]}>[1]): T[1] {
+  if ($value->isEmpty(), | $or->eval(), | $value->toOne());
+}
+
+function meta::rel::utils::else<T>(value: T[*], or: FunctionDefinition<{->T[1..*]}>[1]): T[1..*] {
+  if ($value->isEmpty(), | $or->eval(), | $value->toOneMany());
+}
+
+function meta::rel::utils::maybeAt<T>(collection: T[*], index: Integer[1]): T[0..1] {
+  if (($index >= 0) && ($index < $collection->size()), | $collection->at($index), | []);
+}
+

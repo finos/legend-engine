@@ -1,0 +1,82 @@
+import meta::rel::utils::visitor::*;
+
+Class meta::rel::utils::visitor::Visited<T> {
+  values: T[*];
+  explored: Map<Any, Any>[1];
+}
+
+function meta::rel::utils::visitor::report<T>(visited: Visited<T>[1], object: Any[1]): Visited<T>[1] {
+  ^$visited(explored=$visited.explored->put($object, $object));
+}
+
+function meta::rel::utils::visitor::report<T>(visited: Visited<T>[1], other: Visited<T>[1]): Visited<T>[1] {
+  ^$visited(explored=$visited.explored->putAll($other.explored));
+}
+
+function meta::rel::utils::visitor::with<T>(visited: Visited<T>[1], values: T[*]): Visited<T>[1] {
+    ^$visited(values=$visited.values->concatenate($values));
+}
+
+function meta::rel::utils::visitor::update<T>(visited: Visited<T>[1], other: Visited<T>[1]): Visited<T>[1] {
+    ^$visited(values=$visited.values->concatenate($other.values), explored=$visited.explored->putAll($other.explored));
+}
+
+function meta::rel::utils::visitor::hasVisited<T>(visited: Visited<T>[1], object: T[1]): Boolean[1] {
+  !$visited.explored->get($object)->isEmpty();
+}
+
+Class meta::rel::utils::visitor::Visit {
+  values: Any[*];
+  visited: Map<Any,Any>[1];
+}
+
+function meta::rel::utils::visitor::Visit(): Visit[1] {
+  Visit(^Map<Any,Any>());
+}
+
+function meta::rel::utils::visitor::Visit(values: Any[*], visited: Map<Any,Any>[1]): Visit[1] {
+  ^Visit(values=$values, visited=$visited);
+}
+
+function meta::rel::utils::visitor::Visit(values: Any[*]): Visit[1] {
+  Visit($values, ^Map<Any,Any>());
+}
+
+function meta::rel::utils::visitor::Visit(visited: Map<Any,Any>[1]): Visit[1] {
+  Visit([], $visited);
+}
+
+function meta::rel::utils::visitor::with(visit: Visit[1], values: Any[*]): Visit[1] {
+    ^$visit(values=$visit.values->concatenate($values));
+}
+
+function meta::rel::utils::visitor::hasVisited(visit: Visit[1], object: Any[1]): Boolean[1] {
+  !$visit.visited->get($object)->isEmpty();
+}
+
+function meta::rel::utils::visitor::report(visit: Visit[1], object: Any[1]): Visit[1] {
+  ^$visit(visited=$visit.visited->put($object, 1));
+}
+
+function meta::rel::utils::visitor::visit(
+  objects: Any[*],
+  logic: FunctionDefinition<{Any[1], FunctionDefinition<{Any[*]->Visit[1]}>[1] -> Visit[1]}>[1],
+  visit: Visit[1]
+): Visit[1] {
+  $objects->fold({object, accum |
+    if(!$accum->hasVisited($object), {| 
+      let new = $accum->report($object);
+      $logic
+        ->eval($object, {any: Any[*] | 
+          $any->visit($logic, $new);
+        });
+    }, | $accum);
+  }, $visit);
+}
+
+function meta::rel::utils::visitor::visit(
+  objects: Any[*],
+  logic: FunctionDefinition<{Any[1], FunctionDefinition<{Any[*]->Visit[1]}>[1] -> Visit[1]}>[1]
+): Visit[1] {
+  $objects->visit($logic, Visit());
+}

@@ -1,0 +1,211 @@
+import meta::rel::utils::collection::*;
+import meta::rel::utils::*;
+
+Class meta::rel::utils::collection::BiMap<K, V> {
+  to: Map<K, V>[1];
+  from: Map<V, K>[1];
+}
+
+function meta::rel::utils::collection::BiMap<K,V>(key: K[1], value: V[1]): BiMap<K, V>[1] {
+  let to = ^Map<K, V>();
+  let from = ^Map<V,K>();
+  ^BiMap<K,V>(to=$to, from=$from);
+}
+
+function meta::rel::utils::collection::put<K, V>(map: BiMap<K,V>[1], key: K[1], value: V[1]): BiMap<K,V>[1] {
+  ^BiMap<K,V>(to=$map.to->put($key, $value), from=$map.from->put($value, $key));
+}
+
+function meta::rel::utils::collection::putAll<K, V>(map: BiMap<K, V>[1], keyValues: Pair<K, V>[*]): BiMap<K,V>[1] {
+  $keyValues->fold({pair, accum |
+    $accum->put($pair.first, $pair.second);
+  },
+  $map);
+}
+
+function meta::rel::utils::collection::getValue<K, V>(map: BiMap<K, V>[1], key: K[1]): V[0..1] {
+  $map.to->get($key);
+}
+
+function meta::rel::utils::collection::getKey<K, V>(map: BiMap<K, V>[1], value: V[1]): K[0..1] {
+  $map.from->get($value);
+}
+
+function meta::rel::utils::collection::keyValues<K, V>(map: BiMap<K,V>[1]): Pair<K, V>[*] {
+  $map.to->keyValues();
+}
+
+function meta::rel::utils::collection::keys<K, V>(map: BiMap<K, V>[1]): K[*] {
+  $map.to->keys();
+}
+
+function meta::rel::utils::collection::values<K, V>(map: BiMap<K, V>[1]): V[*] {
+  $map.to->values();
+}
+
+function meta::rel::utils::collection::valueKeys<K, V>(map: BiMap<K,V>[1]): Pair<V, K>[*] {
+  $map.from->keyValues();
+}
+
+Class <<typemodifiers.abstract>> meta::rel::utils::collection::Entry { }
+
+Class meta::rel::utils::collection::CollectionEntry<T> extends Entry {
+  collection: T[*];
+  index: Integer[1];
+  value: T[1];
+}
+
+function meta::rel::utils::collection::entry<T>(collection: T[*], index: Integer[1]): CollectionEntry<T>[0..1] {
+  $collection
+    ->maybeAt($index)
+    ->map(entry | ^CollectionEntry<T>(collection=$collection, index=$index, value=$entry);)
+}
+
+function meta::rel::utils::collection::andModify<T>(
+  entry: CollectionEntry<T>[0..1], 
+  fn: FunctionDefinition<{T[1]->T[1]}>[1]
+): CollectionEntry<T>[0..1] {
+  $entry
+    ->map(inner |
+      let newValue = $fn->eval($inner.value);
+
+      let newCollection = $inner.collection
+        ->slice(0, $inner.index)
+        ->concatenate($newValue)
+        ->concatenate($inner.collection->slice($inner.index + 1, $inner.collection->size()));
+
+      ^$inner(value=$newValue, collection=$newCollection);
+    );
+}
+
+function meta::rel::utils::collection::modify<T>(
+  collection: T[*],
+  index: Integer[1], 
+  fn: FunctionDefinition<{T[1]->T[1]}>[1]
+): T[*] {
+  $collection
+    ->entry($index)
+    ->andModify($fn)
+    .collection;
+}
+
+Class meta::rel::utils::collection::MPair<S, T|n, m> {
+  <<equality.Key>> first: S[n];
+  <<equality.Key>> second: T[m];
+}
+
+function meta::rel::utils::collection::mpair<S,T|n,m>(first: S[n], second: T[m]): MPair<S,T|n,m>[1] {
+  ^MPair<S,T|n,m>(first=$first, second=$second);
+}
+
+Class meta::rel::utils::collection::Triple<S, T, U|n,m,p> {
+  first: S[n];
+  second: T[m];
+  third: U[p];
+}
+
+function meta::rel::utils::collection::triple<S,T,U|n,m,p>(first: S[n], second: T[m], third: U[p]): Triple<S,T,U|n,m,p>[1] {
+  ^Triple<S,T,U|n,m,p>(first=$first, second=$second, third=$third);
+}
+
+Class meta::rel::utils::collection::Trie<T> {
+  values: T[*];
+  children: Map<T, Trie<T>>[1];
+}
+
+Class meta::rel::utils::collection::TrieWord<T> {
+  <<equality.Key>> values: T[*];
+}
+
+function meta::rel::utils::collection::TrieWord<T>(values: T[*]): TrieWord<T>[1] {
+  ^TrieWord<T>(values=$values);
+}
+
+function meta::rel::utils::collection::Trie<T>(object: T[1]): Trie<T>[1] {
+  let children = ^Map<T,Trie<T>>();
+  ^Trie<T>(children=$children);
+}
+
+function meta::rel::utils::collection::insert<T>(trie: Trie<T>[1], word: T[*]): Trie<T>[1] {
+  let size = $word->size();
+
+  if ($size == 0, | $trie, {|
+    let prefix = $word->at(0);
+    let child = $trie.children
+      ->get($prefix)
+      ->orElse(Trie(@T));
+
+    ^$trie(
+      values=if($size == 1, | $trie.values->concatenate($word), | $trie.values),
+      children=$trie.children
+        ->put(
+          $word->at(0), 
+          $child->insert($word->tail())
+        )
+    );
+  });
+}
+
+function meta::rel::utils::collection::display<T>(trie: Trie<T>[1]): String[1] {
+  $trie->display(0);
+}
+
+function meta::rel::utils::collection::display<T>(trie: Trie<T>[1], indent: Integer[1]): String[1] {
+  let values = $trie.values
+    ->map(v | $v->toString())
+    ->joinStrings(', ');
+
+  format('%s%s\n%s', [
+    indent($indent),
+    if ($values == '', | '<<empty>>', | $values),
+    $trie.children
+      ->keyValues()
+      ->map(pair: Pair<T, Trie<T>>[1] | 
+        format('%s%s ->\n%s', [
+          indent($indent + 2), 
+          $pair.first->toString(), 
+          $pair.second->display($indent + 4)
+        ])
+      )
+      ->joinStrings('')
+  ]);
+}
+
+function meta::rel::utils::collection::find<T>(trie: Trie<T>[1], word: T[*]): Trie<T>[0..1] {
+  let size = $word->size();
+
+  if ($size == 0, | $trie, {|
+    let child = $trie.children
+      ->get($word->at(0));
+
+    if ($child->isEmpty(), | [], | $child->toOne()->find($word->tail()));
+  });
+}
+
+function <<access.private>> meta::rel::utils::collection::collectWords<T>(trie: Trie<T>[1], prefix: T[*]): TrieWord<T>[*] {
+  if ($trie->isTerminal(), {|
+    TrieWord($prefix);
+  }, {|
+    $trie
+      .children
+      ->keyValues()
+      ->map(pair: Pair<T,Trie<T>>[1] | $pair.second->collectWords($prefix->concatenate($pair.first)));
+  });
+}
+
+function meta::rel::utils::collection::isTerminal<T>(trie: Trie<T>[1]): Boolean[1] {
+  $trie
+    .children
+    ->keyValues()
+    ->isEmpty();  
+}
+
+function meta::rel::utils::collection::entries<T>(trie: Trie<T>[1], prefix: T[*]): TrieWord<T>[*] {
+  $trie
+    ->find($prefix)
+    ->map(t: Trie<T>[1] | $t->collectWords($prefix));
+}
+
+function meta::rel::utils::collection::entries<T>(trie: Trie<T>[1]): TrieWord<T>[*] {
+  $trie->entries([]);
+}

@@ -1,0 +1,121 @@
+import meta::rel::utils::*;
+import meta::rel::utils::lang::*;
+import meta::rel::utils::collection::*;
+
+function meta::rel::utils::stringify<T>(
+  list: T[*], 
+  elem: FunctionDefinition<{T[1]->String[1]}>[1], 
+  separator: String[1]
+): String[1] {
+  if ($list->size() == 0, | '', |
+    $list->init()->fold({e, accum |
+      $accum + $elem->eval($e) + $separator
+    }, '') + $elem->eval($list->last()->toOne())
+  );
+}
+
+function meta::rel::utils::type(spec: ValueSpecification[1]): Type[1] {
+  $spec.genericType.rawType->toOne();
+}
+
+function meta::rel::utils::inspect<T|m>(any: T[m]): T[m] {
+  println($any);
+  $any;
+}
+
+function meta::rel::utils::inspect<T|m>(any: T[m], label: String[1]): T[m] {
+  print($label + ': ');
+  println($any);
+  $any;
+}
+
+function meta::rel::utils::inspect<T|m>(any: T[m], fun: FunctionDefinition<{T[m]->Any[*]}>[1]): T[m] {
+  println($fun->eval($any));
+  $any;
+}
+
+function meta::rel::utils::inspect<T|m>(any: T[m], fun: FunctionDefinition<{T[m]->Any[*]}>[1], label: String[1]): T[m] {
+  print($label + ': ');
+  println($fun->eval($any));
+  $any;
+}
+
+function meta::rel::utils::debugInspect<T|m>(any: T[m], ctx: DebugContext[1]): T[m] {
+  $ctx->debug($any, 'DEBUG: ');
+  $any;
+}
+
+function meta::rel::utils::debug(ctx: DebugContext[1], message: Any[*], label: String[1]): Any[*] {
+  $ctx->debug(| $message, $label);
+}
+
+function meta::rel::utils::debug(ctx: DebugContext[1], message: Any[*]): Any[*] {
+  $ctx->debug($message, '');
+}
+
+
+function meta::rel::utils::debug(ctx: DebugContext[1], message: FunctionDefinition<{->Any[*]}>[1]): Any[*] {
+  $ctx->debug($message, '');
+}
+
+function meta::rel::utils::debug(ctx: DebugContext[1], message: FunctionDefinition<{->Any[*]}>[1], label: String[1]): Any[*] {
+  if($ctx.debug, | print($label); $message->eval()->println(); $message;, | '');
+}
+
+function meta::rel::utils::quote(str: String[1]): String[1] {
+  '`' + $str + '`'; 
+}
+
+function meta::rel::utils::decToBinary(decimal: Decimal[1]): String[1] {
+  let rem = $decimal->rem(2);
+  let res = floor($decimal / 2);
+  
+  if ($res > 0, | decToBinary($res->toDecimal()) + $rem->toString(), | $rem->toString());
+}
+
+function meta::rel::utils::binaryToHex(binary: String[1]): String[1] {
+  let toPad = $binary->length()->rem(4);
+  let rem = if ($toPad == 0,| 0, | 4 - $toPad);
+  let padded = range(round($rem))->map(_i | '0')->joinStrings() + $binary;
+
+  range(round($padded->length() / 4))
+    ->fold({chunk, accum |
+      let quad = $padded->substring($chunk * 4, ($chunk + 1) * 4);
+      let converted = switch([
+        case($quad == '0000', | '0'),
+        case($quad == '0001', | '1'),
+        case($quad == '0010', | '2'),
+        case($quad == '0011', | '3'),
+        case($quad == '0100', | '4'),
+        case($quad == '0101', | '5'),
+        case($quad == '0110', | '6'),
+        case($quad == '0111', | '7'),
+        case($quad == '1000', | '8'),
+        case($quad == '1001', | '9'),
+        case($quad == '1010', | 'A'),
+        case($quad == '1011', | 'B'),
+        case($quad == '1100', | 'C'),
+        case($quad == '1101', | 'D'),
+        case($quad == '1110', | 'E'),
+        case($quad == '1111', | 'F')
+      ], | '');
+
+    $accum + $converted;
+    }, '');
+}
+
+function meta::rel::utils::escapeString(string: String[1], character: String[1]): String[1] {
+  $string->replace($character, format('\\%s', $character));
+}
+
+function meta::rel::utils::indent(amount: Integer[1]): String[1] {
+  range($amount)->map(_n | ' ')->joinStrings('');
+}
+
+function meta::rel::utils::measure<T|n>(fn: FunctionDefinition<{->T[n]}>[1]): MPair<Integer, T|1,n>[1] {
+  let now = now();
+  let result = $fn->eval();
+  let diff = $now->dateDiff(now(), DurationUnit.MILLISECONDS)->toOne();
+
+  mpair($diff, $result);
+}

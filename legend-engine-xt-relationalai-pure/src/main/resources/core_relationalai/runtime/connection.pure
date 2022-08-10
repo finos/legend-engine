@@ -1,0 +1,75 @@
+import meta::rel::runtime::*;
+
+Class meta::rel::runtime::RAICloudCredentials {
+  clientId: String[1];
+  clientSecret: String[1];
+  clientCredentialsURL: String[0..1];
+}
+
+Class meta::rel::runtime::RAIConnection extends meta::pure::runtime::Connection {
+  host: String[1];
+  port: String[1];
+  scheme: String[1];
+  database: String[1];
+  engine: String[1];
+
+  credentials: RAICloudCredentials[0..1];
+}
+
+function meta::rel::runtime::RAIConnection(
+  element: Any[1],
+  host: String[1], 
+  port: String[1], 
+  scheme: String[1],
+  database: String[1],
+  engine: String[1],
+  credentials: RAICloudCredentials[0..1]
+): RAIConnection[1] {
+  ^RAIConnection(element=$element, host=$host, port=$port, scheme=$scheme, database=$database, engine=$engine, credentials=$credentials);
+}
+
+function meta::rel::runtime::RAICloudCredentials(clientId: String[1], clientSecret: String[1], clientCredentialsURL: String[0..1]): RAICloudCredentials[1] {
+  ^RAICloudCredentials(clientId=$clientId, clientSecret=$clientSecret, clientCredentialsURL=$clientCredentialsURL);
+}
+
+function meta::rel::runtime::RAICloudCredentials(clientId: String[1], clientSecret: String[1]): RAICloudCredentials[1] {
+  RAICloudCredentials($clientId, $clientSecret, []);
+}
+
+function meta::rel::runtime::RAIConnection(
+  schema: meta::rel::mapping::frontend::RAISchema[1],
+  host: String[1], 
+  port: String[1], 
+  scheme: String[1],
+  database: String[1],
+  engine: String[1],
+  credentials: RAICloudCredentials[0..1]
+): RAIConnection[1] {
+  RAIConnection($schema, $host, $port, $scheme, $database, $engine, $credentials);
+}
+
+function meta::rel::runtime::RAIConnection(
+  element: Any[1],
+  host: String[1], 
+  port: String[1], 
+  scheme: String[1],
+  database: String[1],
+  engine: String[1]
+): RAIConnection[1] {
+  RAIConnection($element, $host, $port, $scheme, $database, $engine, []);
+}
+
+function meta::rel::runtime::query(connection: RAIConnection[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {  
+  let schema = $connection.element->cast(@meta::rel::mapping::frontend::RAISchema);
+
+  let runtime = ^meta::pure::runtime::Runtime(connections=$connection);
+
+  let result = execute(
+    $query,
+    $schema.mapping,
+    $runtime,
+    meta::rel::extension::defaultRAIExtension()
+  );
+
+  $result.values;
+}

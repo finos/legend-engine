@@ -47,6 +47,9 @@
         <module>legend-engine-xts-mongodb</module>
         <module>legend-engine-xts-elasticsearch</module>
 
+        <!-- RelationalAI -->
+        <module>legend-engine-xt-relationalai-pure</module>
+
         <!-- External Formats -->
         <module>legend-engine-xts-xml</module>
         <module>legend-engine-xts-protobuf</module>
