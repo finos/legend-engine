@@ -1,0 +1,64 @@
+import meta::rel::utils::collection::*;
+import meta::rel::utils::assert::*;
+
+function <<test.Test>> meta::rel::test::utils::collection::testEntry(): Any[*] {
+  assertEquals(
+    [1, 43, 42, 4, 5],
+    [1, 2, 3, 4, 5]
+      ->modify(2, i | 42)
+      ->modify(1, i | 43)
+  );
+}
+
+function <<test.Test>> meta::rel::test::utils::collection::testTrie(): Any[*] {
+  let trie = 
+    Trie(@Integer)
+      ->insert([0, 1, 2, 3, 4])
+      ->insert([0, 1, 2, 3, 5])
+      ->insert([0, 1, 6, 7])
+      ->insert([0, 1, 8, 9]);
+
+  assertEqualElements(
+    TrieWord([0, 1, 2, 3, 4]),
+    $trie->entries([0, 1, 2, 3, 4])
+  );
+
+  assertEqualElements([
+      TrieWord([0, 1, 2, 3, 4]),
+      TrieWord([0, 1, 2, 3, 5])
+    ],    
+    $trie->entries([0, 1, 2, 3])
+  );
+
+  assertEqualElements([
+      TrieWord([0, 1, 2, 3, 4]),
+      TrieWord([0, 1, 2, 3, 5]),
+      TrieWord([0, 1, 6, 7]),
+      TrieWord([0, 1, 8, 9])
+    ],    
+    $trie->entries([0])
+  );
+
+  assertEqualElements([
+      TrieWord([0, 1, 2, 3, 4]),
+      TrieWord([0, 1, 2, 3, 5]),
+      TrieWord([0, 1, 6, 7]),
+      TrieWord([0, 1, 8, 9])
+    ],    
+    $trie->entries([])
+  );
+
+  assertEqualElements([
+      TrieWord([0, 1, 2, 3, 4]),
+      TrieWord([0, 1, 2, 3, 5]),
+      TrieWord([0, 1, 6, 7]),
+      TrieWord([0, 1, 8, 9])
+    ],    
+    $trie->entries([0, 1])
+  );
+
+  assertEqualElements(
+    TrieWord([0, 1, 6, 7]),  
+    $trie->entries([0, 1, 6])
+  );
+}
