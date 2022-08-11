@@ -100,4 +100,24 @@ public class LegendH2Extensions
     {
         return string == null ? null : Base64.encodeBase64URLSafeString(string.getBytes(StandardCharsets.UTF_8));
     }
+
+    public static String legend_h2_extension_split_part(String string, String separator, Integer position)
+    {
+        if (position <= 0 || separator.equals(""))
+        {
+            return null;
+        }
+        else
+        {
+            String[] parts = string.split(separator, -1);
+            if (position > parts.length)
+            {
+                return "";
+            }
+            else
+            {
+                return parts[position-1];
+            }
+        }
+    }
 }

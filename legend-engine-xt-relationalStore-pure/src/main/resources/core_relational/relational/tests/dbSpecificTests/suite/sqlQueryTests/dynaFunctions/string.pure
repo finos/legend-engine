@@ -272,3 +272,31 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let expected = ^Literal(value=true);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartDefault(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='splitPart', parameters=[^Literal(value='Mr-Joe-Bloggs'), ^Literal(value='-'), ^Literal(value=3)]);
+  let expected = ^Literal(value='Bloggs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartNoDelimiterFoundIndexOne(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='splitPart', parameters=[^Literal(value='Mr-Joe-Bloggs'), ^Literal(value=','), ^Literal(value=1)]);
+  let expected = ^Literal(value='Mr-Joe-Bloggs');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartNoDelimiterFoundIndexTwo(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='splitPart', parameters=[^Literal(value='Mr-Joe-Bloggs'), ^Literal(value=','), ^Literal(value=2)]);
+  let expected = ^Literal(value='');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartOutOfRange(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='splitPart', parameters=[^Literal(value='Mr-Joe-Bloggs'), ^Literal(value='-'), ^Literal(value=4)]);
+  let expected = ^Literal(value='');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

@@ -55,6 +55,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParamsForSybaseIQ()})),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='%s', transform=getTransformForSplitPartSybaseIQ())),
     dynaFnToSql('startsWith',             $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()}))
   ]->concatenate(getDynaFunctionToSqlCommonToBothSybases());
 }
@@ -234,6 +235,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 
     assert($s.orderBy->isNotEmpty(), | 'SybaseIQ requires an order by column for meaningful limit/offset');
     '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getTransformForSplitPartSybaseIQ():LambdaFunction<{String[3]->String[1]}>[1]
+{
+    {p:String[3]
+                | let string = $p->at(0);
+                  let separator = $p->at(1);
+                  let position = $p ->at(2) -> meta::pure::functions::string::parseInteger();
+                  assert($position>0, 'SplitPart supports only index values greater than or equal to 1');
+                  assert($separator->length() > 0,'SplitPart does not support empty separators'); '';
+                  if($position == 1,| getBeforeAndAfterIndexIQ($string, $separator, $position, 'locate('+ $string+', ' + $separator + ', 0)-1', 'LENGTH('+ $string +')') ,| getBeforeAndAfterIndexIQ($string, $separator, $position, 'locate('+ $string+', ' + $separator + ', 0)', '0'));
+    }
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getBeforeAndAfterIndexIQ(string: String[1], separator: String[1], position: Integer[1], current: String[1], prev:String[1]):String[1]
+{
+   if($position == 1, | 'CASE WHEN '+$current +'!='+$prev+' AND locate(' + $string +', ' + $separator + ')!=0 THEN substring('+$string+', 0, locate('+$string+', ' + $separator+')-1) WHEN '+$current +'!='+$prev+' AND locate(' + $string +', ' + $separator + ')=0 THEN '+$string+ ' WHEN '+$prev+'!=0 AND locate(' + $string +', ' + $separator + ')=0 THEN '+$string+' ELSE right('+$string+',0) END',
+                      | getBeforeAndAfterIndexIQ('right('+ $string + ', LENGTH('+ $string +')-locate(' + $string + ', ' + $separator +'))', $separator, $position - 1, 'locate(' + $string + ', ' + $separator +', ' + $current + '+1)', $current))
+
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::columnNameToIdentifierForSybaseIQ(columnName: String[1], dbConfig: DbConfig[1]): String[1]

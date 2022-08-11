@@ -49,3 +49,16 @@ function meta::relational::tests::dbSpecificTests::sqlServer::runSQLQueryTestsPa
 
   !$ignoredTests->contains($f);
 }
+
+function meta::relational::tests::dbSpecificTests::sqlServer::paramCustomizationsForDynaFunctionTests(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+{
+  //optionally assert db specific sql for a bunch of tests
+   let expectedSqls= [
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartDefault_DbTestConfig_1__Boolean_1_, 'select split_part(\'Mr-Joe-Bloggs\',\'-\',3)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartNoDelimiterFoundIndexOne_DbTestConfig_1__Boolean_1_, 'select split_part(\'Mr-Joe-Bloggs\',\',\',1)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartNoDelimiterFoundIndexTwo_DbTestConfig_1__Boolean_1_, 'select split_part(\'Mr-Joe-Bloggs\',\',\',2)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartOutOfRange_DbTestConfig_1__Boolean_1_, 'select split_part(\'Mr-Joe-Bloggs\',\'-\',4)')
+   ]->newMap();
+
+  ^$dbTestConfig(expectedSql= $expectedSqls->get($f));
+}

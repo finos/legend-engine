@@ -133,3 +133,18 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::test
    
    assertPlanGenerationForOptionalParameter(DatabaseType.SqlServer, $expectedPlan);
 }
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testSplitPartFunctionSqlServer():Boolean[1]
+{
+   let fn = {|Person.all()->project([s | $s.firm->toOne().nameAndAddress()->splitPart(',', 2)], ['splitRes'])};
+   let sqlSqlServer = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select split_part("firmTable_d#2_dy0_d_q_d#2_d_m1".LEGALNAME+\',\'+"addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r".NAME,\',\',2) as "splitRes" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d_q_d#2_d_m1" on ("firmTable_d#2_dy0_d_q_d#2_d_m1".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r" on ("addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r".ID = "firmTable_d#2_dy0_d_q_d#2_d_m1".ADDRESSID)', $sqlSqlServer);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testMappingSplitPartSqlServer():Boolean[1]
+{
+   let sqlServerSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']),
+                                   testMapping,
+                                   meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select split_part("root".stringDateFormat,\'-\',2) as "Part" from dataTable as "root"',$sqlServerSql);
+}

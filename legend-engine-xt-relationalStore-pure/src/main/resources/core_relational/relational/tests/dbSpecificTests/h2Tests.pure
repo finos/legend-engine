@@ -33,7 +33,11 @@ function meta::relational::tests::dbSpecificTests::H2::paramCustomizationsForDyn
 {
   //optionally assert db specific sql for a bunch of tests
    let expectedSqls= [
-     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testNegative_DbTestConfig_1__Boolean_1_, 'select abs(-1)')
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::abs::testNegative_DbTestConfig_1__Boolean_1_, 'select abs(-1)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartDefault_DbTestConfig_1__Boolean_1_, 'select legend_h2_extension_split_part(\'Mr-Joe-Bloggs\',\'-\',3)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartNoDelimiterFoundIndexOne_DbTestConfig_1__Boolean_1_, 'select legend_h2_extension_split_part(\'Mr-Joe-Bloggs\',\',\',1)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartNoDelimiterFoundIndexTwo_DbTestConfig_1__Boolean_1_, 'select legend_h2_extension_split_part(\'Mr-Joe-Bloggs\',\',\',2)'),
+     pair(meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::splitPart::testSplitPartOutOfRange_DbTestConfig_1__Boolean_1_, 'select legend_h2_extension_split_part(\'Mr-Joe-Bloggs\',\'-\',4)')
    ]->newMap();
 
   ^$dbTestConfig(expectedSql= $expectedSqls->get($f));
