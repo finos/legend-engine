@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
+import java.util.Collections;
+import java.util.List;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -34,7 +36,14 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
 {
     public static Test createSuite(String pureTestCollectionPath, String testServerConfigFilePath) throws Exception
     {
-        //Run test engine server - needs to be setup before as we need testParam(connection details) to create test suite
+        return createSuite(Collections.singletonList(pureTestCollectionPath), testServerConfigFilePath);
+    }
+
+    public static Test createSuite(List<String> pureTestCollectionPaths, String testServerConfigFilePath)
+        throws Exception
+    {
+        //Run test engine server - needs to be setup before as we need testParam(connection details) to create test
+        // suite
         boolean shouldCleanUp = PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X");
         final ThreadLocal<ServersState> state = new ThreadLocal<>();
         state.set(PureTestHelper.initEnvironment(false, testServerConfigFilePath));
@@ -42,7 +51,13 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
         CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
 
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        pureTestCollectionPaths.forEach(pureTestCollectionPath ->
+            suite.addTest(PureTestBuilderHelper.buildSuite(
+                TestCollection.collectTests(pureTestCollectionPath,
+                    executionSupport.getProcessorSupport(),
+                    fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport),
+                    ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())),
+                executionSupport)));
 
         return new TestSetup(suite)
         {
