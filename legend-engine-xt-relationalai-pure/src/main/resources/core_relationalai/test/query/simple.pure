@@ -70,3 +70,18 @@ function <<test.Test>> meta::rel::test::query::simple::testExists(): Any[*] {
   );
 }
 
+function <<test.Test>> meta::rel::test::query::simple::testMap(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output = ("foo" from x1 in Person)'
+    ],
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->map(p | 'foo')
+      )
+      ->rel()
+  );
+}
