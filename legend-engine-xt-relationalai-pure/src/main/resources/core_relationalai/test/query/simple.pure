@@ -1,51 +1,72 @@
 import meta::rel::test::query::support::*;
 import meta::rel::test::query::models::simple::*;
 import meta::rel::mapping::*;
+import meta::rel::utils::assert::*;
 
 function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): Any[*] {
   let rai = testConnection(schema());
 
-  assertEquals(
+  assertEqualRel(
+    [
+      'def output[:query](i, x) = Person(i, x)',
+      'def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)',
+      'def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)'
+    ],
     $rai
       ->doQuery(| Person.all())
-      ->rel(),
-    'def output[:query](i, x) = Person(i, x)'
-      ->line('def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)')
-      ->line('def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)')
-      ->line('')
+      ->rel()
   );
 }
 
 function <<test.Test>> meta::rel::test::query::simple::testFilterByFirstName(): Any[*] {
   let rai = testConnection(schema());
 
-  assertEquals(
+  assertEqualRel(
+    [
+      'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John")(i, x)',
+      'def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)',
+      'def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)'
+    ],
     $rai
       ->doQuery(| 
         Person.all()
           ->filter(p | $p.firstName == 'John')
       )
-      ->rel(),
-    'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John")(i, x)'
-      ->line('def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)')
-      ->line('def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)')
-      ->line('')
+      ->rel()
   );
 }
 
 function <<test.Test>> meta::rel::test::query::simple::testCombinedFilter(): Any[*] {
   let rai = testConnection(schema());
 
-  assertEquals(
+  assertEqualRel(
+    [
+      'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(i, x)',
+      'def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)',
+      'def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)'
+    ],
     $rai
       ->doQuery(| 
         Person.all()
           ->filter(p | $p.firstName == 'John' && $p.lastName == 'Doe')
       )
-      ->rel(),
-    'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(i, x)'
-      ->line('def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)')
-      ->line('def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)')
-      ->line('')
+      ->rel()
   );
 }
+
+function <<test.Test>> meta::rel::test::query::simple::testExists(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output = exists(x1 in Person: true)'
+    ],
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->exists(p | true)
+      )
+      ->rel()
+  );
+}
+

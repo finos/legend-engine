@@ -17,3 +17,9 @@ function meta::rel::utils::assert::assertEqualElements<T>(expected: T[*], actual
     )
   );
 }
+
+function meta::rel::utils::assert::assertEqualRel(expected: String[*], actual: String[1]): Boolean[1] {
+  let source = $expected->joinStrings('\n');
+
+  assertEquals($source + '\n', $actual);
+}
