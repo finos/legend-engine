@@ -1,0 +1,27 @@
+import meta::rel::test::query::models::simple::*;
+import meta::rel::mapping::frontend::*;
+
+Class meta::rel::test::query::models::simple::Person {
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class meta::rel::test::query::models::simple::Employee extends Person {
+  salary: Integer[1];
+}
+
+Class meta::rel::test::query::models::simple::Firm {
+  legalName: String[1];
+}
+
+Association meta::rel::test::query::models::simple::Employment {
+  firm: Firm[1];
+  employee: Employee[*];
+}
+
+function meta::rel::test::query::models::simple::schema(): RAISchema[1] {
+  RAISchema('meta::rel::test::query::models::simple')
+    ->includeClass(Person)
+    ->includeClass(Employee)
+    ->includeClass(Firm);
+}

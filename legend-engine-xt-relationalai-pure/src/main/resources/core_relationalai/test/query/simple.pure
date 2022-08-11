@@ -1,0 +1,51 @@
+import meta::rel::test::query::support::*;
+import meta::rel::test::query::models::simple::*;
+import meta::rel::mapping::*;
+
+function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEquals(
+    $rai
+      ->doQuery(| Person.all())
+      ->rel(),
+    'def output[:query](i, x) = Person(i, x)'
+      ->line('def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)')
+      ->line('def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)')
+      ->line('')
+  );
+}
+
+function <<test.Test>> meta::rel::test::query::simple::testFilterByFirstName(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEquals(
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->filter(p | $p.firstName == 'John')
+      )
+      ->rel(),
+    'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John")(i, x)'
+      ->line('def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)')
+      ->line('def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)')
+      ->line('')
+  );
+}
+
+function <<test.Test>> meta::rel::test::query::simple::testCombinedFilter(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEquals(
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->filter(p | $p.firstName == 'John' && $p.lastName == 'Doe')
+      )
+      ->rel(),
+    'def output[:query](i, x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(i, x)'
+      ->line('def output[:firstName][i] = Person:firstName[x] from x where output[:query](i, x)')
+      ->line('def output[:lastName][i] = Person:lastName[x] from x where output[:query](i, x)')
+      ->line('')
+  );
+}

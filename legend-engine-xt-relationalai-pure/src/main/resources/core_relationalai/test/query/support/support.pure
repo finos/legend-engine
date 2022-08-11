@@ -1,0 +1,22 @@
+import meta::rel::runtime::*;
+import meta::rel::mapping::frontend::*;
+import meta::pure::mapping::*;
+
+function meta::rel::test::query::support::testConnection(schema: RAISchema[1]): TestConnection[1] {
+  $schema->TestConnection();
+}
+
+function meta::rel::test::query::support::line(first: String[1], second: String[1]): String[1] {
+  $first + '\n' + $second;
+}
+
+function meta::rel::test::query::support::doQuery(connection: meta::pure::runtime::Connection[1], query: FunctionDefinition<{->Any[*]}>[1]): Result<Any|*>[1] {
+  let schema = $connection.element->cast(@RAISchema);
+
+  execute(
+    $query,
+    $schema.mapping,
+    ^meta::pure::runtime::Runtime(connections=$connection),
+    meta::rel::extension::defaultRAIExtension()//, debug()
+  );
+}  

@@ -1,0 +1,10 @@
+import meta::pure::mapping::*;
+import meta::rel::mapping::*;
+
+function meta::rel::mapping::rel(result: Result<Any|*>[1]): String[1] {
+  $result.activities
+    ->filter(a | $a->instanceOf(QueryActivity))
+    ->at(0)
+    ->cast(@QueryActivity)
+    .relSource
+}
