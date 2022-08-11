@@ -19,6 +19,11 @@ Class meta::rel::mapping::KeyInformation extends meta::pure::mapping::MappingIns
    sourceConnection: meta::pure::runtime::Connection[1];
 }
 
+Class meta::rel::mapping::QueryActivity extends meta::pure::mapping::Activity {
+  relSource: String[1];
+  executionTimeInMS: Number[1];
+}
+
 function meta::rel::mapping::execution(
   sq: meta::pure::mapping::StoreQuery[1], 
   _ext: RoutedValueSpecification[0..1], 
@@ -207,23 +212,29 @@ function <<access.private>> meta::rel::mapping::execution(
         });
     });
 
-  let output = 
-    if ($result->isOk(), {|
-      let unwrapped = $result->unwrap();
-      let compiled = $unwrapped.first.program->render();
 
-      let response = $connection
-        ->doRAIExecute($compiled)
-        ->maybeFail();
+  if ($result->isOk(), {|
+    let unwrapped = $result->unwrap();
+    let compiled = $unwrapped.first.program->render();
 
-      $unwrapped.second->eval($response)->unwrapm();
-    }, {|
-      // Fail with error message
-      $result->unwrap();
-      [];
-    });
+    let response = $connection
+      ->doRAIExecute($compiled)
+      ->maybeFail();
 
-  ^meta::pure::mapping::Result<Any|*>(values=[$output]);
+    let output = $unwrapped
+      .second
+      ->eval($response)
+      ->unwrapm();
+
+    ^meta::pure::mapping::Result<Any|*>(
+      values=[$output], 
+      activities=[^QueryActivity(relSource=$compiled, executionTimeInMS=0)]
+    );
+  }, {|
+    // Fail with error message
+    $result->unwrap();
+    ^meta::pure::mapping::Result<Any|*>();
+  });
 }
 
 function <<access.private>> meta::rel::mapping::doRAIExecute(connection: meta::pure::runtime::Connection[1], rel: String[1]): RAIResult[1] {
