@@ -34,7 +34,7 @@ public class BigQueryGrammarParserExtension implements IRelationalGrammarParserE
         {
             if ("BigQuery".equals(code.getType()))
             {
-                return parse(code, BigQueryLexerGrammar::new, BigQueryParserGrammar::new,
+                return IRelationalGrammarParserExtension.parse(code, BigQueryLexerGrammar::new, BigQueryParserGrammar::new,
                         p -> visitBigQueryDatasourceSpecification(code, p.bigQueryDatasourceSpecification()));
             }
             return null;
