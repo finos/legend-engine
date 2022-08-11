@@ -59,13 +59,13 @@ public class BigQueryConnectionExtension implements RelationalConnectionExtensio
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
     {
-        return null;
+        return authenticationStrategy -> null;
     }
 
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
     {
-        return null;
+        return authenticationStrategy -> null;
     }
 
     @Override
