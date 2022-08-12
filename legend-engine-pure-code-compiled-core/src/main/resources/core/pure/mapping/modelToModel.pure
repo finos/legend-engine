@@ -164,7 +164,8 @@ function meta::pure::mapping::modelToModel::planExecutionPure(sq:meta::pure::map
    let connection = $runtime->toOne()->connectionByElement($sq.store);
    $connection->match([
       mc: ModelConnection[1]| planExecutionInMemory($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mc, $runtime, $exeCtx, $extensions, $debug),
-      mcc: ModelChainConnection[1]| planExecutionChain($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug)
+      mcc: ModelChainConnection[1]| planExecutionChain($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug),
+      c: Connection[1]| assert(false, 'Projection not currently supported with Model to Model mapping: This connection is not currently supported with ModelToModel mapping and projection, consider using \'GraphFetch\' instead of \'Projection\' - may alternatively use \'ModelConnection\' or \'ModelChainConnection\' in place of this connection'); ^ExecutionNode<>(resultType=^ResultType(type=Any));
    ]);
 }
 

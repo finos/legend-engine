@@ -33,6 +33,10 @@ function test::functionWithBatchSize(input: String[1]): String[1]
    test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#, 10)->serialize(#{test::Person{firstName,lastName}}#)
 }
 
+function test::functionWithProjectOnM2M(input: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Person.all()->project(p|$p.firstName,'firstName')
+}
 
 ###Mapping
 Mapping test::Map

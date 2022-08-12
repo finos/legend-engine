@@ -495,6 +495,21 @@ public class TestServiceRunner
         Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
     }
 
+    @Test
+    public void testM2MWithProject()
+    {
+        Exception e1 = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerWithProjection());
+        Assert.assertEquals("Assert failure at (resource:/platform/pure/corefunctions/test.pure line:22 column:5), \"Projection not currently supported with Model to Model mapping: This connection is not currently supported with ModelToModel mapping and projection, consider using 'GraphFetch' instead of 'Projection' - may alternatively use 'ModelConnection' or 'ModelChainConnection' in place of this connection\"", e1.getMessage());
+    }
+
+    private static class SimpleM2MServiceRunnerWithProjection extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerWithProjection()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::functionWithProjectOnM2M"), true);
+        }
+    }
+
     private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;

@@ -22,7 +22,7 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      id = 'modelStore',
      executeStoreQuery = meta::pure::mapping::modelToModel::contract::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_,
      supports = meta::pure::mapping::modelToModel::contract::supports_FunctionExpression_1__Boolean_1_,
-     
+
      planExecution = meta::pure::mapping::modelToModel::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
      planCrossGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__String_1__Boolean_1__Boolean_1__Map_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
@@ -43,7 +43,8 @@ function meta::pure::mapping::modelToModel::contract::execution(sq:meta::pure::m
    $connection->match(
                         [
                            mc:ModelConnection[1]| executeInMemory($sq.fe, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mc, $runtime, $sq.advancedRouting->toOne(), $exeCtx, $extensions, $debug),
-                           mcc:ModelChainConnection[1]| executeChain($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug)
+                           mcc:ModelChainConnection[1]| executeChain($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug),
+                           c: Connection[1]| assert(false, 'Projection not currently supported with Model to Model mapping: This connection is not currently supported with ModelToModel mapping and projection, consider using \'GraphFetch\' instead of \'Projection\' - may alternatively use \'ModelConnection\' or \'ModelChainConnection\' in place of this connection'); ^Result<Any|*>(values=Any);
                         ]
                );
 }
