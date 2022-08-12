@@ -280,4 +280,32 @@ function meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions:
       sd :StrictDate[1] |  meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0); ,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
       dt: DateTime[1]   | $dt;
   ]);
-}          
+}    
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstHourOfDay::testFirstHourOfDay(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstHourOfDay', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T00:00:00.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstMinuteOfHour::testFirstMinuteOfHour(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstMinuteOfHour', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T15:00:00.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstSecondOfMinute::testFirstSecondOfMinute(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstSecondOfMinute', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T15:22:00.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstMillisecondOfSecond::testFirstMillisecondOfSecond(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstMillisecondOfSecond', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T15:22:23);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

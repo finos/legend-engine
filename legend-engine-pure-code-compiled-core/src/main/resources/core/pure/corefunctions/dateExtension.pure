@@ -401,3 +401,23 @@ function meta::pure::functions::date::isLeap(year:Integer[1]):Boolean[1]
 {
    (date($year, 3, 1)->adjust(-1, DurationUnit.DAYS)->dayOfMonth())==29
 }
+
+function meta::pure::functions::date::firstHourOfDay(dateTime:DateTime[1]):DateTime[1]
+{
+   date($dateTime->year(), $dateTime->monthNumber(), $dateTime->dayOfMonth(), 0, 0, 0);
+}
+
+function meta::pure::functions::date::firstMinuteOfHour(dateTime:DateTime[1]):DateTime[1]
+{
+   date($dateTime->year(), $dateTime->monthNumber(), $dateTime->dayOfMonth(), $dateTime->hour(), 0, 0);
+}
+
+function meta::pure::functions::date::firstSecondOfMinute(dateTime:DateTime[1]):DateTime[1]
+{
+   date($dateTime->year(), $dateTime->monthNumber(), $dateTime->dayOfMonth(), $dateTime->hour(), $dateTime->minute(), 0);
+}
+
+function meta::pure::functions::date::firstMillisecondOfSecond(dateTime:DateTime[1]):DateTime[1]
+{
+   date($dateTime->year(), $dateTime->monthNumber(), $dateTime->dayOfMonth(), $dateTime->hour(), $dateTime->minute(), $dateTime->second());
+}

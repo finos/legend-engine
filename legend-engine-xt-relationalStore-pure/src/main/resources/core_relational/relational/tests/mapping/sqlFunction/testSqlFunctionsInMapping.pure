@@ -1125,6 +1125,202 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::base64::te
     assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::firstHourOfDay::testFirstHourOfDayWithoutH2():Boolean[1]
+{
+    let prestoSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+    let postgresSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+    let snowflakeSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+    let databricksSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+    let redShiftSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+    let sybaseIQSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    let DB2Sql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select date_trunc(\'day\', "root".stringDateTimeFormat) as "FirstHour" from dataTable as "root"', $prestoSql);
+    assertEquals('select date_trunc(\'day\', "root".stringDateTimeFormat) as "FirstHour" from dataTable as "root"', $postgresSql);
+    assertEquals('select date_trunc(\'day\', "root".stringDateTimeFormat) as "FirstHour" from dataTable as "root"', $snowflakeSql);
+    assertEquals('select trunc(`root`.stringDateTimeFormat, \'DAY\') as `FirstHour` from dataTable as `root`', $databricksSql);
+    assertEquals('select date_trunc(\'day\', "root".stringDateTimeFormat) as "FirstHour" from dataTable as "root"', $redShiftSql);
+    assertEquals('select CAST(CAST("root".stringDateTimeFormat AS DATE) AS DATETIME) as "FirstHour" from dataTable as "root"', $sybaseIQSql);
+    assertEquals('select TRUNC_TIMESTAMP("root".stringDateTimeFormat, \'DAY\') as "FirstHour" from dataTable as "root"', $DB2Sql);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::firstHourOfDay::testFirstHourOfDayWithH2():Boolean[1]
+{
+    let H2result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']), 
+      testMapping, 
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals([%2016-06-23T00:00:00.000000000+0000, %2016-02-23T00:00:00.000000000+0000], $H2result.values->at(0).rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::firstMinuteOfHour::testFirstMinuteOfHourWithoutH2():Boolean[1]
+{
+    let prestoSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+    let postgresSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+    let snowflakeSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+    let databricksSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+    let redShiftSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+    let sybaseIQSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    let DB2Sql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select date_trunc(\'hour\', "root".stringDateTimeFormat) as "FirstMinute" from dataTable as "root"', $prestoSql);
+    assertEquals('select date_trunc(\'hour\', "root".stringDateTimeFormat) as "FirstMinute" from dataTable as "root"', $postgresSql);
+    assertEquals('select date_trunc(\'hour\', "root".stringDateTimeFormat) as "FirstMinute" from dataTable as "root"', $snowflakeSql);
+    assertEquals('select trunc(`root`.stringDateTimeFormat, \'HOUR\') as `FirstMinute` from dataTable as `root`', $databricksSql);
+    assertEquals('select date_trunc(\'hour\', "root".stringDateTimeFormat) as "FirstMinute" from dataTable as "root"', $redShiftSql);
+    assertEquals('select DATEADD(HOUR, DATEPART(HOUR, "root".stringDateTimeFormat), CAST(CAST("root".stringDateTimeFormat AS DATE) AS DATETIME)) as "FirstMinute" from dataTable as "root"', $sybaseIQSql);
+    assertEquals('select TRUNC_TIMESTAMP("root".stringDateTimeFormat, \'HOUR\') as "FirstMinute" from dataTable as "root"', $DB2Sql);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::firstMinuteOfHour::testFirstMinuteOfHourWithH2():Boolean[1]
+{
+    let H2result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']), 
+      testMapping, 
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals([%2016-06-23T13:00:00.000000000+0000, %2016-02-23T23:00:00.000000000+0000], $H2result.values->at(0).rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::firstSecondOfMinute::testFirstMinuteOfHourWithoutH2():Boolean[1]
+{
+    let prestoSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+    let postgresSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+    let snowflakeSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+    let databricksSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+    let redShiftSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+    let sybaseIQSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    let DB2Sql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select date_trunc(\'minute\', "root".stringDateTimeFormat) as "FirstSecond" from dataTable as "root"', $prestoSql);
+    assertEquals('select date_trunc(\'minute\', "root".stringDateTimeFormat) as "FirstSecond" from dataTable as "root"', $postgresSql);
+    assertEquals('select date_trunc(\'minute\', "root".stringDateTimeFormat) as "FirstSecond" from dataTable as "root"', $snowflakeSql);
+    assertEquals('select trunc(`root`.stringDateTimeFormat, \'MINUTE\') as `FirstSecond` from dataTable as `root`', $databricksSql);
+    assertEquals('select date_trunc(\'minute\', "root".stringDateTimeFormat) as "FirstSecond" from dataTable as "root"', $redShiftSql);
+    assertEquals('select DATEADD(MINUTE, DATEPART(MINUTE, "root".stringDateTimeFormat),DATEADD(HOUR, DATEPART(HOUR, "root".stringDateTimeFormat), CAST(CAST("root".stringDateTimeFormat AS DATE) AS DATETIME))) as "FirstSecond" from dataTable as "root"', $sybaseIQSql);
+    assertEquals('select TRUNC_TIMESTAMP("root".stringDateTimeFormat, \'MINUTE\') as "FirstSecond" from dataTable as "root"', $DB2Sql);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::firstSecondOfMinute::testFirstMinuteOfHourWithH2():Boolean[1]
+{
+    let H2result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']), 
+      testMapping, 
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals([%2016-06-23T13:00:00.000000000+0000, %2016-02-23T23:00:00.000000000+0000], $H2result.values->at(0).rows.values);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::firstMillisecondOfSecond::testFirstMillisecondOfSecondWithoutH2():Boolean[1]
+{
+    let prestoSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+    let postgresSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+    let snowflakeSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+    let databricksSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+    let redShiftSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+    let sybaseIQSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    let DB2Sql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select date_trunc(\'second\', "root".stringDateTimeFormat) as "FirstMilliSecond" from dataTable as "root"', $prestoSql);
+    assertEquals('select date_trunc(\'second\', "root".stringDateTimeFormat) as "FirstMilliSecond" from dataTable as "root"', $postgresSql);
+    assertEquals('select date_trunc(\'second\', "root".stringDateTimeFormat) as "FirstMilliSecond" from dataTable as "root"', $snowflakeSql);
+    assertEquals('select trunc(`root`.stringDateTimeFormat, \'SECOND\') as `FirstMilliSecond` from dataTable as `root`', $databricksSql);
+    assertEquals('select date_trunc(\'second\', "root".stringDateTimeFormat) as "FirstMilliSecond" from dataTable as "root"', $redShiftSql);
+    assertEquals('select DATEADD(SECOND, DATEPART(SECOND, "root".stringDateTimeFormat),DATEADD(MINUTE, DATEPART(MINUTE, "root".stringDateTimeFormat),DATEADD(HOUR, DATEPART(HOUR, "root".stringDateTimeFormat), CAST(CAST("root".stringDateTimeFormat AS DATE) AS DATETIME)))) as "FirstMilliSecond" from dataTable as "root"', $sybaseIQSql);
+    assertEquals('select TRUNC_TIMESTAMP("root".stringDateTimeFormat, \'SECOND\') as "FirstMilliSecond" from dataTable as "root"', $DB2Sql);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::firstMillisecondOfSecond::testFirstMillisecondOfSecondWithH2():Boolean[1]
+{
+    let H2result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMilliSecond']), 
+      testMapping, 
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals([%2016-06-23T13:00:00.000000000+0000, %2016-02-23T23:00:00.000000000+0000], $H2result.values->at(0).rows.values);
+}
+
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo
 {
    concatResult :String[1];
@@ -1174,6 +1370,10 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    powerResult: Float[1];
    expResult: Float[1];
    logResult: Float[1];
+   firstHourOfDayResult: DateTime[1];
+   firstMinuteOfHourResult: DateTime[1];
+   firstSecondOfMinuteResult: DateTime[1];
+   firstMillisecondOfSecondResult: DateTime[1];
 
    convertVarchar128: String[1];
    indexOfResult : Integer[1];
@@ -1285,6 +1485,10 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           month : monthNumber(dateTime),
           week : weekOfYear(dateTime),
           date : datePart(dateTime),
+          firstHourOfDayResult: firstHourOfDay(stringDateTimeFormat),
+          firstMinuteOfHourResult: firstMinuteOfHour(stringDateTimeFormat),
+          firstSecondOfMinuteResult: firstSecondOfMinute(stringDateTimeFormat),
+          firstMillisecondOfSecondResult: firstMillisecondOfSecond(stringDateTimeFormat),
 
           encodeBase64Result : encodeBase64(alphaNumericString),
           decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString))

@@ -517,3 +517,147 @@ function <<test.Test>> meta::relational::tests::query::function::testWrapReserve
    let s = toSQLString($fn, simpleRelationalMappingPersonForMemSQL, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select `personTable_d#2_d_m1`.`key` as `KEY` from personTable as `root` left outer join personTable as `personTable_d#2_d_m1` on (`root`.`key` = `personTable_d#2_d_m1`.`key`)',$s);
 }
+
+function <<test.Test>> meta::relational::tests::query::function::dates::testFilterUsingFirstHourOfDayWithoutH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstHourOfDay()], ['FirstHour'])};
+   
+   let sqlSybaseIQ = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select CAST(CAST("root".settlementDateTime AS DATE) AS DATETIME) as "FirstHour" from orderTable as "root"',$sqlSybaseIQ);
+
+   let sqlPresto = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'day\', "root".settlementDateTime) as "FirstHour" from orderTable as "root"', $sqlPresto);
+
+   let sqlSnowflake = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'day\', "root".settlementDateTime) as "FirstHour" from orderTable as "root"', $sqlSnowflake);
+
+   let sqlRedshift = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'day\', "root".settlementDateTime) as "FirstHour" from orderTable as "root"', $sqlRedshift);
+
+   let sqlDatabricks = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.settlementDateTime, \'DAY\') as `FirstHour` from orderTable as `root`', $sqlDatabricks);
+
+   let sqlPostgres = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'day\', "root".settlementDateTime) as "FirstHour" from orderTable as "root"', $sqlPostgres);
+
+   let sqlDB2 = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select TRUNC_TIMESTAMP("root".settlementDateTime, \'DAY\') as "FirstHour" from orderTable as "root"', $sqlDB2);
+
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::function::dates::testFilterUsingFirstHourOfDayWithH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstHourOfDay()], ['FirstHour'])};
+
+   let H2result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([%2014-12-02T00:00:00.000000000+0000, %2014-12-02T00:00:00.000000000+0000, %2014-12-02T00:00:00.000000000+0000, %2014-12-03T00:00:00.000000000+0000], $H2result.values.rows.values);
+   assertSameSQL('select date_trunc(\'day\', "root".settlementDateTime) as "FirstHour" from orderTable as "root"', $H2result);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::dates::testFilterUsingFirstMinuteOfHourWithoutH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstMinuteOfHour()], ['FirstMinute'])};
+   
+   let sqlSybaseIQ = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select DATEADD(HOUR, DATEPART(HOUR, "root".settlementDateTime), CAST(CAST("root".settlementDateTime AS DATE) AS DATETIME)) as "FirstMinute" from orderTable as "root"',$sqlSybaseIQ);
+
+   let sqlPresto = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'hour\', "root".settlementDateTime) as "FirstMinute" from orderTable as "root"', $sqlPresto);
+
+   let sqlSnowflake = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'hour\', "root".settlementDateTime) as "FirstMinute" from orderTable as "root"', $sqlSnowflake);
+
+   let sqlRedshift = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'hour\', "root".settlementDateTime) as "FirstMinute" from orderTable as "root"', $sqlRedshift);
+
+   let sqlDatabricks = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.settlementDateTime, \'HOUR\') as `FirstMinute` from orderTable as `root`', $sqlDatabricks);
+
+   let sqlPostgres = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'hour\', "root".settlementDateTime) as "FirstMinute" from orderTable as "root"', $sqlPostgres);
+
+   let sqlDB2 = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select TRUNC_TIMESTAMP("root".settlementDateTime, \'HOUR\') as "FirstMinute" from orderTable as "root"', $sqlDB2);
+
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::function::dates::testFilterUsingFirstMinuteOfHourWithH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstMinuteOfHour()], ['FirstMinute'])};
+
+   let H2result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([%2014-12-02T21:00:00.000000000+0000, %2014-12-02T21:00:00.000000000+0000, %2014-12-02T21:00:00.000000000+0000, %2014-12-03T21:00:00.000000000+0000], $H2result.values.rows.values);
+   assertSameSQL('select date_trunc(\'hour\', "root".settlementDateTime) as "FirstMinute" from orderTable as "root"', $H2result);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::dates::testFilterUsingFirstSecondOfMinuteWithoutH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstSecondOfMinute()], ['FirstSecond'])};
+   
+   let sqlSybaseIQ = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select DATEADD(MINUTE, DATEPART(MINUTE, "root".settlementDateTime),DATEADD(HOUR, DATEPART(HOUR, "root".settlementDateTime), CAST(CAST("root".settlementDateTime AS DATE) AS DATETIME))) as "FirstSecond" from orderTable as "root"',$sqlSybaseIQ);
+
+   let sqlPresto = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'minute\', "root".settlementDateTime) as "FirstSecond" from orderTable as "root"', $sqlPresto);
+
+   let sqlSnowflake = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'minute\', "root".settlementDateTime) as "FirstSecond" from orderTable as "root"', $sqlSnowflake);
+
+   let sqlRedshift = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'minute\', "root".settlementDateTime) as "FirstSecond" from orderTable as "root"', $sqlRedshift);
+
+   let sqlDatabricks = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.settlementDateTime, \'MINUTE\') as `FirstSecond` from orderTable as `root`', $sqlDatabricks);
+
+   let sqlPostgres = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'minute\', "root".settlementDateTime) as "FirstSecond" from orderTable as "root"', $sqlPostgres);
+
+   let sqlDB2 = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select TRUNC_TIMESTAMP("root".settlementDateTime, \'MINUTE\') as "FirstSecond" from orderTable as "root"', $sqlDB2);
+
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::function::dates::testFilterUsingFirstSecondOfMinuteWithH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstSecondOfMinute()], ['FirstSecond'])};
+
+   let H2result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([%2014-12-02T21:00:00.000000000+0000, %2014-12-02T21:00:00.000000000+0000, %2014-12-02T21:00:00.000000000+0000, %2014-12-03T21:00:00.000000000+0000], $H2result.values.rows.values);
+   assertSameSQL('select date_trunc(\'minute\', "root".settlementDateTime) as "FirstSecond" from orderTable as "root"', $H2result);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::dates::testFilterUsingFirstMillisecondOfSecondWithoutH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstMillisecondOfSecond()], ['FirstMilliSecond'])};
+   
+   let sqlSybaseIQ = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select DATEADD(SECOND, DATEPART(SECOND, "root".settlementDateTime),DATEADD(MINUTE, DATEPART(MINUTE, "root".settlementDateTime),DATEADD(HOUR, DATEPART(HOUR, "root".settlementDateTime), CAST(CAST("root".settlementDateTime AS DATE) AS DATETIME)))) as "FirstMilliSecond" from orderTable as "root"',$sqlSybaseIQ);
+
+   let sqlPresto = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'second\', "root".settlementDateTime) as "FirstMilliSecond" from orderTable as "root"', $sqlPresto);
+
+   let sqlSnowflake = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'second\', "root".settlementDateTime) as "FirstMilliSecond" from orderTable as "root"', $sqlSnowflake);
+
+   let sqlRedshift = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'second\', "root".settlementDateTime) as "FirstMilliSecond" from orderTable as "root"', $sqlRedshift);
+
+   let sqlDatabricks = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
+   assertEquals('select trunc(`root`.settlementDateTime, \'SECOND\') as `FirstMilliSecond` from orderTable as `root`', $sqlDatabricks);
+
+   let sqlPostgres = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'second\', "root".settlementDateTime) as "FirstMilliSecond" from orderTable as "root"', $sqlPostgres);
+
+   let sqlDB2 = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
+   assertEquals('select TRUNC_TIMESTAMP("root".settlementDateTime, \'SECOND\') as "FirstMilliSecond" from orderTable as "root"', $sqlDB2);
+
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::function::dates::testFilterUsingFirstMillisecondOfSecondWithH2():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne() -> firstMillisecondOfSecond()], ['FirstMilliSecond'])};
+
+   let H2result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements([%2014-12-02T21:00:00.000000000+0000, %2014-12-02T21:00:00.000000000+0000, %2014-12-02T21:00:00.000000000+0000, %2014-12-03T21:00:00.000000000+0000], $H2result.values.rows.values);
+   assertSameSQL('select date_trunc(\'second\', "root".settlementDateTime) as "FirstMilliSecond" from orderTable as "root"', $H2result);
+}

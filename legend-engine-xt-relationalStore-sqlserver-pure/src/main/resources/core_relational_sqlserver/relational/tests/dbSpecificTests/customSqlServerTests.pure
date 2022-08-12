@@ -133,3 +133,63 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::test
    
    assertPlanGenerationForOptionalParameter(DatabaseType.SqlServer, $expectedPlan);
 }
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testFirstHourOfDayFunctionSqlServer():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne()->firstHourOfDay()], ['FirstHour'])};
+   let sqlSqlServer = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'DAY\', "root".settlementDateTime) as "FirstHour" from orderTable as "root"', $sqlSqlServer);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testMappingFirstHourOfDaySqlServer():Boolean[1]
+{
+   let sqlServerSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.firstHourOfDayResult], ['FirstHour']),
+                                   testMapping,
+                                   meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'DAY\', "root".stringDateTimeFormat) as "FirstHour" from dataTable as "root"',$sqlServerSql);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testFirstMinuteOfHourFunctionSqlServer():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne()->firstMinuteOfHour()], ['FirstMinute'])};
+   let sqlSqlServer = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'HOUR\', "root".settlementDateTime) as "FirstMinute" from orderTable as "root"', $sqlSqlServer);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testMappingFirstMinuteOfHourSqlServer():Boolean[1]
+{
+   let sqlServerSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.firstMinuteOfHourResult], ['FirstMinute']),
+                                   testMapping,
+                                   meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'HOUR\', "root".stringDateTimeFormat) as "FirstMinute" from dataTable as "root"',$sqlServerSql);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testFirstSecondOfMinuteFunctionSqlServer():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne()->firstSecondOfMinute()], ['FirstSecond'])};
+   let sqlSqlServer = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'MINUTE\', "root".settlementDateTime) as "FirstSecond" from orderTable as "root"', $sqlSqlServer);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testMappingFirstSecondOfMinuteSqlServer():Boolean[1]
+{
+   let sqlServerSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.firstSecondOfMinuteResult], ['FirstSecond']),
+                                   testMapping,
+                                   meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'MINUTE\', "root".stringDateTimeFormat) as "FirstSecond" from dataTable as "root"',$sqlServerSql);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testFirstMillisecondOfSecondFunctionSqlServer():Boolean[1]
+{
+   let fn = {|Order.all()->project([t | $t.settlementDateTime -> toOne()->firstMillisecondOfSecond()], ['FirstMillisecond'])};
+   let sqlSqlServer = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'SECOND\', "root".settlementDateTime) as "FirstMillisecond" from orderTable as "root"', $sqlSqlServer);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::testMappingFirstMillisecondOfSecondSqlServer():Boolean[1]
+{
+   let sqlServerSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.firstMillisecondOfSecondResult], ['FirstMillisecond']),
+                                   testMapping,
+                                   meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+   assertEquals('select date_trunc(\'SECOND\', "root".stringDateTimeFormat) as "FirstMillisecond" from dataTable as "root"',$sqlServerSql);
+}

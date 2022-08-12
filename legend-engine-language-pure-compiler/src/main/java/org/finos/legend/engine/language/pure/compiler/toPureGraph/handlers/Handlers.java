@@ -728,6 +728,10 @@ public class Handlers
         register("meta::pure::functions::date::firstDayOfThisYear__Date_1_", false, ps -> res("Date", "one"));
         register("meta::pure::functions::date::firstDayOfWeek_Date_1__Date_1_", false, ps -> res("Date", "one"));
         register("meta::pure::functions::date::firstDayOfYear_Date_1__Date_1_", false, ps -> res("Date", "one"));
+        register("meta::pure::functions::date::firstHourOfDay_DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstMinuteOfHour_DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstSecondOfMinute_DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"));
+        register("meta::pure::functions::date::firstMillisecondOfSecond_DateTime_1__DateTime_1_", false, ps -> res("DateTime", "one"));
 
         register("meta::pure::functions::date::hasYear_Date_1__Boolean_1_", false, ps -> res("Boolean", "one"));
 
@@ -1677,6 +1681,10 @@ public class Handlers
         map.put("meta::pure::functions::date::firstDayOfThisYear__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 0);
         map.put("meta::pure::functions::date::firstDayOfWeek_Date_1__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::firstDayOfYear_Date_1__Date_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::date::firstHourOfDay_DateTime_1__DateTime_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::date::firstMillisecondOfSecond_DateTime_1__DateTime_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::date::firstMinuteOfHour_DateTime_1__DateTime_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::date::firstSecondOfHour_DateTime_1__DateTime_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::hasDay_Date_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::hasHour_Date_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::hasMinute_Date_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
