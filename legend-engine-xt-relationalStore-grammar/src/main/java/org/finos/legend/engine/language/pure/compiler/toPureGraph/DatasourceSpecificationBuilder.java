@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
@@ -23,6 +24,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
@@ -107,6 +110,16 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
 
 
             return _snowflake;
+        }
+        else if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
+        {
+            BigQueryDatasourceSpecification bigQueryDatasourceSpecification = (BigQueryDatasourceSpecification) datasourceSpecification;
+            Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification _bigquery = new Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification_Impl("");
+            _bigquery._projectId(bigQueryDatasourceSpecification.projectId);
+            _bigquery._defaultDataset(bigQueryDatasourceSpecification.defaultDataset);
+            _bigquery._proxyHost(bigQueryDatasourceSpecification.proxyHost);
+            _bigquery._proxyPort(bigQueryDatasourceSpecification.proxyPort);
+            return _bigquery;
         }
         else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
