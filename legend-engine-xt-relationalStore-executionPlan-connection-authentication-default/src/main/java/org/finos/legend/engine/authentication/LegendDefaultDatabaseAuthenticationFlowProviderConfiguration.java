@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.authentication;
 
+import org.finos.legend.engine.authentication.cloud.AWSConfig;
+import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 
 public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
@@ -73,87 +75,5 @@ public final class LegendDefaultDatabaseAuthenticationFlowProviderConfiguration 
     public GCPWorkloadConfig getGcpWorkloadConfig()
     {
         return gcpWorkloadConfig;
-    }
-
-    public static class AWSConfig
-    {
-        public String getRegion()
-        {
-            return region;
-        }
-
-        public String getAccountId()
-        {
-            return accountId;
-        }
-
-        public String getRole()
-        {
-            return role;
-        }
-
-        public String getAwsAccessKeyIdVaultReference()
-        {
-            return awsAccessKeyIdVaultReference;
-        }
-
-        public String getAwsSecretAccessKeyVaultReference()
-        {
-            return awsSecretAccessKeyVaultReference;
-        }
-
-        public AWSConfig(String region, String accountId, String role, String awsAccessKeyIdVaultReference, String awsSecretAccessKeyVaultReference)
-        {
-            this.region = region;
-            this.accountId = accountId;
-            this.role = role;
-            this.awsAccessKeyIdVaultReference = awsAccessKeyIdVaultReference;
-            this.awsSecretAccessKeyVaultReference = awsSecretAccessKeyVaultReference;
-        }
-
-        private String region;
-        private String accountId;
-        private String role;
-        private String awsAccessKeyIdVaultReference;
-        private String awsSecretAccessKeyVaultReference;
-
-        public AWSConfig()
-        {
-            // jackson
-        }
-    }
-
-    public static class GCPWorkloadConfig
-    {
-        public String getProjectNumber()
-        {
-            return projectNumber;
-        }
-
-        public String getPoolId()
-        {
-            return poolId;
-        }
-
-        public String getProviderId()
-        {
-            return providerId;
-        }
-
-        public GCPWorkloadConfig(String projectNumber, String poolId, String providerId)
-        {
-            this.projectNumber = projectNumber;
-            this.poolId = poolId;
-            this.providerId = providerId;
-        }
-
-        private String projectNumber;
-        private String poolId;
-        private String providerId;
-
-        public GCPWorkloadConfig()
-        {
-            // jackson
-        }
     }
 }
