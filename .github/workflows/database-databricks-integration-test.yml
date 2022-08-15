@@ -24,6 +24,7 @@ env:
   DATABRICKS_CLUSTERID: 0228-234110-ve0xbrtk
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *" # every day at 00:00 on default/base branch
 
