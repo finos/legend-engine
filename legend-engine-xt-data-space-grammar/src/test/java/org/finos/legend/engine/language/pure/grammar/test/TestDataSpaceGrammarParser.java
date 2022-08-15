@@ -220,6 +220,21 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "  title: 'some title';\n" +
+                "}\n", "PARSER error at [2:1-15:1]: Field 'title' should be specified only once");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
                 "  description: 'some description';\n" +
                 "  description: 'some description';\n" +
                 "}\n", "PARSER error at [2:1-15:1]: Field 'description' should be specified only once");

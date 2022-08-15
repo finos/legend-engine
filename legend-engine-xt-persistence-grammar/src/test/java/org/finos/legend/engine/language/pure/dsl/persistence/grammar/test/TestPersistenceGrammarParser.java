@@ -61,116 +61,6 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
     }
 
     /**********
-     * persistence context
-     **********/
-
-    @Test
-    public void persistenceContextPersistence()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "}\n", "PARSER error at [3:1-5:1]: Field 'persistence' is required");
-
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "}\n", "PARSER error at [3:1-7:1]: Field 'persistence' should be specified only once");
-    }
-
-    @Test
-    public void persistenceContextPersistencePlatform()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "}\n");
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  platform: Default;\n" +
-                "}\n");
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  platform: Unknown;\n" +
-                "}\n", "PARSER error at [6:13-19]: Unsupported persistence platform type 'Unknown'");
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  platform: Default;\n" +
-                "  platform: Default;\n" +
-                "}\n", "PARSER error at [3:1-8:1]: Field 'platform' should be specified only once");
-    }
-
-    @Test
-    public void persistenceContextServiceParameters()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "}\n");
-
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters: [foo='hello',bar=1];\n" +
-                "  serviceParameters: [foo='hello',bar=1];\n" +
-                "}\n", "PARSER error at [3:1-8:1]: Field 'serviceParameters' should be specified only once");
-    }
-
-    @Test
-    public void persistenceContextSinkConnection()
-    {
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "}\n");
-
-        test("###Persistence\n" +
-                "\n" +
-                "PersistenceContext test::TestPersistenceContext \n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters: [foo='hello',bar=1];\n" +
-                "  sinkConnection: #{\n" +
-                "    RelationalDatabaseConnection {\n" +
-                "      store: test::TestDatabase;\n" +
-                "      type: H2;\n" +
-                "      specification: LocalH2{};\n" +
-                "      auth: Test;\n" +
-                "    }\n" +
-                "  }#;\n" +
-                "  sinkConnection: #{\n" +
-                "    RelationalDatabaseConnection {\n" +
-                "      store: test::TestDatabase;\n" +
-                "      type: H2;\n" +
-                "      specification: LocalH2{};\n" +
-                "      auth: Test;\n" +
-                "    }\n" +
-                "  }#;\n" +
-                "}\n", "PARSER error at [3:1-23:1]: Field 'sinkConnection' should be specified only once");
-    }
-
-    /**********
      * persistence
      **********/
 
@@ -2496,6 +2386,32 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "    }\n" +
                 "  }\n" +
                 "}\n", "PARSER error at [19:17-24:5]: Field 'filterDuplicates' should be specified only once");
+
+        test("###Persistence\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      database: test::Database;\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: true;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
     }
 
     @Test

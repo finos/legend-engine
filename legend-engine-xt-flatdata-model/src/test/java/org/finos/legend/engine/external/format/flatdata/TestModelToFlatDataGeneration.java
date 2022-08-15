@@ -17,8 +17,8 @@ package org.finos.legend.engine.external.format.flatdata;
 import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
 import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.junit.Assert;
 import org.junit.Test;
 

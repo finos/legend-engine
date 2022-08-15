@@ -70,7 +70,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -78,20 +77,23 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class PersistenceParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
+    private final List<Function<TriggerSourceCode, Trigger>> triggerProcessors;
 
     private final PersistenceContextParseTreeWalker persistenceContextWalker;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, PersistenceContextParseTreeWalker persistenceContextWalker)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, PersistenceContextParseTreeWalker persistenceContextWalker)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.triggerProcessors = triggerProcessors;
         this.persistenceContextWalker = persistenceContextWalker;
     }
 
@@ -133,7 +135,7 @@ public class PersistenceParseTreeWalker
 
         // trigger
         PersistenceParserGrammar.TriggerContext triggerContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.trigger(), "trigger", persistence.sourceInformation);
-        persistence.trigger = visitTrigger(triggerContext);
+        persistence.trigger = visitTriggerSpecification(triggerContext.triggerSpecification());
 
         // service
         PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", persistence.sourceInformation);
@@ -154,22 +156,36 @@ public class PersistenceParseTreeWalker
      * trigger
      **********/
 
-    private Trigger visitTrigger(PersistenceParserGrammar.TriggerContext ctx)
+    private Trigger visitTriggerSpecification(PersistenceParserGrammar.TriggerSpecificationContext ctx)
     {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.TRIGGER_MANUAL() != null)
+        StringBuilder text = new StringBuilder();
+        PersistenceParserGrammar.TriggerValueContext triggerValueContext = ctx.triggerValue();
+        if (triggerValueContext != null)
         {
-            ManualTrigger manualTrigger = new ManualTrigger();
-            manualTrigger.sourceInformation = sourceInformation;
+            for (PersistenceParserGrammar.TriggerValueContentContext fragment : triggerValueContext.triggerValueContent())
+            {
+                text.append(fragment.getText());
+            }
+            String textToParse = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
 
-            return manualTrigger;
+            // prepare island grammar walker source information
+            int startLine = triggerValueContext.ISLAND_OPEN().getSymbol().getLine();
+            int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+            // only add current walker source information column offset if this is the first line
+            int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + triggerValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + triggerValueContext.ISLAND_OPEN().getSymbol().getText().length();
+            ParseTreeWalkerSourceInformation triggerValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+            SourceInformation triggerValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            TriggerSourceCode sourceCode = new TriggerSourceCode(textToParse, ctx.triggerType().getText(), triggerValueSourceInformation, triggerValueWalkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, triggerProcessors);
         }
-        else if (ctx.TRIGGER_CRON() != null)
+        else
         {
-            //TODO: ledav -- implement cron trigger
-            throw new UnsupportedOperationException("Cron trigger is not yet supported.");
+            SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            TriggerSourceCode sourceCode = new TriggerSourceCode(text.toString(), ctx.triggerType().getText(), sourceInformation, walkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, triggerProcessors);
         }
-        throw new EngineException("Unrecognized trigger", sourceInformation, EngineErrorType.PARSER);
     }
 
     /**********
@@ -310,7 +326,7 @@ public class PersistenceParseTreeWalker
 
         // database
         PersistenceParserGrammar.SinkDatabaseContext sinkDatabaseContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.sinkDatabase(), "database", sink.sourceInformation);
-        sink.database = sinkDatabaseContext == null ? null : visitDatabasePointer(sinkDatabaseContext, sink.sourceInformation);
+        sink.database = visitDatabasePointer(sinkDatabaseContext, sink.sourceInformation);
 
         return sink;
     }
@@ -672,9 +688,22 @@ public class PersistenceParseTreeWalker
 
         // filter duplicates
         PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.filterDuplicates(), "filterDuplicates", appendOnly.sourceInformation);
-        appendOnly.filterDuplicates = Boolean.parseBoolean(filterDuplicatesContext.FILTER_DUPLICATES().getText());
+        appendOnly.filterDuplicates = visitFilterDuplicates(filterDuplicatesContext);
 
         return appendOnly;
+    }
+
+    private boolean visitFilterDuplicates(PersistenceParserGrammar.FilterDuplicatesContext filterDuplicatesContext)
+    {
+        if (filterDuplicatesContext.TRUE() != null)
+        {
+            return true;
+        }
+        else if (filterDuplicatesContext.FALSE() != null)
+        {
+            return false;
+        }
+        throw new EngineException("Unrecognized value for filter duplicates", walkerSourceInformation.getSourceInformation(filterDuplicatesContext), EngineErrorType.PARSER);
     }
 
     // merge strategy

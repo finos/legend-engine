@@ -63,156 +63,11 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
    ^Extension
    (
       type = $type,
-      availableStores = [meta::relational::contract::relationalStoreContract(), meta::relational::contract::relationalEmbeddedStoreContract()],
+
+      availableStores = meta::pure::extension::defaultExtensions().availableStores->concatenate(meta::relational::contract::relationalStoreContract()),                         
+
       serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
-      analytics_getStoreFromSetImpl = mapping:Mapping[1] | {rsi:meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | let resolvedDb = $rsi->getResolvedStore($mapping)->toOne(); $mapping.resolveStore($resolvedDb);},
-      analytics_getStoreFromSetImpl_Operation = mapping:Mapping[1] | {rr : meta::relational::mapping::RootRelationalInstanceSetImplementation[*] | 
-                                                                                                      let databases = $rr->getResolvedStore($mapping)->removeDuplicates();
-                                                                               assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));
-                                                                               $mapping.resolveStore($databases->at(0));},
-      
-      cluster_cluster_ExtendedRoutedValueSpecification = {r:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1] |
-                                                                                [
-                                                                                   {rsi: meta::relational::mapping::RootRelationalInstanceSetImplementation[1]|
-                                                                                     let resolvedDb = $rsi->getResolvedStore($mapping)->toOne();           
-                                                                                     ^ClusteredValueSpecification(
-                                                                                        genericType  = $r.genericType,
-                                                                                        multiplicity = $r.multiplicity,
-                                                                                        s = meta::relational::contract::relationalStoreContract(),
-                                                                                        store = $r.mapping.resolveStore($resolvedDb),
-                                                                                        mapping = $r.mapping,
-                                                                                        runtime = $r.runtime,
-                                                                                        openVars = $openVariables,
-                                                                                        val = $r,
-                                                                                        exeCtx = $r.executionContext,
-                                                                                        executable = false
-                                                                                     );},
-                                                                                  {rsi: meta::pure::router::clustering::CrossSetImplementation[1]|
-                                                                                     ^ClusteredValueSpecification(
-                                                                                        genericType  = $r.genericType,
-                                                                                        multiplicity = $r.multiplicity,
-                                                                                        s = meta::relational::contract::relationalStoreContract(),
-                                                                                        store = $rsi.targetStore,
-                                                                                        mapping = $r.mapping,
-                                                                                        runtime = $r.runtime,
-                                                                                        openVars = $openVariables,
-                                                                                        val = $r,
-                                                                                        exeCtx = $r.executionContext,
-                                                                                        executable = false
-                                                                                     );},
-                                                                                   {e: meta::pure::mapping::EmbeddedSetImplementation[1]|
-                                                                                     ^ClusteredValueSpecification(
-                                                                                        genericType  = $r.genericType,
-                                                                                        multiplicity = $r.multiplicity,
-                                                                                        s = meta::relational::contract::relationalEmbeddedStoreContract(),
-                                                                                        store = ^EmbeddedStore(package=::),
-                                                                                        mapping = $r.mapping,
-                                                                                        openVars = $openVariables,
-                                                                                        exeCtx = $r.executionContext,
-                                                                                        val = $r,
-                                                                                        executable = false
-                                                                                     );}
-                                                                                 ]
-                     },
-      cluster_cluster_ExtendedRoutedValueSpecification_Operation = {r:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1] |
-                                                                                    {rr:meta::relational::mapping::RootRelationalInstanceSetImplementation[*]|
-                                                                                       let databases = $rr->getResolvedStore($r.mapping);
-                                                                                       assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));
-                                                                                       ^ClusteredValueSpecification(
-                                                                                          genericType  = $r.genericType,
-                                                                                          multiplicity = $r.multiplicity,
-                                                                                          s = meta::relational::contract::relationalStoreContract(),
-                                                                                          store = $mapping.resolveStore($databases->at(0)),
-                                                                                          mapping = $r.mapping,
-                                                                                          runtime = $r.runtime,
-                                                                                          openVars = $openVariables,
-                                                                                          val = $r,
-                                                                                          exeCtx = $r.executionContext,
-                                                                                          executable = false
-                                                                                       );}
-                                  },
-      cluster_cluster = {openVariables:Map<String, List<Any>>[1] |
-                                                            {t:TDSRoutedValueSpecification[1] | ^ClusterResponse(cluster = ^ClusteredValueSpecification(
-                                                                               genericType  = $t.genericType,
-                                                                               multiplicity = $t.multiplicity,
-                                                                               s = meta::relational::contract::relationalStoreContract(),
-                                                                               store = $t.store,
-                                                                               mapping = $t.mapping,
-                                                                               runtime = $t.runtime,
-                                                                               openVars = $openVariables,
-                                                                               val = $t,
-                                                                               exeCtx = $t.executionContext,
-                                                                               executable = true
-                                                                               ))
-                                                            }
-                        },
-      cluster_resolveInstanceSetImplementations = {r : Extension[*] | {r:meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | $r}},
-      cluster_resolveRootFromEmbedded = {r:meta::relational::mapping::RootRelationalInstanceSetImplementation[1]|$r},
-      graphFetch_getStoreFromSet = mapping:Mapping[1] | {rsi : meta::relational::mapping::RootRelationalInstanceSetImplementation[1] | $mapping.resolveStore($rsi->getResolvedStore($mapping)->toOne())},
-      graphFetch_getStoreFromSet_Operation = mapping:Mapping[1] | {rr : meta::relational::mapping::RootRelationalInstanceSetImplementation[*] | let databases = $rr->getResolvedStore($mapping); 
-                                                                                                                       assert($databases->size() == 1, | 'Found ' + $databases->size()->toString() + ' stores while trying to resolve Operation Mappings. 1 unique store is required for routing. Stores found were ' + $databases.name->joinStrings('[',',', ']'));
-                                                                                                                       $mapping.resolveStore($databases->at(0));},
-      graphFetch_getStoreContractFromStore = db : meta::relational::metamodel::Database[1] | meta::relational::contract::relationalStoreContract(),
-      routing_routeFunctionExpressionFunctionDefinition = pair(
-            fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
-            {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1] |
-                    let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
-                    assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
-                    let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();
-                    ^$state(value = ^TDSRoutedValueSpecification(  genericType = $fe.genericType,
-                                                                 multiplicity = $fe.multiplicity,
-                                                                 id = 'Table TDS',
-                                                                 store = $store,
-                                                                 runtime = $runtime,
-                                                                 mapping = $mapping,
-                                                                 executionContext = $executionContext,
-                                                                 value = $fe
-                                                               ));}
-            ),
-      
-      graphFetch_executionPlan_planGraphFetchExecution = {
-         sq: meta::pure::mapping::StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
-         {db : meta::relational::metamodel::Database[1] | meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational($sq, $ext, $clusteredTree, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
-      },
-      
-      graphFetch_executionPlan_addCrossStoreChildren = {
-         clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
-         {db : meta::relational::metamodel::Database[1] | meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational($clusteredTree, $orderedPaths, $parentPath, $inScopeVars, $mapping, $runtime, $exeCtx, $extensions, $debug)}
-      },
-      
-      graphFetch_executionPlan_localGraphFetchExecutionNodeToString = {space: String[1], extensions:meta::pure::extension::Extension[*] | {r: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $r->relationalGraphFetchExecutionNodeToString($space, $extensions)}},
-      
-      routing_extraShouldStop = [
-                                    project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
-                                    tableToTDS_Table_1__TableTDS_1_,
-                                    viewToTDS_View_1__TableTDS_1_,
-                                    meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_,
-                                    meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_,
-                                    meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_,
-                                    meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
-                                    meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_
-                                ],
-      main_storeEquals = {a:Any[1], b:Any[1] | {k:meta::relational::mapping::KeyInformation[1] | $a->getHiddenPayload() == $b->getHiddenPayload()->toOne()->cast(@meta::relational::mapping::KeyInformation).pk}},
-      executionPlan_print_planNodeToString = 
-                                {space : String[1], extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                          cpt:CreateAndPopulateTempTableExecutionNode[1]|'CreateAndPopulateTempTable\n'+$space+'('+header($cpt, $space, $extensions)+'\n'+$space+'  inputVarNames = ' + $cpt.inputVarNames->joinStrings('[', ', ', ']') + '\n' + $space + '  tempTableName = ' + $cpt.tempTableName + '\n' +$space+'  tempTableColumns = '+$cpt.tempTableColumnMetaData->map(col|'('+$col.column.label+', '+if($col.column.dataType->isEmpty(),|'""',| $col.column.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($col.identifierForGetter->isEmpty(), | '', | ', ' + $col.identifierForGetter->toOne() + ', ' + if($col.parametersForGetter->isEmpty(),|'[""]',| $col.parametersForGetter->toOne()->keyValues()->map(param| '(' + $param.first + ', ' + $param.second->toString() + ')')->joinStrings('[', ', ', ']') )) + ' )')->joinStrings('[',', ',']') +'\n' + $space + '  connection = '+$cpt.connection ->connectionToString($extensions) +'\n' + $cpt.implementation->printImplementation('implementation', $space+'  ', $extensions) + $space+')\n',
-                                          r:SQLExecutionNode[1]|'SQL\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.sqlQuery+'\n'+ $space + '  connection = '+$r.connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
-                                          r:RelationalInstantiationExecutionNode[1]|'Relational\n'+$space+'('+header($r, $space, $extensions)+'\n'+$space+'  resultColumns = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).resultColumns->map(rc|'('+$rc.label+', '+if($rc.dataType->isEmpty(),|'""',| $rc.dataType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText())+')')->joinStrings('[',', ',']')+'\n'+$space+'  sql = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery+'\n'+ $space + '  connection = '+$r.executionNodes->at(0)->cast(@meta::relational::mapping::SQLExecutionNode).connection ->connectionToString($extensions) +'\n'+$r.implementation->printImplementation('implementation', $space+'  ', $extensions)+ $space+')\n',
-                                          rb:RelationalBlockExecutionNode[1]|'RelationalBlockExecutionNode\n'+ $space+ '(' + header($rb, $space, $extensions) + $rb->childrenToString($space+'  ', $extensions) +' \n' +$space+ ')\n';
-                                       ]},
-      executionPlan_print_connectionToString =
-                                {extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                           testDatabase:TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
-                                           db:DatabaseConnection[1]|  databaseConnectionTypeToString($db)
-                                       ]},
-      executionPlan_print_typeToString = 
-                                {space : String[1], extensions:meta::pure::extension::Extension[*]|
-                                       [
-                                           tdsResultType:TDSResultType[1]|'TDS['+$tdsResultType.tdsColumns->map(c|'('+$c.name+', '+$c.type->toOne()->elementToPath()+ ', '+ if($c.sourceDataType->isEmpty(),|'""',| $c.sourceDataType->toOne()->cast(@meta::relational::metamodel::datatype::DataType)->meta::relational::metamodel::datatype::dataTypeToSqlText()) + if($c.documentation->isEmpty(),|', ""',|', "'+$c.documentation->toOne()+'"')+if($c.enumMappingId->isEmpty(),|'',|', '+$c.enumMappingId->toOne())+')')->joinStrings(', ')+']',
-                                           relationResultType : RelationResultType[1]|'Relation[name='+$relationResultType.relationName+', type='+$relationResultType.relationType->toString()+', schema='+$relationResultType.schemaName+', database='+$relationResultType.database+$relationResultType.columns->map(c | '('+$c.name+','+$c.type->meta::relational::metamodel::datatype::dataTypeToSqlText()+')')->joinStrings(', columns=[', ', ', ']')+']'
-                                      ]},
+          
       executionPlan_execution_processNode = 
                                 {mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::extension::Extension[*] |
                                    [
@@ -296,33 +151,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              let varMultiplicity  = if($parameterVal->instanceOf(List), |ZeroMany, |PureOne);
                                              convertPlaceHolderToSQLString(^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = $name, type=$type, multiplicity=$varMultiplicity), $dbConfig.dbExtension.literalProcessor, $d.timeZone);
                               },
-      executionPlan_generation_updateConnection =
-                     [
-                        t:meta::relational::runtime::TestDatabaseConnection[1] |
-                              ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$t.element->instanceOf(meta::relational::metamodel::Database),
-                                                 | [];,
-                                                 | if ($t.testDataSetupSqls->isEmpty(),
-                                                       | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($t.element->cast(@meta::relational::metamodel::Database)),
-                                                       | $t.testDataSetupSqls))),
-                        r:meta::pure::alloy::connections::RelationalDatabaseConnection[1] |
-                              ^$r(
-                                 datasourceSpecification = $r.datasourceSpecification->match([
-                                    l:meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification[1] |
-                                       ^$l
-                                       (
-                                            testDataSetupSqls =
-                                                $l.testDataSetupSqls->concatenate(
-                                                    if ($l.testDataSetupCsv->isEmpty() || !$r.element->instanceOf(meta::relational::metamodel::Database),
-                                                        | [];,
-                                                        | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($r.element->cast(@meta::relational::metamodel::Database))
-                                                    )
-                                                 )
-                                       ),
-                                    d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | $d
-                                 ])
-                              )
-                              
-                     ],
       java_conventions_defaultProhibitedFunctions = 
             [
                   meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_,
@@ -380,7 +208,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                      ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode)), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)));
                ]
             },
-      systemMapping_systemForSetImplementation = r:RelationalInstanceSetImplementation[1]|meta::relational::contract::relationalStoreContract(),
       tdsSchema_resolveSchemaImpl = {fe:FunctionExpression[1], openVars:Map<String, List<Any>>[1], extensions:Extension[*]|
                                              [
                                                 join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
@@ -431,7 +258,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              )
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
-      logActivities = activities:meta::pure::mapping::Activity[*] | meta::pure::functions::io::logActivities($activities),
       validTestPackages = 'meta::relational::tests'
      
    )
@@ -440,7 +266,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
 
 //Helper Functions
 
-function meta::pure::router::clustering::getResolvedStore(rr: 	meta::relational::mapping::RootRelationalInstanceSetImplementation[*], mapping: Mapping[1]):Store[*]
+function meta::pure::router::clustering::getResolvedStore(rr: meta::relational::mapping::RootRelationalInstanceSetImplementation[*], mapping: Mapping[1]):Store[*]
 {
    $rr->map(r | let mainTableAlias = $r.mainTableAlias;
                 if ($mainTableAlias.database->isEmpty(), | $r.mainTable.schema.database, | $mainTableAlias.database->toOne());
@@ -460,4 +286,31 @@ function meta::pure::executionPlan::execution::flattenList(value:Any[1]):Any[*]
 function meta::pure::executionPlan::toString::databaseConnectionTypeToString(connection: DatabaseConnection[1]):String[1]
 {
    'type = "' + $connection.type ->toString() + '"'
+}
+
+function  meta::relational::functions::sqlQueryToString::processLiteralDefaultForPlanService(a:Any[1], dbType:DatabaseType[1], dbTimeZone : String[0..1], quoteIdentifiers:Boolean[0..1]): String[1]
+{
+   let dbConfig = createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers);
+   let type = if($a->instanceOf(List),
+                 |
+                 if($a->cast(@List<Any>).values->isNotEmpty(),
+                    |$a->cast(@List<Any>).values->type(),
+                    |let typeArgumentType = $a.classifierGenericType.typeArguments.rawType; if($typeArgumentType->isEmpty(),|String,|$typeArgumentType->toOne());),
+                 |$a->type());
+   let processor = $dbConfig.literalProcessor($type);
+   if(!$a->type()==String,
+      | if($a->type()==List,
+           | $a->cast(@List<Any>)->processLiteralListForPlanService($type, $dbConfig, $dbType, $dbTimeZone)->joinStrings(','),
+           | $processor.formatValue($a, $dbTimeZone)),
+      |$processor.formatValue($a, $dbTimeZone)->replace('\'\'', '\''));
+}
+
+function meta::relational::functions::sqlQueryToString::processLiteralListForPlanService(a:List<Any>[*], type:Type[1], dbConfig : DbConfig[1], dbType:DatabaseType[1], dbTimeZone : String[0..1]): String[1]
+{
+
+   $a.values->map(v|$v->match([
+                     s:String[1]| $dbConfig.literalProcessor($type).formatValue($s, $dbTimeZone)->replace('\'\'', '\''),
+                     a:Any[1]| $dbConfig.literalProcessor($type).formatValue($a, $dbTimeZone)
+                  ]))
+   ->joinStrings(',');
 }

@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::mapping::*;
 import meta::pure::router::operations::*;
 import meta::pure::router::routing::*;
+import meta::pure::router::clustering::*;
+import meta::pure::mapping::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::pure::mapping::modelToModel::*;
-import meta::pure::router::clustering::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
-import meta::pure::store::*;
 
 Class meta::pure::mapping::StaticMappingInstanceData
 {
@@ -57,7 +56,7 @@ function meta::pure::mapping::sourceClass(setImplementation:SetImplementation[1]
 {
    $setImplementation->match([
       pure: PureInstanceSetImplementation[1]             | $pure.srcClass->cast(@Class<Any>)->toOne()
-   ]->concatenate($extensions.mapping_sourceClass)->toOneMany());
+   ]->concatenate($extensions.availableStores.extractSourceClassFromSetImplementation)->toOneMany());
 }
 
 function meta::pure::mapping::classMappingByClass(mapping:Mapping[1], class:Class<Any>[1]):SetImplementation[*]
@@ -190,45 +189,22 @@ function meta::pure::router::clustering::resolveInstanceSetImplementations(o:Ope
    $sets->map(s | $s->match([
                               o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations($extensions),
                               e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded($extensions),
-                              p:PureInstanceSetImplementation[1] | $p
-                            ]->concatenate($extensions.cluster_resolveInstanceSetImplementations->map(e|$e->eval($extensions)))->toOneMany()));
+                              i:InstanceSetImplementation[1] | $i
+                            ]));
 }
 
 function <<access.private>> meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1], extensions:meta::pure::extension::Extension[*]):InstanceSetImplementation[*]
 {
    $o.owner->match([
-                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions)
-                  ]->concatenate($extensions.cluster_resolveRootFromEmbedded)->toOneMany());
+                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions),
+                     i:InstanceSetImplementation[1]|$i
+                  ]);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::getStoreFromSet(s: SetImplementation[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):Store[1]
+function meta::pure::router::routing::getStoreFromSet(set: SetImplementation[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*]):Store[1]
 {
-   $s->match([
-      pure : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[1]   | ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::),
-      rsi  : meta::pure::mapping::EmbeddedSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(package=::),
-      o    : meta::pure::mapping::OperationSetImplementation[1] | let roots = $o->resolveInstanceSetImplementations($extensions);
-                                                                  $roots->match([
-                                                                     p : meta::pure::mapping::modelToModel::PureInstanceSetImplementation[*] | ^meta::pure::mapping::modelToModel::ModelStore(name='MODEL', package=::)
-                                                                  ]->concatenate($extensions.graphFetch_getStoreFromSet_Operation->map(e|$e->eval($mapping)))->toOneMany());
-   ]->concatenate($extensions.graphFetch_getStoreFromSet->map(e|$e->eval($mapping)))->toOneMany())
+  $set->storeContractForSetImplementation($mapping, $extensions).second;
 }
-
-function meta::pure::router::analytics::getStoreFromSetImpl(set: SetImplementation[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::pure::store::Store[1]
-{
-   $set->match([
-      e   : EmbeddedSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(name='EMBEDDED', package=::),
-      agg  : AggregationAwareSetImplementation[1] | ^AggregationAwareStore(name='AGGREGATION_AWARE', package=::),
-      pure : PureInstanceSetImplementation[1]  | ^ModelStore(name='MODEL', package=::),
-      o    : OperationSetImplementation[1] | let roots = $o->resolveOperation($mapping);
-              $roots->match([p : PureInstanceSetImplementation[*] | ^ModelStore(name='MODEL', package=::)]
-                            ->concatenate($extensions.analytics_getStoreFromSetImpl_Operation->map(e|$e->eval($mapping)))->toOneMany()
-                      );
-           ]
-           ->concatenate($extensions.analytics_getStoreFromSetImpl->map(m|$m->eval($mapping)))->toOneMany()
-        )
-}
-
-
 
 function meta::pure::router::routing::findMappingsFromProperty(p:AbstractProperty<Any>[1], mapping:Mapping[1], sourceMappings:SetImplementation[*], state:RoutingState[1], extensions:meta::pure::extension::Extension[*]):SetImplementation[*]
 {
@@ -274,7 +250,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
        if ($classMapping->isEmpty(),
           |let mappings = $state.classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
            if ($mappings->isEmpty(),
-               |^EmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
+               |^M2MEmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
                |$mappings
            );,
           |$classMapping

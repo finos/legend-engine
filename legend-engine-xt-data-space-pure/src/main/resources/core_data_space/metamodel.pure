@@ -21,6 +21,7 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   defaultExecutionContext: DataSpaceExecutionContext[1];
 
   featuredDiagrams: Diagram[*];
+  title: String[0..1];
   description: String[0..1];
   supportInfo: DataSpaceSupportInfo[0..1];
 

@@ -20,159 +20,6 @@ import org.junit.Test;
 public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
-    public void persistenceContextPermitOptionalFieldsToBeEmpty()
-    {
-        test("###Persistence\n" +
-                "import test::*;\n" +
-                "PersistenceContext test::TestPersistenceContext\n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "}\n");
-    }
-
-    @Test
-    public void persistenceContextPlatformDefault()
-    {
-        testFormat(
-                "###Persistence\n" +
-                        "import test::*;\n" +
-                        "PersistenceContext test::TestPersistenceContext\n" +
-                        "{\n" +
-                        "  persistence: test::TestPersistence;\n" +
-                        "}\n",
-                "###Persistence\n" +
-                        "import test::*;\n" +
-                        "PersistenceContext test::TestPersistenceContext\n" +
-                        "{\n" +
-                        "  persistence: test::TestPersistence;\n" +
-                        "  platform: Default;\n" +
-                        "}\n");
-    }
-
-    @Test
-    public void persistenceContextSingleServiceParameter()
-    {
-        test("###Persistence\n" +
-                "import test::*;\n" +
-                "PersistenceContext test::TestPersistenceContext\n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters:\n" +
-                "  [\n" +
-                "    foo='hello'\n" +
-                "  ];\n" +
-                "  sinkConnection: test::TestConnection;\n" +
-                "}\n");
-    }
-
-    @Test
-    public void persistenceContextSinkConnectionPointer()
-    {
-        test("###Persistence\n" +
-                "import test::*;\n" +
-                "PersistenceContext test::TestPersistenceContext\n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters:\n" +
-                "  [\n" +
-                "    foo='hello',\n" +
-                "    bar=1,\n" +
-                "    con1=test::TestConnection,\n" +
-                "    con2=\n" +
-                "    #{\n" +
-                "      RelationalDatabaseConnection\n" +
-                "      {\n" +
-                "        store: test::TestDatabase;\n" +
-                "        type: H2;\n" +
-                "        specification: LocalH2\n" +
-                "        {\n" +
-                "        };\n" +
-                "        auth: Test;\n" +
-                "      }\n" +
-                "    }#\n" +
-                "  ];\n" +
-                "  sinkConnection: test::TestConnection;\n" +
-                "}\n");
-    }
-
-    @Test
-    public void persistenceContextSinkConnectionEmbedded()
-    {
-        test("###Persistence\n" +
-                "import test::*;\n" +
-                "PersistenceContext test::TestPersistenceContext\n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters:\n" +
-                "  [\n" +
-                "    foo='hello',\n" +
-                "    bar=1,\n" +
-                "    con1=test::TestConnection,\n" +
-                "    con2=\n" +
-                "    #{\n" +
-                "      RelationalDatabaseConnection\n" +
-                "      {\n" +
-                "        store: test::TestDatabase;\n" +
-                "        type: H2;\n" +
-                "        specification: LocalH2\n" +
-                "        {\n" +
-                "        };\n" +
-                "        auth: Test;\n" +
-                "      }\n" +
-                "    }#\n" +
-                "  ];\n" +
-                "  sinkConnection:\n" +
-                "  #{\n" +
-                "    RelationalDatabaseConnection\n" +
-                "    {\n" +
-                "      store: test::TestDatabase;\n" +
-                "      type: H2;\n" +
-                "      specification: LocalH2\n" +
-                "      {\n" +
-                "      };\n" +
-                "      auth: Test;\n" +
-                "    }\n" +
-                "  }#;\n" +
-                "}\n");
-        test("###Persistence\n" +
-                "import test::*;\n" +
-                "PersistenceContext test::TestPersistenceContext\n" +
-                "{\n" +
-                "  persistence: test::TestPersistence;\n" +
-                "  serviceParameters:\n" +
-                "  [\n" +
-                "    con2=\n" +
-                "    #{\n" +
-                "      RelationalDatabaseConnection\n" +
-                "      {\n" +
-                "        store: test::TestDatabase;\n" +
-                "        type: H2;\n" +
-                "        specification: LocalH2\n" +
-                "        {\n" +
-                "        };\n" +
-                "        auth: Test;\n" +
-                "      }\n" +
-                "    }#,\n" +
-                "    foo='hello',\n" +
-                "    bar=1,\n" +
-                "    con1=test::TestConnection\n" +
-                "  ];\n" +
-                "  sinkConnection:\n" +
-                "  #{\n" +
-                "    RelationalDatabaseConnection\n" +
-                "    {\n" +
-                "      store: test::TestDatabase;\n" +
-                "      type: H2;\n" +
-                "      specification: LocalH2\n" +
-                "      {\n" +
-                "      };\n" +
-                "      auth: Test;\n" +
-                "    }\n" +
-                "  }#;\n" +
-                "}\n");
-    }
-
-    @Test
     public void persistencePermitOptionalFieldsToBeEmptyFlat()
     {
         test("###Persistence\n" +
@@ -313,6 +160,51 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          sourceDateTimeFromField: sourceFrom;\n" +
                 "        }\n" +
                 "      }\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      modelClass: test::ModelClass;\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      partitionFields: [propertyA, propertyB];\n" +
+                "      deduplicationStrategy: MaxVersion\n" +
+                "      {\n" +
+                "        versionField: version;\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "  notifier:\n" +
+                "  {\n" +
+                "    notifyees:\n" +
+                "    [\n" +
+                "      Email\n" +
+                "      {\n" +
+                "        address: 'x.y@z.com';\n" +
+                "      },\n" +
+                "      PagerDuty\n" +
+                "      {\n" +
+                "        url: 'https://x.com';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
+
+        test("###Persistence\n" +
+                "import test::*;\n" +
+                "Persistence test::TestPersistence\n" +
+                "{\n" +
+                "  doc: 'test doc';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::service::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      database: test::Database;\n" +
+                "    }\n" +
+                "    ingestMode: AppendOnly\n" +
+                "    {\n" +
+                "      auditing: None;\n" +
+                "      filterDuplicates: true;\n" +
                 "    }\n" +
                 "    targetShape: Flat\n" +
                 "    {\n" +

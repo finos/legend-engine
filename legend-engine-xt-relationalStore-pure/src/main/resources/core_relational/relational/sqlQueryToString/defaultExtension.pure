@@ -121,6 +121,17 @@ function meta::relational::functions::sqlQueryToString::default::getDefaultLiter
    ]);
 }
 
+function meta::relational::functions::sqlQueryToString::default::convertDateToSqlString(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+   let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
+   if($date->hasSecond(),
+      | if ($date->hasSubsecond(),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date));
+}
+
 function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperationWithConcatCall(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
@@ -333,6 +344,14 @@ function meta::relational::functions::sqlQueryToString::default::processSliceOrD
    '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
 }
 
+function  meta::relational::functions::sqlQueryToString::default::getValueForTake(l:Literal[1]):String[1]
+{
+   $l.value->match([
+      i:Integer[1]| $i->toString(),
+      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '', [])
+   ]);
+}
+
 function meta::relational::functions::sqlQueryToString::default::processIdentifierWithBackTicks(identifier:String[1], dbConfig: DbConfig[1]):String[1]
 {
    $identifier->processIdentifierWithQuoteChar('`', $dbConfig);
@@ -493,16 +512,6 @@ function meta::relational::functions::sqlQueryToString::default::mapToDBDayOfWee
       pair(DayOfWeek.Saturday->toString(), 7),
       pair(DayOfWeek.Sunday->toString(), 1)
    ]->filter(p | $p.first == $day).second->toOne();
-}
-
-function meta::relational::functions::sqlQueryToString::default::convertStringToSQLString(s:String[1]):String[1]
-{
-   $s->replace('\'', '\'\'')->replace('\@@','\'')
-}
-
-function meta::relational::functions::sqlQueryToString::default::convertSQLNullToSQLString(s:SQLNull[1]):String[1]
-{
-   'null'
 }
 
 function meta::relational::functions::sqlQueryToString::default::getTransformForAddPlus():LambdaFunction<{String[*]->String[*]}>[1]

@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.shared.core.identity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public interface Credential
 {
+    @JsonIgnore
     default boolean isValid()
     {
         return true;

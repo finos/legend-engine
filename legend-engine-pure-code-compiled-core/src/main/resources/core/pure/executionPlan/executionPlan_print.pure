@@ -41,7 +41,7 @@ function meta::pure::executionPlan::toString::planToString(e:ExecutionPlan[1], s
 function <<access.public>> meta::pure::executionPlan::toString::planNodeToString(e:ExecutionNode[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let root = $e->match(
-      $extensions.executionPlan_print_planNodeToString->map(x|$x->eval($space, $extensions))->concatenate(
+      $extensions.executionPlanExtensions().printPlanNodeToString->map(x|$x->eval($space, $extensions))->concatenate(
       [
          p:PureExpressionPlatformExecutionNode[1]|'PureExp\n'+$space+'('+header($p, $space, $extensions)+'\n'+$space+'  expression = '+$p.expression->asString(^Pref(useClusterIndex=true, clusterIndex=extractClusters($p.executionNodes, $extensions)))+$e->childrenToString($space+'  ', $extensions)+'\n'+$p.implementation->printImplementation('implementation', $space+'  ', $extensions)+$space+')\n',
          p:SequenceExecutionNode[1]|'Sequence\n'+$space+'('+header($p, $space, $extensions)+$e->childrenToString($space+'  ', $extensions)+'\n'+$space+')\n',
@@ -54,8 +54,7 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.type->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
-         i:	meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
-
+         i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
       ])->toOneMany()
    );
    $space + $root;
@@ -104,7 +103,7 @@ function meta::pure::executionPlan::toString::childrenToString(e:ExecutionNode[*
 function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:ResultType[1], space:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $e->match(
-      $extensions.executionPlan_print_typeToString->map(e|$e->eval($space, $extensions))->concatenate(
+      $extensions.executionPlanExtensions().printTypeToString->map(e|$e->eval($space, $extensions))->concatenate(
       [
          partialClassResultType : PartialClassResultType[1]|'PartialClass[impls=['+$partialClassResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+'], propertiesWithParameters = ['+$partialClassResultType.propertiesWithParameters->map(x | if($x.property->instanceOf(Property), | $x.property.name->toOne(), | $x.parameters->map(x | $x->asString())->joinStrings($x.property.name->toOne() + '(', ', ', ')')))->joinStrings(', ')+']]',
          classResultType : ClassResultType[1]|'Class[impls='+$classResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+']'+if($classResultType.genericType->isEmpty(), |'', |'\n'+$space+'         as '+$classResultType.genericType->toOne()->printGenericType()),
@@ -117,7 +116,7 @@ function meta::pure::executionPlan::toString::connectionToString(connection:Conn
 {
    $connection->class() ->toString() + '('+
    $connection->match(
-               $extensions.executionPlan_print_connectionToString->map(x|$x->eval($extensions))->concatenate(
+               $extensions.executionPlanExtensions().printConnectionToString->map(x|$x->eval($extensions))->concatenate(
                [
                    connection:Connection[1] | $connection.element ->toString()
                ])->toOneMany()

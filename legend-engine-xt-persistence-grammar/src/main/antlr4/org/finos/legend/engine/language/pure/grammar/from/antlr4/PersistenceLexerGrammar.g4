@@ -31,10 +31,6 @@ PERSISTENCE_SERVICE:                        'service';
 PERSISTENCE_PERSISTER:                      'persister';
 PERSISTENCE_NOTIFIER:                       'notifier';
 
-// TRIGGER
-TRIGGER_MANUAL:                             'Manual';
-TRIGGER_CRON:                               'Cron';
-
 // PERSISTER
 PERSISTER_STREAMING:                        'Streaming';
 PERSISTER_BATCH:                            'Batch';

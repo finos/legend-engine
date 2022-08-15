@@ -18,6 +18,8 @@ import java.io.Serializable;
 
 public abstract class GraphFetchCacheKey implements Serializable
 {
+    public abstract String getStringIdentifier();
+
     protected abstract int hash();
 
     protected abstract boolean equivalent(Object other);

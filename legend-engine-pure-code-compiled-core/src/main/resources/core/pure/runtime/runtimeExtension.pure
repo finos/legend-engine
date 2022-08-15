@@ -17,9 +17,15 @@ import meta::pure::store::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 
+Class meta::pure::runtime::EngineRuntime extends Runtime
+{
+  mappings: Mapping[*];
+// NOTE: we don't need to process the rest of engine runtime for now
+}
+
 Class meta::pure::runtime::PackageableRuntime extends PackageableElement
 {
-   
+   runtimeValue: meta::pure::runtime::EngineRuntime[1];
 }
 
 Class meta::pure::runtime::PackageableConnection extends PackageableElement
@@ -51,7 +57,7 @@ function meta::pure::runtime::connectionEquality(a:Connection[1], b:Connection[1
    
    if( $a->type() == $b->type(),
       |$a->match(
-            $extensions.runtime_connectionEquality->map(e | $e->eval($b))->concatenate([
+            $extensions.routerExtensions().connectionEquality->map(e | $e->eval($b))->concatenate([
                 a:Connection[1]  | true
             ])->toOneMany()
        ),   

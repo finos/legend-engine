@@ -77,7 +77,10 @@ Class meta::pure::mapping::modelToModel::ModelChainConnection extends Connection
 }
 
 
+Class meta::pure::mapping::M2MEmbeddedSetImplementation extends EmbeddedSetImplementation
+{
 
+}
 
 
 Class meta::pure::mapping::modelToModel::ModelToModelExecutionNode extends ExecutionNode
@@ -265,12 +268,13 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planRootG
 
    let connection = if ($sq.store->instanceOf(ModelStore),
                         | let sourceClass = $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass->toOne();
-                          $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->match($extensions.executionPlan_generation_isConnectionForClass->map(x|$x->eval($sourceClass))->concatenate([
+                          $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->match([
+                             x : meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | $x.element->cast(@meta::external::shared::format::binding::Binding).modelUnit->meta::pure::model::unit::resolve().packageableElements->contains($sourceClass),
                              j : JsonModelConnection[1]  | $j.class == $sourceClass,
                              x : XmlModelConnection[1]   | $x.class ==  $sourceClass,
                              m : ModelConnection[1]      | true,
                              m : ModelChainConnection[1] | false
-                          ])->toOneMany()));,
+                          ]));,
                         | $runtime->connectionByElement($store)
                     );
    assert($connection->size() <= 1, | 'Multiple connections available for source class - ' + $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass.name->toOne());
@@ -342,15 +346,15 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::planCross
 
    let xStorePropertyMapping = $rootTree.propertyMapping->toOne()->cast(@XStorePropertyMapping);
 
-
    let connection = if ($store->instanceOf(ModelStore),
                         | let sourceClass = $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass->toOne();
-                          $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->match($extensions.executionPlan_generation_isConnectionForClass->map(x|$x->eval($sourceClass))->concatenate([
+                          $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->match([
+                             x : meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | $x.element->cast(@meta::external::shared::format::binding::Binding).modelUnit->meta::pure::model::unit::resolve().packageableElements->contains($sourceClass),
                              j : JsonModelConnection[1]  | $j.class == $sourceClass,
                              x : XmlModelConnection[1]   | $x.class ==  $sourceClass,
                              m : ModelConnection[1]      | true,
                              m : ModelChainConnection[1] | false
-                          ])->toOneMany()));,
+                          ]));,
                         | $runtime->connectionByElement($store)
                     );
    assert($connection->size() <= 1, | 'Multiple connections available for source class - ' + $rootTree.sets->toOne()->cast(@PureInstanceSetImplementation).srcClass.name->toOne());
@@ -594,18 +598,60 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::sourceSup
                      let chainedMappings             = $mapping->concatenate($mcc.mappings->take($mcc.mappings->size() - 1));
                      let sourceClassWitSetsProcessed = $chainedMappings->fold({m, c | let srcClass      = $m.rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation).srcClass->toOne()->cast(@Class<Any>);
                                                                                       let processedSets = $c.second;
-                                                                                      pair($srcClass, ^$processedSets(values += $m.rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation)));}, 
-                                                                                pair($rootClass, ^List<PureInstanceSetImplementation>(values = [])));
+                                                                                      pair($srcClass, ^$processedSets(values += $m.rootClassMappingByClass($c.first)->cast(@PureInstanceSetImplementation)));
+                                                                              }, pair($rootClass, ^List<PureInstanceSetImplementation>(values = [])));
                      let sourceClass                 = $sourceClassWitSetsProcessed.first;
                      let setsProcessed               = $sourceClassWitSetsProcessed.second;
                      let sourceSetImpl               = $mcc.mappings->last()->toOne().rootClassMappingByClass($sourceClass);
                      
-                     let inScopeVars                 = $populatedXStorePropertiesInScope->map(p | pair($p->propertyToVarName(), ^List<Any>(values=$p)))->newMap();
-                     $sourceSetImpl->match($extensions.executionPlan_generation_sourceSupportsBatching->map(e | $e->eval($setsProcessed.values, $inScopeVars))->concatenate([
-                                              s:SetImplementation[1] | false
-                                          ])->toOneMany());,
-              c:Connection[1]             | false
+                     let inScopeVars                 = $populatedXStorePropertiesInScope->map(p |
+                                                          pair($p->propertyToVarName(), ^List<Any>(values=$p))
+                                                          )->newMap();
+
+                     // resolve Params
+                     let resolvedSourceParams = $setsProcessed.values->resolveParamMapForChainProcessing($inScopeVars, noDebug());
+                     let resolvedSourceProperties = $inScopeVars->keyValues()
+                                                      ->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty))
+                                                      .second.values->cast(@AbstractProperty<Any>)
+                                                      ->map(targetProp | $targetProp->resolveSourcePropertyFromTargetProperty($setsProcessed.values->cast(@meta::pure::mapping::modelToModel::PureInstanceSetImplementation)));
+
+                     $sourceSetImpl->match(
+                        [
+                            i:InstanceSetImplementation[1] |
+                                let f = $extensions->storeContractForSetImplementation($i).crossStoreSourceSupportsBatching;
+                                if ($f->isEmpty(),
+                                      | false,
+                                      | $f->toOne()->eval($i, $resolvedSourceProperties, $resolvedSourceParams)
+                                );,
+                            s:SetImplementation[1] | false
+                        ]
+                     );,
+              c:Connection[1] | false
              ]);
+}
+
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::resolveParamMapForChainProcessing(setsProcessed:SetImplementation[*], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):Map<String, String>[1]
+{
+   let populatedXStorePropertiesInScope = $inScopeVars->keyValues()->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty)).second.values->cast(@AbstractProperty<Any>);
+
+   assert($populatedXStorePropertiesInScope->forAll(prop | $prop.multiplicity->hasToOneUpperBound()), 'All properties in XStore relationship should have 1 as multiplicty upper bound for service store.');
+   $populatedXStorePropertiesInScope->map(p | let targetPath  = $p->propertyToVarName();
+                                              let srcProperty = resolveSourcePropertyFromTargetProperty($p, $setsProcessed->cast(@PureInstanceSetImplementation));
+                                              let srcPath     = $srcProperty->propertyToVarName();
+                                              pair($srcPath, $targetPath);)->newMap();
+}
+
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::resolveSourcePropertyFromTargetProperty(property:AbstractProperty<Any>[1], sets:PureInstanceSetImplementation[*]):AbstractProperty<Any>[1]
+{
+   let set = $sets->filter(set | $set.class == $property.owner || $set.mappingClass == $property.owner);
+   if($set->isEmpty(),
+      | $property,
+      | assert($set->size() == 1, 'Expected 1 mapping for class - ' + $property.owner.name->toOne());
+        let pm          = $set.propertyMappings->filter(pm | $pm.property == $property);
+        assert($pm->cast(@PurePropertyMapping).transform.expressionSequence->toOne()->instanceOf(SimpleFunctionExpression) && $pm->cast(@PurePropertyMapping).transform.expressionSequence->toOne()->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->instanceOf(AbstractProperty), 'Expected target property : ' + $property.name->toOne() + ' to be mapped directly to a source property for resolving service parameter input');
+        let srcProperty = $pm->cast(@PurePropertyMapping).transform.expressionSequence->toOne()->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->cast(@AbstractProperty<Any>);
+        $srcProperty->resolveSourcePropertyFromTargetProperty($sets);
+   );
 }
 
 function meta::pure::mapping::modelToModel::graphFetch::executionPlan::propertyToVarName(property:AbstractProperty<Any>[1]):String[1]
