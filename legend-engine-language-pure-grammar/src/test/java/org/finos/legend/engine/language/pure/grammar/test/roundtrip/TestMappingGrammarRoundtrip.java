@@ -136,6 +136,10 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     public void testMappingWithTestSuitesWithMultipleTestData()
     {
         test("###Mapping\n" +
+                "/* Unsupported transformation for 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding' */\n" +
+                "\n" +
+                "/* Unsupported transformation for 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding' */\n" +
+                "\n" +
                 "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
                 "(\n" +
                 "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
@@ -153,21 +157,19 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      data:\n" +
                 "      [\n" +
                 "        ModelStore:\n" +
-                "        {\n" +
-                "          meta::pure::mapping::modelToModel::test::shared::src::_S_Person:\n" +
-                "            Reference\n" +
-                "            #{\n" +
-                "              testMapping::Person::TestData\n" +
-                "            }#\n" +
-                "        },\n" +
-                "        ModelStore:\n" +
-                "        {\n" +
-                "          meta::pure::mapping::modelToModel::test::shared::src::_S_Firm:\n" +
-                "            Reference\n" +
-                "            #{\n" +
-                "              testMapping::Firm::TestData\n" +
-                "            }#\n" +
-                "        }\n" +
+                "          ModelStore\n" +
+                "          #{\n" +
+                "            meta::pure::mapping::modelToModel::test::shared::src::_S_Firm:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testMapping::Firm::TestData\n" +
+                "              }#,\n" +
+                "            meta::pure::mapping::modelToModel::test::shared::src::_S_Person:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testMapping::Person::TestData\n" +
+                "              }#\n" +
+                "          }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
@@ -215,6 +217,8 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     public void testMappingWithTestSuitesWithMultipleTestAssertions()
     {
         test("###Mapping\n" +
+                "/* Unsupported transformation for 'org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding' */\n" +
+                "\n" +
                 "Mapping meta::pure::mapping::modelToModel::test::simple::simpleModelMapping\n" +
                 "(\n" +
                 "  *meta::pure::mapping::modelToModel::test::shared::dest::Person[meta_pure_mapping_modelToModel_test_shared_dest_Person]: Pure\n" +
@@ -232,13 +236,14 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      data:\n" +
                 "      [\n" +
                 "        ModelStore:\n" +
-                "        {\n" +
-                "          meta::pure::mapping::modelToModel::test::shared::src::_S_Person:\n" +
-                "            Reference\n" +
-                "            #{\n" +
-                "              testMapping::Person::TestData\n" +
-                "            }#\n" +
-                "        }\n" +
+                "          ModelStore\n" +
+                "          #{\n" +
+                "            meta::pure::mapping::modelToModel::test::shared::src::_S_Person:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                testMapping::Person::TestData\n" +
+                "              }#\n" +
+                "          }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +

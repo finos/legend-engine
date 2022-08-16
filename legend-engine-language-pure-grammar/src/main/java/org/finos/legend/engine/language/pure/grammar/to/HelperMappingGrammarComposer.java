@@ -240,25 +240,7 @@ public class HelperMappingGrammarComposer
         int baseIndentation = 4;
         StringBuilder str = new StringBuilder();
         str.append(getTabString(baseIndentation)).append(storeTestData.store).append(":\n");
-        if (storeTestData.data instanceof ModelStoreData)
-        {
-            str.append(getTabString(baseIndentation)).append("{\n");
-            for (Map.Entry<String, ValueSpecification> entry : ((ModelStoreData) storeTestData.data).instances.entrySet())
-            {
-                str.append(getTabString(baseIndentation + 1)).append(entry.getKey()).append(":\n");
-                DataElementReference reference = new DataElementReference();
-                if (entry.getValue() instanceof Pair)
-                {
-                    reference.dataElement = ((PackageableElementPtr)((Pair) entry.getValue()).second).fullPath;
-                }
-                str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 2)).build()));
-            }
-            str.append("\n").append(getTabString(baseIndentation)).append("}");
-        }
-        else
-        {
-            str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(storeTestData.data, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 1)).build()));
-        }
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(storeTestData.data, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 1)).build()));
         return str.toString();
     }
 

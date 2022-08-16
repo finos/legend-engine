@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
@@ -22,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import java.util.Collections;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Mapping extends PackageableElement
 {
     public List<ClassMapping> classMappings;

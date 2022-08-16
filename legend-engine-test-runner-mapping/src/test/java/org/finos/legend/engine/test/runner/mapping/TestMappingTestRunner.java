@@ -151,14 +151,14 @@ public class TestMappingTestRunner
                 "    {\n" +
                 "      data:\n" +
                 "      [\n" +
-                "       ModelStore:\n" +
-                "        {\n" +
+                "       ModelStore: ModelStore\n" +
+                "        #{\n" +
                 "           test::model:\n" +
                 "            Reference \n" +
                 "            #{ \n" +
                 "              test::data::MyData\n" +
                 "            }#\n" +
-                "        }\n" +
+                "        }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +

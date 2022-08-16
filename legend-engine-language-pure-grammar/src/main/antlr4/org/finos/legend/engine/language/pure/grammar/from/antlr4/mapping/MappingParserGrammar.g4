@@ -75,9 +75,7 @@ mappingTestSuites:              MAPPING_TEST_SUITES COLON BRACKET_OPEN (mappingT
 ;
 mappingTestSuite:               identifier COLON BRACE_OPEN TEST_INPUT_DATA COLON BRACKET_OPEN (mappingTestData (COMMA mappingTestData)*)? BRACKET_CLOSE SEMI_COLON MAPPING_TESTS COLON BRACKET_OPEN (mappingTest (COMMA mappingTest)*)? BRACKET_CLOSE SEMI_COLON BRACE_CLOSE
 ;
-mappingTestData:                qualifiedName COLON (embeddedData | modelEmbeddedData)
-;
-modelEmbeddedData:              BRACE_OPEN qualifiedName COLON embeddedData BRACE_CLOSE
+mappingTestData:                qualifiedName COLON embeddedData
 ;
 embeddedData:                   identifier ISLAND_OPEN (embeddedDataContent)*
 ;

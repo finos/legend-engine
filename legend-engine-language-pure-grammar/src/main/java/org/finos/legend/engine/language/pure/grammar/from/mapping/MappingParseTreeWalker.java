@@ -31,7 +31,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
@@ -188,53 +188,32 @@ public class MappingParseTreeWalker
 
     private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx)
     {
-        if (ctx.embeddedData() != null)
-        {
-            StoreTestData testData = new StoreTestData();
-            testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-            testData.store = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(),ctx.qualifiedName().identifier());     //build store
-            return testData;
-        }
-        else
-        {
-            return visitModelStoreTestData(ctx);
-        }
+        StoreTestData testData = new StoreTestData();
+        testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        this.createDummyBindingIfRequired(testData.data);
+        testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
+                "ModelStore" :
+                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(),ctx.qualifiedName().identifier());     //build store
+        return testData;
     }
 
-    private StoreTestData visitModelStoreTestData(MappingParserGrammar.MappingTestDataContext ctx)
+    private void createDummyBindingIfRequired(EmbeddedData data)
     {
-        StoreTestData modelStoreTestData = new StoreTestData();
-        modelStoreTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.modelEmbeddedData().embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        modelStoreTestData.store = ctx.qualifiedName().getText();
-        if (modelStoreTestData.data instanceof DataElementReference)
+        if (data instanceof ModelStoreData)
         {
-            ModelStoreData modelData = new ModelStoreData();
-            String clazz = PureGrammarParserUtility.fromQualifiedName(ctx.modelEmbeddedData().qualifiedName().packagePath().identifier(), ctx.modelEmbeddedData().qualifiedName().identifier());
-            PackageableElementPtr ptr = new PackageableElementPtr();
-            ptr.fullPath = ((DataElementReference) modelStoreTestData.data).dataElement;
-            //creating bindingPtr
-            Binding binding = new Binding();
-            ModelUnit modelUnit = new ModelUnit();
-            modelUnit.packageableElementIncludes = Collections.singletonList(clazz);
-            binding.name = "binding";
-            binding._package = "default::" + clazz;
-            binding.modelUnit = modelUnit;
-            binding.contentType = "application/json";    //default content type
-            Stream.of(binding).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-
-            PackageableElementPtr bindingPtr = new PackageableElementPtr();
-            bindingPtr.fullPath = binding.getPath();
-            Pair pair = new Pair();
-            pair.first = bindingPtr;
-            pair.second = ptr;
-            modelData.instances = Maps.mutable.of(clazz, pair);
-            modelStoreTestData.data = modelData;
+            ((ModelStoreData) data).instances.keySet().stream().forEach(key ->
+                    {
+                        Binding binding = new Binding();
+                        ModelUnit modelUnit = new ModelUnit();
+                        modelUnit.packageableElementIncludes = Collections.singletonList(key);
+                        binding.name = "binding";
+                        binding._package = "default::" + key;
+                        binding.modelUnit = modelUnit;
+                        binding.contentType = "application/json";    //default content type
+                        Stream.of(binding).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+                    }
+            );
         }
-        else
-        {
-            throw new EngineException("unsupported data for m2m mappings, currently only external format data as references are supported");
-        }
-        return modelStoreTestData;
     }
 
     private MappingTest visitAtomicTest(MappingParserGrammar.MappingTestContext ctx, Mapping mapping)

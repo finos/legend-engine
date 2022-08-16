@@ -327,14 +327,14 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    {\n" +
                 "      data:\n" +
                 "      [\n" +
-                "        ModelStore:\n" +
-                "        {\n" +
+                "        ModelStore: ModelStore\n" +
+                "        #{\n" +
                 "           test::example::model:\n" +
                 "              Reference \n" +
                 "              #{ \n" +
                 "                testMapping::TestData \n" +
                 "              }#\n" +
-                "         }\n" +
+                "         }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
@@ -385,22 +385,19 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    {\n" +
                 "      data:\n" +
                 "      [\n" +
-                "        ModelStore:\n" +
-                "        {\n" +
+                "        ModelStore: ModelStore\n" +
+                "        #{\n" +
                 "           test::example::model:\n" +
                 "              Reference \n" +
                 "              #{ \n" +
                 "                testMapping::TestData \n" +
                 "              }#\n" +
-                "         },\n" +
+                "         }#,\n" +
                 "        test::db:\n" +
-                "        {\n" +
-                "           test::example::model:\n" +
-                "              Reference \n" +
-                "              #{ \n" +
-                "                testMapping::relational::TestData \n" +
-                "              }#\n" +
-                "         }\n" +
+                "        Reference \n" +
+                "        #{ \n" +
+                "           testMapping::relational::TestData \n" +
+                "        }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
@@ -440,22 +437,14 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    {\n" +
                 "      data:\n" +
                 "      [\n" +
-                "        ModelStore:\n" +
-                "        {\n" +
+                "        ModelStore: ModelStore\n" +
+                "        #{\n" +
                 "           test::example::model:\n" +
                 "              Reference \n" +
                 "              #{ \n" +
                 "                testMapping::TestData \n" +
                 "              }#\n" +
-                "         },\n" +
-                "        test::db:\n" +
-                "        {\n" +
-                "           test::example::model:\n" +
-                "           Reference \n" +
-                "           #{ \n" +
-                "             testMapping::relational::TestData \n" +
-                "           }#\n" +
-                "         }\n" +
+                "         }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
@@ -495,14 +484,14 @@ public class TestMappingGrammarParser extends TestGrammarParser.TestGrammarParse
                 "    {\n" +
                 "      data:\n" +
                 "      [\n" +
-                "        ModelStore:\n" +
-                "        {\n" +
+                "        ModelStore: ModelStore\n" +
+                "        #{\n" +
                 "           test::example::model:\n" +
                 "              Reference \n" +
                 "              #{ \n" +
                 "                testMapping::TestData \n" +
                 "              }#\n" +
-                "         }\n" +
+                "         }#\n" +
                 "      ];\n" +
                 "      tests:\n" +
                 "      [\n" +
