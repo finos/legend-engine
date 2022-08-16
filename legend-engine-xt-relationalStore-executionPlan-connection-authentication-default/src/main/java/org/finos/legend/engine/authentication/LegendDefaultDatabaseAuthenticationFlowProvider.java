@@ -24,6 +24,7 @@ import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswo
 import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SnowflakeWithKeyPairFlow;
 import org.finos.legend.engine.authentication.flows.SqlServerStaticWithUserPasswordFlow;
+import org.finos.legend.engine.authentication.flows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -48,7 +49,8 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
                 new SnowflakeWithKeyPairFlow(),
                 new SqlServerStaticWithUserPasswordFlow(),
                 new PostgresStaticWithUserPasswordFlow(),
-                new RedshiftWithUserPasswordFlow()
+                new RedshiftWithUserPasswordFlow(),
+                new PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow()
         );
     }
 
