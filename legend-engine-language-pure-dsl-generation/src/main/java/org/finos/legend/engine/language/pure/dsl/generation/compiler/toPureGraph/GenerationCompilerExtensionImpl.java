@@ -43,7 +43,7 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
                         (fileGeneration, context) ->
                         {
                             // NOTE: we stub out since this element doesn't have an equivalent packageable element form in PURE metamodel
-                            PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("");
+                            PackageableElement stub = new Root_meta_pure_metamodel_PackageableElement_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::PackageableElement"));
                             Root_meta_pure_generation_metamodel_GenerationConfiguration configuration = HelperFileGenerationBuilder.processFileGeneration(fileGeneration, context);
                             this.fileConfigurationsIndex.put(context.pureModel.buildPackageString(fileGeneration._package, fileGeneration.name), configuration);
                             return stub;
@@ -53,7 +53,7 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
                         Collections.singletonList(AbstractGenerationSpecification.class),
                         (generationSpecification, context) ->
                         {
-                            Root_meta_pure_generation_metamodel_GenerationSpecification genTree = new Root_meta_pure_generation_metamodel_GenerationSpecification_Impl("");
+                            Root_meta_pure_generation_metamodel_GenerationSpecification genTree = new Root_meta_pure_generation_metamodel_GenerationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::generation::metamodel::GenerationSpecification"));
                             HelperGenerationSpecificationBuilder.processGenerationSpecification(generationSpecification, context);
                             this.generationSpecificationsIndex.put(context.pureModel.buildPackageString(generationSpecification._package, generationSpecification.name), genTree);
                             return genTree;

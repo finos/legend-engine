@@ -33,7 +33,7 @@ public class MostCommonType
 //        else
 //        {
 //            Type res = types.size() == 1? types.get(0):types.take(types.size()-1).injectInto(types.get(types.size()-1), (a,b) -> mostCommon(a,b, pureModel));
-//            return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(res);
+//            return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(res);
 //        }
     }
 

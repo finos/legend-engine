@@ -59,7 +59,7 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     {
         try
         {
-            return new Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl("")
+            return new Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl("", null, context.getPureModel().getClass("meta::external::query::graphQL::binding::toPure::introspection::GraphQLIntrospectionContainer"))
                     ._schema(
                             new Translator().translate(
                                     new ObjectMapper().readValue(context.getContent(), __Schema.class),
@@ -94,7 +94,7 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, GraphQLSchemaToModelConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration configuration = new Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration_Impl("")
+        Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration configuration = new Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::shared::format::binding::toPure::SchemaToModelConfiguration"))
                 ._sourceSchemaId(config.sourceSchemaId)
                 ._targetPackage(config.targetPackage)
                 ._targetBinding(config.targetBinding);

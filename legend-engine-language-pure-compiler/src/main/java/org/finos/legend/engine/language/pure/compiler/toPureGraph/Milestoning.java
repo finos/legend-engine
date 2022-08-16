@@ -122,7 +122,7 @@ public class Milestoning
         MutableList<Property> generatedMilestoningDateProperties = Lists.mutable.ofAll(milestoningStereotype.getTemporalDatePropertyNames()).collect(name -> new Root_meta_pure_metamodel_function_property_Property_Impl<>(name)
                 ._name(name)
                 ._genericType(dateGenericType)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))
                         ._typeArguments(Lists.fixedSize.of(owner._classifierGenericType(), dateGenericType)))
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
@@ -137,7 +137,7 @@ public class Milestoning
         Property generatedMilestoningRangeProperty = new Root_meta_pure_metamodel_function_property_Property_Impl<>(MilestoningFunctions.MILESTONING)
                 ._name(MilestoningFunctions.MILESTONING)
                 ._genericType(milestoningRangePropertyGenericType)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))
                         ._typeArguments(Lists.fixedSize.of(owner._classifierGenericType(), milestoningRangePropertyGenericType)))
                 ._multiplicity(context.pureModel.getMultiplicity("zeroone"))
@@ -223,66 +223,66 @@ public class Milestoning
         String qualifiedPropertyName = originalProperty._name();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> qualifiedProperty = getQualifiedProperty(propertyOwner, originalProperty, qualifiedPropertyName, originalProperty._multiplicity(), stereotypes);
 
-        VariableExpression thisVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("this")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(sourceClass._classifierGenericType()._typeArguments().toList().get(0));
-        VariableExpression v_milestoning = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("v_milestoning")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(edgePointProperty._genericType());
+        VariableExpression thisVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(sourceClass._classifierGenericType()._typeArguments().toList().get(0));
+        VariableExpression v_milestoning = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("v_milestoning")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(edgePointProperty._genericType());
 
         ListIterable<Pair<VariableExpression, SimpleFunctionExpression>> datesToCompare = returnTypeMilestoningStereotype.getTemporalDatePropertyNames().collect(d ->
         {
-            VariableExpression inputTemporalDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name(d)._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(context.pureModel.getGenericType("Date"));
+            VariableExpression inputTemporalDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(d)._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(context.pureModel.getGenericType("Date"));
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> temporalDateProperty = ((Class<Object>) originalProperty._genericType()._rawType())._properties().detect(p -> p._name().equals(d));
-            SimpleFunctionExpression temporalDatePropertyExp = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+            SimpleFunctionExpression temporalDatePropertyExp = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                     ._func(temporalDateProperty)
-                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.fixedSize.of(d)))
+                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(d)))
                     ._genericType(context.pureModel.getGenericType("Date"))
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._parametersValues(Lists.fixedSize.of(v_milestoning));
             return Tuples.pair(inputTemporalDate, temporalDatePropertyExp);
         });
 
-        ListIterable<SimpleFunctionExpression> equalExpressions = datesToCompare.collect(p -> new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        ListIterable<SimpleFunctionExpression> equalExpressions = datesToCompare.collect(p -> new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(context.pureModel.getFunction("meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_", true))
                 ._functionName("eq")
                 ._genericType(context.pureModel.getGenericType("Boolean"))
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._parametersValues(Lists.fixedSize.<ValueSpecification>of(p.getTwo(), p.getOne())));
-        SimpleFunctionExpression equalExpression = equalExpressions.size() == 1 ? equalExpressions.get(0) : new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        SimpleFunctionExpression equalExpression = equalExpressions.size() == 1 ? equalExpressions.get(0) : new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(context.pureModel.getFunction("meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_", true))
                 ._functionName("and")
                 ._genericType(context.pureModel.getGenericType("Boolean"))
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._parametersValues(equalExpressions);
 
-        GenericType functionType = PureModel.buildFunctionType(Lists.fixedSize.of(v_milestoning), context.pureModel.getGenericType("Boolean"), context.pureModel.getMultiplicity("one"));
+        GenericType functionType = PureModel.buildFunctionType(Lists.fixedSize.of(v_milestoning), context.pureModel.getGenericType("Boolean"), context.pureModel.getMultiplicity("one"), context.pureModel);
 
-        LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("")
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+        LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::function::LambdaFunction"))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))
                         ._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(Lists.fixedSize.of("this"))
                 ._expressionSequence(Lists.fixedSize.of(equalExpression));
 
-        InstanceValue filterInstanceValue = new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        InstanceValue filterInstanceValue = new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(filterLambda._classifierGenericType())
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._values(Lists.fixedSize.of(filterLambda));
 
-        SimpleFunctionExpression filterLhs = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        SimpleFunctionExpression filterLhs = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(edgePointProperty)
-                ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.fixedSize.of(edgePointProperty._name())))
+                ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(edgePointProperty._name())))
                 ._genericType(edgePointProperty._genericType())
                 ._multiplicity(edgePointProperty._multiplicity())
                 ._parametersValues(Lists.fixedSize.of(thisVar));
 
-        SimpleFunctionExpression filterExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        SimpleFunctionExpression filterExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(context.pureModel.getFunction("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", true))
                 ._functionName("filter")
                 ._genericType(qualifiedProperty._genericType())
                 ._multiplicity(context.pureModel.getMultiplicity("zeromany"))
                 ._parametersValues(Lists.fixedSize.of(filterLhs, filterInstanceValue));
 
-        GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+        GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
-                ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar), qualifiedProperty._genericType(), originalProperty._multiplicity())));
+                ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar), qualifiedProperty._genericType(), originalProperty._multiplicity(), context.pureModel)));
 
         qualifiedProperty._classifierGenericType(classifierGenericType);
         qualifiedProperty._expressionSequence(Lists.fixedSize.of(filterExpression));
@@ -295,66 +295,66 @@ public class Milestoning
         String qualifiedPropertyName = originalProperty._name();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty<?> qualifiedProperty = getQualifiedProperty(propertyOwner, originalProperty, qualifiedPropertyName, originalProperty._multiplicity(), stereotypes);
 
-        VariableExpression thisVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("this")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(sourceClass._classifierGenericType()._typeArguments().toList().get(0));
-        VariableExpression v_milestoning = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("v_milestoning")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(edgePointProperty._genericType());
+        VariableExpression thisVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(sourceClass._classifierGenericType()._typeArguments().toList().get(0));
+        VariableExpression v_milestoning = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("v_milestoning")._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(edgePointProperty._genericType());
 
         ListIterable<Pair<VariableExpression, SimpleFunctionExpression>> datesToCompare = returnTypeMilestoningStereotype.getTemporalDatePropertyNames().collect(d ->
         {
-            VariableExpression inputTemporalDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name(d)._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(context.pureModel.getGenericType("Date"));
+            VariableExpression inputTemporalDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(d)._multiplicity(context.pureModel.getMultiplicity("one"))._genericType(context.pureModel.getGenericType("Date"));
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> temporalDateProperty = ((Class<Object>) originalProperty._genericType()._rawType())._properties().detect(p -> p._name().equals(d));
-            SimpleFunctionExpression temporalDatePropertyExp = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+            SimpleFunctionExpression temporalDatePropertyExp = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                     ._func(temporalDateProperty)
-                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.fixedSize.of(d)))
+                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(d)))
                     ._genericType(context.pureModel.getGenericType("Date"))
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._parametersValues(Lists.fixedSize.of(v_milestoning));
             return Tuples.pair(inputTemporalDate, temporalDatePropertyExp);
         });
 
-        ListIterable<SimpleFunctionExpression> equalExpressions = datesToCompare.collect(p -> new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        ListIterable<SimpleFunctionExpression> equalExpressions = datesToCompare.collect(p -> new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(context.pureModel.getFunction("meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_", true))
                 ._functionName("eq")
                 ._genericType(context.pureModel.getGenericType("Boolean"))
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._parametersValues(Lists.fixedSize.<ValueSpecification>of(p.getTwo(), p.getOne())));
-        SimpleFunctionExpression equalExpression = equalExpressions.size() == 1 ? equalExpressions.get(0) : new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        SimpleFunctionExpression equalExpression = equalExpressions.size() == 1 ? equalExpressions.get(0) : new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(context.pureModel.getFunction("meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_", true))
                 ._functionName("and")
                 ._genericType(context.pureModel.getGenericType("Boolean"))
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._parametersValues(equalExpressions);
 
-        GenericType functionType = PureModel.buildFunctionType(Lists.fixedSize.of(v_milestoning), context.pureModel.getGenericType("Boolean"), context.pureModel.getMultiplicity("one"));
+        GenericType functionType = PureModel.buildFunctionType(Lists.fixedSize.of(v_milestoning), context.pureModel.getGenericType("Boolean"), context.pureModel.getMultiplicity("one"), context.pureModel);
 
-        LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("")
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+        LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::function::LambdaFunction"))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))
                         ._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(returnTypeMilestoningStereotype.getTemporalDatePropertyNames())
                 ._expressionSequence(Lists.fixedSize.of(equalExpression));
 
-        InstanceValue filterInstanceValue = new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        InstanceValue filterInstanceValue = new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(filterLambda._classifierGenericType())
                 ._multiplicity(context.pureModel.getMultiplicity("one"))
                 ._values(Lists.fixedSize.of(filterLambda));
 
-        SimpleFunctionExpression filterLhs = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        SimpleFunctionExpression filterLhs = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(edgePointProperty)
-                ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.fixedSize.of(edgePointProperty._name())))
+                ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(edgePointProperty._name())))
                 ._genericType(edgePointProperty._genericType())
                 ._multiplicity(edgePointProperty._multiplicity())
                 ._parametersValues(Lists.fixedSize.of(thisVar));
 
-        SimpleFunctionExpression filterExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        SimpleFunctionExpression filterExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(context.pureModel.getFunction("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", true))
                 ._functionName("filter")
                 ._genericType(qualifiedProperty._genericType())
                 ._multiplicity(context.pureModel.getMultiplicity("zeromany"))
                 ._parametersValues(Lists.fixedSize.of(filterLhs, filterInstanceValue));
 
-        GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+        GenericType classifierGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
-                ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar).withAll(datesToCompare.collect(Functions.firstOfPair())), qualifiedProperty._genericType(), originalProperty._multiplicity())));
+                ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar).withAll(datesToCompare.collect(Functions.firstOfPair())), qualifiedProperty._genericType(), originalProperty._multiplicity(), context.pureModel)));
 
         qualifiedProperty._classifierGenericType(classifierGenericType);
         qualifiedProperty._expressionSequence(Lists.fixedSize.of(filterExpression));
@@ -371,60 +371,60 @@ public class Milestoning
             String qualifiedPropertyName = MilestoningFunctions.getRangePropertyName(originalProperty._name());
             String temporalDatePropertyName = returnTypeMilestoningStereotype.getTemporalDatePropertyNames().getFirst();
 
-            VariableExpression thisVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")
+            VariableExpression thisVar = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                     ._name("this")
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._genericType(sourceClass._classifierGenericType()._typeArguments().getFirst());
 
-            VariableExpression v_milestoning = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")
+            VariableExpression v_milestoning = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                     ._name("v_milestoning")
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._genericType(edgePointProperty._genericType());
 
-            VariableExpression inputStartDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")
+            VariableExpression inputStartDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                     ._name("start")
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._genericType(context.pureModel.getGenericType("Date"));
 
-            VariableExpression inputEndDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")
+            VariableExpression inputEndDate = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                     ._name("end")
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._genericType(context.pureModel.getGenericType("Date"));
 
-            SimpleFunctionExpression temporalDatePropertyExp = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+            SimpleFunctionExpression temporalDatePropertyExp = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                     ._func(HelperModelBuilder.getOwnedProperty((Class<Object>) originalProperty._genericType()._rawType(), temporalDatePropertyName, context.pureModel.getExecutionSupport()))
-                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.mutable.of(temporalDatePropertyName)))
+                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.mutable.of(temporalDatePropertyName)))
                     ._genericType(context.pureModel.getGenericType("Date"))
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._parametersValues(Lists.mutable.of(v_milestoning));
 
-            SimpleFunctionExpression equalExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+            SimpleFunctionExpression equalExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                     ._func(context.pureModel.getFunction("meta::pure::functions::boolean::eq_Any_1__Any_1__Boolean_1_", true))
                     ._functionName("eq")
                     ._genericType(context.pureModel.getGenericType("Boolean"))
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._parametersValues(Lists.mutable.of(temporalDatePropertyExp, inputStartDate));
 
-            LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("")
-                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+            LambdaFunction filterLambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::function::LambdaFunction"))
+                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                             ._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))
-                            ._typeArguments(Lists.mutable.of(PureModel.buildFunctionType(Lists.mutable.of(v_milestoning), context.pureModel.getGenericType("Boolean"), context.pureModel.getMultiplicity("one")))))
+                            ._typeArguments(Lists.mutable.of(PureModel.buildFunctionType(Lists.mutable.of(v_milestoning), context.pureModel.getGenericType("Boolean"), context.pureModel.getMultiplicity("one"), context.pureModel))))
                     ._openVariables(Lists.mutable.of(temporalDatePropertyName))
                     ._expressionSequence(Lists.mutable.of(equalExpression));
 
-            InstanceValue filterInstanceValue = new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+            InstanceValue filterInstanceValue = new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                     ._genericType(filterLambda._classifierGenericType())
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._values(Lists.mutable.of(filterLambda));
 
-            SimpleFunctionExpression filterLhs = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+            SimpleFunctionExpression filterLhs = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                     ._func(edgePointProperty)
-                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")._values(Lists.mutable.of(edgePointProperty._name())))
+                    ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.mutable.of(edgePointProperty._name())))
                     ._genericType(edgePointProperty._genericType())
                     ._multiplicity(edgePointProperty._multiplicity())
                     ._parametersValues(Lists.mutable.of(thisVar));
 
-            SimpleFunctionExpression filterExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+            SimpleFunctionExpression filterExpression = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                     ._func(context.pureModel.getFunction("meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_", true))
                     ._functionName("filter")
                     ._genericType(originalProperty._genericType())
@@ -432,9 +432,9 @@ public class Milestoning
                     ._parametersValues(Lists.mutable.of(filterLhs, filterInstanceValue));
 
             QualifiedProperty<?> milestoningRangeQualifiedProperty = getQualifiedProperty(propertyOwner, originalProperty, qualifiedPropertyName, originalProperty._multiplicity(), stereotypes)
-                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                             ._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
-                            ._typeArguments(Lists.mutable.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar, inputStartDate, inputEndDate), originalProperty._genericType(), originalProperty._multiplicity()))))
+                            ._typeArguments(Lists.mutable.of(PureModel.buildFunctionType(Lists.mutable.of(thisVar, inputStartDate, inputEndDate), originalProperty._genericType(), originalProperty._multiplicity(), context.pureModel))))
                     ._expressionSequence(Lists.mutable.of(filterExpression));
 
             generatedMilestoningRangeQualifiedProperty.add(milestoningRangeQualifiedProperty);

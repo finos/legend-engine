@@ -59,7 +59,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                         {
                             Root_meta_external_store_service_metamodel_ServiceStore pureServiceStore = new Root_meta_external_store_service_metamodel_ServiceStore_Impl(serviceStore.name);
 
-                            pureServiceStore._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                            pureServiceStore._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                     ._rawType(context.pureModel.getType("meta::external::store::service::metamodel::ServiceStore")));
 
                             context.pureModel.storesIndex.put(context.pureModel.buildPackageString(serviceStore._package, serviceStore.name), pureServiceStore);
@@ -99,7 +99,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                     {
                         ServiceStoreConnection serviceStoreConnection = (ServiceStoreConnection) connectionValue;
 
-                        Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection = new Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl("");
+                        Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection = new Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::runtime::ServiceStoreConnection"));
                         pureServiceStoreConnection._element(HelperServiceStoreBuilder.getServiceStore(serviceStoreConnection.element, serviceStoreConnection.elementSourceInformation, context));
                         pureServiceStoreConnection._baseUrl(serviceStoreConnection.baseUrl);
 
