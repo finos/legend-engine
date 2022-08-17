@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.authentication.flows;
 
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.cloud.AWSConfig;
+import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -33,14 +34,14 @@ import static org.junit.Assert.assertTrue;
 public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFlow
 {
     private final Identity identity1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("identity1");
-    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+    private static final AWSConfig awsConfig = new AWSConfig(
             "us-east-1",
             "564704738649",
             "gcp-wif",
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY"
     );
-    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+    private static final GCPWorkloadConfig gcpWorkloadConfig = new GCPWorkloadConfig(
             "412074507462",
             "aws-wif-pool2",
             "aws-wif-provider2"
@@ -56,11 +57,7 @@ public class ExternalIntegration_TestBigQueryWithGCPWorkloadIdentityFederationFl
     @Test
     public void makeCredential() throws Exception
     {
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
-                .withAwsConfig(awsConfig)
-                .withGcpWorkloadConfig(gcpWorkloadConfig)
-                .build();
-        BigQueryWithGCPWorkloadIdentityFederationFlow flow = new BigQueryWithGCPWorkloadIdentityFederationFlow(flowProviderConfiguration);
+        BigQueryWithGCPWorkloadIdentityFederationFlow flow = new BigQueryWithGCPWorkloadIdentityFederationFlow(awsConfig, gcpWorkloadConfig);
         GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
         authenticationStrategy.serviceAccountEmail = "legend-integration-wif1@legend-integration-testing.iam.gserviceaccount.com";
         Credential credential = flow.makeCredential(identity1, new BigQueryDatasourceSpecification(), authenticationStrategy);
