@@ -81,7 +81,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-graphQL-pure</artifactId>
+                        <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
@@ -89,12 +89,7 @@
                         <artifactId>legend-pure-code-compiled-platform-java</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-graphQL-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
+                   </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

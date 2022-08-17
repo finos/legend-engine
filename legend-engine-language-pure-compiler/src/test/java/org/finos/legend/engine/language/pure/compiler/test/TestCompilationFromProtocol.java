@@ -70,7 +70,7 @@ public class TestCompilationFromProtocol
             try
             {
                 PureModelContextData pureModelContextData = objectMapper.readValue(jsonString, PureModelContextData.class);
-                Compiler.compile(pureModelContextData, null, null, offset);
+                Compiler.compile(pureModelContextData, null, null, offset, null);
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");

@@ -40,6 +40,7 @@ public class FunctionHandler
     private final ReturnInference returnInference;
     private Dispatch dispatch;
     private final int parametersSize;
+    private PureModel pureModel;
 
     FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference)
     {
@@ -48,11 +49,12 @@ public class FunctionHandler
 
     FunctionHandler(PureModel pureModel, String name, boolean isNative, ReturnInference returnInference, Dispatch dispatch)
     {
-        this(name, pureModel.getFunction(name, isNative), returnInference, dispatch);
+        this(pureModel, name, pureModel.getFunction(name, isNative), returnInference, dispatch);
     }
 
-    public FunctionHandler(String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func, ReturnInference returnInference, Dispatch dispatch)
+    public FunctionHandler(PureModel pureModel, String name, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object> func, ReturnInference returnInference, Dispatch dispatch)
     {
+        this.pureModel = pureModel;
         this.func = func;
         this.functionSignature = func._name();
         this.fullName = name;
@@ -66,7 +68,7 @@ public class FunctionHandler
     {
         TypeAndMultiplicity inferred = returnInference.infer(vs);
         Assert.assertTrue(func != null, () -> "Func is null");
-        return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(func)
                 ._functionName(func._functionName())
                 ._genericType(inferred.genericType)

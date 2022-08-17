@@ -54,7 +54,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                 Processor.newProcessor(
                         Persistence.class,
                         Lists.fixedSize.of(Service.class, Mapping.class, Binding.class, PackageableConnection.class, Database.class),
-                        (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl("")
+                        (persistence, context) -> new Root_meta_pure_persistence_metamodel_Persistence_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::Persistence"))
                                 ._documentation(persistence.documentation),
                         (persistence, context) ->
                         {
@@ -68,7 +68,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                 Processor.newProcessor(
                         PersistenceContext.class,
                         Lists.fixedSize.of(Persistence.class, PackageableConnection.class),
-                        (persistenceContext, context) -> new Root_meta_pure_persistence_metamodel_PersistenceContext_Impl(""),
+                        (persistenceContext, context) -> new Root_meta_pure_persistence_metamodel_PersistenceContext_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceContext")),
                         (persistenceContext, context) ->
                         {
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
@@ -85,7 +85,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
     {
         return Collections.singletonList((persistencePlatform, compileContext) ->
                 persistencePlatform instanceof DefaultPersistencePlatform
-                        ? new Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl("")
+                        ? new Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::context::PersistencePlatform"))
                         : null);
     }
 
@@ -96,12 +96,12 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
         {
             if (trigger instanceof ManualTrigger)
             {
-                return new Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl("");
+                return new Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::trigger::ManualTrigger"));
             }
             else if (trigger instanceof CronTrigger)
             {
                 CronTrigger cronTrigger = (CronTrigger) trigger;
-                return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("")
+                return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::trigger::CronTrigger"))
                         ._minutes(cronTrigger.minutes)
                         ._hours(cronTrigger.hours)
                         ._dayOfMonth(cronTrigger.dayOfMonth)

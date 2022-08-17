@@ -57,10 +57,10 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Collections.singletonList(Processor.newProcessor(
                 Service.class,
                 Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class),
-                (service, context) -> new Root_meta_legend_service_metamodel_Service_Impl("")
+                (service, context) -> new Root_meta_legend_service_metamodel_Service_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::Service"))
                         ._name(service.name)
                         ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                        ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
+                        ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
                         ._pattern(service.pattern)
                         ._owners(Lists.mutable.withAll(service.owners))
                         ._documentation(service.documentation),
@@ -110,7 +110,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
             if (test instanceof ServiceTestSuite)
             {
                 ServiceTestSuite serviceTestSuite = (ServiceTestSuite) test;
-                Root_meta_legend_service_metamodel_ServiceTestSuite pureServiceTestSuite = new Root_meta_legend_service_metamodel_ServiceTestSuite_Impl("");
+                Root_meta_legend_service_metamodel_ServiceTestSuite pureServiceTestSuite = new Root_meta_legend_service_metamodel_ServiceTestSuite_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ServiceTestSuite"));
 
                 if (serviceTestSuite.tests == null || serviceTestSuite.tests.isEmpty())
                 {
@@ -139,7 +139,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
             else if (test instanceof ServiceTest)
             {
                 ServiceTest serviceTest = (ServiceTest) test;
-                Root_meta_legend_service_metamodel_ServiceTest pureServiceTest = new Root_meta_legend_service_metamodel_ServiceTest_Impl("");
+                Root_meta_legend_service_metamodel_ServiceTest pureServiceTest = new Root_meta_legend_service_metamodel_ServiceTest_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ServiceTest"));
 
                 pureServiceTest._id(serviceTest.id);
                 if (serviceTest.parameters != null && !serviceTest.parameters.isEmpty())
