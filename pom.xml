@@ -56,6 +56,10 @@
         <module>legend-engine-xt-persistence-cloud-protocol</module>
         <module>legend-engine-xt-persistence-cloud-pure</module>
 
+        <module>legend-engine-xt-mastery-grammar</module>
+        <module>legend-engine-xt-mastery-protocol</module>
+        <module>legend-engine-xt-mastery-pure</module>
+
         <module>legend-engine-xt-serviceStore-executionPlan</module>
         <module>legend-engine-xt-serviceStore-protocol</module>
         <module>legend-engine-xt-serviceStore-grammar</module>
@@ -645,7 +649,6 @@
                 <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</artifactId>
@@ -757,6 +760,22 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mastery-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mastery-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mastery-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
