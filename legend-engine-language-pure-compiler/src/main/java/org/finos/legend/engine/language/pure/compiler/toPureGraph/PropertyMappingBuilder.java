@@ -98,7 +98,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(PurePropertyMapping propertyMapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = new Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl("");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = new Root_meta_pure_mapping_modelToModel_PurePropertyMapping_Impl("", null, context.pureModel.getType("meta::pure::mapping::modelToModel::PurePropertyMapping"));
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)
@@ -148,12 +148,12 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
 
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity oneMultiplicity = this.context.pureModel.getMultiplicity("one");
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thisVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("this");
-        thisVariable._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(thisClass));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thisVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this");
+        thisVariable._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(thisClass));
         thisVariable._multiplicity(oneMultiplicity);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thatVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("that");
-        thatVariable._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(thatClass));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thatVariable = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("that");
+        thatVariable._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(thatClass));
         thatVariable._multiplicity(oneMultiplicity);
 
         MutableList<VariableExpression> pureParameters = FastList.newListWith(thisVariable, thatVariable);
@@ -165,7 +165,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(propertyMapping.crossExpression.body, p -> p.accept(new ValueSpecificationBuilder(this.context, openVariables, ctx)));
         MutableList<String> cleanedOpenVariables = openVariables.distinct();
         cleanedOpenVariables.removeAll(pureParameters.collect(e -> e._name()));
-        GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity());
+        GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
         String mappingPath = HelperModelBuilder.getElementFullPath(mapping, this.context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("that");
         ctx.flushVariable("this");
@@ -176,11 +176,11 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
         }
 
         LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl(parent._id() + "." + propertyMapping.property.property, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("", null, context.pureModel.getClass("meta::pure::mapping::xStore::XStorePropertyMapping"));
 
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
@@ -198,7 +198,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(AggregationAwarePropertyMapping propertyMapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("", null, context.pureModel.getClass("meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping"));
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         apm._localMappingProperty(propertyMapping.localMappingProperty != null)
                 ._property(property)

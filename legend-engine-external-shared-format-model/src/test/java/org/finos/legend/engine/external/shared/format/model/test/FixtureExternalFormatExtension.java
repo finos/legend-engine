@@ -47,13 +47,13 @@ public class FixtureExternalFormatExtension implements ExternalFormatExtension<R
     @Override
     public Root_meta_external_shared_format_metamodel_SchemaDetail compileSchema(ExternalSchemaCompileContext context)
     {
-        return new Root_meta_external_shared_format_metamodel_SchemaDetail_Impl("");
+        return new Root_meta_external_shared_format_metamodel_SchemaDetail_Impl("", null, context.getPureModel().getClass("meta::external::shared::format::metamodel::SchemaDetail"));
     }
 
     @Override
     public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
     {
-        return new Root_meta_external_shared_format_binding_validation_BindingDetail_Impl("");
+        return new Root_meta_external_shared_format_binding_validation_BindingDetail_Impl("", null, context.pureModel.getClass("meta::external::shared::format::binding::validation::BindingDetail"));
     }
 
     @Override

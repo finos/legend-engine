@@ -46,7 +46,7 @@ public class EmbeddedDataCompilerHelper
         {
             //TODO: Have extension mechanism to validate data with respect to contentType
             ExternalFormatData externalFormatData = (ExternalFormatData) embeddedData;
-            return new Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl("")
+            return new Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::data::ExternalFormatData"))
                     ._contentType(externalFormatData.contentType)
                     ._data(externalFormatData.data);
         }
@@ -70,7 +70,7 @@ public class EmbeddedDataCompilerHelper
                 typeIndexedInstances.put(c, collection);
             }
 
-            return new Root_meta_pure_data_ModelStoreData_Impl("")
+            return new Root_meta_pure_data_ModelStoreData_Impl("", null, context.pureModel.getClass("meta::pure::data::ModelStoreData"))
                     ._instances(new PureMap(typeIndexedInstances));
         }
         else if (embeddedData instanceof DataElementReference)
@@ -82,7 +82,7 @@ public class EmbeddedDataCompilerHelper
                 throw new EngineException("Can only reference a Data element", dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
             }
 
-            return new Root_meta_pure_data_DataElementReference_Impl("")
+            return new Root_meta_pure_data_DataElementReference_Impl("", null, context.pureModel.getClass("meta::pure::data::DataElementReference"))
                     ._dataElement((Root_meta_pure_data_DataElement) element);
         }
         else

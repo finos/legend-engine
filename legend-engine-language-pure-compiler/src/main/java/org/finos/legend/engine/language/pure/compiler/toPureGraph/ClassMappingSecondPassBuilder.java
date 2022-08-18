@@ -86,7 +86,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
             {
                 throw new EngineException("Can't find class mapping '" + classMappingId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
             }
-            return new Root_meta_pure_mapping_SetImplementationContainer_Impl("")._id(classMappingId)._setImplementation(match);
+            return new Root_meta_pure_mapping_SetImplementationContainer_Impl("", null, context.pureModel.getClass("meta::pure::mapping::SetImplementationContainer"))._id(classMappingId)._setImplementation(match);
         }));
     }
 

@@ -38,12 +38,12 @@ public class JsonSchemaCompiler
 
         // validation step
         Root_meta_json_schema_fromSchema_SchemaInput schemaInput =
-                new Root_meta_json_schema_fromSchema_SchemaInput_Impl("")
+                new Root_meta_json_schema_fromSchema_SchemaInput_Impl("", null, context.getPureModel().getClass("meta::json::schema::fromSchema::SchemaInput"))
                         ._fileName(location)
                         ._schema(content);
         core_external_format_json_fromJSONSchema.Root_meta_json_schema_fromSchema_JSONSchemaToPure_SchemaInput_MANY__PackageableElement_MANY_(Lists.mutable.with(schemaInput), context.getPureModel().getExecutionSupport());
 
-        return new Root_meta_external_format_json_metamodel_JsonSchema_Impl("")
+        return new Root_meta_external_format_json_metamodel_JsonSchema_Impl("", null, context.getPureModel().getClass("meta::external::format::json::metamodel::JsonSchema"))
                 ._content(content);
     }
 }
