@@ -286,3 +286,25 @@ function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessin
    
    assertEquals('select upper("producttable_0".NAME) as "ProductName", sum("root".quantity) as "QuantitySum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by upper("producttable_0".NAME) having upper("producttable_0".NAME) in (\'ABC\', \'DEF\') order by "ProductName"', $result);
 }
+
+function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessingOfGroupByAndHavingOpCachedTransform():Boolean[1]
+{
+   let runtime = testRuntime();
+   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
+   let postProcessFunction = {rel: RelationalOperationElement[1] |
+      $rel->match([
+         t: TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Varchar), | ^DynaFunction(name = 'toUpper', parameters = ^$t(column = $t.column->map(c | ^$c(type = ^meta::relational::metamodel::datatype::DataType())))), | $t),
+         r: RelationalOperationElement[1] | $r
+      ])
+   };
+   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | ^meta::pure::mapping::Result<SelectSQLQuery|1>(values=$query->transform($postProcessFunction)->cast(@SelectSQLQuery))}]));
+   
+   let result = meta::relational::functions::sqlstring::toSQL(
+      {|Trade.all()->groupBy([x|$x.product.name], [agg(x|$x.quantity, y|$y->sum())], ['ProductName', 'QuantitySum'])->filter(r | $r.getString('ProductName')->in(['ABC', 'DEF']))->sort(['ProductName'])},
+      simpleRelationalMapping,
+      $runtimeWithPostProcessor,
+      meta::relational::extension::relationalExtensions()
+   ).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
+   
+   assertEquals('select upper("producttable_0".NAME) as "ProductName", sum("root".quantity) as "QuantitySum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by upper("producttable_0".NAME) having upper("producttable_0".NAME) in (\'ABC\', \'DEF\') order by "ProductName"', $result);
+}
