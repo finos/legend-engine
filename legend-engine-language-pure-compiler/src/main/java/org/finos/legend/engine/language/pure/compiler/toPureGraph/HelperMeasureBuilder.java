@@ -27,9 +27,9 @@ public class HelperMeasureBuilder
     {
         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit targetUnit = new Root_meta_pure_metamodel_type_Unit_Impl(unit.name, SourceInformationHelper.toM3SourceInformation(unit.sourceInformation), null);
         context.pureModel.typesIndex.put(context.pureModel.buildPackageString(unit._package, unit.name), targetUnit);
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(targetUnit);
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(targetUnit);
         context.pureModel.typesGenericTypeIndex.put(context.pureModel.buildPackageString(unit._package, unit.name), genericType);
-        GenericType unitGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::type::Unit"));
+        GenericType unitGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::type::Unit"));
         org.finos.legend.pure.m3.coreinstance.Package pack = context.pureModel.getOrCreatePackage(unit._package);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit res = targetUnit
                 ._name(unit.name)

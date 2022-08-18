@@ -72,11 +72,11 @@ public class HelperModelBuilder
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
             return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name)
                     ._name(property.name)
-                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
+                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
                     ._genericType(returnGenericType)
                     ._multiplicity(context.pureModel.getMultiplicity(property.multiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                    ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
+                    ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
                     ._owner(owner);
         };
     }
@@ -84,7 +84,7 @@ public class HelperModelBuilder
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createThisVariableForClass(CompileContext context, String classPackageString)
     {
         final GenericType _classGenericType = context.resolveGenericType(classPackageString);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("this");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this");
         ve._genericType(_classGenericType);
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
         multiplicity.lowerBound = 1;
@@ -95,8 +95,8 @@ public class HelperModelBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification createVariableValueSpecification(CompileContext context, String variableName)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name(variableName);
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("Number"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(variableName);
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("Number"));
         ve._genericType(genericType);
         Multiplicity multiplicity = new Multiplicity();
         multiplicity.lowerBound = 1;
@@ -107,8 +107,8 @@ public class HelperModelBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction mapFn, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name("mapped");
-        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl) mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("mapped");
+        final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl) mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
         ve._genericType(genericType);
         Multiplicity multiplicity = new Multiplicity();
         multiplicity.lowerBound = 0;
@@ -134,9 +134,9 @@ public class HelperModelBuilder
                     ._genericType(context.resolveGenericType(property.returnType, property.sourceInformation))
                     ._multiplicity(context.pureModel.getMultiplicity(property.returnMultiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                    ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
-                            ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.resolveGenericType(property.returnType, property.sourceInformation), context.pureModel.getMultiplicity(property.returnMultiplicity)))))
+                    ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
+                    ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::QualifiedProperty"))
+                            ._typeArguments(Lists.fixedSize.of(PureModel.buildFunctionType(Lists.mutable.of(thisVariable).withAll(ListIterate.collect(property.parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), processingContext)))), context.resolveGenericType(property.returnType, property.sourceInformation), context.pureModel.getMultiplicity(property.returnMultiplicity), context.pureModel))))
                     ._owner(owner);
         };
     }
@@ -166,7 +166,7 @@ public class HelperModelBuilder
     public static void processClassConstraints(Class srcClass, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> targetClass, ProcessingContext ctx, ValueSpecification thisVariable)
     {
         ctx.addInferredVariables("this", thisVariable);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ClassConstraintValueSpecificationContext classConstraintValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl("")._class(targetClass);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ClassConstraintValueSpecificationContext classConstraintValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::ClassConstraintValueSpecificationContext"))._class(targetClass);
         RichIterable<Constraint> pureConstraints = processConstraints(srcClass.constraints, context, srcClass._package, srcClass.name, classConstraintValueSpecificationContext, ctx);
         ctx.flushVariable("this");
         targetClass._constraints(pureConstraints);
@@ -174,7 +174,7 @@ public class HelperModelBuilder
 
     public static void processFunctionConstraints(Function f, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition targetFunc, ProcessingContext ctx)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ExpressionSequenceValueSpecificationContext expressionSequenceValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl("")._functionDefinition(targetFunc);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ExpressionSequenceValueSpecificationContext expressionSequenceValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::ExpressionSequenceValueSpecificationContext"))._functionDefinition(targetFunc);
 
         RichIterable<Constraint> functionPreConstraints = processConstraints(f.preConstraints, context, f._package, f.name, expressionSequenceValueSpecificationContext, ctx);
         RichIterable<Constraint> functionPostConstraints = processConstraints(f.postConstraints, context, f._package, f.name, expressionSequenceValueSpecificationContext, ctx);

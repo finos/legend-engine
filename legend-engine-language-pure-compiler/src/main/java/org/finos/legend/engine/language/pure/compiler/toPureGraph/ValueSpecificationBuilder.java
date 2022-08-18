@@ -134,7 +134,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = this.context.resolvePackageableElement(packageableElementPtr.fullPath, packageableElementPtr.sourceInformation);
 
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(packageableElement._classifierGenericType())
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(packageableElement));
@@ -143,8 +143,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(Whatever whatever)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.resolveType(whatever._class, whatever.sourceInformation)))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.resolveType(whatever._class, whatever.sourceInformation)))
                 ._multiplicity(this.context.pureModel.getMultiplicity(whatever.multiplicity))
                 ._values(FastList.newListWith());
     }
@@ -152,7 +152,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CString cString)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("String"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cString.multiplicity))
                 ._values(FastList.newList(cString.values));
@@ -161,7 +161,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CDateTime cDateTime)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("DateTime"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cDateTime.multiplicity))
                 ._values(ListIterate.collect(cDateTime.values, DateFormat::parseDateTime));
@@ -170,7 +170,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CLatestDate cLatestDate)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("LatestDate"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cLatestDate.multiplicity))
                 ._values(Lists.immutable.of(LatestDate.instance));
@@ -179,7 +179,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CStrictDate cStrictDate)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("StrictDate"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cStrictDate.multiplicity))
                 ._values(ListIterate.collect(cStrictDate.values, DateFormat::parseStrictDate));
@@ -188,7 +188,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CStrictTime cStrictTime)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("StrictTime"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cStrictTime.multiplicity))
                 ._values(ListIterate.collect(cStrictTime.values, StrictTimeFormat::parsePureStrictTime));
@@ -199,17 +199,17 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     {
         LambdaFunction l = (LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) aggregateValue.mapFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
         LambdaFunction o = (LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) aggregateValue.aggregateFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::functions::collection::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.mutable.of(new Root_meta_pure_functions_collection_AggregateValue_Impl("")._mapFn(l)._aggregateFn(o)));
+                ._values(Lists.mutable.of(new Root_meta_pure_functions_collection_AggregateValue_Impl("", null, context.pureModel.getClass("meta::pure::functions::collection::AggregateValue"))._mapFn(l)._aggregateFn(o)));
     }
 
     @Override
     public ValueSpecification visit(Class aClass)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Class"))._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.resolveType(aClass.fullPath, aClass.sourceInformation)))))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Class"))._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.resolveType(aClass.fullPath, aClass.sourceInformation)))))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(this.context.resolveType(aClass.fullPath, aClass.sourceInformation))); //Align with pure graph, first instance value of new function used for inference only (i.e only need the typeArgument, values should be empty)
     }
@@ -217,7 +217,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CBoolean cBoolean)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("Boolean"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cBoolean.multiplicity))
                 ._values(FastList.newList(cBoolean.values));
@@ -226,7 +226,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(UnknownAppliedFunction unknownAppliedFunction)
     {
-        return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends java.lang.Object>) null)
                 ._functionName(null)
                 ._genericType(this.context.resolveGenericType(unknownAppliedFunction.returnType, unknownAppliedFunction.sourceInformation))
@@ -236,8 +236,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(Enum anEnum)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.resolveType(anEnum.fullPath, anEnum.sourceInformation)))))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.resolveType(anEnum.fullPath, anEnum.sourceInformation)))))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(this.context.resolveType(anEnum.fullPath, anEnum.sourceInformation)));
     }
@@ -245,8 +245,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(EnumValue enumValue)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(this.context.resolveEnumeration(enumValue.fullPath, enumValue.sourceInformation)))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(this.context.resolveEnumValue(enumValue.fullPath, enumValue.value, enumValue.sourceInformation, enumValue.sourceInformation)));
@@ -256,8 +256,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(RuntimeInstance runtimeInstance)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime _runtime = HelperRuntimeBuilder.buildPureRuntime(runtimeInstance.runtime, this.context);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::runtime::Runtime")))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::runtime::Runtime")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(_runtime));
     }
@@ -280,13 +280,13 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
 
         // Should be the max of all the properties multiplicities!!!
         Multiplicity mul = ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.path.PropertyPathElement) res.result.getLast())._property()._multiplicity();
-        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+        GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(this.context.pureModel.getType("meta::pure::metamodel::path::Path"))
-                ._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(cl),
-                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(res.currentClass)))
+                ._typeArguments(FastList.newListWith(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(cl),
+                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(res.currentClass)))
                 ._multiplicityArguments(FastList.newListWith(mul));
 
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(genericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(
@@ -321,7 +321,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CInteger cInteger)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("Integer"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cInteger.multiplicity))
                 ._values(FastList.newList(cInteger.values));
@@ -330,7 +330,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CDecimal cDecimal)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("Decimal"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cDecimal.multiplicity))
                 ._values(FastList.newList(cDecimal.values));
@@ -339,7 +339,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(SerializationConfig serializationConfig)
     {
-        Root_meta_pure_graphFetch_execution_AlloySerializationConfig config = new Root_meta_pure_graphFetch_execution_AlloySerializationConfig_Impl("");
+        Root_meta_pure_graphFetch_execution_AlloySerializationConfig config = new Root_meta_pure_graphFetch_execution_AlloySerializationConfig_Impl("", null, context.pureModel.getClass("meta::pure::graphFetch::execution::AlloySerializationConfig"));
         config._includeType(serializationConfig.includeType);
         config._typeKeyName(serializationConfig.typeKeyName);
         config._includeEnumType(serializationConfig.includeEnumType);
@@ -347,7 +347,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         config._removePropertiesWithEmptySets(serializationConfig.removePropertiesWithEmptySets);
         config._fullyQualifiedTypePath(serializationConfig.fullyQualifiedTypePath);
         config._includeObjectReference(serializationConfig.includeObjectReference);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::graphFetch::execution::AlloySerializationConfig"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(Lists.mutable.of(config));
@@ -357,7 +357,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(Lambda glambda)
     {
         LambdaFunction lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(glambda.body, glambda.parameters, this.context, processingContext);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(lambda._classifierGenericType())
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(Lists.fixedSize.of(lambda));
@@ -367,8 +367,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(ExecutionContextInstance executionContextInstance)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext _executionContext = HelperValueSpecificationBuilder.processExecutionContext(executionContextInstance.executionContext, this.context);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::runtime::ExecutionContext")))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::runtime::ExecutionContext")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(_executionContext));
     }
@@ -378,13 +378,13 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification f = pair.first.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), processingContext));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification s = pair.second.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), processingContext));
-        GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::functions::collection::Pair"))
+        GenericType gt = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::functions::collection::Pair"))
                 ._typeArguments(FastList.newListWith(f._genericType(), s._genericType()));
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(gt)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(
-                        new Root_meta_pure_functions_collection_Pair_Impl("")
+                        new Root_meta_pure_functions_collection_Pair_Impl("", null, context.pureModel.getClass("meta::pure::functions::collection::Pair"))
                                 ._classifierGenericType(gt)
                                 ._first(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) f)._values().getFirst())
                                 ._second(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) s)._values().getFirst())));
@@ -405,7 +405,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         openVariables.add(variable.name);
         if (variable._class != null && variable.multiplicity != null)
         {
-            VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")
+            VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                     ._name(variable.name);
             ve._genericType(this.context.resolveGenericType(this.context.pureModel.addPrefixToTypeReference(variable._class), variable.sourceInformation));
             ve._multiplicity(this.context.pureModel.getMultiplicity(variable.multiplicity));
@@ -426,7 +426,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(CFloat cFloat)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("Float"))
                 ._multiplicity(this.context.pureModel.getMultiplicity(cFloat.multiplicity))
                 ._values(FastList.newList(cFloat.values));
@@ -435,8 +435,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(MappingInstance mappingInstance)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::mapping::Mapping")))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::mapping::Mapping")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(this.context.resolveMapping(mappingInstance.fullPath, mappingInstance.sourceInformation)));
     }
@@ -444,8 +444,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(HackedClass hackedClass)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.resolveType(hackedClass.fullPath, hackedClass.sourceInformation)))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.resolveType(hackedClass.fullPath, hackedClass.sourceInformation)))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"));
     }
 
@@ -468,7 +468,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         GenericType _genericType = collection.values.isEmpty()
                 ? this.context.pureModel.getGenericType(M3Paths.Nil)
                 : MostCommonType.mostCommon(transformed.collect(ValueSpecificationAccessor::_genericType).distinct(), this.context.pureModel);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(_genericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity(collection.multiplicity))
                 ._values(transformed.collect(valueSpecification ->
@@ -491,7 +491,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         {
             MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)));
             String letName = ((CString) appliedFunction.parameters.get(0)).values.get(0);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("")._name(letName);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(letName);
             ve._genericType(vs.get(1)._genericType());
             ve._multiplicity(vs.get(1)._multiplicity());
             processingContext.addInferredVariables(letName, ve);
@@ -516,8 +516,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(PropertyGraphFetchTree propertyGraphFetchTree)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree tree = HelperValueSpecificationBuilder.buildGraphFetchTree(propertyGraphFetchTree, this.context, null, openVariables, processingContext);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::graphFetch::PropertyGraphFetchTree")))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::graphFetch::PropertyGraphFetchTree")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(tree));
     }
@@ -526,8 +526,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(RootGraphFetchTree rootGraphFetchTree)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree tree = HelperValueSpecificationBuilder.buildGraphFetchTree(rootGraphFetchTree, this.context, null, openVariables, processingContext);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::graphFetch::RootGraphFetchTree")))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::graphFetch::RootGraphFetchTree")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(tree));
     }
@@ -542,7 +542,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     public ValueSpecification visit(TdsOlapAggregation tdsOlapAggregation)
     {
         LambdaFunction lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(tdsOlapAggregation.function, this.context, processingContext);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapAggregation"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(Lists.mutable.of(new Root_meta_pure_tds_TdsOlapAggregation_Impl<>("")._func(lambda)._colName(tdsOlapAggregation.columnName)));
@@ -553,46 +553,46 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     {
         LambdaFunction l = (LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) tdsAggregateValue.mapFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
         LambdaFunction o = (LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) tdsAggregateValue.aggregateFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::AggregateValue"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.mutable.of(new Root_meta_pure_tds_AggregateValue_Impl("")._name(tdsAggregateValue.name)._mapFn(l)._aggregateFn(o)));
+                ._values(Lists.mutable.of(new Root_meta_pure_tds_AggregateValue_Impl("", null, context.pureModel.getClass("meta::pure::tds::AggregateValue"))._name(tdsAggregateValue.name)._mapFn(l)._aggregateFn(o)));
     }
 
     @Override
     public ValueSpecification visit(TDSSortInformation tdsSortInformation)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum dirEnum = this.context.pureModel.getEnumValue("meta::pure::tds::SortDirection", tdsSortInformation.direction);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::SortInformation"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.mutable.of(new Root_meta_pure_tds_SortInformation_Impl("")._column(tdsSortInformation.column)._direction(dirEnum)));
+                ._values(Lists.mutable.of(new Root_meta_pure_tds_SortInformation_Impl("", null, context.pureModel.getClass("meta::pure::tds::SortInformation"))._column(tdsSortInformation.column)._direction(dirEnum)));
     }
 
     @Override
     public ValueSpecification visit(TDSColumnInformation tdsColumnInformation)
     {
         LambdaFunction l = (LambdaFunction) ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue) tdsColumnInformation.columnFn.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext)))._values().getFirst();
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::BasicColumnSpecification"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.mutable.of(new Root_meta_pure_tds_BasicColumnSpecification_Impl("")._name(tdsColumnInformation.name)._func(l)));
+                ._values(Lists.mutable.of(new Root_meta_pure_tds_BasicColumnSpecification_Impl("", null, context.pureModel.getClass("meta::pure::tds::BasicColumnSpecification"))._name(tdsColumnInformation.name)._func(l)));
     }
 
     @Override
     public ValueSpecification visit(TdsOlapRank tdsOlapRank)
     {
         LambdaFunction lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(tdsOlapRank.function, this.context, processingContext);
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.pureModel.getGenericType("meta::pure::tds::TdsOlapRank"))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(Lists.mutable.of(new Root_meta_pure_tds_TdsOlapRank_Impl("")._func(lambda)));
+                ._values(Lists.mutable.of(new Root_meta_pure_tds_TdsOlapRank_Impl("", null, context.pureModel.getClass("meta::pure::tds::TdsOlapRank"))._func(lambda)));
     }
 
     @Override
     public ValueSpecification visit(HackedUnit hackedUnit)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.resolveGenericType(hackedUnit.unitType, hackedUnit.sourceInformation))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newList());
@@ -606,7 +606,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         {
             values.add(unitInstance.unitValue);
         }
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(this.context.resolveGenericType(unitInstance.unitType, unitInstance.sourceInformation))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(values);
@@ -617,8 +617,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     {
         FastList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit> values = FastList.newList();
         values.add((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Unit) this.context.resolveType(unitType.unitType, unitType.sourceInformation));
-        GenericType unitGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Unit"));
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        GenericType unitGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::Unit"));
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(unitGenericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(values);
@@ -630,9 +630,9 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification key = keyExpression.key.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification expression = keyExpression.expression.accept(new ValueSpecificationBuilder(this.context, openVariables, processingContext));
         FastList<org.finos.legend.pure.m3.coreinstance.meta.pure.functions.lang.KeyExpression> values = FastList.newList();
-        values.add(new Root_meta_pure_functions_lang_KeyExpression_Impl("")._add(keyExpression.add)._key((InstanceValue) key)._expression(expression));
-        GenericType keyExpressionGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::functions::lang::KeyExpression"));
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+        values.add(new Root_meta_pure_functions_lang_KeyExpression_Impl("", null, context.pureModel.getClass("meta::pure::functions::lang::KeyExpression"))._add(keyExpression.add)._key((InstanceValue) key)._expression(expression));
+        GenericType keyExpressionGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::functions::lang::KeyExpression"));
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
                 ._genericType(keyExpressionGenericType)
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(values);
@@ -641,10 +641,10 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     @Override
     public ValueSpecification visit(PrimitiveType primitiveType)
     {
-        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::PrimitiveType")))
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::metamodel::type::PrimitiveType")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
-                ._values(FastList.newListWith(new Root_meta_pure_metamodel_type_PrimitiveType_Impl("")
+                ._values(FastList.newListWith(new Root_meta_pure_metamodel_type_PrimitiveType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::PrimitiveType"))
                         ._name(primitiveType.name)));
     }
 }

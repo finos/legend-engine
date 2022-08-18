@@ -62,7 +62,7 @@ public class BindingCompiler
     {
         Root_meta_external_shared_format_binding_Binding binding = new Root_meta_external_shared_format_binding_Binding_Impl(srcSchemaOp.name)
                 ._name(srcSchemaOp.name)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::external::shared::format::binding::Binding")));
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::external::shared::format::binding::Binding")));
 
         String path = context.pureModel.buildPackageString(srcSchemaOp._package, srcSchemaOp.name);
         this.bindingIndex.put(path, binding);
@@ -89,8 +89,8 @@ public class BindingCompiler
                     ._schemaId(srcBinding.schemaId);
         }
 
-        Root_meta_pure_model_unit_ModelUnit modelUnit = new Root_meta_pure_model_unit_ModelUnit_Impl("")
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::pure::model::unit::ModelUnit")))
+        Root_meta_pure_model_unit_ModelUnit modelUnit = new Root_meta_pure_model_unit_ModelUnit_Impl("", null, context.pureModel.getClass("meta::pure::model::unit::ModelUnit"))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::model::unit::ModelUnit")))
                 ._packageableElementIncludes(ListIterate.collect(srcBinding.modelUnit.packageableElementIncludes, pe -> context.pureModel.getPackageableElement(pe, srcBinding.sourceInformation)))
                 ._packageableElementExcludes(ListIterate.collect(srcBinding.modelUnit.packageableElementExcludes, pe -> context.pureModel.getPackageableElement(pe, srcBinding.sourceInformation)));
 

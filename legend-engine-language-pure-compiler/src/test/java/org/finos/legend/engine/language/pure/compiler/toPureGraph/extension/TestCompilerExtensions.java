@@ -178,7 +178,7 @@ public class TestCompilerExtensions
 
     private org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement stubFirstPass(PackageableElement element, CompileContext context)
     {
-        return new Root_meta_pure_metamodel_PackageableElement_Impl("");
+        return new Root_meta_pure_metamodel_PackageableElement_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::PackageableElement"));
     }
 
     private static CompilerExtension newExtension(Processor<?>... processors)

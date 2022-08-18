@@ -53,7 +53,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
         {
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification local = new Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl("");
+            Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification local = new Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification"));
             local._testDataSetupCsv(localH2DatasourceSpecification.testDataSetupCsv);
             local._testDataSetupSqls(localH2DatasourceSpecification.testDataSetupSqls == null ? FastList.newList() : FastList.newList(localH2DatasourceSpecification.testDataSetupSqls));
             return local;
@@ -61,7 +61,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         else if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
         {
             EmbeddedH2DatasourceSpecification embeddedH2DatasourceSpecification = (EmbeddedH2DatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification embedded = new Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification_Impl("");
+            Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification embedded = new Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::EmbeddedH2DatasourceSpecification"));
             embedded._autoServerMode(embeddedH2DatasourceSpecification.autoServerMode);
             embedded._databaseName(embeddedH2DatasourceSpecification.databaseName);
             embedded._directory(embeddedH2DatasourceSpecification.directory);
@@ -70,7 +70,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {
             StaticDatasourceSpecification staticDatasourceSpecification = (StaticDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl("");
+            Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification"));
             _static._host(staticDatasourceSpecification.host);
             _static._port(staticDatasourceSpecification.port);
             _static._databaseName(staticDatasourceSpecification.databaseName);
@@ -79,7 +79,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
         {
             DatabricksDatasourceSpecification staticDatasourceSpecification = (DatabricksDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("");
+            Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification _static = new Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification"));
             _static._hostname(staticDatasourceSpecification.hostname);
             _static._port(staticDatasourceSpecification.port);
             _static._protocol(staticDatasourceSpecification.protocol);
@@ -89,7 +89,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
             SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification _snowflake = new Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl("");
+            Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification _snowflake = new Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification"));
             _snowflake._accountName(snowflakeDatasourceSpecification.accountName);
             _snowflake._region(snowflakeDatasourceSpecification.region);
             _snowflake._warehouseName(snowflakeDatasourceSpecification.warehouseName);
@@ -111,7 +111,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
         else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
             RedshiftDatasourceSpecification redshiftDatasourceSpecification = (RedshiftDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification redshiftSpec = new Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification_Impl("");
+            Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification redshiftSpec = new Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification"));
             redshiftSpec._clusterID(redshiftDatasourceSpecification.clusterID);
             redshiftSpec._databaseName(redshiftDatasourceSpecification.databaseName);
             redshiftSpec._endpointURL(redshiftDatasourceSpecification.endpointURL);
