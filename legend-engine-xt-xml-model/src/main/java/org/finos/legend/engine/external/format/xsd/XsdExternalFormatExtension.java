@@ -83,7 +83,7 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, XsdToModelConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration configuration = new Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl("")
+        Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration configuration = new Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::xml::binding::toPure::XsdToModelConfiguration"))
                 ._sourceSchemaId(config.sourceSchemaId)
                 ._targetPackage(config.targetPackage)
                 ._targetBinding(config.targetBinding)

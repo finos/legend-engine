@@ -70,12 +70,11 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v | $v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $debug));
    
-   let nestedNodesFromChildUnion = $children->filter(ch | $ch->instanceOf(PureExpressionPlatformExecutionNode) && $ch->cast(@PureExpressionPlatformExecutionNode).expression->cast(@FunctionExpression).func->in([union_T_MANY__T_MANY__T_MANY_, concatenate_T_MANY__T_MANY__T_MANY_]));
+   let nestedNodesFromChildUnion = $children->filter(ch | $ch->instanceOf(PlatformUnionExecutionNode));
    let updatedChildren = $children->filter(ch | !$ch->in($nestedNodesFromChildUnion))->concatenate($children->filter(ch | $ch->in($nestedNodesFromChildUnion)).executionNodes);
    
-   ^PureExpressionPlatformExecutionNode
+   ^PlatformUnionExecutionNode
    (
-      expression = $fe,
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
       executionNodes = $updatedChildren,
       fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $inScopeVars)

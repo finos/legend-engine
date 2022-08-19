@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.11.1-SNAPSHOT</version>
+    <version>3.14.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -41,6 +41,7 @@
         <module>legend-engine-xt-graphQL-protocol</module>
         <module>legend-engine-xt-graphQL-query</module>
         <module>legend-engine-xt-graphQL-pure</module>
+        <module>legend-engine-xt-graphQL-pure-metamodel</module>
 
         <module>legend-engine-xt-protobuf-grammar</module>
         <module>legend-engine-xt-protobuf-protocol</module>
@@ -126,6 +127,7 @@
 
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
+        <module>legend-engine-pure-runtime-compiler</module>
 
         <module>legend-engine-executionPlan-generation</module>
         <module>legend-engine-executionPlan-dependencies</module>
@@ -162,14 +164,17 @@
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
         <module>legend-engine-server</module>
+        <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
+        <module>legend-engine-executionPlan-execution-authorizer</module>
+        <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.3.0</legend.pure.version>
+        <legend.pure.version>3.6.0</legend.pure.version>
         <legend.shared.version>0.22.0</legend.shared.version>
 
         <!-- SONAR -->
@@ -500,7 +505,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                    <failOnWarning>true</failOnWarning>
+                    <failOnWarning>false</failOnWarning>
                     <ignoreNonCompile>true</ignoreNonCompile>
                 </configuration>
                 <executions>
@@ -635,6 +640,11 @@
                 <artifactId>legend-engine-xt-graphQL-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -644,6 +654,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -978,6 +993,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-executionPlan-execution-authorizer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-executionPlan-authorizer</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1078,6 +1103,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-server-integration-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1190,16 +1220,6 @@
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m4</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
@@ -1211,14 +1231,6 @@
                 <artifactId>legend-pure-m3-core</artifactId>
                 <version>${legend.pure.version}</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
                     <exclusion>
                         <groupId>io.opentracing.contrib</groupId>
                         <artifactId>opentracing-jaxrs2</artifactId>
@@ -1254,14 +1266,6 @@
                 <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
                 <version>${legend.pure.version}</version>
                 <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
                     <exclusion>
                         <groupId>org.apache.hadoop</groupId>
                         <artifactId>hadoop-common</artifactId>
@@ -1318,91 +1322,31 @@
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m3-dsl-path</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-mapping</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-diagram</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m3-dsl-graph</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-store-relational</artifactId>
                 <version>${legend.pure.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr4</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.antlr</groupId>
-                        <artifactId>antlr-runtime</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>

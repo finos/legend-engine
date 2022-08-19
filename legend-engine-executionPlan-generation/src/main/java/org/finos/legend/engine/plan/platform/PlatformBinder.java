@@ -33,7 +33,7 @@ abstract class PlatformBinder
 
     protected Root_meta_pure_executionPlan_PlatformCodeGenerationConfig getPlatformCodeGenerationConfig(String planId, PureModel pureModel)
     {
-        return new Root_meta_pure_executionPlan_PlatformCodeGenerationConfig_Impl("")
+        return new Root_meta_pure_executionPlan_PlatformCodeGenerationConfig_Impl("", null, pureModel.getClass("meta::pure::executionPlan::PlatformCodeGenerationConfig"))
                 ._platform(getPlatform().getPureEnumValue(pureModel))
                 ._planId(planId);
     }

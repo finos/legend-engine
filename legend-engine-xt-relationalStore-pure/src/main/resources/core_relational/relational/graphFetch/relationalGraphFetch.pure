@@ -531,12 +531,13 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
                                             (
                                                name = 'driverTemp_cross_parent_' + $setImpl.mainRelation->cast(@NamedRelation).name,
                                                aliases = [pair($tempAlias, $mainAlias), pair($mainAlias, $tempAlias)],
-                                               operation = $replacedSQL.columns->cast(@Alias)->filter(x | $x.name == '"cross_join_op$"')->toOne().relationalElement->cast(@Operation)
+                                               operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])
                                             ),
                                      joinType=JoinType.INNER,
                                      childrenData = $selectData.childrenData
                                   )
-                )
+                ),
+      filteringOperation = $replacedSQL.filteringOperation->concatenate($replacedSQL.columns->cast(@Alias)->filter(x | $x.name == '"cross_join_op$"')->toOne().relationalElement)->andFilters($extensions)
    );
 
 

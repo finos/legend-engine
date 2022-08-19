@@ -18,7 +18,7 @@ public enum SerializationFormat
 {
     DEFAULT,
     CSV,
-    CSV_FIXED,
+    CSV_TRANSFORMED,
     PURE_TDSOBJECT,
     PURE,
     RAW;
