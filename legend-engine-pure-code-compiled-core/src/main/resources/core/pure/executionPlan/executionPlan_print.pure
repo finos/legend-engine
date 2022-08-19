@@ -54,8 +54,7 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.type->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
-         i:	meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
-
+         i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
       ])->toOneMany()
    );
    $space + $root;

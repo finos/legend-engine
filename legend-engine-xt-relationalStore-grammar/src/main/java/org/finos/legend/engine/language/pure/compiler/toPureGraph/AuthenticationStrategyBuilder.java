@@ -39,8 +39,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_au
 
 public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisitor<Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>
 {
-    public AuthenticationStrategyBuilder()
+    private CompileContext context;
+
+    public AuthenticationStrategyBuilder(CompileContext context)
     {
+        this.context = context;
     }
 
     @Override
@@ -48,51 +51,51 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
     {
         if (authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_TestDatabaseAuthenticationStrategy_Impl("");
+            return new Root_meta_pure_alloy_connections_alloy_authentication_TestDatabaseAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy"));
         }
         else if (authenticationStrategy instanceof DefaultH2AuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_DefaultH2AuthenticationStrategy_Impl("");
+            return new Root_meta_pure_alloy_connections_alloy_authentication_DefaultH2AuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy"));
         }
         else if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl("")
+            return new Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy"))
                     ._serverPrincipal(((DelegatedKerberosAuthenticationStrategy) authenticationStrategy).serverPrincipal);
         }
         else if (authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl("")
+            return new Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy"))
                     ._vaultReference(((MiddleTierUserNamePasswordAuthenticationStrategy) authenticationStrategy).vaultReference)
                     ;
 
         }
         else if (authenticationStrategy instanceof ApiTokenAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_ApiTokenAuthenticationStrategy_Impl("")
+            return new Root_meta_pure_alloy_connections_alloy_authentication_ApiTokenAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy"))
                     ._apiToken(((ApiTokenAuthenticationStrategy) authenticationStrategy).apiToken);
         }
         else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
-            return new Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl("")
+            return new Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy"))
                     ._baseVaultReference(userNamePasswordAuthenticationStrategy.baseVaultReference)
                     ._userNameVaultReference(userNamePasswordAuthenticationStrategy.userNameVaultReference)
                     ._passwordVaultReference(userNamePasswordAuthenticationStrategy.passwordVaultReference);
         }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy_Impl("")
+            return new Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy"))
                     ._publicUserName(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).publicUserName)
                     ._privateKeyVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).privateKeyVaultReference)
                     ._passPhraseVaultReference(((SnowflakePublicAuthenticationStrategy) authenticationStrategy).passPhraseVaultReference);
         }
         else if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("");
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy"));
         }
         else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
         {
-            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl("")
+            return new Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy"))
                     ._serviceAccountEmail(((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).serviceAccountEmail)
                     ._additionalGcpScopes(
                             ((GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy).additionalGcpScopes == null ?

@@ -68,7 +68,7 @@ public class SchemaSetCompiler
 
         Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = new Root_meta_external_shared_format_metamodel_SchemaSet_Impl(srcSchemaSet.name)
                 ._name(srcSchemaSet.name)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::external::shared::format::metamodel::SchemaSet")))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::external::shared::format::metamodel::SchemaSet")))
                 ._format(srcSchemaSet.format);
 
         Set<String> ids = Sets.mutable.empty();
@@ -90,7 +90,7 @@ public class SchemaSetCompiler
                 }
             }
 
-            Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("")
+            Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::Schema"))
                     ._id(srcSchema.id)
                     ._location(srcSchema.location);
             schemaSet._schemasAdd(schema);
@@ -114,7 +114,7 @@ public class SchemaSetCompiler
             try
             {
                 Root_meta_external_shared_format_metamodel_SchemaDetail detail = schemaExtension.compileSchema(new SchemaCompileContext(srcSchema, srcSchemaSet, context));
-                Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("")
+                Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::Schema"))
                         ._id(srcSchema.id)
                         ._location(srcSchema.location)
                         ._detail(detail);

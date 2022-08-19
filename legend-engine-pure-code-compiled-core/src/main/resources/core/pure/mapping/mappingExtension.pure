@@ -56,7 +56,7 @@ function meta::pure::mapping::sourceClass(setImplementation:SetImplementation[1]
 {
    $setImplementation->match([
       pure: PureInstanceSetImplementation[1]             | $pure.srcClass->cast(@Class<Any>)->toOne()
-   ]->concatenate($extensions.mapping_sourceClass)->toOneMany());
+   ]->concatenate($extensions.availableStores.extractSourceClassFromSetImplementation)->toOneMany());
 }
 
 function meta::pure::mapping::classMappingByClass(mapping:Mapping[1], class:Class<Any>[1]):SetImplementation[*]

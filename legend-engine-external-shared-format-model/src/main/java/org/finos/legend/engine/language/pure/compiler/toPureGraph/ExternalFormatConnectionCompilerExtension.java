@@ -52,7 +52,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
                 {
                     if (connectionValue instanceof ExternalFormatConnection)
                     {
-                        return new Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl("");
+                        return new Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl("", null, context.pureModel.getClass("meta::external::shared::format::executionPlan::ExternalFormatConnection"));
                     }
                     return null;
                 }
@@ -97,7 +97,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
             if (spec instanceof UrlStreamExternalSource)
             {
                 UrlStreamExternalSource urlStreamExternalSource = (UrlStreamExternalSource) spec;
-                return new Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl("")
+                return new Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl("", null, context.pureModel.getClass("meta::external::shared::format::executionPlan::UrlStreamExternalSource"))
                         ._url(urlStreamExternalSource.url);
             }
             return null;

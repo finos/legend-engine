@@ -116,7 +116,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, FlatDataToModelConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration configuration = new Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration_Impl("")
+        Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration configuration = new Root_meta_external_format_flatdata_binding_toPure_FlatDataToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::flatdata::binding::toPure::FlatDataToModelConfiguration"))
                 ._targetBinding(config.targetBinding)
                 ._targetPackage(config.targetPackage)
                 ._purifyNames(config.purifyNames)
@@ -141,7 +141,7 @@ public class FlatDataExternalFormatExtension implements ExternalFormatExtension<
     @Override
     public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToFlatDataConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration configuration = new Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration_Impl("")
+        Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration configuration = new Root_meta_external_format_flatdata_binding_fromPure_ModelToFlatDataConfiguration_Impl("", null, pureModel.getClass("meta::external::format::flatdata::binding::fromPure::ModelToFlatDataConfiguration"))
                 ._targetBinding(config.targetBinding)
                 ._targetSchemaSet(config.targetSchemaSet);
 

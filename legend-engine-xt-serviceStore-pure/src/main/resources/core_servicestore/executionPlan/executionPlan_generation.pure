@@ -153,30 +153,6 @@ function meta::external::store::service::executionPlan::generation::getParamMapF
               ->map(p | pair($p, $p))->newMap();
 }
 
-function meta::external::store::service::executionPlan::generation::resolveParamMapForChainProcessing(setsProcessed:SetImplementation[*], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]):Map<String, String>[1]
-{
-   let populatedXStorePropertiesInScope = $inScopeVars->keyValues()->filter(kv | $kv.second.values->size() == 1 && $kv.second.values->toOne()->instanceOf(AbstractProperty)).second.values->cast(@AbstractProperty<Any>);
-
-   assert($populatedXStorePropertiesInScope->forAll(prop | $prop.multiplicity->hasToOneUpperBound()), 'All properties in XStore relationship should have 1 as multiplicty upper bound for service store.');
-   $populatedXStorePropertiesInScope->map(p | let targetPath  = $p->propertyToVarName();
-                                              let srcProperty = resolveSourcePropertyFromTargetProperty($p, $setsProcessed->cast(@PureInstanceSetImplementation));
-                                              let srcPath     = $srcProperty->propertyToVarName();
-                                              pair($srcPath, $targetPath);)->newMap();
-}
-
-function meta::external::store::service::executionPlan::generation::resolveSourcePropertyFromTargetProperty(property:AbstractProperty<Any>[1], sets:PureInstanceSetImplementation[*]):AbstractProperty<Any>[1]
-{
-   let set = $sets->filter(set | $set.class == $property.owner || $set.mappingClass == $property.owner);
-   if($set->isEmpty(),
-      | $property,
-      | assert($set->size() == 1, 'Expected 1 mapping for class - ' + $property.owner.name->toOne());
-        let pm          = $set.propertyMappings->filter(pm | $pm.property == $property);
-        assert($pm->cast(@PurePropertyMapping).transform.expressionSequence->toOne()->instanceOf(SimpleFunctionExpression) && $pm->cast(@PurePropertyMapping).transform.expressionSequence->toOne()->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->instanceOf(AbstractProperty), 'Expected target property : ' + $property.name->toOne() + ' to be mapped directly to a source property for resolving service parameter input');
-        let srcProperty = $pm->cast(@PurePropertyMapping).transform.expressionSequence->toOne()->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func->cast(@AbstractProperty<Any>);
-        $srcProperty->resolveSourcePropertyFromTargetProperty($sets);
-   );
-}
-
 Class <<access.private>> meta::external::store::service::executionPlan::generation::ServiceStoreQueryProcessedState
 {
    executionNodes  : ExecutionNode[*];
@@ -220,7 +196,6 @@ function meta::external::store::service::executionPlan::generation::querySupport
    let xStorePropertyIsLocal = $xStorePropInScope->exists(prop | $prop.owner->instanceOf(MappingClass));
    let serviceMappingInScope = $serviceSetImpl->getServiceMappingForParameters($paramMap->keys());
    let serParamForXStoreProp = $serviceMappingInScope.requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList->filter(pm | $pm.transform.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification()->exists(p | $p->in($xStorePropInScope))).serviceParameter;
-
    !$xStorePropertyIsLocal && $serParamForXStoreProp.type->forAll(t | $t.list);
 }
 

@@ -258,7 +258,7 @@ public class HelperServiceStoreBuilder
 
         if (serviceParameter.serializationFormat != null)
         {
-            Root_meta_external_store_service_metamodel_SerializationFormat serializationFormat = new Root_meta_external_store_service_metamodel_SerializationFormat_Impl("");
+            Root_meta_external_store_service_metamodel_SerializationFormat serializationFormat = new Root_meta_external_store_service_metamodel_SerializationFormat_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::SerializationFormat"));
             if (serviceParameter.serializationFormat.style != null)
             {
                 serializationFormat._style(serviceParameter.serializationFormat.style);
@@ -288,23 +288,23 @@ public class HelperServiceStoreBuilder
 
         if (typeReference instanceof BooleanTypeReference)
         {
-            pureTypeReference = new Root_meta_external_store_service_metamodel_BooleanTypeReference_Impl("");
+            pureTypeReference = new Root_meta_external_store_service_metamodel_BooleanTypeReference_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::BooleanTypeReference"));
         }
         else if (typeReference instanceof FloatTypeReference)
         {
-            pureTypeReference = new Root_meta_external_store_service_metamodel_FloatTypeReference_Impl("");
+            pureTypeReference = new Root_meta_external_store_service_metamodel_FloatTypeReference_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::FloatTypeReference"));
         }
         else if (typeReference instanceof IntegerTypeReference)
         {
-            pureTypeReference = new Root_meta_external_store_service_metamodel_IntegerTypeReference_Impl("");
+            pureTypeReference = new Root_meta_external_store_service_metamodel_IntegerTypeReference_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::IntegerTypeReference"));
         }
         else if (typeReference instanceof StringTypeReference)
         {
-            pureTypeReference = new Root_meta_external_store_service_metamodel_StringTypeReference_Impl("");
+            pureTypeReference = new Root_meta_external_store_service_metamodel_StringTypeReference_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::StringTypeReference"));
         }
         else if (typeReference instanceof ComplexTypeReference)
         {
-            Root_meta_external_store_service_metamodel_ComplexTypeReference complexTypeReference = new Root_meta_external_store_service_metamodel_ComplexTypeReference_Impl("");
+            Root_meta_external_store_service_metamodel_ComplexTypeReference complexTypeReference = new Root_meta_external_store_service_metamodel_ComplexTypeReference_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::ComplexTypeReference"));
             Root_meta_external_shared_format_binding_Binding binding = HelperExternalFormat.getBinding(((ComplexTypeReference) typeReference).binding, context);
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class pureClass = context.resolveClass(((ComplexTypeReference) typeReference).type);
 

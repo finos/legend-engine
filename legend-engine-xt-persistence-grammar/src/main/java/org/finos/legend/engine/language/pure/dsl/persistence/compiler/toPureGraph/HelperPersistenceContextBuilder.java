@@ -61,7 +61,7 @@ public class HelperPersistenceContextBuilder
 
     public static Root_meta_pure_persistence_metamodel_service_ServiceParameter buildServiceParameter(ServiceParameter serviceParameter, CompileContext context)
     {
-        Root_meta_pure_persistence_metamodel_service_ServiceParameter pureServiceParameter = new Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl("");
+        Root_meta_pure_persistence_metamodel_service_ServiceParameter pureServiceParameter = new Root_meta_pure_persistence_metamodel_service_ServiceParameter_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::service::ServiceParameter"));
         pureServiceParameter._name(serviceParameter.name);
 
         if (serviceParameter.value instanceof PrimitiveTypeValue)

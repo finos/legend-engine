@@ -102,7 +102,7 @@ public class ProtobufFormatExtension implements ExternalFormatExtension<Root_met
     @Override
     public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToProtobufConfiguration modelToSchemaConfiguration, PureModel pureModel)
     {
-        Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration configuration = new Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration_Impl("")
+        Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration configuration = new Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration_Impl("", null, pureModel.getClass("meta::external::format::protobuf::binding::fromPure::ModelToProtobufDataConfiguration"))
                 ._sourceModel(ListIterate.collect(modelToSchemaConfiguration.sourceModel, pureModel::getClass))
                 ._targetBinding(modelToSchemaConfiguration.targetBinding)
                 ._targetSchemaSet(modelToSchemaConfiguration.targetSchemaSet)

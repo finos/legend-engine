@@ -27,7 +27,7 @@ public class HelperPersistenceCloudBuilder
 
     public static Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform buildAwsGluePersistencePlatform(AwsGluePersistencePlatform persistencePlatform, CompileContext context)
     {
-        return new Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform_Impl("")
+        return new Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform_Impl("", null, context.pureModel.getClass("meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform"))
                 ._dataProcessingUnits(persistencePlatform.dataProcessingUnits);
     }
 }

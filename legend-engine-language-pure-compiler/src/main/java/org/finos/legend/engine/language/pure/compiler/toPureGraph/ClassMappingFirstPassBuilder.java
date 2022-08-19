@@ -103,7 +103,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = this.context.resolveClass(classMapping._class, classMapping.sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> srcClass = classMapping.srcClass == null ? null : this.context.resolveClass(classMapping.srcClass, classMapping.sourceClassSourceInformation);
-        PureInstanceSetImplementation mappingClass = new Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl("");
+        PureInstanceSetImplementation mappingClass = new Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::PureInstanceSetImplementation"));
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
         PureInstanceSetImplementation rootSetImpl = mappingClass
                 ._id(id)

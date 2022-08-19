@@ -729,6 +729,50 @@ function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThan
    assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.H2, $expectedPlan); 
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForMultipleExpressionsWithPropertyPath():Boolean[1]
+{
+  let query = {|
+            let endDateCalendar = FiscalCalendarDate.all()->filter(x|$x.fiscalYear.value == 2015)->toOne();
+            IncomeFunction.all()->filter(x|$x.incomeYear == $endDateCalendar->toOne().fiscalYear.value);
+            };
+  let generatedPlan = executionPlan($query, myMapping,meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions()); 
+
+  let expectedPlan = 'Sequence\n'+
+                '(\n'+
+                '  type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::IncomeFunction | myMapping.meta_relational_tests_groupBy_datePeriods_domain_IncomeFunction)]\n'+
+                '  resultSizeRange = *\n'+
+                '  (\n'+
+                '    Allocation\n'+
+                '    (\n'+
+                '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n'+
+                '      resultSizeRange = 1\n'+
+                '      name = endDateCalendar\n'+
+                '      value = \n'+
+                '        (\n'+
+                '          Relational\n'+
+                '          (\n'+
+                '            type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::FiscalCalendarDate | myMapping.meta_relational_tests_groupBy_datePeriods_domain_FiscalCalendarDate)]\n'+
+                '            resultSizeRange = 1\n'+
+                '            resultColumns = [("pk_0", DATE), ("pk_1", VARCHAR(15)), ("date", DATE), ("weekStart", DATE), ("weekEnd", DATE), ("day", INT), ("week", INT), ("dayOfWeekNumber", INT), ("yearEnd", DATE), ("yearStart", DATE)]\n'+
+                '            sql = select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."fiscal year" = 2015\n'+
+                '            connection = TestDatabaseConnection(type = "H2")\n'+
+                '          )\n'+
+                '        )\n'+
+                '    )\n'+
+                '    Relational\n'+
+                '    (\n'+
+                '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::IncomeFunction | myMapping.meta_relational_tests_groupBy_datePeriods_domain_IncomeFunction)]\n'+
+                '      resultSizeRange = *\n'+
+                '      resultColumns = [("pk_0", INT), ("code", INT), ("name", VARCHAR(30)), ("incomeYear", INT)]\n'+
+                '      sql = select "root".code as "pk_0", "root".code as "code", "root".name as "name", "root".year as "incomeYear" from INCOME_FUNCTION as "root" where "root".year = ${endDateCalendar.fiscalYear.value}\n'+
+                '      connection = TestDatabaseConnection(type = "H2")\n'+
+                '    )\n'+
+                '  )\n'+
+               ')\n';
+   assertEquals($expectedPlan, $result);
+}
+
 function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDateTimeConstantParameterNoTimeZone():Boolean[1]
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, []);
@@ -916,7 +960,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testClassPropertyOpenVa
             '      type = Class[impls=(meta::relational::tests::groupBy::datePeriods::domain::SalesCredit | myMapping.meta_relational_tests_groupBy_datePeriods_domain_SalesCredit)]\n' +
             '      resultSizeRange = *\n'+
             '      resultColumns = [("pk_0", INT), ("grossValue", DOUBLE)]\n'+
-            '      sql = select \"root\".key as \"pk_0\", \"root\".credits as \"grossValue\" from SALES_GCS as \"root\" left outer join calendar as \"calendar_0\" on (\"root\".tradeDate = \"calendar_0\".\"date\") where \"calendar_0\".\"date\" < \'${reportEndDate[\"date\"]}\'\n' +
+            '      sql = select \"root\".key as \"pk_0\", \"root\".credits as \"grossValue\" from SALES_GCS as \"root\" left outer join calendar as \"calendar_0\" on (\"root\".tradeDate = \"calendar_0\".\"date\") where \"calendar_0\".\"date\" < \'${reportEndDate.date}\'\n' +
             '      connection = TestDatabaseConnection(type = \"H2\")\n' +
             '    )\n' +
             '  )\n' +
@@ -964,7 +1008,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithOpenVari
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
       '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
-      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate["day"]} then "root".credits else 0.0 end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
+      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else 0.0 end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
@@ -1029,7 +1073,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithTwoOpenV
       '    (\n'+
       '      type = TDS[(Sales Division, String, VARCHAR(30), ""), (Income Function, Number, FLOAT, "")]\n'+
       '      resultColumns = [("Sales Division", VARCHAR(30)), ("Income Function", "")]\n'+
-      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate["day"]} then "root".credits else 0.0 end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'${startDate}\' and "calendar_0"."date" <= \'${reportEndDate["date"]}\') group by "Sales Division"\n'+
+      '      sql = select "org_chart_entity_0".name as "Sales Division", sum(case when "calendar_0"."fiscal day" <= ${reportEndDate.day} then "root".credits else 0.0 end) as "Income Function" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'${startDate}\' and "calendar_0"."date" <= \'${reportEndDate.date}\') group by "Sales Division"\n'+
       '      connection = TestDatabaseConnection(type = "H2")\n'+
       '    )\n'+
       '  )\n'+
@@ -1125,8 +1169,14 @@ Class meta::pure::executionPlan::tests::OtherDummyExecutionOption extends Execut
 
 function <<test.Test>> meta::pure::executionPlan::tests::testPlanForExecutionOption():Boolean[1]
 {
-   let dummyExtension = ^Extension(type = 'dummy', serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
-                                         executionPlan_generation_executionOptionParameters = [ d: DummyExecutionOption[1] | $d.paramsRequired ]);
+   let dummyExtension = ^Extension(
+                            type = 'dummy',
+                            serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
+                            availableFeatures = ^meta::pure::extension::FeatureExtension(
+                                                  id='dummy',
+                                                  extractVariablesFromExecutionOption={s:ExecutionOption[1]|$s->match([ d: DummyExecutionOption[1] | $d.paramsRequired, a:Any[*] | [] ]);}
+                                              )
+                         );
    let executionOptionContext = ^ExecutionOptionContext(executionOptions = [^DummyExecutionOption()]);
    let extensions = meta::relational::extension::relationalExtensions()->add($dummyExtension);
    let result = executionPlan({|let name = 'ok';

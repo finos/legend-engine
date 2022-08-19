@@ -67,19 +67,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
       availableStores = meta::pure::extension::defaultExtensions().availableStores->concatenate(meta::relational::contract::relationalStoreContract()),                         
 
       serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
-
-      graphFetch_executionPlan_planGraphFetchExecution = {
-         sq: meta::pure::mapping::StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
-         {db : meta::relational::metamodel::Database[1] | meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutionRelational($sq, $ext, $clusteredTree, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)}
-      },
-      
-      graphFetch_executionPlan_addCrossStoreChildren = {
-         clusteredTree: ClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1] |
-         {db : meta::relational::metamodel::Database[1] | meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExecutionRelational($clusteredTree, $orderedPaths, $parentPath, $inScopeVars, $mapping, $runtime, $exeCtx, $extensions, $debug)}
-      },
-      
-      graphFetch_executionPlan_localGraphFetchExecutionNodeToString = {space: String[1], extensions:meta::pure::extension::Extension[*] | {r: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $r->relationalGraphFetchExecutionNodeToString($space, $extensions)}},
-      
+          
       executionPlan_execution_processNode = 
                                 {mapping:Mapping[1], runtime: Runtime[1], parametersValues:Pair<VariableExpression, Any>[*], extensions:meta::pure::extension::Extension[*] |
                                    [
@@ -163,33 +151,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              let varMultiplicity  = if($parameterVal->instanceOf(List), |ZeroMany, |PureOne);
                                              convertPlaceHolderToSQLString(^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = $name, type=$type, multiplicity=$varMultiplicity), $dbConfig.dbExtension.literalProcessor, $d.timeZone);
                               },
-      executionPlan_generation_preprocessClusterConnection =
-                     [
-                        t:meta::relational::runtime::TestDatabaseConnection[1] |
-                              ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$t.element->instanceOf(meta::relational::metamodel::Database),
-                                                 | [];,
-                                                 | if ($t.testDataSetupSqls->isEmpty(),
-                                                       | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($t.element->cast(@meta::relational::metamodel::Database)),
-                                                       | $t.testDataSetupSqls))),
-                        r:meta::pure::alloy::connections::RelationalDatabaseConnection[1] |
-                              ^$r(
-                                 datasourceSpecification = $r.datasourceSpecification->match([
-                                    l:meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification[1] |
-                                       ^$l
-                                       (
-                                            testDataSetupSqls =
-                                                $l.testDataSetupSqls->concatenate(
-                                                    if ($l.testDataSetupCsv->isEmpty() || !$r.element->instanceOf(meta::relational::metamodel::Database),
-                                                        | [];,
-                                                        | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($r.element->cast(@meta::relational::metamodel::Database))
-                                                    )
-                                                 )
-                                       ),
-                                    d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | $d
-                                 ])
-                              )
-                              
-                     ],
       java_conventions_defaultProhibitedFunctions = 
             [
                   meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_,
@@ -297,7 +258,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              )
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
-      logActivities = activities:meta::pure::mapping::Activity[*] | meta::pure::functions::io::logActivities($activities),
       validTestPackages = 'meta::relational::tests'
      
    )
