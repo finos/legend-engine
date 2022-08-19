@@ -55,6 +55,16 @@ function meta::protocols::pure::v1_25_0::transformation::fromPureGraph::executio
                resultType=$platform.resultType->transformResultType($mapping, $extensions),
                pure = $platform.expression->meta::protocols::pure::v1_25_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([])->cast(@Map<String, List<Any>>), $extensions)
             ),
+         platform:meta::pure::executionPlan::PlatformUnionExecutionNode[1]|
+            ^meta::protocols::pure::v1_25_0::metamodel::executionPlan::PlatformUnionExecutionNode(
+              _type='platformUnion',
+              resultType=$platform.resultType->transformResultType($mapping, $extensions)
+            ),
+         platform:meta::pure::executionPlan::PlatformMergeExecutionNode[1]|
+            ^meta::protocols::pure::v1_25_0::metamodel::executionPlan::PlatformMergeExecutionNode(
+              _type='platformMerge',
+              resultType=$platform.resultType->transformResultType($mapping, $extensions)
+            ),
          cons:meta::pure::executionPlan::ConstantExecutionNode[1]|
             ^meta::protocols::pure::v1_25_0::metamodel::executionPlan::ConstantExecutionNode(
                _type='constant',
