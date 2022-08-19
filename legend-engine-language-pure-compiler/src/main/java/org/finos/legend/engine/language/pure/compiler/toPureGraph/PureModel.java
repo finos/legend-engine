@@ -810,12 +810,13 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile_safe(String fullPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(fullPath);
+        String pathWithTypeReference = addPrefixToTypeReference(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(pathWithTypeReference);
         if (profile == null)
         {
             try
             {
-                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + fullPath);
+                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + pathWithTypeReference);
             }
             catch (Exception e)
             {
@@ -823,7 +824,7 @@ public class PureModel implements IPureModel
             }
             if (profile != null)
             {
-                this.profilesIndex.put(fullPath, profile);
+                this.profilesIndex.put(pathWithTypeReference, profile);
             }
         }
         return profile;

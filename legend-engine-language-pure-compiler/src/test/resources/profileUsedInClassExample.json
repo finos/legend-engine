@@ -1,0 +1,66 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Firm",
+      "sourceInformation": null,
+      "superTypes": [],
+      "originalMilestonedProperties": [],
+      "properties": [
+        {
+          "name": "id",
+          "type": "Integer",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "defaultValue": null,
+          "stereotypes": [],
+          "taggedValues": [],
+          "sourceInformation": null,
+          "propertyTypeSourceInformation": null
+        },
+        {
+          "name": "legalName",
+          "type": "String",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "defaultValue": null,
+          "stereotypes": [],
+          "taggedValues": [],
+          "sourceInformation": null,
+          "propertyTypeSourceInformation": null
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "test::profile::Doc",
+            "value": "doc",
+            "sourceInformation": null,
+            "profileSourceInformation": null
+          },
+          "value": "this is the firm class",
+          "sourceInformation": null
+        }
+      ],
+      "constraints": [],
+      "package": "test::model"
+    },
+    {
+      "_type": "profile",
+      "name": "Doc",
+      "sourceInformation": null,
+      "stereotypes": [],
+      "tags": [
+        "doc"
+      ],
+      "package": "test::profile"
+    }
+  ]
+}
