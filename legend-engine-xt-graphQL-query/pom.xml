@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.13.1-SNAPSHOT</version>
+        <version>3.14.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -79,6 +79,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-graphQL-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

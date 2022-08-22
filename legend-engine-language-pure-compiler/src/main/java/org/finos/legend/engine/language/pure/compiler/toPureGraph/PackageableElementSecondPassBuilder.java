@@ -97,7 +97,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
             {
                 throw new EngineException("Duplicated super type '" + superType + "' in class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "'", srcClass.sourceInformation, EngineErrorType.COMPILATION);
             }
-            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("")._general(this.context.resolveGenericType(superType, srcClass.sourceInformation))._specific(_class);
+            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))._general(this.context.resolveGenericType(superType, srcClass.sourceInformation))._specific(_class);
             if (!this.context.pureModel.isImmutable(superType))
             {
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> superTypeClass;
@@ -234,7 +234,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         // NOTE: the whole point of this processing is to put the Pure Runtime in an index
         final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, this.context);
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), runtime);
-        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("")._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation))));
+        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation))));
         return metamodel;
     }
 

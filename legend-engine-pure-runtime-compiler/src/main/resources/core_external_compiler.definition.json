@@ -1,0 +1,5 @@
+{
+    "name" : "core_external_compiler",
+    "pattern" : "(meta::legend)(::.*)?",
+    "dependencies" : ["platform"]
+}

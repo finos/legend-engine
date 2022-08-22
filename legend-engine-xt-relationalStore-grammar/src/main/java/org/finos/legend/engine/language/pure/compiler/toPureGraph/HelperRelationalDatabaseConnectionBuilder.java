@@ -67,26 +67,26 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
     }
 
-    public static Root_meta_pure_alloy_connections_MapperPostProcessor createMapperPostProcessor(MapperPostProcessor mapper)
+    public static Root_meta_pure_alloy_connections_MapperPostProcessor createMapperPostProcessor(MapperPostProcessor mapper, CompileContext context)
     {
-        return createMapperPostProcessor(mapper.mappers);
+        return createMapperPostProcessor(mapper.mappers, context);
     }
 
-    public static Root_meta_pure_alloy_connections_MapperPostProcessor createMapperPostProcessor(List<Mapper> mappers)
+    public static Root_meta_pure_alloy_connections_MapperPostProcessor createMapperPostProcessor(List<Mapper> mappers, CompileContext context)
     {
-        Root_meta_pure_alloy_connections_MapperPostProcessor p = new Root_meta_pure_alloy_connections_MapperPostProcessor_Impl("");
-        p._mappers(createMappers(mappers));
+        Root_meta_pure_alloy_connections_MapperPostProcessor p = new Root_meta_pure_alloy_connections_MapperPostProcessor_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::MapperPostProcessor"));
+        p._mappers(createMappers(mappers, context));
         return p;
     }
 
-    public static MutableList<Root_meta_pure_alloy_connections_Mapper> createMappers(List<Mapper> mappers)
+    public static MutableList<Root_meta_pure_alloy_connections_Mapper> createMappers(List<Mapper> mappers, CompileContext context)
     {
         return ListIterate.collect(mappers, m ->
         {
             if (m instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper)
             {
-                Root_meta_pure_alloy_connections_TableNameMapper nameMapper = new Root_meta_pure_alloy_connections_TableNameMapper_Impl("");
-                Root_meta_pure_alloy_connections_SchemaNameMapper schemaNameMapper = new Root_meta_pure_alloy_connections_SchemaNameMapper_Impl("");
+                Root_meta_pure_alloy_connections_TableNameMapper nameMapper = new Root_meta_pure_alloy_connections_TableNameMapper_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::TableNameMapper"));
+                Root_meta_pure_alloy_connections_SchemaNameMapper schemaNameMapper = new Root_meta_pure_alloy_connections_SchemaNameMapper_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::SchemaNameMapper"));
 
                 schemaNameMapper._from(((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper) m).schema.from);
                 schemaNameMapper._to(((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper) m).schema.to);
@@ -99,7 +99,7 @@ public class HelperRelationalDatabaseConnectionBuilder
             }
             else if (m instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper)
             {
-                Root_meta_pure_alloy_connections_SchemaNameMapper schemaNameMapper = new Root_meta_pure_alloy_connections_SchemaNameMapper_Impl("");
+                Root_meta_pure_alloy_connections_SchemaNameMapper schemaNameMapper = new Root_meta_pure_alloy_connections_SchemaNameMapper_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::SchemaNameMapper"));
                 schemaNameMapper._from(m.from);
                 schemaNameMapper._to(m.to);
 

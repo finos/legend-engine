@@ -77,7 +77,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     @Override
     public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, JsonSchemaToModelConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration configuration = new Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration_Impl("")
+        Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration configuration = new Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::json::binding::toPure::JsonSchemaToModelConfiguration"))
                 ._sourceSchemaId(config.sourceSchemaId)
                 ._targetBinding(config.targetBinding)
                 ._targetPackage(config.targetPackage);
@@ -89,7 +89,7 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     @Override
     public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToJsonSchemaConfiguration config, PureModel pureModel)
     {
-        Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration configuration = new Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration_Impl("")
+        Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration configuration = new Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration_Impl("", null, pureModel.getClass("meta::external::format::json::binding::fromPure::ModelToJsonSchemaConfiguration"))
                 ._targetBinding(config.targetBinding)
                 ._targetSchemaSet(config.targetSchemaSet);
 
