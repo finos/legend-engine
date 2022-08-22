@@ -29,9 +29,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
       selectSQLQueryProcessor = processSelectSQLQueryForPresto_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForPresto_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
-      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierForPresto_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::presto::processIdentifierForPresto(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->processIdentifierWithDoubleQuotes($dbConfig)->replace('$$$','.');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::presto::getLiteralProcessorsForPresto():Map<Type,LiteralProcessor>[1]
@@ -121,7 +126,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::presto::schemaNameToIdentifierForPresto(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
 {
-   $schemaName->replace('$', '.');
+   $schemaName->replace('$', '$$$');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::presto::convertToDatePresto(params:String[*]):String[1]
