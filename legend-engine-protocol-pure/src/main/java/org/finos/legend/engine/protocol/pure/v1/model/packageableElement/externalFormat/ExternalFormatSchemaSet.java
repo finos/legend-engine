@@ -25,6 +25,7 @@ public class ExternalFormatSchemaSet extends PackageableElement
 {
     public String format;
     public List<ExternalFormatSchema> schemas = new ArrayList<>();
+
     public SourceInformation formatSourceInformation;
 
     @Override

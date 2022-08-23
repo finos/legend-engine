@@ -65,7 +65,7 @@ Class meta::protocols::generation::java::tests::model::scalar::String extends me
 
 function <<test.Test>> meta::protocols::generation::java::tests::testTranslatorJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::translation::generateTranslation('meta::protocols::generation::java::tests::model', 'org.finos')->meta::pure::executionPlan::engine::java::projectToImplementation().classes.source->sort();
+  let sources = meta::protocols::generation::java::translation::generateTranslation('meta::protocols::generation::java::tests::model', 'org.finos', [])->meta::pure::executionPlan::engine::java::projectToImplementation().classes.source->sort();
   assertEquals(1, $sources->size());
   assertEquals( 'package org.finos;\n'+
                 '\n'+
@@ -274,7 +274,7 @@ function <<test.Test>> meta::protocols::generation::java::tests::testTranslatorJ
 
 function <<test.Test>> meta::protocols::generation::java::tests::testProtocolJavaGeneration():Boolean[1]
 {
-  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos')->meta::pure::executionPlan::engine::java::projectToImplementation().classes.source->sort();
+  let sources = meta::protocols::generation::java::generateProtocolClasses('meta::protocols::generation::java::tests::model', 'org.finos', [])->meta::pure::executionPlan::engine::java::projectToImplementation().classes.source->sort();
   assertEquals(13, $sources->size());
 
   assertEquals('package org.finos.scalar;\n' +

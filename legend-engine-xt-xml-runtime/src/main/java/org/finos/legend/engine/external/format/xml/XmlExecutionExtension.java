@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 public class XmlExecutionExtension implements ExecutionExtension
 {
     @Override

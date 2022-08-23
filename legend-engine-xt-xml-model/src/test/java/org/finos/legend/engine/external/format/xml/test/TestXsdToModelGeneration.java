@@ -15,7 +15,7 @@
 package org.finos.legend.engine.external.format.xml.test;
 
 import org.finos.legend.engine.external.format.xsd.toModel.XsdToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.test.SchemaToModelGenerationTest;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelGenerationTest;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -982,10 +982,8 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
     private XsdToModelConfiguration config(String sourceSchemaSet, String sourceSchemaId, String targetPackage, boolean inlineCollectionClasses, boolean includeUnreachableClasses)
     {
         XsdToModelConfiguration config = new XsdToModelConfiguration();
-        config.sourceSchemaSet = sourceSchemaSet;
         config.sourceSchemaId = sourceSchemaId;
         config.targetPackage = targetPackage;
-        config.targetBinding = targetPackage + "::TestBinding";
         config.inlineCollectionClasses = inlineCollectionClasses;
         config.includeUnreachableClasses = includeUnreachableClasses;
         return config;

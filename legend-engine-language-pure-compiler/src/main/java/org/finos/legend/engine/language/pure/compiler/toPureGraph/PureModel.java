@@ -144,6 +144,8 @@ public class PureModel implements IPureModel
     final MutableMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
+    public static final PureModel CORE_PURE_MODEL = getCorePureModel();
+
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
     {
         this(pure, pm, null, deploymentMode, new PureModelProcessParameter(), null);
@@ -161,7 +163,12 @@ public class PureModel implements IPureModel
 
     public PureModel(PureModelContextData pureModelContextData, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this.extensions = CompilerExtensions.fromAvailableExtensions();
+        this(pureModelContextData, CompilerExtensions.fromAvailableExtensions(), pm, classLoader, deploymentMode, pureModelProcessParameter, metaData);
+    }
+
+    public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
+    {
+        this.extensions = extensions;
         List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = this.extensions.getExtraPostValidators();
 
         if (classLoader == null)
@@ -296,9 +303,14 @@ public class PureModel implements IPureModel
         catch (Exception e)
         {
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
-            // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception
+            // TODO: we need to have a better strategy to throw compilation error instead of the generic exception
             throw e;
         }
+    }
+
+    private static PureModel getCorePureModel()
+    {
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), null, null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()

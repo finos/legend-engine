@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatDeserializeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 
+@Deprecated
 public class FlatDataDeserializeExecutionNode extends ExternalFormatDeserializeExecutionNode
 {
     @JsonProperty(required = false)

@@ -14,33 +14,47 @@
 
 package org.finos.legend.engine.external.shared.format.model;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
-import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelConfiguration;
+import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 
 import java.util.List;
 
 /**
  * Defines an extension to be implemented to define an external format schema type.
- *
- * To implement a schema format it is also necessary to implement a metamodel that represents the
+ * <p>
+ * To implement a schema format it is necessary to implement a metamodel that represents the
  * compiled version of the external schema.  This is a metamodel class graph expressed in PURE.  It
  * will represent the semantically checked and canonicalized data model (for example inclusions maybe
  * inlined and references reconciled).
  */
-public interface ExternalFormatExtension<
-        Metamodel extends Root_meta_external_shared_format_metamodel_SchemaDetail,
-        ModelGenConfig extends SchemaToModelConfiguration,
-        SchemaGenConfig extends ModelToSchemaConfiguration>
+public interface ExternalFormatExtension<Metamodel extends Root_meta_external_shared_format_metamodel_SchemaDetail>
 {
+    /**
+     * Returns the contract for this external format written in PURE
+     */
+    Root_meta_external_shared_format_ExternalFormatContract<Metamodel> getExternalFormatContract();
+
+    /**
+     * Called to compile an external format schema set of this format.  This should verify the schema contents
+     * are lexically and semantically valid. Errors are reported by throwing an
+     * {@link org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException}.
+     */
+    Metamodel compileSchema(ExternalSchemaCompileContext context);
+
+    /**
+     * Called to convert a compiled schema detail back to its textual (schema-specific grammar) form
+     */
+    String metamodelToText(Metamodel schemaDetail, PureModel pureModel);
+
     /**
      * Returns the format of external schema this extension represents.  This will be the name used
      * to express the format as part of the schema (e.g. FORMAT_NAME):
@@ -56,86 +70,34 @@ public interface ExternalFormatExtension<
      *     ~~END~~
      * </pre>
      */
-    String getFormat();
+    default String getFormat()
+    {
+        return getExternalFormatContract()._id();
+    }
 
     /**
      * Returns the content types (see https://www.iana.org/assignments/media-types/media-types.xhtml) supported
      * by this format.
      */
-    List<String> getContentTypes();
-
-    /**
-     * Called to compile an external format schema set  of this format.  This should verify the schema contents
-     * are lexically and semantically valid. Errors are reported by throwing an
-     * {@link org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException}.
-     */
-    Metamodel compileSchema(ExternalSchemaCompileContext context);
+    default List<String> getContentTypes()
+    {
+        return FastList.newList(getExternalFormatContract()._contentTypes());
+    }
 
     /**
      * Called as part of Binding compilation to verify that the model and schema match such that serialization and deserialization
      * can occur.  This provides early warning to the user as they change the schema and model of changes that would break data flows.
-     * The compilation fails if the result returned is a meta_external_shared_format_binding_validation_FailedCorrelation.
+     * The compilation fails if the result returned is a meta_external_shared_format_binding_validation_FailedBindingDetail.
      */
-    Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context);
-
-    /**
-     * Called to convert a compiled schema detail back to its textual (schema-specific grammar) form
-     */
-    String metamodelToText(Metamodel schemaDetail, PureModel pureModel);
-
-    /**
-     * Determines whether this extension supports model generation.
-     */
-    default boolean supportsModelGeneration()
+    default Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
     {
-        return false;
-    }
+        Root_meta_external_shared_format_ExternalFormatContract<Metamodel> externalFormatContract = getExternalFormatContract();
 
-    /**
-     * Provides the properties used to configure model generation.
-     */
-    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
-    {
-        if (this.supportsModelGeneration())
+        if (externalFormatContract._externalFormatBindingValidator() == null)
         {
-            throw new IllegalStateException("Must supply properties if supporting generation");
+            throw new EngineException("Format " + getFormat() + " does not support binding validation", SourceInformation.getUnknownSourceInformation(), EngineErrorType.COMPILATION);
         }
-        return Lists.mutable.empty();
+
+        return externalFormatContract.validateBinding(binding, context.getExecutionSupport());
     }
-
-    /**
-     * Called when an external schema of this format is used to generate a PURE model.
-     */
-    Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, ModelGenConfig config, PureModel pureModel);
-
-    /**
-     * Determines whether this extension supports schema generation.
-     */
-    default boolean supportsSchemaGeneration()
-    {
-        return false;
-    }
-
-    /**
-     * Provides the properties used to configure model generation.
-     */
-    default RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
-    {
-        if (this.supportsSchemaGeneration())
-        {
-            throw new IllegalStateException("Must supply properties if supporting generation");
-        }
-        return Lists.mutable.empty();
-    }
-
-    /**
-     * Called when a PURE model is used to generate an external schema of this format.
-     */
-    Root_meta_external_shared_format_binding_Binding generateSchema(SchemaGenConfig config, PureModel pureModel);
-
-    /**
-     * Called to obtain the PackageableElement names (elementToPath) that are required to be registered for elementToPath.  This is usually the serializer
-     * extension functions.
-     */
-    List<String> getRegisterablePackageableElementNames();
 }

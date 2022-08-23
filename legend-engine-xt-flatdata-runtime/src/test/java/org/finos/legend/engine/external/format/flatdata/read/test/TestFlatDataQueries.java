@@ -15,12 +15,16 @@
 package org.finos.legend.engine.external.format.flatdata.read.test;
 
 import net.javacrumbs.jsonunit.JsonMatchers;
-import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
-import org.finos.legend.engine.external.format.flatdata.toModel.FlatDataToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
-import org.finos.legend.engine.external.shared.format.model.test.SchemaToModelGenerationTest;
+import org.finos.legend.engine.external.format.flatdata.transformation.fromModel.ModelToFlatDataConfiguration;
+import org.finos.legend.engine.external.format.flatdata.transformation.toModel.FlatDataToModelConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaGenerationTest;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelGenerationTest;
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,17 +34,23 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-import static org.finos.legend.engine.external.shared.format.model.test.SchemaToModelGenerationTest.newExternalSchemaSetGrammarBuilder;
+import static org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelGenerationTest.newExternalSchemaSetGrammarBuilder;
 
 public class TestFlatDataQueries extends TestExternalFormatQueries
 {
+    List<Root_meta_pure_extension_Extension> formatExtensions = Collections.singletonList(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
+
     @Test
     public void testDeserializeCsvWithGeneratedSchema()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -48,7 +58,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/peopleWithExactHeadings.csv"));
+                resource("queries/peopleWithExactHeadings.csv"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
     }
@@ -57,7 +68,9 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     public void testDeserializeCsvBadHeadings()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -65,7 +78,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/people.csv"));
+                resource("queries/people.csv"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleBadHeadingsResult.json")));
     }
@@ -74,7 +88,9 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     public void testDeserializeAndReserializeCsvWithGeneratedSchema()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -82,7 +98,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding)",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/peopleWithExactHeadings.csv"));
+                resource("queries/peopleWithExactHeadings.csv"),
+                formatExtensions);
 
         Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), result);
     }
@@ -91,7 +108,9 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     public void testDeserializeAndReserializeUncheckedCsvWithGeneratedSchema()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::firm::model::Person"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -99,7 +118,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::firm::model::Person.all()->graphFetch(" + personTree() + ")->externalize(test::gen::TestBinding)",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/peopleWithExactHeadings.csv"));
+                resource("queries/peopleWithExactHeadings.csv"),
+                formatExtensions);
 
         Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), result);
     }
@@ -117,7 +137,10 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "  name: String[1];\n" +
                 "  gender: test::Gender[1];\n" +
                 "}\n";
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::Person"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::Person");
+
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
 
         String selfMapping = "###Mapping\n" +
                 "Mapping test::SelfMapping\n" +
@@ -135,7 +158,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
                 "test::SelfMapping",
                 "test::runtime",
-                "name,gender\nJohn Doe,Male");
+                "name,gender\nJohn Doe,Male",
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithEnumResult.json")));
     }
@@ -153,7 +177,9 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "  name: String[1];\n" +
                 "  gender: test::Gender[1];\n" +
                 "}\n";
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toFlatDataConfig("test::Person"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
 
         String selfMapping = "###Mapping\n" +
                 "Mapping test::SelfMapping\n" +
@@ -171,7 +197,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::Person.all()->graphFetchChecked(" + personTree + ")->serialize(" + personTree + ")",
                 "test::SelfMapping",
                 "test::runtime",
-                "name,gender\nJohn Doe,Neuter");
+                "name,gender\nJohn Doe,Neuter",
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithEnumBadValueResult.json")));
     }
@@ -180,7 +207,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     public void testDeserializeCsvAndReserializeWithGeneratedModel()
     {
         String schemaCode = tradeSchema();
-        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
         String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
@@ -194,7 +221,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::gen::TradeRecord.all()->graphFetchChecked(" + tradeTree + ")->externalize(test::gen::TestBinding)",
                 "test::trade::SelfMapping",
                 "test::runtime",
-                tradeData);
+                tradeData,
+                formatExtensions);
 
         Assert.assertEquals(tradeData, result);
     }
@@ -203,7 +231,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     public void testDeserializeCsvWithGeneratedModelCheckedForMissingData()
     {
         String schemaCode = tradeSchema();
-        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
         String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
@@ -217,7 +245,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::gen::TradeRecord.all()->graphFetchChecked(" + tradeTree + ")->serialize(" + tradeTree + ")",
                 "test::trade::SelfMapping",
                 "test::runtime",
-                tradeData);
+                tradeData,
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForMissingDataResult.json")));
     }
@@ -226,7 +255,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     public void testDeserializeCsvWithGeneratedModelCheckedForBadData()
     {
         String schemaCode = tradeSchema();
-        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::tradeSchema"));
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig(), true, "test::gen::TestBinding");
 
         String grammar = schemaCode + tradeSelfMapping() + urlStreamRuntime("test::trade::SelfMapping", "test::gen::TestBinding");
         String tradeTree = "#{test::gen::TradeRecord {product,quantity,tradeTime,price,priceCcy,settlementCcy,settlementRate,settlementDate,confirmedAt,expiryDate,executions}}#";
@@ -240,7 +269,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::gen::TradeRecord.all()->graphFetchChecked(" + tradeTree + ")->serialize(" + tradeTree + ")",
                 "test::trade::SelfMapping",
                 "test::runtime",
-                tradeData);
+                tradeData,
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeCsvWithGeneratedModelCheckedForBadDataResult.json")));
     }
@@ -289,7 +319,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                         "}\n")
                 .build();
 
-        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::WholeLoanPriceFileSchema", "PriceFile"));
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("PriceFile"), true, "test::gen::TestBinding");
 
         String mapping = "###Mapping\n" +
                 "Mapping test::PriceRowToLoanPrice\n" +
@@ -314,7 +344,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::LoanPrice.all()->graphFetchChecked(" + tree + ")->serialize(" + tree + ")",
                 "test::PriceRowToLoanPrice",
                 "test::runtime",
-                resourceAsString("queries/prices.csv"));
+                resourceAsString("queries/prices.csv"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
     }
@@ -368,7 +399,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 )
                 .build();
 
-        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("test::WholeLoanPriceFileSchema", "PriceFile"));
+        PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig("PriceFile"), true, "test::gen::TestBinding");
 
         String mapping = "###Mapping\n" +
                 "Mapping test::PriceRowToLoanPrice\n" +
@@ -393,7 +424,8 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 "|test::LoanPrice.all()->graphFetchChecked(" + tree + ")->serialize(" + tree + ")",
                 "test::PriceRowToLoanPrice",
                 "test::runtime",
-                resourceAsString("queries/prices_with_footer.csv"));
+                resourceAsString("queries/prices_with_footer.csv"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/deserializeAndMapMultiSectionCsvResult.json")));
     }
@@ -438,26 +470,22 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 .build();
     }
 
-    private ModelToFlatDataConfiguration toFlatDataConfig(String className)
+    private ModelToFlatDataConfiguration toFlatDataConfig()
     {
         ModelToFlatDataConfiguration config = new ModelToFlatDataConfiguration();
-        config.targetBinding = "test::gen::TestBinding";
         config.targetSchemaSet = "test::gen::TestSchemaSet";
-        config.sourceModel.add(className);
         config.format = "FlatData";
         return config;
     }
 
-    private FlatDataToModelConfiguration fromFlatDataConfig(String sourceSchemaSet)
+    private FlatDataToModelConfiguration fromFlatDataConfig()
     {
-        return fromFlatDataConfig(sourceSchemaSet, null);
+        return fromFlatDataConfig(null);
     }
 
-    private FlatDataToModelConfiguration fromFlatDataConfig(String sourceSchemaSet, String schemaClassName)
+    private FlatDataToModelConfiguration fromFlatDataConfig(String schemaClassName)
     {
         FlatDataToModelConfiguration config = new FlatDataToModelConfiguration();
-        config.sourceSchemaSet = sourceSchemaSet;
-        config.targetBinding = "test::gen::TestBinding";
         config.targetPackage = "test::gen";
         config.purifyNames = true;
         config.schemaClassName = schemaClassName;

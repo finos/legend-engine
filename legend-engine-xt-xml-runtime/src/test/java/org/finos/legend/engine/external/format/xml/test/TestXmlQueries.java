@@ -16,11 +16,20 @@ package org.finos.legend.engine.external.format.xml.test;
 
 import net.javacrumbs.jsonunit.JsonMatchers;
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.List;
+
 public class TestXmlQueries extends TestExternalFormatQueries
 {
+    List<Root_meta_pure_extension_Extension> formatExtensions = Collections.singletonList(core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
+
     @Test
     public void testDeserializeSingleFirmUsingAttributesWithoutSchema()
     {
@@ -29,7 +38,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/oneFirm.xml"));
+                resource("queries/oneFirm.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/oneFirmCheckedResult.json")));
     }
@@ -42,7 +52,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/manyFirmsAttributes.xml"));
+                resource("queries/manyFirmsAttributes.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsAttributesCheckedResult.json")));
     }
@@ -55,7 +66,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/manyFirmsElements.xml"));
+                resource("queries/manyFirmsElements.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsCheckedResult.json")));
     }
@@ -68,7 +80,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetch(" + firmTree() + ")->serialize(" + firmTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/manyFirmsElements.xml"));
+                resource("queries/manyFirmsElements.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/manyFirmsElementsObjectResult.json")));
     }
@@ -81,7 +94,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/fullFirm.xml"));
+                resource("queries/fullFirm.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/fullFirmCheckedResult.json")));
     }
@@ -94,7 +108,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/fullFirm.xml"));
+                resource("queries/fullFirm.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/fullFirmUnwrappedResult.json")));
     }
@@ -107,7 +122,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmInvalidRanking.xml"));
+                resource("queries/firmInvalidRanking.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result1, JsonMatchers.jsonEquals(resourceReader("queries/firmInvalidRankingCheckedResult.json")));
 
@@ -115,7 +131,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmInvalidLongitude.xml"));
+                resource("queries/firmInvalidLongitude.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result2, JsonMatchers.jsonEquals(resourceReader("queries/firmInvalidLongitudeCheckedResult.json")));
     }
@@ -128,7 +145,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmLongitudeConstraintViolation.xml"));
+                resource("queries/firmLongitudeConstraintViolation.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmLongitudeConstraintViolationCheckedResult.json")));
     }
@@ -141,7 +159,8 @@ public class TestXmlQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmWithXsiNil.xml"));
+                resource("queries/firmWithXsiNil.xml"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmWithXsiNilCheckedResult.json")));
     }

@@ -18,9 +18,10 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.format.protobuf.fromModel.ModelToProtobufConfiguration;
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.external.shared.format.model.api.GenerateSchemaInput;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaConfiguration;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.json.simple.parser.JSONParser;
@@ -65,7 +66,6 @@ public class TestBindingService
                             "      \"modelUnit\": {\n" +
                             "        \"packageableElementExcludes\": [],\n" +
                             "        \"packageableElementIncludes\": [\n" +
-                            "          \"test::Pierre\",\n" +
                             "          \"test::Pierre\"\n" +
                             "        ]\n" +
                             "      },\n" +
@@ -87,10 +87,12 @@ public class TestBindingService
     {
         GenerateSchemaInput input = new GenerateSchemaInput();
         input.config = configuration;
-        input.model = PureGrammarParser.newInstance().parseModel(model);
         configuration.targetSchemaSet = "myPack::yo";
-        configuration.targetBinding = "myPack::yo2";
-        configuration.sourceModel = elements;
+        input.model = PureGrammarParser.newInstance().parseModel(model);
+        input.sourceModelUnit = new ModelUnit();
+        input.sourceModelUnit.packageableElementIncludes.addAll(elements);
+        input.generateBinding = true;
+        input.targetBindingPath = "myPack::yo2";
         Response response = externalFormats.generateSchema(input, null);
         Object result = response.getEntity();
         if (result instanceof ExceptionError)

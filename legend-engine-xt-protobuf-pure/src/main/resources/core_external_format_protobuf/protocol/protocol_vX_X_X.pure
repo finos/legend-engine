@@ -19,7 +19,7 @@ import meta::json::*;
 import meta::pure::generation::metamodel::*;
 import meta::external::format::protobuf::metamodel::*;
 import meta::external::format::protobuf::deprecated::generation::configuration::*;
-import meta::external::format::protobuf::binding::fromPure::*;
+import meta::external::format::protobuf::transformation::fromPure::*;
 import meta::protocols::pure::vX_X_X::invocation::generation::protobuf::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 import meta::alloy::metadataServer::*;
@@ -27,14 +27,17 @@ import meta::pure::functions::io::http::*;
 import meta::external::format::protobuf::deprecated::generation::*;
 import meta::protocols::pure::vX_X_X::invocation::externalFormat::protobuf::*;
 
-function meta::protocols::pure::vX_X_X::invocation::externalFormat::protobuf::legendGenerateProtobuf(input:ModelToProtobufDataConfiguration[1], host:String[1], port:Integer[1], version:String[1]):meta::external::shared::format::metamodel::data::SchemaData[*]
+import meta::pure::model::unit::*;
+
+function meta::protocols::pure::vX_X_X::invocation::externalFormat::protobuf::legendGenerateProtobuf(modelUnit:ModelUnit[1], input:ModelToProtobufDataConfiguration[1], host:String[1], port:Integer[1], version:String[1]):meta::external::shared::format::metamodel::data::SchemaData[*]
 {
    let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/external/format/generateSchema'),
                                  HTTPMethod.POST,
                                  'application/json',
                                  '{ "clientVersion":"vX_X_X",'+
+                                 '  "sourceModelUnit": {"packageableElementIncludes" : ' + $modelUnit->resolve().packageableElements->map(e | $e->elementToPath())->joinStrings('["', '","', '"]') + '},' +
                                  '  "config":'+$input->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::format::protobuf::transformModelToProtobufDataConfiguration()->alloyToJSON()+','+
-                                 '  "model":'+$input.sourceModel->match(
+                                 '  "model":'+$modelUnit.packageableElementIncludes->match(
                                                     [
                                                       p:Package[1]|$p->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON(),
                                                       c:Type[1]|$c->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON()
@@ -106,8 +109,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf
 Class meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration
 {
    format : String[1];
-   sourceModel : String[*];
-   targetBinding : String[1];
    targetSchemaSet : String[1];
    javaPackage : String[0..1];
    javaOuterClassname:String[0..1];
@@ -144,13 +145,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external:
    )
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::format::protobuf::transformModelToProtobufDataConfiguration(input:meta::external::format::protobuf::binding::fromPure::ModelToProtobufDataConfiguration[1]):meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::format::protobuf::transformModelToProtobufDataConfiguration(input:meta::external::format::protobuf::transformation::fromPure::ModelToProtobufDataConfiguration[1]):meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration[1]
 {
   ^meta::protocols::pure::vX_X_X::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration
   (
-    format = $input.format, 
-    sourceModel = $input.resolveSourceModel()->filter(x|$x->instanceOf(Type) && !$x->instanceOf(Enumeration))->map(x|$x->elementToPath()), 
-    targetBinding = $input.targetBinding, 
+    format = $input.format,
     targetSchemaSet = $input.targetSchemaSet,
     javaPackage = $input.javaPackage,
     javaOuterClassname = $input.javaOuterClassname,

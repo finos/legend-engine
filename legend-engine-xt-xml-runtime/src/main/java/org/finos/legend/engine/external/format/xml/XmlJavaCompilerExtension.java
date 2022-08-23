@@ -49,12 +49,12 @@ import java.util.Map;
 
 public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtension
 {
-    private static final String PURE_PACKAGE = "meta::external::format::xml::executionPlan::engine::";
+    private static final String PURE_PACKAGE = "meta::external::format::xml::executionPlan::engine::java::";
     private static final Map<String, Class<?>> DEPENDENCIES = new LinkedHashMap<>();
 
     static
     {
-        DEPENDENCIES.put("meta::external::format::xml::executionPlan::XmlDataRecord", XmlDataRecord.class);
+        DEPENDENCIES.put("meta::external::format::xml::executionPlan::model::XmlDataRecord", XmlDataRecord.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IXmlDeserializeExecutionNodeSpecifics", IXmlDeserializeExecutionNodeSpecifics.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_DeserializeContext", DeserializeContext.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_SimpleTypeHandler", SimpleTypeHandler.class);

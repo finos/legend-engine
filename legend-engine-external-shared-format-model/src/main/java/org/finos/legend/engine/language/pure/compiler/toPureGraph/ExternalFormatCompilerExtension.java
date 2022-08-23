@@ -30,7 +30,7 @@ import java.util.Map;
 
 public class ExternalFormatCompilerExtension implements CompilerExtension
 {
-    private final Map<String, ExternalFormatExtension> externalFormatExtensions;
+    private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
     final SchemaSetCompiler schemaSetCompiler;
     final BindingCompiler bindingCompiler;
 
@@ -52,7 +52,6 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     {
         ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
         List<String> elements = versions.collect(v -> "meta::protocols::pure::" + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
-        externalFormatExtensions.values().forEach(x -> elements.addAll(x.getRegisterablePackageableElementNames()));
         return ListIterate.collect(elements, this::registerElement);
     }
 

@@ -1,0 +1,2004 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::xml::transformation::toPure::*;
+import meta::external::format::xml::metamodel::xml::*;
+import meta::external::format::xml::metamodel::xsd::*;
+
+import meta::external::shared::*;
+import meta::external::shared::generation::*;
+import meta::external::shared::format::*;
+import meta::external::shared::format::transformation::*;
+import meta::external::shared::format::transformation::toString::*;
+import meta::external::shared::format::metamodel::*;
+
+import meta::pure::functions::collection::*;
+import meta::pure::functions::meta::*;
+import meta::pure::functions::tests::collection::*;
+
+import meta::pure::generation::metamodel::*;
+
+import meta::pure::graphFetch::*;
+
+import meta::pure::metamodel::serialization::grammar::*;
+
+import meta::pure::model::unit::*;
+
+// ========================================================================================================================================================
+// Descriptor
+// ========================================================================================================================================================
+
+function meta::external::format::xml::transformation::toPure::xsdToPureDescriptor(): ExternalFormatToPureDescriptor<XsdToModelConfiguration>[1]
+{
+  ^ExternalFormatToPureDescriptor<XsdToModelConfiguration>
+  (
+    configuration        = XsdToModelConfiguration,
+    generator            = xsdToPure_SchemaSet_1__XsdToModelConfiguration_1__PackageableElement_MANY_,
+    generatorWithDebug   = xsdToPureWithDebug_SchemaSet_1__XsdToModelConfiguration_1__PackageableElement_MANY_,
+    defaultConfig        = defaultConfig()
+  )
+}
+
+// ========================================================================================================================================================
+// Configuration
+// ========================================================================================================================================================
+
+Class meta::external::format::xml::transformation::toPure::XsdToModelConfiguration extends meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration
+{
+   {doc.doc = 'Should classes that represent only a collection be eliminated from the structure? For example, if true, <things><thing/><thing/></things> becomes Thing[*] rather than a class Things with a single property of type Thing[*].'}
+   inlineCollectionClasses   : Boolean[1];
+   {doc.doc = 'Should classes derived from types included in the XSD but not reachable from the document root still be generated? These are usually structures included into the XSD but not used in the specific document(s) described.'}
+   includeUnreachableClasses : Boolean[1];
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::defaultConfig(): XsdToModelConfiguration[1]
+{
+  ^XsdToModelConfiguration(format='XSD', targetPackage='target::package', inlineCollectionClasses=true, includeUnreachableClasses=false);
+}
+
+// ========================================================================================================================================================
+// GenerationContext
+// ========================================================================================================================================================
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::GenerationContext
+{
+   config          : XsdToModelConfiguration[1];
+   schemaSet       : SchemaSet[1];
+   schema          : XsdSchema[1];
+   
+   targetNamespace : String[1];
+   inScopeSchemas  : XsdSchema[*];
+   
+   unresolved      : XsdObject[*]; 
+   globalsByName   : Map<QName, XsdObject>[1];
+   genInfos        : Map<QName, GenInfo>[1];
+   builtInGenInfos : Map<QName, GenInfo>[1];
+
+   package() {if($this.config.targetPackage->endsWith('::'), |$this.config.targetPackage, |$this.config.targetPackage+'::')}: String[1];
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::createGenerationContext(schemaSet:SchemaSet[1], config:XsdToModelConfiguration[1]): GenerationContext[1]
+{
+   let schema  = if($config.sourceSchemaId->isEmpty(), 
+                    | $schemaSet.schemas->at(0),
+                    | $schemaSet.schemas->filter(s| $s.id == $config.sourceSchemaId)->toOne()
+                 ).detail->cast(@XsdSchema); 
+   let context = ^GenerationContext(
+      config          = $config, 
+      schemaSet       = $schemaSet,
+      schema          = $schema, 
+      targetNamespace = '',
+      genInfos        = ^Map<QName, GenInfo>(), 
+      globalsByName   = ^Map<QName, XsdObject>(), 
+      builtInGenInfos =
+         [
+            // Built in datatypes defined: https://www.w3.org/TR/2012/REC-xmlschema11-2-20120405/
+            pair(xsName('string'),             infoPrimitive(String)),
+            pair(xsName('normalizedString'),   infoPrimitive(String)),
+            pair(xsName('token'),              infoPrimitive(String)),
+            pair(xsName('ID'),                 infoPrimitive(String)),
+            pair(xsName('IDREF'),              infoPrimitive(String)),
+            pair(xsName('anyURI'),             infoPrimitive(String)),
+            pair(xsName('NCName'),             infoPrimitive(String)),
+            pair(xsName('Name'),               infoPrimitive(String)),
+            pair(xsName('QName'),              infoPrimitive(String)),
+            pair(xsName('integer'),            infoPrimitive(Decimal)),
+            pair(xsName('long'),               infoPrimitive(Integer)),
+            pair(xsName('int'),                infoPrimitive(Integer)),
+            pair(xsName('short'),              infoPrimitive(Integer)),
+            pair(xsName('byte'),               infoPrimitive(Integer)),
+            pair(xsName('unsignedLong'),       infoPrimitive(Decimal)),
+            pair(xsName('unsignedInt'),        infoPrimitive(Integer)),
+            pair(xsName('unsignedShort'),      infoPrimitive(Integer)),
+            pair(xsName('unsignedByte'),       infoPrimitive(Integer)),
+            pair(xsName('nonPositiveInteger'), infoPrimitive(Decimal)),
+            pair(xsName('negativeInteger'),    infoPrimitive(Decimal)),
+            pair(xsName('nonNegativeInteger'), infoPrimitive(Decimal)),
+            pair(xsName('positiveInteger'),    infoPrimitive(Decimal)),
+            pair(xsName('float'),              infoPrimitive(Float)),
+            pair(xsName('double'),             infoPrimitive(Float)),
+            pair(xsName('decimal'),            infoPrimitive(Decimal)),
+            pair(xsName('hexBinary'),          infoPrimitive(String)),
+            pair(xsName('base64Binary'),       infoPrimitive(String)),
+            pair(xsName('boolean'),            infoPrimitive(Boolean)),
+            pair(xsName('date'),               infoPrimitive(StrictDate)),
+            pair(xsName('time'),               infoPrimitive(String)),
+            pair(xsName('dateTime'),           infoPrimitive(DateTime))
+         ]->newMap()
+   );
+}
+
+// ========================================================================================================================================================
+// generation
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::xsdToPure(schemaSet:SchemaSet[1], config:XsdToModelConfiguration[1]): PackageableElement[*]
+{
+   xsdToPure($schemaSet, $config, noDebug());
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::xsdToPureWithDebug(schemaSet:SchemaSet[1], config:XsdToModelConfiguration[1]): PackageableElement[*]
+{
+   xsdToPure($schemaSet, $config, debug());
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::xsdToPure(schemaSet:SchemaSet[1], config:XsdToModelConfiguration[1], debug:DebugContext[1]): PackageableElement[*]
+{
+   let resolved = createGenerationContext($schemaSet, $config)
+      ->findAllGlobals($debug)
+      ->resolveAllGlobalSimpleTypes($debug)
+      ->resolveAllGlobalComplexTypesAndElements($debug)
+      ->evaluateAndDeactivate();
+
+   let optimized = $resolved
+      ->inlineCollectionClasses($debug)
+      ->pruneUnreachableClasses($debug);
+
+   let generatedElements = $optimized->generateTypes($debug)->removeDuplicates()->cast(@PackageableElement);
+
+   $debug->log(|'\nGenerated the following model:\n\n'+$generatedElements->printPackageableElements());
+   $generatedElements;
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::withTargetNamespace(context:GenerationContext[1], namespace:String[1]): GenerationContext[1]
+{
+   ^$context(targetNamespace=$namespace);
+}
+
+// TODO REMOVE
+function <<access.private>> meta::external::format::xml::transformation::toPure::getSchema(context:GenerationContext[1], location:String[1]): XsdSchema[1]
+{
+   fail('No schema found for location ' + $location);
+   ^XsdSchema();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::pushInScope(context:GenerationContext[1], schema:XsdSchema[1]): GenerationContext[1]
+{
+   ^$context(inScopeSchemas+=$schema);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::popInScope(context:GenerationContext[1]): GenerationContext[1]
+{
+   ^$context(inScopeSchemas+=$context.inScopeSchemas->init());
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::isInScope(context:GenerationContext[1], schema:XsdSchema[1]): Boolean[1]
+{
+   $context.inScopeSchemas->contains($schema);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::isIncluding(context:GenerationContext[1]): Boolean[1]
+{
+   $context.inScopeSchemas->size() > 1;
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::addGlobal(context:GenerationContext[1], global:XsdObject[1]): GenerationContext[1]
+{
+   assert($global->instanceOf(XsdNamed) && $global->cast(@XsdNamed).name->isNotEmpty());
+
+   let added = ^$context(globalsByName=$context.globalsByName->put($global->cast(@XsdNamed).name->toOne(), $global));
+      
+   $global->match([
+      c: XsdComplexType[1] | ^$added(unresolved+=$c),
+      s: XsdSimpleType[1]  | ^$added(unresolved+=$s),
+      e: XsdElement[1]     | ^$added(unresolved+=$e),
+      a: Any[1]            | $added
+   ]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::registerGenInfo(context:GenerationContext[1], object:XsdNamed[1], genInfo:GenInfo[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   assert($object.name->isNotEmpty(), 'Only named object can be registered');
+   let name = $object.name->toOne();
+   
+   $genInfo->match([
+      {u:UnknownGenInfo[1] | 
+         $debug->log(|'Not yet resolved: '+$object->nameOrAnon());
+         $context;
+      },
+      {inc: ClassReferenceGenInfo[1] |
+         $debug->log(|'Partially resolved: '+$object->nameOrAnon());
+         ^$context(genInfos = $context.genInfos->put($name, $genInfo));
+      },
+      {p:PropertyGenInfo[1] | 
+         $p.type->match([
+            {inc: ClassReferenceGenInfo[1] |
+               $debug->log(|'Partially resolved property: '+$object->nameOrAnon());
+               ^$context(genInfos = $context.genInfos->put($name, $genInfo));
+            },
+            {i:GenInfo[1] | 
+               $debug->log(|'Successfully resolved property: '+$object->nameOrAnon());
+               ^$context(
+                  genInfos   = $context.genInfos->put($name, $genInfo),
+                  unresolved = $context.unresolved->remove($object->cast(@XsdObject))
+               );
+            }
+         ])
+      },
+      {i:GenInfo[1] | 
+         $debug->log(|'Successfully resolved: '+$object->nameOrAnon());
+         ^$context(
+            genInfos   = $context.genInfos->put($name, $genInfo),
+            unresolved = $context.unresolved->remove($object->cast(@XsdObject))
+         );
+      }
+   ]);   
+}
+
+// TODO Deprecated
+function <<access.private>> meta::external::format::xml::transformation::toPure::resolve<T>(context:GenerationContext[1], schemaElement:T[0..1]): T[0..1]
+{
+   $schemaElement->match([
+      {named:XsdNamed[1] |
+         if($named.ref->isEmpty(),
+            |$named,
+            {|
+               let resolved = $context.globalsByName->get($named.ref->toOne());
+               assert($resolved->isNotEmpty(), |'No global found for reference: '+$named.ref->toOne()->qNameToString());
+               assert($resolved->type() == $named->type(), |'Resolved global is a different type');
+               $resolved;
+            }
+         );
+      },
+      other :XsdObject[0..1] | $other
+   ])->cast(@T);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::resolveNamedGenInfo(context:GenerationContext[1], name:QName[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->log(|'resolveNamedGenInfo ' + $name->qNameToString());
+   
+   let builtIn = $context.builtInGenInfos->get($name);
+   
+   let result = if($builtIn->isNotEmpty(),
+      | $builtIn->toOne(),
+      | $context->genInfoOf($name, $debug)
+   );   
+
+   $debug->log(|'resolved to ' + $result->toDebugString());
+   $result;   
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::referencedGenInfo(context:GenerationContext[1], named:XsdNamed[1], debug:DebugContext[1]): GenInfo[1]
+{
+   assert($named.ref->isNotEmpty());
+
+   $debug->lookingAt(|'Resolving reference '+$named.ref->toOne()->qNameToString());
+   $context->genInfoOf($named.ref->toOne(), $debug);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::genInfoOf(context:GenerationContext[1], name:QName[1], debug:DebugContext[1]): GenInfo[1]
+{
+   let result = $context.genInfos->get($name);
+   if($result->isEmpty(), 
+      {| 
+         $debug->log(|'No type found for ' + $name->qNameToString());
+         infoUnknown();
+      }, 
+      |$result->toOne()
+   );
+}
+
+// ========================================================================================================================================================
+// discovery 
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::findAllGlobals(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   let targetNamespace = $context.schema.targetNamespace->orElse('');
+   $debug->log(|'targetNamespace is ' + $targetNamespace->namespaceToString());
+   $context->withTargetNamespace($targetNamespace)->findGlobalsInSchema($context.schema, $debug);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::findGlobalsInSchema(context:GenerationContext[1], schema:XsdSchema[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   $debug->log(|'findGlobalsInSchema');
+   
+   if($context->isInScope($schema),
+      {|
+         $debug->log(|'schema already included');
+         $context;
+      },
+      {|
+         let withSchema = $context->pushInScope($schema);
+
+         let withIncluded = $schema.externals->filter(e| $e->instanceOf(XsdInclude))->fold(
+            {i, ctx| 
+               $debug->log(|'-- including: ' + $i.schemaLocation->toOne());
+               let included = $context->getSchema($i.schemaLocation->toOne());
+               assert($included.targetNamespace->isEmpty() || $included.targetNamespace == $context.targetNamespace, |'Cannot use include for a different namespace');
+               $ctx->findGlobalsInSchema($included, $debug->indent());
+            }, 
+            $withSchema
+         );   
+         
+         let withGlobals = $schema.items->fold(
+            {x, ctx| 
+               assert($x->instanceOf(XsdNamed) && $x->cast(@XsdNamed).name->isNotEmpty());
+               let globalNamed = $x->cast(@XsdNamed);
+               let globalQName = $globalNamed.name->toOne();
+               
+               $debug->log(|'-- found: '+$x->cast(@XsdNamed).name->map(n| $n->qNameToString())->joinStrings()+' is a '+$x->type().name->toOne());
+               $ctx->addGlobal($x);
+            }, 
+            $withIncluded   
+         );
+
+         $withGlobals->popInScope();
+      }
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::adjustNamespace(qName:QName[1], targetNamespace:String[1]): QName[1]
+{
+   if($qName.namespace == '' && $targetNamespace != '', |^$qName(namespace=$targetNamespace), |$qName);
+}
+
+// ========================================================================================================================================================
+// type resolution 
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::resolveAllGlobalSimpleTypes(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   resolveAll(
+      $context,
+      {ctx       | $ctx.unresolved->filter(o| $o->instanceOf(XsdSimpleType))->cast(@XsdSimpleType)},
+      {type, ctx | $ctx->analyseGlobalSimpleType($type, $debug)},
+      $debug
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::resolveAllGlobalComplexTypesAndElements(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   resolveAll(
+      $context,
+      {ctx      | $ctx.unresolved->filter(o| $o->instanceOf(XsdComplexType) || $o->instanceOf(XsdElement))},
+      {obj, ctx | $obj->match([
+                     type:XsdComplexType[1] | $ctx->analyseGlobalComplexType($type, $debug),
+                     elem:XsdElement[1]     | $ctx->analyseElement($elem, $debug)
+                  ])},
+      $debug
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::resolveAll<T>(context       :GenerationContext[1], 
+                                                             getUnresolved :Function<{GenerationContext[1]->T[*]}>[1],
+                                                             resolveOne    :Function<{T[1],GenerationContext[1]->GenInfo[1]}>[1], 
+                                                             debug:DebugContext[1]
+                                                            ): GenerationContext[1]
+{
+   let unresolved = $getUnresolved->eval($context);
+   let newContext = $unresolved->fold(
+      {it, ctx|
+         $debug->log(|'Resolving: '+$it->cast(@XsdNamed).name->map(n| $n->qNameToString())->joinStrings());
+         let resolved = $resolveOne->eval($it, $ctx);
+         $ctx->registerGenInfo($it->cast(@XsdNamed), $resolved, $debug);
+      }, 
+      $context
+   );
+   
+   let remaining = $getUnresolved->eval($newContext);
+   if($remaining->isNotEmpty(),
+      {|
+         assert($remaining->size() < $unresolved->size(), |'Unable to make progress resolving.  Remaining: ' + $remaining->cast(@XsdNamed).name.localPart->joinStrings('[', ',', ']'));
+         $debug->log(|'Starting next resolution pass');
+         $newContext->resolveAll($getUnresolved, $resolveOne, $debug);
+      },
+      | $newContext
+   );
+}
+
+// ========================================================================================================================================================
+// Model optimization
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::inlineCollectionClasses(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   if($context.config.inlineCollectionClasses,
+      | $context->doInlineCollectionClasses($debug),
+      | $context;
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::doInlineCollectionClasses(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   $debug->log(|'--- Inlining Collection Classes');
+   
+   let classInfos = $context.genInfos->values()->map(i| $i->findClasses())->removeDuplicates({c1,c2| $c1.name == $c2.name});
+   let inlineable = $classInfos->filter({ci| 
+      $debug->log(|'   Examining class (pass 1) ' + $ci.name->qNameToString());
+      let props     = $ci.properties;
+      let canInline = if($props.properties->size() == 1 && $props.xtends->isEmpty(),
+                         {|
+                            let prop = $props.properties->at(0);
+                            $prop.minOccurs == 0 && $prop.maxOccurs->isEmpty();
+                         },
+                         | false
+                      );
+      if($canInline, |$debug->log(|'   -> inlineable'), |[]);
+      $canInline;      
+   });
+
+   ^$context(genInfos=$context.genInfos->keyValues()->map(kv| pair($kv.first, $kv.second->inlineIfPossible($inlineable, [], $debug)))->newMap());
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::inlineIfPossible(info:GenInfo[1], inlineable:ClassGenInfo[*], seen:GenInfo[*], debug:DebugContext[1]): GenInfo[1]
+{
+   if($seen->contains($info), 
+      | $info,
+      {|
+         $info->match([
+            {cls:ClassGenInfo[1] |
+               $debug->log(|'Examining class (pass 2) ' + $cls.name->qNameToString());
+               $cls->inlineIfPossible($inlineable, $seen->add($cls), $debug);
+            },
+            {prop:PropertyGenInfo[1] |
+               $debug->log(|'Examining property (pass 2) ' + $prop.rawName);
+               $prop->inlineIfPossible($inlineable, $seen->add($prop), $debug);
+            },
+            {pset:PropertySetGenInfo[1] |
+               ^$pset(properties=$pset.properties->map(p| $p->inlineIfPossible($inlineable, $seen->add($pset), $debug)));
+            },
+            gi:GenInfo[1] | $gi
+         ]);
+      }
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::inlineIfPossible(cls:ClassGenInfo[1], inlineable:ClassGenInfo[*], seen:GenInfo[*], debug:DebugContext[1]): ClassGenInfo[1]
+{
+   ^$cls(properties=$cls.properties->inlineIfPossible($inlineable, $seen, $debug->indent())->cast(@PropertySetGenInfo));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::inlineIfPossible(prop:PropertyGenInfo[1], inlineable:ClassGenInfo[*], seen:GenInfo[*], debug:DebugContext[1]): PropertyGenInfo[1]
+{
+//    if($prop.type->instanceOf(ClassGenInfo) && $prop.source.name == $prop.type->cast(@ClassGenInfo).name,
+//       {|
+//          // Type defined directly in property
+//          ^$prop(type = $prop.type->cast(@ClassGenInfo)->inlineIfPossible($inlineable, $seen, $debug));
+//       },
+//       {|
+         let propTypeName = $prop.type->match([
+            cinf: ClassGenInfo[1]          | $cinf.name,
+            cref: ClassReferenceGenInfo[1] | $cref.name,
+            else: GenInfo[1]               | []
+         ]);
+         let inlineWith = $inlineable->filter(i| $i.name == $propTypeName);
+         $inlineWith->match([
+            {iw:ClassGenInfo[1] | 
+               $debug->log(|'   Inlining ' + $prop.rawName);
+               ^$prop(type=$iw.properties.properties->at(0).type, minOccurs=0, maxOccurs=[]);
+            },
+            a0:Any[0] | ^$prop(type=$prop.type->inlineIfPossible($inlineable, $seen, $debug)->cast(@TypeGenInfo))
+         ]);
+//       }
+//    );
+}
+
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::pruneUnreachableClasses(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   if($context.config.includeUnreachableClasses,
+      | $context,
+      | $context->doPruneUnreachableClasses($debug)
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::doPruneUnreachableClasses(context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+{
+   $debug->log(|'--- Pruning Unreachable Classes');
+
+   let topLevelProperties = $context.genInfos->keyValues()->filter(kv| $kv.second->instanceOf(PropertyGenInfo))->newMap();
+   let newGenInfos        = $topLevelProperties->values()->fold({prop, map| $prop->addReachable($map, $context.genInfos, $debug->indent())}, $topLevelProperties);
+   
+   ^$context(genInfos=$newGenInfos);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::addReachable(info:GenInfo[1], reachable:Map<QName, GenInfo>[1], allInfos:Map<QName, GenInfo>[1], debug:DebugContext[1]): Map<QName, GenInfo>[1]
+{
+   $debug->log(|'Examining ' + $info->toDebugString());
+   $info->match([
+      {prim: PrimitiveTypeGenInfo[1] | 
+         $reachable
+      },
+      {prop: PropertyGenInfo[1] | 
+         $prop.type->addReachable($reachable, $allInfos, $debug->indent());
+      },
+      {props: PropertySetGenInfo[1] |
+         let children = $props.properties->concatenate($props.xtends);
+         $children->fold({info, map| $info->addReachable($map, $allInfos, $debug->indent())}, $reachable);
+      },
+      {cref: ClassReferenceGenInfo[1] | 
+         let referenced = $allInfos->keyValues()->filter(ni| $ni.first == $cref.name).second->toOne()->cast(@GenInfo);
+         $referenced->addReachable($reachable, $allInfos, $debug->indent());
+      },
+      {cls : ClassGenInfo[1] | 
+         if($reachable->values()->exists(i| $i->instanceOf(ClassGenInfo) && $i->cast(@ClassGenInfo).name == $cls.name),
+            | $reachable,
+            {|
+               let existing     = $allInfos->keyValues()->filter(ni| $ni.first == $cls.name);
+               $debug->log(|'-> reachable: ' + $cls->toDebugString());
+               let newReachable = $reachable->keyValues()->concatenate($existing)->newMap();
+               $cls.properties->addReachable($newReachable, $allInfos, $debug->indent());
+            }
+         )
+      }
+   ]);
+}
+
+// ========================================================================================================================================================
+// Type generation
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::generateTypes(context:GenerationContext[1], debug:DebugContext[1]): Type[*]
+{
+   $debug->log(|'--- Generating Types');
+
+   let primitiveInfos = $context.genInfos->values()->filter(i| $i->instanceOf(PrimitiveTypeGenInfo))->cast(@PrimitiveTypeGenInfo);
+   let enumInfos      = $primitiveInfos->filter(pi| $pi.pureType == String && $pi.source->isNotEmpty() && $pi.restrictions->exists(r| $r->instanceOf(EnumValuesRestriction)));
+   
+   let enums = $enumInfos->map({ei|
+      let values     = $ei.restrictions->filter(r| $r->instanceOf(EnumValuesRestriction))->cast(@EnumValuesRestriction).values->cast(@String);
+      let safeValues = $values->map(ev| $context->toSafeEnumValue($ev));
+      let typeName   = $context->typeName($ei.rawName);
+      let e          = newEnumeration($typeName, $safeValues);
+      let enum       = ^$e(taggedValues=$ei.source.annotation->annotationsToDoc());
+      pair($ei, $enum);
+   })->newMap();
+   
+   let classInfos = $context.genInfos->values()->map(i| $i->findClasses())->removeDuplicates({c1,c2| $c1.name == $c2.name});
+   let classNames = $classInfos->map(ci| $context->typeName($ci.rawName));
+   assert($classNames->isDistinct(), | 'Class names are not unique: ' + $classNames->joinStrings(','));
+
+   $debug->log(|'Creating naked classes');
+   let nakedClasses = zip($classInfos, $classNames)->map({infoAndName|
+      let info = $infoAndName.first;
+      let name = $infoAndName.second;
+      
+      $debug->log(|'   Creating ' + $name + ' from ' + $info->toDebugString());
+      
+      let stereotypes = if($info.source.abstract->isTrue(),
+                           {| 
+                              let typeModifiers = Profile.all()->filter(p|$p.name == 'typemodifiers')->toOne();
+                              ^Stereotype(profile=$typeModifiers, value='abstract');
+                           },
+                           | []
+                        );
+
+      let c   = newClass($name);
+      let cls = ^$c(
+         taggedValues    = $info.source.annotation->annotationsToDoc(),         
+         stereotypes     = $stereotypes, 
+         generalizations = [] // Remove Generalization to Any.  It causes issues a) if other generalizations are added and b) because the translation to protocol doesn't require it
+      );
+      pair($info, $cls);
+   })->newMap();
+   $debug->log(|'Created ' + $nakedClasses->keyValues()->size()->toString() + ' classes');
+
+   $debug->log(|'Adding extend clauses');
+   let extendedClasses = $nakedClasses->keyValues()->map({infoAndClass|
+      let info = $infoAndClass.first;
+      let cls = $infoAndClass.second;
+      
+      if($info.properties.xtends->isEmpty(),
+         | $cls,
+         {|
+            let super          = $nakedClasses->getClass($info.properties.xtends->toOne());
+            $debug->log(|'   Extending ' + $cls.name->toOne() + ' from ' + $super.name->toOne());
+            let generalization = ^Generalization(general=^GenericType(rawType=$super), specific=$cls);
+            $super->mutateAdd('specializations', $generalization);
+            $cls->mutateAdd('generalizations', $generalization);
+         }
+      );
+      pair($info, $cls);
+   })->newMap();
+
+   $debug->log(|'Adding properties');
+   let withProperties = $extendedClasses->keyValues()->map({infoAndClass|
+      let info = $infoAndClass.first;
+      let cls = $infoAndClass.second;
+      $debug->log(|'   Adding properties to ' + $cls.name->toOne());
+      let propInfos = $info.properties.properties;
+      let propNames = $propInfos->map(i| $context->toSafeIdentifier($i.rawName, false));
+      assert($propNames->isDistinct(), | 'Property names are not unique');
+      
+      let propTypes = $propInfos->map({i| 
+         let rawType = $i.type->match([
+            pinf:PrimitiveTypeGenInfo[1]  | $enums->get($pinf)->orElse($pinf.pureType),
+            cinf:ClassGenInfo[1]          | $extendedClasses->keyValues()->filter(ic| $ic.first.name == $cinf.name)->map(ic| $ic.second)->toOne(),
+            cref:ClassReferenceGenInfo[1] | $extendedClasses->keyValues()->filter(ic| $ic.first.rawName == $cref.rawName)->map(ic| $ic.second)->toOne()
+         ]);
+         ^GenericType(rawType=$rawType);
+      });      
+      let propMults      = $propInfos->map(i| $i.multiplicity);
+      let clsGenericType = $cls.classifierGenericType->toOne().typeArguments->at(0);      
+      
+      let props = zip(zip($propNames, $propTypes), $propMults)->map({parts|
+         let p = newProperty(
+            $parts.first.first, 
+            $clsGenericType, 
+            $parts.first.second, 
+            $parts.second
+         );
+      });
+      
+      let annotatedProps = zip($props, $propInfos)->map({propAndInfo|
+         let p = $propAndInfo.first;
+         let annotation = $propAndInfo.second.annotation;
+         ^$p(taggedValues = $annotation->annotationsToDoc());
+      });
+
+      let constraints = $cls->createConstraints($propInfos, $annotatedProps, $info.properties.sizeLimits, $enums);
+
+      $cls->mutateAdd('properties', $annotatedProps)->mutateAdd('constraints', $constraints);
+   });
+
+   $enums->values()->concatenate($withProperties);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::getClass(classes:Map<ClassGenInfo, Class<Any>>[1], info:GenInfo[1]): Class<Any>[1]
+{
+      $info->match([
+         cinf:ClassGenInfo[1]          | $classes->keyValues()->filter(ic| $ic.first.name == $cinf.name)->map(ic| $ic.second),
+         cref:ClassReferenceGenInfo[1] | $classes->keyValues()->filter(ic| $ic.first.rawName == $cref.rawName)->map(ic| $ic.second)
+      ])->toOne();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::createConstraints(cls:Class<Any>[1], propInfos:PropertyGenInfo[*], properties:AbstractProperty<Any>[*], sizeLimits:SizeLimitation[*], enums:Map<GenInfo,Enumeration<Any>>[1]): meta::pure::metamodel::constraint::Constraint[*]
+{
+   let f       = newExpressionFactory();
+   let thisVar = $f->variable('this', $cls, PureOne);
+   
+   let restrictionAndProperties = zip($propInfos, $properties)->map({infoAndProperty|
+      $infoAndProperty.first.type->match([
+         pinf:PrimitiveTypeGenInfo[1]  | if($enums->get($pinf)->isEmpty(), |$pinf.restrictions->map(r|pair($r, $infoAndProperty.second)), |[]),
+         cinf:ClassGenInfo[1]          | [],
+         cinf:ClassReferenceGenInfo[1] | []
+      ]);
+   });
+   
+   let categoriesAndPredicates = $restrictionAndProperties->map({rp| 
+      let restriction = $rp.first;
+      let property    = $rp.second;
+      
+      let category = $restriction->match([
+         r:StringLengthRestriction[1] | 'length',         
+         r:EnumValuesRestriction[1]   | 'values',         
+         r:ValueRangeRestriction[1]   | 'range'
+      ]);
+      let predicates = $restriction->match([
+         {r:EnumValuesRestriction[1] |
+            let propertyType = $property->functionReturnType().rawType->toOne();
+            let values       = $f->instance($r.values, $propertyType);
+            $f->_in($f->func($thisVar, $property), $values)->forAllIfNeeded($property, $thisVar, $f);
+         },
+         {r:StringLengthRestriction[1] |
+            let propLength = $f->_length($f->func($thisVar, $property));
+
+            if($r.length->isNotEmpty(),
+               {|
+                  let length = $f->instance($r.length->toOne(), Integer);
+                  $f->_equal($propLength, $length)->forAllIfNeeded($property, $thisVar, $f);
+               },
+               {|
+                  let min = $r.minLength->map(l| $f->_greaterThanEqual($propLength, $f->instance($l->toOne(), Integer)));
+                  let max = $r.maxLength->map(l| $f->_lessThanEqual($propLength, $f->instance($l->toOne(), Integer)));
+                  $min->concatenate($max)->map(c | $c->forAllIfNeeded($property, $thisVar, $f));
+               }
+            );
+         },
+         {r:ValueRangeRestriction[1] |
+            let getProp      = $f->func($thisVar, $property);
+            let propertyType = $property->functionReturnType().rawType->toOne();
+
+            let min = if($r.minInclusive->isNotEmpty(),
+                         | $f->_greaterThanEqual($getProp, $f->instance($r.minInclusive->toOne(), $propertyType)),
+                         |
+                      if($r.minExclusive->isNotEmpty(),
+                         | $f->_greaterThan($getProp, $f->instance($r.minExclusive->toOne(), $propertyType)),
+                         | []
+                      ));
+
+            let max = if($r.maxInclusive->isNotEmpty(),
+                         | $f->_lessThanEqual($getProp, $f->instance($r.maxInclusive->toOne(), $propertyType)),
+                         |
+                      if($r.maxExclusive->isNotEmpty(),
+                         | $f->_lessThan($getProp, $f->instance($r.maxExclusive->toOne(), $propertyType)),
+                         | []
+                      ));
+         
+            $min->concatenate($max)->map(c | $c->forAllIfNeeded($property, $thisVar, $f));
+         }
+      ]);
+                                                        
+      $predicates->map(e | pair($category, $e));  
+   });
+
+   let sizeConstraints = $sizeLimits->map({sl| pair('choice', $sl->createSizeLimitsConstraint($cls, $propInfos, $properties)->toOne())});
+
+   $categoriesAndPredicates->concatenate($sizeConstraints)->toIndexed()->map({indexed |
+      let num      = $indexed.first;
+      let category = $indexed.second.first;
+      let expr     = $indexed.second.second;
+      let name     = 'c'+toString($num+1)+'_'+$category;
+      ^meta::pure::metamodel::constraint::Constraint(name=$name, functionDefinition=$f->lambda($thisVar, $expr));
+   });
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::createSizeLimitsConstraint(limits:SizeLimitation[1], cls:Class<Any>[1], propInfos:PropertyGenInfo[*], properties:AbstractProperty<Any>[*]): ValueSpecification[*]
+{
+   let f       = newExpressionFactory();
+   let thisVar = $f->variable('this', $cls, PureOne);
+   
+   $limits->match([
+      {s1: SizeLimitOne[1] | 
+         let prop = zip($propInfos, $properties)->filter(pp| $pp.first.rawName == $s1.rawName)->map(pp| $pp.second)->at(0);
+         // TODO More complex tests on size
+         if($s1.minOccurs == 0 && $s1.maxOccurs == 0, 
+            | $f->_isEmpty($f->func($thisVar, $prop)),
+            | $f->_isNotEmpty($f->func($thisVar, $prop))
+         );
+      },
+      sor : SizeLimitOr[1]  | $f->_or($sor.limits->map(l| $l->createSizeLimitsConstraint($cls, $propInfos, $properties))),
+      sand: SizeLimitAnd[1] | $f->_and($sand.limits->map(l| $l->createSizeLimitsConstraint($cls, $propInfos, $properties)))
+   ]);
+}
+
+// ========================================================================================================================================================
+// gen info 
+// ========================================================================================================================================================
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::GenInfo
+{
+   annotation : XsdAnnotation[0..1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::TypeGenInfo extends GenInfo
+{
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::PrimitiveTypeGenInfo extends TypeGenInfo
+{
+   source       : XsdSimpleType[0..1];
+   pureType     : Type[1];
+   restrictions : PrimitiveRestriction[*];
+
+   rawName() {$this.source.name->toOne().localPart}: String[1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::PrimitiveTypeExtensionGenInfo extends TypeGenInfo
+{
+   primitive  : PrimitiveTypeGenInfo[1];
+   properties : PropertySetGenInfo[1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::ClassGenInfo extends TypeGenInfo
+{
+   source     : XsdComplexType[1];
+   name       : QName[1];
+   properties : PropertySetGenInfo[1];
+
+   rawName() {$this.name->toOne().localPart}: String[1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::ClassReferenceGenInfo extends TypeGenInfo
+{
+   source     : XsdComplexType[1];
+   name       : QName[1];
+
+   rawName() {$this.name->toOne().localPart}: String[1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::PropertyGenInfo extends GenInfo
+{
+   source     : XsdObject[1];
+   rawName    : String[1];
+   type       : TypeGenInfo[1];
+   minOccurs  : Integer[1];
+   maxOccurs  : Integer[0..1];
+   annotation : XsdAnnotation[0..1];
+
+   multiplicity() {toMultiplicity($this.minOccurs, $this.maxOccurs)}: Multiplicity[1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::PropertySetGenInfo extends GenInfo
+{
+   source     : XsdObject[1];
+   properties : PropertyGenInfo[*];
+   xtends     : TypeGenInfo[0..1];
+   sizeLimits : SizeLimitation[*];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::PrimitiveRestriction
+{
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::EnumValuesRestriction extends PrimitiveRestriction
+{
+   values : Any[*];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::StringLengthRestriction extends PrimitiveRestriction
+{
+   length    : Integer[0..1];
+   minLength : Integer[0..1];
+   maxLength : Integer[0..1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::ValueRangeRestriction extends PrimitiveRestriction
+{
+   minInclusive : Any[0..1];
+   minExclusive : Any[0..1];
+   maxInclusive : Any[0..1];
+   maxExclusive : Any[0..1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::SizeLimitation
+{
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::SizeLimitOne extends SizeLimitation
+{
+   rawName   : String[1];
+   minOccurs : Integer[1];
+   maxOccurs : Integer[0..1];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::SizeLimitOr extends SizeLimitation
+{
+   limits : SizeLimitation[*];
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::SizeLimitAnd extends SizeLimitation
+{
+   limits : SizeLimitation[*];
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoUnknown(): UnknownGenInfo[1]
+{
+   ^UnknownGenInfo();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoPrimitive(pureType:Type[1]): PrimitiveTypeGenInfo[1]
+{
+   ^PrimitiveTypeGenInfo(pureType=$pureType);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoPrimitive(type:XsdSimpleType[1], from:PrimitiveTypeGenInfo[1]): PrimitiveTypeGenInfo[1]
+{
+   ^$from(source=$type);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoClass(source:XsdComplexType[1], name:QName[1], properties:PropertySetGenInfo[1]): ClassGenInfo[1]
+{
+   ^ClassGenInfo
+   (
+      source     = $source,
+      name       = $name,
+      properties = $properties
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoClassReference(source:XsdComplexType[1], name:QName[1]): ClassReferenceGenInfo[1]
+{
+   ^ClassReferenceGenInfo
+   (
+      source     = $source,
+      name       = $name
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::typesAreCompatible(t1:TypeGenInfo[0..1], t2:TypeGenInfo[0..1]): Boolean[1]
+{
+   $t1->match([
+      t1c:ClassGenInfo[1]          | $t2->match([t2c:ClassGenInfo[1] | $t1c.rawName == $t2c.rawName, t2r:ClassReferenceGenInfo[1] | $t1c.rawName == $t2r.rawName, t2p:PrimitiveTypeGenInfo[1] | false,                          t20:Any[0]| true]),
+      t1r:ClassReferenceGenInfo[1] | $t2->match([t2c:ClassGenInfo[1] | $t1r.rawName == $t2c.rawName, t2r:ClassReferenceGenInfo[1] | $t1r.rawName == $t2r.rawName, t2p:PrimitiveTypeGenInfo[1] | false,                          t20:Any[0]| true]),
+      t1p:PrimitiveTypeGenInfo[1]  | $t2->match([t2c:ClassGenInfo[1] | false,                        t2r:ClassReferenceGenInfo[1] | false,                        t2p:PrimitiveTypeGenInfo[1] | $t1p.pureType == $t2p.pureType, t20:Any[0]| true]),
+      t10:Any[0]                   | true
+   ]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::restrictEnumValues(primitive:PrimitiveTypeGenInfo[1], enumValues:Any[*]): PrimitiveTypeGenInfo[1]
+{
+   let restriction = ^EnumValuesRestriction(values = $enumValues);
+   ^$primitive(restrictions=$primitive.restrictions->filter(r| !$r->instanceOf(EnumValuesRestriction))->concatenate($restriction));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::restrictStringLength(primitive:PrimitiveTypeGenInfo[1], length:Integer[0..1], minLength:Integer[0..1], maxLength:Integer[0..1]): PrimitiveTypeGenInfo[1]
+{
+   let existing = $primitive.restrictions->filter(r| $r->instanceOf(StringLengthRestriction))->first()->cast(@StringLengthRestriction);
+   assert($existing->isEmpty() || $existing.length->isEmpty() || $existing.length->toOne() == $length->toOne(), | 'Cannot relax length restrictions');
+   assert($existing->isEmpty() || $existing.minLength->isEmpty() || $minLength->isEmpty() || ($existing.minLength->toOne() <= $minLength->toOne()), | 'Cannot relax length restrictions');
+   assert($existing->isEmpty() || $existing.maxLength->isEmpty() || $maxLength->isEmpty() || ($existing.maxLength->toOne() <= $maxLength->toOne()), | 'Cannot relax length restrictions');
+   
+   let restriction = ^StringLengthRestriction(
+      length       = $length,
+      minLength    = $minLength,
+      maxLength    = $maxLength
+   );
+   ^$primitive(restrictions=$primitive.restrictions->filter(r| !$r->instanceOf(StringLengthRestriction))->concatenate($restriction));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::restrictValueRange(primitive:PrimitiveTypeGenInfo[1], minInclusive:Any[0..1], minExclusive:Any[0..1], maxInclusive:Any[0..1], maxExclusive:Any[0..1]): PrimitiveTypeGenInfo[1]
+{
+   let restriction = ^ValueRangeRestriction(
+      minInclusive = $minInclusive,
+      minExclusive = $minExclusive,
+      maxInclusive = $maxInclusive,
+      maxExclusive = $maxExclusive
+   );
+   ^$primitive(restrictions=$primitive.restrictions->filter(r| !$r->instanceOf(ValueRangeRestriction))->concatenate($restriction));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::limitSize(rawName:String[1], minOccurs:Integer[1], maxOccurs:Integer[0..1]): SizeLimitation[1]
+{
+   ^SizeLimitOne
+   (
+      rawName   = $rawName,
+      minOccurs = $minOccurs,
+      maxOccurs = $maxOccurs
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::andSizeLimits(limits:SizeLimitation[*]): SizeLimitation[1]
+{
+   ^SizeLimitAnd
+   (
+      limits = $limits
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::orSizeLimits(limits:SizeLimitation[*]): SizeLimitation[1]
+{
+   ^SizeLimitOr
+   (
+      limits = $limits
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoProperty(element:XsdElement[1], type:TypeGenInfo[1]): PropertyGenInfo[1]
+{
+   $element->infoProperty($element.name->toOne().localPart, $type, $element.minOccurs, $element.maxOccurs);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoProperty(attribute:XsdAttribute[1], type:TypeGenInfo[1]): PropertyGenInfo[1]
+{
+   let minOccurs = if($attribute.use == XsdUse.REQUIRED,   |1, |0);
+   let maxOccurs = if($attribute.use == XsdUse.PROHIBITED, |0, |1);
+   $attribute->infoProperty($attribute.name->toOne().localPart, $type, $minOccurs, $maxOccurs);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoProperty(content:XsdSimpleContent[1], type:TypeGenInfo[1]): PropertyGenInfo[1]
+{
+   $content->infoProperty('value', $type, 1, 1);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoProperty(object:XsdObject[1], rawName:String[1], type:TypeGenInfo[1], minOccurs:Integer[1], maxOccurs:Integer[0..1]): PropertyGenInfo[1]
+{
+   $object->infoProperty($rawName, $type, $minOccurs, $maxOccurs, $object->cast(@XsdAnnotated).annotation);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoProperty(object:XsdObject[1], rawName:String[1], type:TypeGenInfo[1], minOccurs:Integer[1], maxOccurs:Integer[0..1], annotation:XsdAnnotation[0..1]): PropertyGenInfo[1]
+{
+   ^PropertyGenInfo
+   (
+      source     = $object,
+      rawName    = $rawName,
+      type       = $type,
+      minOccurs  = $minOccurs,
+      maxOccurs  = $maxOccurs,
+      annotation = $annotation
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoPropertySet(source:XsdObject[1], properties:PropertyGenInfo[*]): PropertySetGenInfo[1]
+{
+   infoPropertySet($source, $properties, []);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoPropertySet(source:XsdObject[1], properties:PropertyGenInfo[*], sizeLimits:SizeLimitation[*]): PropertySetGenInfo[1]
+{
+   ^PropertySetGenInfo
+   (
+      source     = $source,
+      properties = $properties,
+      sizeLimits = $sizeLimits
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoExtension(source:XsdObject[1], base:ClassGenInfo[1], properties:PropertyGenInfo[*]): PropertySetGenInfo[1]
+{
+   ^PropertySetGenInfo
+   (
+      source     = $source,
+      properties = $properties,
+      xtends     = $base
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoExtension(source:XsdObject[1], base:ClassReferenceGenInfo[1], properties:PropertyGenInfo[*]): PropertySetGenInfo[1]
+{
+   ^PropertySetGenInfo
+   (
+      source     = $source,
+      properties = $properties,
+      xtends     = $base
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::infoPrimitiveExtension(primitive:PrimitiveTypeGenInfo[1], properties:PropertySetGenInfo[1]): PrimitiveTypeExtensionGenInfo[1]
+{
+   ^PrimitiveTypeExtensionGenInfo
+   (
+      primitive  = $primitive,
+      properties = $properties
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::occurs(info:GenInfo[1], minOccurs:Integer[1], maxOccurs:Integer[0..1]): GenInfo[1]
+{
+   $info->match([
+      prop: PropertyGenInfo[1] | ^$prop(minOccurs = $minOccurs, maxOccurs=$maxOccurs),
+      unk : UnknownGenInfo[1]  | $unk
+   ]);
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::UnknownGenInfo extends GenInfo
+{
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::coalesce(xsdObject:XsdObject[1], infos:GenInfo[*]): GenInfo[1]
+{
+   if($infos->size() == 1 && !$infos->at(0)->instanceOf(PropertyGenInfo),
+      {| 
+         $infos->at(0);
+      },
+      |
+   if($infos->exists(i| $i->instanceOf(UnknownGenInfo)),
+      | infoUnknown(),
+      |
+   if($infos->forAll(i| $i->instanceOf(PropertyGenInfo) || $i->instanceOf(PropertySetGenInfo)),
+      {| 
+         let props = $infos->map(i| $i->match([
+            p: PropertyGenInfo[1]    | $p,
+            s: PropertySetGenInfo[1] | $s.properties
+         ]));
+         let limits = $infos->map(i| $i->match([
+            p: PropertyGenInfo[1]    | [],
+            s: PropertySetGenInfo[1] | $s.sizeLimits
+         ]));
+         $xsdObject->infoPropertySet($props, $limits);
+      },
+      | fail('Unable to coalesce: ' + $infos->map(i| $i->type()).name->joinStrings(',')); infoUnknown();
+   )));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::toMultiplicity(min:Integer[1], max:Integer[0..1]): Multiplicity[1]
+{
+   if($min == 1 && $max == 1,
+      | PureOne,
+      |
+   if($min == 0 && $max == 1,
+      | ZeroOne,
+      |
+   if($min == 0 && $max->isEmpty(),
+      | ZeroMany,
+      | ^Multiplicity(
+           lowerBound=^MultiplicityValue(value=$min), 
+           upperBound=if($max->isEmpty(), |^MultiplicityValue(), |^MultiplicityValue(value=$max->toOne()))
+        )
+   )));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::forAllIfNeeded(fe:SimpleFunctionExpression[1], prop:AbstractProperty<Any>[1], thisVar:VariableExpression[1], f:ExpressionFactory[1]): SimpleFunctionExpression[1]
+{
+   if($prop.multiplicity == PureOne,
+      | $fe,
+      {|
+         let type = $prop->functionReturnType().rawType->toOne();
+         let xVar = $f->variable('x', $type, PureOne);
+         let l    = $f->lambda($xVar, $fe->replacePropWith($prop, $xVar));
+         $f->_forAll($f->func($thisVar, $prop), $l);
+      }
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::replacePropWith(vs:ValueSpecification[1], prop:AbstractProperty<Any>[1], var:VariableExpression[1]): ValueSpecification[1]
+{
+   $vs->match([
+      {fe: SimpleFunctionExpression[1] | 
+         let sfe = $fe->evaluateAndDeactivate();
+         if($sfe.func == $prop,
+            | $var,
+            | ^$sfe(parametersValues=$sfe.parametersValues->map(pv|$pv->replacePropWith($prop, $var)))
+         );
+      },
+      {vs: ValueSpecification[1] | $vs}
+   ])
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::xsName(name:String[1]): QName[1]
+{
+   ^QName(
+      namespace = 'http://www.w3.org/2001/XMLSchema',
+      localPart = $name,
+      prefix    = 'xs'
+   )
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::findClasses(info:GenInfo[1]): ClassGenInfo[*]
+{
+   $info->match([
+      c:ClassGenInfo[1]       | $c->concatenate($c.properties->findClasses()),
+      p:PropertyGenInfo[1]    | $p.type->findClasses(),
+      p:PropertySetGenInfo[1] | $p.properties->map(p| $p->findClasses()),
+      x:GenInfo[1]            | []
+   ]);
+}
+
+// simple type analysis =========================================================================================================================================================================
+
+function <<access.private>> 
+meta::external::format::xml::transformation::toPure::analyseGlobalSimpleType(context:GenerationContext[1], type:XsdSimpleType[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'simpleType (global) '+$type.name->toOne()->qNameToString());
+
+   let fromDetails = $context->analyseSimpleTypeDetails($type, $debug);
+   let result = $fromDetails->match([
+      prim:PrimitiveTypeGenInfo[1] | $type->infoPrimitive($prim),
+      i   :GenInfo[1]              | $i
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+meta::external::format::xml::transformation::toPure::analyseLocalSimpleType(context:GenerationContext[1], type:XsdSimpleType[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'simpleType (local)');
+   
+   let result = $context->analyseSimpleTypeDetails($type, $debug);
+   
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='simpleType: annotation? (restriction|list|union)',
+ doc.todo='list'}
+meta::external::format::xml::transformation::toPure::analyseSimpleTypeDetails(context:GenerationContext[1], type:XsdSimpleType[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $type.derivation->match([
+      r:XsdRestriction[1] | $context->analyseSimpleType_Restriction($r, $debug->indent()),
+      u:XsdUnion[1]       | $context->analyseSimpleType_Union($u, $debug->indent())
+   ]);
+}
+
+function <<access.private>> 
+{doc.doc='restriction: annotation? simpleType? (minExclusive|minInclusive|maxExclusive|maxInclusive|totalDigits|fractionDigits|length|minLength|maxLength|enumeration|whiteSpace|pattern)*',
+ doc.todo='Most of it'}
+meta::external::format::xml::transformation::toPure::analyseSimpleType_Restriction(context:GenerationContext[1], restriction:XsdRestriction[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'restriction');
+
+   let base = if($restriction.baseTypeName->isNotEmpty(),
+                 | $context->resolveNamedGenInfo($restriction.baseTypeName->toOne(), $debug),
+                 | $context->analyseLocalSimpleType($restriction.baseType->cast(@XsdSimpleType)->toOne(), $debug->indent());
+              );
+   
+   let result = $base->match([
+      {prim:PrimitiveTypeGenInfo[1] |
+         // TODO non-String enumerations
+         let isEnumeration      = $prim.pureType == String && $restriction.facets->exists(f|$f->instanceOf(XsdEnumeration));
+         let isRestrictedString = $prim.pureType == String && $restriction.facets->exists(f|$f->instanceOf(XsdLength) || $f->instanceOf(XsdMinLength) || $f->instanceOf(XsdMaxLength));
+         let isValueRestricted  = $restriction.facets->exists(f|$f->instanceOf(XsdMinInclusive) || $f->instanceOf(XsdMinExclusive) || $f->instanceOf(XsdMaxInclusive) || $f->instanceOf(XsdMaxExclusive));                                                                                    
+
+         if($isEnumeration,
+            | $prim->restrictEnumValues($restriction.facets->filter(f|$f->instanceOf(XsdEnumeration)).value),
+            |
+         if($isRestrictedString,
+            | $prim->restrictStringLength($restriction->facetValue(XsdLength)->map(v|$v->parseInteger()), 
+                                          $restriction->facetValue(XsdMinLength)->map(v|$v->parseInteger()), 
+                                          $restriction->facetValue(XsdMaxLength)->map(v|$v->parseInteger())),
+            |
+         if($isValueRestricted,
+            | $prim->restrictValueRange(parse($restriction->facetValue(XsdMinInclusive), $prim.pureType), 
+                                        parse($restriction->facetValue(XsdMinExclusive), $prim.pureType), 
+                                        parse($restriction->facetValue(XsdMaxInclusive), $prim.pureType), 
+                                        parse($restriction->facetValue(XsdMaxExclusive), $prim.pureType)),
+            | $prim
+         )));
+      },
+      {unk:UnknownGenInfo[1] |
+         $unk;
+      }
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+meta::external::format::xml::transformation::toPure::analyseSimpleType_Union(context:GenerationContext[1], union:XsdUnion[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'union');
+   let members = $union.memberTypeNames->map(n| $context->resolveNamedGenInfo($n, $debug))
+                    ->concatenate($union.memberTypes->map(t| $context->analyseLocalSimpleType($t, $debug->indent())));
+
+   let result = if($members->exists(i| $i->instanceOf(UnknownGenInfo)),
+                   | infoUnknown(),
+                   |
+                if($members->forAll(i| $i->instanceOf(PrimitiveTypeGenInfo)),
+                   {| 
+                      let primitives = $members->cast(@PrimitiveTypeGenInfo);
+                      assert($primitives->forAll(p| $p.pureType == $primitives->at(0).pureType), |'Union of different type primiives not handled yet');
+                      // TODO Other restrictions
+                      let enumValues = $primitives->map(p| $p.restrictions->filter(r| $r->instanceOf(EnumValuesRestriction))->cast(@EnumValuesRestriction)).values;                      
+                      let prim       = infoPrimitive($primitives->at(0).pureType);
+                      if($enumValues->isEmpty(),
+                         | $prim,
+                         | $prim->restrictEnumValues($enumValues)
+                      );
+                   },
+                   | $members->println(); fail('Unhandled union'); infoUnknown();
+                ));
+ 
+   $debug->logGenInfo($result);
+}
+
+// complex type analysis =========================================================================================================================================================================
+
+function <<access.private>> 
+{doc.doc='complexType: annotation? (simpleContent|complexContent|group|all|choice|sequence)? (attribute|attributeGroup)* anyAttribute?',
+ doc.doc='A compositor (all|choice|sequence) is supplied inline or referenced via group (or not at all),',
+ doc.todo='anyAttribute'}
+meta::external::format::xml::transformation::toPure::analyseGlobalComplexType(context:GenerationContext[1], type:XsdComplexType[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'complexType (global) '+$type.name->toOne()->qNameToString());
+   let result = $context->analyseComplexTypeDetails($type, $type.name->toOne(), $debug);
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='complexType: annotation? (simpleContent|complexContent|group|all|choice|sequence)? (attribute|attributeGroup)* anyAttribute?',
+ doc.doc='A compositor (all|choice|sequence) is supplied inline or referenced via group (or not at all),',
+ doc.todo='Everything'}
+meta::external::format::xml::transformation::toPure::analyseLocalComplexType(context:GenerationContext[1], type:XsdComplexType[1], inElement:XsdElement[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'complexType (local)');
+   let result = $context->analyseComplexTypeDetails($type, $inElement.name->toOne(), $debug);
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::analyseComplexTypeDetails(context:GenerationContext[1], type:XsdComplexType[1], name:QName[1], debug:DebugContext[1]): GenInfo[1]
+{
+   let fromContent = $type.contentModel->match([
+      simple:  XsdSimpleContent[1]  | $context->analyseSimpleContent($simple, $debug->indent()),
+      complex: XsdComplexContent[1] | $context->analyseComplexContent($complex, $debug->indent()),
+      none:    Any[0]               | $type.particle->map(p| $context->analyseParticle($p, $debug->indent()))
+   ]);
+
+   let fromAttributes = $type.attributeItems->map(ai| $context->analyseAttributeItem($ai, $debug->indent()));
+   let combined       = $type->coalesce($fromContent->concatenate($fromAttributes));
+   
+   $combined->match([
+      props:PropertySetGenInfo[1] | $type->infoClass($name, $props),
+      unk  :UnknownGenInfo[1]     | $type->infoClassReference($name)
+   ]);   
+}
+
+function <<access.private>> 
+{doc.doc='simpleContent: annotation? (restriction|extension)',
+ doc.todo='restriction'}
+meta::external::format::xml::transformation::toPure::analyseSimpleContent(context:GenerationContext[1], content:XsdSimpleContent[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'simpleContent');
+
+   let fromContent = $content.derivation->match([
+      extension   : XsdExtension[1]   | $context->analyseSimpleContent_Extension($extension, $debug->indent()),
+      restriction : XsdRestriction[1] | infoUnknown(),
+      nothing     : Any[0]            | infoUnknown()
+   ]);
+   
+   let result = $fromContent->match([
+      {ext: PrimitiveTypeExtensionGenInfo[1] | 
+         let valueProperty = infoProperty($content, $ext.primitive);
+         $content->coalesce($ext.properties.properties->concatenate($valueProperty));
+      },
+      {other:GenInfo[1] |
+         $other;
+      }
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='restriction: annotation? (simpleType? (minExclusive|minInclusive|maxExclusive|maxInclusive|totalDigits|fractionDigits|length|minLength|maxLength|enumeration|whiteSpace|pattern)*)? (attribute|attributeGroup)* anyAttribute?',
+ doc.todo='Everything'}
+meta::external::format::xml::transformation::toPure::analyseSimpleContent_Restriction(context:GenerationContext[1], restriction:XsdRestriction[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'restriction');
+
+   let result = infoUnknown();
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='complexContent: xs:annotation? (restriction|extension)',
+ doc.todo='restriction'}
+meta::external::format::xml::transformation::toPure::analyseComplexContent(context:GenerationContext[1], content:XsdComplexContent[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'complexContent');
+
+   let result = $content.derivation->match([
+      extension   : XsdExtension[1]   | $context->analyseComplexContent_Extension($extension, $debug->indent()),
+      restriction : XsdRestriction[1] | infoUnknown(),
+      nothing     : Any[0]            | infoUnknown()
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='restriction: annotation? (group|all|choice|sequence)? (attribute|attributeGroup)* anyAttribute?',
+ doc.todo='Everything'}
+meta::external::format::xml::transformation::toPure::analyseCommplexContent_Restriction(context:GenerationContext[1], restriction:XsdRestriction[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'restriction');
+
+   let result = infoUnknown();
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.todo='all | choice'}
+meta::external::format::xml::transformation::toPure::analyseParticle(context:GenerationContext[1], particle:XsdParticle[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $particle->match([
+      group:   XsdGroup[1]    | $context->analyseGroup($group, $debug),
+      all:     XsdAll[1]      | $context->analyseAll($all, $debug),
+      any:     XsdAny[1]      | infoPropertySet($any, []), 
+      choice:  XsdChoice[1]   | $context->analyseChoice($choice, $debug),
+      sequence:XsdSequence[1] | $context->analyseSequence($sequence, $debug),
+      element: XsdElement[1]  | $context->analyseElement($element, $debug)
+   ]);
+}
+
+function <<access.private>> 
+{doc.doc='sequence: annotation? (element|group|choice|sequence|any)*',
+ doc.todo='group | choice | any'}
+meta::external::format::xml::transformation::toPure::analyseGroup(context:GenerationContext[1], group:XsdGroup[1], debug:DebugContext[1]): GenInfo[1]
+{
+   let resolved = $context->resolve($group);
+   $debug->lookingAt(|'group '+$resolved.name->toOne()->qNameToString());
+
+   let result = $context->analyseParticle($resolved.particle->toOne(), $debug->indent());
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='sequence: annotation? element*',
+ doc.todo='group | choice | any'}
+meta::external::format::xml::transformation::toPure::analyseAll(context:GenerationContext[1], all:XsdAll[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'sequence');
+
+   let perParticle = $all.items->map(e| $context->analyseParticle($e, $debug->indent()));
+   let result      = $all->coalesce($perParticle);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='sequence: annotation? (element|group|choice|sequence|any)*',
+ doc.todo='group | choice | any'}
+meta::external::format::xml::transformation::toPure::analyseSequence(context:GenerationContext[1], sequence:XsdSequence[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'sequence');
+
+   let perParticle = $sequence.items->map(e| $context->analyseParticle($e, $debug->indent()));
+   let result      = $sequence->coalesce($perParticle);
+
+   $debug->logGenInfo($result);
+}
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::ChoiceProperty
+{
+   type       : TypeGenInfo[0..1];
+   rawName    : String[1];
+   minOccurs  : Integer[1];
+   maxOccurs  : Integer[0..1];
+   annotation : XsdAnnotation[0..1];
+}
+
+function <<access.private>> 
+{doc.doc='choice: annotation? (element|group|choice|sequence|any)*'}
+meta::external::format::xml::transformation::toPure::analyseChoice(context:GenerationContext[1], choice:XsdChoice[1], debug:DebugContext[1]): GenInfo[1]
+{   
+   $debug->lookingAt(|'choice');
+
+   let perParticle  = $choice.items->map(e| $context->analyseParticle($e, $debug->indent()));
+   let result = if($perParticle->exists(i|$i->instanceOf(UnknownGenInfo)),
+      | infoUnknown(),
+      {|
+         let sets = $perParticle->map({i| 
+            $i->match([
+               s:PropertySetGenInfo[1] | $s,
+               p:PropertyGenInfo[1]    | $p.source->infoPropertySet($p)
+            ])
+         });
+         
+         let allNames = $sets.properties.rawName->removeDuplicates();
+         
+         let choiceProperties = $sets->map({set|
+            let forSet = $allNames->map({name|
+               let maybePgi = $set.properties->filter(p| $p.rawName == $name);
+               $maybePgi->match([
+                  p0:PropertyGenInfo[0] | ^ChoiceProperty(rawName=$name, minOccurs=0, maxOccurs=0),
+                  p :PropertyGenInfo[1] | ^ChoiceProperty(rawName=$name, type=$p.type, minOccurs=$p.minOccurs, maxOccurs=$p.maxOccurs, annotation=$p.annotation)
+               ]);               
+            });
+            list($forSet);
+         });
+
+         let combinedProperties = $allNames->map({name|
+            let forName  = $choiceProperties.values->filter(cp| $cp.rawName == $name);
+            $forName->tail()->fold(
+               {cp1, cp2|
+                  assert(typesAreCompatible($cp1.type, $cp1.type), 'Cannot combine properties of incompatible types');
+                  ^ChoiceProperty(
+                     rawName    = $name, 
+                     type       = $cp1.type->concatenate($cp2.type)->first(),
+                     minOccurs  = min($cp1.minOccurs, $cp2.minOccurs),
+                     maxOccurs  = if($cp1.maxOccurs->isEmpty() || $cp2.maxOccurs->isEmpty(), |[], |max($cp1.maxOccurs->toOne(), $cp2.maxOccurs->toOne())),
+                     annotation = $cp1.annotation->concatenate($cp2.annotation)->first()
+                  );
+               },
+               $forName->at(0)
+            );
+         });
+
+         let choiceLimitations = $choiceProperties->map({l|
+            let choiceProperties    = $l.values;
+            let smallerThanCombined = zip($combinedProperties, $choiceProperties)->map(p| if($p.first.minOccurs == $p.second.minOccurs && $p.first.maxOccurs == $p.second.maxOccurs, |[], |$p.second));
+            list($smallerThanCombined);
+         });
+   
+         let sizeLimits = if($choiceLimitations->forAll(l| $l.values->isNotEmpty()),
+            | $choiceLimitations->map(l|$l.values->map(cp| limitSize($cp.rawName, $cp.minOccurs, $cp.maxOccurs))->andSizeLimits())->orSizeLimits(),
+            | []
+         );
+         
+         let finalProperties = $combinedProperties->map(cp| $choice->infoProperty($cp.rawName, $cp.type->toOne(), $cp.minOccurs, $cp.maxOccurs, $cp.annotation));
+         $choice->infoPropertySet($finalProperties, $sizeLimits);
+      }
+   );
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='extension: annotation? (attribute|attributeGroup)* anyAttribute?'}
+meta::external::format::xml::transformation::toPure::analyseSimpleContent_Extension(context:GenerationContext[1], extension:XsdExtension[1], debug:DebugContext[1]): GenInfo[1]
+{   
+   $debug->lookingAt(|'extension');
+
+   let perAttribute   = $extension.attributeItems->map(ai| $context->analyseAttributeItem($ai, $debug->indent()));
+   let fromAttributes = $extension->coalesce($perAttribute);
+
+   let result = $fromAttributes->match([
+      unknw: UnknownGenInfo[1] | $unknw,
+      {props: PropertySetGenInfo[1] |
+         let resolved = $context->resolveNamedGenInfo($extension.baseTypeName->toOne(), $debug);
+         $resolved->match([
+            unk : UnknownGenInfo[1]        | $unk,
+            prim: PrimitiveTypeGenInfo[1]  | $prim->infoPrimitiveExtension($props),
+            cls : ClassGenInfo[1]          | $extension->infoExtension($cls, $props.properties),
+            crf : ClassReferenceGenInfo[1] | $extension->infoExtension($crf, $props.properties)
+         ]);
+      }
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='extension: annotation? (group|all|choice|sequence)? (attribute|attributeGroup)* anyAttribute?',
+ doc.doc='A compositor (all|choice|sequence) is supplied inline or referenced via group (or not at all),',
+ doc.todo='attributeGroup',
+ doc.todo='anyAttribute'}
+meta::external::format::xml::transformation::toPure::analyseComplexContent_Extension(context:GenerationContext[1], extension:XsdExtension[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $debug->lookingAt(|'extension');
+
+   let fromParticle   = $extension.particle->map(p| $context->analyseParticle($p, $debug->indent()));
+   let fromAttributes = $extension.attributeItems->map(ai| $context->analyseAttributeItem($ai, $debug->indent()));
+   let combined       = $extension->coalesce($fromParticle->concatenate($fromAttributes));
+
+   let result = $combined->match([
+      unknw: UnknownGenInfo[1] | $unknw,
+      {props: PropertySetGenInfo[1] |
+         $context->resolveNamedGenInfo($extension.baseTypeName->toOne(), $debug)->match([
+            unk: UnknownGenInfo[1]        | $unk,
+            cls: ClassGenInfo[1]          | $extension->infoExtension($cls, $props.properties),
+            crf: ClassReferenceGenInfo[1] | $extension->infoExtension($crf, $props.properties)
+         ]);
+      }
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='element: annotation? (simpleType|complexType)? (unique|key|keyref)*',
+ doc.todo='inline types',
+ doc.todo='unique|key|keyref'}
+meta::external::format::xml::transformation::toPure::analyseElement(context:GenerationContext[1], element:XsdElement[1], debug:DebugContext[1]): GenInfo[1]
+{
+   let result = if($element.ref->isNotEmpty(),
+      {|
+         $debug->lookingAt(|'element (ref) '+$element.ref->toOne()->qNameToString());
+         $context->referencedGenInfo($element, $debug)->occurs($element.minOccurs, $element.maxOccurs);
+      },
+      {|
+         $debug->lookingAt(|'element '+$element.name->toOne()->qNameToString());
+
+         let type = $element.type->match([
+            simple : XsdSimpleType[1]  | $context->analyseLocalSimpleType($simple, $debug->indent()),
+            complex: XsdComplexType[1] | $context->analyseLocalComplexType($complex, $element, $debug->indent()),
+            none   : Any[0]            | $element.typeName->map(n| $context->resolveNamedGenInfo($n, $debug->indent()))->orElse(infoUnknown())
+         ]);
+      
+         $debug->indent()->log(|'type is  '+$type->toDebugString());
+         
+         $type->match([
+            type:TypeGenInfo[1] | infoProperty($element, $type),
+            other:GenInfo[1]    | infoUnknown()
+         ]);
+      }
+   );
+   
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+meta::external::format::xml::transformation::toPure::analyseAttributeItem(context:GenerationContext[1], item:XsdAttributeItem[1], debug:DebugContext[1]): GenInfo[1]
+{
+   $item->match([
+      group    : XsdAttributeGroup[1] | $context->analyseAttributeGroup($group, $debug),
+      attribute: XsdAttribute[1]      | $context->analyseAttribute($attribute, $debug)
+   ]);
+}
+
+function <<access.private>> 
+{doc.doc='attribute: annotation? simpleType?'}
+meta::external::format::xml::transformation::toPure::analyseAttribute(context:GenerationContext[1], attribute:XsdAttribute[1], debug:DebugContext[1]): GenInfo[1]
+{
+   let resolved = $context->resolve($attribute);
+   $debug->lookingAt(|'attribute '+$resolved.name->toOne()->qNameToString());
+
+   let type = $resolved.type->match([
+      simple: XsdSimpleType[1] | $context->analyseLocalSimpleType($simple, $debug->indent()),
+      none  : Any[0]           | $resolved.typeName->map(n| $context->resolveNamedGenInfo($n, $debug->indent()))->orElse(infoUnknown())
+   ]);
+   
+   let propertyName = $context->toSafeIdentifier($resolved.name.localPart->toOne(), false);
+   let result = $type->match([
+      prim :PrimitiveTypeGenInfo[1] | $attribute->infoProperty($prim),
+      other:GenInfo[1]              | infoUnknown()
+   ]);
+
+   $debug->logGenInfo($result);
+}
+
+function <<access.private>> 
+{doc.doc='attribute: annotation? simpleType?'}
+meta::external::format::xml::transformation::toPure::analyseAttributeGroup(context:GenerationContext[1], attributeGroup:XsdAttributeGroup[1], debug:DebugContext[1]): GenInfo[1]
+{
+   let resolved = $context->resolve($attributeGroup);
+   $debug->lookingAt(|'attributeGroup '+$resolved.name->toOne()->qNameToString());
+
+   let perItem = $attributeGroup.items->map(ai| $context->analyseAttributeItem($ai, $debug->indent()));
+   let result  = $attributeGroup->coalesce($perItem);
+
+   $debug->logGenInfo($result);
+}
+
+// ========================================================================================================================================================
+// helpers 
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::newClass(context:GenerationContext[1], type:XsdComplexType[1]): Class<Any>[1]
+{
+   $context->newClass($type, $context->typeName($type.name));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::newClass(context:GenerationContext[1], type:XsdComplexType[1], name:String[1]): Class<Any>[1]
+{
+   let c = newClass($name)
+      ->applyAnnotations($type.annotation)
+      ->cast(@Class<Any>)
+      ->applyAbstract($type.abstract->isTrue());
+   
+   // Remove the Generalization to Any as it causes issues a) if other generalizations are added and b) because the translation to protocol doesn't require it
+   ^$c(generalizations=[]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::typeName(context:GenerationContext[1], xsdName:String[0..1]): String[1]
+{
+   let safe = $context->toSafeIdentifier($xsdName->toOne(), true);
+   $context.package + $safe;
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::typeName(context:GenerationContext[1], xsdName:QName[0..1]): String[1]
+{
+   let safe = $context->toSafeIdentifier($xsdName.localPart->toOne(), true);
+   $context.package + $safe;
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::toSafeIdentifier(context:GenerationContext[1], text:String[1], upperFirst:Boolean[1]): String[1]
+{
+   let words = $text->splitOnCamelCase()
+      ->map(s| $s->split('.'))
+      ->map(s| $s->split('-'))
+      ->map(s| $s->split('_'))
+      ->filter(s| $s->isNotEmpty());
+
+   assert($words->isNotEmpty(), 'Empty identifiers are not allowed');
+   
+   let canonical = $words
+      ->map(s| $s->chunk(1)->map(ch| if($ch->isDigit() || $ch->isLetter() || $ch == '_', | $ch, | '_'))->joinStrings())
+      ->map(s| $s->toLower())
+      ->toIndexed()
+      ->map(is| if($is.first > 0 || $upperFirst, |$is.second->toUpperFirstCharacter(), |$is.second))
+      ->joinStrings();
+   if($canonical->substring(0, 1)->isDigit(), |'_'+$canonical, |$canonical);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::toSafeEnumValue(context:GenerationContext[1], text:String[1]): String[1]
+{
+   assert($text->length() > 0, 'Empty identifiers are not allowed');
+   let canonical = $text->chunk(1)->map(ch| if($ch->isDigit() || $ch->isLetter() || $ch == '_', | $ch, | '_'))->joinStrings();
+   if($canonical->substring(0, 1)->isDigit(), |'_'+$canonical, |$canonical);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::makeAbstract<T>(clazz:Class<T>[1]):Class<T>[1]
+{
+   let typeModifiers = Profile.all()->filter(p|$p.name == 'typemodifiers')->toOne();
+   ^$clazz(stereotypes+=^Stereotype(profile=$typeModifiers, value='abstract'));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::applyAbstract<T>(clazz:Class<T>[1], isAbstract:Boolean[0..1]): Class<T>[1]
+{
+   if($isAbstract->isTrue(), | $clazz->makeAbstract(), | $clazz);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::applyAnnotations(type:AnnotatedElement[1], annotations:XsdAnnotation[*]): AnnotatedElement[1]
+{
+   ^$type(taggedValues=$type.taggedValues->concatenate($annotations->annotationsToDoc()));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::applyAnnotations(property:Property<Nil,Any|*>[1], annotations:XsdAnnotation[*]): Property<Nil,Any|*>[1]
+{
+   ^$property(taggedValues=$property.taggedValues->concatenate($annotations->annotationsToDoc()));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::annotationsToDoc(annotations:XsdAnnotation[*]): TaggedValue[0..1]
+{
+   let docs = $annotations.items->filter(i| $i->instanceOf(XsdDocumentation))->cast(@XsdDocumentation).value;
+   if($docs->isEmpty(), |[], |^TaggedValue(tag=doc->tag('doc'), value=$docs->joinStrings(' ')));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::qNameToString(name:QName[1]): String[1]
+{
+   $name.prefix->map(p| $p+':')->orElse('') + $name.localPart + ' (' + $name.namespace->namespaceToString() + ')';
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::namespaceToString(namespace:String[1]): String[1]
+{
+   if($namespace == '', |'default namespace', |$namespace);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::facetValue(restriction:XsdRestriction[1], type:Type[1]): String[0..1]
+{
+   $restriction.facets->filter(f|$f->instanceOf($type))->first().value;
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::parse(value:String[0..1], type:Type[1]): Any[0..1]
+{
+   if($value->isEmpty(),
+      | [],
+      |
+   if($type == Integer,
+      | $value->toOne()->parseInteger(),
+      |
+   if($type == Float,
+      | $value->toOne()->parseFloat(),
+      |
+   if($type == Decimal,
+      | $value->toOne()->parseDecimal(),
+      |    
+   if($type == StrictDate || $type == DateTime,
+      | $value->toOne()->parseDate(),
+      | fail('Unsupported Type: ' + $type.name->toOne()); [];
+   )))));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::log(debug:DebugContext[1], message:Function<{->String[1]}>[1]): Any[*]
+{
+   if($debug.debug,
+      | println($debug.space+$message->eval()),
+      | []
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::lookingAt(debug:DebugContext[1], message:Function<{->String[1]}>[1]): Any[*]
+{
+   if($debug.debug,
+      | println($debug.space+'~O^O~ '+$message->eval()),
+      | []
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::logGenInfo(debug:DebugContext[1], result:GenInfo[1]): GenInfo[1]
+{
+   if($debug.debug,
+      | println($debug.space+'>>--> '+$result->toDebugString()),
+      | []
+   );
+
+   $result;
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::nameOrAnon(object:XsdNamed[1]): String[1]
+{
+   if($object.name->isEmpty(),
+      | 'anonymous',
+      | $object.name->toOne()->qNameToString()
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::nameOrAnon(object:XsdObject[1]): String[1]
+{
+   if(!$object->instanceOf(XsdNamed) || $object->cast(@XsdNamed).name->isEmpty(),
+      | 'anonymous',
+      | $object->cast(@XsdNamed).name->toOne()->qNameToString()
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::toDebugString(result:GenInfo[1]): String[1]
+{
+   $result->match([
+      u:UnknownGenInfo[1]                | 'Unknown',
+      p:PrimitiveTypeGenInfo[1]          | 'Primitive ' + $p.pureType.name->toOne(),
+      x:PrimitiveTypeExtensionGenInfo[1] | 'PrimitiveExtension ' + $x.primitive.pureType.name->toOne() + ' ' + $x.properties.properties.rawName->joinStrings(','),
+      p:PropertyGenInfo[1]               | 'Property ' + $p.rawName + ': ' + $p.type->toDebugString() + '['+$p.multiplicity->printMultiplicity()+']',
+      p:PropertySetGenInfo[1]            | 'PropertySet ' + $p->propertySetDebugDetails(),
+      c:ClassGenInfo[1]                  | 'Class ' + $c.rawName + ' ' + $c.properties->propertySetDebugDetails(),
+      c:ClassReferenceGenInfo[1]         | 'ClassReference ' + $c.rawName
+   ]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::propertySetDebugDetails(p:PropertySetGenInfo[1]): String[1]
+{
+   $p.properties.rawName->joinStrings('{',',','}') + if($p.xtends->isEmpty(), |'', |' extends ' + $p.xtends->map(x| $x->match([c:ClassGenInfo[1] | $c.rawName, c:ClassReferenceGenInfo[1] | $c.rawName]))->joinStrings(','));
+}
+
+// ========================================================================================================================================================
+// expression factory
+// ========================================================================================================================================================
+
+Class <<access.private>> meta::external::format::xml::transformation::toPure::ExpressionFactory
+{
+   importGroup: ImportGroup[1];   
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::newExpressionFactory(): ExpressionFactory[1]
+{
+   ^ExpressionFactory(
+      importGroup =  {f: SimpleFunctionExpression[1]|$f.importGroup}.expressionSequence->evaluateAndDeactivate()->at(0)->cast(@SimpleFunctionExpression).importGroup
+   );
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::instance(factory:ExpressionFactory[1], values:Any[1], type:Type[1]): InstanceValue[1]
+{
+   ^InstanceValue(
+      values=$values,
+      multiplicity=PureOne,
+      genericType=^GenericType(rawType=$type)
+   )->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::instance(factory:ExpressionFactory[1], values:Any[0..1], type:Type[1]): InstanceValue[1]
+{
+   ^InstanceValue(
+      values=$values,
+      multiplicity=ZeroOne,
+      genericType=^GenericType(rawType=$type)
+   )->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::instance(factory:ExpressionFactory[1], values:Any[*], type:Type[1]): InstanceValue[1]
+{
+   ^InstanceValue(
+      values=$values,
+      multiplicity=ZeroMany,
+      genericType=^GenericType(rawType=$type)
+   )->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::variable(factory:ExpressionFactory[1], name:String[1], type:Type[1], multiplicity:Multiplicity[1]): VariableExpression[1]
+{
+   ^VariableExpression( 
+      name         = $name,
+      genericType  = ^GenericType(rawType=$type),
+      multiplicity = $multiplicity
+   )->evaluateAndDeactivate(); 
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::func(factory:ExpressionFactory[1], object:VariableExpression[1], prop:AbstractProperty<Any>[1]): SimpleFunctionExpression[1]
+{
+   ^SimpleFunctionExpression(
+      func             = $prop,
+      genericType      = $prop.genericType,
+      multiplicity     = $prop.multiplicity,
+      parametersValues = $object,
+      importGroup      = $factory.importGroup
+   )->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::func(factory:ExpressionFactory[1], func:Function<Any>[1], args:ValueSpecification[*]): SimpleFunctionExpression[1]
+{
+   let funcType = $func->genericType().typeArguments->at(0).rawType->toOne()->cast(@FunctionType);
+   
+   ^SimpleFunctionExpression(
+      func             = $func,
+      genericType      = $funcType.returnType,
+      multiplicity     = $funcType.returnMultiplicity,
+      parametersValues = $args,
+      importGroup      = $factory.importGroup
+   )->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::lambda(factory:ExpressionFactory[1], params:VariableExpression[*], expr:ValueSpecification[1]): LambdaFunction<Any>[1]
+{
+   let classifierGenericType = ^GenericType(
+      rawType = LambdaFunction, 
+      typeArguments = ^GenericType(
+         rawType = ^FunctionType(
+            returnMultiplicity = $expr->deactivate().multiplicity, 
+            returnType         = $expr->deactivate().genericType, 
+            parameters         = $params
+         )
+      )
+   ); 
+
+   let l = ^LambdaFunction<Any>(expressionSequence=$expr);
+   ^$l(classifierGenericType = $classifierGenericType)->evaluateAndDeactivate();
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_isEmpty(factory:ExpressionFactory[1], arg:ValueSpecification[1]): SimpleFunctionExpression[1]     
+{
+   let func = if($arg.multiplicity == ZeroOne, |isEmpty_Any_$0_1$__Boolean_1_, |isEmpty_Any_MANY__Boolean_1_);
+   $factory->func($func, $arg);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_isNotEmpty(factory:ExpressionFactory[1], arg:ValueSpecification[1]): SimpleFunctionExpression[1]  
+{
+   let func = if($arg.multiplicity == ZeroOne, |isNotEmpty_Any_$0_1$__Boolean_1_, |isNotEmpty_Any_MANY__Boolean_1_);
+   $factory->func($func, $arg);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_forAll(factory:ExpressionFactory[1], arg:ValueSpecification[1], lambda:LambdaFunction<Any>[1]): SimpleFunctionExpression[1]  
+{
+   $factory->func(forAll_T_MANY__Function_1__Boolean_1_, [$arg, $factory->instance($lambda, LambdaFunction)]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_eq(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(eq_Any_1__Any_1__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_equal(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(equal_Any_MANY__Any_MANY__Boolean_1_, [$arg1, $arg2]);
+}
+
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_lessThan(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(lessThan_Number_1__Number_1__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_lessThanEqual(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(lessThanEqual_Number_1__Number_1__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_greaterThan(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(greaterThan_Number_1__Number_1__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_greaterThanEqual(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(greaterThanEqual_Number_1__Number_1__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_length(factory:ExpressionFactory[1], arg:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(length_String_1__Integer_1_, $arg);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_in(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(in_Any_1__Any_MANY__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_and(factory:ExpressionFactory[1], args:ValueSpecification[*]): ValueSpecification[1]
+{
+   assert($args->isNotEmpty());
+   if($args->size() == 1,
+      | $args->at(0),
+      |
+   if($args->size() == 2,
+      | $factory->_and($args->at(0), $args->at(1)),
+      | $args->init()->reverse()->fold({a1, a2| $factory->_and($a1, $a2)}, $args->last()->toOne())
+   ));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_and(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(and_Boolean_1__Boolean_1__Boolean_1_, [$arg1, $arg2]);
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_or(factory:ExpressionFactory[1], args:ValueSpecification[*]): ValueSpecification[1]
+{
+   assert($args->isNotEmpty());
+   if($args->size() == 1,
+      | $args->at(0),
+      |
+   if($args->size() == 2,
+      | $factory->_or($args->at(0), $args->at(1)),
+      | $args->init()->reverse()->fold({a1, a2| $factory->_or($a1, $a2)}, $args->last()->toOne())
+   ));
+}
+
+function <<access.private>> meta::external::format::xml::transformation::toPure::_or(factory:ExpressionFactory[1], arg1:ValueSpecification[1], arg2:ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   $factory->func(or_Boolean_1__Boolean_1__Boolean_1_, [$arg1, $arg2]);
+}
+

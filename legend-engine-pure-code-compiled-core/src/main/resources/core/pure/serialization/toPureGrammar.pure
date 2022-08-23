@@ -286,5 +286,13 @@ function meta::pure::metamodel::serialization::grammar::printType(type : meta::p
    ]);
 }
 
+function meta::pure::metamodel::serialization::grammar::printPackageableElements(packageableElements:PackageableElement[*]): String[1]
+{
+   $packageableElements->map(pe| $pe->match([
+      t:Type[1]        | $t->printType(),
+      a:Association[1] | $a->printAssociation();
+   ]))->joinStrings('\n\n');
+}
+
 
 

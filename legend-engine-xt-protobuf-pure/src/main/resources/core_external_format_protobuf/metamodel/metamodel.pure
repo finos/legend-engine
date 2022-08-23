@@ -19,6 +19,12 @@ Enum meta::external::format::protobuf::metamodel::Syntax
    proto2,proto3
 }
 
+Class meta::external::format::protobuf::metamodel::ProtobufSchema extends meta::external::shared::format::metamodel::SchemaDetail
+{
+  fileName : String[1];
+  file : ProtoFile[1];  
+}
+
 Class meta::external::format::protobuf::metamodel::ProtoFile
 [
   //Initially implemented this with multiple inheritence but more than one super type is not currently supported in several flows
