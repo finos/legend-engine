@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat;
 
+@Deprecated
 public abstract class PathReference
 {
 }

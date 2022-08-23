@@ -44,6 +44,7 @@
                                 <argument>meta::external::format::protobuf::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.protobuf3.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
+                                <argument>meta::external::format::protobuf::metamodel::ProtobufSchema</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>

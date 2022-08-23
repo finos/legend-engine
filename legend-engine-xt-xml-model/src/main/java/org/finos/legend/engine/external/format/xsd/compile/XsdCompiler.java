@@ -60,7 +60,7 @@ import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdUnion;
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdUse;
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdWhiteSpace;
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.visit.XsdObjectVisitor;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xml_QName;

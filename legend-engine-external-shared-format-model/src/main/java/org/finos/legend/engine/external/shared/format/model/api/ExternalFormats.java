@@ -23,8 +23,10 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaGenerator;
-import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelGenerator;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaGenerator;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -60,7 +62,7 @@ public class ExternalFormats
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Legend Execution Server");
-    static final Map<String, ExternalFormatExtension> extensions = ExternalFormatExtensionLoader.extensions();
+    static final Map<String, ExternalFormatExtension<?>> extensions = ExternalFormatExtensionLoader.extensions();
 
     private final ModelManager modelManager;
 
@@ -101,14 +103,14 @@ public class ExternalFormats
         {
             long start = System.currentTimeMillis();
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_START).toString());
-            ExternalFormatExtension extension = extensions.get(generateModelInput.config.format);
-            if (!extension.supportsModelGeneration())
+            ExternalFormatExtension<?> extension = extensions.get(generateModelInput.config.format);
+            if (!(extension instanceof ExternalFormatModelGenerationExtension))
             {
                 throw new UnsupportedOperationException("Model generation not supported for " + extension.getFormat());
             }
             PureModel pureModel = this.modelManager.loadModel(generateModelInput.model, generateModelInput.clientVersion, profiles, null);
-            SchemaToModelGenerator generator = new SchemaToModelGenerator(pureModel, generateModelInput.clientVersion);
-            PureModelContextData generated = generator.generate(generateModelInput.config);
+            SchemaToModelGenerator generator = new SchemaToModelGenerator(pureModel, generateModelInput.clientVersion, extensions);
+            PureModelContextData generated = generator.generate(generateModelInput.config, generateModelInput.sourceSchemaSet, generateModelInput.generateBinding, generateModelInput.targetBindingPath);
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(profiles, generated, objectMapper);
         }
@@ -134,22 +136,23 @@ public class ExternalFormats
             {
                 throw new EngineException("Please provide a Format");
             }
-            ExternalFormatExtension extension = extensions.get(generateSchemaInput.config.format);
+            ExternalFormatExtension<?> extension = extensions.get(generateSchemaInput.config.format);
             if (extension == null)
             {
                 throw new UnsupportedOperationException("Can't find an extension supporting the external format " + generateSchemaInput.config.format);
             }
-            if (!extension.supportsSchemaGeneration())
+            if (!(extension instanceof ExternalFormatSchemaGenerationExtension))
             {
-                throw new UnsupportedOperationException("Model generation not supported for " + extension.getFormat());
+                throw new UnsupportedOperationException("Schema generation not supported for " + extension.getFormat());
             }
+
             if (generateSchemaInput.model == null)
             {
                 throw new UnsupportedOperationException("Please provide a PureModelContext");
             }
             PureModel pureModel = this.modelManager.loadModel(generateSchemaInput.model, generateSchemaInput.clientVersion, profiles, null);
-            ModelToSchemaGenerator generator = new ModelToSchemaGenerator(pureModel);
-            PureModelContextData generated = generator.generate(generateSchemaInput.config);
+            ModelToSchemaGenerator generator = new ModelToSchemaGenerator(pureModel, extensions);
+            PureModelContextData generated = generator.generate(generateSchemaInput.config, generateSchemaInput.sourceModelUnit, generateSchemaInput.generateBinding, generateSchemaInput.targetBindingPath);
             LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double) System.currentTimeMillis() - start).toString());
             return ManageConstantResult.manageResult(profiles, generated, objectMapper);
         }

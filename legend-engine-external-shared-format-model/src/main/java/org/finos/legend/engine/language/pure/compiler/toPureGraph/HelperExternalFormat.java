@@ -57,7 +57,7 @@ public class HelperExternalFormat
         return Objects.requireNonNull(ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), ExternalFormatCompilerExtension.class).getAny(), "Serializable model specification extension is not in scope");
     }
 
-    public static ExternalFormatExtension<?, ?, ?> getExternalFormatExtension(Root_meta_external_shared_format_binding_Binding binding)
+    public static ExternalFormatExtension<?> getExternalFormatExtension(Root_meta_external_shared_format_binding_Binding binding)
     {
         return ExternalFormatExtensionLoader.extensions().values().stream()
                 .filter(ext -> ext.getContentTypes().contains(binding._contentType()))

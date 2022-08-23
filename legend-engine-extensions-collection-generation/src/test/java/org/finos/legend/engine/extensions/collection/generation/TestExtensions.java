@@ -282,10 +282,10 @@ public class TestExtensions
                 .with(org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension.class);
     }
 
-    protected Iterable<? extends Class<? extends ExternalFormatExtension<?, ?, ?>>> getExpectedExternalFormatExtensions()
+    protected Iterable<? extends Class<? extends ExternalFormatExtension<?>>> getExpectedExternalFormatExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
-        return Lists.mutable.<Class<? extends ExternalFormatExtension<?, ?, ?>>>empty()
+        return Lists.mutable.<Class<? extends ExternalFormatExtension<?>>>empty()
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)

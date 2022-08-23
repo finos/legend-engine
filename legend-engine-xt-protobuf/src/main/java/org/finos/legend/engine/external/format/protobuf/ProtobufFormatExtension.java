@@ -14,112 +14,62 @@
 
 package org.finos.legend.engine.external.format.protobuf;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.format.protobuf.fromModel.ModelToProtobufConfiguration;
-import org.finos.legend.engine.external.format.protobuf.toModel.ProtobufToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
+import org.finos.legend.engine.language.protobuf3.grammar.from.Protobuf3GrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_ProtobufSchema;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Translator;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtoFile;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtobufSchema;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_metamodel_ProtobufSchema_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_transformation_fromPure_ModelToProtobufDataConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.core_external_format_protobuf_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_protobuf_metamodel_metamodel_serialization;
-import org.finos.legend.pure.generated.core_external_format_protobuf_transformation_transformation;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
-import java.util.List;
-
-public class ProtobufFormatExtension implements ExternalFormatExtension<Root_meta_external_format_protobuf_binding_ProtobufSchema, ProtobufToModelConfiguration, ModelToProtobufConfiguration>
+public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_protobuf_metamodel_ProtobufSchema, ModelToProtobufConfiguration>
 {
-    public static final String TYPE = "Protobuf";
-
-    //There is no standard content type for protobuf yet
-    private static final String CONTENT_TYPE_1 = "application/protobuf";
-    private static final String CONTENT_TYPE_2 = " application/vnd.google.protobuf";
+    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> protobufContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema>) core_external_format_protobuf_externalFormatContract.Root_meta_external_format_protobuf_contract_protobufFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    public static final String TYPE = protobufContract._id();
 
     @Override
-    public String getFormat()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract()
     {
-        return TYPE;
+        return protobufContract;
     }
 
     @Override
-    public List<String> getContentTypes()
+    public Root_meta_external_format_protobuf_metamodel_ProtobufSchema compileSchema(ExternalSchemaCompileContext context)
     {
-        return Lists.fixedSize.of(CONTENT_TYPE_1, CONTENT_TYPE_2);
+        ProtoFile protoFile = Protobuf3GrammarParser.newInstance().parseProto(context.getContent());
+        Root_meta_external_format_protobuf_metamodel_ProtoFile pureProtoFile = new Translator().translate(protoFile, context.getPureModel());
+
+        Root_meta_external_format_protobuf_metamodel_ProtobufSchema protobufSchema = new Root_meta_external_format_protobuf_metamodel_ProtobufSchema_Impl("", null, context.getPureModel().getClass("meta::external::format::protobuf::metamodel::ProtobufSchema"));
+        protobufSchema._file(pureProtoFile);
+        protobufSchema._fileName(context.getLocation());
+
+        return protobufSchema;
     }
 
     @Override
-    public boolean supportsModelGeneration()
-    {
-        return false;
-    }
-
-    @Override
-    public Root_meta_external_format_protobuf_binding_ProtobufSchema compileSchema(ExternalSchemaCompileContext context)
-    {
-        throw new RuntimeException("TODO");
-
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
-    {
-        return null;
-    }
-
-    @Override
-    public String metamodelToText(Root_meta_external_format_protobuf_binding_ProtobufSchema schemaDetail, PureModel pureModel)
+    public String metamodelToText(Root_meta_external_format_protobuf_metamodel_ProtobufSchema schemaDetail, PureModel pureModel)
     {
         return core_external_format_protobuf_metamodel_metamodel_serialization.Root_meta_external_format_protobuf_metamodel_serialization_toString_ProtoFile_1__String_1_(schemaDetail._file(), pureModel.getExecutionSupport());
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, ProtobufToModelConfiguration protobufToModelConfiguration, PureModel pureModel)
+    public Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToProtobufConfiguration configuration, PureModel pureModel)
     {
-        return null;
-    }
-
-    @Override
-    public boolean supportsSchemaGeneration()
-    {
-        return true;
-    }
-
-    @Override
-    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getSchemaGenerationProperties(PureModel pureModel)
-    {
-        return core_external_format_protobuf_transformation_transformation.Root_meta_external_format_protobuf_binding_fromPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToProtobufConfiguration modelToSchemaConfiguration, PureModel pureModel)
-    {
-        Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration configuration = new Root_meta_external_format_protobuf_binding_fromPure_ModelToProtobufDataConfiguration_Impl("", null, pureModel.getClass("meta::external::format::protobuf::binding::fromPure::ModelToProtobufDataConfiguration"))
-                ._sourceModel(ListIterate.collect(modelToSchemaConfiguration.sourceModel, pureModel::getClass))
-                ._targetBinding(modelToSchemaConfiguration.targetBinding)
-                ._targetSchemaSet(modelToSchemaConfiguration.targetSchemaSet)
-                ._javaPackage(modelToSchemaConfiguration.javaPackage)
-                ._javaOuterClassname(modelToSchemaConfiguration.javaOuterClassname)
-                ._javaMultipleFiles(modelToSchemaConfiguration.javaMultipleFiles)
-                ._optimizeFor(modelToSchemaConfiguration.optimizeFor == null ? null : pureModel.getEnumValue("meta::external::format::protobuf::binding::fromPure::OptimizeMode", modelToSchemaConfiguration.optimizeFor.name()))
-                ._customOptions(new PureMap(modelToSchemaConfiguration.customOptions));
-
-        modelToSchemaConfiguration.sourceModel.forEach(pe -> configuration._sourceModelAdd(pureModel.getPackageableElement(pe)));
-
-        return core_external_format_protobuf_transformation_transformation.Root_meta_external_format_protobuf_binding_fromPure_pureToProtobuf_ModelToProtobufDataConfiguration_1__Binding_1_(configuration, pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public List<String> getRegisterablePackageableElementNames()
-    {
-        return Lists.mutable.empty();
+        return new Root_meta_external_format_protobuf_transformation_fromPure_ModelToProtobufDataConfiguration_Impl("", null, pureModel.getClass("meta::external::format::protobuf::transformation::fromPure::ModelToProtobufDataConfiguration"))
+                ._targetSchemaSet(configuration.targetSchemaSet)
+                ._javaPackage(configuration.javaPackage)
+                ._javaOuterClassname(configuration.javaOuterClassname)
+                ._javaMultipleFiles(configuration.javaMultipleFiles)
+                ._optimizeFor(configuration.optimizeFor == null ? null : pureModel.getEnumValue("meta::external::format::protobuf::transformation::fromPure::OptimizeMode", configuration.optimizeFor.name()))
+                ._customOptions(new PureMap(configuration.customOptions));
     }
 }

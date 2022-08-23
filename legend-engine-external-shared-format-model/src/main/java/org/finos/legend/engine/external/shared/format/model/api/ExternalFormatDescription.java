@@ -18,6 +18,8 @@ import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationParameter;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
 
@@ -37,15 +39,15 @@ public class ExternalFormatDescription
     public boolean supportsModelGeneration;
     public List<GenerationProperty> modelGenerationProperties;
 
-    public static ExternalFormatDescription newDescription(ExternalFormatExtension extension, PureModel pureModel)
+    public static ExternalFormatDescription newDescription(ExternalFormatExtension<?> extension, PureModel pureModel)
     {
         ExternalFormatDescription result = new ExternalFormatDescription();
         result.name = extension.getFormat();
         result.contentTypes = Collections.unmodifiableList(extension.getContentTypes());
-        result.supportsModelGeneration = extension.supportsModelGeneration();
-        result.modelGenerationProperties = toGenerationProperties(extension.getModelGenerationProperties(pureModel));
-        result.supportsSchemaGeneration = extension.supportsSchemaGeneration();
-        result.schemaGenerationProperties = toGenerationProperties(extension.getSchemaGenerationProperties(pureModel));
+        result.supportsModelGeneration = extension instanceof ExternalFormatModelGenerationExtension;
+        result.modelGenerationProperties = result.supportsModelGeneration ? toGenerationProperties(((ExternalFormatModelGenerationExtension<?, ?>) extension).getModelGenerationProperties(pureModel)) : Collections.emptyList();
+        result.supportsSchemaGeneration = extension instanceof ExternalFormatSchemaGenerationExtension;
+        result.schemaGenerationProperties = result.supportsSchemaGeneration ? toGenerationProperties(((ExternalFormatSchemaGenerationExtension<?, ?>) extension).getSchemaGenerationProperties(pureModel)) : Collections.emptyList();
         return result;
     }
 

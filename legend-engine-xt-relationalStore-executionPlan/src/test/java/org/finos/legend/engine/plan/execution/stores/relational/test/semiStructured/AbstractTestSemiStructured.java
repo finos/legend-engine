@@ -31,7 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.core_external_format_json_extension;
+import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
 
@@ -102,7 +102,9 @@ public abstract class AbstractTestSemiStructured
     {
         MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
         extensions.addAll(Lists.mutable.withAll(Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport())));
-        extensions.addAll(core_pure_binding_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", Lists.mutable.with(core_external_format_json_extension.Root_meta_external_format_json_jsonFormatExtension__ExternalFormatExtension_1_(pureModel.getExecutionSupport())), pureModel.getExecutionSupport()).toList());
+        extensions.add(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
+        extensions.add(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
+
         return extensions;
     }
 

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.external.format.protobuf.fromModel;
 
 import org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaConfiguration;
 
 import java.util.Collections;
 import java.util.Map;
@@ -26,11 +26,10 @@ public class ModelToProtobufConfiguration extends ModelToSchemaConfiguration
     public String javaOuterClassname;
     public Boolean javaMultipleFiles;
     public OptimizeMode optimizeFor;
-    public Map<String,Object> customOptions = Collections.EMPTY_MAP;
+    public Map<String, Object> customOptions = Collections.EMPTY_MAP;
 
     public ModelToProtobufConfiguration()
     {
         super(ProtobufFormatExtension.TYPE);
     }
-
 }
