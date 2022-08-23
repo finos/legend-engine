@@ -86,16 +86,19 @@ public class RelationalConnectionManager implements ConnectionManager
                 Lists.mutable.<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>>with(c -> new DataSourceSpecificationKeyGenerator(testDbPort, c))
                         .withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationKeyGenerators(testDbPort)));
 
+        Function<RelationalDatabaseConnection, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> authenticationStrategyProvider =
+                r -> ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
+                        .select(Objects::nonNull)
+                        .getFirstOptional()
+                        .orElseThrow(() -> new UnsupportedOperationException("No transformer provided for Authentication Strategy - " + r.authenticationStrategy.getClass().getName()));
+
         this.dataSourceTrans =
                 Lists.mutable.<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>>with(
                         (r, c) -> new DataSourceSpecificationTransformer(
                                 c.getDataSourceSpecificationKey(),
-                                ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
-                                        .select(Objects::nonNull)
-                                        .getFirstOptional()
-                                        .orElseThrow(() -> new UnsupportedOperationException("No transformer provided for Authentication Strategy - " + r.authenticationStrategy.getClass().getName())),
+                                authenticationStrategyProvider.apply(r),
                                 r)
-                ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(oauthProfiles, null)));
+                ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(authenticationStrategyProvider)));
     }
 
     private DataSourceSpecificationKey buildDataSourceKey(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection)

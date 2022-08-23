@@ -93,6 +93,10 @@
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
 
+        <module>legend-engine-xt-relationalStore-bigquery-execution</module>
+        <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
+        <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
+
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
 
@@ -699,6 +703,21 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
