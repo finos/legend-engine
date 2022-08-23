@@ -213,7 +213,6 @@
             <artifactId>legend-engine-xt-diagram-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-grammar</artifactId>

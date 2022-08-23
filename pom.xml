@@ -513,7 +513,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                    <failOnWarning>false</failOnWarning>
+                    <failOnWarning>true</failOnWarning>
                     <ignoreNonCompile>true</ignoreNonCompile>
                 </configuration>
                 <executions>
