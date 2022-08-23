@@ -298,6 +298,13 @@ function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionO
    $executionOptionsList->isNotEmpty();
 }
 
+function meta::pure::executionPlan::validateAndReturnExecutionOptionOfType(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):ExecutionOption[1]
+{
+   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   assert($executionOptionsList->size() == 1, |'Execution Option List provided has no or more that two instances of the following Execution Options' + $execOption.name->toOne());
+   $executionOptionsList->head()->toOne();
+}
+
 function meta::pure::executionPlan::stubExecutionOptionParameters(execOptionCtx: ExecutionOptionContext[1], extensions: meta::pure::extension::Extension[*]):PlanVarPlaceHolder[*]
 {
    let planVarPlaceHolders = $extensions.executionPlanExtensions()->map(

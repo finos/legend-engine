@@ -1220,6 +1220,35 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanForExecutionOpt
       '    )\n'+
       '  )\n'+
       ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
+      let executionOption = $executionOptionContext->validateAndReturnExecutionOptionOfType(DummyExecutionOption);
+      assertEquals(true, $executionOption->toOne()->instanceOf(DummyExecutionOption));
+}
+
+function meta::pure::executionPlan::tests::withContext(tds: TabularDataSet[1]):TabularDataSet[1]
+{
+  $tds;
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testRoutingContextBuilderFunctions():Boolean[1]
+{
+  let dummyExtension = ^Extension(
+                            type = 'dummy',
+                            serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
+                            routeContextBuilderFunctions={fe:FunctionExpression[1]| if($fe.func == meta::pure::executionPlan::tests::withContext_TabularDataSet_1__TabularDataSet_1_,
+                                                                                                        | ^ExecutionContext(),|[]);}
+                         );
+  let extensions = meta::relational::extension::relationalExtensions()->add($dummyExtension); 
+  let result = executionPlan({|Person.all()->project([col(p|$p.firstName, '"firstName"', 'doc1'), col(p|$p.lastName, 'lastName')])->withContext();}, simpleRelationalMapping, meta::relational::tests::testRuntime(), $extensions);                      
+  
+  //creates plan with execution context
+  assertEquals(
+    'Relational\n' +
+    '(\n' +
+    '  type = TDS[("firstName", String, VARCHAR(200), "doc1"), (lastName, String, VARCHAR(200), "")]\n' +
+    '  resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200))]\n' +
+    '  sql = select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"\n' +
+    '  connection = TestDatabaseConnection(type = "H2")\n' +
+    ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));                               
 }
 
 Class meta::pure::executionPlan::tests::Struct
