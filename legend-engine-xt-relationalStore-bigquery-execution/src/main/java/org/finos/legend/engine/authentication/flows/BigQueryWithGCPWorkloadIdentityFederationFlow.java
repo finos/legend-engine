@@ -25,7 +25,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.cloud.AWSConfig;
+import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
@@ -68,11 +69,13 @@ public class BigQueryWithGCPWorkloadIdentityFederationFlow implements DatabaseAu
     public static final String GCP_STS_HOST = "sts.googleapis.com";
     public static final String GCP_IAM_CREDENTIALS_HOST = "iamcredentials.googleapis.com";
     public static final String ISO8601BasicFormat = "yyyyMMdd'T'HHmmss'Z'";
-    private final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration;
+    private final AWSConfig awsConfig;
+    private final GCPWorkloadConfig gcpWorkloadConfig;
 
-    public BigQueryWithGCPWorkloadIdentityFederationFlow(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration)
+    public BigQueryWithGCPWorkloadIdentityFederationFlow(AWSConfig awsConfig, GCPWorkloadConfig gcpWorkloadConfig)
     {
-        this.flowProviderConfiguration = flowProviderConfiguration;
+        this.awsConfig = awsConfig;
+        this.gcpWorkloadConfig = gcpWorkloadConfig;
     }
 
     @Override
@@ -98,19 +101,19 @@ public class BigQueryWithGCPWorkloadIdentityFederationFlow implements DatabaseAu
     {
         Credentials awsCredentials = assumeAWSRoleAndGetCredentials(
                 String.format("arn:aws:iam::%s:role/%s",
-                        flowProviderConfiguration.getAwsConfig().getAccountId(),
-                        flowProviderConfiguration.getAwsConfig().getRole()),
-                flowProviderConfiguration.getAwsConfig().getRole(), flowProviderConfiguration.getAwsConfig().getRegion(),
-                flowProviderConfiguration.getAwsConfig().getAwsAccessKeyIdVaultReference(),
-                flowProviderConfiguration.getAwsConfig().getAwsSecretAccessKeyVaultReference());
+                        awsConfig.getAccountId(),
+                        awsConfig.getRole()),
+                awsConfig.getRole(), awsConfig.getRegion(),
+                awsConfig.getAwsAccessKeyIdVaultReference(),
+                awsConfig.getAwsSecretAccessKeyVaultReference());
         Date date = new Date();
         String currentDate = getUTCDate(date);
-        String canonicalAWSRequestSignature = computeCanonicalAWSRequestSignature(awsCredentials, date, flowProviderConfiguration.getAwsConfig().getRegion());
+        String canonicalAWSRequestSignature = computeCanonicalAWSRequestSignature(awsCredentials, date, awsConfig.getRegion());
         String gcpTargetResource = String.format(
                 "//iam.googleapis.com/projects/%s/locations/global/workloadIdentityPools/%s/providers/%s",
-                flowProviderConfiguration.getGcpWorkloadConfig().getProjectNumber(),
-                flowProviderConfiguration.getGcpWorkloadConfig().getPoolId(),
-                flowProviderConfiguration.getGcpWorkloadConfig().getProviderId()
+                gcpWorkloadConfig.getProjectNumber(),
+                gcpWorkloadConfig.getPoolId(),
+                gcpWorkloadConfig.getProviderId()
         );
         String subjectTokenType = "urn:ietf:params:aws:token-type:aws4_request";
         String callerIdentityToken = makeAWSCallerIdentityToken(awsCredentials, currentDate, canonicalAWSRequestSignature, gcpTargetResource);
