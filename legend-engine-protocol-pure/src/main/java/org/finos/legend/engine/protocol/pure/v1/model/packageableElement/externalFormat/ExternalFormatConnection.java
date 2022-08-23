@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.extern
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
 
+@Deprecated
 public class ExternalFormatConnection extends Connection
 {
     public ExternalSource externalSource;

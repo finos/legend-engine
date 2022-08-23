@@ -15,7 +15,7 @@
 package org.finos.legend.engine.external.format.json.fromModel;
 
 import org.finos.legend.engine.external.format.json.JsonExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaConfiguration;
 
 public class ModelToJsonSchemaConfiguration extends ModelToSchemaConfiguration
 {

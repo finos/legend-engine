@@ -200,7 +200,9 @@ function meta::pure::executionPlan::engine::java::prepare(node:ExecutionNode[1],
       g:GlobalGraphFetchExecutionNode[1]             | $g->prepareForGlobalGraphFetchNode($path, $contextFromOtherNodes, $debug),
       g:InMemoryGraphFetchExecutionNode[1]           | $g->prepareForInMemoryGraphFetch($path, $contextFromOtherNodes, $debug),
       g:StoreStreamReadingExecutionNode[1]           | $g->prepareForStoreStreamReading($path, $contextFromOtherNodes, $extensions, $debug),
-      p:PureExpressionPlatformExecutionNode[1]       | $p->prepareForPlatformNode($path, $contextFromOtherNodes, $extensions, $debug),      
+      p:PureExpressionPlatformExecutionNode[1]       | $p->prepareForPlatformNode($path, $contextFromOtherNodes, $extensions, $debug),
+      p:PlatformMergeExecutionNode[1]                | $p->prepareForPlatformMergeNode($path, $contextFromOtherNodes, $extensions, $debug),
+      p:PlatformUnionExecutionNode[1]                | $p->prepareForPlatformUnionNode($path, $contextFromOtherNodes, $extensions, $debug),      
       e:ExecutionNode[1]                             |  $contextFromOtherNodes
    ])->toOneMany());
 }

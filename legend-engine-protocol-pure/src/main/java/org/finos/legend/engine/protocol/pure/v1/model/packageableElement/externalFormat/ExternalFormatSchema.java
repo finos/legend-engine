@@ -21,6 +21,7 @@ public class ExternalFormatSchema
     public String id;
     public String location;
     public String content;
+    
     public SourceInformation sourceInformation;
     public SourceInformation contentSourceInformation;
 }

@@ -126,12 +126,27 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                                                let foTransform = $fo->transform($f, $agg.second);
                                                pair(list($agg.first.values->add($foTransform.first)), $foTransform.second);
                                             }, pair(^List<RelationalOperationElement>(), $transformedColumns.second));
+                                            let transformedGroupBy = $s.groupBy->fold({gp, agg |
+                                               let gpTransform = $gp->transform($f, $agg.second);
+                                               pair(list($agg.first.values->add($gpTransform.first)), $gpTransform.second);
+                                            }, pair(^List<RelationalOperationElement>(), $transformedFilterOp.second));
+                                            let transformedHavingOp = $s.havingOperation->fold({ho, agg |
+                                               let hoTransform = $ho->transform($f, $agg.second);
+                                               pair(list($agg.first.values->add($hoTransform.first)), $hoTransform.second);
+                                            }, pair(^List<RelationalOperationElement>(), $transformedGroupBy.second));
+                                            let transformedOrderBy = $s.orderBy->fold({ob, agg |
+                                               let obTransform = $ob.column->transform($f, $agg.second);
+                                               pair(list($agg.first.values->add(^$ob(column=$obTransform.first))), $obTransform.second);
+                                            }, pair(^List<OrderBy>(), $transformedHavingOp.second));
                                             let newS = ^$s( data=$transformedData.first->cast(@RootJoinTreeNode),
                                                             columns=$transformedColumns.first.values,
-                                                            filteringOperation=$transformedFilterOp.first.values
+                                                            filteringOperation=$transformedFilterOp.first.values,
+                                                            groupBy=$transformedGroupBy.first.values,
+                                                            havingOperation=$transformedHavingOp.first.values,
+                                                            orderBy=$transformedOrderBy.first.values
                                                           );
                                             let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
-                                            pair($newSWithLeftSideModified, $transformedFilterOp.second);,
+                                            pair($newSWithLeftSideModified, $transformedOrderBy.second);,
 
                       v:ViewSelectSQLQuery[1] | let transformedSql = $v.selectSQLQuery->transform($f, $transformed);
                                                 pair(^$v(selectSQLQuery=$transformedSql.first->cast(@SelectSQLQuery)), $transformedSql.second);,
@@ -254,7 +269,10 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
                       s:SelectSQLQuery[1] | 
                                             let newS = ^$s( data= if($s.data->isEmpty(), | [], |$s.data->toOne()->transformNonCached([], $f)->cast(@RootJoinTreeNode)),
                                                             columns=$s.columns->map(c|$c->transformNonCached($f)),
-                                                            filteringOperation=$s.filteringOperation->map(c|$c->transformNonCached($f))
+                                                            filteringOperation=$s.filteringOperation->map(c|$c->transformNonCached($f)),
+                                                            groupBy=$s.groupBy->map(c|$c->transformNonCached($f)),
+                                                            havingOperation=$s.havingOperation->map(c|$c->transformNonCached($f)),
+                                                            orderBy=$s.orderBy->map(o|^$o(column=$o.column->transformNonCached($f)))
                                                           );
                                             let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
                                             $newSWithLeftSideModified;,

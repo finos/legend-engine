@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
-import org.finos.legend.engine.external.format.flatdata.fromModel.ModelToFlatDataConfiguration;
-import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
+import org.finos.legend.engine.external.format.flatdata.transformation.fromModel.ModelToFlatDataConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaGenerationTest;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.junit.Assert;
@@ -40,7 +41,51 @@ public class TestModelToFlatDataGeneration extends ModelToSchemaGenerationTest
                 "  timeOfDeath : DateTime[1];\n" +
                 "}";
 
-        PureModelContextData generated = generateSchema(modelCode, config("test::gen"));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::gen::Data");
+
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"));
+        Assert.assertEquals(3, generated.getElements().size());
+        ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
+        Assert.assertEquals("test::gen::TestSchemaSet", schemaSet.getPath());
+
+        String expectedDefinition = "section Data: DelimitedWithHeadings\n" +
+                "{\n" +
+                "  scope.untilEof;\n" +
+                "  delimiter: ',';\n" +
+                "\n" +
+                "  Record\n" +
+                "  {\n" +
+                "    name: STRING;\n" +
+                "    employed: BOOLEAN(optional);\n" +
+                "    iq: INTEGER(optional);\n" +
+                "    weightKg: DECIMAL(optional);\n" +
+                "    heightM: DECIMAL;\n" +
+                "    dateOfBirth: DATE;\n" +
+                "    timeOfDeath: DATETIME;\n" +
+                "  }\n" +
+                "}";
+        Assert.assertEquals(expectedDefinition, schemaSet.schemas.get(0).content);
+    }
+
+    @Test
+    public void testSimpleCsvWithBinding()
+    {
+        String modelCode = "Class test::gen::Data\n" +
+                "{\n" +
+                "  name        : String[1];\n" +
+                "  employed    : Boolean[0..1];\n" +
+                "  iq          : Integer[0..1];\n" +
+                "  weightKg    : Float[0..1];\n" +
+                "  heightM     : Decimal[1];\n" +
+                "  dateOfBirth : StrictDate[1];\n" +
+                "  timeOfDeath : DateTime[1];\n" +
+                "}";
+
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::gen::Data");
+
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"), true, "test::gen::TestBinding");
         Binding binding = generated.getElementsOfType(Binding.class).stream().findFirst().get();
         Assert.assertEquals("test::gen::TestBinding", binding.getPath());
         Assert.assertEquals("test::gen::TestSchemaSet", binding.schemaSet);
@@ -69,9 +114,7 @@ public class TestModelToFlatDataGeneration extends ModelToSchemaGenerationTest
     private ModelToFlatDataConfiguration config(String targetPackage)
     {
         ModelToFlatDataConfiguration config = new ModelToFlatDataConfiguration();
-        config.targetBinding = targetPackage + "::TestBinding";
         config.targetSchemaSet = targetPackage + "::TestSchemaSet";
-        config.sourceModel.add("test::gen::Data");
         config.format = "FlatData";
         return config;
     }

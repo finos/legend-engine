@@ -109,6 +109,14 @@ Class meta::pure::executionPlan::PureExpressionPlatformExecutionNode extends met
    expression : ValueSpecification[1];
 }
 
+Class meta::pure::executionPlan::PlatformUnionExecutionNode extends meta::pure::executionPlan::ExecutionNode
+{
+}
+
+Class meta::pure::executionPlan::PlatformMergeExecutionNode extends meta::pure::executionPlan::ExecutionNode
+{
+}
+
 Class meta::pure::executionPlan::FreeMarkerConditionalExecutionNode extends meta::pure::executionPlan::ExecutionNode
 [
    $this.freeMarkerBooleanExpression->startsWith('${(') && $this.freeMarkerBooleanExpression->endsWith(')?c}')

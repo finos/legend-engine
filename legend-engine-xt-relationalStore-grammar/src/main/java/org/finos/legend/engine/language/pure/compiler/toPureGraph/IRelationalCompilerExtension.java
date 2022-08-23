@@ -16,11 +16,13 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.multimap.Multimap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -84,6 +86,11 @@ public interface IRelationalCompilerExtension extends CompilerExtension
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported " + type + " type '" + item.getClass() + "'", srcInfo, EngineErrorType.COMPILATION));
+    }
+
+    default Iterable<? extends Processor<?>> getExtraProcessors()
+    {
+        return Lists.immutable.with();
     }
 
     default List<Function2<PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()

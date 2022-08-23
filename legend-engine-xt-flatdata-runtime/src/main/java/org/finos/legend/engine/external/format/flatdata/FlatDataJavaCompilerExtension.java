@@ -44,13 +44,13 @@ import java.util.Map;
 
 public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerExtension
 {
-    private static final String PURE_PACKAGE = "meta::external::format::flatdata::executionPlan::engine::";
+    private static final String PURE_PACKAGE = "meta::external::format::flatdata::executionPlan::engine::java::";
     private static final Map<String, Class<?>> DEPENDENCIES = new LinkedHashMap<>();
 
     static
     {
-        DEPENDENCIES.put("meta::external::format::flatdata::executionPlan::RawFlatData", RawFlatData.class);
-        DEPENDENCIES.put("meta::external::format::flatdata::executionPlan::RawFlatDataValue", RawFlatDataValue.class);
+        DEPENDENCIES.put("meta::external::format::flatdata::executionPlan::model::RawFlatData", RawFlatData.class);
+        DEPENDENCIES.put("meta::external::format::flatdata::executionPlan::model::RawFlatDataValue", RawFlatDataValue.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IFlatDataSerializeExecutionNodeSpecifics", IFlatDataSerializeExecutionNodeSpecifics.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IFlatDataDeserializeExecutionNodeSpecifics", IFlatDataDeserializeExecutionNodeSpecifics.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_FlatDataContext", FlatDataContext.class);

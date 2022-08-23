@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.api.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.impl.list.mutable.FastList;
+import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -39,7 +39,13 @@ public class TestCompileApi
     @Test
     public void testEnumerationMappingWithMixedFormatSourceValues()
     {
-        testWithProtocolPath("faultyEnumerationMappingWithMixedFormatSourceValues.json", FastList.newListWith("Mixed formats for enum value mapping source values"));
+        testWithProtocolPath("faultyEnumerationMappingWithMixedFormatSourceValues.json",
+                "{\n" +
+                        "  \"errorType\" : \"COMPILATION\",\n" +
+                        "  \"code\" : -1,\n" +
+                        "  \"status\" : \"error\",\n" +
+                        "  \"message\" : \"Error in 'meta::sMapping::tests::simpleMapping1': Mixed formats for enum value mapping source values\"\n" +
+                        "}");
     }
 
     @Test
@@ -53,16 +59,16 @@ public class TestCompileApi
         testWithProtocolPath(protocolPath, null);
     }
 
-    public void testWithProtocolPath(String protocolPath, List<String> compilationResultTextFragments)
+    public void testWithProtocolPath(String protocolPath, String compilationResult)
     {
         String jsonString = new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream(protocolPath), "Can't find resource '" + protocolPath + "'"), "UTF-8").useDelimiter("\\A").next();
-        testWithJson(jsonString, compilationResultTextFragments);
+        testWithJson(jsonString, compilationResult);
     }
 
     // NOTE: since if compilation failed we throw an EngineException which inherits many properties from the general Exception
     // comparing the JSON is not a good option, so we have to search fragment of the error response string instead
     // We can fix this method when we properly serialize the error response
-    public void testWithJson(String pureModelContextDataJsonStr, List<String> compilationResultTextFragments)
+    public void testWithJson(String pureModelContextDataJsonStr, String compilationResult)
     {
         String actual;
         try
@@ -70,11 +76,11 @@ public class TestCompileApi
             PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
             Object response = compileApi.compile(pureModelContextData, null, null).getEntity();
             actual = objectMapper.writeValueAsString(response);
-            // NOTE when we call `toString` we most likely call it on `EngineException` which will return something that does not really make sense
-            // and it's not a JSON object (since the verbose stack-trace info is also included), so it's hard to just print out everything
-            if (compilationResultTextFragments != null)
+            if (compilationResult != null)
             {
-                compilationResultTextFragments.forEach(fragment -> assertTrue(actual.contains(fragment)));
+                JsonAssert.assertJsonEquals(compilationResult, actual,
+                        JsonAssert.whenIgnoringPaths("trace")
+                );
             }
             else
             {

@@ -74,4 +74,10 @@ public class TestDomainCompilationFromProtocol extends TestCompilationFromProtoc
     {
         testProtocolLoadingModelWithPackageOffset("functionExample.json", null, "update::");
     }
+
+    @Test
+    public void testProfileLoadingWithPackageOffset()
+    {
+        testProtocolLoadingModelWithPackageOffset("profileUsedInClassExample.json", null, "update::");
+    }
 }

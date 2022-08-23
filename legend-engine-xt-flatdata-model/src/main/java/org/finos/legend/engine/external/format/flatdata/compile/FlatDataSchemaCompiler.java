@@ -31,7 +31,7 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidation;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidationResult;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatData;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataBoolean_Impl;
@@ -83,13 +83,13 @@ public class FlatDataSchemaCompiler
 
     private Root_meta_external_format_flatdata_metamodel_FlatData convert(FlatData flatData)
     {
-        return new Root_meta_external_format_flatdata_metamodel_FlatData_Impl("")
+        return new Root_meta_external_format_flatdata_metamodel_FlatData_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatData"))
                 ._sections(ListIterate.collect(flatData.getSections(), this::convertSection));
     }
 
     private Root_meta_external_format_flatdata_metamodel_FlatDataSection convertSection(FlatDataSection section)
     {
-        return new Root_meta_external_format_flatdata_metamodel_FlatDataSection_Impl("")
+        return new Root_meta_external_format_flatdata_metamodel_FlatDataSection_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataSection"))
                 ._name(section.getName())
                 ._driverId(section.getDriverId())
                 ._sectionProperties(ListIterate.collect(section.getSectionProperties(), this::convertSectionProperty))
@@ -98,14 +98,14 @@ public class FlatDataSchemaCompiler
 
     private Root_meta_external_format_flatdata_metamodel_FlatDataProperty convertSectionProperty(FlatDataProperty property)
     {
-        return new Root_meta_external_format_flatdata_metamodel_FlatDataProperty_Impl("")
+        return new Root_meta_external_format_flatdata_metamodel_FlatDataProperty_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataProperty"))
                 ._name(property.getName())
                 ._value(ListAdapter.adapt(property.getValues()));
     }
 
     private Root_meta_external_format_flatdata_metamodel_FlatDataRecordType convertFlatDataRecordType(FlatDataRecordType recordType)
     {
-        return new Root_meta_external_format_flatdata_metamodel_FlatDataRecordType_Impl("")
+        return new Root_meta_external_format_flatdata_metamodel_FlatDataRecordType_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataRecordType"))
                 ._fields(ListIterate.collect(recordType.getFields(), this::convertField));
     }
 
@@ -114,32 +114,32 @@ public class FlatDataSchemaCompiler
         Root_meta_external_format_flatdata_metamodel_FlatDataDataType type;
         if (field.getType() instanceof FlatDataBoolean)
         {
-            type = new Root_meta_external_format_flatdata_metamodel_FlatDataBoolean_Impl("")
+            type = new Root_meta_external_format_flatdata_metamodel_FlatDataBoolean_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataBoolean"))
                     ._trueString(((FlatDataBoolean) field.getType()).getTrueString())
                     ._falseString(((FlatDataBoolean) field.getType()).getFalseString());
         }
         else if (field.getType() instanceof FlatDataString)
         {
-            type = new Root_meta_external_format_flatdata_metamodel_FlatDataString_Impl("");
+            type = new Root_meta_external_format_flatdata_metamodel_FlatDataString_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataString"));
         }
         else if (field.getType() instanceof FlatDataInteger)
         {
-            type = new Root_meta_external_format_flatdata_metamodel_FlatDataInteger_Impl("")
+            type = new Root_meta_external_format_flatdata_metamodel_FlatDataInteger_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataInteger"))
                     ._format(((FlatDataInteger) field.getType()).getFormat());
         }
         else if (field.getType() instanceof FlatDataDecimal)
         {
-            type = new Root_meta_external_format_flatdata_metamodel_FlatDataDecimal_Impl("")
+            type = new Root_meta_external_format_flatdata_metamodel_FlatDataDecimal_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataDecimal"))
                     ._format(((FlatDataDecimal) field.getType()).getFormat());
         }
         else if (field.getType() instanceof FlatDataDate)
         {
-            type = new Root_meta_external_format_flatdata_metamodel_FlatDataDate_Impl("")
+            type = new Root_meta_external_format_flatdata_metamodel_FlatDataDate_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataDate"))
                     ._format(ListAdapter.adapt(((FlatDataDate) field.getType()).getFormat()));
         }
         else if (field.getType() instanceof FlatDataDateTime)
         {
-            type = new Root_meta_external_format_flatdata_metamodel_FlatDataDateTime_Impl("")
+            type = new Root_meta_external_format_flatdata_metamodel_FlatDataDateTime_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataDateTime"))
                     ._timeZone(((FlatDataDateTime) field.getType()).getTimeZone())
                     ._format(ListAdapter.adapt(((FlatDataDateTime) field.getType()).getFormat()));
         }
@@ -148,7 +148,7 @@ public class FlatDataSchemaCompiler
             throw new IllegalStateException("Unknown flat data type: " + field.getType().getClass().getSimpleName());
         }
 
-        return new Root_meta_external_format_flatdata_metamodel_FlatDataRecordField_Impl("")
+        return new Root_meta_external_format_flatdata_metamodel_FlatDataRecordField_Impl("", null, context.getPureModel().getClass("meta::external::format::flatdata::metamodel::FlatDataRecordField"))
                 ._label(field.getLabel())
                 ._address(field.getAddress())
                 ._type(type._optional(field.getType().isOptional()));

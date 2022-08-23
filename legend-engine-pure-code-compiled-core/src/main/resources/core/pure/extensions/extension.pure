@@ -38,28 +38,28 @@ Class meta::pure::extension::Extension
   availableStores : StoreContract[*];
   // -------------------------------------------------------------------------- Store Extension
 
+  // External Format Extension ----------------------------------------------------------------
+  // TODO: We should change this package to better align with our strategy to have binding as core feature
+  availableExternalFormats : meta::external::shared::format::ExternalFormatContract<meta::external::shared::format::metamodel::SchemaDetail>[*];
+  // ---------------------------------------------------------------- External Format Extension
+
   // Feature Extension ------------------------------------------------------------------------
   availableFeatures : FeatureExtension[*];
-  // ------------------------------------------------------------------------ Feature Extension 
-  
-  // External Format Extension ----------------------------------------------------------------
-  availableExternalFormats : ExternalFormatExtension[*];
-  // ---------------------------------------------------------------- External Format Extension 
+  // ------------------------------------------------------------------------ Feature Extension
 
   routerExtensions() 
   {
     $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::router::extension::RouterExtension)
   } : meta::pure::router::extension::RouterExtension[*];
 
-  executionPlanExtensions() 
+  executionPlanExtensions()
   {
     $this.availableStores->concatenate($this.availableFeatures)->cast(@meta::pure::executionPlan::extension::ExecutionPlanExtension)
   } : meta::pure::executionPlan::extension::ExecutionPlanExtension[*];
 
-  
+
   // Bind plan to platform
   java_conventions_defaultProhibitedFunctions : Function<Any>[*];
-  java_mappingAdaptor : Function<{Nil[1]->String[1]}>[*];
   java_graphFetch_graphFetchCommon_generateCodeForLocalGraphFetchNode : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->Project[1]}>[*]}>[0..1];
   java_graphFetch_graphFetchCommon_updateImplementationClassWithStoreSpecificFieldsAndMethods : Function<{meta::external::language::java::metamodel::Class[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->Project[1]}>[*]}>[0..1];
   java_graphFetch_inMemory_applyTypeFilter : Function<{InstanceSetImplementation[1], Code[1], Code[1..*], GenerationContext[1], DebugContext[1]->Function<{Nil[1]->Code[*]}>[*]}>[0..1];
@@ -70,11 +70,8 @@ Class meta::pure::extension::Extension
   plan_javaRuntime_main_prepare2 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[0..1];
   plan_javaRuntime_main_generatePlatformCode1 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GeneratedCode[1]}>[*]}>[0..1];
   plan_javaRuntime_main_generatePlatformCode2 : Function<{String[1], Mapping[1], GenerationContext[1], Extension[*], Project[0..1], DebugContext[1] -> Function<{Nil[1]->GeneratedNode[1]}>[*]}>[0..1];
-  plan_javaRuntime_mappingAdaptor_addMapOneMethod : Function<{Code[1], Code[1], Conventions[1], DebugContext[1] -> Function<{Nil[1]->Code[1]}>[*]}>[0..1];
   plan_javaRuntime_common_generateInterfaceForClass : meta::pure::metamodel::type::Class<Any>[*];
-  plan_javaRuntime_mappingAdaptor_generatePropertyMapping1 : Function<{Conventions[1], DebugContext[1] -> Function<{Nil[1]->Code[1]}>[*]}>[0..1];
-  plan_javaRuntime_mappingAdaptor_generatePropertyMapping2 : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
-  plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1]->Conventions[1]}>[0..1];
+  plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1], Extension[*]->Conventions[1]}>[0..1];
    <<doc.deprecated>> plan_javaRuntime_graphFetchStream_getConnectionTree : Function<{Nil[1] -> RootGraphFetchTree<Any>[0..1]}>[*];
    <<doc.deprecated>> plan_javaRuntime_graphFetchStream_sourceTypeFromConnection : Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
    <<doc.deprecated>> plan_javaRuntime_graphFetchStream_streamReaderMethodCodes : Function<{Conventions[1],Code[1]->Function<{Nil[1] -> Code[1]}>[*]}>[0..1];
@@ -101,13 +98,12 @@ Class meta::pure::extension::Extension
   //---------------------------------------------------------------------------------------------------------------------------------------
 
   // logActivities implementation is in Relationl because it casts Activity to RelationalActivity -----------------------------------------
-  logActivities : Function<{meta::pure::mapping::Activity[*] -> Nil[0]}>[0..1]; 
+  logActivities : Function<{meta::pure::mapping::Activity[*] -> Nil[0]}>[0..1];
   //---------------------------------------------------------------------------------------------------------------------------------------
 
   // Used by the graph serializer to ensure we push serialize Test models stored in the system area ---------------------------------------
   validTestPackages : String[*];
   //---------------------------------------------------------------------------------------------------------------------------------------
-
 
   // Serializer Extension ---------------------------------------------------------------------
   serializerExtension : Function<{String[1]->String[1]}>[0..1];

@@ -230,15 +230,25 @@ function meta::external::store::service::executionPlan::generation::nodeFromServ
                                     | ^SequenceExecutionNode(executionNodes = $allNodes, resultType = $serviceStoreNode.resultType),
                                     | $allNodes)->toOne();
 
-                  let pathOffset               = if($serviceMapping.pathOffset->isNotEmpty(),
-                                                    |$extensions.moduleExtension('externalFormat')->cast(@ExternalFormatModuleExtension).generatePathReference->toOne()->eval($serviceMapping.service.response.binding, $serviceMapping.pathOffset->toOne()),
+                  let config                   = if($serviceMapping.pathOffset->isNotEmpty(),
+                                                    |assert($serviceMapping.service.response.binding.contentType->in(meta::external::format::json::contract::jsonSchemaFormatContract().contentTypes), 'PathOffset is supported with json only!');
+                                                     meta::external::format::json::metamodel::internalize::generateJsonSchemaInternalizeConfig($serviceMapping.pathOffset->toOne());,
                                                     |[]);
 
-                  let externalFormatConnection = ^ExternalFormatConnection(element        = $serviceMapping.service.response.binding,
-                                                                           externalSource = ^ExecutionNodeExternalSource(node = $node),
-                                                                           pathOffset     = $pathOffset);
+                  let deserializeNode = ^ExternalFormatInternalizeExecutionNode
+                                        (
+                                            resultType      = ^PartialClassResultType(
+                                                                type = $tree.class->toOne(),
+                                                                propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                                                              ),
+                                            resultSizeRange = ZeroMany,
+                                            tree            = $tree,
+                                            binding         = $serviceMapping.service.response.binding,
+                                            executionNodes  = $node,
+                                            config          = $config
+                                        );
 
-                  $externalFormatConnection->meta::pure::executionPlan::nodeFromConnection($tree, $enableConstraints, $checked, $extensions);,
+                  generateDataQualityNode($deserializeNode, $enableConstraints, $checked);,
       c: Connection[1]            | fail('Expected ServiceStoreConnection for Service Store execution. Found : ' + $c->meta::pure::executionPlan::toString::connectionToString($extensions)); @ExecutionNode;
    ]);
 }
@@ -294,7 +304,15 @@ function meta::external::store::service::executionPlan::generation::getServiceRe
        let requestBodyResolutionNode   = ^PureExpressionPlatformExecutionNode(expression             = $updatedTransformAndPropPath.first->cast(@ValueSpecification),
                                                                               requiredVariableInputs = $requiredVariableInputs,
                                                                               resultType             = $resultType);
-       let serializedRequestBody       = $extensions.moduleExtension('externalFormat')->cast(@ExternalFormatModuleExtension).executionPlan_generation_generateSerializeNode->toOne()->eval(false, $requestBodyType->cast(@ComplexTypeReference).binding, $requestBodyResolutionNode);
+                                                                              
+       let serializedRequestBody       = ^ExternalFormatExternalizeExecutionNode
+                                          (
+                                              resultType      = ^ResultType(type=String),
+                                              resultSizeRange = PureOne,
+                                              checked         = false,
+                                              binding         = $requestBodyType->toOne()->cast(@ComplexTypeReference).binding,
+                                              executionNodes  = $requestBodyResolutionNode
+                                          );
 
        ^AllocationExecutionNode(varName        = $serviceMapping.service.owner->elementToPath('_') + '_' + $serviceMapping.service.resolveFullPathRecursively()->replace('/', '_') + '_requestBody',
                                 executionNodes = $serializedRequestBody,

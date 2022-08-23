@@ -16,42 +16,27 @@ package org.finos.legend.engine.query.graphQL.api.format;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.Translator;
 import org.finos.legend.engine.protocol.graphQL.introspection.model.__Schema;
-import org.finos.legend.pure.generated.core_external_query_graphql_introspection_transformation;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.core_external_query_graphql_introspection_transformation;
 
-import java.util.Collections;
-import java.util.List;
-
-public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, GraphQLSchemaToModelConfiguration, ModelToSchemaConfiguration>
+public class GraphQLFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, SchemaToModelConfiguration>
 {
-    private static final String TYPE = "GraphQL_Introspection";
+    private final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_introspection_transformation.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
     @Override
-    public String getFormat()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> getExternalFormatContract()
     {
-        return TYPE;
-    }
-
-    @Override
-    public List<String> getContentTypes()
-    {
-        return Collections.emptyList();
+        return graphQLIntrospectionContract;
     }
 
     @Override
@@ -59,7 +44,7 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     {
         try
         {
-            return new Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl("")
+            return new Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer_Impl("", null, context.getPureModel().getClass("meta::external::query::graphQL::binding::toPure::introspection::GraphQLIntrospectionContainer"))
                     ._schema(
                             new Translator().translate(
                                     new ObjectMapper().readValue(context.getContent(), __Schema.class),
@@ -74,48 +59,16 @@ public class GraphQLFormatExtension implements ExternalFormatExtension<Root_meta
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
-    {
-        return null;
-    }
-
-    @Override
-    public boolean supportsModelGeneration()
-    {
-        return true;
-    }
-
-    @Override
-    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
-    {
-        return Lists.mutable.empty();
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, GraphQLSchemaToModelConfiguration config, PureModel pureModel)
-    {
-        Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration configuration = new Root_meta_external_shared_format_binding_toPure_SchemaToModelConfiguration_Impl("")
-                ._sourceSchemaId(config.sourceSchemaId)
-                ._targetPackage(config.targetPackage)
-                ._targetBinding(config.targetBinding);
-        return core_external_query_graphql_introspection_transformation.Root_meta_external_query_graphQL_binding_toPure_introspection_IntrospectionToPure_SchemaSet_1__SchemaToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToSchemaConfiguration modelToXsdConfiguration, PureModel pureModel)
-    {
-        return null;
-    }
-
-    @Override
     public String metamodelToText(Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer schemaDetail, PureModel pureModel)
     {
         return null;
     }
 
     @Override
-    public List<String> getRegisterablePackageableElementNames()
+    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(SchemaToModelConfiguration configuration, PureModel pureModel)
     {
-        return Lists.mutable.empty();
+        return new Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration"))
+                ._sourceSchemaId(configuration.sourceSchemaId)
+                ._targetPackage(configuration.targetPackage);
     }
 }

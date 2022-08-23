@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.exter
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 
+@Deprecated
 public abstract class ExternalFormatDeserializeExecutionNode extends ExecutionNode
 {
     public PathReference pathOffset;

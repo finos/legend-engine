@@ -35,7 +35,7 @@ public class DiagramCompilerExtension implements CompilerExtension
         return Collections.singletonList(Processor.newProcessor(Diagram.class,
                 (diagram, context) ->
                 {
-                    Root_meta_pure_metamodel_diagram_Diagram metamodel = new Root_meta_pure_metamodel_diagram_Diagram_Impl("")._name(diagram.name);
+                    Root_meta_pure_metamodel_diagram_Diagram metamodel = new Root_meta_pure_metamodel_diagram_Diagram_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::Diagram"))._name(diagram.name);
                     this.diagramsIndex.put(context.pureModel.buildPackageString(diagram._package, diagram.name), metamodel);
                     return metamodel;
                 },
@@ -44,7 +44,7 @@ public class DiagramCompilerExtension implements CompilerExtension
                     Root_meta_pure_metamodel_diagram_Diagram metamodel = this.diagramsIndex.get(context.pureModel.buildPackageString(diagram._package, diagram.name));
                     metamodel._classViews(ListIterate.collect(diagram.classViews, view -> HelperDiagramBuilder.buildClassView(view, context)));
                     metamodel._propertyViews(ListIterate.collect(diagram.propertyViews, view -> HelperDiagramBuilder.buildPropertyView(view, context, metamodel)));
-                    metamodel._generalizationViews(ListIterate.collect(diagram.generalizationViews, view -> HelperDiagramBuilder.buildGeneralizationView(view, metamodel)));
+                    metamodel._generalizationViews(ListIterate.collect(diagram.generalizationViews, view -> HelperDiagramBuilder.buildGeneralizationView(view, metamodel, context)));
                 }));
     }
 }

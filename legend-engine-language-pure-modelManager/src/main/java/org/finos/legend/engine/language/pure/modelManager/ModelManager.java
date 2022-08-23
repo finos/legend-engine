@@ -36,10 +36,8 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
 import org.slf4j.Logger;
 
-import javax.security.auth.Subject;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 

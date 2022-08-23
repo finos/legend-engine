@@ -1,0 +1,108 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::metamodel::*;
+import meta::external::format::json::transformation::fromPure::*;
+
+import meta::external::shared::format::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::shared::format::utils::*;
+
+import meta::pure::generation::metamodel::*;
+
+import meta::pure::model::unit::*;
+
+// To be removed
+import meta::json::schema::fromSchema::*;
+import meta::json::schema::generation::*;
+// To be removed
+
+// ========================================================================================================================================================
+// Descriptor
+// ========================================================================================================================================================
+
+function meta::external::format::json::transformation::fromPure::jsonSchemaFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToJsonSchemaConfiguration>[1]
+{
+  ^ExternalFormatFromPureDescriptor<ModelToJsonSchemaConfiguration>
+  (
+    configuration        = ModelToJsonSchemaConfiguration,
+    generator            = pureToJsonSchema_ModelUnit_1__ModelToJsonSchemaConfiguration_1__SchemaSet_1_,
+    generatorWithDebug   = pureToJsonSchemaWithDebug_ModelUnit_1__ModelToJsonSchemaConfiguration_1__SchemaSet_1_,
+    defaultConfig        = meta::external::format::json::transformation::fromPure::defaultConfig()
+  )
+}
+
+// ========================================================================================================================================================
+// Configuration
+// ========================================================================================================================================================
+
+Class meta::external::format::json::transformation::fromPure::ModelToJsonSchemaConfiguration extends meta::external::shared::format::transformation::fromPure::ModelToSchemaConfiguration
+{
+}
+
+function <<access.private>> meta::external::format::json::transformation::fromPure::defaultConfig(): ModelToJsonSchemaConfiguration[1]
+{
+  ^ModelToJsonSchemaConfiguration(format='JSON', targetSchemaSet='target::package::GeneratedSchemaSet');
+}
+
+// ========================================================================================================================================================
+// generation
+// ========================================================================================================================================================
+
+function meta::external::format::json::transformation::fromPure::pureToJsonSchema(modelUnit:ModelUnit[1], config:ModelToJsonSchemaConfiguration[1]): SchemaSet[1]
+{
+   pureToJsonSchema($modelUnit, $config, noDebug());
+}
+
+function <<access.private>> meta::external::format::json::transformation::fromPure::pureToJsonSchemaWithDebug(modelUnit:ModelUnit[1], config:ModelToJsonSchemaConfiguration[1]): SchemaSet[1]
+{
+   pureToJsonSchema($modelUnit, $config, debug());
+}
+
+function <<access.private>> meta::external::format::json::transformation::fromPure::pureToJsonSchema(modelUnit:ModelUnit[1], config:ModelToJsonSchemaConfiguration[1], debug:DebugContext[1]): SchemaSet[1]
+{
+   let packageableElements = $modelUnit->resolve().packageableElements;
+   generate($packageableElements, $config, $debug);
+}
+
+function <<access.private>> meta::external::format::json::transformation::fromPure::generate(packageableElements:PackageableElement[*], config:ModelToJsonSchemaConfiguration[1], debug:DebugContext[1]): SchemaSet[1]
+{
+   let jsonConfig        = ^JSONSchemaConfig(scopeElements = $packageableElements);
+   let jsonSchemaOutputs = generateJsonSchemaFromPureWithScope($jsonConfig);
+   
+   let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
+   let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
+   
+   let schemaSet = ^SchemaSet(
+      package = pathToPackage($schemaSetPkgName, true),
+      name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
+      format  = 'JSON'
+   );
+   $jsonSchemaOutputs->map(o | $o->jsonSchemaOutputToSchema($schemaSet));   
+   $schemaSet;
+}
+
+// ========================================================================================================================================================
+// helper functions
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::json::transformation::fromPure::jsonSchemaOutputToSchema(output:JSONSchemaOutput[1], schemaSet: SchemaSet[1]): Schema[*]
+{
+   ^Schema(
+      set = $schemaSet,
+      id = $output.fileName->refToFileName(),
+      location = $output.fileName,
+      detail = ^JsonSchema(content = $output.content)
+   )
+}
