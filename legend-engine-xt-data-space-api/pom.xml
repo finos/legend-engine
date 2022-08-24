@@ -28,12 +28,12 @@
     <name>Legend Engine - XT - Data Space - API</name>
 
     <dependencies>
-        <!-- Pure -->
+        <!-- PURE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-pure</artifactId>
         </dependency>
-        <!-- Pure -->
+        <!-- PURE -->
 
         <!-- ENGINE -->
         <dependency>
@@ -142,6 +142,6 @@
             <artifactId>jersey-common</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- TEST -->
+      <!-- TEST -->
     </dependencies>
 </project>

@@ -168,10 +168,6 @@
             <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution-authorizer</artifactId>
-        </dependency>
         <!-- TEST -->
     </dependencies>
 
