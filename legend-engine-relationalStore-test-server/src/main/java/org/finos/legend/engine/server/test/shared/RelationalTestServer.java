@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
+import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
@@ -66,7 +66,7 @@ public class RelationalTestServer extends TestServer<RelationalTestServerConfigu
         RelationalStoreExecutor relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
 
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor);
-        environment.jersey().register(new ExecutePlanStrategic(planExecutor));
+        environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         environment.jersey().register(new TestConnectionProviderApi(getTestConnections(serverConfiguration)));
 

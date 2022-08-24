@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
 
 public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite
@@ -24,7 +26,8 @@ public class Test_Relational_DbSpecific_H2_UsingPureClientTestSuite
     {
         return createSuite(
                 "meta::relational::tests::dbSpecificTests::H2",
-                "org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json"
+                "org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json",
+                new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
         );
     }
 }

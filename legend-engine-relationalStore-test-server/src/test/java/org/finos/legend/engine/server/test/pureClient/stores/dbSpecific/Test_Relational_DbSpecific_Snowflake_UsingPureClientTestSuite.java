@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
 
 public class Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite
@@ -22,6 +24,10 @@ public class Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
-        return createSuite("meta::relational::tests::dbSpecificTests::snowflake", "org/finos/legend/engine/server/test/userTestConfig_withSnowflakeTestConnection.json");
+        return createSuite(
+                "meta::relational::tests::dbSpecificTests::snowflake",
+                "org/finos/legend/engine/server/test/userTestConfig_withSnowflakeTestConnection.json",
+                new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
+        );
     }
 }

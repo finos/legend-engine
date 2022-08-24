@@ -55,6 +55,7 @@ public class TestServer<T extends TestServerConfiguration> extends Application<T
         loadVaults(serverConfiguration.vaults);
         this.environment = environment;
         DeploymentStateAndVersions.DEPLOYMENT_MODE = DeploymentMode.DEV;
+        environment.jersey().setUrlPattern("/api/*");
     }
 
     private void loadVaults(List<VaultConfiguration> vaultConfigurations)

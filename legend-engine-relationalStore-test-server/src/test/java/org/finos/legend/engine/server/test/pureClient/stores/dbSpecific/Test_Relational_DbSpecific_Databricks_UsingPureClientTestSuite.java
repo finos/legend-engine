@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.server.test.pureClient.stores.dbSpecific;
 
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
 
 public class Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite
@@ -23,6 +25,10 @@ public class Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite
     public static Test suite() throws Exception
     {
         // To make test work, please enable environment variable DATABRICKS_API_TOKEN with a valid API token
-        return createSuite("meta::relational::tests::dbSpecificTests::databricks", "org/finos/legend/engine/server/test/userTestConfig_withDatabricksTestConnection.json");
+        return createSuite(
+                "meta::relational::tests::dbSpecificTests::databricks",
+                "org/finos/legend/engine/server/test/userTestConfig_withDatabricksTestConnection.json",
+                new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
+        );
     }
 }
