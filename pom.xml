@@ -92,8 +92,10 @@
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
+        <module>legend-engine-xt-relationalStore-test-server</module>
 
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
+        <module>legend-engine-xt-relationalStore-sqlserver-execution-tests</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
 
         <module>legend-engine-xt-relationalStore-bigquery-execution</module>
@@ -172,7 +174,6 @@
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
         <module>legend-engine-server</module>
-        <module>legend-engine-relationalStore-test-server</module>
         <module>legend-engine-test-server-shared</module>
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
@@ -697,7 +698,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1144,11 +1155,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-relationalStore-test-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
