@@ -21,8 +21,10 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
@@ -86,6 +88,12 @@ public class TestExtensions
     public void testExpectedExternalFormatExtensionsArePresent()
     {
         assertHasExtensions(getExpectedExternalFormatExtensions(), ExternalFormatExtension.class);
+    }
+
+    @Test
+    public void testExpectedArtifactGenerationExtensionsArePresent()
+    {
+        assertHasExtensions(getExpectedArtifactGenerationExtensions(), ArtifactGenerationExtension.class);
     }
 
     @Test
@@ -293,6 +301,13 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class);
+    }
+
+    protected Iterable<? extends Class<? extends ArtifactGenerationExtension>> getExpectedArtifactGenerationExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
+                .with(DataSpaceAnalyticsArtifactGenerationExtension.class);
     }
 
     protected Iterable<String> getExpectedCodeRepositories()
