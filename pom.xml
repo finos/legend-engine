@@ -125,6 +125,7 @@
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-protocol</module>
         <module>legend-engine-xt-data-space-pure</module>
+        <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
 
         <module>legend-engine-xt-analytics-mapping-api</module>
@@ -513,7 +514,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                    <failOnWarning>false</failOnWarning>
+                    <failOnWarning>true</failOnWarning>
                     <ignoreNonCompile>true</ignoreNonCompile>
                 </configuration>
                 <executions>
@@ -992,6 +993,12 @@
                 <artifactId>legend-engine-xt-data-space-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-api</artifactId>

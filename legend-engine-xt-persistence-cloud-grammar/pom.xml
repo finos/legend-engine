@@ -51,6 +51,18 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-m3-core</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-protocol</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-protocol-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -66,24 +78,6 @@
                             <listener>true</listener>
                             <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
                             <libDirectory>target/antlr</libDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <!-- The dependency plugin analyzer raises these as false positives -->
-                            <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.pure:legend-pure-m3-core</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-protocol</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-protocol-pure</dependency>
-                                <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
-                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>
