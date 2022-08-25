@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
@@ -89,21 +88,13 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
     @Override
     public Function2<RelationalDatabaseConnection, ConnectionKey,
         DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(
-        List<OAuthProfile> oauthProfiles, RelationalExecutorInfo relationalExecutorInfo)
+        Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
     {
         return (relationalDatabaseConnection, connectionKey) -> (DatasourceSpecificationVisitor<DataSourceSpecification>) datasourceSpecification ->
         {
-
             if (datasourceSpecification instanceof SpannerDatasourceSpecification)
             {
-                AuthenticationStrategyVisitor<AuthenticationStrategy> visitor =
-                    getExtraAuthenticationStrategyTransformGenerators(oauthProfiles);
-                if (visitor == null)
-                {
-                    return null;
-                }
-                AuthenticationStrategy authenticationStrategy =
-                    visitor.visit(relationalDatabaseConnection.authenticationStrategy);
+                AuthenticationStrategy authenticationStrategy = authenticationStrategyProvider.apply(relationalDatabaseConnection);
 
                 return new SpannerDataSourceSpecification(
                     (SpannerDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
