@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 
 class ExternalFormatParseTreeWalker
 {
-    private final Map<String, ExternalFormatExtension> schemaExtensions;
+    private final Map<String, ExternalFormatExtension<?>> schemaExtensions;
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;

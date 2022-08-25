@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.13.1-SNAPSHOT</version>
+    <version>3.14.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -56,6 +56,10 @@
         <module>legend-engine-xt-persistence-cloud-grammar</module>
         <module>legend-engine-xt-persistence-cloud-protocol</module>
         <module>legend-engine-xt-persistence-cloud-pure</module>
+
+        <module>legend-engine-xt-mastery-grammar</module>
+        <module>legend-engine-xt-mastery-protocol</module>
+        <module>legend-engine-xt-mastery-pure</module>
 
         <module>legend-engine-xt-serviceStore-executionPlan</module>
         <module>legend-engine-xt-serviceStore-protocol</module>
@@ -94,6 +98,10 @@
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
 
+        <module>legend-engine-xt-relationalStore-bigquery-execution</module>
+        <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
+        <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
+
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
 
@@ -118,6 +126,7 @@
         <module>legend-engine-xt-data-space-compiler</module>
         <module>legend-engine-xt-data-space-protocol</module>
         <module>legend-engine-xt-data-space-pure</module>
+        <module>legend-engine-xt-data-space-generation</module>
         <module>legend-engine-xt-data-space-api</module>
 
         <module>legend-engine-xt-analytics-mapping-api</module>
@@ -509,7 +518,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <configuration>
-                    <failOnWarning>false</failOnWarning>
+                    <failOnWarning>true</failOnWarning>
                     <ignoreNonCompile>true</ignoreNonCompile>
                 </configuration>
                 <executions>
@@ -649,7 +658,6 @@
                 <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</artifactId>
@@ -708,6 +716,21 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -771,6 +794,22 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mastery-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mastery-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-mastery-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -968,6 +1007,12 @@
                 <artifactId>legend-engine-xt-data-space-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-data-space-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-api</artifactId>

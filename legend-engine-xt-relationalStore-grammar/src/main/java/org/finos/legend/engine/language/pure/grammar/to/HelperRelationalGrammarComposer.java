@@ -31,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
@@ -664,18 +663,6 @@ public class HelperRelationalGrammarComposer
                     (spec.organization != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "organization: " + convertString(spec.organization, true) + ";\n" : "") +
 
                     (spec.role != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "role: " + convertString(spec.role, true) + ";\n" : "") +
-                    context.getIndentationString() + getTabString(baseIndentation) + "}";
-        }
-        else if (_spec instanceof BigQueryDatasourceSpecification)
-        {
-            BigQueryDatasourceSpecification spec = (BigQueryDatasourceSpecification) _spec;
-            int baseIndentation = 1;
-            return "BigQuery\n" +
-                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "projectId: " + convertString(spec.projectId, true) + ";\n" +
-                    context.getIndentationString() + getTabString(baseIndentation + 1) + "defaultDataset: " + convertString(spec.defaultDataset, true) + ";\n" +
-                    (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyHost: " + convertString(spec.proxyHost, true) + ";\n" : "") +
-                    (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyPort: " + convertString(spec.proxyPort, true) + ";\n" : "") +
                     context.getIndentationString() + getTabString(baseIndentation) + "}";
         }
         else if (_spec instanceof SpannerDatasourceSpecification)

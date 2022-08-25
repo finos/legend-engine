@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class JsonJavaCompilerExtension implements ExecutionPlanJavaCompilerExtension
 {
-    private static final String PURE_PACKAGE = "meta::external::format::json::executionPlan::engine::";
+    private static final String PURE_PACKAGE = "meta::external::format::json::executionPlan::engine::java::";
     private static final Map<String, Class<?>> DEPENDENCIES = new LinkedHashMap<>();
 
     static

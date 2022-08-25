@@ -31,9 +31,9 @@ public class HelperDataSpaceBuilder
 
     public static Root_meta_pure_metamodel_dataSpace_DataSpace getDataSpace(String fullPath, SourceInformation sourceInformation, CompileContext context)
     {
-        Root_meta_pure_metamodel_dataSpace_DataSpace diagram = getDataSpaceCompilerExtensionInstance(context).dataSpacesIndex.get(fullPath);
-        Assert.assertTrue(diagram != null, () -> "Can't find data space '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
-        return diagram;
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataspace = getDataSpaceCompilerExtensionInstance(context).dataSpacesIndex.get(fullPath);
+        Assert.assertTrue(dataspace != null, () -> "Can't find data space '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return dataspace;
     }
 
     public static Root_meta_pure_metamodel_dataSpace_DataSpace resolveDataSpace(String fullPath, SourceInformation sourceInformation, CompileContext context)

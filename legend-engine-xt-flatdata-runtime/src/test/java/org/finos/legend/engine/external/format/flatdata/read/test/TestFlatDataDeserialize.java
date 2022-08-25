@@ -17,7 +17,7 @@ package org.finos.legend.engine.external.format.flatdata.read.test;
 import org.finos.legend.engine.external.format.flatdata.FlatDataContext;
 import org.finos.legend.engine.external.format.flatdata.read.FlatDataReader;
 import org.finos.legend.engine.external.format.flatdata.read.fixtures.ReadPerson;
-import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.testing.model.firm.Person;
+import org.finos.legend.engine.external.format.test.fixture.app.meta.external.shared.format.executionPlan.tests.model.firm.Person;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.junit.Assert;
 import org.junit.Test;

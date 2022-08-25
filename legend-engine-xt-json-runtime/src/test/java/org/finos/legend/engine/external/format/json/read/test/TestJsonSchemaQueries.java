@@ -17,22 +17,31 @@ package org.finos.legend.engine.external.format.json.read.test;
 import net.javacrumbs.jsonunit.JsonMatchers;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
-import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaGenerationTest;
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
+import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 public class TestJsonSchemaQueries extends TestExternalFormatQueries
 {
+    List<Root_meta_pure_extension_Extension> formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
+
     @Test
     public void testDeserializeJsonWithGeneratedSchema()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toJsonSchemaConfig(Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition")));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -40,7 +49,8 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/peopleTestData.json"));
+                resource("queries/peopleTestData.json"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
     }
@@ -49,7 +59,9 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     public void testDeserializeJsonWithFullTree()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toJsonSchemaConfig(Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition")));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -57,7 +69,8 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmTreeTestData.json"));
+                resource("queries/firmTreeTestData.json"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
     }
@@ -66,7 +79,9 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     public void testDeserializeJsonWithDefects()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toJsonSchemaConfig(Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition")));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -74,7 +89,8 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmTreeDefectsData.json"));
+                resource("queries/firmTreeDefectsData.json"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeDefectsResult.json")));
     }
@@ -83,7 +99,9 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     public void testDeserializeAndSerializeJsonWithGeneratedSchema()
     {
         String modelGrammar = firmModel();
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, toJsonSchemaConfig(Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition")));
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
 
         String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
@@ -91,7 +109,8 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding)",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/peopleTestData.json"));
+                resource("queries/peopleTestData.json"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/externalizePeopleCheckedResult.json")));
     }
@@ -105,7 +124,8 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->externalize(test::Binding)",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmTreeTestData.json"));
+                resource("queries/firmTreeTestData.json"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
     }
@@ -119,7 +139,8 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->externalize(test::Binding)",
                 "test::firm::mapping::SelfMapping",
                 "test::runtime",
-                resource("queries/firmTreeDefectsData.json"));
+                resource("queries/firmTreeDefectsData.json"),
+                formatExtensions);
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeDefectsResult.json")));
     }
@@ -340,12 +361,10 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
                 "}\n";
     }
 
-    private ModelToJsonSchemaConfiguration toJsonSchemaConfig(List<String> classNames)
+    private ModelToJsonSchemaConfiguration toJsonSchemaConfig()
     {
         ModelToJsonSchemaConfiguration config = new ModelToJsonSchemaConfiguration();
-        config.targetBinding = "test::gen::TestBinding";
         config.targetSchemaSet = "test::gen::TestSchemaSet";
-        config.sourceModel.addAll(classNames);
         config.format = "JSON";
         return config;
     }

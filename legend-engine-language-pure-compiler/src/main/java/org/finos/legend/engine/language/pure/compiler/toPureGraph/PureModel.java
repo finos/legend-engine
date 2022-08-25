@@ -144,6 +144,8 @@ public class PureModel implements IPureModel
     final MutableMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
+    public static final PureModel CORE_PURE_MODEL = getCorePureModel();
+
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
     {
         this(pure, pm, null, deploymentMode, new PureModelProcessParameter(), null);
@@ -161,7 +163,12 @@ public class PureModel implements IPureModel
 
     public PureModel(PureModelContextData pureModelContextData, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this.extensions = CompilerExtensions.fromAvailableExtensions();
+        this(pureModelContextData, CompilerExtensions.fromAvailableExtensions(), pm, classLoader, deploymentMode, pureModelProcessParameter, metaData);
+    }
+
+    public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
+    {
+        this.extensions = extensions;
         List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = this.extensions.getExtraPostValidators();
 
         if (classLoader == null)
@@ -296,9 +303,14 @@ public class PureModel implements IPureModel
         catch (Exception e)
         {
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
-            // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception
+            // TODO: we need to have a better strategy to throw compilation error instead of the generic exception
             throw e;
         }
+    }
+
+    private static PureModel getCorePureModel()
+    {
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), null, null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()
@@ -810,12 +822,13 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile_safe(String fullPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(fullPath);
+        String pathWithTypeReference = addPrefixToTypeReference(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(pathWithTypeReference);
         if (profile == null)
         {
             try
             {
-                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + fullPath);
+                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + pathWithTypeReference);
             }
             catch (Exception e)
             {
@@ -823,7 +836,7 @@ public class PureModel implements IPureModel
             }
             if (profile != null)
             {
-                this.profilesIndex.put(fullPath, profile);
+                this.profilesIndex.put(pathWithTypeReference, profile);
             }
         }
         return profile;

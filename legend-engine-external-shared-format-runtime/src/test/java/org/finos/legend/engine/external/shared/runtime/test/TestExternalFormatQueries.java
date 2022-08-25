@@ -15,10 +15,8 @@
 package org.finos.legend.engine.external.shared.runtime.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatPlanGenerationExtensionLoader;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -35,7 +33,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
@@ -48,15 +45,16 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 import java.util.Objects;
 
 public abstract class TestExternalFormatQueries
 {
-    protected String runTest(String grammar, String query, String mappingPath, String runtimePath, String input)
+    protected String runTest(String grammar, String query, String mappingPath, String runtimePath, String input, List<Root_meta_pure_extension_Extension> formatExtensions)
     {
         try
         {
-            return runTest(grammar, query, mappingPath, runtimePath, new ByteArrayInputStream(input.getBytes("UTF-8")));
+            return runTest(grammar, query, mappingPath, runtimePath, new ByteArrayInputStream(input.getBytes("UTF-8")), formatExtensions);
         }
         catch (Exception e)
         {
@@ -64,11 +62,11 @@ public abstract class TestExternalFormatQueries
         }
     }
 
-    protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, String input)
+    protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, String input, List<Root_meta_pure_extension_Extension> formatExtensions)
     {
         try
         {
-            return runTest(generated, grammar, query, mappingPath, runtimePath, new ByteArrayInputStream(input.getBytes("UTF-8")));
+            return runTest(generated, grammar, query, mappingPath, runtimePath, new ByteArrayInputStream(input.getBytes("UTF-8")), formatExtensions);
         }
         catch (Exception e)
         {
@@ -76,12 +74,12 @@ public abstract class TestExternalFormatQueries
         }
     }
 
-    protected String runTest(String grammar, String query, String mappingPath, String runtimePath, InputStream input)
+    protected String runTest(String grammar, String query, String mappingPath, String runtimePath, InputStream input, List<Root_meta_pure_extension_Extension> formatExtensions)
     {
-        return runTest(null, grammar, query, mappingPath, runtimePath, input);
+        return runTest(null, grammar, query, mappingPath, runtimePath, input, formatExtensions);
     }
 
-    protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, InputStream input)
+    protected String runTest(PureModelContextData generated, String grammar, String query, String mappingPath, String runtimePath, InputStream input, List<Root_meta_pure_extension_Extension> formatExtensions)
     {
         try
         {
@@ -98,8 +96,8 @@ public abstract class TestExternalFormatQueries
 
             ExecutionContext context = new Root_meta_pure_runtime_ExecutionContext_Impl(" ")._enableConstraints(true);
 
-            RichIterable<Root_meta_external_shared_format_ExternalFormatExtension> planGenerationExtensions = LazyIterate.collect(ExternalFormatPlanGenerationExtensionLoader.extensions().values(), ext -> ext.getPureExtension(model.getExecutionSupport()));
-            RichIterable<? extends Root_meta_pure_extension_Extension> extensions = core_pure_binding_extension.Root_meta_external_shared_format_routerExtensions_String_1__ExternalFormatExtension_MANY__Extension_MANY_("externalFormat", planGenerationExtensions, model.getExecutionSupport());
+            MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
+            extensions.addAll(formatExtensions);
 
             Mapping mapping = model.getMapping(mappingPath);
             Runtime runtime = model.getRuntime(runtimePath);

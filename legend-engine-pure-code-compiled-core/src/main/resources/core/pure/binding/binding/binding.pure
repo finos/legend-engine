@@ -37,11 +37,3 @@ function meta::external::shared::format::binding::toString::bindingToString(bind
    '  ]\n' +
    '}';
 }
-
-function meta::external::shared::format::binding::toString::modelToString(binding:Binding[1]): String[1]
-{
-   $binding.modelUnit->resolve().packageableElements->map(pe| $pe->match([
-      t:Type[1]        | $t->printType(),
-      a:Association[1] | $a->printAssociation();
-   ]))->joinStrings('\n\n');
-}

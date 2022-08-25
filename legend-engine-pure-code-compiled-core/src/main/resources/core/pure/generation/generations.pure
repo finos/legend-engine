@@ -105,10 +105,13 @@ function meta::pure::generation::pathToFileName(path:String[0..1],extension:Stri
    if($path->isEmpty() ,|'',|$path->toOne()->replace('::','/')+'.'+$extension);
 }
 
-
 function  meta::pure::generation::describeConfiguration(configClass:Class<Any>[1], configCreator:Function<{->Any[1]}>[1],excludedProperties:String[*]):GenerationParameter[*]
 {
-  let defaultConfig = $configCreator->eval();
+    describeConfiguration($configClass, $configCreator->eval(), $excludedProperties);
+}
+
+function  meta::pure::generation::describeConfiguration(configClass:Class<Any>[1], defaultConfig:Any[1],excludedProperties:String[*]):GenerationParameter[*]
+{
   let ignoredProperties = $excludedProperties->concatenate(['class','package']);
   let properties = $configClass->configProperties($ignoredProperties);
   
@@ -143,11 +146,11 @@ function  meta::pure::generation::describeConfiguration(configClass:Class<Any>[1
                                            let doc = $p->value4Tag('doc', meta::pure::profiles::doc);
    
                                            ^GenerationParameter(name=$p.name->toOne(),
-                                                                 description=$doc.value->joinStrings(',')
-                                                                ,type=$type
-                                                                ,defaultValue=$defaultValue
-                                                                ,required=$required
-                                                                ,items=$items);
+                                                                description=$doc.value->joinStrings(','),
+                                                                type=$type,
+                                                                defaultValue=$defaultValue,
+                                                                required=$required,
+                                                                items=$items);
                                          );
 }
 

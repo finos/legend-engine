@@ -14,91 +14,35 @@
 
 package org.finos.legend.engine.external.format.xsd;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.ImmutableList;
-import org.finos.legend.engine.external.format.xml.XmlExternalFormatPureExtension;
 import org.finos.legend.engine.external.format.xsd.compile.XsdCompiler;
-import org.finos.legend.engine.external.format.xsd.fromModel.ModelToXsdConfiguration;
 import org.finos.legend.engine.external.format.xsd.toModel.XsdToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.pure.generated.Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xsd_XsdSchema;
+import org.finos.legend.pure.generated.Root_meta_external_format_xml_transformation_toPure_XsdToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
-import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationParameter;
-import org.finos.legend.pure.generated.core_external_format_xml_binding_xsdToPure;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract;
 
-import java.lang.management.ManagementFactory;
-import java.util.Collections;
-import java.util.List;
-
-public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration, ModelToXsdConfiguration>
+public class XsdExternalFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_format_xml_metamodel_xsd_XsdSchema, XsdToModelConfiguration>
 {
-    public static final String TYPE = "XSD";
-    private static final boolean DEBUG_MODEL_GEN = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
+    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> xsdContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema>) core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_contract_xsdFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    public static final String TYPE = xsdContract._id();
 
     @Override
-    public String getFormat()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract()
     {
-        return TYPE;
-    }
-
-    @Override
-    public List<String> getContentTypes()
-    {
-        return Collections.singletonList(XmlExternalFormatPureExtension.CONTENT_TYPE);
+        return xsdContract;
     }
 
     @Override
     public Root_meta_external_format_xml_metamodel_xsd_XsdSchema compileSchema(ExternalSchemaCompileContext context)
     {
         return new XsdCompiler(context).compile();
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
-    {
-        // TODO XSD Correlation
-        return null;
-    }
-
-    @Override
-    public boolean supportsModelGeneration()
-    {
-        return true;
-    }
-
-    @Override
-    public RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationParameter> getModelGenerationProperties(PureModel pureModel)
-    {
-        return core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, XsdToModelConfiguration config, PureModel pureModel)
-    {
-        Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration configuration = new Root_meta_external_format_xml_binding_toPure_XsdToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::xml::binding::toPure::XsdToModelConfiguration"))
-                ._sourceSchemaId(config.sourceSchemaId)
-                ._targetPackage(config.targetPackage)
-                ._targetBinding(config.targetBinding)
-                ._inlineCollectionClasses(config.inlineCollectionClasses)
-                ._includeUnreachableClasses(config.includeUnreachableClasses);
-        return DEBUG_MODEL_GEN
-                ? core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPureWithDebug_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
-                : core_external_format_xml_binding_xsdToPure.Root_meta_external_format_xml_binding_toPure_xsdToPure_SchemaSet_1__XsdToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToXsdConfiguration modelToXsdConfiguration, PureModel pureModel)
-    {
-        // TODO XSD from model
-        return null;
     }
 
     @Override
@@ -109,9 +53,19 @@ public class XsdExternalFormatExtension implements ExternalFormatExtension<Root_
     }
 
     @Override
-    public List<String> getRegisterablePackageableElementNames()
+    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(XsdToModelConfiguration configuration, PureModel pureModel)
     {
-        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
-        return versions.collect(v -> "meta::protocols::pure::" + v + "::external::format::xml::serializerExtension_String_1__SerializerExtension_1_").toList();
+        return new Root_meta_external_format_xml_transformation_toPure_XsdToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::xml::transformation::toPure::XsdToModelConfiguration"))
+                ._sourceSchemaId(configuration.sourceSchemaId)
+                ._targetPackage(configuration.targetPackage)
+                ._inlineCollectionClasses(configuration.inlineCollectionClasses)
+                ._includeUnreachableClasses(configuration.includeUnreachableClasses);
+    }
+
+    @Override
+    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
+    {
+        // TODO XSD Correlation
+        return null;
     }
 }

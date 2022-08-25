@@ -19,7 +19,7 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -41,9 +41,9 @@ import java.util.Set;
 public class SchemaSetCompiler
 {
     private final MutableMap<String, Root_meta_external_shared_format_metamodel_SchemaSet> schemaSetIndex = Maps.mutable.empty();
-    private final Map<String, ExternalFormatExtension> externalFormatExtensions;
+    private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
 
-    public SchemaSetCompiler(Map<String, ExternalFormatExtension> externalFormatExtensions)
+    public SchemaSetCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)
     {
         this.externalFormatExtensions = externalFormatExtensions;
     }
@@ -107,7 +107,7 @@ public class SchemaSetCompiler
         String path = context.pureModel.buildPackageString(srcSchemaSet._package, srcSchemaSet.name);
         Root_meta_external_shared_format_metamodel_SchemaSet compiled = schemaSetIndex.get(path);
 
-        ExternalFormatExtension schemaExtension = externalFormatExtensions.get(srcSchemaSet.format);
+        ExternalFormatExtension<?> schemaExtension = externalFormatExtensions.get(srcSchemaSet.format);
         compiled._schemas(Lists.mutable.empty());
         for (ExternalFormatSchema srcSchema : srcSchemaSet.schemas)
         {

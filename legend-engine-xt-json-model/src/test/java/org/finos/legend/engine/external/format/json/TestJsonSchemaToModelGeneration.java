@@ -15,8 +15,9 @@
 package org.finos.legend.engine.external.format.json;
 
 import org.finos.legend.engine.external.format.json.toModel.JsonSchemaToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.test.SchemaToModelGenerationTest;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelGenerationTest;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,7 +73,9 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                                 "}")
                 .build();
 
-        PureModelContextData model = generateModel(schemaCode, config("test::Simple", "example::jsonSchema"));
+        PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
+
+        Assert.assertEquals(1, model.getElements().size());
 
         String expected = ">>>example::jsonSchema::Test\n" +
                 "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
@@ -87,6 +90,80 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                 "  stringField: String[1];\n" +
                 "}\n";
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
+    }
+
+    @Test
+    public void testSimpleJsonSchemaWithBinding()
+    {
+        String schemaCode = newExternalSchemaSetGrammarBuilder("test::Simple", "JSON")
+                .withSchemaText("Test", "Test.json",
+                        "{\n" +
+                                "  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n" +
+                                "  \"type\": \"object\",\n" +
+                                "  \"properties\": {\n" +
+                                "    \"stringField\": {\n" +
+                                "      \"type\": \"string\"\n" +
+                                "    },\n" +
+                                "    \"floatField\": {\n" +
+                                "      \"type\": \"number\"\n" +
+                                "    },\n" +
+                                "    \"decimalField\": {\n" +
+                                "      \"type\": \"number\"\n" +
+                                "    },\n" +
+                                "    \"integerField\": {\n" +
+                                "      \"type\": \"integer\"\n" +
+                                "    },\n" +
+                                "    \"dateField\": {\n" +
+                                "      \"type\": \"string\",\n" +
+                                "      \"format\": \"date-time\"\n" +
+                                "    },\n" +
+                                "    \"dateTimeField\": {\n" +
+                                "      \"type\": \"string\",\n" +
+                                "      \"format\": \"date-time\"\n" +
+                                "    },\n" +
+                                "    \"strictDateField\": {\n" +
+                                "      \"type\": \"string\",\n" +
+                                "      \"format\": \"date\"\n" +
+                                "    },\n" +
+                                "    \"booleanField\": {\n" +
+                                "      \"type\": \"boolean\"\n" +
+                                "    }\n" +
+                                "  },\n" +
+                                "  \"required\": [\n" +
+                                "    \"stringField\",\n" +
+                                "    \"floatField\",\n" +
+                                "    \"decimalField\",\n" +
+                                "    \"integerField\",\n" +
+                                "    \"dateField\",\n" +
+                                "    \"dateTimeField\",\n" +
+                                "    \"strictDateField\",\n" +
+                                "    \"booleanField\"\n" +
+                                "  ]\n" +
+                                "}")
+                .build();
+
+        PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"), true, "test::gen::TargetBinding");
+
+        Assert.assertEquals(2, model.getElements().size());
+
+        String expected = ">>>example::jsonSchema::Test\n" +
+                "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
+                "{\n" +
+                "  floatField: Float[1];\n" +
+                "  decimalField: Float[1];\n" +
+                "  strictDateField: StrictDate[1];\n" +
+                "  integerField: Integer[1];\n" +
+                "  booleanField: Boolean[1];\n" +
+                "  dateField: DateTime[1];\n" +
+                "  dateTimeField: DateTime[1];\n" +
+                "  stringField: String[1];\n" +
+                "}\n";
+        Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
+
+        Binding genBinding = model.getElementsOfType(Binding.class).get(0);
+        Assert.assertEquals("test::gen::TargetBinding", genBinding.getPath());
+        Assert.assertEquals("application/json", genBinding.contentType);
+        Assert.assertArrayEquals(new String[] {"example::jsonSchema::Test"}, genBinding.modelUnit.packageableElementIncludes.toArray());
     }
 
     @Test
@@ -132,7 +209,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                                 "}")
                 .build();
 
-        PureModelContextData model = generateModel(schemaCode, config("test::Simple", "example::jsonSchema"));
+        PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
 
         String expected = ">>>example::jsonSchema::Test\n" +
                 "Class example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
@@ -387,7 +464,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                                 "}")
                 .build();
 
-        PureModelContextData model = generateModel(schemaCode, config("test::Simple", "example::jsonSchema"));
+        PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
 
         String expected = ">>>example::jsonSchema::Test\n" +
                 "Class {meta::json::schema::JSONSchemaGeneration.title = 'meta::json::schema::tests::PrimitiveTypeDomain'} example::jsonSchema::Test extends meta::pure::metamodel::type::Any\n" +
@@ -475,7 +552,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                                 "}")
                 .build();
 
-        PureModelContextData model = generateModel(schemaCode, config("test::Simple", "example::jsonSchema"));
+        PureModelContextData model = generateModel(schemaCode, config("example::jsonSchema"));
 
         String expected = ">>>demo::jsonSchema::Firm\n" +
                 "Class demo::jsonSchema::Firm extends meta::pure::metamodel::type::Any\n" +
@@ -589,7 +666,7 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
                                 "}")
                 .build();
 
-        PureModelContextData model = generateModel(schemaCode, config("test::Simple::SchemaSet", "test::Simple"));
+        PureModelContextData model = generateModel(schemaCode, config("test::Simple"));
 
         String expected = ">>>test::Simple::Address\n" +
                 "Class test::Simple::Address extends meta::pure::metamodel::type::Any\n" +
@@ -628,11 +705,9 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
     }
 
-    private JsonSchemaToModelConfiguration config(String sourceSchemaSet, String targetPackage)
+    private JsonSchemaToModelConfiguration config(String targetPackage)
     {
         JsonSchemaToModelConfiguration config = new JsonSchemaToModelConfiguration();
-        config.sourceSchemaSet = sourceSchemaSet;
-        config.targetBinding = targetPackage + "::TestBinding";
         config.targetPackage = targetPackage;
         return config;
     }

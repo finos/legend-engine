@@ -31,7 +31,7 @@ import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataSec
 import org.finos.legend.engine.external.format.flatdata.shared.model.FlatDataString;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidation;
 import org.finos.legend.engine.external.format.flatdata.shared.validation.FlatDataValidationResult;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatData;
 import org.finos.legend.pure.generated.Root_meta_external_format_flatdata_metamodel_FlatDataBoolean_Impl;

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.13.1-SNAPSHOT</version>
+        <version>3.14.3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,12 +28,12 @@
     <name>Legend Engine - XT - Data Space - API</name>
 
     <dependencies>
-        <!-- Pure -->
+        <!-- PURE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-data-space-pure</artifactId>
         </dependency>
-        <!-- Pure -->
+        <!-- PURE -->
 
         <!-- ENGINE -->
         <dependency>
@@ -142,6 +142,6 @@
             <artifactId>jersey-common</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- TEST -->
+      <!-- TEST -->
     </dependencies>
 </project>

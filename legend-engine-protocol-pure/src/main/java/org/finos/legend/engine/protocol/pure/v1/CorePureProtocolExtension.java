@@ -25,6 +25,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -125,6 +127,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(DataQualityExecutionNode.class, "dataQuality")
                         .withSubtype(UrlStreamExecutionNode.class, "urlStream")
+                        .withSubtype(ExternalFormatInternalizeExecutionNode.class, "externalFormatInternalize")
+                        .withSubtype(ExternalFormatExternalizeExecutionNode.class, "externalFormatExternalize")
                         .build()
         ));
     }

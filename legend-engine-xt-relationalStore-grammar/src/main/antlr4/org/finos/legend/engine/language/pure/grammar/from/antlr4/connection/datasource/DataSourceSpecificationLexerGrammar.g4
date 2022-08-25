@@ -29,10 +29,6 @@ ACCOUNTTYPE:                                'accountType';
 ORGANIZATION:                               'organization';
 ROLE:                                       'role';
 
-BIGQUERY_DSP:                               'BigQuery';
-PROJECT:                                    'projectId';
-DATASET:                                    'defaultDataset';
-
 SPANNER_DATA_SOURCE_SPECIFICATION:          'Spanner';
 INSTANCE:                                   'instanceId';
 DATABASE:                                   'databaseId';

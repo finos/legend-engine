@@ -114,16 +114,6 @@ snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON
 dbRole:                                     ROLE COLON STRING SEMI_COLON
 ;
 
-bigQueryDatasourceSpecification:            BIGQUERY_DSP
-                                                BRACE_OPEN
-                                                    (
-                                                        projectId
-                                                        | defaultDataset
-                                                        | dbProxyHost
-                                                        | dbProxyPort
-                                                    )*
-                                                BRACE_CLOSE
-;
 spannerDatasourceSpecification:             SPANNER_DATA_SOURCE_SPECIFICATION
                                                 BRACE_OPEN
                                                     (

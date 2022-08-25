@@ -139,10 +139,9 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
    let firstCluster = $subClusters->at(0);
    let childNodes   = $subClusters->map(cls | $cls->plan($runtime, $sq.inScopeVars, $sq.advancedRouting, $exeCtx, $extensions, $debug));
    
-   ^PureExpressionPlatformExecutionNode
+   ^PlatformUnionExecutionNode
    (
       fromCluster    = ^$firstCluster(val = $fe),
-      expression     = $fe,
       resultType     = $childNodes->at(0).resultType,
       executionNodes = $childNodes
    );
