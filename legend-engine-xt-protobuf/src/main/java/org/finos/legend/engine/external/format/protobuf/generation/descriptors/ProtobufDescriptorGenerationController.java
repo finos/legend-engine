@@ -15,7 +15,6 @@
 package org.finos.legend.engine.external.format.protobuf.generation.descriptors;
 
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -68,10 +67,7 @@ public class ProtobufDescriptorGenerationController
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf Descriptor").startActive(true))
         {
-            Span span = scope.span();
-            String uniqueId = span.context().toTraceId();
-            byte[] descriptor = protobufDescriptorGenerationService.generateDescriptor(generateProtobufInput, pm,
-                uniqueId);
+            byte[] descriptor = protobufDescriptorGenerationService.generateDescriptor(generateProtobufInput, pm);
             return Response.ok(descriptor).type(MediaType.APPLICATION_OCTET_STREAM).build();
         } catch (Exception ex)
         {

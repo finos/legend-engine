@@ -16,36 +16,29 @@ package org.finos.legend.engine.external.format.protobuf.generation.descriptors.
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import jersey.repackaged.com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
+import org.junit.Test;
 
-public class FileService
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
+
+
+public class FileServiceTest
 {
-    public static final String PROTO = ".proto";
+    private FileService fileService = new FileService();
 
-    public List<File> writeToTempFolder(List<GenerationOutput> generationOutputs) throws IOException
+    @Test
+    public void filesHasProperNames() throws IOException
     {
-        ArrayList<File> files = new ArrayList<>();
-        for (GenerationOutput generationOutput : generationOutputs)
-        {
-            // Note, that Files.createTempFile tempFile path always would be unique
-            Path tempFile = Files.createTempFile(generationOutput.fileName + "-", PROTO);
-            files.add(tempFile.toFile());
-        }
-        return files;
-    }
-
-    public byte[] getFileContentInBinary(File file) throws IOException
-    {
-        return FileUtils.readFileToByteArray(file);
-    }
-
-    public void wipeOut(List<File> files)
-    {
-        files.forEach(FileUtils::deleteQuietly);
+        List<File> files = fileService
+            .writeToTempFolder(Lists.newArrayList(new GenerationOutput("content", "filename", "format")));
+        String tempDir = FileUtils.getTempDirectory().getPath();
+        assertThat(files.get(0).getParent(), is(tempDir));
+        assertThat(files.get(0).getName(), containsString("filename-"));
+        assertThat(files.get(0).getName(), containsString(".proto"));
     }
 }

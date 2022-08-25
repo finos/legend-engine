@@ -40,11 +40,11 @@ public class ProtobufDescriptorGenerationService
     }
 
     public byte[] generateDescriptor(ProtobufGenerationInput generateProtobufInput,
-                                     ProfileManager<CommonProfile> pm, String uniqueId) throws IOException
+                                     ProfileManager<CommonProfile> pm) throws IOException
     {
         List<GenerationOutput> generationOutputs =
             protobufGenerationService.generateProtobufOutput(generateProtobufInput, pm);
-        List<File> filesWritten = fileService.writeToTempFolder(generationOutputs, uniqueId);
+        List<File> filesWritten = fileService.writeToTempFolder(generationOutputs);
         try
         {
             File discriptorSet = protobufCompilerService.generateDiscriptorSet(filesWritten);

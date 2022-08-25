@@ -56,15 +56,14 @@ public class ProtobufDescriptorGenerationServiceTest
         List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
             "fileName", "format"));
         when(protobufGenerationService.generateProtobufOutput(any(), any())).thenReturn(generationOutputs);
-        String unique_id = "unique_id";
         List<File> protoFiles = Lists.newArrayList(new File("path-to-proto-file"));
-        when(fileService.writeToTempFolder(generationOutputs, unique_id)).thenReturn(protoFiles);
+        when(fileService.writeToTempFolder(generationOutputs)).thenReturn(protoFiles);
         when(protobufCompilerService.generateDiscriptorSet(protoFiles)).thenReturn(new File("descriptor"));
         byte[] bytes = {0, 1};
         when(fileService.getFileContentInBinary(new File("descriptor"))).thenReturn(bytes);
 
         assertThat(protobufDescriptorGenerationService
-                .generateDescriptor(new ProtobufGenerationInput(), Mockito.mock(ProfileManager.class), unique_id),
+                .generateDescriptor(new ProtobufGenerationInput(), Mockito.mock(ProfileManager.class)),
             is(bytes));
 
         verify(fileService, times(1))
@@ -77,14 +76,13 @@ public class ProtobufDescriptorGenerationServiceTest
         List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
             "fileName", "format"));
         when(protobufGenerationService.generateProtobufOutput(any(), any())).thenReturn(generationOutputs);
-        String unique_id = "unique_id";
         List<File> protoFiles = Lists.newArrayList(new File("path-to-proto-file"));
-        when(fileService.writeToTempFolder(generationOutputs, unique_id)).thenReturn(protoFiles);
+        when(fileService.writeToTempFolder(generationOutputs)).thenReturn(protoFiles);
         when(protobufCompilerService.generateDiscriptorSet(protoFiles))
             .thenThrow(new RuntimeException("something's wrong"));
 
         assertThrows(RuntimeException.class, () -> protobufDescriptorGenerationService
-            .generateDescriptor(new ProtobufGenerationInput(), Mockito.mock(ProfileManager.class), unique_id));
+            .generateDescriptor(new ProtobufGenerationInput(), Mockito.mock(ProfileManager.class)));
 
         verify(fileService, times(1)).wipeOut(protoFiles);
     }
