@@ -58,4 +58,4 @@ jobs:
       - name: Run Sql Generation Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite" test
+        run: mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite" test

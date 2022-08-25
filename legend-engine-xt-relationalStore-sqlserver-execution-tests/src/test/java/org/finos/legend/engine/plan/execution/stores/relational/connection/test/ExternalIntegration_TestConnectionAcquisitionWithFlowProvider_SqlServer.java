@@ -15,68 +15,48 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.SqlServerTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.SqlServerTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.SqlServerTestContainers;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
-import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
-import org.finos.legend.engine.shared.core.vault.Vault;
-import org.finos.legend.engine.shared.core.vault.VaultImplementation;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.testcontainers.containers.MSSQLServerContainer;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
-public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer extends org.finos.legend.engine.plan.execution.stores.relational.connection.test.DbSpecificTests
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer extends RelationalConnectionTest
 {
-    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2019-latest")
-            .acceptLicense();
-
     private ConnectionManagerSelector connectionManagerSelector;
-    private VaultImplementation vaultImplementation;
-
-    @Override
-    protected Subject getSubject()
-    {
-        return null;
-    }
+    private SqlServerTestContainers sqlServerTestContainer;
 
     @Before
-    public void setup() throws Exception
+    public void setup()
     {
         startMSSQLServerContainer();
-
-        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
-        flowProvider.configure(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
+        SqlServerTestDatabaseAuthenticationFlowProvider flowProvider = new SqlServerTestDatabaseAuthenticationFlowProvider();
+        flowProvider.configure(new SqlServerTestDatabaseAuthenticationFlowProviderConfiguration());
         assertStaticSQLServerFlowProviderIsAvailable(flowProvider);
-
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
-
-        Properties properties = new Properties();
-        properties.put("sqlServerAccount.user", "SA");
-        properties.put("sqlServerAccount.password", "A_Str0ng_Required_Password");
-        this.vaultImplementation = new PropertiesVaultImplementation(properties);
-        Vault.INSTANCE.registerImplementation(this.vaultImplementation);
     }
 
     private void startMSSQLServerContainer()
     {
         try
         {
-            this.mssqlserver.start();
+            this.sqlServerTestContainer = new SqlServerTestContainers();
+            this.sqlServerTestContainer.setup();
         }
         catch (Throwable ex)
         {
@@ -84,7 +64,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlSe
         }
     }
 
-    public void assertStaticSQLServerFlowProviderIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    public void assertStaticSQLServerFlowProviderIsAvailable(SqlServerTestDatabaseAuthenticationFlowProvider flowProvider)
     {
         StaticDatasourceSpecification staticDatasourceSpecification = new StaticDatasourceSpecification();
         UserNamePasswordAuthenticationStrategy authenticationStrategy = new UserNamePasswordAuthenticationStrategy();
@@ -98,30 +78,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlSe
     @After
     public void cleanup()
     {
-        Vault.INSTANCE.unregisterImplementation(this.vaultImplementation);
-        this.mssqlserver.stop();
+        this.sqlServerTestContainer.cleanup();
     }
 
     @Test
     public void testSqlServerUserNamePasswordConnection() throws Exception
     {
-        RelationalDatabaseConnection systemUnderTest = this.sqlServerWithUserNamePassword();
+        RelationalDatabaseConnection systemUnderTest = this.sqlServerTestContainer.getConnection();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "select db_name() as dbname");
-    }
-
-    private RelationalDatabaseConnection sqlServerWithUserNamePassword()
-    {
-        StaticDatasourceSpecification sqlServerDatasourceSpecification = new StaticDatasourceSpecification();
-        sqlServerDatasourceSpecification.host = "localhost";
-        sqlServerDatasourceSpecification.port = this.mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
-        sqlServerDatasourceSpecification.databaseName = "master";
-        UserNamePasswordAuthenticationStrategy authSpec = new UserNamePasswordAuthenticationStrategy();
-        authSpec.baseVaultReference = "sqlServerAccount.";
-        authSpec.userNameVaultReference = "user";
-        authSpec.passwordVaultReference = "password";
-        RelationalDatabaseConnection conn = new RelationalDatabaseConnection(sqlServerDatasourceSpecification, authSpec, DatabaseType.SqlServer);
-        conn.type = DatabaseType.SqlServer;
-        return conn;
+        testConnection(connection, 5, "select db_name() as dbname");
     }
 }

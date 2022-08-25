@@ -35,7 +35,7 @@
     "temporarytestdb": {
       "port": 9099
     },
-    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
+    "flowProviderClass": "org.finos.legend.engine.authentication.SqlServerTestDatabaseAuthenticationFlowProvider",
     "flowProviderConfiguration": {
       "_type": "sqlServerTest"
     }
