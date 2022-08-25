@@ -132,8 +132,6 @@ instanceId:                                 INSTANCE COLON STRING SEMI_COLON
 ;
 projectId:                                    PROJECT COLON STRING SEMI_COLON
 ;
-defaultDataset:                                    DATASET COLON STRING SEMI_COLON
-;
 
 region:                                     REGION COLON STRING SEMI_COLON
 ;
