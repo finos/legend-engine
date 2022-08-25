@@ -19,6 +19,14 @@ import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import java.util.List;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfig;
@@ -32,19 +40,13 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -67,37 +69,55 @@ public class ProtobufGenerationService
     @Path("protobuf")
     @ApiOperation(value = "Generates Protobuf for a given class and transitive dependencies")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput,
+                                     @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         boolean interactive = generateProtobufInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf").startActive(true))
         {
-            return exec(generateProtobufInput.config != null ? generateProtobufInput.config : new ProtobufGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, profiles, null).getTwo(),
-                    interactive,
-                    profiles);
-        }
-        catch (Exception ex)
+            List<GenerationOutput> result = generateProtobufOutput(generateProtobufInput, pm);
+            return ManageConstantResult.manageResult(profiles, result);
+        } catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex,
+                interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR :
+                    LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, profiles);
         }
     }
 
-    private Response exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
+    public List<GenerationOutput> generateProtobufOutput(ProtobufGenerationInput generateProtobufInput,
+                                                         @ApiParam(hidden = true) @Pac4JProfileManager
+                                                             ProfileManager<CommonProfile> pm)
     {
-        try
-        {
-            long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
-            PureModel pureModel = pureModelFunc.value();
-            Object result = core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_internal_transform_ProtobufConfig_1__GenerationOutput_MANY_(protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double)System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(pm, result);
-        }
-        catch (Exception ex)
-        {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_PROTOBUF_CODE_ERROR, pm);
-        }
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        boolean interactive = generateProtobufInput.model instanceof PureModelContextData;
+
+        return exec(
+            generateProtobufInput.config != null ? generateProtobufInput.config : new ProtobufGenerationConfig(),
+            () -> this.modelManager
+                .loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, profiles, null)
+                .getTwo(),
+            interactive,
+            profiles);
+    }
+
+    private List<GenerationOutput> exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc,
+                                        boolean interactive,
+                                        MutableList<CommonProfile> pm)
+    {
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START :
+            LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
+        PureModel pureModel = pureModelFunc.value();
+        RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput>
+            result = core_external_format_protobuf_deprecated
+            .Root_meta_external_format_protobuf_deprecated_generation_internal_transform_ProtobufConfig_1__GenerationOutput_MANY_(
+                protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport());
+        List<GenerationOutput> generationOutputs =
+            result.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
+        LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP :
+            LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
+        return generationOutputs;
     }
 }
