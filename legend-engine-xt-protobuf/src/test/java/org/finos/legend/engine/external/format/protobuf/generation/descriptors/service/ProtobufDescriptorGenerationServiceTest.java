@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.format.protobuf.generation.descriptors.
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import jersey.repackaged.com.google.common.collect.Lists;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationService;
@@ -50,7 +51,7 @@ public class ProtobufDescriptorGenerationServiceTest
     private ProtobufCompilerService protobufCompilerService;
 
     @Test
-    public void generateDescriptors()
+    public void generateDescriptors() throws IOException
     {
         List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
             "fileName", "format"));
@@ -71,7 +72,7 @@ public class ProtobufDescriptorGenerationServiceTest
     }
 
     @Test
-    public void wipingOutEvenOnException()
+    public void wipingOutEvenOnException() throws IOException
     {
         List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
             "fileName", "format"));

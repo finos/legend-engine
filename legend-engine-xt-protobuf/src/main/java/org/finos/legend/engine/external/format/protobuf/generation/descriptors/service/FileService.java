@@ -15,23 +15,36 @@
 package org.finos.legend.engine.external.format.protobuf.generation.descriptors.service;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 
 public class FileService
 {
-    public List<File> writeToTempFolder(List<GenerationOutput> generationOutputs, String uniqueId)
+    public static final String PROTO = ".proto";
+
+    public List<File> writeToTempFolder(List<GenerationOutput> generationOutputs, String uniqueId) throws IOException
     {
-        return null;
+        ArrayList<File> files = new ArrayList<>();
+        for (GenerationOutput generationOutput : generationOutputs)
+        {
+            Path tempFile = Files.createTempFile(generationOutput.fileName + uniqueId, PROTO);
+            files.add(tempFile.toFile());
+        }
+        return files;
     }
 
-    public byte[] getFileContentInBinary(File file)
+    public byte[] getFileContentInBinary(File file) throws IOException
     {
-        return new byte[0];
+        return FileUtils.readFileToByteArray(file);
     }
 
     public void wipeOut(List<File> files)
     {
-
+        files.forEach(FileUtils::deleteQuietly);
     }
 }

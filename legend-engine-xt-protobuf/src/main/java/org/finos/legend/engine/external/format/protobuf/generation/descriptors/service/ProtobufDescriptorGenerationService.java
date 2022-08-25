@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.format.protobuf.generation.descriptors.service;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationService;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationInput;
@@ -39,7 +40,7 @@ public class ProtobufDescriptorGenerationService
     }
 
     public byte[] generateDescriptor(ProtobufGenerationInput generateProtobufInput,
-                                     ProfileManager<CommonProfile> pm, String uniqueId)
+                                     ProfileManager<CommonProfile> pm, String uniqueId) throws IOException
     {
         List<GenerationOutput> generationOutputs =
             protobufGenerationService.generateProtobufOutput(generateProtobufInput, pm);
