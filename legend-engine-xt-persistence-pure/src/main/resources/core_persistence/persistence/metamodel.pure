@@ -211,6 +211,12 @@ meta::pure::persistence::metamodel::persister::sink::ObjectStorageSink extends S
    binding: Binding[1];
 }
 
+Class
+{doc.doc = 'Specification for GS Financial Cloud sinks.'}
+meta::pure::persistence::metamodel::persister::sink::FinancialCloudSink extends Sink
+{
+}
+
 /**********
  * target shape
  **********/

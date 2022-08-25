@@ -1,0 +1,83 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::generation::*;
+import meta::pure::generation::metamodel::*;
+import meta::pure::persistence::metamodel::*;
+import meta::external::persistence::aws::cnas::generation::*;
+import meta::external::persistence::aws::cnas::spec::*;
+
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::trigger::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::persistence::metamodel::batch::*;
+import meta::pure::persistence::metamodel::batch::targetspecification::*;
+import meta::pure::persistence::metamodel::batch::deduplication::*;
+import meta::pure::persistence::metamodel::batch::mode::snapshot::*;
+import meta::pure::persistence::metamodel::batch::audit::*;
+
+
+function  meta::external::persistence::aws::cnas::generation::transform(input: AwsPersistenceConfig[1]): AwsPersistenceOutput[*]
+{
+  meta::legend::test::mayExecuteLegendTest(
+       {clientVersion, serverVersion, serializationKind, host, port|
+                   let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::generation::awspersistence::legendGenerateAwsPersistence_AwsPersistenceConfig_1__String_1__Integer_1__String_1__AwsPersistenceOutput_MANY_';
+                   let xf = $fStr->pathToElement()->cast(@Function<{AwsPersistenceConfig[1], String[1], Integer[1], String[1]->AwsPersistenceOutput[*]}>);
+                   $xf->evaluate([$input, $host, $port, $serverVersion]->map(v|list($v)))->toOneMany()->cast(@AwsPersistenceOutput);},
+       | meta::external::persistence::aws::cnas::generation::internal_transform($input)
+    )->toOneMany();   
+}
+
+function <<access.private,Generation.Transformation>> meta::external::persistence::aws::cnas::generation::internal_transform(input: AwsPersistenceConfig[1]): AwsPersistenceOutput[*]
+{
+   let possibleElement = $input.allPackageScopeElements()->filter(p|$p->instanceOf(PersistenceContext))->cast(@PersistenceContext);
+   assertNotEmpty($possibleElement, | 'No Persistence context was found');
+   assertFalse($possibleElement->size()>1, | 'More than one Persistence context was found');
+   $input->meta::external::persistence::aws::cnas::generation::generateAwsPersistenceFromPure($possibleElement->toOne()->cast(@PersistenceContext));
+}
+
+
+function meta::external::persistence::aws::cnas::generation::generateAwsPersistenceFromPureWithScope(config: AwsPersistenceConfig[1]): AwsPersistenceOutput[*]
+{
+   let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(PersistenceContext))->cast(@PersistenceContext);
+   assertNotEmpty($scopeElements, 'At least one Persistence Context is needed to transform into cloud-persistent backend form');
+   $scopeElements->map(pc| $config->meta::external::persistence::aws::cnas::generation::generateAwsPersistenceFromPure($pc));
+}
+
+function meta::external::persistence::aws::cnas::generation::generateAwsPersistenceFromPure(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): AwsPersistenceOutput[*]
+{
+   let content = $config->generateAwsPersistenceBackend($pc);
+   let out = ^AwsPersistenceOutput(content=$content,fileName=$pc->elementToPath()->pathToFileName('awspersistence'), format='json');
+   $out;
+}
+
+function meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackend(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): String[1]
+{
+  $config->meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackendRaw($pc)->toPrettyJSONString();
+}
+
+function meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackendRaw(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): JSONElement[1]
+{
+  let jsonConfig = config(true, false, true, true, '__type', false);
+  let content = $config->meta::external::persistence::aws::cnas::serialization::serialize($pc);
+  $content->toJSONElement(meta::external::persistence::aws::cnas::generation::extraJsonSerializers(), 1000, $jsonConfig);
+}
+
+function meta::external::persistence::aws::cnas::generation::extraJsonSerializers():Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*]
+{
+  [
+    // TODO: Add based on what _type we want etc. on the CNAS side
+  ]
+}

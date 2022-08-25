@@ -1,0 +1,92 @@
+import meta::pure::persistence::metamodel::*;
+import meta::legend::service::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::persistence::metamodel::notifier::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::deduplication::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::*;
+import meta::pure::persistence::metamodel::persister::audit::*;
+import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
+import meta::pure::runtime::*;
+
+import meta::relational::metamodel::*;
+
+Class meta::external::persistence::aws::cnas::spec::ModelClassProperty
+{
+  name: String[1];
+  type: Type[1];
+}
+
+Class meta::external::persistence::aws::cnas::spec::ModelClass
+{
+  name: String[1];
+  package: Package[1];
+  properties: meta::external::persistence::aws::cnas::spec::ModelClassProperty[*];
+}
+
+Class meta::external::persistence::aws::cnas::spec::RelationalProperty
+{
+  name: String[1];
+  sqlType: String[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::persistence::aws::cnas::spec::AwsPersistenceTargetConnection
+{
+}
+
+Class meta::external::persistence::aws::cnas::spec::RelationalConnection extends meta::external::persistence::aws::cnas::spec::AwsPersistenceTargetConnection
+{
+  schemaName: String[1];
+  tableName: String[1];
+  authenticationStrategy: AuthenticationStrategy[1];
+  targetSpecification: DatasourceSpecification[1];
+  columns: meta::external::persistence::aws::cnas::spec::RelationalProperty[*];
+}
+
+Class meta::external::persistence::aws::cnas::spec::S3Connection extends meta::external::persistence::aws::cnas::spec::AwsPersistenceTargetConnection
+{
+  partition: meta::external::persistence::aws::metamodel::AwsPartition[1];
+  region: String[1];
+  bucket: String[1];
+  key: String[1];
+  contentType: String[0..1]; // From the Binding
+}
+
+// FIXME: This is just duplicating meta::external::persistence::aws::metamodel::connection::AwsFinCloudConnection without the store
+Class meta::external::persistence::aws::cnas::spec::AwsFinCloudConnection extends meta::external::persistence::aws::cnas::spec::AwsPersistenceTargetConnection
+{
+  datasetId: String[1];
+  authenticationStrategy: AuthenticationStrategy[1];
+  apiUrl: String[1];
+  queryInfo: String[0..1];
+}
+
+
+Class meta::external::persistence::aws::cnas::spec::AwsPersistenceTarget
+{
+  name: String[1];
+  connection: meta::external::persistence::aws::cnas::spec::AwsPersistenceTargetConnection[1];
+  // deduplicationStrategy: DeduplicationStrategy[1];
+  ingestMode: meta::pure::persistence::metamodel::persister::ingestmode::IngestMode[1];
+}
+
+Class meta::external::persistence::aws::cnas::spec::AwsPersistenceService
+{
+  service: Service[1];
+  // auth: AuthenticationStrategy[0..1]; // We no longer need to lift the auth out, since the service's auth mechanism will be used via Vault.INSTANCE in the cnas runtime too 
+  modelClass: meta::external::persistence::aws::cnas::spec::ModelClass[1..*];
+}
+
+Class meta::external::persistence::aws::cnas::spec::AwsPersistence
+{
+   documentation: String[1];
+   service: meta::external::persistence::aws::cnas::spec::AwsPersistenceService[1];
+   serviceInput: Connection[0..1];
+   trigger: Trigger[1];
+   notifier: Notifier[1];
+   persister: Persister[0..1];
+   target: meta::external::persistence::aws::cnas::spec::AwsPersistenceTarget[1..*];
+}
