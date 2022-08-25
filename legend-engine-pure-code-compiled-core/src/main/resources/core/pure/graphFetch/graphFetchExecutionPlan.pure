@@ -88,12 +88,8 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
    let enableConstraints        = $exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne();
    let checked                  = $fe.genericType.rawType == Checked;
 
-   let localRoot = $rootTree.store->match([
-      model : ModelStore[1] | planRootGraphFetchExecutionInMemory($sq, $ext, $rootTreeOneCluster, $orderedPaths, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
-   ]->concatenate(
-      $extensions.graphFetch_executionPlan_planGraphFetchExecution->map(f|$f->evaluate([list($sq), list($ext), list($rootTreeOneCluster), list($orderedPaths), list($mapping), list($runtime), list($exeCtx), list($enableConstraints), list($checked), list($extensions), list($debug)])->cast(@Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>))
-   )->toOneMany());
-
+  
+   let localRoot = $rootTree.s.planGraphFetchExecution->toOne()->evaluate([list($rootTreeOneCluster), list($orderedPaths), list($enableConstraints), list($checked), list($sq), list($ext), list($mapping), list($runtime), list($exeCtx), list($extensions), list($debug)])->cast(@LocalGraphFetchExecutionNode)->toOne();
 
    let rootGlobalNode = ^GlobalGraphFetchExecutionNode
                         (
@@ -143,10 +139,9 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
    let firstCluster = $subClusters->at(0);
    let childNodes   = $subClusters->map(cls | $cls->plan($runtime, $sq.inScopeVars, $sq.advancedRouting, $exeCtx, $extensions, $debug));
    
-   ^PureExpressionPlatformExecutionNode
+   ^PlatformUnionExecutionNode
    (
       fromCluster    = ^$firstCluster(val = $fe),
-      expression     = $fe,
       resultType     = $childNodes->at(0).resultType,
       executionNodes = $childNodes
    );
@@ -165,11 +160,14 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
                                         |$currentTree->toOne()->getPathTo($ch.first)->toOne(),
                                         |$parentPath->toOne()+'.'+$currentTree->getPathTo($ch.first)->toOne()
                                      );
-           let crossLocalNode      = $ch.first.store->match([
-                                                                model : ModelStore[1] | planCrossStoreGraphFetchExecutionInMemory($childTreeOneCluster, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
-                                                            ]->concatenate(
-                                                                $extensions.graphFetch_executionPlan_addCrossStoreChildren->map(f|$f->evaluate([list($childTreeOneCluster), list($orderedPaths), list($newParentPath), list($inScopeVars), list($m), list($runtime), list($exeCtx), list($enableConstraints), list($checked), list($extensions), list($debug)])->cast(@Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>))
-                                                            )->toOneMany())->toOne()->cast(@LocalGraphFetchExecutionNode);
+           let crossLocalNode      = $ch.first.s.planCrossGraphFetchExecution->toOne()->evaluate([list($childTreeOneCluster), list($orderedPaths), list($newParentPath), list($enableConstraints), list($checked), list($inScopeVars), list($m), list($runtime), list($exeCtx), list($extensions), list($debug)])->toOne()->cast(@LocalGraphFetchExecutionNode);
+           
+          //  tore->match([
+          //                                                       model : ModelStore[1] | planCrossStoreGraphFetchExecutionInMemory($childTreeOneCluster, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug);
+          //                                                   ]->concatenate(
+          //                                                       $extensions.graphFetch_executionPlan_addCrossStoreChildren->map(f|$f->evaluate([list($childTreeOneCluster), list($orderedPaths), list($newParentPath), list($inScopeVars), list($m), list($runtime), list($exeCtx), list($enableConstraints), list($checked), list($extensions), list($debug)])->cast(@Function<{Nil[1]->LocalGraphFetchExecutionNode[1]}>))
+          //                                                   )->toOneMany())->toOne()->cast(@LocalGraphFetchExecutionNode);
+                                                            
            let propertyMapping     = $routedTree.propertyMapping->toOne()->cast(@meta::pure::mapping::xStore::XStorePropertyMapping);
            let newCrossNode        = ^GlobalGraphFetchExecutionNode
                                      (
@@ -261,21 +259,12 @@ function meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToS
    'GlobalGraphFetch\n' + 
       $space + '(' + header($g, $space, $extensions) + '\n'+
       $space + '  store = ' + $g.store->elementToPath() + '\n'+
-      $space + '  localGraphFetchExecutionNode = \n' + $space + '     ' + $g.localGraphFetchExecutionNode->localGraphFetchExecutionNodeToString($space + '     ', $extensions) +
+      $space + '  localGraphFetchExecutionNode = \n' + $g.localGraphFetchExecutionNode->meta::pure::executionPlan::toString::planNodeToString($space+ '     ', $extensions) +
       $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
       if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
       if($g.xStorePropertyMapping->isEmpty(), | '', | $space + '  xStorePropertyMapping = ' + $g.xStorePropertyMapping.property.name->toOne() + '[' + $g.xStorePropertyMapping.sourceSetImplementationId->toOne() + ' -> ' + $g.xStorePropertyMapping.targetSetImplementationId->toOne() + ']' + '\n') +
       $g.implementation->printImplementation('implementation', $space+'  ', $extensions)+
       $space + ')\n';
-}
-
-function meta::pure::graphFetch::executionPlan::localGraphFetchExecutionNodeToString(g: LocalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
-{  
-   $g->match([
-      i : InMemoryGraphFetchExecutionNode[1] | $i->inMemoryGraphFetchExecutionNodeToString($space, $extensions)
-   ]->concatenate(
-      $extensions.graphFetch_executionPlan_localGraphFetchExecutionNodeToString->map(f | $f->evaluate([list($space), list($extensions)])->cast(@Function<{Nil[1]->String[1]}>))
-   )->toOneMany());
 }
 
 function meta::pure::graphFetch::executionPlan::resultTypeFromGraphFetchTree(g: GraphFetchTree[1]):PartialClassResultType[1]

@@ -17,8 +17,10 @@ package org.finos.legend.engine.plan.execution.api;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -44,6 +46,11 @@ public class ExecutePlanStrategic extends ExecutePlan
     public ExecutePlanStrategic(PlanExecutor planExecutor)
     {
         super(planExecutor);
+    }
+
+    public ExecutePlanStrategic(PlanExecutor planExecutor, PlanExecutionAuthorizer planExecutionAuthorizer, IdentityFactory identityFactory)
+    {
+        super(planExecutor, planExecutionAuthorizer, identityFactory);
     }
 
     @POST

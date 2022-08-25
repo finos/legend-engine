@@ -21,13 +21,11 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.postgres.PostgresManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.sqlserver.SqlServerManager;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Properties;
@@ -51,9 +49,7 @@ public abstract class DatabaseManager
                     LOGGER.info("DatabaseManager starting initialization");
                     long start = System.currentTimeMillis();
                     register(new H2Manager());
-                    register(new SqlServerManager());
                     register(new SnowflakeManager());
-                    register(new BigQueryManager());
                     register(new DatabricksManager());
                     register(new PostgresManager());
                     register(new RedshiftManager());

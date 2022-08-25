@@ -14,31 +14,39 @@
 
 package org.finos.legend.engine.protocol.generation;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.language.java.generation.GenerateJavaProject;
 import org.finos.legend.pure.generated.Root_meta_external_language_java_metamodel_project_Project;
 import org.finos.legend.pure.generated.core_pure_protocol_generation_java_generation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class GenerateMetaClasses extends GenerateJavaProject
 {
     public static void main(String[] args)
     {
-        new GenerateMetaClasses(args[0], args[1], args[2]).execute();
+        List<String> elementsToBeExcluded = args.length == 4 ? Arrays.asList(args[3].split(",")) : Collections.emptyList();
+        new GenerateMetaClasses(args[0], args[1], args[2], elementsToBeExcluded).execute();
     }
 
     private final String fromPurePackage;
     private final String toJavaPackage;
+    private final List<String> elementsToBeExcluded;
 
-    protected GenerateMetaClasses(String fromPurePackage, String toJavaPackage, String outputDirectory)
+    protected GenerateMetaClasses(String fromPurePackage, String toJavaPackage, String outputDirectory, List<String> elementsToBeExcluded)
     {
         super(outputDirectory);
         this.fromPurePackage = fromPurePackage;
         this.toJavaPackage = toJavaPackage;
+        this.elementsToBeExcluded = elementsToBeExcluded;
     }
 
     @Override
     protected Root_meta_external_language_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport)
     {
-        return core_pure_protocol_generation_java_generation.Root_meta_protocols_generation_java_generateProtocolClasses_String_1__String_1__Project_1_(fromPurePackage, toJavaPackage, executionSupport);
+        return core_pure_protocol_generation_java_generation.Root_meta_protocols_generation_java_generateProtocolClasses_String_1__String_1__String_MANY__Project_1_(fromPurePackage, toJavaPackage, Lists.mutable.withAll(elementsToBeExcluded), executionSupport);
     }
 }

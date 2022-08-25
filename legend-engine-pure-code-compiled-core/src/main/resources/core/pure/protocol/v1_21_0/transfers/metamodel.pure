@@ -16,12 +16,26 @@
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::runtime::*;
 import meta::pure::metamodel::constraint::*;
+import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::*;
 import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::model::*;
 import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::domain::*;
 import meta::protocols::alloy::model::*;
 import meta::protocols::alloy::function::*;
 import meta::pure::milestoning::*;
 import meta::json::*;
+
+function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::domain::transformPackageableElement(packageableElement:PackageableElement[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_21_0::metamodel::PackageableElement[1]
+{
+   $packageableElement->match([
+     class:Class<Any>[1]             | transformClass($class, $extensions),
+     assoc:Association[1]            | transformAssociation($assoc, $extensions),
+     enum:Enumeration<Any>[1]        | transformEnum($enum),
+     meas:Measure[1]                 | transformMeasure($meas, $extensions),
+     unit:Unit[1]                    | transformUnit($unit, $extensions),
+     func:FunctionDefinition<Any>[1] | transformFunction($func, $extensions),
+     prof:Profile[1]                 | transformProfile($prof, $extensions)
+   ])
+}
 
 function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::domain::transformClass(class:Class<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_21_0::metamodel::domain::Class[1]
 {

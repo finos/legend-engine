@@ -75,8 +75,12 @@ function meta::pure::executionPlan::engine::java::serialize::generateImplementio
 
 function meta::pure::executionPlan::engine::java::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
+   createSerializeProject($path, $context, $context->nodeInfosForPath($path).data->cast(@SerializeData)->toOne(), $debug)
+}
+
+function meta::pure::executionPlan::engine::java::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], data:SerializeData[1], debug:DebugContext[1]): Project[1]
+{
    let conventions = $context.conventions;
-   let data        = $context->nodeInfosForPath($path).data->cast(@SerializeData)->toOne();
 
    let childReturnTypes = $context->childNodeInfosForPath($path).returnType;
    assert($childReturnTypes->map(t|$t->match([s:SimpleJavaType[1]|$s, c:CheckedJavaType[1]|$c.checkedOf])).pureType->removeDuplicates()->size()==1,'Only one return type should be selected during Serialization Class generation');

@@ -19,12 +19,12 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchema;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchema;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_Schema;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaDetail;
@@ -41,9 +41,9 @@ import java.util.Set;
 public class SchemaSetCompiler
 {
     private final MutableMap<String, Root_meta_external_shared_format_metamodel_SchemaSet> schemaSetIndex = Maps.mutable.empty();
-    private final Map<String, ExternalFormatExtension> externalFormatExtensions;
+    private final Map<String, ExternalFormatExtension<?>> externalFormatExtensions;
 
-    public SchemaSetCompiler(Map<String, ExternalFormatExtension> externalFormatExtensions)
+    public SchemaSetCompiler(Map<String, ExternalFormatExtension<?>> externalFormatExtensions)
     {
         this.externalFormatExtensions = externalFormatExtensions;
     }
@@ -68,7 +68,7 @@ public class SchemaSetCompiler
 
         Root_meta_external_shared_format_metamodel_SchemaSet schemaSet = new Root_meta_external_shared_format_metamodel_SchemaSet_Impl(srcSchemaSet.name)
                 ._name(srcSchemaSet.name)
-                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::external::shared::format::metamodel::SchemaSet")))
+                ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::external::shared::format::metamodel::SchemaSet")))
                 ._format(srcSchemaSet.format);
 
         Set<String> ids = Sets.mutable.empty();
@@ -90,7 +90,7 @@ public class SchemaSetCompiler
                 }
             }
 
-            Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("")
+            Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::Schema"))
                     ._id(srcSchema.id)
                     ._location(srcSchema.location);
             schemaSet._schemasAdd(schema);
@@ -107,14 +107,14 @@ public class SchemaSetCompiler
         String path = context.pureModel.buildPackageString(srcSchemaSet._package, srcSchemaSet.name);
         Root_meta_external_shared_format_metamodel_SchemaSet compiled = schemaSetIndex.get(path);
 
-        ExternalFormatExtension schemaExtension = externalFormatExtensions.get(srcSchemaSet.format);
+        ExternalFormatExtension<?> schemaExtension = externalFormatExtensions.get(srcSchemaSet.format);
         compiled._schemas(Lists.mutable.empty());
         for (ExternalFormatSchema srcSchema : srcSchemaSet.schemas)
         {
             try
             {
                 Root_meta_external_shared_format_metamodel_SchemaDetail detail = schemaExtension.compileSchema(new SchemaCompileContext(srcSchema, srcSchemaSet, context));
-                Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("")
+                Root_meta_external_shared_format_metamodel_Schema schema = new Root_meta_external_shared_format_metamodel_Schema_Impl("", null, context.pureModel.getClass("meta::external::shared::format::metamodel::Schema"))
                         ._id(srcSchema.id)
                         ._location(srcSchema.location)
                         ._detail(detail);

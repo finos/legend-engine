@@ -15,8 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.ExternalFormatSerializeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatSerializeExecutionNode;
 
+@Deprecated
 public class JsonSerializeExecutionNode extends ExternalFormatSerializeExecutionNode
 {
     @Override

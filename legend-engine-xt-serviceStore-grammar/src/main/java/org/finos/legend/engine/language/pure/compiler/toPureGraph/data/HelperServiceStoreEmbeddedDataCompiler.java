@@ -54,7 +54,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
 
     public Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData compileServiceStoreEmbeddedData(ServiceStoreEmbeddedData serviceStoreEmbeddedData)
     {
-        Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData pureServiceStoreEmbeddedData = new Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData_Impl("");
+        Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData pureServiceStoreEmbeddedData = new Root_meta_external_store_service_metamodel_data_ServiceStoreEmbeddedData_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::data::ServiceStoreEmbeddedData"));
         pureServiceStoreEmbeddedData._serviceStubMappings(ListIterate.collect(serviceStoreEmbeddedData.serviceStubMappings, this::compileServiceStubMapping));
 
         return pureServiceStoreEmbeddedData;
@@ -62,7 +62,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
 
     private Root_meta_external_store_service_metamodel_data_ServiceStubMapping compileServiceStubMapping(ServiceStubMapping serviceStubMapping)
     {
-        Root_meta_external_store_service_metamodel_data_ServiceStubMapping pureServiceStubMapping = new Root_meta_external_store_service_metamodel_data_ServiceStubMapping_Impl("");
+        Root_meta_external_store_service_metamodel_data_ServiceStubMapping pureServiceStubMapping = new Root_meta_external_store_service_metamodel_data_ServiceStubMapping_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::data::ServiceStubMapping"));
         pureServiceStubMapping._requestPattern(this.compileServiceRequestPattern(serviceStubMapping.requestPattern));
         pureServiceStubMapping._responseDefinition(this.compileServiceResponseDefinition(serviceStubMapping.responseDefinition));
 
@@ -73,7 +73,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
     {
         validateServiceRequestPattern(serviceRequestPattern);
 
-        Root_meta_external_store_service_metamodel_data_ServiceRequestPattern pureServiceRequestPattern = new Root_meta_external_store_service_metamodel_data_ServiceRequestPattern_Impl("");
+        Root_meta_external_store_service_metamodel_data_ServiceRequestPattern pureServiceRequestPattern = new Root_meta_external_store_service_metamodel_data_ServiceRequestPattern_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::data::ServiceRequestPattern"));
         pureServiceRequestPattern._method(context.pureModel.getEnumValue("meta::pure::functions::io::http::HTTPMethod", serviceRequestPattern.method.name()));
 
         if (serviceRequestPattern.url != null)
@@ -139,7 +139,7 @@ public class HelperServiceStoreEmbeddedDataCompiler
 
     private Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition compileServiceResponseDefinition(ServiceResponseDefinition serviceResponseDefinition)
     {
-        Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition pureServiceResponseDefinition = new Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition_Impl("");
+        Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition pureServiceResponseDefinition = new Root_meta_external_store_service_metamodel_data_ServiceResponseDefinition_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::data::ServiceResponseDefinition"));
         pureServiceResponseDefinition._body((Root_meta_external_shared_format_metamodel_data_ExternalFormatData) serviceResponseDefinition.body.accept(new EmbeddedDataFirstPassBuilder(this.context, this.processingContext)));
 
         return pureServiceResponseDefinition;

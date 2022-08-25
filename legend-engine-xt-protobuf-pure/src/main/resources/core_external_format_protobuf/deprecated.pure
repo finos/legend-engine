@@ -16,7 +16,7 @@ import meta::external::format::protobuf::metamodel::*;
 import meta::pure::generation::*;
 import meta::pure::generation::metamodel::*;
 import meta::external::format::protobuf::deprecated::generation::configuration::*;
-import meta::external::format::protobuf::binding::fromPure::*;
+import meta::external::format::protobuf::transformation::fromPure::*;
 import meta::external::format::protobuf::deprecated::generation::*;
 
 Class meta::external::format::protobuf::deprecated::generation::configuration::ProtobufConfig extends GenerationConfiguration
@@ -28,7 +28,7 @@ Class meta::external::format::protobuf::deprecated::generation::configuration::P
   {doc.doc='If false, only a single .java file will be generated for this .proto file, and all the Java classes/enums/etc. generated for the top-level messages, services, and enumerations will be nested inside of an outer class (see java_outer_classname). If true, separate .java files will be generated for each of the Java classes/enums/etc. generated for the top-level messages, services, and enumerations, and the wrapper Java class generated for this .proto file won\'t contain any nested classes/enums/etc. This is a Boolean option which defaults to false'}
   javaMultipleFiles:Boolean[0..1];
   {doc.doc='Affects the C++ and Java code generators (and possibly third-party generators) changing the generated code to optimize for these characteristics.'}
-  optimizeFor:meta::external::format::protobuf::binding::fromPure::OptimizeMode[0..1];
+  optimizeFor:meta::external::format::protobuf::transformation::fromPure::OptimizeMode[0..1];
   {doc.doc='Freeform options that are not part of the specification but can be passed through to other tooling'}
   customOptions:Map<String,Any>[0..1];
 }
@@ -69,24 +69,21 @@ function meta::external::format::protobuf::deprecated::generation::internal_tran
 function meta::external::format::protobuf::deprecated::generation::generateProtobufFromPure(config:ProtobufConfig[1], class: Class<Any>[1..*]):meta::pure::generation::metamodel::GenerationOutput[*]
 {
 
-  let options = meta::external::format::protobuf::binding::fromPure::configToOptions($config->translateConfig());
-  $class->meta::external::format::protobuf::binding::fromPure::classToMessage($options)->map(s|
+  let options = meta::external::format::protobuf::transformation::fromPure::configToOptions($config->translateConfig());
+  $class->meta::external::format::protobuf::transformation::fromPure::classToMessage($options)->map(s|
       let content = $s->meta::external::format::protobuf::metamodel::serialization::toString();
-      let fileName = if($s.package->isEmpty(), | $class.name->toOne() + '.proto', | $s.package->toOne()->meta::external::format::protobuf::binding::fromPure::protoPackageToFileName());
+      let fileName = if($s.package->isEmpty(), | $class.name->toOne() + '.proto', | $s.package->toOne()->meta::external::format::protobuf::transformation::fromPure::protoPackageToFileName());
       ^meta::pure::generation::metamodel::GenerationOutput(content=$content, fileName=$fileName, format = 'proto');
     );
 }
 
-function meta::external::format::protobuf::deprecated::generation::translateConfig(config:ProtobufConfig[1]):meta::external::format::protobuf::binding::fromPure::ModelToProtobufDataConfiguration[1]
+function meta::external::format::protobuf::deprecated::generation::translateConfig(config:ProtobufConfig[1]):meta::external::format::protobuf::transformation::fromPure::ModelToProtobufDataConfiguration[1]
 {
   ^ModelToProtobufDataConfiguration
   (
     format = 'Protobuf',
 
-    targetBinding = 'x::x',
-    targetSchemaSet = 'x::x',   
-
-    sourceModel = $config.scopeElements,
+    targetSchemaSet = 'x::x',
 
     javaPackage = $config.javaPackage,
     javaOuterClassname = $config.javaOuterClassname,
@@ -97,11 +94,11 @@ function meta::external::format::protobuf::deprecated::generation::translateConf
   )  
 }
 
-function meta::external::format::protobuf::deprecated::generation::translateConfig(config:meta::external::format::protobuf::binding::fromPure::ModelToProtobufDataConfiguration[1]):ProtobufConfig[1]
+function meta::external::format::protobuf::deprecated::generation::translateConfig(sourceModels:PackageableElement[*], config:meta::external::format::protobuf::transformation::fromPure::ModelToProtobufDataConfiguration[1]):ProtobufConfig[1]
 {
   ^ProtobufConfig
   (
-    scopeElements = $config.sourceModel,
+    scopeElements = $sourceModels,
 
     javaPackage = $config.javaPackage,
     javaOuterClassname = $config.javaOuterClassname,

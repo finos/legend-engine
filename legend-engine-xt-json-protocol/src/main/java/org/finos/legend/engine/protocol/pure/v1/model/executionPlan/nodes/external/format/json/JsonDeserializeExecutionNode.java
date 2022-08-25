@@ -16,9 +16,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.exter
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.ExternalFormatDeserializeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatDeserializeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 
+@Deprecated
 public class JsonDeserializeExecutionNode extends ExternalFormatDeserializeExecutionNode
 {
     @JsonProperty(required = false)

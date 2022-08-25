@@ -16,15 +16,15 @@ package org.finos.legend.engine.external.format.json;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
-import org.finos.legend.engine.external.shared.format.model.test.ModelToSchemaGenerationTest;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaGenerationTest;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.List;
 
 public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
 {
@@ -41,12 +41,11 @@ public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
                 "  dateOfBirth : StrictDate[1];\n" +
                 "  timeOfDeath : DateTime[1];\n" +
                 "}";
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::gen::Data");
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"));
 
-        PureModelContextData generated = generateSchema(modelCode, config("test::gen", Lists.mutable.with("test::gen::Data")));
-        Binding binding = generated.getElementsOfType(Binding.class).stream().findFirst().get();
-        Assert.assertEquals("test::gen::TestBinding", binding.getPath());
-        Assert.assertEquals("test::gen::TestSchemaSet", binding.schemaSet);
-        Assert.assertEquals(Collections.singletonList("test::gen::Data"), binding.modelUnit.packageableElementIncludes);
+        Assert.assertEquals(3, generated.getElements().size());
 
         ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
         String expectedDefiniiton = "{\n" +
@@ -89,6 +88,71 @@ public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
     }
 
     @Test
+    public void testSimpleJsonSchemaWithBinding()
+    {
+        String modelCode = "Class test::gen::Data\n" +
+                "{\n" +
+                "  name        : String[1];\n" +
+                "  employed    : Boolean[0..1];\n" +
+                "  iq          : Integer[0..1];\n" +
+                "  weightKg    : Float[0..1];\n" +
+                "  heightM     : Decimal[1];\n" +
+                "  dateOfBirth : StrictDate[1];\n" +
+                "  timeOfDeath : DateTime[1];\n" +
+                "}";
+
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::gen::Data");
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"), true, "test::gen::TestBinding");
+
+        Assert.assertEquals(4, generated.getElements().size());
+
+        ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
+        String expectedDefiniiton = "{\n" +
+                "  \"$schema\": \"http:\\/\\/json-schema.org\\/draft-07\\/schema#\",\n" +
+                "  \"title\": \"test::gen::Data\",\n" +
+                "  \"type\": \"object\",\n" +
+                "  \"properties\":   {\n" +
+                "    \"name\":     {\n" +
+                "      \"type\": \"string\"\n" +
+                "    },\n" +
+                "    \"employed\":     {\n" +
+                "      \"type\": \"boolean\"\n" +
+                "    },\n" +
+                "    \"iq\":     {\n" +
+                "      \"type\": \"integer\"\n" +
+                "    },\n" +
+                "    \"weightKg\":     {\n" +
+                "      \"type\": \"number\"\n" +
+                "    },\n" +
+                "    \"heightM\":     {\n" +
+                "      \"type\": \"number\"\n" +
+                "    },\n" +
+                "    \"dateOfBirth\":     {\n" +
+                "      \"type\": \"string\",\n" +
+                "      \"format\": \"date\"\n" +
+                "    },\n" +
+                "    \"timeOfDeath\":     {\n" +
+                "      \"type\": \"string\",\n" +
+                "      \"format\": \"date-time\"\n" +
+                "    }\n" +
+                "  },\n" +
+                "  \"required\": [\n" +
+                "\"name\",\n" +
+                "\"heightM\",\n" +
+                "\"dateOfBirth\",\n" +
+                "\"timeOfDeath\"\n" +
+                "  ]\n" +
+                "}\n";
+        Assert.assertEquals(expectedDefiniiton, schemaSet.schemas.get(0).content);
+
+        Binding binding = generated.getElementsOfType(Binding.class).stream().findFirst().get();
+        Assert.assertEquals("test::gen::TestBinding", binding.getPath());
+        Assert.assertEquals("test::gen::TestSchemaSet", binding.schemaSet);
+        Assert.assertEquals(Collections.singletonList("test::gen::Data"), binding.modelUnit.packageableElementIncludes);
+    }
+
+    @Test
     public void testVariousMultiplicityPropertiesWithJsonSchema()
     {
         String modelCode = "Class test::gen::Data\n" +
@@ -124,12 +188,9 @@ public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
                 "  stringField: String[1];\n" +
                 "  dateMultipleField: String[*];\n" +
                 "}\n";
-
-        PureModelContextData generated = generateSchema(modelCode, config("test::gen", Lists.mutable.with("test::gen::Data")));
-        Binding binding = generated.getElementsOfType(Binding.class).stream().findFirst().get();
-        Assert.assertEquals("test::gen::TestBinding", binding.getPath());
-        Assert.assertEquals("test::gen::TestSchemaSet", binding.schemaSet);
-        Assert.assertEquals(Collections.singletonList("test::gen::Data"), binding.modelUnit.packageableElementIncludes);
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::gen::Data");
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"));
 
         ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
         String expectedDefiniiton = "{\n" +
@@ -355,11 +416,9 @@ public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
                         "  legalName: String[1];\n" +
                         "}\n";
 
-        PureModelContextData generated = generateSchema(modelCode, config("test::gen", Lists.mutable.with("test::Simple::Person", "test::Simple::Firm")));
-        Binding binding = generated.getElementsOfType(Binding.class).stream().findFirst().get();
-        Assert.assertEquals("test::gen::TestBinding", binding.getPath());
-        Assert.assertEquals("test::gen::TestSchemaSet", binding.schemaSet);
-        Assert.assertEquals(Lists.mutable.with("test::Simple::Person", "test::Simple::Firm"), binding.modelUnit.packageableElementIncludes);
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::Simple::Person", "test::Simple::Firm");
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"));
 
         ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
         String expectedDefiniiton = "{\n" +
@@ -441,11 +500,9 @@ public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
                 "  addresses: test::Simple::Address[*];\n" +
                 "}\n";
 
-        PureModelContextData generated = generateSchema(modelCode, config("test::gen", Lists.mutable.with("test::Simple::Person", "test::Simple::Firm", "test::Simple::Address", "test::Simple::AddressType")));
-        Binding binding = generated.getElementsOfType(Binding.class).stream().findFirst().get();
-        Assert.assertEquals("test::gen::TestBinding", binding.getPath());
-        Assert.assertEquals("test::gen::TestSchemaSet", binding.schemaSet);
-        Assert.assertEquals(Lists.mutable.with("test::Simple::Person", "test::Simple::Firm", "test::Simple::Address", "test::Simple::AddressType"), binding.modelUnit.packageableElementIncludes);
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::Simple::Person", "test::Simple::Firm", "test::Simple::Address", "test::Simple::AddressType");
+        PureModelContextData generated = generateSchema(modelCode, modelUnit, config("test::gen"));
 
         ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
         String expectedDefiniiton = "{\n" +
@@ -538,12 +595,10 @@ public class TestModelToJsonSchemaGeneration extends ModelToSchemaGenerationTest
         Assert.assertEquals(expectedDefiniiton, schemaSet.schemas.get(0).content);
     }
 
-    private ModelToJsonSchemaConfiguration config(String targetPackage, List<String> sourceModels)
+    private ModelToJsonSchemaConfiguration config(String targetPackage)
     {
         ModelToJsonSchemaConfiguration config = new ModelToJsonSchemaConfiguration();
-        config.targetBinding = targetPackage + "::TestBinding";
         config.targetSchemaSet = targetPackage + "::TestSchemaSet";
-        config.sourceModel = sourceModels;
         config.format = "JSON";
         return config;
     }

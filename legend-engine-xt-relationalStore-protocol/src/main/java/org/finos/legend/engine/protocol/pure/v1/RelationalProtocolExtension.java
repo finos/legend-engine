@@ -52,12 +52,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
@@ -163,7 +163,6 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(StaticDatasourceSpecification.class, "static")
                         .withSubtype(EmbeddedH2DatasourceSpecification.class, "h2Embedded")
                         .withSubtype(SnowflakeDatasourceSpecification.class, "snowflake")
-                        .withSubtype(BigQueryDatasourceSpecification.class, "bigQuery")
                         .withSubtype(DatabricksDatasourceSpecification.class, "databricks")
                         .withSubtype(RedshiftDatasourceSpecification.class, "redshift")
                         .build(),
@@ -178,6 +177,7 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(GCPApplicationDefaultCredentialsAuthenticationStrategy.class, "gcpApplicationDefaultCredentials")
                         .withSubtype(ApiTokenAuthenticationStrategy.class, "apiToken")
                         .withSubtype(GCPWorkloadIdentityFederationAuthenticationStrategy.class, "gcpWorkloadIdentityFederation")
+                        .withSubtype(MiddleTierUserNamePasswordAuthenticationStrategy.class, "middleTierUserNamePassword")
                         .build(),
 
                 //Post Processor

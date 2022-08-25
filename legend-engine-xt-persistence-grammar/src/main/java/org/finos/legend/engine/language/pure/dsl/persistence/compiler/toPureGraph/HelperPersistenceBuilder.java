@@ -78,10 +78,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.TriggerVisitor;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
@@ -133,8 +130,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_pers
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -153,16 +148,15 @@ public class HelperPersistenceBuilder
 {
     private static final String PERSISTENCE_PACKAGE_PREFIX = "meta::pure::persistence::metamodel";
 
-    private static final TriggerBuilder TRIGGER_BUILDER = new TriggerBuilder();
     private static final AuditingBuilder AUDITING_BUILDER = new AuditingBuilder();
 
     private HelperPersistenceBuilder()
     {
     }
 
-    public static Root_meta_pure_persistence_metamodel_trigger_Trigger buildTrigger(Trigger trigger)
+    public static Root_meta_pure_persistence_metamodel_trigger_Trigger buildTrigger(Trigger trigger, CompileContext context)
     {
-        return trigger.accept(TRIGGER_BUILDER);
+        return IPersistenceCompilerExtension.process(trigger, ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraTriggerProcessors), context);
     }
 
     public static Root_meta_legend_service_metamodel_Service buildService(Persistence persistence, CompileContext context)
@@ -187,7 +181,7 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_pure_persistence_metamodel_notifier_Notifier buildNotifier(Notifier notifier, CompileContext context)
     {
-        return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("")
+        return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::notifier::Notifier"))
                 ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
     }
 
@@ -198,11 +192,6 @@ public class HelperPersistenceBuilder
 
     public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
     {
-        if (database == null)
-        {
-            return null;
-        }
-
         String databasePath = database.substring(0, database.lastIndexOf("::"));
         String databaseName = database.substring(database.lastIndexOf("::") + 2);
 
@@ -217,11 +206,6 @@ public class HelperPersistenceBuilder
 
     public static Root_meta_external_shared_format_binding_Binding buildBinding(String binding, SourceInformation sourceInformation, CompileContext context)
     {
-        if (binding == null)
-        {
-            return null;
-        }
-
         String bindingPath = binding.substring(0, binding.lastIndexOf("::"));
         String bindingName = binding.substring(binding.lastIndexOf("::") + 2);
 
@@ -303,26 +287,6 @@ public class HelperPersistenceBuilder
 
     // helper visitors for class hierarchies
 
-    private static class TriggerBuilder implements TriggerVisitor<Root_meta_pure_persistence_metamodel_trigger_Trigger>
-    {
-        @Override
-        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(ManualTrigger val)
-        {
-            return new Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl("");
-        }
-
-        @Override
-        public Root_meta_pure_persistence_metamodel_trigger_Trigger visit(CronTrigger val)
-        {
-            return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("")
-                    ._minutes(val.minutes)
-                    ._hours(val.hours)
-                    ._dayOfMonth(val.dayOfMonth)
-                    ._month(val.month)
-                    ._dayOfWeek(val.dayOfWeek);
-        }
-    }
-
     private static class PersisterBuilder implements PersisterVisitor<Root_meta_pure_persistence_metamodel_persister_Persister>
     {
         private final CompileContext context;
@@ -338,7 +302,7 @@ public class HelperPersistenceBuilder
             Map<String, Class<?>> modelClassByProperty = val.targetShape.accept(new ModelClassByPropertyExtractor(context));
             Collection<Class<?>> modelClasses = modelClassByProperty.values();
 
-            return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_BatchPersister_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::BatchPersister"))
                     ._sink(buildSink(val.sink, context))
                     ._ingestMode(buildIngestMode(val.ingestMode, modelClasses, context))
                     ._targetShape(buildTargetShape(val.targetShape, modelClassByProperty, context));
@@ -347,7 +311,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_Persister visit(StreamingPersister val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_StreamingPersister_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::StreamingPersister"))
                     ._sink(buildSink(val.sink, context));
         }
     }
@@ -364,14 +328,14 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_notifier_Notifyee visit(EmailNotifyee val)
         {
-            return new Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl("")
+            return new Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::notifier::EmailNotifyee"))
                     ._emailAddress(val.address);
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_notifier_Notifyee visit(PagerDutyNotifyee val)
         {
-            return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("")
+            return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::notifier::PagerDutyNotifyee"))
                     ._url(val.url);
         }
     }
@@ -388,14 +352,14 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(RelationalSink val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_sink_RelationalSink_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::sink::RelationalSink"))
                     ._database(buildDatabase(val.database, val.sourceInformation, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_sink_Sink visit(ObjectStorageSink val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_sink_ObjectStorageSink_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::sink::ObjectStorageSink"))
                     ._binding(buildBinding(val.binding, val.sourceInformation, context));
         }
     }
@@ -446,7 +410,7 @@ public class HelperPersistenceBuilder
         public Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape visit(FlatTarget val)
         {
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
-            return new Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::targetshape::FlatTarget"))
                     ._targetName(val.targetName)
                     ._modelClass(modelClass)
                     ._partitionFields(ListIterate.collect(val.partitionFields, p -> validateAndResolvePropertyName(modelClass, p, val.sourceInformation, context)))
@@ -458,7 +422,7 @@ public class HelperPersistenceBuilder
         {
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
             String TRANSACTION_SCOPE_FULL_PATH = PERSISTENCE_PACKAGE_PREFIX + "::persister::targetshape::TransactionScope";
-            return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTarget_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::targetshape::MultiFlatTarget"))
                     ._modelClass(modelClass)
                     ._transactionScope(context.resolveEnumValue(TRANSACTION_SCOPE_FULL_PATH, val.transactionScope.name()))
                     ._parts(ListIterate.collect(val.parts, p -> resolvePart(p, modelClass, context)));
@@ -469,7 +433,7 @@ public class HelperPersistenceBuilder
             Property<?, ?> property = validateAndResolveProperty(modelClass, part.modelProperty, part.sourceInformation, context);
             Class<?> nestedModelClass = modelClassByProperty.get(property._name());
 
-            return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_targetshape_MultiFlatTargetPart_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::targetshape::MultiFlatTargetPart"))
                     ._modelProperty(property)
                     ._targetName(part.targetName)
                     ._partitionFields(ListIterate.collect(part.partitionFields, p -> validateAndResolvePropertyName(nestedModelClass, p, part.sourceInformation, context)))
@@ -491,26 +455,26 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(NoDeduplicationStrategy val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl("");
+            return new Root_meta_pure_persistence_metamodel_persister_deduplication_NoDeduplicationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::deduplication::NoDeduplicationStrategy"));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(AnyVersionDeduplicationStrategy val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_deduplication_AnyVersionDeduplicationStrategy_Impl("");
+            return new Root_meta_pure_persistence_metamodel_persister_deduplication_AnyVersionDeduplicationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::deduplication::AnyVersionDeduplicationStrategy"));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(MaxVersionDeduplicationStrategy val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_deduplication_MaxVersionDeduplicationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::deduplication::MaxVersionDeduplicationStrategy"))
                     ._versionField(validateAndResolvePropertyName(modelClass, val.versionField, val.sourceInformation, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_deduplication_DeduplicationStrategy visit(DuplicateCountDeduplicationStrategy val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_deduplication_DuplicateCountDeduplicationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::deduplication::DuplicateCountDeduplicationStrategy"))
                     ._duplicateCountName(val.duplicateCountName);
         }
     }
@@ -529,21 +493,21 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(NontemporalSnapshot val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_NontemporalSnapshot_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_NontemporalSnapshot_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::snapshot::NontemporalSnapshot"))
                     ._auditing(buildAuditing(val.auditing));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(UnitemporalSnapshot val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_UnitemporalSnapshot_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::snapshot::UnitemporalSnapshot"))
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context));
         }
 
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(BitemporalSnapshot val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_BitemporalSnapshot_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_snapshot_BitemporalSnapshot_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::snapshot::BitemporalSnapshot"))
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context))
                     ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, modelClasses, context));
         }
@@ -551,7 +515,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(NontemporalDelta val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_NontemporalDelta_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_NontemporalDelta_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::delta::NontemporalDelta"))
                     ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClasses, context))
                     ._auditing(buildAuditing(val.auditing));
         }
@@ -559,7 +523,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(UnitemporalDelta val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_UnitemporalDelta_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::delta::UnitemporalDelta"))
                     ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClasses, context))
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context));
         }
@@ -567,7 +531,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(BitemporalDelta val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_BitemporalDelta_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::delta::BitemporalDelta"))
                     ._mergeStrategy(buildMergeStrategy(val.mergeStrategy, modelClasses, context))
                     ._transactionMilestoning(buildTransactionMilestoning(val.transactionMilestoning, modelClasses, context))
                     ._validityMilestoning(buildValidityMilestoning(val.validityMilestoning, modelClasses, context));
@@ -576,7 +540,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_IngestMode visit(AppendOnly val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_appendonly_AppendOnly_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_appendonly_AppendOnly_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::appendonly::AppendOnly"))
                     ._auditing(buildAuditing(val.auditing))
                     ._filterDuplicates(val.filterDuplicates);
         }
@@ -606,7 +570,7 @@ public class HelperPersistenceBuilder
                     .distinct()
                     .getOnly();
 
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_DeleteIndicatorMergeStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::DeleteIndicatorMergeStrategy"))
                     ._deleteField(deleteProperty)
                     ._deleteValues(Lists.immutable.ofAll(val.deleteValues));
         }
@@ -614,7 +578,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy visit(NoDeletesMergeStrategy val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy_Impl("");
+            return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::NoDeletesMergeStrategy"));
         }
     }
 
@@ -648,7 +612,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdAndDateTimeTransactionMilestoning"))
                     ._batchIdInName(val.batchIdInName)
                     ._batchIdOutName(val.batchIdOutName)
                     ._dateTimeInName(val.dateTimeInName)
@@ -659,7 +623,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdTransactionMilestoning val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdTransactionMilestoning_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdTransactionMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdTransactionMilestoning"))
                     ._batchIdInName(val.batchIdInName)
                     ._batchIdOutName(val.batchIdOutName);
         }
@@ -667,7 +631,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(DateTimeTransactionMilestoning val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::DateTimeTransactionMilestoning"))
                     ._dateTimeInName(val.dateTimeInName)
                     ._dateTimeOutName(val.dateTimeOutName)
                     ._derivation(val.derivation == null ? null : buildTransactionDerivation(val.derivation, modelClasses, context));
@@ -698,7 +662,7 @@ public class HelperPersistenceBuilder
                     .distinct()
                     .getOnly();
 
-            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInAndOutDate_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::derivation::SourceSpecifiesTransactionInAndOutDate"))
                     ._sourceDateTimeInField(sourceDateTimeInField)
                     ._sourceDateTimeOutField(sourceDateTimeOutField);
         }
@@ -711,7 +675,7 @@ public class HelperPersistenceBuilder
                     .distinct()
                     .getOnly();
 
-            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_derivation_SourceSpecifiesTransactionInDate_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::derivation::SourceSpecifiesTransactionInDate"))
                     ._sourceDateTimeInField(sourceDateTimeInField);
         }
     }
@@ -730,7 +694,7 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning visit(DateTimeValidityMilestoning val)
         {
-            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::validitymilestoning::DateTimeValidityMilestoning"))
                     ._dateTimeFromName(val.dateTimeFromName)
                     ._dateTimeThruName(val.dateTimeThruName)
                     ._derivation(buildValidityDerivation(val.derivation, modelClasses, context));
@@ -761,7 +725,7 @@ public class HelperPersistenceBuilder
                     .distinct()
                     .getOnly();
 
-            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromAndThruDate_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::SourceSpecifiesValidFromAndThruDate"))
                     ._sourceDateTimeFromField(sourceDateTimeFromField)
                     ._sourceDateTimeThruField(sourceDateTimeThruField);
         }
@@ -774,7 +738,7 @@ public class HelperPersistenceBuilder
                     .distinct()
                     .getOnly();
 
-            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("")
+            return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_SourceSpecifiesValidFromDate_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::SourceSpecifiesValidFromDate"))
                     ._sourceDateTimeFromField(sourceDateTimeFromField);
         }
     }

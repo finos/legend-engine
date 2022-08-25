@@ -106,7 +106,7 @@ public class HelperServiceBuilder
             inferEmbeddedRuntimeMapping(pureSingleExecution.runtime, pureSingleExecution.mapping);
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(pureSingleExecution.runtime, context);
             HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, pureSingleExecution.runtime.sourceInformation);
-            return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("")
+            return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureSingleExecution"))
                     ._func(HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context))
                     ._mapping(mapping)
                     ._runtime(runtime);
@@ -119,7 +119,7 @@ public class HelperServiceBuilder
                 throw new EngineException("Service multi execution must not be empty", pureMultiExecution.sourceInformation, EngineErrorType.COMPILATION);
             }
             Set<String> executionKeyValues = new HashSet<>();
-            return new Root_meta_legend_service_metamodel_PureMultiExecution_Impl("")
+            return new Root_meta_legend_service_metamodel_PureMultiExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureMultiExecution"))
                     ._executionKey(pureMultiExecution.executionKey)
                     ._func(HelperValueSpecificationBuilder.buildLambda(pureMultiExecution.func, context))
                     ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, context, executionKeyValues)));
@@ -138,7 +138,7 @@ public class HelperServiceBuilder
         {
             throw new EngineException("Execution parameter with key '" + keyedExecutionParameter.key + "' already existed", keyedExecutionParameter.sourceInformation, EngineErrorType.COMPILATION);
         }
-        return new Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl("")
+        return new Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::KeyedExecutionParameter"))
                 ._key(keyedExecutionParameter.key)
                 ._mapping(mapping)
                 ._runtime(runtime);
@@ -146,7 +146,7 @@ public class HelperServiceBuilder
 
     public static Root_meta_legend_service_metamodel_TestData processServiceTestSuiteData(TestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_legend_service_metamodel_TestData pureTestData = new Root_meta_legend_service_metamodel_TestData_Impl("");
+        Root_meta_legend_service_metamodel_TestData pureTestData = new Root_meta_legend_service_metamodel_TestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::TestData"));
 
         if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
         {
@@ -165,7 +165,7 @@ public class HelperServiceBuilder
 
     private static Root_meta_legend_service_metamodel_ConnectionTestData processServiceConnectionData(ConnectionTestData connectionData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_legend_service_metamodel_ConnectionTestData pureConnectionData = new Root_meta_legend_service_metamodel_ConnectionTestData_Impl("");
+        Root_meta_legend_service_metamodel_ConnectionTestData pureConnectionData = new Root_meta_legend_service_metamodel_ConnectionTestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ConnectionTestData"));
 
         pureConnectionData._connectionId(connectionData.id);
         pureConnectionData._testData(connectionData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
@@ -175,7 +175,7 @@ public class HelperServiceBuilder
 
     public static Root_meta_legend_service_metamodel_ParameterValue processServiceTestParameterValue(ParameterValue parameterValue, CompileContext context)
     {
-        Root_meta_legend_service_metamodel_ParameterValue pureParameterValue = new Root_meta_legend_service_metamodel_ParameterValue_Impl("");
+        Root_meta_legend_service_metamodel_ParameterValue pureParameterValue = new Root_meta_legend_service_metamodel_ParameterValue_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ParameterValue"));
 
         pureParameterValue._name(parameterValue.name);
         pureParameterValue._value(Lists.immutable.with(parameterValue.value.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))));
@@ -223,7 +223,7 @@ public class HelperServiceBuilder
                 throw new EngineException("Test does not match execution type", serviceTest.sourceInformation, EngineErrorType.COMPILATION);
             }
             SingleExecutionTest singleExecutionTest = (SingleExecutionTest) serviceTest;
-            return new Root_meta_legend_service_metamodel_SingleExecutionTest_Impl("")
+            return new Root_meta_legend_service_metamodel_SingleExecutionTest_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionTest"))
                     ._data(singleExecutionTest.data)
                     ._asserts(ListIterate.collect(singleExecutionTest.asserts, assertion -> processTestContainer(assertion, context)));
         }
@@ -240,7 +240,7 @@ public class HelperServiceBuilder
             {
                 throw new EngineException("Service multi execution test must not be empty", multiExecutionTest.sourceInformation, EngineErrorType.COMPILATION);
             }
-            Root_meta_legend_service_metamodel_MultiExecutionTest multiTest = new Root_meta_legend_service_metamodel_MultiExecutionTest_Impl("")
+            Root_meta_legend_service_metamodel_MultiExecutionTest multiTest = new Root_meta_legend_service_metamodel_MultiExecutionTest_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::MultiExecutionTest"))
                     ._tests(ListIterate.collect(multiExecutionTest.tests, test -> processServiceKeyedSingleExecutionTest(test, context, testKeyValues)));
             /**
              * Here, we verify matching key values between multi execution and multi test
@@ -267,7 +267,7 @@ public class HelperServiceBuilder
         {
             throw new EngineException("Service test with key '" + keyedSingleExecutionTest.key + "' already existed", keyedSingleExecutionTest.sourceInformation, EngineErrorType.COMPILATION);
         }
-        return new Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl("")
+        return new Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::KeyedSingleExecutionTest"))
                 ._key(keyedSingleExecutionTest.key)
                 ._data(keyedSingleExecutionTest.data)
                 ._asserts(ListIterate.collect(keyedSingleExecutionTest.asserts, assertion -> processTestContainer(assertion, context)));
@@ -275,7 +275,7 @@ public class HelperServiceBuilder
 
     public static Root_meta_legend_service_metamodel_TestContainer processTestContainer(TestContainer testContainer, CompileContext context)
     {
-        return new Root_meta_legend_service_metamodel_TestContainer_Impl("")
+        return new Root_meta_legend_service_metamodel_TestContainer_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::TestContainer"))
                 ._parametersValues(ListIterate.collect(testContainer.parametersValues, parameterValue -> parameterValue.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))))
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));
     }

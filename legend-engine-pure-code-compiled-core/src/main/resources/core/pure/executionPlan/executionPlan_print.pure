@@ -44,6 +44,8 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
       $extensions.executionPlanExtensions().printPlanNodeToString->map(x|$x->eval($space, $extensions))->concatenate(
       [
          p:PureExpressionPlatformExecutionNode[1]|'PureExp\n'+$space+'('+header($p, $space, $extensions)+'\n'+$space+'  expression = '+$p.expression->asString(^Pref(useClusterIndex=true, clusterIndex=extractClusters($p.executionNodes, $extensions)))+$e->childrenToString($space+'  ', $extensions)+'\n'+$p.implementation->printImplementation('implementation', $space+'  ', $extensions)+$space+')\n',
+         p:PlatformUnionExecutionNode[1]|'PlatformUnion\n'+$space+'('+header($p, $space, $extensions)+'\n'+$e->childrenToString($space+'  ', $extensions)+'\n'+$p.implementation->printImplementation('implementation', $space+'  ', $extensions)+$space+')\n',
+         p:PlatformMergeExecutionNode[1]|'PlatformMerge\n'+$space+'('+header($p, $space, $extensions)+'\n'+$e->childrenToString($space+'  ', $extensions)+'\n'+$p.implementation->printImplementation('implementation', $space+'  ', $extensions)+$space+')\n',
          p:SequenceExecutionNode[1]|'Sequence\n'+$space+'('+header($p, $space, $extensions)+$e->childrenToString($space+'  ', $extensions)+'\n'+$space+')\n',
          f:FreeMarkerConditionalExecutionNode[1]|'FreeMarkerConditionalExecutionNode\n'+$space+'('+header($f, $space, $extensions)+'\n' + $space + '  condition = ' +  $f.freeMarkerBooleanExpression + '\n' + $space + '  trueBlock = \n' + $space + '  (\n' + $f.trueBlock->planNodeToString($space+'    ', $extensions)+ $space + '  )\n' + if($f.falseBlock->isEmpty(),|'',| $space + '  falseBlock = \n' + $space + '  (\n' + $f.falseBlock->toOne()->planNodeToString($space+'    ', $extensions)+ $space + '  )\n')+$space+')\n',
          ag:AggregationAwareExecutionNode[1]|'AggregationAware\n'+$space+'('+header($ag, $space, $extensions)+'\n'+$space+ '  activity=' + $ag.aggregationAwareActivity+$e->childrenToString($space+'  ', $extensions)+'\n'+$space+')\n',
@@ -54,8 +56,7 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.type->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
-         i:	meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
-
+         i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
       ])->toOneMany()
    );
    $space + $root;

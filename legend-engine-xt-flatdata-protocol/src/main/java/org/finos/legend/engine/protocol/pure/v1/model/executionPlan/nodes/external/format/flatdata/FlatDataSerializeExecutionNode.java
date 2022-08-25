@@ -15,8 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.flatdata;
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.ExternalFormatSerializeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatSerializeExecutionNode;
 
+@Deprecated
 public class FlatDataSerializeExecutionNode extends ExternalFormatSerializeExecutionNode
 {
     @Override

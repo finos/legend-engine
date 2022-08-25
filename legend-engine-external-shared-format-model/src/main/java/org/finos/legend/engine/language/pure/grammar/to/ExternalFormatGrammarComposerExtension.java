@@ -28,12 +28,12 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.Binding;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchema;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatSchemaSet;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchema;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 
 import java.util.Collections;
 import java.util.List;

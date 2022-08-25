@@ -60,8 +60,9 @@ import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdUnion;
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdUse;
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.XsdWhiteSpace;
 import org.finos.legend.engine.external.format.xsd.compile.parseTree.visit.XsdObjectVisitor;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalFormatSchemaException;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xml_QName;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xml_QName_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_xml_metamodel_xsd_XsdAll;
@@ -190,7 +191,7 @@ public class XsdCompiler
             throw new ExternalFormatSchemaException("Location must be specified for XSD schemas");
         }
 
-        MainVisitor mainVisitor = new MainVisitor();
+        MainVisitor mainVisitor = new MainVisitor(context);
         schema.accept(mainVisitor);
         return mainVisitor.compiledSchema;
     }
@@ -246,11 +247,17 @@ public class XsdCompiler
         private Root_meta_external_format_xml_metamodel_xsd_XsdSchema compiledSchema;
         private List<String> schemaLocationsIncluded = new ArrayList<>();
         private Stack<XsdInclude> including = new Stack<>();
+        private ExternalSchemaCompileContext context;
+
+        public MainVisitor(ExternalSchemaCompileContext context)
+        {
+            this.context = context;
+        }
 
         @Override
         public void visitBefore(XsdAll all)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdAll compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAll_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdAll compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAll_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAll"))
                     ._minOccurs(all.minOccurs)
                     ._maxOccurs(all.maxOccurs);
             objectConsumer.peek().accept(compiled);
@@ -268,7 +275,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdAnnotation annotation)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdAnnotation compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAnnotation_Impl("");
+            Root_meta_external_format_xml_metamodel_xsd_XsdAnnotation compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAnnotation_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAnnotation"));
             annotationConsumer.peek().accept(compiled);
             objectConsumer.push(o -> compiled._itemsAdd((Root_meta_external_format_xml_metamodel_xsd_XsdAnnotationItem) o));
         }
@@ -282,7 +289,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdAny any)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdAny compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAny_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdAny compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAny_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAny"))
                     ._minOccurs(any.minOccurs)
                     ._maxOccurs(any.maxOccurs)
                     ._namespace(any.namespace == null
@@ -302,7 +309,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdAnyAttribute anyAttribute)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAnyAttribute_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAnyAttribute"))
                     ._namespace(anyAttribute.namespace == null
                             ? Lists.mutable.empty()
                             : ListIterate.collect(anyAttribute.namespace, s -> s))
@@ -320,13 +327,13 @@ public class XsdCompiler
         @Override
         public void visit(XsdAppInfo appInfo)
         {
-            objectConsumer.peek().accept(new Root_meta_external_format_xml_metamodel_xsd_XsdAppInfo_Impl(""));
+            objectConsumer.peek().accept(new Root_meta_external_format_xml_metamodel_xsd_XsdAppInfo_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAppInfo")));
         }
 
         @Override
         public void visitBefore(XsdAttribute attribute)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdAttribute compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAttribute_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdAttribute compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAttribute_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAttribute"))
                     ._name(qName(attribute.name))
                     ._ref(qName(attribute.ref)) // TODO Resolve reference
                     ._defaultValue(attribute.defaultValue)
@@ -352,7 +359,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdAttributeGroup attributeGroup)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdAttributeGroup compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAttributeGroup_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdAttributeGroup compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdAttributeGroup_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdAttributeGroup"))
                     ._name(qName(attributeGroup.name))
                     ._ref(qName(attributeGroup.ref)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
@@ -380,7 +387,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdChoice choice)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdChoice compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdChoice_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdChoice compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdChoice_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdChoice"))
                     ._minOccurs(choice.minOccurs)
                     ._maxOccurs(choice.maxOccurs);
             objectConsumer.peek().accept(compiled);
@@ -398,7 +405,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdComplexContent complexContent)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdComplexContent compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdComplexContent_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdComplexContent compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdComplexContent_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdComplexContent"))
                     ._mixed(complexContent.mixed);
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o -> compiled._derivation((Root_meta_external_format_xml_metamodel_xsd_XsdContentDerivation) o));
@@ -415,7 +422,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdComplexType complexType)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdComplexType compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdComplexType_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdComplexType compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdComplexType_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdComplexType"))
                     ._name(qName(complexType.name))
                     ._ref(qName(complexType.ref)) // TODO Resolve reference
                     ._abstract(complexType._abstract)
@@ -456,7 +463,7 @@ public class XsdCompiler
         public void visit(XsdDocumentation documentation)
         {
             objectConsumer.peek().accept(
-                    new Root_meta_external_format_xml_metamodel_xsd_XsdDocumentation_Impl("")
+                    new Root_meta_external_format_xml_metamodel_xsd_XsdDocumentation_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdDocumentation"))
                             ._value(documentation.value)
                             ._language(documentation.language)
             );
@@ -465,7 +472,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdElement element)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdElement compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdElement_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdElement compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdElement_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdElement"))
                     ._name(qName(element.name))
                     ._ref(qName(element.ref)) // TODO Resolve reference
                     ._minOccurs(element.minOccurs)
@@ -495,7 +502,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdEnumeration enumeration)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdEnumeration compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdEnumeration_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdEnumeration compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdEnumeration_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdEnumeration"))
                     ._value(enumeration.value)
                     ._fixed(enumeration.fixed);
             objectConsumer.peek().accept(compiled);
@@ -511,7 +518,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdExtension extension)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdExtension compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdExtension_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdExtension compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdExtension_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdExtension"))
                     ._baseTypeName(qName(extension.baseTypeName)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o ->
@@ -542,7 +549,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdFractionDigits fractionDigits)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdFractionDigits compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdFractionDigits_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdFractionDigits compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdFractionDigits_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdFractionDigits"))
                     ._value(fractionDigits.value)
                     ._fixed(fractionDigits.fixed);
             objectConsumer.peek().accept(compiled);
@@ -558,7 +565,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdGroup group)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdGroup compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdGroup_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdGroup compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdGroup_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdGroup"))
                     ._name(qName(group.name))
                     ._ref(qName(group.ref)) // TODO Resolve reference
                     ._minOccurs(group.minOccurs)
@@ -623,7 +630,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdLength length)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdLength compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdLength_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdLength compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdLength_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdLength"))
                     ._value(length.value)
                     ._fixed(length.fixed);
             objectConsumer.peek().accept(compiled);
@@ -639,7 +646,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdList list)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdList compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdList_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdList compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdList_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdList"))
                     ._itemTypeName(qName(list.itemTypeName)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o -> compiled._itemType((Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType) o));
@@ -657,7 +664,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdMaxExclusive maxExclusive)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdMaxExclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMaxExclusive_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdMaxExclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMaxExclusive_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdMaxExclusive"))
                     ._value(maxExclusive.value)
                     ._fixed(maxExclusive.fixed);
             objectConsumer.peek().accept(compiled);
@@ -673,7 +680,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdMaxInclusive maxInclusive)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdMaxInclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMaxInclusive_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdMaxInclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMaxInclusive_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdMaxInclusive"))
                     ._value(maxInclusive.value)
                     ._fixed(maxInclusive.fixed);
             objectConsumer.peek().accept(compiled);
@@ -689,7 +696,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdMaxLength maxLength)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdMaxLength compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMaxLength_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdMaxLength compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMaxLength_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdMaxLength"))
                     ._value(maxLength.value)
                     ._fixed(maxLength.fixed);
             objectConsumer.peek().accept(compiled);
@@ -705,7 +712,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdMinExclusive minExclusive)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdMinExclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMinExclusive_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdMinExclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMinExclusive_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdMinExclusive"))
                     ._value(minExclusive.value)
                     ._fixed(minExclusive.fixed);
             objectConsumer.peek().accept(compiled);
@@ -721,7 +728,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdMinInclusive minInclusive)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdMinInclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMinInclusive_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdMinInclusive compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMinInclusive_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdMinInclusive"))
                     ._value(minInclusive.value)
                     ._fixed(minInclusive.fixed);
             objectConsumer.peek().accept(compiled);
@@ -737,7 +744,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdMinLength minLength)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdMinLength compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMinLength_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdMinLength compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdMinLength_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdMinLength"))
                     ._value(minLength.value)
                     ._fixed(minLength.fixed);
             objectConsumer.peek().accept(compiled);
@@ -753,7 +760,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdPattern pattern)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdPattern compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdPattern_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdPattern compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdPattern_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdPattern"))
                     ._value(pattern.value)
                     ._fixed(pattern.fixed);
             objectConsumer.peek().accept(compiled);
@@ -781,7 +788,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdRestriction restriction)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdRestriction compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdRestriction_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdRestriction compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdRestriction_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdRestriction"))
                     ._baseTypeName(qName(restriction.baseTypeName)); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o ->
@@ -828,7 +835,7 @@ public class XsdCompiler
                 elementFormDefault = schema.elementFormDefault == null ? XsdForm.UNQUALIFIED : schema.elementFormDefault;
                 attributeFormDefault = schema.attributeFormDefault == null ? XsdForm.UNQUALIFIED : schema.attributeFormDefault;
 
-                compiledSchema = new Root_meta_external_format_xml_metamodel_xsd_XsdSchema_Impl("")
+                compiledSchema = new Root_meta_external_format_xml_metamodel_xsd_XsdSchema_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdSchema"))
                         ._targetNamespace(targetNamespace)
                         ._elementFormDefault(form(elementFormDefault))
                         ._attributeFormDefault(form(attributeFormDefault))
@@ -863,7 +870,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdSequence sequence)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdSequence compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdSequence_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdSequence compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdSequence_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdSequence"))
                     ._minOccurs(sequence.minOccurs)
                     ._maxOccurs(sequence.maxOccurs);
             objectConsumer.peek().accept(compiled);
@@ -881,7 +888,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdSimpleContent simpleContent)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdSimpleContent compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdSimpleContent_Impl("");
+            Root_meta_external_format_xml_metamodel_xsd_XsdSimpleContent compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdSimpleContent_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdSimpleContent"));
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o -> compiled._derivation((Root_meta_external_format_xml_metamodel_xsd_XsdContentDerivation) o));
             pushAnnotationConsumer(compiled);
@@ -897,7 +904,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdSimpleType simpleType)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdSimpleType"))
                     ._name(qName(simpleType.name))
                     ._ref(qName(simpleType.ref)) // TODO Resolve reference
                     ._final(derivationTypes(simpleType._final, Collections.emptyList(), XsdDerivationType.LIST_UNION_RESTRICTION, simpleType));
@@ -916,7 +923,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdTotalDigits totalDigits)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdTotalDigits compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdTotalDigits_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdTotalDigits compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdTotalDigits_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdTotalDigits"))
                     ._value(totalDigits.value)
                     ._fixed(totalDigits.fixed);
             objectConsumer.peek().accept(compiled);
@@ -932,7 +939,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdUnion union)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdUnion compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdUnion_Impl("");
+            Root_meta_external_format_xml_metamodel_xsd_XsdUnion compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdUnion_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdUnion"));
             union.memberTypeNames.forEach(m -> compiled._memberTypeNamesAdd(qName(m))); // TODO Resolve reference
             objectConsumer.peek().accept(compiled);
             objectConsumer.push(o -> compiled._memberTypesAdd((Root_meta_external_format_xml_metamodel_xsd_XsdSimpleType) o));
@@ -950,7 +957,7 @@ public class XsdCompiler
         @Override
         public void visitBefore(XsdWhiteSpace whiteSpace)
         {
-            Root_meta_external_format_xml_metamodel_xsd_XsdWhiteSpace compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdWhiteSpace_Impl("")
+            Root_meta_external_format_xml_metamodel_xsd_XsdWhiteSpace compiled = new Root_meta_external_format_xml_metamodel_xsd_XsdWhiteSpace_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xsd::XsdWhiteSpace"))
                     ._value(whiteSpace.value)
                     ._fixed(whiteSpace.fixed);
             objectConsumer.peek().accept(compiled);
@@ -981,13 +988,13 @@ public class XsdCompiler
             }
             else if (XMLConstants.NULL_NS_URI.equals(qName.getNamespaceURI()))
             {
-                return new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(qName.getLocalPart())
+                return new Root_meta_external_format_xml_metamodel_xml_QName_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xml::QName"))._localPart(qName.getLocalPart())
                         ._namespace(targetNamespace)
                         ._prefix(prefixFor(targetNamespace, qName.getPrefix()));
             }
             else
             {
-                return new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(qName.getLocalPart())
+                return new Root_meta_external_format_xml_metamodel_xml_QName_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xml::QName"))._localPart(qName.getLocalPart())
                         ._namespace(qName.getNamespaceURI())
                         ._prefix(prefixFor(qName.getNamespaceURI(), qName.getPrefix()));
             }
@@ -997,7 +1004,7 @@ public class XsdCompiler
         {
             return name == null
                     ? null
-                    : new Root_meta_external_format_xml_metamodel_xml_QName_Impl("")._localPart(name)
+                    : new Root_meta_external_format_xml_metamodel_xml_QName_Impl("", null, context.getPureModel().getClass("meta::external::format::xml::metamodel::xml::QName"))._localPart(name)
                     ._namespace(targetNamespace)
                     ._prefix(prefixFor(targetNamespace));
         }

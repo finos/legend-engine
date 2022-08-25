@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class {meta::pure::profiles::doc.doc = 'Raw data read from flat data'} meta::external::format::flatdata::executionPlan::RawFlatData
+import meta::external::format::flatdata::executionPlan::model::*;
+
+import meta::external::shared::format::*;
+
+Class {meta::pure::profiles::doc.doc = 'Raw data read from flat data'} meta::external::format::flatdata::executionPlan::model::RawFlatData
 {
-  number: Integer[1];
-  lineNumber: Integer[1];
-  record: String[1];
-  recordValues: meta::external::format::flatdata::executionPlan::RawFlatDataValue[*];
+  number       : Integer[1];
+  lineNumber   : Integer[1];
+  record       : String[1];
+  recordValues : RawFlatDataValue[*];
 }
 
-Class meta::external::format::flatdata::executionPlan::RawFlatDataValue
+Class meta::external::format::flatdata::executionPlan::model::RawFlatDataValue
 {
-  address: meta::pure::metamodel::type::Any[1];
-  rawValue: String[1];
+  address      : Any[1];
+  rawValue     : String[1];
 }

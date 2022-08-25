@@ -14,46 +14,30 @@
 
 package org.finos.legend.engine.external.format.json;
 
-import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
 import org.finos.legend.engine.external.format.json.toModel.JsonSchemaToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.ExternalFormatModelGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.pure.generated.core_external_format_json_binding_validation;
-import org.finos.legend.pure.generated.core_external_format_json_binding_jsonSchemaToPure;
-import org.finos.legend.pure.generated.core_external_format_json_binding_pureToJsonSchema;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_format_json_metamodel_JsonSchema;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_transformation_fromPure_ModelToJsonSchemaConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_json_transformation_toPure_JsonSchemaToModelConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration;
+import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 
-import java.lang.management.ManagementFactory;
-import java.util.Collections;
-import java.util.List;
-
-public class JsonExternalFormatExtension implements ExternalFormatExtension<Root_meta_external_format_json_metamodel_JsonSchema, JsonSchemaToModelConfiguration, ModelToJsonSchemaConfiguration>
+public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_json_metamodel_JsonSchema, ModelToJsonSchemaConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_json_metamodel_JsonSchema, JsonSchemaToModelConfiguration>
 {
-    public static final String TYPE = "JSON";
-    private static final boolean IN_DEBUG = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains(":jdwp");
+    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> jsonSchemaContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema>) core_external_format_json_externalFormatContract.Root_meta_external_format_json_contract_jsonSchemaFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    public static final String TYPE = jsonSchemaContract._id();
 
     @Override
-    public String getFormat()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract()
     {
-        return TYPE;
-    }
-
-    @Override
-    public List<String> getContentTypes()
-    {
-        return Collections.singletonList(JsonExternalFormatPureExtension.CONTENT_TYPE);
+        return jsonSchemaContract;
     }
 
     @Override
@@ -63,47 +47,23 @@ public class JsonExternalFormatExtension implements ExternalFormatExtension<Root
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
-    {
-        return core_external_format_json_binding_validation.Root_meta_external_format_json_binding_validation_bindDetails_Binding_1__BindingDetail_1_(binding, context.getExecutionSupport());
-    }
-
-    @Override
     public String metamodelToText(Root_meta_external_format_json_metamodel_JsonSchema schemaDetail, PureModel pureModel)
     {
         return schemaDetail._content();
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schemaSet, JsonSchemaToModelConfiguration config, PureModel pureModel)
+    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(JsonSchemaToModelConfiguration configuration, PureModel pureModel)
     {
-        Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration configuration = new Root_meta_external_format_json_binding_toPure_JsonSchemaToModelConfiguration_Impl("")
-                ._sourceSchemaId(config.sourceSchemaId)
-                ._targetBinding(config.targetBinding)
-                ._targetPackage(config.targetPackage);
-        return IN_DEBUG
-                ? core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_jsonSchemaToPureWithDebug_SchemaSet_1__JsonSchemaToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport())
-                : core_external_format_json_binding_jsonSchemaToPure.Root_meta_external_format_json_binding_toPure_jsonSchemaToPure_SchemaSet_1__JsonSchemaToModelConfiguration_1__Binding_1_(schemaSet, configuration, pureModel.getExecutionSupport());
+        return new Root_meta_external_format_json_transformation_toPure_JsonSchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::format::json::transformation::toPure::JsonSchemaToModelConfiguration"))
+                ._sourceSchemaId(configuration.sourceSchemaId)
+                ._targetPackage(configuration.targetPackage);
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToJsonSchemaConfiguration config, PureModel pureModel)
+    public Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToJsonSchemaConfiguration configuration, PureModel pureModel)
     {
-        Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration configuration = new Root_meta_external_format_json_binding_fromPure_ModelToJsonSchemaConfiguration_Impl("")
-                ._targetBinding(config.targetBinding)
-                ._targetSchemaSet(config.targetSchemaSet);
-
-        config.sourceModel.forEach(pe -> configuration._sourceModelAdd(pureModel.getPackageableElement(pe)));
-
-        return IN_DEBUG
-                ? core_external_format_json_binding_pureToJsonSchema.Root_meta_external_format_json_binding_fromPure_pureToJsonSchemaWithDebug_ModelToJsonSchemaConfiguration_1__Binding_1_(configuration, pureModel.getExecutionSupport())
-                : core_external_format_json_binding_pureToJsonSchema.Root_meta_external_format_json_binding_fromPure_pureToJsonSchema_ModelToJsonSchemaConfiguration_1__Binding_1_(configuration, pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public List<String> getRegisterablePackageableElementNames()
-    {
-        ImmutableList<String> versions = PureClientVersions.versionsSince("v1_23_0");
-        return versions.collect(v -> "meta::protocols::pure::" + v + "::external::format::json::serializerExtension_String_1__SerializerExtension_1_").toList();
+        return new Root_meta_external_format_json_transformation_fromPure_ModelToJsonSchemaConfiguration_Impl("", null, pureModel.getClass("meta::external::format::json::transformation::fromPure::ModelToJsonSchemaConfiguration"))
+                ._targetSchemaSet(configuration.targetSchemaSet);
     }
 }

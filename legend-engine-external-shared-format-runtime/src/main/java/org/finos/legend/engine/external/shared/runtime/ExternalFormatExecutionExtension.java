@@ -29,8 +29,10 @@ import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.DataQualityExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.UrlStreamExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -39,12 +41,13 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Map;
 import java.util.stream.Stream;
 
 public class ExternalFormatExecutionExtension implements ExecutionExtension
 {
+    private final Map<String, ExternalFormatRuntimeExtension> EXTENSIONS = ExternalFormatRuntimeExtensionLoader.extensions();
+
     @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
@@ -58,11 +61,41 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             {
                 return executeUrlStream((UrlStreamExecutionNode) executionNode, pm, executionState);
             }
+            else if (executionNode instanceof ExternalFormatInternalizeExecutionNode)
+            {
+                return executeInternalizeExecutionNode((ExternalFormatInternalizeExecutionNode) executionNode, pm, executionState);
+            }
+            else if (executionNode instanceof ExternalFormatExternalizeExecutionNode)
+            {
+                return executeExternalizeExecutionNode((ExternalFormatExternalizeExecutionNode) executionNode, pm, executionState);
+            }
             else
             {
                 return null;
             }
         });
+    }
+
+    private Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
+        if (extension == null)
+        {
+            throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
+        }
+
+        return extension.executeInternalizeExecutionNode(node, profiles, executionState);
+    }
+
+    private Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
+        if (extension == null)
+        {
+            throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
+        }
+
+        return extension.executeExternalizeExecutionNode(node, profiles, executionState);
     }
 
     private Result executeUrlStream(UrlStreamExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -119,18 +152,5 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
                     ? BasicChecked.newChecked(null, checked.getSource(), allDefects)
                     : BasicChecked.newChecked(checked.getValue(), checked.getSource(), allDefects);
         }
-    }
-
-    private Object extractValue(IChecked<?> checked)
-    {
-        if (checked.getDefects().stream().anyMatch(d -> d.getEnforcementLevel() != EnforcementLevel.Warn))
-        {
-            throw new IllegalStateException(checked.getDefects().stream().map(IDefect::getMessage).filter(Objects::nonNull).collect(Collectors.joining("\n")));
-        }
-        else if (checked.getValue() == null)
-        {
-            throw new IllegalStateException("Unexpected error: no object and no explanatory defects");
-        }
-        return checked.getValue();
     }
 }

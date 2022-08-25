@@ -22,10 +22,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json.JsonDeserializeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json.JsonPathReference;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.json.JsonSerializeExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.shared.PathReference;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.PathReference;
 
 import java.util.List;
 
+@Deprecated
 public class JsonProtocolExtension implements PureProtocolExtension
 {
     @Override

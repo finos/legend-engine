@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
+@Deprecated
 public class FlatDataExecutionExtension implements ExecutionExtension
 {
     private static long DEFAULT_MAX_SCHEMA_OBJECT_SIZE = 50 * 1024 * 1024;

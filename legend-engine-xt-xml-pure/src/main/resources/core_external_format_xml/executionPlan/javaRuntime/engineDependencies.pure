@@ -1,0 +1,235 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/*
+ * Generated extension externalFormatXml class definitions: see org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension
+ */
+
+import meta::external::format::xml::executionPlan::engine::java::*;
+import meta::external::language::java::factory::*;
+import meta::external::language::java::transform::*;
+
+Class meta::external::format::xml::executionPlan::engine::java::_IXmlDeserializeExecutionNodeSpecifics {}
+Class meta::external::format::xml::executionPlan::engine::java::_DeserializeContext {}
+Class meta::external::format::xml::executionPlan::engine::java::_SimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::engine::java::_BooleanSimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::engine::java::_LongSimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::engine::java::_DoubleSimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::engine::java::_ValueProcessor {}
+Class meta::external::format::xml::executionPlan::engine::java::_AddBooleanToObject {}
+Class meta::external::format::xml::executionPlan::engine::java::_AddDoubleToObject {}
+Class meta::external::format::xml::executionPlan::engine::java::_AddEnumToObject {}
+Class meta::external::format::xml::executionPlan::engine::java::_AddLongToObject {}
+Class meta::external::format::xml::executionPlan::engine::java::_AddObjectToObject {}
+Class meta::external::format::xml::executionPlan::engine::java::h_ReadHandler {}
+Class meta::external::format::xml::executionPlan::engine::java::h_All {}
+Class meta::external::format::xml::executionPlan::engine::java::h_AnySurroundingElements {}
+Class meta::external::format::xml::executionPlan::engine::java::h_Attribute {}
+Class meta::external::format::xml::executionPlan::engine::java::h_Choice {}
+Class meta::external::format::xml::executionPlan::engine::java::h_Document {}
+Class meta::external::format::xml::executionPlan::engine::java::h_Element {}
+Class meta::external::format::xml::executionPlan::engine::java::h_FlexCollectionElement {}
+Class meta::external::format::xml::executionPlan::engine::java::h_Particle {}
+Class meta::external::format::xml::executionPlan::engine::java::h_Sequence {}
+Class meta::external::format::xml::executionPlan::engine::java::h_TextContent {}
+
+/*
+ * This function should be assigned to the router extension:
+ *
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ */
+function meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+{
+
+   let jXmlDataRecord = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.XmlDataRecord')
+      ->addMethod(javaMethod('public', javaLong(), 'getNumber', []))
+      ->addMethod(javaMethod('public', javaString(), 'getRecord', []));
+
+   let jSimpleTypeHandler = javaClass('public', 'org.finos.legend.engine.external.format.xml.shared.datatypes.SimpleTypeHandler')
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('public', 'org.finos.legend.engine.external.format.xml.shared.datatypes.SimpleTypeHandler'), [javaTypeVar('T')]), 'derive', [javaParam(javaClass('javax.xml.namespace.QName'), 'p0'), javaParam(javaArray(javaClass('org.finos.legend.engine.external.format.xml.shared.datatypes.Facet')), 'p1')]))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('public', 'org.finos.legend.engine.external.format.xml.shared.datatypes.SimpleTypeHandler'), [javaTypeVar('T')]), 'derive', [javaParam(javaClass('javax.xml.namespace.QName'), 'p0'), javaParam(javaList(javaClass('org.finos.legend.engine.external.format.xml.shared.datatypes.Facet')), 'p1')]))
+      ->addMethod(javaMethod('public', javaClass('javax.xml.namespace.QName'), 'getName', []))
+      ->addMethod(javaMethod('public', javaTypeVar('T'), 'parse', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toText', [javaParam(javaTypeVar('T'), 'p0')]));
+
+   let jBooleanSimpleTypeHandler = javaClass('public', 'org.finos.legend.engine.external.format.xml.shared.datatypes.BooleanSimpleTypeHandler')
+      ->addMethod(javaMethod('public', javaBoolean(), 'parseBoolean', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toText', [javaParam(javaBoolean(), 'p0')]));
+
+   let jLongSimpleTypeHandler = javaClass('public', 'org.finos.legend.engine.external.format.xml.shared.datatypes.LongSimpleTypeHandler')
+      ->addMethod(javaMethod('public', javaLong(), 'parseLong', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toText', [javaParam(javaLong(), 'p0')]));
+
+   let jDoubleSimpleTypeHandler = javaClass('public', 'org.finos.legend.engine.external.format.xml.shared.datatypes.DoubleSimpleTypeHandler')
+      ->addMethod(javaMethod('public', javaDouble(), 'parseDouble', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toText', [javaParam(javaDouble(), 'p0')]));
+
+   let jDeserializeContext = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.DeserializeContext')
+      ->addMethod(javaMethod('public', javaVoid(), 'addCriticalDefect', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'addErrorDefect', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'addValue', [javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataBooleanAdder'), 'p0'), javaParam(javaBoolean(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'addValue', [javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataDoubleAdder'), 'p0'), javaParam(javaDouble(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'addValue', [javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataLongAdder'), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'addValue', [javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p0'), javaParam(javaObject(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'addWarningDefect', [javaParam(javaString(), 'p0')]))
+      ->addMethod(javaMethod('public', $jBooleanSimpleTypeHandler, 'booleanSimpleTypeHandler', []))
+      ->addMethod(javaMethod('public', javaParameterizedType($jSimpleTypeHandler, [javaTemporal()]), 'dateSimpleTypeHandler', []))
+      ->addMethod(javaMethod('public', javaParameterizedType($jSimpleTypeHandler, [javaTemporal()]), 'dateTimeSimpleTypeHandler', []))
+      ->addMethod(javaMethod('public', javaParameterizedType($jSimpleTypeHandler, [javaBigDecimal()]), 'decimalSimpleTypeHandler', []))
+      ->addMethod(javaMethod('public', $jDoubleSimpleTypeHandler, 'doubleSimpleTypeHandler', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'finishDataObject', []))
+      ->addMethod(javaMethod('public', javaClass('org.finos.legend.engine.external.format.xml.read.ErrorHandlingType'), 'getInsufficientOccurrencesHandling', []))
+      ->addMethod(javaMethod('public', javaString(), 'getPath', []))
+      ->addMethod(javaMethod('public', javaClass('org.finos.legend.engine.external.format.xml.read.ErrorHandlingType'), 'getUnexpectedElementHandling', []))
+      ->addMethod(javaMethod('public', $jLongSimpleTypeHandler, 'longSimpleTypeHandler', []))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('org.finos.legend.engine.external.format.xml.read.DeserializeContext.Transaction'), []), 'newTransaction', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'popPathElement', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'pushPathElement', [javaParam(javaClass('javax.xml.namespace.QName'), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setInsufficientOccurrencesHandling', [javaParam(javaClass('org.finos.legend.engine.external.format.xml.read.ErrorHandlingType'), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'setUnexpectedElementHandling', [javaParam(javaClass('org.finos.legend.engine.external.format.xml.read.ErrorHandlingType'), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'startDataObject', [javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory'), 'p0'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p1')]))
+      ->addMethod(javaMethod('public', javaParameterizedType($jSimpleTypeHandler, [javaString()]), 'stringSimpleTypeHandler', []));
+
+   let jIXmlDeserializeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.IXmlDeserializeExecutionNodeSpecifics')
+      ->addMethod(javaMethod('public', javaVoid(), 'read', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]));
+
+   let jValueProcessor = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.ValueProcessor')
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaString(), 'p1')]));
+
+   let jAddBooleanToObject = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.valueProcessors.AddBooleanToObject')
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaString(), 'p1')]));
+
+   let jAddDoubleToObject = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.valueProcessors.AddDoubleToObject')
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaString(), 'p1')]));
+
+   let jAddEnumToObject = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.valueProcessors.AddEnumToObject')
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaString(), 'p1')]));
+
+   let jAddLongToObject = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.valueProcessors.AddLongToObject')
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaString(), 'p1')]));
+
+   let jAddObjectToObject = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.valueProcessors.AddObjectToObject')
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaString(), 'p1')]));
+
+   let jReadHandler = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.ReadHandler')
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'checkOccursRange', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'requireValidAttributeOccurs', [javaParam(javaLong(), 'p0')]))
+      ->addMethod(javaMethod('public', javaLong(), 'requireValidOccurs', [javaParam(javaLong(), 'p0')]));
+
+   let jAll = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.All')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.All'), 'add', [javaParam($jReadHandler, 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('org.eclipse.collections.api.list.MutableList'), [$jReadHandler]), 'handlersThatCanConsume', [javaParam(javaParameterizedType(javaClass('org.eclipse.collections.api.list.MutableList'), [$jReadHandler]), 'p0'), javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p1')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   let jAnySurroundingElements = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.AnySurroundingElements')
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaInt(), 'skip', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]));
+
+   let jAttribute = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Attribute')
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Attribute'), [javaTypeVar('C')]), 'ofLenient', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaString(), 'p2'), javaParam(javaParameterizedType($jValueProcessor, [javaTypeVar('C')]), 'p3')]))
+      ->addMethod(javaMethod('public', javaParameterizedType(javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Attribute'), [javaTypeVar('C')]), 'ofStrict', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaClass('javax.xml.namespace.QName'), 'p2'), javaParam(javaParameterizedType($jValueProcessor, [javaTypeVar('C')]), 'p3')]))
+      ->addMethod(javaMethod('public', javaString(), 'path', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]));
+
+   let jChoice = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Choice')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Choice'), 'add', [javaParam($jReadHandler, 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Choice'), 'of', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []))
+      ->addMethod(javaMethod('public', javaBoolean(), 'tryOption', [javaParam($jReadHandler, 'p0'), javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p1')]));
+
+   let jDocument = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Document')
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   let jFlexCollectionElement = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.FlexCollectionElement')
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsumeElement', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.FlexCollectionElement'), 'ofLenient', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.FlexCollectionElement'), 'ofLenient', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaString(), 'p2'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory'), 'p3'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p4')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.FlexCollectionElement'), 'ofStrict', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaClass('javax.xml.namespace.QName'), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.FlexCollectionElement'), 'ofStrict', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaClass('javax.xml.namespace.QName'), 'p2'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory'), 'p3'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p4')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   let jParticle = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Particle');
+
+   let jSequence = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Sequence')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Sequence'), 'add', [javaParam($jReadHandler, 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   let jTextContent = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.TextContent')
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   let jElement = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element')
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'add', [javaParam($jAttribute, 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'add', [javaParam($jParticle, 'p0')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'add', [javaParam($jTextContent, 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'canConsume', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaBoolean(), 'mustConsume', []))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'ofLenient', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaString(), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'ofLenient', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaString(), 'p2'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory'), 'p3'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p4')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'ofStrict', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaClass('javax.xml.namespace.QName'), 'p2')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'ofStrict', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaClass('javax.xml.namespace.QName'), 'p2'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory'), 'p3'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p4')]))
+      ->addMethod(javaMethod('public', javaClass('public', 'org.finos.legend.engine.external.format.xml.read.handlers.Element'), 'ofWildcard', [javaParam(javaLong(), 'p0'), javaParam(javaLong(), 'p1'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.IExternalDataFactory'), 'p2'), javaParam(javaClass('org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataObjectAdder'), 'p3')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'process', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'processForName', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0'), javaParam(javaClass('javax.xml.namespace.QName'), 'p1')]))
+      ->addMethod(javaMethod('public', javaVoid(), 'processOne', [javaParam(javaParameterizedType($jDeserializeContext, [javaWildcard()]), 'p0')]))
+      ->addMethod(javaMethod('public', javaString(), 'toString', []));
+
+   $conventions
+      ->addProvidedType(meta::external::format::xml::executionPlan::model::XmlDataRecord, $jXmlDataRecord)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_IXmlDeserializeExecutionNodeSpecifics, $jIXmlDeserializeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_DeserializeContext, $jDeserializeContext)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_SimpleTypeHandler, $jSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_BooleanSimpleTypeHandler, $jBooleanSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_LongSimpleTypeHandler, $jLongSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_DoubleSimpleTypeHandler, $jDoubleSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_ValueProcessor, $jValueProcessor)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddBooleanToObject, $jAddBooleanToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddDoubleToObject, $jAddDoubleToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddEnumToObject, $jAddEnumToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddLongToObject, $jAddLongToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddObjectToObject, $jAddObjectToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_ReadHandler, $jReadHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_All, $jAll)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_AnySurroundingElements, $jAnySurroundingElements)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Attribute, $jAttribute)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Choice, $jChoice)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Document, $jDocument)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Element, $jElement)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_FlexCollectionElement, $jFlexCollectionElement)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Particle, $jParticle)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Sequence, $jSequence)
+      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_TextContent, $jTextContent);
+}

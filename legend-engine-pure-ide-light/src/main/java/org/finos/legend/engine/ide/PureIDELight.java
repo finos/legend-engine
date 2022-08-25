@@ -16,6 +16,7 @@ package org.finos.legend.engine.ide;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
 import org.finos.legend.pure.ide.light.PureIDECodeRepository;
 import org.finos.legend.pure.ide.light.PureIDEServer;
 import org.finos.legend.pure.ide.light.SourceLocationConfiguration;
@@ -24,6 +25,7 @@ import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeR
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.RepositoryCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.MutableFSCodeStorage;
+import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -47,6 +49,7 @@ public class PureIDELight extends PureIDEServer
             return Lists.mutable
                     .<RepositoryCodeStorage>with(new ClassLoaderCodeStorage(CodeRepository.newPlatformCodeRepository()))
                     .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
+                    .with(this.buildCore("legend-engine-xt-mastery-pure", "mastery"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
                     .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
@@ -57,6 +60,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-json-pure", "external-format-json"))
                     .with(this.buildCore("legend-engine-xt-xml-pure", "external-format-xml"))
                     .with(this.buildCore("legend-engine-xt-graphQL-pure", "external-query-graphql"))
+                    .with(this.buildCore("legend-engine-xt-graphQL-pure-metamodel", "external-query-graphql-metamodel"))
                     .with(this.buildCore("legend-engine-xt-protobuf-pure", "external-format-protobuf"))
                     .with(this.buildCore("legend-engine-xt-avro-pure", "external-format-avro"))
                     .with(this.buildCore("legend-engine-xt-rosetta-pure", "external-format-rosetta"))
@@ -70,6 +74,13 @@ public class PureIDELight extends PureIDEServer
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    protected void postInit()
+    {
+        FunctionExecutionInterpreted fe = (FunctionExecutionInterpreted)this.getPureSession().getFunctionExecution();
+        fe.setProcessorSupport(new LegendCompileMixedProcessorSupport(fe.getRuntime().getContext(), fe.getRuntime().getModelRepository(), fe.getProcessorSupport()));
     }
 
     protected MutableFSCodeStorage buildCore(String path, String module) throws IOException

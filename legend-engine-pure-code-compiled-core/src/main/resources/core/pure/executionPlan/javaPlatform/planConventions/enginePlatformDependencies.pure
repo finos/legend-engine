@@ -41,8 +41,6 @@ Class meta::pure::executionPlan::engine::DataQualityConstrainedInterface {}
 Class meta::pure::executionPlan::engine::IReferencedObject {}
 Class meta::pure::executionPlan::engine::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics {}
 Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeSerializeSpecifics {}
-Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics {}
-Class meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics {}
 Class meta::pure::executionPlan::engine::ISerializationWriter {}
 Class meta::pure::executionPlan::engine::IGraphSerializer {}
 Class meta::pure::executionPlan::engine::IStoreStreamReadingExecutionNodeSpecifics {}
@@ -366,9 +364,6 @@ function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventi
    let jIRelationalCreateAndPopulateTempTableExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics')
       ->addMethod(javaMethod('public', javaString(), 'getGetterNameForProperty', [javaParam(javaString(), 'p0')]));
 
-   let jIPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics');
-   let jIPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics');
-
    let jISerializationWriter = javaClass('public', 'org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter')
       ->addMethod(javaMethod('public', javaVoid(), 'endObject', []))
       ->addMethod(javaMethod('public', javaVoid(), 'startObject', [javaParam(javaString(), 'p0')]))
@@ -505,8 +500,6 @@ function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventi
       ->addProvidedType(meta::pure::executionPlan::engine::IReferencedObject, $jIReferencedObject)
       ->addProvidedType(meta::pure::executionPlan::engine::IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics, $jIRelationalCreateAndPopulateTempTableExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeSerializeSpecifics, $jIPlatformPureExpressionExecutionNodeSerializeSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics, $jIPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics)
-      ->addProvidedType(meta::pure::executionPlan::engine::IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics, $jIPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics)
 
       ->addProvidedType(meta::pure::executionPlan::engine::ISerializationWriter, $jISerializationWriter)
       ->addProvidedType(meta::pure::executionPlan::engine::IGraphSerializer, $jIGraphSerializer)
@@ -522,5 +515,5 @@ function meta::pure::executionPlan::engine::applyJavaEngineDependencies(conventi
       ->addProvidedType(meta::pure::executionPlan::engine::IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics, $jIRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics)
       ->addProvidedType(meta::pure::executionPlan::engine::IServiceParametersResolutionExecutionNodeSpecifics, $jIServiceParametersResolutionExecutionNodeSpecifics);
 
-   $extensions.plan_javaRuntime_enginePlatformDependencies_conventions->fold({e,b|$e->eval($b)}, $res);
+   $extensions.plan_javaRuntime_enginePlatformDependencies_conventions->fold({e,b|$e->eval($b, $extensions)}, $res);
 }

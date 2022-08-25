@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
@@ -85,16 +86,19 @@ public class RelationalConnectionManager implements ConnectionManager
                 Lists.mutable.<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>>with(c -> new DataSourceSpecificationKeyGenerator(testDbPort, c))
                         .withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationKeyGenerators(testDbPort)));
 
+        Function<RelationalDatabaseConnection, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> authenticationStrategyProvider =
+                r -> ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
+                        .select(Objects::nonNull)
+                        .getFirstOptional()
+                        .orElseThrow(() -> new UnsupportedOperationException("No transformer provided for Authentication Strategy - " + r.authenticationStrategy.getClass().getName()));
+
         this.dataSourceTrans =
                 Lists.mutable.<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>>with(
                         (r, c) -> new DataSourceSpecificationTransformer(
                                 c.getDataSourceSpecificationKey(),
-                                ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
-                                        .select(Objects::nonNull)
-                                        .getFirstOptional()
-                                        .orElseThrow(() -> new UnsupportedOperationException("No transformer provided for Authentication Strategy - " + r.authenticationStrategy.getClass().getName())),
+                                authenticationStrategyProvider.apply(r),
                                 r)
-                ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(oauthProfiles, null)));
+                ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(authenticationStrategyProvider)));
     }
 
     private DataSourceSpecificationKey buildDataSourceKey(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection)
@@ -132,7 +136,7 @@ public class RelationalConnectionManager implements ConnectionManager
         // TODO : pass identity into this method
         RelationalDatabaseConnection testConnection = buildTestDatabaseDatasourceSpecification();
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
-        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity);
+        Optional<CredentialSupplier> credentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, testConnection, identity, StoreExecutionState.emptyRuntimeContext());
         return this.getDataSourceSpecification(testConnection).getConnectionUsingIdentity(identity, credentialHolder);
     }
 
@@ -150,17 +154,17 @@ public class RelationalConnectionManager implements ConnectionManager
         return testConnection;
     }
 
-    public static Optional<CredentialSupplier> getCredential(Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, RelationalDatabaseConnection connection, Identity identity)
+    public static Optional<CredentialSupplier> getCredential(Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, RelationalDatabaseConnection connection, Identity identity, StoreExecutionState.RuntimeContext runtimeContext)
     {
         if (!flowProviderHolder.isPresent())
         {
             // The use of flows has not been enabled
             return Optional.empty();
         }
-        return RelationalConnectionManager.getCredential(flowProviderHolder.get(), connection, identity);
+        return RelationalConnectionManager.getCredential(flowProviderHolder.get(), connection, identity, runtimeContext);
     }
 
-    public static Optional<CredentialSupplier> getCredential(DatabaseAuthenticationFlowProvider flowProvider, RelationalDatabaseConnection connection, Identity identity)
+    public static Optional<CredentialSupplier> getCredential(DatabaseAuthenticationFlowProvider flowProvider, RelationalDatabaseConnection connection, Identity identity, StoreExecutionState.RuntimeContext runtimeContext)
     {
         Optional<DatabaseAuthenticationFlow> flowHolder = flowProvider.lookupFlow(connection);
         if (!flowHolder.isPresent())
@@ -176,7 +180,7 @@ public class RelationalConnectionManager implements ConnectionManager
             LOGGER.warn(message);
             return Optional.empty();
         }
-        CredentialSupplier credentialSupplier = new CredentialSupplier(flowHolder.get(), connection.datasourceSpecification, connection.authenticationStrategy);
+        CredentialSupplier credentialSupplier = new CredentialSupplier(flowHolder.get(), connection.datasourceSpecification, connection.authenticationStrategy, DatabaseAuthenticationFlow.RuntimeContext.newWith(runtimeContext.getContextParams()));
         return Optional.of(credentialSupplier);
     }
 

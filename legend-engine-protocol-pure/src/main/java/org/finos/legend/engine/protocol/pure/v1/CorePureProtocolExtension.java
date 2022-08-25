@@ -23,7 +23,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
@@ -33,6 +39,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
@@ -43,9 +54,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
-
-import java.util.List;
-import java.util.Map;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
@@ -54,6 +62,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+
+import java.util.List;
+import java.util.Map;
 
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
@@ -71,6 +82,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(Function.class, "function")
                         .withSubtype(Measure.class, "measure")
                         .withSubtype(Unit.class, "unit")
+                        .withSubtype(ExternalFormatSchemaSet.class, "externalFormatSchemaSet")
+                        .withSubtype(Binding.class, "binding")
                         .build(),
                 // Runtime
                 ProtocolSubTypeInfo.newBuilder(Runtime.class)
@@ -79,6 +92,10 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(EngineRuntime.class, "engineRuntime")
                         .withSubtype(RuntimePointer.class, "runtimePointer")
                         .build(),
+                // Connection
+                ProtocolSubTypeInfo.newBuilder(Connection.class)
+                        .withSubtype(ExternalFormatConnection.class, "ExternalFormatConnection")
+                        .build(),
                 // Embedded Data
                 ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
                         .withSubtype(ExternalFormatData.class, "externalFormat")
@@ -86,21 +103,33 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(DataElementReference.class, "reference")
                         .build(),
                 // Test Assertion
-            ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
-                .withSubtype(EqualTo.class, "equalTo")
-                .withSubtype(EqualToJson.class, "equalToJson")
-                .build(),
+                ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
+                        .withSubtype(EqualTo.class, "equalTo")
+                        .withSubtype(EqualToJson.class, "equalToJson")
+                        .build(),
                 // Test Result
                 ProtocolSubTypeInfo.newBuilder(TestResult.class)
-                    .withSubtype(TestError.class, "testError")
-                    .withSubtype(TestPassed.class, "testPassed")
-                    .withSubtype(TestFailed.class, "testFailed")
+                        .withSubtype(TestError.class, "testError")
+                        .withSubtype(TestPassed.class, "testPassed")
+                        .withSubtype(TestFailed.class, "testFailed")
                         .build(),
+                // Assertion Status
                 ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)
                         .withSubtype(AssertPass.class, "assertPass")
                         .withSubtype(AssertFail.class, "assertFail")
                         .withSubtype(EqualToJsonAssertFail.class, "equalToJsonAssertFail")
-                    .build()
+                        .build(),
+                // External Source
+                ProtocolSubTypeInfo.newBuilder(ExternalSource.class)
+                        .withSubtype(UrlStreamExternalSource.class, "urlStream")
+                        .build(),
+                // Execution Node
+                ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
+                        .withSubtype(DataQualityExecutionNode.class, "dataQuality")
+                        .withSubtype(UrlStreamExecutionNode.class, "urlStream")
+                        .withSubtype(ExternalFormatInternalizeExecutionNode.class, "externalFormatInternalize")
+                        .withSubtype(ExternalFormatExternalizeExecutionNode.class, "externalFormatExternalize")
+                        .build()
         ));
     }
 

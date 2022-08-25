@@ -1601,3 +1601,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testJoinSt
    let snowflakeSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".LEGALNAME as "legalName", concat(\'A\', \'*\', \'B\', \'*\', \'C\') as "employeesFirstName" from firmTable as "root"', $snowflakeSql);
 }
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationDayOfMonth_SybaseIQ():Boolean[1]
+{
+   let result = toSQLString(
+      |Trade.all()
+         ->project(col(t|$t.date->dayOfMonth(), 'date')),
+      simpleRelationalMapping,
+      DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select datepart(DAY,"root".tradeDate) as "date" from tradeTable as "root"', $result);
+}

@@ -20,9 +20,9 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalFormatConnection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.ExternalSource;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.external.shared.UrlStreamExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalSource;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.UrlStreamExternalSource;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
@@ -52,7 +52,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
                 {
                     if (connectionValue instanceof ExternalFormatConnection)
                     {
-                        return new Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl("");
+                        return new Root_meta_external_shared_format_executionPlan_ExternalFormatConnection_Impl("", null, context.pureModel.getClass("meta::external::shared::format::executionPlan::ExternalFormatConnection"));
                     }
                     return null;
                 }
@@ -97,7 +97,7 @@ public class ExternalFormatConnectionCompilerExtension implements IExternalForma
             if (spec instanceof UrlStreamExternalSource)
             {
                 UrlStreamExternalSource urlStreamExternalSource = (UrlStreamExternalSource) spec;
-                return new Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl("")
+                return new Root_meta_external_shared_format_executionPlan_UrlStreamExternalSource_Impl("", null, context.pureModel.getClass("meta::external::shared::format::executionPlan::UrlStreamExternalSource"))
                         ._url(urlStreamExternalSource.url);
             }
             return null;

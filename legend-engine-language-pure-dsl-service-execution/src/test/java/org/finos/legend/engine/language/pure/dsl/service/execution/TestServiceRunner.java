@@ -18,8 +18,8 @@ import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.H2TestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.H2TestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -251,10 +251,22 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testSimpleServiceWithMultiplePureExpressionsHavingPropertyWithPath()
+    {
+        SimpleServiceWithMultiplePureExpressions simpleServiceWithMultiplePureExpressions = new SimpleServiceWithMultiplePureExpressions();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = simpleServiceWithMultiplePureExpressions.run(serviceRunnerInput);
+        Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}",result);
+    }
+
+    @Test
     public void testSimpleRelationalServiceExecution()
     {
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
-                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .withDatabaseAuthenticationFlowProvider(H2TestDatabaseAuthenticationFlowProvider.class, new H2TestDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
         SimpleRelationalServiceRunner simpleRelationalServiceRunner = (SimpleRelationalServiceRunner) ServiceRunnerBuilder.newInstance()
@@ -282,7 +294,7 @@ public class TestServiceRunner
     public void testSimpleRelationalServiceExecutionWithTDSResult()
     {
         RelationalExecutionConfiguration relationalExecutionConfiguration = RelationalExecutionConfiguration.newInstance()
-                .withDatabaseAuthenticationFlowProvider(LegendDefaultDatabaseAuthenticationFlowProvider.class, new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration())
+                .withDatabaseAuthenticationFlowProvider(H2TestDatabaseAuthenticationFlowProvider.class, new H2TestDatabaseAuthenticationFlowProviderConfiguration())
                 .build();
 
         SimpleRelationalServiceRunnerTDS simpleRelationalServiceRunner = (SimpleRelationalServiceRunnerTDS) ServiceRunnerBuilder.newInstance()
@@ -508,6 +520,22 @@ public class TestServiceRunner
         SimpleRelationalServiceWithUserRunner()
         {
             super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetchWithUserId"), true);
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class SimpleServiceWithMultiplePureExpressions extends AbstractServicePlanExecutor
+    {
+        SimpleServiceWithMultiplePureExpressions()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithPropertyPath"), true);
         }
 
         @Override

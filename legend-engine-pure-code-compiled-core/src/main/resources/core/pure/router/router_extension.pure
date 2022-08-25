@@ -8,6 +8,7 @@ Class meta::pure::router::extension::RouterExtension
   // routing
   shouldStopRouting : Function<Any>[*];
   routeFunctionExpressions : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{FunctionExpression[1], RoutingState[1], Runtime[1], Mapping[1], ExecutionContext[1]->RoutingState[1]}>>[0..1];
+  connectionEquality : Function<{Connection[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
 
   // Execution
   traceQueryInfoBuilder : Function<{FunctionDefinition<Any>[1], Mapping[1], meta::pure::runtime::Runtime[1] -> String[1]}>[0..1];

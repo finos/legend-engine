@@ -247,7 +247,7 @@ function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStoreUnion::inMe
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testSimpleUnionCrossStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_24_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testSimpleUnionCrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -289,7 +289,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testNestedUnionCrossStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_24_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testNestedUnionCrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -334,7 +334,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testSimpleUnionOnMultipleSetsCrossStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_24_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testSimpleUnionOnMultipleSetsCrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -422,7 +422,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testNestedUnionOnMultipleSetsCrossStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_24_0'} meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::testNestedUnionOnMultipleSetsCrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
