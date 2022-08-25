@@ -21,6 +21,8 @@ import javax.security.auth.Subject;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.cloud.AWSConfig;
+import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -42,7 +44,7 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
     public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
     public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
 
-    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig awsConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.AWSConfig(
+    private static final AWSConfig awsConfig = new AWSConfig(
             "us-east-1",
             "564704738649",
             "integration-wif-role1",
@@ -50,7 +52,7 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
             "AWS_SECRET_ACCESS_KEY"
     );
 
-    private static final LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig gcpWorkloadConfig = new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.GCPWorkloadConfig(
+    private static final GCPWorkloadConfig gcpWorkloadConfig = new GCPWorkloadConfig(
             "412074507462",
             "integration-wif-pool1",
             "integration-wif-pool1-provider"
