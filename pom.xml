@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.14.3-SNAPSHOT</version>
+    <version>3.14.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>

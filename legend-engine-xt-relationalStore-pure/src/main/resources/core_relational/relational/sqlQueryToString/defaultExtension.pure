@@ -364,20 +364,10 @@ function meta::relational::functions::sqlQueryToString::default::processIdentifi
 
 function meta::relational::functions::sqlQueryToString::default::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
 {
-  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier) || (!$identifier->isCStyleIdentifier() && !isFreeMarkerIdentifier($identifier)),
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier),
     | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
     | $identifier
   );
-}
-
-function meta::relational::functions::sqlQueryToString::default::isCStyleIdentifier(identifier:String[1]):Boolean[1]
-{
-  $identifier->matches('[a-zA-Z_][a-zA-Z0-9_$]*')
-}
-
-function meta::relational::functions::sqlQueryToString::default::isFreeMarkerIdentifier(identifier:String[1]):Boolean[1]
-{
-  $identifier->startsWith('${')
 }
 
 function meta::relational::functions::sqlQueryToString::default::getDDLCommandsTranslatorDefault(): RelationalDDLCommandsTranslator[1]
