@@ -16,6 +16,8 @@ package org.finos.legend.engine.external.format.protobuf.generation.descriptors.
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,13 +29,13 @@ public class FileService
 {
     public static final String PROTO = ".proto";
 
-    public List<File> writeToTempFolder(List<GenerationOutput> generationOutputs) throws IOException
+    public List<File> writeToDir(List<GenerationOutput> generationOutputs, Path dir) throws IOException
     {
         ArrayList<File> files = new ArrayList<>();
         for (GenerationOutput generationOutput : generationOutputs)
         {
-            // Note, that Files.createTempFile tempFile path always would be unique
-            Path tempFile = Files.createTempFile(generationOutput.fileName + "-", PROTO);
+            Path tempFile = Files.createFile(FileSystems.getDefault().getPath(dir.toString(), generationOutput.fileName));
+            Files.write(tempFile, generationOutput.content.getBytes(StandardCharsets.UTF_8));
             files.add(tempFile.toFile());
         }
         return files;
@@ -44,8 +46,8 @@ public class FileService
         return FileUtils.readFileToByteArray(file);
     }
 
-    public void wipeOut(List<File> files)
+    public void wipeOut(Path files) throws IOException
     {
-        files.forEach(FileUtils::deleteQuietly);
+        FileUtils.deleteDirectory(files.toFile());
     }
 }

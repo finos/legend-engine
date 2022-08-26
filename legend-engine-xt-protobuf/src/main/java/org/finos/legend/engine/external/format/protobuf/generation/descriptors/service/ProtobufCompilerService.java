@@ -17,6 +17,7 @@ package org.finos.legend.engine.external.format.protobuf.generation.descriptors.
 import com.github.os72.protocjar.Protoc;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,13 +25,14 @@ import java.util.stream.Collectors;
 
 public class ProtobufCompilerService
 {
-    public File generateDescriptorSet(List<File> protoFiles) throws IOException, InterruptedException
+    public File generateDescriptorSet(List<File> protoFiles, Path dir) throws IOException, InterruptedException
     {
-        Path descriptorSet = Files.createTempFile("descriptor-set", ".pb");
+        Path descriptorSet = Files.createFile(FileSystems.getDefault().getPath(dir.toString(), "descriptor-set.pb"));
         List<String> args = protoFiles.stream()
-            .map(File::getAbsolutePath)
+            .map(File::getName)
             .collect(Collectors.toList());
         args.add("--descriptor_set_out=" + descriptorSet.toAbsolutePath());
+        args.add("--proto_path=" + dir);
         Protoc.runProtoc(args.toArray(new String[]{}));
         return descriptorSet.toFile();
     }

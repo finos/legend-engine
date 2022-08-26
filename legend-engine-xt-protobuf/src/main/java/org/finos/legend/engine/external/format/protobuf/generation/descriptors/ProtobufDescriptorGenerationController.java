@@ -60,18 +60,24 @@ public class ProtobufDescriptorGenerationController
     @Path("protobuf-descriptors")
     @ApiOperation(value = "Generates Protobuf descriptors for a given class and transitive dependencies")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response generateProtobuf(ProtobufGenerationInput generateProtobufInput,
-                                     @ApiParam(hidden = true) @Pac4JProfileManager
+    public Response generateProtobufDescriptor(ProtobufGenerationInput generateProtobufInput,
+                                               @ApiParam(hidden = true) @Pac4JProfileManager
                                          ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf Descriptor").startActive(true))
         {
-            byte[] descriptor = protobufDescriptorGenerationService.generateDescriptor(generateProtobufInput, pm);
+            byte[] descriptor = protobufDescriptorGenerationService.generateDescriptor(generateProtobufInput,
+                ProfileManagerHelper.extractProfiles(pm));
             return Response.ok(descriptor).type(MediaType.APPLICATION_OCTET_STREAM).build();
         } catch (Exception ex)
         {
             return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PROTOBUF_DESCRIPTOR_ERROR, profiles);
         }
+    }
+
+    public ProtobufDescriptorGenerationService getProtobufDescriptorGenerationService()
+    {
+        return protobufDescriptorGenerationService;
     }
 }

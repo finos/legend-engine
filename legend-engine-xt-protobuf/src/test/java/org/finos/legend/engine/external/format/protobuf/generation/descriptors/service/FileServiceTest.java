@@ -16,15 +16,15 @@ package org.finos.legend.engine.external.format.protobuf.generation.descriptors.
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import jersey.repackaged.com.google.common.collect.Lists;
-import org.apache.commons.io.FileUtils;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 
 public class FileServiceTest
@@ -34,11 +34,11 @@ public class FileServiceTest
     @Test
     public void filesHasProperNames() throws IOException
     {
+        Path tempDirectory = Files.createTempDirectory("test");
         List<File> files = fileService
-            .writeToTempFolder(Lists.newArrayList(new GenerationOutput("content", "filename", "format")));
-        String tempDir = FileUtils.getTempDirectory().getPath();
-        assertThat(files.get(0).getParent(), is(tempDir));
-        assertThat(files.get(0).getName(), containsString("filename-"));
-        assertThat(files.get(0).getName(), containsString(".proto"));
+            .writeToDir(Lists.newArrayList(new GenerationOutput("content", "filename.proto", "format")),
+                tempDirectory);
+        assertThat(files.get(0).getParent(), is(tempDirectory.toString()));
+        assertThat(files.get(0).getName(), is("filename.proto"));
     }
 }

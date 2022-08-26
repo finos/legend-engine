@@ -15,76 +15,56 @@
 package org.finos.legend.engine.external.format.protobuf.tests;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 import java.util.Scanner;
-import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfig;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfigFromFileGenerationSpecificationBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationInput;
+import org.finos.legend.engine.external.format.protobuf.generation.descriptors.ProtobufDescriptorGenerationController;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig;
-import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
-import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
-import org.junit.Assert;
 import org.junit.Test;
+import org.pac4j.core.profile.CommonProfile;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 
 public class TestProtobufDescriptorGeneration
 {
-    @Test
-    public void generateDescriptorTest()
-    {
-        try
-        {
-            PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
-            FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
-            ProtobufGenerationConfig protobufConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
+    private final ProtobufDescriptorGenerationController protobufDescriptorGenerationController =
+        new ProtobufDescriptorGenerationController(new ModelManager(DeploymentMode.TEST));
 
-            Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig metaModelConfig = protobufConfig.transformToPure(pureModel);
-            List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = core_external_format_protobuf_deprecated.Root_meta_external_format_protobuf_deprecated_generation_internal_transform_ProtobufConfig_1__GenerationOutput_MANY_(metaModelConfig, pureModel.getExecutionSupport()).toList();
-            Assert.assertEquals(outputs.size(), 2);
-            Assert.assertEquals("_other.proto", outputs.get(0)._fileName());
-            Assert.assertEquals("syntax = \"proto3\";\n" +
-                    "package _other;\n" +
-                    "\n" +
-                    "message OtherClass {\n" +
-                    "  string stuff = 1;\n" +
-                    "}", outputs.get(0)._content());
-            Assert.assertEquals("_meta_pure_generation_tests_model.proto", outputs.get(1)._fileName());
-            Assert.assertEquals("syntax = \"proto3\";\n" +
-                    "package _meta.pure.generation.tests.model;\n" +
-                    "\n" +
-                    "message Address {\n" +
-                    "  string street = 1;\n" +
-                    "}\n" +
-                    "\n" +
-                    "message Firm {\n" +
-                    "  string legal_name = 1;\n" +
-                    "  repeated Person employees = 2;\n" +
-                    "  repeated Address addresses = 3;\n" +
-                    "  int64 count = 4;\n" +
-                    "}\n" +
-                    "\n" +
-                    "message Person {\n" +
-                    "  string first_name = 1;\n" +
-                    "  string last_name = 2;\n" +
-                    "  repeated Address addresses = 3;\n" +
-                    "  Firm firm = 4;\n" +
-                    "}", outputs.get(1)._content());
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+    @Test
+    public void generateDescriptorTest() throws IOException, InterruptedException
+    {
+        ProtobufGenerationInput protobufGenerationInput = new ProtobufGenerationInput();
+        PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
+        protobufGenerationInput.model = pureModelContextData;
+
+        FileGenerationSpecification fileGeneration =
+            pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
+        protobufGenerationInput.config =
+            ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
+
+        byte[] descriptor = protobufDescriptorGenerationController.getProtobufDescriptorGenerationService()
+            .generateDescriptor(protobufGenerationInput, FastList.newListWith(new CommonProfile()));
+
+        byte[] etalonDescriptor = FileUtils.readFileToByteArray(FileUtils.getFile(
+            "src\\test\\resources\\org\\finos\\legend\\engine\\external\\format\\protobuf\\tests\\descriptor-set.pb"));
+
+        assertThat(descriptor, is(etalonDescriptor));
     }
 
     private PureModelContextData getProtocol(String fileName) throws JsonProcessingException
     {
         String jsonString = this.getResourceAsString(fileName);
-        return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(jsonString, PureModelContextData.class);
+        return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports()
+            .readValue(jsonString, PureModelContextData.class);
     }
 
     private String getResourceAsString(String fileName)
