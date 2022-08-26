@@ -65,7 +65,7 @@ function meta::external::persistence::aws::cnas::generation::generateAwsPersiste
 
 function meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackend(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): String[1]
 {
-  $config->meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackendRaw($pc)->toPrettyJSONString();
+  $config->meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackendRaw($pc)->toCompactJSONString();
 }
 
 function meta::external::persistence::aws::cnas::generation::generateAwsPersistenceBackendRaw(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): JSONElement[1]

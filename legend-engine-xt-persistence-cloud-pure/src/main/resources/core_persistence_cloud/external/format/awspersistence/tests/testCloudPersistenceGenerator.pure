@@ -1,0 +1,125 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::persistence::metamodel::persister::sink::*;
+import meta::external::shared::format::binding::*;
+
+import meta::external::persistence::aws::cnas::generation::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::external::persistence::aws::metamodel::*;
+import meta::external::persistence::aws::metamodel::connection::*;
+// import meta::external::persistence::aws::cnas::generation::tests::*;
+import meta::json::*;
+
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::persistence::metamodel::notifier::*;
+import meta::pure::persistence::metamodel::reader::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::audit::*;
+import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::snapshot::*;
+import meta::pure::persistence::metamodel::persister::deduplication::*;
+import meta::legend::service::metamodel::*;
+
+Profile meta::external::persistence::aws::cnas::generation::tests::AwsPersistenceProperty
+{
+   tags: [
+     p1, p2, p3
+   ];
+}
+
+Class <<access.private>> meta::external::persistence::aws::cnas::generation::tests::A
+{
+    a: String[1];
+}
+
+function <<access.private>> meta::external::persistence::aws::cnas::generation::tests::getObjectStorageSink(): ObjectStorageSink[1]
+{
+  ^ObjectStorageSink(binding = ^Binding(contentType='json', modelUnit=meta::pure::model::unit::newModelUnit()));
+}
+
+function <<access.private>> meta::external::persistence::aws::cnas::generation::tests::getS3Connection(): AwsS3Connection[1]
+{
+  ^AwsS3Connection(
+          element = 'kaka',
+          partition = AwsPartition.AWS,
+          region = 'us-east-1',
+          key = 'thekey',
+          bucket = 'boquet'
+        );          
+}
+
+
+function <<access.private>> meta::external::persistence::aws::cnas::generation::tests::getPersistenceContext(): PersistenceContext[1]
+{
+  let package = meta::pure::functions::meta::pathToPackage('meta::external::persistence::aws::cnas::generation::tests', true);
+
+  let notifier = ^Notifier(
+    notifyees = [
+      // ^EmailNotifyee(emailAddress = 'basecamp@k2.com'),
+      ^PagerDutyNotifyee(url = 'mountains.are.cool')
+  	]
+  );
+
+  let service = ^Service(
+	  package = $package,
+	  pattern = '/mountains/lhotse',
+	  owners = ['ram'],
+	  autoActivateUpdates = true,
+	  documentation = 'A service',
+	  execution = ^PureExecution(func = {|true}),
+	  test = ^Test(),
+	  tags = []
+  );
+
+  let p = ^Persistence(
+    package = $package,
+    documentation = 'Mountains are cool',
+    trigger = ^ManualTrigger(),
+    service = $service,
+    persister = ^BatchPersister(
+      sink = meta::external::persistence::aws::cnas::generation::tests::getObjectStorageSink(),
+  	  ingestMode = ^NontemporalSnapshot(
+        auditing = ^NoAuditing()
+      ),
+      targetShape = ^FlatTarget(
+        modelClass = meta::external::persistence::aws::cnas::generation::tests::A,
+        targetName = 's3sink',
+        deduplicationStrategy = ^NoDeduplicationStrategy()
+      )
+    ),
+    notifier = $notifier
+  );
+
+  let pc = ^PersistenceContext(
+    package = $package,
+    persistence = $p,
+    platform = ^meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform(dataProcessingUnits = 2),
+    sinkConnection = meta::external::persistence::aws::cnas::generation::tests::getS3Connection()
+  );
+
+  $pc;
+}
+
+function <<test.Test>> {serverVersion.start='v1_20_0'} meta::external::persistence::aws::cnas::generation::tests::transform_persistenceToBackend(): Boolean[1]
+{
+  let p = meta::external::persistence::aws::cnas::generation::tests::getPersistenceContext();
+  let config = meta::external::persistence::aws::cnas::generation::defaultConfig();
+  let schema = meta::external::persistence::aws::cnas::generation::transform(^$config(scopeElements=[$p]))->at(0)->at(0).content;
+  let expected = '{"__type":"AwsPersistence","documentation":"Mountains are cool","service":{"__type":"AwsPersistenceService","service":"meta::external::persistence::aws::cnas::generation::tests","modelClass":[{"__type":"ModelClass","name":"A","package":"meta::external::persistence::aws::cnas::generation::tests","properties":[{"__type":"ModelClassProperty","name":"a","type":"String"}]}]},"trigger":{"__type":"ManualTrigger"},"notifier":{"__type":"Notifier","notifyees":[{"__type":"PagerDutyNotifyee","url":"mountains.are.cool"}]},"target":[{"__type":"AwsPersistenceTarget","name":"s3sink","connection":{"__type":"S3Connection","partition":"AWS","region":"us-east-1","bucket":"boquet","key":"thekey","contentType":"json"},"deduplicationStrategy":{"__type":"NoDeduplicationStrategy"},"ingestMode":{"__type":"NontemporalSnapshot","auditing":{"__type":"NoAuditing"}}}]}';
+  assertEquals($expected, $schema);
+}
+
