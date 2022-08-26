@@ -44,8 +44,11 @@ import meta::pure::runtime::*;
 import meta::pure::store::*;
 
 
-function  meta::external::persistence::aws::cnas::serialization::serialize(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): meta::external::persistence::aws::cnas::spec::AwsPersistence[1]
+function  meta::external::persistence::aws::cnas::serialization::serialize(config: AwsPersistenceConfig[1], pc: PersistenceContext[1]): meta::external::persistence::aws::cnas::spec::AwsPersistenceContext[1]
 {
+  assertInstanceOf($pc.platform, meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform, |'Expected only AwsGluePersistencePlatform in the persistence context');
+  let platform = $pc.platform->cast(@meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform);
+
   let p = $pc.persistence;
   let notifier = $p.notifier;
   let nonpd = $notifier.notifyees->filter(n|!$n->instanceOf(PagerDutyNotifyee));
@@ -60,13 +63,19 @@ function  meta::external::persistence::aws::cnas::serialization::serialize(confi
 
   let as = $config->annotatedService($p.service, $mc);
 
-  ^meta::external::persistence::aws::cnas::spec::AwsPersistence(
+  let jp = ^meta::external::persistence::aws::cnas::spec::AwsPersistence(
       documentation=$p.documentation,
       notifier=$p.notifier,
       trigger=$p.trigger,
-      // FIXME CNAS4 serviceInput=$p.serviceInput,
       service=$as,
       target=$apt
+    );
+  
+  ^meta::external::persistence::aws::cnas::spec::AwsPersistenceContext(
+      persistence=$jp,
+      platform = $platform,
+      serviceParameters = $pc.serviceParameters,
+      sinkConnection = $pc.sinkConnection
     );
 }
 

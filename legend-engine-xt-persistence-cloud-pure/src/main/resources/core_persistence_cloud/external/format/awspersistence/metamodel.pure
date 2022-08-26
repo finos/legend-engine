@@ -97,8 +97,15 @@ Class meta::external::persistence::aws::cnas::spec::AwsPersistence
 {
    documentation: String[1];
    service: meta::external::persistence::aws::cnas::spec::AwsPersistenceService[1];
-   serviceInput: Connection[0..1];
    trigger: Trigger[1];
    notifier: Notifier[1];
    target: meta::external::persistence::aws::cnas::spec::AwsPersistenceTarget[1..*];
+}
+
+Class meta::external::persistence::aws::cnas::spec::AwsPersistenceContext
+{
+  persistence: meta::external::persistence::aws::cnas::spec::AwsPersistence[1];
+  platform: meta::external::persistence::aws::metamodel::AwsGluePersistencePlatform[1];
+  serviceParameters: meta::pure::persistence::metamodel::service::ServiceParameter[*];
+  sinkConnection: Connection[0..1];
 }
