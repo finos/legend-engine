@@ -14,10 +14,7 @@
 
 package org.finos.legend.engine.external.format.protobuf.tests;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Scanner;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationConfigFromFileGenerationSpecificationBuilder;
@@ -26,13 +23,13 @@ import org.finos.legend.engine.external.format.protobuf.generation.descriptors.P
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.finos.legend.engine.external.format.protobuf.Utils.getProtocol;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestProtobufDescriptorGeneration
 {
@@ -58,19 +55,5 @@ public class TestProtobufDescriptorGeneration
             "src\\test\\resources\\org\\finos\\legend\\engine\\external\\format\\protobuf\\tests\\descriptor-set.pb"));
 
         assertThat(descriptor, is(etalonDescriptor));
-    }
-
-    private PureModelContextData getProtocol(String fileName) throws JsonProcessingException
-    {
-        String jsonString = this.getResourceAsString(fileName);
-        return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports()
-            .readValue(jsonString, PureModelContextData.class);
-    }
-
-    private String getResourceAsString(String fileName)
-    {
-        InputStream inputStream = TestProtobufDescriptorGeneration.class.getResourceAsStream(fileName);
-        Scanner scanner = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
-        return scanner.hasNext() ? scanner.next() : "";
     }
 }
