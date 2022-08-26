@@ -294,14 +294,14 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):Boolean[1]
 {
    let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
-   assert($executionOptionsList->size() <= 1, |'Execution Option List provided has two or more instances of the following Execution Options' + $execOption.name->toOne());
+   assert($executionOptionsList->size() <= 1, |'Execution Option :' + $execOption.name->toOne() + 'has more than one instance specified in the context');
    $executionOptionsList->isNotEmpty();
 }
 
 function meta::pure::executionPlan::validateAndReturnExecutionOptionOfType(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):ExecutionOption[1]
 {
    let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
-   assert($executionOptionsList->size() == 1, |'Execution Option List provided has no or more that two instances of the following Execution Options' + $execOption.name->toOne());
+   assert($executionOptionsList->size() == 1, |'Execution Option:' + $execOption.name->toOne() + 'not mentioned or mentioned more than once as part of the context');
    $executionOptionsList->head()->toOne();
 }
 
