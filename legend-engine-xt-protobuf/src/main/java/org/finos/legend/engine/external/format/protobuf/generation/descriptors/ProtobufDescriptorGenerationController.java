@@ -62,7 +62,7 @@ public class ProtobufDescriptorGenerationController
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateProtobufDescriptor(ProtobufGenerationInput generateProtobufInput,
                                                @ApiParam(hidden = true) @Pac4JProfileManager
-                                         ProfileManager<CommonProfile> pm)
+                                                   ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf Descriptor").startActive(true))
@@ -70,7 +70,8 @@ public class ProtobufDescriptorGenerationController
             byte[] descriptor = protobufDescriptorGenerationService.generateDescriptor(generateProtobufInput,
                 ProfileManagerHelper.extractProfiles(pm));
             return Response.ok(descriptor).type(MediaType.APPLICATION_OCTET_STREAM).build();
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PROTOBUF_DESCRIPTOR_ERROR, profiles);
         }

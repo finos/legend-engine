@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import jersey.repackaged.com.google.common.collect.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.external.shared.format.generations.GenerationOutput;
 import org.junit.Test;
 
@@ -36,7 +36,7 @@ public class FileServiceTest
     {
         Path tempDirectory = Files.createTempDirectory("test");
         List<File> files = fileService
-            .writeToDir(Lists.newArrayList(new GenerationOutput("content", "filename.proto", "format")),
+            .writeToDir(Lists.fixedSize.of(new GenerationOutput("content", "filename.proto", "format")),
                 tempDirectory);
         assertThat(files.get(0).getParent(), is(tempDirectory.toString()));
         assertThat(files.get(0).getName(), is("filename.proto"));

@@ -76,7 +76,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-
         <!-- PURE -->
 
         <!-- ENGINE -->
@@ -125,6 +124,13 @@
             <artifactId>legend-engine-xt-protobuf-grammar</artifactId>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- COMMONS -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <!-- COMMONS -->
 
         <!-- ANNOTATIONS -->
         <dependency>
@@ -210,6 +216,11 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

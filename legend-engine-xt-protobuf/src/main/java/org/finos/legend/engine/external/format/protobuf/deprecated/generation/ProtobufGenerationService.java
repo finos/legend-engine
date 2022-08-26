@@ -78,7 +78,8 @@ public class ProtobufGenerationService
         {
             List<GenerationOutput> result = generateProtobufOutput(generateProtobufInput, profiles);
             return ManageConstantResult.manageResult(profiles, result);
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             return ExceptionTool.exceptionManager(ex,
                 interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_ERROR :

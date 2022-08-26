@@ -62,7 +62,8 @@ public class ProtobufDescriptorGenerationService
             List<File> filesWritten = fileService.writeToDir(generationOutputs, tempDirectory);
             File descriptorSet = protobufCompilerService.generateDescriptorSet(filesWritten, tempDirectory);
             return fileService.getFileContentInBinary(descriptorSet);
-        } finally
+        }
+        finally
         {
             fileService.wipeOut(tempDirectory);
             LOGGER.info(new LogInfo(commonProfiles, LoggingEventType.GENERATE_PROTOBUF_DESCRIPTOR_STOP,

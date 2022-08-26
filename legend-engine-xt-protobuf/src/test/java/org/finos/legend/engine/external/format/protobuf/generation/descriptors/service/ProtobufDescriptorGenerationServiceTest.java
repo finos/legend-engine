@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.external.format.protobuf.generation.descriptors.service;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import jersey.repackaged.com.google.common.collect.Lists;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationService;
 import org.finos.legend.engine.external.format.protobuf.deprecated.generation.configuration.ProtobufGenerationInput;
@@ -54,10 +53,10 @@ public class ProtobufDescriptorGenerationServiceTest
     @Test
     public void generateDescriptors() throws IOException, InterruptedException
     {
-        List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
+        List<GenerationOutput> generationOutputs = Lists.fixedSize.of(new GenerationOutput("content",
             "fileName", "format"));
         when(protobufGenerationService.generateProtobufOutput(any(), any())).thenReturn(generationOutputs);
-        List<File> protoFiles = Lists.newArrayList(new File("path-to-proto-file"));
+        List<File> protoFiles = Lists.fixedSize.of(new File("path-to-proto-file"));
         when(fileService.writeToDir(eq(generationOutputs), any())).thenReturn(protoFiles);
         when(protobufCompilerService.generateDescriptorSet(eq(protoFiles), any())).thenReturn(new File("descriptor"));
         byte[] bytes = {0, 1};
@@ -73,10 +72,10 @@ public class ProtobufDescriptorGenerationServiceTest
     @Test
     public void wipingOutEvenOnException() throws IOException, InterruptedException
     {
-        List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
+        List<GenerationOutput> generationOutputs = Lists.fixedSize.of(new GenerationOutput("content",
             "fileName", "format"));
         when(protobufGenerationService.generateProtobufOutput(any(), any())).thenReturn(generationOutputs);
-        List<File> protoFiles = Lists.newArrayList(new File("path-to-proto-file"));
+        List<File> protoFiles = Lists.fixedSize.of(new File("path-to-proto-file"));
         when(fileService.writeToDir(eq(generationOutputs), any())).thenReturn(protoFiles);
         when(protobufCompilerService.generateDescriptorSet(eq(protoFiles), any()))
             .thenThrow(new RuntimeException("something's wrong"));
