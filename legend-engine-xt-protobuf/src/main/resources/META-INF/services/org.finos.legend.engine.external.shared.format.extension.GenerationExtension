@@ -1,1 +1,2 @@
 org.finos.legend.engine.external.format.protobuf.deprecated.generation.ProtobufGenerationExtension
+org.finos.legend.engine.external.format.protobuf.generation.descriptors.ProtobufGenerationDescriptorExtension
