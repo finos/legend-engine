@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,9 +49,9 @@ function  meta::external::persistence::aws::cnas::serialization::serialize(confi
   let p = $pc.persistence;
   let notifier = $p.notifier;
   let nonpd = $notifier.notifyees->filter(n|!$n->instanceOf(PagerDutyNotifyee));
-  assertEmpty($nonpd, | 'AwsPersistence can currently only support PagerDuty notifees');
+  assertEmpty($nonpd, | 'Cloud persistence can currently only support PagerDuty notifees');
 
-  assert($p.persister->instanceOf(BatchPersister), | 'AwsPersistence can currently only handle batch persistence');
+  assert($p.persister->instanceOf(BatchPersister), | 'Cloud persistence can currently only handle batch persistence');
   let bp = $p.persister->cast(@BatchPersister);
 
   let apt = $config->serializeShape($bp, $pc.sinkConnection);
@@ -66,41 +66,29 @@ function  meta::external::persistence::aws::cnas::serialization::serialize(confi
       trigger=$p.trigger,
       // FIXME CNAS4 serviceInput=$p.serviceInput,
       service=$as,
-      // persister=$p.persister,
       target=$apt
     );
 }
 
 function <<access.private>> meta::external::persistence::aws::cnas::serialization::annotatedService(config: AwsPersistenceConfig[1], s: Service[1], mc: meta::external::persistence::aws::cnas::spec::ModelClass[1..*]): meta::external::persistence::aws::cnas::spec::AwsPersistenceService[1]
 {
-  /*
-  let auth = if ($s.execution->instanceOf(PureSingleExecution) &&
-                 $s.execution->cast(@PureSingleExecution).runtime.connections->size() == 1 &&
-                 $s.execution->cast(@PureSingleExecution).runtime.connections->toOne()->instanceOf(RelationalDatabaseConnection), 
-    | $s.execution->cast(@PureSingleExecution).runtime.connections->toOne()->cast(@RelationalDatabaseConnection).authenticationStrategy,
-    | []
-    );
-    */
-
   ^meta::external::persistence::aws::cnas::spec::AwsPersistenceService(
-    // auth = $auth,
     service = $s,
     modelClass = $mc
   );
 }
 
 
-
 function <<access.private>> meta::external::persistence::aws::cnas::serialization::serializeShape(config: AwsPersistenceConfig[1], bp: BatchPersister[1], conn: Connection[0..1]): meta::external::persistence::aws::cnas::spec::AwsPersistenceTarget[1..*]
 {
-  assert($bp.targetShape->instanceOf(FlatTarget), | 'AwsPersistence can currently only handle flat target shapes');
+  assert($bp.targetShape->instanceOf(FlatTarget), | 'Cloud persistence can currently only handle flat target shapes');
   let ft = $bp.targetShape->cast(@FlatTarget);
 
   let canHandle = 'NontemporalSnapshot, UnitemporalSnapshot';
   $bp.ingestMode->match([
     u:UnitemporalSnapshot[1]|assert($u.transactionMilestoning->instanceOf(BatchIdTransactionMilestoning), 'In FlatTarget %s, for UnitemporalSnapshot, only BatchIdTransactionMilestoning is supported', [$ft.targetName]),
     n:NontemporalSnapshot[1]|assert($n.auditing->instanceOf(NoAuditing), 'In FlatTarget %s, for NontemporalSnapshot, only NoAuditing is supported', [$ft.targetName]),
-    a:Any[*]|assert(false, 'AwsPersistence can currently only handle %s milestoning in FlatTarget <%s>', [$canHandle, $ft.targetName])
+    a:Any[*]|assert(false, 'Cloud persistence can currently only handle %s milestoning in FlatTarget <%s>', [$canHandle, $ft.targetName])
   ]);
 
   let apt = $config->serializeAwsPersistenceTarget($ft, $bp.sink, $conn, $bp.ingestMode);
@@ -113,22 +101,22 @@ function <<access.private>> meta::external::persistence::aws::cnas::serializatio
   assertSize($ft.modelClass, 1, 'Expecting exactly one modelClass, found %s', [$ft.modelClass->size()]);
   let modelClass = $ft.modelClass->toOne();
   
-  assert($ft.deduplicationStrategy->instanceOf(NoDeduplicationStrategy), 'AwsPersistence can currently only handle NoDeduplicationStrategy in FlatTarget <%s>', [$ft.targetName]);
+  assert($ft.deduplicationStrategy->instanceOf(NoDeduplicationStrategy), 'Cloud persistence can currently only handle NoDeduplicationStrategy in FlatTarget <%s>', [$ft.targetName]);
 
   ^meta::external::persistence::aws::cnas::spec::AwsPersistenceTarget(
       name = $ft.targetName,
       connection = $config->getTargetConnection($ts, $conn, $modelClass),
-      // deduplicationStrategy=$ft.deduplicationStrategy,
+      deduplicationStrategy=$ft.deduplicationStrategy,
       ingestMode = $im
     );
 }
 
 function <<access.private>> meta::external::persistence::aws::cnas::serialization::getModelClass(config: AwsPersistenceConfig[1], bp: BatchPersister[1]): meta::external::persistence::aws::cnas::spec::ModelClass[1..*]
 {
-  assert($bp.targetShape->instanceOf(FlatTarget), | 'AwsPersistence can currently only handle flat target shapes');
+  assert($bp.targetShape->instanceOf(FlatTarget), | 'Cloud persistence can currently only handle flat target shapes');
   let ft = $bp.targetShape->cast(@FlatTarget);
 
-  // FIXME: Should these be validated in a common place for all generators?
+  // Note: This can be common validation for all persistence code generators
   assertNotEmpty($ft.modelClass, |'Expecting a ModelClass in the BatchPersister but found none');
   assertSize($ft.modelClass, 1, 'Expecting exactly one modelClass, found %s', [$ft.modelClass->size()]);
   let modelClass = $ft.modelClass->toOne();
@@ -161,7 +149,7 @@ function <<access.private>> meta::external::persistence::aws::cnas::serializatio
         rdb:RelationalDatabaseConnection[1]|
           if ($rdb.type == DatabaseType.Snowflake || $rdb.type == DatabaseType.Redshift,
             | $config->getDbConnection($rdb, $modelClass),
-            | assert(false,'AwsPersistence can currently only handle RelationalDB targets of type Snowflake or Redshift');
+            | assert(false,'Cloud persistence can currently only handle RelationalDB targets of type Snowflake or Redshift');
               [];
             ),
         x:Any[1]|
@@ -201,12 +189,6 @@ function <<access.private>> meta::external::persistence::aws::cnas::serializatio
   $aptc->toOne();
 }
 
-/*
-function <<access.private>> meta::external::persistence::aws::cnas::serialization::getRedshiftConnection(config: AwsPersistenceConfig[1], rdb: RelationalDatabaseConnection[1], modelClass: Class<Any>[1]): meta::external::persistence::aws::cnas::spec::RelationalConnection[1]
-{
-  $config->getDbConnection($rdb, $modelClass);
-}
-*/
 
 function <<access.private>> meta::external::persistence::aws::cnas::serialization::getDbConnection(config: AwsPersistenceConfig[1], rdb: RelationalDatabaseConnection[1], modelClass: Class<Any>[1]): meta::external::persistence::aws::cnas::spec::RelationalConnection[1]
 {
@@ -217,12 +199,14 @@ function <<access.private>> meta::external::persistence::aws::cnas::serializatio
   let store = $x->toOne()->cast(@Database);
   let storeName = $store->fullPackageName('::');
 
-  // The databasename is specified in the SnowflakeDatasourceSpecification. The schema is specified in the Store specification
-  // We will use the convention that the tablename in Snowflake corresponds to the modelclass name in the Persister
-  // We check to make sure exactly one such schema exists
-//          let dbName = $rdb.datasourceSpecification->cast(@SnowflakeDatasourceSpecification).databaseName;
-//          let schemas = $store.schemas->filter(s|$s.name == $dbName);
-//          assertSize($schemas, 1, 'In store <%s>, expected a schema with name <%s> as that is the name provided in the datasourceSpecification, instead found <%s>', [$storeName, $dbName, $store.schemas->fold({item,accum|$accum->concatenate($item.name)}, [])->makeString(',')]);
+  // The databasename is specified in the SnowflakeDatasourceSpecification or RedshiftDatasourceSpecification
+  // The schema is specified in the Store specification. We were enforcing the convention that the tablename 
+  // in the database corresponds to the modelclass name in the Persister, and then check to make sure exactly 
+  // one such schema exists. But with modelclass up in the air, don't do this check for now. Here is what
+  // it would look like for Snowflake:
+  //          let dbName = $rdb.datasourceSpecification->cast(@SnowflakeDatasourceSpecification).databaseName;
+  //          let schemas = $store.schemas->filter(s|$s.name == $dbName);
+  //          assertSize($schemas, 1, 'In store <%s>, expected a schema with name <%s> as that is the name provided in the datasourceSpecification, instead found <%s>', [$storeName, $dbName, $store.schemas->fold({item,accum|$accum->concatenate($item.name)}, [])->makeString(',')]);
 
   let tables = $store.schemas->fold({item, accum|$accum->concatenate($item.tables)} , []);
   assertNotEmpty($tables, 'In connection which points to store <%s>, expected to see at least one table but found none', [ $storeName ]);
@@ -232,7 +216,7 @@ function <<access.private>> meta::external::persistence::aws::cnas::serializatio
     | $config->getTableForModelClass($tables, $modelClass, $storeName);
   );
 
-  // This needs revisiting. We need to validate the model class against the store types through the mapping. Doing so is hard
+  // Here is where we would validate the model class against the store types through the mapping. Doing so is non-trivial
   // $config->validateRelationalTargetWithModel($t, $modelClass, $storeName);
 
   let targetRelType = $t.columns->cast(@Column)->map(c|^meta::external::persistence::aws::cnas::spec::RelationalProperty(name=$c.name, sqlType=$c.type->meta::relational::metamodel::datatype::dataTypeToSqlText()));
@@ -254,49 +238,3 @@ function <<access.private>> meta::external::persistence::aws::cnas::serializatio
   $t->toOne();
 }
 
-Class <<access.private>> meta::external::persistence::aws::cnas::serialization::NameAndType
-{
-  name: String[1];
-  type: Type[1];
-  sqlType: meta::relational::metamodel::datatype::DataType[0..1];
-}
-
-
-// This needs revisiting. We need to validate the model class against the store types through the mapping. Doing so is hard
-// For example, element X in the model could map to a combination of relational columns (Y and Z) in the store, through a relational operations
-// What we need to validate is that the type of X matches the type of relop(X, Y). Sometimes, relop is Identity. The names can be
-// different as that is what the mapping handles. This function needs to be redone taking the above into account.
-
-/****
-function <<access.private>> meta::external::persistence::aws::cnas::serialization::validateRelationalTargetWithModel(config: AwsPersistenceConfig[1], table: Table[1], modelClass: Class<Any>[1], storeName: String[1]): Any[*]
-{
-  // Better have the same number of elements
-  let mcn = $modelClass.name->toOne();
-  let properties = $modelClass.properties;
-  let columns = $table.columns->cast(@Column);
-  assert($properties->size() == $columns->size(), 'Class <%s> and columns in store <%s> have different numbers of elements, %d and %d respectively', [ $mcn, $storeName, $properties->size(), $columns->size()]);
-
-  // Better have same names, modulo quotes
-  let mn = $properties->map(p|^NameAndType(name=$p.name->toOne(), type=$p.genericType.rawType->toOne()))->sortBy(nt|$nt.name);
-  let cn = $columns->map(c|^NameAndType(name=$c.name, sqlType=$c.type, type=$c.type->meta::relational::metamodel::datatype::dataTypeToCompatiblePureType()))->sortBy(nt|$nt.name);
-
-  let both = $mn->zip($cn);
-
-  // Example of fold: let tables = $store.schemas->fold({item, accum|$accum->concatenate($item.tables)} , []);
-
-  let gap = $both->filter(b|
-    let m = $b.first;
-    let c = $b.second;
-    ! ($m.type == $c.type && ($m.name == $c.name || $m.name->makeString('"', '', '"') == $c.name)); // Ignore quotes in the name, needed for case sensitivity in some DBs
-  )->fold({b,accum|$accum->concatenate(
-      format('    <%s,%s> is incompatible with <%s,%s>', [$b.first.name, $b.first.type, $b.second.name, $b.second.sqlType->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText()]))},
-      []
-  );
-  
-  assertEmpty($gap, |$gap->makeString(
-    format('When checking model class %s with store definition %s, found:\n', [$mcn, $storeName]),
-    '\n',
-    '\n'
-  ));
-}
-***/

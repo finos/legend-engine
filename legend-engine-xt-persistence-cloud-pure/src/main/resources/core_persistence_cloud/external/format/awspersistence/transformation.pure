@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,6 +78,6 @@ function meta::external::persistence::aws::cnas::generation::generateAwsPersiste
 function meta::external::persistence::aws::cnas::generation::extraJsonSerializers():Function<{Nil[1],JSONState[1] ->JSONElement[1]}>[*]
 {
   [
-    // TODO: Add based on what _type we want etc. on the CNAS side
+    // Note: This is where to specify what _type we want etc. on the CNAS side
   ]
 }
