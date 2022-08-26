@@ -159,6 +159,13 @@
         </dependency>
         <!-- JSON -->
 
+        <!-- Protobuff compiler-->
+        <dependency>
+            <groupId>com.github.os72</groupId>
+            <artifactId>protoc-jar</artifactId>
+        </dependency>
+        <!-- Protobuff compiler-->
+
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>

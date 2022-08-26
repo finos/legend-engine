@@ -51,14 +51,14 @@ public class ProtobufDescriptorGenerationServiceTest
     private ProtobufCompilerService protobufCompilerService;
 
     @Test
-    public void generateDescriptors() throws IOException
+    public void generateDescriptors() throws IOException, InterruptedException
     {
         List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
             "fileName", "format"));
         when(protobufGenerationService.generateProtobufOutput(any(), any())).thenReturn(generationOutputs);
         List<File> protoFiles = Lists.newArrayList(new File("path-to-proto-file"));
         when(fileService.writeToTempFolder(generationOutputs)).thenReturn(protoFiles);
-        when(protobufCompilerService.generateDiscriptorSet(protoFiles)).thenReturn(new File("descriptor"));
+        when(protobufCompilerService.generateDescriptorSet(protoFiles)).thenReturn(new File("descriptor"));
         byte[] bytes = {0, 1};
         when(fileService.getFileContentInBinary(new File("descriptor"))).thenReturn(bytes);
 
@@ -71,14 +71,14 @@ public class ProtobufDescriptorGenerationServiceTest
     }
 
     @Test
-    public void wipingOutEvenOnException() throws IOException
+    public void wipingOutEvenOnException() throws IOException, InterruptedException
     {
         List<GenerationOutput> generationOutputs = Lists.newArrayList(new GenerationOutput("content",
             "fileName", "format"));
         when(protobufGenerationService.generateProtobufOutput(any(), any())).thenReturn(generationOutputs);
         List<File> protoFiles = Lists.newArrayList(new File("path-to-proto-file"));
         when(fileService.writeToTempFolder(generationOutputs)).thenReturn(protoFiles);
-        when(protobufCompilerService.generateDiscriptorSet(protoFiles))
+        when(protobufCompilerService.generateDescriptorSet(protoFiles))
             .thenThrow(new RuntimeException("something's wrong"));
 
         assertThrows(RuntimeException.class, () -> protobufDescriptorGenerationService

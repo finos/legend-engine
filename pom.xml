@@ -14,7 +14,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -287,6 +288,7 @@
         <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
         <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
+        <protoc-jar.version>3.11.4</protoc-jar.version>
     </properties>
 
     <scm>
@@ -538,7 +540,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
@@ -1053,7 +1055,8 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default
+                </artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1559,6 +1562,14 @@
                 <scope>compile</scope>
             </dependency>
             <!-- ANTLR -->
+
+            <!-- Protobuff compiler-->
+            <dependency>
+                <groupId>com.github.os72</groupId>
+                <artifactId>protoc-jar</artifactId>
+                <version>${protoc-jar.version}</version>
+            </dependency>
+            <!-- Protobuff compiler-->
 
             <!-- LOGGING -->
             <dependency>

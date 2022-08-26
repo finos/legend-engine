@@ -40,17 +40,17 @@ public class ProtobufDescriptorGenerationService
     }
 
     public byte[] generateDescriptor(ProtobufGenerationInput generateProtobufInput,
-                                     ProfileManager<CommonProfile> pm) throws IOException
+                                     ProfileManager<CommonProfile> pm) throws IOException, InterruptedException
     {
         List<GenerationOutput> generationOutputs =
             protobufGenerationService.generateProtobufOutput(generateProtobufInput, pm);
         List<File> filesWritten = fileService.writeToTempFolder(generationOutputs);
         try
         {
-            File discriptorSet = protobufCompilerService.generateDiscriptorSet(filesWritten);
+            File descriptorSet = protobufCompilerService.generateDescriptorSet(filesWritten);
             // for future wipe out
-            filesWritten.add(discriptorSet);
-            return fileService.getFileContentInBinary(discriptorSet);
+            filesWritten.add(descriptorSet);
+            return fileService.getFileContentInBinary(descriptorSet);
         } finally
         {
             fileService.wipeOut(filesWritten);
