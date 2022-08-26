@@ -3,7 +3,7 @@
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>3.14.2-SNAPSHOT</version>
+        <version>3.14.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -114,23 +114,6 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- LOG -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- LOG -->
 
         <!-- JACKSON -->
         <dependency>

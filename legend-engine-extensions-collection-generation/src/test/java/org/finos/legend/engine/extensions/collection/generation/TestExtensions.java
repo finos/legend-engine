@@ -21,8 +21,10 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
+import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
+import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
@@ -86,6 +88,12 @@ public class TestExtensions
     public void testExpectedExternalFormatExtensionsArePresent()
     {
         assertHasExtensions(getExpectedExternalFormatExtensions(), ExternalFormatExtension.class);
+    }
+
+    @Test
+    public void testExpectedArtifactGenerationExtensionsArePresent()
+    {
+        assertHasExtensions(getExpectedArtifactGenerationExtensions(), ArtifactGenerationExtension.class);
     }
 
     @Test
@@ -198,6 +206,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
@@ -229,6 +238,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatConnectionGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.from.GenerationParserExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.MasteryParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
@@ -246,6 +256,7 @@ public class TestExtensions
                 .with(DiagramGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ExternalFormatGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.grammar.to.GenerationGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.mastery.grammar.to.MasteryGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.PersistenceComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
@@ -267,6 +278,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph.ServiceCompilerExtensionImpl.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ExternalFormatConnectionCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.dsl.mastery.compiler.toPureGraph.MasteryCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph.PersistenceCloudCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
@@ -291,6 +303,13 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class);
     }
 
+    protected Iterable<? extends Class<? extends ArtifactGenerationExtension>> getExpectedArtifactGenerationExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
+                .with(DataSpaceAnalyticsArtifactGenerationExtension.class);
+    }
+
     protected Iterable<String> getExpectedCodeRepositories()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
@@ -307,6 +326,7 @@ public class TestExtensions
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
                 .with("core_persistence")
+                .with("core_mastery")
                 .with("core_persistence_cloud")
                 .with("core_relational")
                 .with("core_servicestore")
