@@ -73,6 +73,5 @@ public class ProtobufDescriptorGenerationController
         {
             return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PROTOBUF_DESCRIPTOR_ERROR, profiles);
         }
-
     }
 }

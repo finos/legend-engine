@@ -76,7 +76,7 @@ public class ProtobufGenerationService
         boolean interactive = generateProtobufInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Protobuf").startActive(true))
         {
-            List<GenerationOutput> result = generateProtobufOutput(generateProtobufInput, pm);
+            List<GenerationOutput> result = generateProtobufOutput(generateProtobufInput, profiles);
             return ManageConstantResult.manageResult(profiles, result);
         } catch (Exception ex)
         {
@@ -88,36 +88,32 @@ public class ProtobufGenerationService
 
     public List<GenerationOutput> generateProtobufOutput(ProtobufGenerationInput generateProtobufInput,
                                                          @ApiParam(hidden = true) @Pac4JProfileManager
-                                                             ProfileManager<CommonProfile> pm)
+                                                             MutableList<CommonProfile> profiles)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        long start = System.currentTimeMillis();
         boolean interactive = generateProtobufInput.model instanceof PureModelContextData;
+        LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START :
+            LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
 
-        return exec(
+        List<GenerationOutput> generationOutputs = exec(
             generateProtobufInput.config != null ? generateProtobufInput.config : new ProtobufGenerationConfig(),
             () -> this.modelManager
                 .loadModelAndData(generateProtobufInput.model, generateProtobufInput.clientVersion, profiles, null)
-                .getTwo(),
-            interactive,
-            profiles);
+                .getTwo()
+        );
+
+        LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP :
+            LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
+        return generationOutputs;
     }
 
-    private List<GenerationOutput> exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc,
-                                        boolean interactive,
-                                        MutableList<CommonProfile> pm)
+    private List<GenerationOutput> exec(ProtobufGenerationConfig protobufConfig, Function0<PureModel> pureModelFunc)
     {
-        long start = System.currentTimeMillis();
-        LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_START :
-            LoggingEventType.GENERATE_PROTOBUF_CODE_START).toString());
         PureModel pureModel = pureModelFunc.value();
         RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput>
             result = core_external_format_protobuf_deprecated
             .Root_meta_external_format_protobuf_deprecated_generation_internal_transform_ProtobufConfig_1__GenerationOutput_MANY_(
                 protobufConfig.transformToPure(pureModel), pureModel.getExecutionSupport());
-        List<GenerationOutput> generationOutputs =
-            result.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
-        LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_PROTOBUF_CODE_INTERACTIVE_STOP :
-            LoggingEventType.GENERATE_PROTOBUF_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
-        return generationOutputs;
+        return result.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
     }
 }
