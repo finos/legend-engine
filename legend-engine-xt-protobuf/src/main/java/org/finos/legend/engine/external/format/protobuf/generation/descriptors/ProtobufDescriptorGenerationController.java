@@ -57,7 +57,7 @@ public class ProtobufDescriptorGenerationController
     }
 
     @POST
-    @Path("protobuf-descriptors")
+    @Path("protobuf-descriptor")
     @ApiOperation(value = "Generates Protobuf descriptors for a given class and transitive dependencies")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response generateProtobufDescriptor(ProtobufGenerationInput generateProtobufInput,
@@ -69,7 +69,10 @@ public class ProtobufDescriptorGenerationController
         {
             byte[] descriptor = protobufDescriptorGenerationService.generateDescriptor(generateProtobufInput,
                 ProfileManagerHelper.extractProfiles(pm));
-            return Response.ok(descriptor).type(MediaType.APPLICATION_OCTET_STREAM).build();
+            return Response.ok(descriptor)
+                .type(MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"protobuf-descriptor-set.bn\"")
+                .build();
         }
         catch (Exception ex)
         {
