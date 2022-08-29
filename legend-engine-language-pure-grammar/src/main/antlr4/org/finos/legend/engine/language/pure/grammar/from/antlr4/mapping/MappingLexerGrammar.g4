@@ -2,6 +2,13 @@ lexer grammar MappingLexerGrammar;
 
 import M3LexerGrammar;
 
+@lexer::members{
+  static int lastTokenType=0;
+public void emit(Token token) {
+  super.emit(token);
+  this.lastTokenType = token.getType();
+}
+}
 
 // -------------------------------------- KEYWORD --------------------------------------
 
@@ -11,14 +18,18 @@ INCLUDE:                                'include';
 TESTS:                                  'MappingTests';
 EXTENDS:                                'extends';
 
+//--------------------------------------- TEST ------------------------------------------
 TEST_QUERY:                             'query';
 TEST_INPUT_DATA:                        'data';
 TEST_ASSERT:                            'assert';
 
+//-------------------------------------- LEGACY_TEST ------------------------------------
+MAPPING_TEST_ASSERTS:                   'asserts';
+MAPPING_TEST_SUITES:                    'testSuites';
+MAPPING_TESTS:                          'tests';
 
-// -------------------------------------- ACTION --------------------------------------
-
-BRACE_OPEN:                             '{'             -> pushMode (MAPPING_ISLAND_MODE);
+BRACE_OPEN:                             '{' {getVocabulary().getSymbolicName(this.lastTokenType).equals("COLON") || getVocabulary().getSymbolicName(this.lastTokenType).equals("BRACKET_OPEN")}?
+                                        | '{' {pushMode (MAPPING_ISLAND_MODE);};
 
 
 // -------------------------------------- ISLAND --------------------------------------

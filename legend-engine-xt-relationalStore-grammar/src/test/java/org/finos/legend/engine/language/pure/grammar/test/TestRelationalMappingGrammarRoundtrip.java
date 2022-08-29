@@ -85,6 +85,70 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     }
 
     @Test
+    public void testRelationalMappingTestSuites()
+    {
+        test("###Mapping\n" +
+                "Mapping execution::RelationalMapping\n" +
+                "(\n" +
+                "  *model::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [store::TestDB]PersonTable.id\n" +
+                "    )\n" +
+                "    ~mainTable [store::TestDB]PersonTable\n" +
+                "    firstName: [store::TestDB]PersonTable.firstName,\n" +
+                "    lastName: [store::TestDB]PersonTable.lastName\n" +
+                "  }\n" +
+                "  *model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [store::TestDB]FirmTable.id\n" +
+                "    )\n" +
+                "    ~mainTable [store::TestDB]FirmTable\n" +
+                "    legalName: [store::TestDB]FirmTable.legal_name,\n" +
+                "    employees[model_Person]: [store::TestDB]@FirmPerson\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        store::TestDB:\n" +
+                "          Reference\n" +
+                "          #{\n" +
+                "            data::RelationalData\n" +
+                "          }#\n" +
+                "      ];\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            shouldPass:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"columns\":[{\"name\":\"Employees/First Name\",\"type\":\"String\"},{\"name\":\"Employees/Last Name\",\"type\":\"String\"},{\"name\":\"Legal Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[\"John\",\"Doe\",\"Finos\"]},{\"values\":[\"Nicole\",\"Smith\",\"Finos\"]},{\"values\":[\"Time\",\"Smith\",\"Apple\"]}]}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
+
+    @Test
     public void testClassMappingFilterWithInnerJoin()
     {
         test("###Mapping\n" +

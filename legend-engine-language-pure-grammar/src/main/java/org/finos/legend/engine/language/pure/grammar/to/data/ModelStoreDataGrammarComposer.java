@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to.data;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
@@ -95,22 +96,31 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                     str.append(context.getIndentationString());
                     str.append(type).append(":\n");
 
-                    if (((Collection) data.instances.get(type)).values.size() == 1)
+                    if (!(data.instances.get(type) instanceof Pair))
                     {
-                        str.append(indentString).append("[\n");
+                        if (((Collection) data.instances.get(type)).values.size() == 1)
+                        {
+                            str.append(indentString).append("[\n");
 
-                        indentLevel++;
-                        str.append(indentString).append(PureGrammarComposerUtility.getTabString());
-                        str.append(data.instances.get(type).accept(this));
-                        str.append("\n");
-                        indentLevel--;
+                            indentLevel++;
+                            str.append(indentString).append(PureGrammarComposerUtility.getTabString());
+                            str.append(data.instances.get(type).accept(this));
+                            str.append("\n");
+                            indentLevel--;
 
-                        str.append(indentString).append("]");
+                            str.append(indentString).append("]");
+                        }
+                        else
+                        {
+                            str.append(indentString);
+                            str.append(data.instances.get(type).accept(this));
+                        }
                     }
                     else
                     {
-                        str.append(indentString);
-                        str.append(data.instances.get(type).accept(this));
+                        DataElementReference reference = new DataElementReference();
+                        reference.dataElement = ((PackageableElementPtr)((Pair) data.instances.get(type)).second).fullPath;
+                        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
                     }
                     return str.toString();
                 }).collect(Collectors.joining(",\n")));

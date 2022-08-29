@@ -33,7 +33,11 @@ identifier:                            VALID_STRING | STRING
 definition:                            (typeIndexedInstances (COMMA typeIndexedInstances)*)?
                                        EOF
 ;
-typeIndexedInstances:                  qualifiedName COLON BRACKET_OPEN ( instance (COMMA instance)* )? BRACKET_CLOSE
+typeIndexedInstances:                  qualifiedName COLON (embeddedData | BRACKET_OPEN ( instance (COMMA instance)* )? BRACKET_CLOSE)?
+;
+embeddedData:                          identifier ISLAND_OPEN (embeddedDataContent)*
+;
+embeddedDataContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 instance:                              NEW_SYMBOL qualifiedName
                                            PAREN_OPEN

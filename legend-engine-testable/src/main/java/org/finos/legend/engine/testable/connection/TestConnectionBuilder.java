@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.service.connection;
+package org.finos.legend.engine.testable.connection;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -90,33 +90,13 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
     @Override
     public Pair<Connection, List<Closeable>> visit(JsonModelConnection jsonModelConnection)
     {
-        if (!(embeddedData instanceof ExternalFormatData && MediaType.APPLICATION_JSON.equals(((ExternalFormatData) embeddedData).contentType)))
-        {
-            throw new UnsupportedOperationException("Json data should be provided for JsonModelConnection");
-        }
-
-        JsonModelConnection testConnection = new JsonModelConnection();
-        testConnection.element = jsonModelConnection.element;
-        testConnection._class = jsonModelConnection._class;
-        testConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(((ExternalFormatData) embeddedData).data.getBytes(StandardCharsets.UTF_8));
-
-        return Tuples.pair(testConnection, Collections.emptyList());
+        return this.visit((Connection) jsonModelConnection);
     }
 
     @Override
     public Pair<Connection, List<Closeable>> visit(XmlModelConnection xmlModelConnection)
     {
-        if (!(embeddedData instanceof ExternalFormatData && MediaType.APPLICATION_XML.equals(((ExternalFormatData) embeddedData).contentType)))
-        {
-            throw new UnsupportedOperationException("Xml data should be provided for XmlModelConnection");
-        }
-
-        XmlModelConnection testConnection = new XmlModelConnection();
-        testConnection.element = xmlModelConnection.element;
-        testConnection._class = xmlModelConnection._class;
-        testConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(((ExternalFormatData) embeddedData).data.getBytes(StandardCharsets.UTF_8));
-
-        return Tuples.pair(testConnection, Collections.emptyList());
+        return this.visit((Connection) xmlModelConnection);
     }
 
     @Override

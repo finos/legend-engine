@@ -14,20 +14,24 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 
 import java.util.Collections;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Mapping extends PackageableElement
 {
     public List<ClassMapping> classMappings;
     public List<MappingInclude> includedMappings = Collections.emptyList();
     public List<AssociationMapping> associationMappings = Collections.emptyList();
     public List<EnumerationMapping> enumerationMappings = Collections.emptyList();
-    public List<MappingTest> tests = Collections.emptyList();
+    public List<MappingTest_Legacy> tests = Collections.emptyList();
+    public List<MappingTestSuite> testSuites = Collections.emptyList();
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

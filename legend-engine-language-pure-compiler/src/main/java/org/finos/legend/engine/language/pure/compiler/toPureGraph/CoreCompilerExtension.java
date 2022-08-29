@@ -19,7 +19,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.Embe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.core.TestAssertionCompilerHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.core.TestCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
@@ -39,6 +41,12 @@ public class CoreCompilerExtension implements CompilerExtension
     public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
     {
         return Collections.singletonList(EmbeddedDataCompilerHelper::compileCoreEmbeddedDataTypes);
+    }
+
+    @Override
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
+    {
+        return Collections.singletonList(TestCompilerHelper::compilePureMappingTests);
     }
 
     @Override

@@ -41,6 +41,10 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Ge
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.slf4j.Logger;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class PackageableElementFourthPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
@@ -162,6 +166,17 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
         if (!mapping.tests.isEmpty())
         {
             mapping.tests.forEach(t -> HelperMappingBuilder.processMappingTest(t, this.context));
+        }
+        if (mapping.testSuites != null)
+        {
+            List<String> testSuiteIds = ListIterate.collect(mapping.testSuites, suite -> suite.id);
+            List<String> duplicateTestSuiteIds = testSuiteIds.stream().filter(e -> Collections.frequency(testSuiteIds, e) > 1).distinct().collect(Collectors.toList());
+
+            if (!duplicateTestSuiteIds.isEmpty())
+            {
+                throw new EngineException("Multiple testSuites found with ids : '" + String.join(",", duplicateTestSuiteIds) + "'", mapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            pureMapping._tests(ListIterate.collect(mapping.testSuites, suite -> HelperMappingBuilder.processMappingTestSuite(suite, this.context)));
         }
         return pureMapping;
     }

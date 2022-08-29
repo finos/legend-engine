@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.service.assertion;
+package org.finos.legend.engine.testable.assertion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +25,7 @@ import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 
 import java.io.IOException;
 
-public class ServiceTestAssertionHelper
+public class TestAssertionHelper
 {
     protected static AssertionStatus compareAssertionJSON(TestAssertion parentAssertion, String _expected, String _actual) throws IOException
     {
