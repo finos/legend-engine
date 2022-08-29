@@ -15,7 +15,8 @@
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
-
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
 
 Class meta::relational::dbTestRunner::DbTestConfig
 {
@@ -54,15 +55,20 @@ function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Functio
    ]));
 }
 
-function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[0..1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
   meta::legend::test::mayExecuteLegendTest
      (
        {clientVersion, serverVersion, serializationKind, host, port |
-         let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::executeInRelationalDb::executeInRelationalDb_String_MANY__RelationalDatabaseConnection_1__String_1__Integer_1__Extension_MANY__Boolean_1_';
-         let xf = $fStr->pathToElement()->cast(@Function<{String[*], RelationalDatabaseConnection[1], String[1], Integer[1], meta::pure::extension::Extension[*]->Boolean[1]}>);
-         let res= $xf->evaluate(list($sqls)->concatenate([$conn, $host, $port]->map(v|list($v)))->concatenate(list($extensions)));
-         $res->cast(@Boolean)->toOne();
+         if($conn->isNotEmpty(),
+            |
+                let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::executeInRelationalDb::executeInRelationalDb_String_MANY__RelationalDatabaseConnection_1__String_1__Integer_1__Extension_MANY__Boolean_1_';
+                let xf = $fStr->pathToElement()->cast(@Function<{String[*], RelationalDatabaseConnection[1], String[1], Integer[1], meta::pure::extension::Extension[*]->Boolean[1]}>);
+                let res= $xf->evaluate(list($sqls)->concatenate([$conn->toOne(), $host, $port]->map(v|list($v)))->concatenate(list($extensions)));
+                $res->cast(@Boolean)->toOne();,
+            | println('**** Warning **** : No connection available for given dbtype,Skipping execution of setup sqls');
+              false;
+            );
          },
        { |
          println('**** Warning **** : Legend Engine Server not available');
@@ -70,3 +76,16 @@ function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], c
        }
      );
 }
+
+function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
+{
+  let context=[];
+  let basicPlan = if($m.name->isEmpty(),
+                  |meta::pure::executionPlan::executionPlan($f, if($context->isEmpty(), |^ExecutionContext(), |$context->toOne()), $extensions, noDebug());,
+                  |meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime, if($context->isEmpty(), |^ExecutionContext(), |$context->toOne()), $extensions, noDebug()););
+  let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, ^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
+  
+  let res=meta::pure::router::executePlan($boundPlan,$extensions);
+  println($res);     
+  ^Result<T|m>(values = $res.values, activities= $res.activities);  // cast doesnt work properly, copying values is slow   
+}  

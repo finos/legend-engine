@@ -26,10 +26,10 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let runtime = ^Runtime(connections=$config.connection);
 
-  let result = execute(|Person.all()->slice(1,4), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+  let result = executeViaPlan(|Person.all()->slice(1,4), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
   assertSize($result.values, 3);
 
-  let result2 = execute(|Person.all()->slice(0,1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+  let result2 = executeViaPlan(|Person.all()->slice(0,1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
   assertSize($result2.values, 1);
 }
 
@@ -38,11 +38,11 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let runtime = ^Runtime(connections=$config.connection);
 
    let f1 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->slice(0,50)->restrict('firstName')->sort(asc('firstName'))->slice(3, 5);};
-   let result = execute($f1, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result = executeViaPlan($f1, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 2);
 
    let f2 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->sort(asc('firstName'))->slice(0,50)->restrict('firstName');};
-   let result2 = execute($f2, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result2 = executeViaPlan($f2, simpleRelationalMapping, $runtime,meta::relational::extension::relationalExtensions());
   assertSize($result2.values.rows,7);
 }
 
@@ -50,10 +50,10 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
 {
   let runtime = ^Runtime(connections=$config.connection);
 
-   let result = execute(|Person.all()->limit(0), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result = executeViaPlan(|Person.all()->limit(0), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result.values, 0 );
 
-   let result2 = execute(|Person.all()->limit(1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result2 = executeViaPlan(|Person.all()->limit(1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 1 );
 }
 
@@ -61,10 +61,10 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
 {
   let runtime = ^Runtime(connections=$config.connection);
 
-   let result = execute(|Person.all()->take(0), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result = executeViaPlan(|Person.all()->take(0), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result.values, 0 );
 
-   let result2 = execute(|Person.all()->take(1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result2 = executeViaPlan(|Person.all()->take(1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 1 );
 }
 
@@ -72,16 +72,16 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
 {
    let runtime = ^Runtime(connections=$config.connection);
 
-   let result = execute(|Person.all()->drop(0), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result = executeViaPlan(|Person.all()->drop(0), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result.values, 7 );
 
-   let result2 = execute(|Person.all()->drop(1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let result2 = executeViaPlan(|Person.all()->drop(1), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 6);
 }
 
 function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::drop::testDropLimitByVendor(config:DbTestConfig[1]):Boolean[1]
 {
   let runtime = ^Runtime(connections=$config.connection);
-  let result = execute(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->drop(10)->limit(100);, meta::relational::tests::simpleRelationalMapping,  $runtime, meta::relational::extension::relationalExtensions());
+  let result = executeViaPlan(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->drop(10)->limit(100);, meta::relational::tests::simpleRelationalMapping,  $runtime, meta::relational::extension::relationalExtensions());
   assertSize($result.values, 1 );
 }
