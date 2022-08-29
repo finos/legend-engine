@@ -51,8 +51,8 @@ public class TestProtobufDescriptorGeneration
         byte[] descriptor = protobufDescriptorGenerationController.getProtobufDescriptorGenerationService()
             .generateDescriptor(protobufGenerationInput, FastList.newListWith(new CommonProfile()));
 
-        byte[] etalonDescriptor = FileUtils.readFileToByteArray(FileUtils.getFile(
-            "src\\test\\resources\\org\\finos\\legend\\engine\\external\\format\\protobuf\\tests\\descriptor-set.pb"));
+        byte[] etalonDescriptor =
+            FileUtils.readFileToByteArray(FileUtils.toFile(this.getClass().getResource("descriptor-set.pb")));
 
         assertThat(descriptor, is(etalonDescriptor));
     }
