@@ -212,7 +212,12 @@ function meta::relational::mapping::collectionRenderFunction():String[1]
 
 function meta::relational::mapping::utcToTimeZoneSupportFunction():String[1]
 {
-   '<#function GMTtoTZ tz paramDate><#return (tz+" "+paramDate)?date.@alloyDate></#function>'+
+   '<#function GMTtoTZ tz paramDate>'+
+      '<#if paramDate?is_enumerable && !paramDate?has_content>'+
+         '<#return paramDate>'+
+      '<#else>' +
+         '<#return (tz+" "+paramDate)?date.@alloyDate></#if></#function>'+
+
    '<#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue>'+
       '<#assign result = [] />'+
       '<#list collection as c>'+

@@ -145,7 +145,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
                            let executionNodeToBeAdded               = if($collectionValues->size() > $dbThreshold,
                                                                               | $allocationNode->concatenate($createAndPopulateTempTableNode),
-                                                                              | let conditionString            = $varPlaceHoldersInCollection->map(var | 'collectionSize(' + $var.name + ')?number')
+                                                                              | let conditionString            = $varPlaceHoldersInCollection->map(var | 'collectionSize(' + $var.name +'![])?number')
                                                                                                                                        ->concatenate(if($collectionValuesWithoutVarPlaceHolder->isEmpty(), | [], |$collectionValuesWithoutVarPlaceHolder->size()->toString()))
                                                                                                                                        ->joinStrings('((' ,' + ',') > ' + $dbThreshold->toString() + ')');
                                                                                 let conditionWithStreamHandled = $varPlaceHoldersInCollection->map(var | 'instanceOf(' +$var.name + ', "Stream")')->concatenate($conditionString)->joinStrings('(', ' || ', ')');
