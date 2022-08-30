@@ -32,12 +32,8 @@ function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::s
                 '6, \'Oliver\', \'Hill\',32, 6,3,null\n'+
                 '7, \'David\', \'Harris\',35, 7,4,null\n';
 
-  let setupSqls = meta::alloy::service::execution::setUpDataSQLs($records, meta::relational::tests::dbInc);
- 
-  $setupSqls->executeInRelationalDb($config.connection->cast(@RelationalDatabaseConnection),
-                                      meta::relational::extension::relationalExtensions());
-  println('setup done');
-  true;
+  meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbInc,
+                                                     $config, meta::relational::extension::relationalExtensions());
 }
 
 

@@ -26,28 +26,35 @@ import meta::pure::test::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames(config:DbTestConfig[1]):Boolean[1]
 {
-  let runtime = ^Runtime(connections=$config.connection);
-
-   let result = executeViaPlan(| MyClass.all(), testMapping, $runtime, meta::relational::extension::relationalExtensions());
-   assertSize($result, 1);
-   assertEquals(2, $result.values->first()->cast(@MyClass).a);
-   assertEquals(MyEnum.NO, $result.values->first()->cast(@MyClass).d);
+   let result = executeViaPlan(| MyClass.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+   if($result->isEmpty(), | true,
+   | 
+      assertSize($result->toOne(), 1);
+      assertEquals(2, $result.values->first()->cast(@MyClass).a);
+      assertEquals(MyEnum.NO, $result.values->first()->cast(@MyClass).d);
+   );
    
-   let result2 = executeViaPlan(| MyClassB.all(), testMapping, $runtime, meta::relational::extension::relationalExtensions());
-   assertSize($result2, 1);
-   assertEquals('\'Description A\'', $result2.values->first()->cast(@MyClassB).c);
+   let result2 = executeViaPlan(| MyClassB.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+   if($result2->isEmpty(), | true,
+    |  assertSize($result2, 1);
+       assertEquals('\'Description A\'', $result2.values->first()->cast(@MyClassB).c);
+    );
          
-   let filteredResult = executeViaPlan(| MyClass.all()->filter(m | $m.a == 2), testMapping, $runtime, meta::relational::extension::relationalExtensions());
-   assertSize($filteredResult, 1);
-   assertEquals(2, $result.values->first()->cast(@MyClass).a);
+   let filteredResult = executeViaPlan(| MyClass.all()->filter(m | $m.a == 2), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+   if($filteredResult->isEmpty(), | true,
+    |  assertSize($filteredResult, 1);
+       assertEquals(2, $result.values->first()->cast(@MyClass).a);
+   );
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testTableNameInJoinAlias(config:DbTestConfig[1]):Boolean[1]
 {
   let runtime = ^Runtime(connections=$config.connection);
   
-   let result = executeViaPlan(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, $runtime,meta::relational::extension::relationalExtensions());
-   assertSize($result, 1);
+   let result = executeViaPlan(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+    if($result->isEmpty(), | true,
+       | assertSize($result, 1);
+    );
 }
 
 function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::setUp(config:DbTestConfig[1]):Boolean[1]
@@ -74,12 +81,8 @@ function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::s
                 '3,\'Description A\'\n'
                 ;
 
-  let setupSqls = meta::alloy::service::execution::setUpDataSQLs($records, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB);
- 
-  $setupSqls->executeInRelationalDb($config.connection->cast(@RelationalDatabaseConnection),
-                                      meta::relational::extension::relationalExtensions());
-  println('setup done');
-  true;
+  meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB,
+                                                     $config, meta::relational::extension::relationalExtensions());
 }
 
 
