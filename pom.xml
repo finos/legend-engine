@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.14.5</version>
+    <version>3.14.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -291,7 +291,7 @@
 
     <scm>
         <developerConnection>scm:git:https://github.com/finos/legend-engine</developerConnection>
-        <tag>legend-engine-3.14.5</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
