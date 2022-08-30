@@ -44,12 +44,6 @@ public class CoreCompilerExtension implements CompilerExtension
     }
 
     @Override
-    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
-    {
-        return Collections.singletonList(TestCompilerHelper::compilePureMappingTests);
-    }
-
-    @Override
     public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
         return Collections.singletonList(TestAssertionCompilerHelper::compileCoreTestAssertionTypes);

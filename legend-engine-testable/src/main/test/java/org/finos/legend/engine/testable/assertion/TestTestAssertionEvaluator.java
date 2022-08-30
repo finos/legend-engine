@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.test.runner.shared.assertion;
+package java.org.finos.legend.engine.testable.assertion;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;

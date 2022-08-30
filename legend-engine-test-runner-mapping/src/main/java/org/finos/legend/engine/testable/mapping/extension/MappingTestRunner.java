@@ -112,7 +112,7 @@ public class MappingTestRunner implements TestRunner
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = ListIterate.detect(pmcd.getElementsOfType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class), ele -> ele.getPath().equals(getElementFullPath(this.pureMapping, pureModel.getExecutionSupport())));
         MappingTestSuite suite = ListIterate.detect(mapping.testSuites, ts -> ts.id.equals(testSuite._id()));
         List<String> testIds = ListIterate.collect(atomicTestIds, testId -> testId.atomicTestId);
-        List<Pair<Connection, List<Closeable>>> connections = createConnnectionAndCloseablePair(pmcd, suite.storeTestDatas);
+        List<Pair<Connection, List<Closeable>>> connections = buildTestConnections(pmcd, suite.storeTestDatas);
         connections.stream().forEach(conn -> this.runtime._connectionsAdd(conn.getOne().accept(connectionVisitor)));
         try
         {
@@ -152,7 +152,7 @@ public class MappingTestRunner implements TestRunner
         return results;
     }
 
-    private List<Pair<Connection, List<Closeable>>> createConnnectionAndCloseablePair(PureModelContextData pmcd, List<StoreTestData> storeTestData)
+    private List<Pair<Connection, List<Closeable>>> buildTestConnections(PureModelContextData pmcd, List<StoreTestData> storeTestData)
     {
         List<Pair<String, EmbeddedData>> connectionInfo = storeTestData.stream().map(testData ->
         {

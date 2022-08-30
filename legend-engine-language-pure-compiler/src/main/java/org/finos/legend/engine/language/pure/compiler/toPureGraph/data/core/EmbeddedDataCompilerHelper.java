@@ -98,6 +98,7 @@ public class EmbeddedDataCompilerHelper
     {
        return (value.first instanceof PackageableElementPtr && value.second instanceof PackageableElementPtr &&
                 context.pureModel.getPackageableElement(((PackageableElementPtr) value.first).fullPath) instanceof Root_meta_external_shared_format_binding_Binding &&
-                context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath) instanceof Root_meta_pure_data_DataElement);
+                context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath) instanceof Root_meta_pure_data_DataElement
+               );
     }
 }

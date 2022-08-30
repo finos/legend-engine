@@ -25,6 +25,7 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.core.TestCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -521,7 +522,7 @@ public class HelperMappingBuilder
     }
 
 
-    public static Test processMappingTestSuite(org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext context)
+    public static Test processMappingTestAndTestSuite(org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext context)
     {
         if (test instanceof MappingTestSuite)
         {
@@ -541,7 +542,7 @@ public class HelperMappingBuilder
                 throw new EngineException("Multiple tests found with ids : '" + String.join(",", duplicateTestIds) + "'", mappingTestSuite.sourceInformation, EngineErrorType.COMPILATION);
             }
 
-            RichIterable<? extends Root_meta_pure_test_AtomicTest> tests = ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestSuite(unitTest, context));
+            RichIterable<? extends Root_meta_pure_test_AtomicTest> tests = ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, context));
 
             pureMappingTestSuite._id(test.id);
             if (mappingTestSuite.storeTestDatas != null)
@@ -559,10 +560,7 @@ public class HelperMappingBuilder
         else if (test instanceof MappingTest)
         {
             MappingTest mappingTest = (MappingTest) test;
-            Root_meta_pure_test_AtomicTest pureMappingTest = context.getCompilerExtensions().getExtraTestProcessors().stream().map(processor -> (Root_meta_pure_test_AtomicTest) processor.value(mappingTest, context, new ProcessingContext("Mapping Test '" + mappingTest.id + "' Second Pass")))
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElseThrow(() -> new UnsupportedOperationException("No Processors found for test: " + mappingTest.id));
+            Root_meta_pure_test_AtomicTest pureMappingTest = (Root_meta_pure_test_AtomicTest) TestCompilerHelper.compilePureMappingTests(mappingTest, context, new ProcessingContext("Mapping Test '" + mappingTest.id + "' Second Pass"));
             if (mappingTest.assertions == null || mappingTest.assertions.isEmpty())
             {
                 throw new EngineException("Mapping Tests should have atleast 1 assert", mappingTest.sourceInformation, EngineErrorType.COMPILATION);

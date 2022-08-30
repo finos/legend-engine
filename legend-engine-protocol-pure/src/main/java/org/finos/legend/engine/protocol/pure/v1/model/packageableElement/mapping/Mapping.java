@@ -31,7 +31,7 @@ public class Mapping extends PackageableElement
     public List<AssociationMapping> associationMappings = Collections.emptyList();
     public List<EnumerationMapping> enumerationMappings = Collections.emptyList();
     public List<MappingTest_Legacy> tests = Collections.emptyList();
-    public List<MappingTestSuite> testSuites = Collections.emptyList();
+    public List<MappingTestSuite> testSuites;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

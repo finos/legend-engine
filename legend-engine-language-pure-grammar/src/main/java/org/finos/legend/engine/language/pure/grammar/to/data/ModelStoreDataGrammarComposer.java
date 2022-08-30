@@ -96,31 +96,28 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                     str.append(context.getIndentationString());
                     str.append(type).append(":\n");
 
-                    if (!(data.instances.get(type) instanceof Pair))
+                    if ((data.instances.get(type) instanceof Pair))
                     {
-                        if (((Collection) data.instances.get(type)).values.size() == 1)
-                        {
-                            str.append(indentString).append("[\n");
+                        DataElementReference reference = new DataElementReference();
+                        reference.dataElement = ((PackageableElementPtr) ((Pair) data.instances.get(type)).second).fullPath;
+                        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
+                    }
+                    else if (((Collection) data.instances.get(type)).values.size() == 1)
+                    {
+                        str.append(indentString).append("[\n");
 
-                            indentLevel++;
-                            str.append(indentString).append(PureGrammarComposerUtility.getTabString());
-                            str.append(data.instances.get(type).accept(this));
-                            str.append("\n");
-                            indentLevel--;
+                        indentLevel++;
+                        str.append(indentString).append(PureGrammarComposerUtility.getTabString());
+                        str.append(data.instances.get(type).accept(this));
+                        str.append("\n");
+                        indentLevel--;
 
-                            str.append(indentString).append("]");
-                        }
-                        else
-                        {
-                            str.append(indentString);
-                            str.append(data.instances.get(type).accept(this));
-                        }
+                        str.append(indentString).append("]");
                     }
                     else
                     {
-                        DataElementReference reference = new DataElementReference();
-                        reference.dataElement = ((PackageableElementPtr)((Pair) data.instances.get(type)).second).fullPath;
-                        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
+                        str.append(indentString);
+                        str.append(data.instances.get(type).accept(this));
                     }
                     return str.toString();
                 }).collect(Collectors.joining(",\n")));

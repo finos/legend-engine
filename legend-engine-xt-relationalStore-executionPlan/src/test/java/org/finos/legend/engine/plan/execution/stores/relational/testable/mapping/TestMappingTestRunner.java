@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational;
+package org.finos.legend.engine.plan.execution.stores.relational.testable.mapping;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,7 +30,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.test.runner.mapping.MappingTestRunner;
 import org.finos.legend.engine.test.runner.mapping.RichMappingTestResult;
-import org.finos.legend.engine.test.runner.mapping.extension.MappingTestableRunnerExtension;
+import org.finos.legend.engine.testable.mapping.extension.MappingTestableRunnerExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class TestMappingTestRunner
     {
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
         mappingTestableRunnerExtension.setPureVersion("v1_23_0");
-        String grammar = getResourceAsString("relationalMappingTestSuites.pure");
+        String grammar = getResourceAsString("org/finos/legend/engine/plan/execution/stores/relational/testable/mapping/relationalMappingTestSuites.pure");
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(grammar);
         PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("execution::RelationalMapping");

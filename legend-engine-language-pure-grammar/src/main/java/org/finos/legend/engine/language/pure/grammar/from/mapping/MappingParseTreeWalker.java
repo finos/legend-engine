@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MappingParseTreeWalker
@@ -201,18 +202,15 @@ public class MappingParseTreeWalker
     {
         if (data instanceof ModelStoreData)
         {
-            ((ModelStoreData) data).instances.keySet().stream().forEach(key ->
-                    {
-                        Binding binding = new Binding();
-                        ModelUnit modelUnit = new ModelUnit();
-                        modelUnit.packageableElementIncludes = Collections.singletonList(key);
-                        binding.name = "binding";
-                        binding._package = "default::" + key;
-                        binding.modelUnit = modelUnit;
-                        binding.contentType = "application/json";    //default content type
-                        Stream.of(binding).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-                    }
-            );
+            Binding binding = new Binding();
+            ModelUnit modelUnit = new ModelUnit();
+            modelUnit.packageableElementIncludes = ((ModelStoreData) data).instances.keySet().stream().collect(Collectors.toList());
+            binding.name = "$binding";
+            binding._package = "default::m2m";
+            binding.modelUnit = modelUnit;
+            binding.contentType = "application/json";    //default content type
+            this.section.elements.add(binding.getPath());
+            this.elementConsumer.accept(binding);
         }
     }
 

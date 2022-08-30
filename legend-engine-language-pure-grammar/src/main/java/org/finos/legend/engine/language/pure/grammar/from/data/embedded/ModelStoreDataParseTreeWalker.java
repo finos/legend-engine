@@ -84,7 +84,7 @@ public class ModelStoreDataParseTreeWalker
                     PackageableElementPtr ptr = new PackageableElementPtr();
                     ptr.fullPath = ((DataElementReference) embeddedData).dataElement;
                     PackageableElementPtr bindingPtr = new PackageableElementPtr();
-                    bindingPtr.fullPath = "default::" + fullPath + "::binding";
+                    bindingPtr.fullPath = "default::m2m::$binding";
                     Pair pair = new Pair();
                     pair.first = bindingPtr;
                     pair.second = ptr;
