@@ -825,11 +825,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                       let newState = ^$state(classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
       
                                       ^FromMappingUpdates(mapping=$fromMapping, runtime=$fromRuntime, executionContext = $fromExecutionContext, state=$newState);,
-                                    | let execCtx = $extensions->map(x| $x.routeContextBuilderFunctions->map(y| $y->eval($fe)));
-                                      if($execCtx->isNotEmpty(),
-                                        | ^FromMappingUpdates(mapping=$mapping, runtime=$runtime, executionContext = $execCtx->toOne(), state=$state),
-                                        | ^FromMappingUpdates(mapping=$mapping, runtime=$runtime, executionContext = $executionContext, state=$state)););
- 
+                                    | ^FromMappingUpdates(mapping=$mapping, runtime=$runtime, executionContext = $executionContext, state=$state));
 
         let newMapping = $fromMappingUpdates.mapping;
         let newRuntime = $fromMappingUpdates.runtime;
