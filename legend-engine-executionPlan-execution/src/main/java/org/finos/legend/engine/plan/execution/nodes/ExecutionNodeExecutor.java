@@ -110,7 +110,16 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     {
         if (executionNode instanceof PlatformUnionExecutionNode)
         {
-            List<StreamingObjectResult<?>> streamingObjectResults = ListIterate.collect(executionNode.executionNodes, node -> (StreamingObjectResult<?>) node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
+            List<StreamingObjectResult<?>> streamingObjectResults;
+            if (this.executionState.getConcurrentExecutionNodeExecutorPool() != null && executionNode.isChildrenExecutionParallelizable)
+            {
+                List<Result> results = this.executionState.getConcurrentExecutionNodeExecutorPool().execute(executionNode.executionNodes, this.profiles, this.executionState);
+                streamingObjectResults = ListIterate.collect(results, result -> (StreamingObjectResult<?>) result);
+            }
+            else
+            {
+                streamingObjectResults = ListIterate.collect(executionNode.executionNodes, node -> (StreamingObjectResult<?>) node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
+            }
 
             Result childResult = new Result("success")
             {

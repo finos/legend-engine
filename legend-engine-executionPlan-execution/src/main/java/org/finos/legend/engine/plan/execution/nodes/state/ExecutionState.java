@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
+import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtensionLoader;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -35,8 +36,11 @@ import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExecutionState
 {
@@ -54,6 +58,8 @@ public class ExecutionState
     public List<GraphFetchCache> graphFetchCaches;
 
     private EngineJavaCompiler javaCompiler;
+
+    private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
 
     private final Map<String, Result> res;
     private final List<? extends String> templateFunctions;
@@ -80,6 +86,7 @@ public class ExecutionState
         this.graphFetchBatchMemoryLimit = state.graphFetchBatchMemoryLimit;
         this.graphObjectsBatch = state.graphObjectsBatch;
         this.graphFetchCaches = state.graphFetchCaches;
+        this.concurrentExecutionNodeExecutorPool = state.concurrentExecutionNodeExecutorPool;
         state.states.forEach((storeType, storeExecutionState) -> this.states.put(storeType, storeExecutionState.copy()));
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
@@ -109,6 +116,30 @@ public class ExecutionState
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates)
     {
         this(res, templateFunctions, extraStates, true);
+    }
+
+    public ExecutionState deepCopy()
+    {
+        Map<String, Result> resCopy = new HashMap<>(this.res);
+        List<? extends String> templateFunctionsCopy = new LinkedList<>(this.templateFunctions);
+        List<? extends StoreExecutionState> extraStatesCopy = this.states.values().stream().map(StoreExecutionState::copy).collect(Collectors.toList());
+
+        ExecutionState copy = new ExecutionState(resCopy, templateFunctionsCopy, extraStatesCopy, this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit);
+
+        copy.inAllocation = this.inAllocation;
+        copy.inLake = this.inLake;
+        copy.allocationNodeName = this.allocationNodeName;
+        copy.authId = this.authId;
+        copy.transformAllocation = this.transformAllocation;
+        copy.topSpan = this.topSpan;
+        copy.activities = Lists.mutable.withAll(this.activities);
+        copy.realizeAllocationResults = this.realizeAllocationResults;
+        copy.javaCompiler = this.javaCompiler;
+        copy.graphObjectsBatch = this.graphObjectsBatch;
+        copy.graphFetchCaches = this.graphFetchCaches;
+        copy.concurrentExecutionNodeExecutorPool = this.concurrentExecutionNodeExecutorPool;
+
+        return copy;
     }
 
     public ExecutionState inLake(boolean inLake)
@@ -171,6 +202,16 @@ public class ExecutionState
     public boolean isJavaCompilationForbidden()
     {
         return !isJavaCompilationAllowed();
+    }
+
+    public ConcurrentExecutionNodeExecutorPool getConcurrentExecutionNodeExecutorPool()
+    {
+        return this.concurrentExecutionNodeExecutorPool;
+    }
+
+    public void setConcurrentExecutionNodeExecutorPool(ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool)
+    {
+        this.concurrentExecutionNodeExecutorPool = concurrentExecutionNodeExecutorPool;
     }
 
     public long getGraphFetchBatchMemoryLimit()

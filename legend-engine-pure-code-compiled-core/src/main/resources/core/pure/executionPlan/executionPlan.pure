@@ -80,6 +80,7 @@ Class meta::pure::executionPlan::ExecutionNode
    kerberos         : String[0..1];
    supportFunctions : String[*];
    requiredVariableInputs : VariableInput[*];
+   isChildrenExecutionParallelizable: Boolean[0..1];
    
    implementation   : PlatformImplementation[0..1];
 

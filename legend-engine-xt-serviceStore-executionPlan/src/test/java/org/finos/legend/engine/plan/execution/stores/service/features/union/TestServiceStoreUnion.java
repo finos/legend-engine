@@ -14,10 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.stores.service.features.union;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.concurrent.ConcurrentExecutionNodeExecutorPool;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamToJsonDefaultSerializer;
+import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
+import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestSuite;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
+import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -243,5 +252,43 @@ public class TestServiceStoreUnion extends ServiceStoreTestSuite
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"}]}";
 
         Assert.assertEquals(expectedRes, executePlan(plan));
+    }
+
+    @Test
+    public void serviceStoreUnionWithMultipleMappingsAndConcurrentExecution()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {|meta::external::store::service::showcase::domain::Person.all()" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               lastName,\n" +
+                "               firmId\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query, "meta::external::store::service::showcase::mapping::ServiceStoreMapping2", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime2");
+
+        ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool = ConcurrentExecutionNodeExecutorPool.getOrInitializeExecutorPool(10);
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(true, Lists.mutable.with(InMemory.build(), ServiceStore.build()), concurrentExecutionNodeExecutorPool, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs()
+                .withPlan(plan)
+                .withProfiles(Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)))
+                .build();
+        JsonStreamingResult result = (JsonStreamingResult) planExecutor.executeWithArgs(executeArgs);
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"}]}";
+        Assert.assertEquals(expectedRes, result.flush(new JsonStreamToJsonDefaultSerializer(result)));
+        Assert.assertTrue(concurrentExecutionNodeExecutorPool.toString().contains("[Running, pool size = 5, active threads = 0, queued tasks = 0, completed tasks = 5]"));
     }
 }

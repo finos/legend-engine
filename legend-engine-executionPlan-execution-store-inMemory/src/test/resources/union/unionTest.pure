@@ -1,0 +1,143 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import demo::domain::*;
+
+Class demo::domain::Trade
+{
+   tradeId  : Integer[1];
+   quantity : Integer[1];
+   product  : Product[1];
+   trader   : Trader[1];
+}
+
+Class demo::domain::Product
+{
+   productId   : String[1];
+   productName : String[1];
+   description : String[1];
+}
+
+Class demo::domain::Trader
+{
+   kerberos  : String[1];
+   firstName : String[1];
+   lastName  : String[1];
+}
+
+Class demo::domain::S_Trade1
+{
+   s_trade1Id       : Integer[1];
+   s_trader1Details : String[1];
+   s_trade1Details  : String[1];
+}
+
+Class demo::domain::S_Trade2
+{
+   s_trade2Id       : Integer[1];
+   s_trader2Details : String[1];
+   s_trade2Details  : String[1];
+}
+
+###Mapping
+import demo::domain::*;
+
+Mapping demo::mapping::Mapping
+(
+   Trade[trade_set_model1] : Pure
+   {
+      ~src S_Trade1
+      tradeId                   : $src.s_trade1Id,
+      quantity                  : $src.s_trade1Details->split(':')->at(1)->parseInteger(),
+      product[prod_set_model1]  : $src,
+      trader[trader_set_model1] : $src
+   }
+
+   *Product[prod_set_model1] : Pure
+   {
+      ~src S_Trade1
+      productId   : $src.s_trade1Details->split(':')->at(0),
+      productName : $src.s_trade1Details->split(':')->at(2),
+      description : ''
+   }
+
+   *Trader[trader_set_model1] : Pure
+   {
+      ~src S_Trade1
+      kerberos  : $src.s_trader1Details->split(':')->at(0),
+      firstName : $src.s_trader1Details->split(':')->at(1),
+      lastName  : $src.s_trader1Details->split(':')->at(2)
+   }
+
+   Trade[trade_set_model2] : Pure
+   {
+      ~src S_Trade2
+      tradeId                   : $src.s_trade2Id,
+      quantity                  : $src.s_trade2Details->split(':')->at(1)->parseInteger(),
+      product[prod_set_model2]  : $src,
+      trader[trader_set_model2] : $src
+   }
+
+   Product[prod_set_model2] : Pure
+   {
+      ~src S_Trade2
+      productId   : $src.s_trade2Details->split(':')->at(0),
+      productName : $src.s_trade2Details->split(':')->at(2),
+      description : $src.s_trade2Details->split(':')->at(3)
+   }
+
+   Trader[trader_set_model2] : Pure
+   {
+      ~src S_Trade2
+      kerberos  : $src.s_trader2Details->split(':')->at(0),
+      firstName : $src.s_trader2Details->split(':')->at(1),
+      lastName  : $src.s_trader2Details->split(':')->at(2)
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_model1, trade_set_model2)
+   }
+)
+
+###Runtime
+Runtime demo::runtime::Runtime
+{
+    mappings:
+    [
+        demo::mapping::Mapping
+    ];
+    connections:
+    [
+        ModelStore:
+        [
+            connections_1:
+                #{
+                    JsonModelConnection
+                    {
+                        class : demo::domain::S_Trade1;
+                        url   : 'executor:s_trade1';
+                    }
+                }#,
+            connections_2:
+                #{
+                    JsonModelConnection
+                    {
+                        class : demo::domain::S_Trade2;
+                        url   : 'executor:s_trade2';
+                    }
+                }#
+        ]
+    ];
+}
