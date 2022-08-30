@@ -68,8 +68,8 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
                 .orElseThrow(() ->
                 {
                     String errorMessage = embeddedData == null
-                            ? "No test data provided for connection type '" + connection.getClass().getSimpleName() + "\". Either you need to provide test data for the connection type or connection type is not supported."
-                            : "Unsupported test data type '" + embeddedData.getClass().getSimpleName() + "\" with connection type '" + connection.getClass().getSimpleName() + '"';
+                            ? "No test data provided for connection type '" + connection.getClass().getSimpleName() + "'. Either you need to provide test data for the connection type or connection type is not supported."
+                            : "Unsupported test data type '" + embeddedData.getClass().getSimpleName() + "' with connection type '" + connection.getClass().getSimpleName() + '"';
                     return new UnsupportedOperationException(errorMessage);
                 });
     }
