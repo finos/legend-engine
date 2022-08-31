@@ -17,11 +17,13 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import java.sql.Connection;
 import javax.security.auth.Subject;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -34,6 +36,19 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.BigQuery;
+    }
+
+    @Override
+    public DatasourceSpecification getDatasourceSpecification()
+    {
+        return new BigQueryDatasourceSpecification();
+    }
+
+    @Override
+    public void assertFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    {
+        assertGCPADCFlowIsAvailable(flowProvider);
+        assertGCPWIFFlowIsAvailable(flowProvider);
     }
 
     @Test

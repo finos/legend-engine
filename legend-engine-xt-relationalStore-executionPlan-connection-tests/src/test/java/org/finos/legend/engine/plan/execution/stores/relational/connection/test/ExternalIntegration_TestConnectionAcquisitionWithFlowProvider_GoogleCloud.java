@@ -29,7 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
@@ -101,14 +101,19 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
                 .withGcpWorkloadConfig(gcpWorkloadConfig)
                 .build();
         flowProvider.configure(flowProviderConfiguration);
-        assertGCPADCFlowIsAvailable(flowProvider);
-        assertGCPWIFFlowIsAvailable(flowProvider);
+        assertFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    private void assertGCPADCFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    public abstract DatabaseType getDatabaseType();
+
+    public abstract DatasourceSpecification getDatasourceSpecification();
+
+    public abstract void assertFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider);
+
+    protected void assertGCPADCFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
-        BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
+        DatasourceSpecification datasourceSpecification = getDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, getDatabaseType());
         relationalDatabaseConnection.type = getDatabaseType();
@@ -116,11 +121,9 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
         assertTrue(getDatabaseType() + " GCP adc flow does not exist ", flow.isPresent());
     }
 
-    public abstract DatabaseType getDatabaseType();
-
-    private void assertGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    protected void assertGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
-        BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
+        DatasourceSpecification datasourceSpecification = getDatasourceSpecification();
         GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, getDatabaseType());
         relationalDatabaseConnection.type = getDatabaseType();

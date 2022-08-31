@@ -17,10 +17,12 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import java.sql.Connection;
 import javax.security.auth.Subject;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
@@ -36,6 +38,18 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
         return DatabaseType.Spanner;
     }
 
+    @Override
+    public DatasourceSpecification getDatasourceSpecification()
+    {
+        return new SpannerDatasourceSpecification();
+    }
+
+    @Override
+    public void assertFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    {
+        assertGCPADCFlowIsAvailable(flowProvider);
+    }
+
     @Test
     public void testSpannerGCPADCConnection_subject() throws Exception
     {
@@ -45,25 +59,9 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     }
 
     @Test
-    public void testSpannerGCPWIFConnection_subject() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPWIFSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, TEST_QUERY);
-    }
-
-    @Test
     public void testSpannerGCPADCConnection_profile() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
-        testConnection(connection, TEST_QUERY);
-    }
-
-    @Test
-    public void testSpannerGCPWIFConnection_profile() throws Exception
-    {
-        RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
         testConnection(connection, TEST_QUERY);
     }

@@ -23,6 +23,7 @@ import org.finos.legend.engine.authentication.flows.H2StaticWithTestUserPassword
 import org.finos.legend.engine.authentication.flows.PostgresStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.RedshiftWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.SnowflakeWithKeyPairFlow;
+import org.finos.legend.engine.authentication.flows.SpannerWithGCPApplicationDefaultCredentialsFlow;
 import org.finos.legend.engine.authentication.flows.SqlServerStaticWithUserPasswordFlow;
 import org.finos.legend.engine.authentication.flows.middletier.PostgresStaticWithMiddletierUserNamePasswordAuthenticationFlow;
 import org.finos.legend.engine.authentication.provider.AbstractDatabaseAuthenticationFlowProvider;
@@ -42,6 +43,7 @@ public final class LegendDefaultDatabaseAuthenticationFlowProvider extends Abstr
     private ImmutableList<DatabaseAuthenticationFlow<? extends DatasourceSpecification, ? extends AuthenticationStrategy>> flows()
     {
         return Lists.immutable.of(
+                new SpannerWithGCPApplicationDefaultCredentialsFlow(),
                 new BigQueryWithGCPApplicationDefaultCredentialsFlow(),
                 new BigQueryWithGCPWorkloadIdentityFederationFlow(databaseAuthenticationFlowProviderConfiguration.getAwsConfig(), databaseAuthenticationFlowProviderConfiguration.getGcpWorkloadConfig()),
                 new DatabricksWithApiTokenFlow(),
