@@ -56,7 +56,7 @@ Profile meta::json::schema::JSONSchemaOpenAPIExtension
 
 Class meta::json::schema::generation::JSONSchemaConfig extends GenerationConfiguration
 {
-  {doc.doc='Generate JSON schema constraints from class constraints, unsupported functions will not generate'}useConstraints:Boolean[0..1];  //defaults false
+  {doc.doc='Generate JSON schema constraints from class constraints, unsupported functions will not generate'} useConstraints:Boolean[0..1];  //defaults false
   {doc.doc='Include related types in a definitions element on the schema, ignored if generating openAPI'}  includeAllRelatedTypes:Boolean[0..1];  // defaults true - if true , dependencies generate to definitions elements
   {doc.doc='If true,An additional schema will be generated that can be used as a collection of subTypes' }generateAnyOfSubType:Boolean[0..1];  // defaults true - if true , SupertTypes generate an additional anyOf for all the subTypes.
   {doc.doc='If true, constraint functions generate as schema files, if false constraint function content is in-lined with the parent schema' }generateConstraintFunctionSchemas:Boolean[0..1];  // defaults false - if true , functions generate seperate schemas.

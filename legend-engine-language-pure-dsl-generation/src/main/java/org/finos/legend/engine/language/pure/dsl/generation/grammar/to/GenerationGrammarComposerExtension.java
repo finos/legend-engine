@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtili
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSequence;
 
 import java.util.List;
 
@@ -60,9 +60,9 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
                     }
                     return ListIterate.collect(elements, element ->
                     {
-                        if (element instanceof GenerationSpecification)
+                        if (element instanceof GenerationSequence)
                         {
-                            return renderGenerationSpecification((GenerationSpecification) element);
+                            return renderGenerationSpecification((GenerationSequence) element);
                         }
                         return "/* Can't transform element '" + element.getPath() + "' in this section */";
                     }).makeString("\n\n");
@@ -80,13 +80,13 @@ public class GenerationGrammarComposerExtension implements PureGrammarComposerEx
                     return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderFileGenerationSpecification).makeString("###" + GenerationParserExtension.FILE_GENERATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
                 }, (elements, context, composedSections) ->
                 {
-                    List<GenerationSpecification> composableElements = ListIterate.selectInstancesOf(elements, GenerationSpecification.class);
+                    List<GenerationSequence> composableElements = ListIterate.selectInstancesOf(elements, GenerationSequence.class);
                     return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, GenerationGrammarComposerExtension::renderGenerationSpecification).makeString("###" + GenerationParserExtension.GENERATION_SPECIFICATION_SECTION_NAME + "\n", "\n\n", ""), composableElements);
                 }
         );
     }
 
-    private static String renderGenerationSpecification(GenerationSpecification generationSpecification)
+    private static String renderGenerationSpecification(GenerationSequence generationSpecification)
     {
         return "GenerationSpecification " + PureGrammarComposerUtility.convertPath(generationSpecification.getPath()) +
                 "\n{\n" +

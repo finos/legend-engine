@@ -21,7 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.GenerationSpeci
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSequence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationTreeNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 
@@ -47,9 +47,9 @@ public class GenerationSpecificationParseTreeWalker
         ctx.generationSpecification().stream().map(this::visitGenerationSpecification).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
-    private GenerationSpecification visitGenerationSpecification(GenerationSpecificationParserGrammar.GenerationSpecificationContext ctx)
+    private GenerationSequence visitGenerationSpecification(GenerationSpecificationParserGrammar.GenerationSpecificationContext ctx)
     {
-        GenerationSpecification generationSpecification = new GenerationSpecification();
+        GenerationSequence generationSpecification = new GenerationSequence();
         generationSpecification.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         generationSpecification._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         generationSpecification.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);

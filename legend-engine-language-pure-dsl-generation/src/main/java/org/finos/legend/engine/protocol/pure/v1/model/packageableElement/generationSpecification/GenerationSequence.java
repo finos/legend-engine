@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import java.util.Collections;
 import java.util.List;
 
-public class GenerationSpecification extends PackageableElement
+public class GenerationSequence extends PackageableElement
 {
     public List<GenerationTreeNode> generationNodes = Collections.emptyList();
     public List<PackageableElementPointer> fileGenerations = Collections.emptyList();

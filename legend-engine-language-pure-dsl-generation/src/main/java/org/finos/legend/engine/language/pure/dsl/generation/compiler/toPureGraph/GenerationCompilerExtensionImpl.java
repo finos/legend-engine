@@ -20,7 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.AbstractGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSequence;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationSpecification_Impl;
@@ -49,7 +49,7 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
                             return stub;
                         }),
                 Processor.newProcessor(
-                        GenerationSpecification.class,
+                        GenerationSequence.class,
                         Collections.singletonList(AbstractGenerationSpecification.class),
                         (generationSpecification, context) ->
                         {

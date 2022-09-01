@@ -1,0 +1,69 @@
+###Diagram
+Diagram meta::pure::generation::metamodel::GenerationDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::pure::generation::metamodel::ArtifactGenerationSpecification,
+        position=(536.00000, 350.00000),
+        width=200.03516,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::metamodel::PackageableElement,
+        position=(523.90063, 214.50000),
+        width=215.04590,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::generation::metamodel::CodeGeneration,
+        position=(355.00000, 444.00000),
+        width=330.61035,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::generation::metamodel::SchemaGeneration,
+        position=(713.00000, 486.00000),
+        width=359.99023,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(520.30517,480.00000),(636.01758,372.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_1,
+        points=[(892.99511,522.00000),(636.01758,372.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+}

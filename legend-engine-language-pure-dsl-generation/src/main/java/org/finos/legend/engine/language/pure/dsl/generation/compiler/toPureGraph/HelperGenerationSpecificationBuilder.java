@@ -20,7 +20,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.generationSpecification.GenerationSequence;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
@@ -35,7 +35,7 @@ public class HelperGenerationSpecificationBuilder
         return ListIterate.selectInstancesOf(context.getCompilerExtensions().getExtensions(), GenerationCompilerExtension.class);
     }
 
-    public static void processGenerationSpecification(GenerationSpecification generationSpecification, CompileContext context)
+    public static void processGenerationSpecification(GenerationSequence generationSpecification, CompileContext context)
     {
         Set<String> ids = Sets.mutable.empty();
         generationSpecification.generationNodes.forEach(node ->
