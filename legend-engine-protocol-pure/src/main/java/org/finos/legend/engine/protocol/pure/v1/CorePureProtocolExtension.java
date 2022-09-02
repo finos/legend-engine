@@ -133,6 +133,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(DataQualityExecutionNode.class, "dataQuality")
                         .withSubtype(UrlStreamExecutionNode.class, "urlStream")
+                        .withSubtype(ExternalFormatInternalizeExecutionNode.class, "externalFormatInternalize")
+                        .withSubtype(ExternalFormatExternalizeExecutionNode.class, "externalFormatExternalize")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(TestSuite.class)
                         .withSubtype(MappingTestSuite.class, "mappingTestSuite")
