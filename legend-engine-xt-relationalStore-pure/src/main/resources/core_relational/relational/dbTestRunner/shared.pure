@@ -97,15 +97,19 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
        let pureRuntime = ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));
 
-       let basicPlan = if($m.name->isEmpty(),
-                      |meta::pure::executionPlan::executionPlan($f, ^ExecutionContext(), $extensions, noDebug());,
-                      |meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime, ^ExecutionContext(),$extensions, noDebug()););
+       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, ^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
        []; ,               
      | 
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
        let connWithDb= ^$conn(element=$db);
        let pureRuntime = ^Runtime(connections=$connWithDb);
-       
-       execute($f, $m, $pureRuntime, ^ExecutionContext(), $extensions);
+
+       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, ^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
+
+       let res=meta::pure::router::executePlan($boundPlan,$extensions);
+       let values = $res.values->cast(@T);
+       ^Result<T|m>(values = $values, activities= $res.activities);
   );  
 }
