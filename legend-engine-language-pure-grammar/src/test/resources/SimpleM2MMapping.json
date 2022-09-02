@@ -100,8 +100,7 @@
         "startColumn": 1,
         "startLine": 2
       },
-      "tests": [],
-      "testSuites": []
+      "tests": []
     },
     {
       "_type": "sectionIndex",

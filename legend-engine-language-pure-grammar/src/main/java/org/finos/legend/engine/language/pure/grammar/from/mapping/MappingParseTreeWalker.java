@@ -100,7 +100,10 @@ public class MappingParseTreeWalker
         mapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         ListIterate.collect(ctx.mappingElement(), mappingElementContext -> visitMappingElement(mappingElementContext, mapping));
         mapping.tests = ctx.tests() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.tests().test(), testContext -> this.visitMappingTest(testContext, mapping));
-        mapping.testSuites = ctx.mappingTestSuites() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.mappingTestSuites().mappingTestSuite(), testSuiteContext -> this.visitMappingTestSuite(testSuiteContext, mapping));
+        if (ctx.mappingTestSuites() != null)
+        {
+            mapping.testSuites = ListIterate.collect(ctx.mappingTestSuites().mappingTestSuite(), testSuiteContext -> this.visitMappingTestSuite(testSuiteContext, mapping));
+        }
         return mapping;
     }
 
@@ -205,7 +208,7 @@ public class MappingParseTreeWalker
             Binding binding = new Binding();
             ModelUnit modelUnit = new ModelUnit();
             modelUnit.packageableElementIncludes = ((ModelStoreData) data).instances.keySet().stream().collect(Collectors.toList());
-            binding.name = "$binding";
+            binding.name = "JohnDoeBinding";
             binding._package = "default::m2m";
             binding.modelUnit = modelUnit;
             binding.contentType = "application/json";    //default content type
