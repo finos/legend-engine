@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pac
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
@@ -98,7 +99,8 @@ public class EmbeddedDataCompilerHelper
     {
        return (value.first instanceof PackageableElementPtr && value.second instanceof PackageableElementPtr &&
                 context.pureModel.getPackageableElement(((PackageableElementPtr) value.first).fullPath) instanceof Root_meta_external_shared_format_binding_Binding &&
-                context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath) instanceof Root_meta_pure_data_DataElement
+                context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath) instanceof Root_meta_pure_data_DataElement &&
+               ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath))._data() instanceof Root_meta_external_shared_format_metamodel_data_ExternalFormatData
                );
     }
 }
