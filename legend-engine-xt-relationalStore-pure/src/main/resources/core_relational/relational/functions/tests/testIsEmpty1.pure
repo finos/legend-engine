@@ -87,7 +87,7 @@ function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsEm
 {
    let result = executionPlan(input:String[*]| Firm.all()->filter(f| $input->isEmpty())->project([f | $f.legalName],['name'])
                                     , simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   let expected = 'Sequence(type=TDS[(name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[input:String[*]])Relational(type=TDS[(name,String,VARCHAR(200),"")]resultColumns=[("name",VARCHAR(200))]sql=select"root".LEGALNAMEas"name"fromfirmTableas"root"where(${collectionSize(input)})=0connection=TestDatabaseConnection(type="H2"))))';
+   let expected = 'Sequence(type=TDS[(name,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[input:String[*]])Relational(type=TDS[(name,String,VARCHAR(200),"")]resultColumns=[("name",VARCHAR(200))]sql=select"root".LEGALNAMEas"name"fromfirmTableas"root"where(${collectionSize(input![])})=0connection=TestDatabaseConnection(type="H2"))))';
    assertEquals($expected, $result->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
    assertSameElements(templateFunctionsList(), $result.processingTemplateFunctions);
 }

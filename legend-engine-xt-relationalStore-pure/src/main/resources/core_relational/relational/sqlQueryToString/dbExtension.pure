@@ -421,20 +421,21 @@ function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLS
 function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], dbTimeZone:String[0..1]): String[1]
 {
    let noPropertyPath              = $v.propertyPath->isEmpty();
+   let optionalHandler             = if($v->isOptionalPlaceHolder() && $noPropertyPath,|'![]',|'');
    let placeHolderWithPath         = $v.name+if($noPropertyPath,|'',|'.')+$v.propertyPath->map(p|$p.name)->joinStrings('.');
    let resolvedPlaceHolder         = if($type == String,
                                            | $placeHolderWithPath->convertStringToSQLString(),
-                                           | $placeHolderWithPath);
+                                           | $placeHolderWithPath) + $optionalHandler;
 
    let isPossibleDateTimeType      = [Date, DateTime]->contains($v.type);
    let possiblyApplyDateTzFunction = if($isPossibleDateTimeType,| processDatePlaceHolder($resolvedPlaceHolder, $dbTimeZone),| $resolvedPlaceHolder);
 
    if($v->isCollectionPlaceHolder(),
       |if($resolvedPlaceHolder == $possiblyApplyDateTzFunction,
-         |'${renderCollection('+$resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"'+ $suffix + '\" ' + placeHolderDefaultValue() +')}',
-         |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+$dbTimeZone->toOne()+']" '+ '\",\" \"' + $prefix + '\" \"'+ $suffix + '\" ' + placeHolderDefaultValue() +')}'),
-      |if($v.multiplicity->isNotEmpty() && $v.multiplicity->toOne()->isZeroOne() && $resolvedPlaceHolder == $possiblyApplyDateTzFunction,
-          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + '![] ' + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
+         |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}',
+         |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'),
+      |if($v->isOptionalPlaceHolder(),
+          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
           |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix)
       );
 }
@@ -461,7 +462,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
 
    let processedParams = $freeMarkerOp.parameters->map(p | $p->match([
                                                                f:FreeMarkerOperationHolder[1] | $f->processFreeMarkerOperationHolder($dbConfig, $format, $generationState, $config, true, $extensions);,
-                                                               l:Literal[1]                   | $l.value->match([v:VarPlaceHolder[1] | if($v.multiplicity->isNotEmpty() && $v.multiplicity->toOne()->isZeroOne(), |$v.name + '![]', |$v.name);,
+                                                               l:Literal[1]                   | $l.value->match([v:VarPlaceHolder[1] | if($v->isOptionalPlaceHolder(), |$v.name + '![]', |$v.name);,
                                                                                                                  a:Any[1]            | $a->toString();]),
                                                                a:RelationalOperationElement[1]| '\'' + $a->processOperation($dbConfig, $format, $generationState, $config, $extensions)->replace('\'', '\\\'') + '\'';
    ]));
@@ -490,6 +491,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let isNonSystemTz = $dbTimeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($dbTimeZone->toOne());
    if($isNonSystemTz,|'GMTtoTZ( "['+$dbTimeZone->toOne()+']" '+$dateParameter+')'
                     ,| $dateParameter);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+{
+   $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::multiplicity::getLowerBound(), 0);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]

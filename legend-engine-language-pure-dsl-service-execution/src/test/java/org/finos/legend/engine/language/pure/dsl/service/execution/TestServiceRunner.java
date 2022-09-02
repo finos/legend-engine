@@ -127,10 +127,52 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testSimpleServiceForOptionalDateTimeWithTimeZone()
+    {
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTimeWithTZ", "optionalDateTimeWithTZ", "2012-05-20T03:10:52.501", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+    }
+
+    @Test
     public void testSimpleServiceForOptionalBoolean()
     {
         this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", true, "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}", "[]");
         this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", false, "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalString_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalCityMany", "optionalCity", Arrays.asList("New York","Dallas"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalInteger_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalAgeMany", "optionalAge", Arrays.asList(25,35), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalFloat_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalSalaryMany", "optionalSalary", Arrays.asList(80000.75,75000.75), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"salary\":75000.75}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDate_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalDobMany", "optionalDate", Arrays.asList("1982-01-20","1997-12-16"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"dob\":\"1997-12-16\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDateTimeWithNoTZ_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithNoTZMany", "optionalDateTime", Arrays.asList("2005-03-15T18:47:52", "2012-05-20T13:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDateTimeWithTZ_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithTZMany", "optionalDateTime", Arrays.asList("2005-03-15T08:47:52", "2012-05-20T03:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
     }
 
     @Test
