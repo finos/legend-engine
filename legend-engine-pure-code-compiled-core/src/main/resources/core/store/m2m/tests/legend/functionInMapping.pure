@@ -50,6 +50,31 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canUseFunctionsInAMappin
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that calls a function: defaultIfEmpty.',
+   doc.doc='When:  the mapping is executed using graphFetch',
+   doc.doc='Then:  the mapping executes successfully'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::testDefaultIfEmptyFunctionUsageInMapping(): Boolean[1]
+{
+   let tree = #{FirstEmployee {name} }#;
+
+   let result = execute(
+      |FirstEmployee.all()->graphFetch($tree)->serialize($tree),
+      defaultIfEmptyMapping,
+      testJsonRuntime(Firm, '[' +
+         '{"name": "FirmX", "employees": [{"firstName": "Peter", "lastName": "Smith"}, {"firstName": "John", "lastName": "Johnson"}]},' +
+         '{"name": "FirmA", "employees": [{"firstName": "Fabrice", "lastName": "Roberts"}]}' +
+      ']'),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let json = $result.values->toOne();
+   let expected = '[{"name":"Johnson"},{"name":"Unknown"}]';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));   
+}
+
 Class meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
 {
   name: String[1];
@@ -75,5 +100,16 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::m1
   {
     ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
     name: $src.employees->at(0).lastName
+  }
+)
+
+###Mapping
+   
+Mapping meta::pure::mapping::modelToModel::test::alloy::simple::function::defaultIfEmptyMapping
+(
+  *meta::pure::mapping::modelToModel::test::alloy::simple::function::FirstEmployee[test_FirstEmployee]: Pure
+  {
+    ~src meta::pure::mapping::modelToModel::test::alloy::simple::function::Firm
+    name: $src.employees->filter(e | $e.firstName == 'John').lastName->defaultIfEmpty('Unknown')->at(0)
   }
 )
