@@ -118,7 +118,7 @@ public class MappingTestRunner implements TestRunner
         {
             for (Test test : suite.tests)
             {
-                if (testIds.contains(test.id))
+                if (testIds.isEmpty() || testIds.contains(test.id))
                 {
                     org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeMappingTest((MappingTest) test, pureMapping, pureModel, planTransformers, routerExtensions);
                     testResult.testable = getElementFullPath(pureMapping, pureModel.getExecutionSupport());
