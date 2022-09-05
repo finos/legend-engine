@@ -1,0 +1,133 @@
+[
+  {
+    "CategoryName": "UserCredentialsError",
+    "Exceptions": [
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "A 'Secure Connect' or a Kerberos connection can't be built outside of a user call|Failed to initialize pool",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "UnsupportedOperationException",
+        "MessageRegex": "Kerberos|credential",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": ".*",
+        "MessageRegex": "(kerberos|credential|username|password|permission|initialize pool)",
+        "Priority": "secondary"
+      }
+    ]
+  },
+
+  {
+    "CategoryName": "UserExecutionError",
+    "Exceptions": [
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Can't find a match for function",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "IllegalArgumentException",
+        "MessageRegex": "Missing external parameter",
+        "Priority": "primary"
+      }
+    ]
+  },
+
+  {
+    "CategoryName": "InternalServerError",
+    "Exceptions": [
+      {
+        "ExceptionName": "RuntimeException",
+        "MessageRegex": "has not been configured properly",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "PureAssertFailException",
+        "MessageRegex": "exception occurred executing service test suites",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "ConnectionException",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "ConnectionClosedException",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": ".*",
+        "MessageRegex": "test|timeout|overload",
+        "Priority": "secondary"
+      }
+    ]
+  },
+
+  {
+    "CategoryName": "ServerExecutionError",
+    "Exceptions": [
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Unexpected token|Missing table or alias for column|Bracket operation is not supported|Field '.*' is required",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "PureExecutionException",
+        "MessageRegex": "cannot cast [a ]?collection of size 0 to multiplicity",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Engine was unable to load information from the Pure SDLC|Can't find mapping",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "FlatDataSchemaParseException",
+        "MessageRegex": "Unexpected token",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Error in.*Can't find [the ]?(property|store|type|profile|packageable element|Connection|SchemaSet|table.*in schema.*and database.*)",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Error in.*[all required service parameters should be mapped|Mapping error: the join .* does not contain the source table|Milestone column.*not found on table definition|Collection element must have a multiplicity]?",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Can't find property .* in (class|association)",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "IllegalArgumentException",
+        "MessageRegex": "Invalid provided parameter|Reprocessing sql failed with vars",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "RuntimeException",
+        "MessageRegex": "HTTP request.*failed with error|Input stream was not provided|The following PackageableElementPointers.*do not exist in the project data loaded from the metadata server",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "EngineException",
+        "MessageRegex": "Can't resolve the builder for function|Can't find service",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": "RuntimeException",
+        "MessageRegex": "Issue processing freemarker function",
+        "Priority": "primary"
+      },
+      {
+        "ExceptionName": ".*",
+        "MessageRegex": "mapping error|Error in '.*::.*':",
+        "Priority": "secondary"
+      }
+    ]
+  }
+]

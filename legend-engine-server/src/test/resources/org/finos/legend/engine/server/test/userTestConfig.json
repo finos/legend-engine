@@ -71,5 +71,8 @@
     "temporarytestdb": {
       "port": 9092
     }
+  },
+  "errorhandlingconfiguration": {
+    "enabled": true
   }
 }

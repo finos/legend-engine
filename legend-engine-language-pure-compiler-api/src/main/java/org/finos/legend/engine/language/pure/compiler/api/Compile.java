@@ -38,7 +38,6 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -49,7 +48,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.HashMap;
 import java.util.Map;
-
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Pure - Compiler")
@@ -88,7 +86,7 @@ public class Compile
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("compile model");
+            MetricsHandler.observeError(LoggingEventType.COMPILE_MODEL_ERROR, ex, null);
             return handleException(uriInfo, profiles, start, ex);
         }
     }
@@ -117,7 +115,7 @@ public class Compile
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("lambda return type");
+            MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
             return handleException(uriInfo, profiles, start, ex);
         }
     }
@@ -126,7 +124,6 @@ public class Compile
     {
         Response.Status status = ex instanceof EngineException ? Response.Status.BAD_REQUEST : Response.Status.INTERNAL_SERVER_ERROR;
         Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, profiles);
-        MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, errorResponse.getStatus());
         return errorResponse;
     }
 }

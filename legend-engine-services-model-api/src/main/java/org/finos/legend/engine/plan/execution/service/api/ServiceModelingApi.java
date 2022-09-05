@@ -19,11 +19,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.service.ServiceModeling;
 import org.finos.legend.engine.plan.execution.service.test.TestResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -36,9 +38,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
-
 import javax.ws.rs.Consumes;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -46,9 +46,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import java.util.List;
-
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Service")
@@ -95,9 +93,15 @@ public class ServiceModelingApi
         }
         catch (Exception ex)
         {
-            MetricsHandler.observe("service test error", start, System.currentTimeMillis());
+            String servicePattern = null;
+            if (service instanceof PureModelContextData)
+            {
+                PureModelContextData data = ((PureModelContextData) service).shallowCopy();
+                Service invokedService = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
+                servicePattern = invokedService == null ? null : invokedService.pattern;
+            }
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
-            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, response.getStatus());
+            MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, ex, servicePattern);
             return response;
         }
     }
