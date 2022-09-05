@@ -34,7 +34,7 @@ public class TestMappingTestRunner
     public void testServiceTestSuiteWithServiceStore()
     {
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
-        mappingTestableRunnerExtension.setPureVersion("v1_23_0");
+        mappingTestableRunnerExtension.setPureVersion("vX_X_X");
         String grammar = "###ServiceStore\n" +
                 "ServiceStore testServiceStoreTestSuites::ServiceStore\n" +
                 "(\n" +
