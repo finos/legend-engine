@@ -248,4 +248,22 @@ public class TestTestConnectionBuilder
 
         testConnectionWithCloseables.getTwo().get(0).close();
     }
+
+    @Test
+    public void testServiceStoreTestConnectionBuilderExceptionInAbsenceOfData()
+    {
+        EmbeddedData embeddedData = null;
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        PackageableConnection serviceStoreConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::serviceStoreConnection".equals(ele.getPath()));
+
+        try
+        {
+            serviceStoreConnection.connectionValue.accept(testConnectionBuilder);
+            Assert.fail("Expected Exception");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "No test data provided for connection type 'ServiceStoreConnection'. Either you need to provide test data for the connection type or connection type is not supported.");
+        }
+    }
 }
