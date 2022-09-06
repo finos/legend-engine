@@ -30,7 +30,7 @@ import meta::pure::graphFetch::execution::*;
 
 
 // Prepare
-function <<access.private>> meta::pure::executionPlan::engine::java::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::engine::java::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
    if($p.expression->cast(@FunctionExpression)->isSerialize($extensions),
       | prepareForSerialize($p, $path, $context, $debug),
@@ -56,7 +56,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::prepareForE
 }
 
 // Generate
-function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
+function meta::pure::executionPlan::engine::java::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
 {   
    if($p.expression->cast(@FunctionExpression).func == now__DateTime_1_,
       | generateImplementionForNow($context.conventions),

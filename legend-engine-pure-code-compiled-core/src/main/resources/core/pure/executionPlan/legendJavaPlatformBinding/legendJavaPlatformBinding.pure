@@ -1,0 +1,91 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::engine::java::*;
+
+function meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(): String[1]
+{
+   'LegendJava'
+}
+
+
+Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBinding extends PlatformBinding [
+   idIsLegendJava: $this.id == legendJavaPlatformBindingId(),
+   allLegendJavaExtensions: $this.platformBindingExtensions->forAll(e | $e->instanceOf(LegendJavaPlatformBindingExtension))
+]
+{
+}
+
+
+Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig extends PlatformBindingConfig {}
+
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingAdhocExtension {}
+
+
+Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingExtension extends PlatformBindingExtension [
+   platformId: $this.platformId == legendJavaPlatformBindingId()
+]
+{
+   // Node based extensions ------------------------------------------------------
+
+   {doc.doc = 'Execution nodes which this extension supports'}
+   supportedExecutionNodes: Class<ExecutionNode>[*];
+
+   {doc.doc = 'As a node can have its own structure of specialized child nodes, function to extract them with an index'}
+   extraChildNodesWithIndex: Function<{ExecutionNode[1] -> Pair<ExecutionNode, String>[*]}>[0..1];
+
+   {doc.doc = 'To update type info and node info within the context as required by the node'}
+   updateGenerationContextForNode: Function<{ExecutionNode[1], GenerationContext[1], String[1], Extension[*], DebugContext[1] -> GenerationContext[1]}>[0..1];
+
+   {doc.doc = 'Generate Java code for the node'}
+   generateLegendJavaCodeForNode: Function<{ExecutionNode[1], String[1], GenerationContext[1], Extension[*], DebugContext[1] -> GeneratedCode[1]}>[0..1];
+
+   {doc.doc = 'Generate Java code for specialized/extra child nodes'}
+   generateLegendJavaCodeForExtraChildNodes: Function<{ExecutionNode[1], Project[0..1], String[1], GenerationContext[1], Extension[*], DebugContext[1] -> GeneratedNode[1]}>[0..1];
+
+   // ------------------------------------------------------ Node based extensions
+
+
+   // Adhoc extensions -----------------------------------------------------------
+
+   {doc.doc = 'Ad hoc extensions - need not be visible at this level'}
+   adhocExtensions: LegendJavaPlatformBindingAdhocExtension[*];
+
+   // ----------------------------------------------------------- Adhoc extensions
+}
+
+
+function meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding(platformBindingExtensions: LegendJavaPlatformBindingExtension[*]): LegendJavaPlatformBinding[1]
+{
+   ^LegendJavaPlatformBinding
+   (
+      id = legendJavaPlatformBindingId(),
+      platformBindingExtensions = $platformBindingExtensions,
+      bindPlanToPlatform = bindPlanToLegendJavaPlatform_ExecutionPlan_1__PlatformBindingConfig_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_
+   )
+}
+
+
+function meta::pure::executionPlan::platformBinding::legendJava::extractLegendJavaAdhocExtensionsOfType<T>(extensions: Extension[*], extensionType: Class<T>[1]): T[*]
+{
+   let platformBinding = $extensions->extractPlatformBindingByIdOptional(legendJavaPlatformBindingId());
+   $platformBinding.platformBindingExtensions->cast(@LegendJavaPlatformBindingExtension).adhocExtensions->filter(e | $e->instanceOf($extensionType))->cast(@T);
+}

@@ -151,63 +151,6 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              let varMultiplicity  = if($parameterVal->instanceOf(List), |ZeroMany, |PureOne);
                                              convertPlaceHolderToSQLString(^meta::relational::functions::pureToSqlQuery::metamodel::VarPlaceHolder(name = $name, type=$type, multiplicity=$varMultiplicity), $dbConfig.dbExtension.literalProcessor, $d.timeZone);
                               },
-      java_conventions_defaultProhibitedFunctions = 
-            [
-                  meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_,
-                  meta::relational::metamodel::execute::createTempTable_String_1__Column_MANY__Function_1__Boolean_1__DatabaseConnection_1__Nil_0_,
-                  meta::relational::metamodel::execute::createTempTable_String_1__Column_MANY__Function_1__DatabaseConnection_1__Nil_0_,
-                  meta::relational::metamodel::execute::dropTempTable_String_1__DatabaseConnection_1__Nil_0_,
-                  meta::relational::metamodel::execute::executeInDb_String_1__DatabaseConnection_1__Integer_1__Integer_1__ResultSet_1_,
-                  meta::relational::metamodel::execute::fetchDbColumnsMetaData_DatabaseConnection_1__String_$0_1$__String_$0_1$__String_$0_1$__ResultSet_1_,
-                  meta::relational::metamodel::execute::fetchDbImportedKeysMetaData_DatabaseConnection_1__String_$0_1$__String_1__ResultSet_1_,
-                  meta::relational::metamodel::execute::fetchDbPrimaryKeysMetaData_DatabaseConnection_1__String_$0_1$__String_1__ResultSet_1_,
-                  meta::relational::metamodel::execute::fetchDbSchemasMetaData_DatabaseConnection_1__String_$0_1$__ResultSet_1_,
-                  meta::relational::metamodel::execute::fetchDbTablesMetaData_DatabaseConnection_1__String_$0_1$__String_$0_1$__ResultSet_1_,
-                  meta::relational::metamodel::execute::loadCsvToDbTable_String_1__Table_1__DatabaseConnection_1__Integer_$0_1$__Nil_0_,
-                  meta::relational::metamodel::execute::loadValuesToDbTable_List_1__Table_1__DatabaseConnection_1__Nil_0_,
-                  meta::relational::metamodel::execute::loadValuesToDbTable_List_MANY__Table_1__DatabaseConnection_1__Nil_0_,
-                  meta::pure::functions::io::logActivities_Activity_MANY__Nil_0_
-            ],
-      java_graphFetch_graphFetchCommon_generateCodeForLocalGraphFetchNode = {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] | {rel: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $rel->meta::pure::executionPlan::engine::java::graphFetch::relational::generateRelationalStoreGraphFetchProject($path, $context, $extensions, $debug)}},
-      java_graphFetch_graphFetchCommon_updateImplementationClassWithStoreSpecificFieldsAndMethods= {x:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] | {rel: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $x->meta::pure::executionPlan::engine::java::graphFetch::relational::enrichForRelationalGraphExecution($rel, $context, $extensions, $debug)}},
-      java_parseObjectReference_getParseObjectReferenceImplClass = {storeType:String[1], args:Any[*], path:String[1], context:GenerationContext[1], debug:DebugContext[1] | 
-                                                                                                       if($storeType == meta::relational::postProcessor::getObjectReferenceStoreType(),
-                                                                                                          |  let pkOrder = $args->cast(@String);
-                                                                                                             meta::pure::executionPlan::engine::java::getRelationalObjectReferenceParserHelperClass($pkOrder, $path, $context, $debug);,
-                                                                                                          | [])},
-      plan_javaRuntime_main_prepare1 =
-            {path:String[1], contextFromChildren:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
-               [
-                  g: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | 
-                     $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.localChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren);
-               ]
-            },
-      plan_javaRuntime_main_prepare2 =
-            {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
-               [
-                  g:meta::relational::mapping::RelationalClassInstantiationExecutionNode[1]           | $g->prepareForClassResult($path, $contextFromOtherNodes, $debug),
-                  g:meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] | $g->meta::pure::executionPlan::engine::java::graphFetch::relational::prepareForRelationalGraphFetch($path, $contextFromOtherNodes, $debug)
-               ]
-            },
-      plan_javaRuntime_main_generatePlatformCode1 =
-            {path:String[1], context:GenerationContext[1], extendsion:Extension[*], debug:DebugContext[1] |
-               [
-                  c:meta::relational::mapping::CreateAndPopulateTempTableExecutionNode[1]   | $c->generateImplementationForCreateAndPopulateTempTableNode($path, $context, $debug),
-                  e:meta::relational::mapping::RelationalClassInstantiationExecutionNode[1] | $e.resultType->match([
-                                                                                                   pc : PartialClassResultType[1] | $e->generateImplementionForRelationalPartialClassResult($path, $pc.propertiesWithParameters.property, $context, $debug),
-                                                                                                   c  : ClassResultType[1]        | $e->generateImplementionForRelationalClassResult($path, $context, $debug)
-                                                                                                ])
-
-               ]
-            },
-      plan_javaRuntime_main_generatePlatformCode2 =
-            {path: String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:Extension[*], fullProject:Project[0..1], debug:DebugContext[1] |
-               [
-                  g: meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode[1] |
-                     let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.localChild' + $x->toString(), $mapping, $context, $extensions, $debug));
-                     ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode)), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)));
-               ]
-            },
       tdsSchema_resolveSchemaImpl = {fe:FunctionExpression[1], openVars:Map<String, List<Any>>[1], extensions:Extension[*]|
                                              [
                                                 join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_,
@@ -258,8 +201,14 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              )
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
-      validTestPackages = 'meta::relational::tests'
-     
+      validTestPackages = 'meta::relational::tests',
+
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = meta::pure::extension::defaultExtensions().availablePlatformBindings->concatenate(
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+           meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension()
+         ])
+      )
    )
 }
 

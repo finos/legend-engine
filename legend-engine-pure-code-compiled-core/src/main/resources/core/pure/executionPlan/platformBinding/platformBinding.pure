@@ -1,0 +1,75 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::extension::*;
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::PlatformBindingConfig
+{
+   {doc.doc = 'Plan Id - To namespace platform code of different plans'}
+   planId: String[0..1];
+}
+
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::PlatformBindingExtension
+{
+   {doc.doc = 'Platform Id'}
+   platformId: String[1];
+
+   {doc.doc = 'Extension Id'}
+   id: String[1];
+}
+
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::PlatformBinding [
+   extensionIdsMatchPlatformBindingId : $this.platformBindingExtensions->forAll(x | $x.platformId == $this.id),
+   uniqueExtensionIds : $this.platformBindingExtensions.id->size() == $this.platformBindingExtensions.id->distinct()->size()
+]
+{
+   {doc.doc = 'Platform Id'}
+   id: String[1];
+
+   {doc.doc = 'Extensions for platform binding'}
+   platformBindingExtensions: PlatformBindingExtension[*];
+
+
+   // Bind to platform ---------------------------------------------------
+
+   {doc.doc = 'To bind a plan to the platform given config'}
+   bindPlanToPlatform: Function<{ExecutionPlan[1], PlatformBindingConfig[1], Extension[*], DebugContext[1] -> ExecutionPlan[1]}>[1];
+
+   // --------------------------------------------------- Bind to platform
+}
+
+
+function meta::pure::executionPlan::platformBinding::extractPlatformBindingById(extensions: Extension[*], platformId: String[1]): PlatformBinding[1]
+{
+   // Ideally, platform binding extension should be built at one place
+   // However, at present, its built at many places. Hence, collecting all extensions
+
+   let platformBindings = $extensions.availablePlatformBindings->filter(p | $p.id == $platformId);
+   assert($platformBindings->size() > 0, | 'Found no platform binding with id: ' +  $platformId);
+   let first = $platformBindings->at(0);
+   ^$first(platformBindingExtensions = $platformBindings.platformBindingExtensions->removeDuplicates(x|$x.id, {a,b|$a==$b}));
+}
+
+
+function meta::pure::executionPlan::platformBinding::extractPlatformBindingByIdOptional(extensions: Extension[*], platformId: String[1]): PlatformBinding[0..1]
+{
+   if ($extensions.availablePlatformBindings->exists(p | $p.id == $platformId),
+       | $extensions->extractPlatformBindingById($platformId),
+       | []
+   )
+}
