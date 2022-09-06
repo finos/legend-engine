@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.Met
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
+import org.finos.legend.engine.server.core.configuration.ErrorHandlingConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
@@ -36,8 +37,8 @@ public class ServerConfiguration extends Configuration
     public Map<String, Integer> filterPriorities;
     public MetaDataServerConfiguration metadataserver;
     public List<VaultConfiguration> vaults;
-
     public RelationalExecutionConfiguration relationalexecution;
+    public ErrorHandlingConfiguration errorhandlingconfiguration = new ErrorHandlingConfiguration();
 
     /*
         This configuration has been deprecated in favor of the 'temporarytestdb' in RelationalExecutionConfiguration
