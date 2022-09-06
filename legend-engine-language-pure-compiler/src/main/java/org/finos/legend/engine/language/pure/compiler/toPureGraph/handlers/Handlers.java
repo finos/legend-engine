@@ -1219,7 +1219,7 @@ public class Handlers
         return new TypeAndMultiplicity(genericType, mul);
     }
 
-    private TypeAndMultiplicity res(GenericType genericType, String mul)
+    public TypeAndMultiplicity res(GenericType genericType, String mul)
     {
         return new TypeAndMultiplicity(genericType, this.pureModel.getMultiplicity(mul));
     }

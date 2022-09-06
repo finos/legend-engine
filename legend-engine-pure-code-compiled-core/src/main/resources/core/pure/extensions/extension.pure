@@ -81,6 +81,9 @@ Class meta::pure::extension::Extension
   executionPlan_execution_allNodes : Function<{meta::pure::extension::Extension[*] -> Function<{Nil[1] ->  ExecutionNode[*]}>[*]}>[0..1];
   executionPlan_execution_buildVariableTemplateString : Function<{String[1], Any[1], meta::pure::metamodel::type::Type[1] -> Function<{Nil[1] ->  String[1]}>[*]}>[0..1];
 
+  //Build Context
+  //TODO: Move to its apt place, with the new extension framework 
+  routeContextBuilderFunctions : Function<{FunctionExpression[1]->ExecutionContext[1]}>[0..1];
 
   // M2M concern that leaks to CSV and Flatdata. Remove when CSV and Flatdata are absorbed by ExternalFormat ------------------------------
   graphExtension_calculateSourceTree : Function<{RootGraphFetchTree<Any>[1] -> Function<{Nil[1]->RootGraphFetchTree<Any>[1]}>[1]}>[0..1];
