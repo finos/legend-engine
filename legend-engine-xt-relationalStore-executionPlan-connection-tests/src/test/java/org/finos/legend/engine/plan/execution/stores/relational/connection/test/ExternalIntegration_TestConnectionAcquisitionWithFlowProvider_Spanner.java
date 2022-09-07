@@ -15,13 +15,13 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import java.sql.Connection;
+import java.util.Optional;
 import javax.security.auth.Subject;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.junit.Test;
@@ -31,6 +31,9 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
 {
 
     public static final String TEST_QUERY = "select 1";
+    public static final String SPANNER_PROJECT_ID = "SPANNER_PROJECT_ID";
+    public static final String SPANNER_INSTANCE_ID = "SPANNER_INSTANCE_ID";
+    public static final String SPANNER_DATABASE_ID = "SPANNER_DATABASE_ID";
 
     @Override
     public DatabaseType getDatabaseType()
@@ -68,22 +71,17 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
 
     private RelationalDatabaseConnection SpannerWithGCPADCSpec()
     {
-        SpannerDatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
-        datasourceSpecification.projectId = "legend-integration-testing";
-        datasourceSpecification.instanceId = "test-instance";
-        datasourceSpecification.databaseId = "test-db";
+        SpannerDatasourceSpecification datasourceSpecification = getSpannerDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         return new RelationalDatabaseConnection(datasourceSpecification, authSpec, getDatabaseType());
     }
 
-    private RelationalDatabaseConnection SpannerWithGCPWIFSpec()
+    private SpannerDatasourceSpecification getSpannerDatasourceSpecification()
     {
         SpannerDatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
-        datasourceSpecification.projectId = "legend-integration-testing";
-        datasourceSpecification.instanceId = "test-instance";
-        datasourceSpecification.databaseId = "test-db";
-        GCPWorkloadIdentityFederationAuthenticationStrategy authSpec = new GCPWorkloadIdentityFederationAuthenticationStrategy();
-        authSpec.serviceAccountEmail = "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com";
-        return new RelationalDatabaseConnection(datasourceSpecification, authSpec, getDatabaseType());
+        datasourceSpecification.projectId = Optional.ofNullable(System.getenv(SPANNER_PROJECT_ID)).orElse("legend-integration-testing");
+        datasourceSpecification.instanceId = Optional.ofNullable(System.getenv(SPANNER_INSTANCE_ID)).orElse("test-instance");
+        datasourceSpecification.databaseId = Optional.ofNullable(System.getenv(SPANNER_DATABASE_ID)).orElse("test-db");
+        return datasourceSpecification;
     }
 }

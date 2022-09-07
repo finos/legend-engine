@@ -60,14 +60,17 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
 
     protected ConnectionManagerSelector connectionManagerSelector;
 
-    @BeforeClass
-    public static void verifyTestSetup()
+    public void verifyGcpTestSetup()
     {
         String googleApplicationCredentials = System.getenv(GOOGLE_APPLICATION_CREDENTIALS);
         if (googleApplicationCredentials == null || googleApplicationCredentials.trim().isEmpty())
         {
             fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
         }
+    }
+
+    public void verifyAwsTestSetup()
+    {
         String awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID);
         if (awsAccessKeyId == null || awsAccessKeyId.trim().isEmpty())
         {
@@ -113,6 +116,7 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
 
     protected void assertGCPADCFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
+        verifyGcpTestSetup();
         DatasourceSpecification datasourceSpecification = getDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, getDatabaseType());
@@ -123,6 +127,7 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
 
     protected void assertGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
     {
+        verifyAwsTestSetup();
         DatasourceSpecification datasourceSpecification = getDatasourceSpecification();
         GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
         RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, getDatabaseType());
