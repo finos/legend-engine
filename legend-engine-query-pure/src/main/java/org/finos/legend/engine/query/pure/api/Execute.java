@@ -64,7 +64,6 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -76,7 +75,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -139,7 +137,7 @@ public class Execute
         catch (Exception ex)
         {
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
-            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, response.getStatus());
+            MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
             return response;
         }
     }
@@ -163,9 +161,8 @@ public class Execute
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("generate plan");
+            MetricsHandler.observeError(LoggingEventType.GENERATE_PLAN_ERROR, ex, null);
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_ERROR, profiles);
-            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, response.getStatus());
             return response;
         }
 
@@ -190,9 +187,8 @@ public class Execute
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("generate plan");
+            MetricsHandler.observeError(LoggingEventType.GENERATE_PLAN_ERROR, ex, null);
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_ERROR, profiles);
-            MetricsHandler.incrementErrorCount(uriInfo != null ? uriInfo.getPath() : null, response.getStatus());
             return response;
         }
     }
@@ -256,9 +252,8 @@ public class Execute
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("execute");
+            MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
-            MetricsHandler.incrementErrorCount("pure/v1/execution/execute", response.getStatus());
             return response;
         }
     }
@@ -274,9 +269,8 @@ public class Execute
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("execute");
+            MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
-            MetricsHandler.incrementErrorCount("pure/v1/execution/execute", response.getStatus());
             return response;
         }
     }

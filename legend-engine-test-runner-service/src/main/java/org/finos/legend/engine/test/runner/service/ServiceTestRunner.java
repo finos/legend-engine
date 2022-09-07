@@ -67,6 +67,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
@@ -81,7 +82,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -281,7 +281,7 @@ public class ServiceTestRunner
             }
             catch (JavaCompileException e)
             {
-                MetricsHandler.incrementErrorCount("test_execute", 0);
+                MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, e, this.service == null ? null : this.service.pattern);
                 throw new RuntimeException("Error compiling test asserts for " + this.service.getPath(), e);
             }
 
@@ -355,7 +355,7 @@ public class ServiceTestRunner
             catch (Exception e)
             {
                 LOGGER.error("Error running tests", e);
-                MetricsHandler.incrementErrorCount("test_execute", 0);
+                MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, e, this.service == null ? null : this.service.pattern);
                 throw (e instanceof RuntimeException) ? (RuntimeException) e : new RuntimeException(e);
             }
             finally

@@ -46,7 +46,7 @@ public class HelperRelationalEmbeddedDataComposer
         if (table.values != null)
         {
             MutableList<String> lines = org.eclipse.collections.api.factory.Lists.mutable.of(table.values.split("\\n"));
-            str.append("\n" + lines.collect(l -> getTabString(5) + convertString(l + "\n", true)).makeString("+\n"));
+            str.append("\n" + lines.collect(l -> baseIndentation + getTabString() + convertString(l + "\n", true)).makeString("+\n"));
         }
         str.append(";");
         return str.toString();

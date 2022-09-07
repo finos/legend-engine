@@ -566,6 +566,7 @@ public class Handlers
         register("meta::pure::functions::collection::tail_T_MANY__T_MANY_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"));
         register("meta::pure::functions::collection::head_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
         register("meta::pure::functions::collection::oneOf_Boolean_MANY__Boolean_1_", false, ps -> res("Boolean", "one"));
+        register("meta::pure::functions::collection::defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_", false, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "oneMany"));
 
         register("meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_", false, ps -> res("Boolean", "one"));
         register("meta::json::schema::mapSchema_String_1__Type_1__DiscriminatorMapping_1_", false, ps -> res("meta::json::schema::DiscriminatorMapping", "one"));
@@ -1219,7 +1220,7 @@ public class Handlers
         return new TypeAndMultiplicity(genericType, mul);
     }
 
-    private TypeAndMultiplicity res(GenericType genericType, String mul)
+    public TypeAndMultiplicity res(GenericType genericType, String mul)
     {
         return new TypeAndMultiplicity(genericType, this.pureModel.getMultiplicity(mul));
     }
@@ -1598,6 +1599,7 @@ public class Handlers
         map.put("meta::pure::functions::collection::containsAny_Any_MANY__Any_MANY__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2);
         map.put("meta::pure::functions::collection::contains_Any_MANY__Any_1__Boolean_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
         map.put("meta::pure::functions::collection::count_Any_MANY__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
+        map.put("meta::pure::functions::collection::defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchOneMany(ps.get(1)._multiplicity()));
         map.put("meta::pure::functions::collection::distinct_T_MANY__T_MANY_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__Integer_1__T_MANY_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::collection::dropAt_T_MANY__Integer_1__T_MANY_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));

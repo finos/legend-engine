@@ -34,7 +34,16 @@ Database test::DB
     FISCAL_YEAR_VALUE INT
   )
 )
-
+Database test::DB2
+(
+  Table employmentTable
+   (
+     EMP_ID INTEGER PRIMARY KEY,
+     FIRSTNAME VARCHAR(100),
+     LASTNAME VARCHAR(100),
+     EMPLOYMENT_DATETIME TIMESTAMP
+   )
+)
 
 ###Pure
 Class test::Person
@@ -59,6 +68,13 @@ Class test::FiscalCalendar
 Class test::FiscalYear
 {
   value: Integer[1];
+}
+
+Class test::Employment
+{
+  firstName: String[1];
+  lastName: String[1];
+  employmentDateTime : DateTime[0..1];
 }
 
 function test::fetch(ip: String[*]): String[1]
@@ -91,6 +107,11 @@ function test::fetchOptionalEmploymentDateTime(optionalDateTime:DateTime[0..1]):
     test::Person.all()->filter(p|$p.employmentDateTime==$optionalDateTime)->graphFetch(#{test::Person{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
 }
 
+function test::fetchOptionalEmploymentDateTimeWithTZ(optionalDateTimeWithTZ:DateTime[0..1]):Any[*]
+{
+    test::Employment.all()->filter(e|$e.employmentDateTime==$optionalDateTimeWithTZ)->graphFetch(#{test::Employment{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Employment{firstName,lastName,employmentDateTime}}#)
+}
+
 function test::fetchOptionalActiveEmployment(optionalActiveEmployment:Boolean[0..1]):Any[*]
 {
     test::Person.all()->filter(p|$p.activeEmployment==$optionalActiveEmployment)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
@@ -112,6 +133,36 @@ function test::testMultiExpressionQueryWithPropertyPath(): Any[*]
 {
     let endDateCalendar = test::FiscalCalendar.all()->filter(x|$x.fiscalYear.value == 2015)->toOne()->graphFetch(#{test::FiscalCalendar{fiscalYear{value}}}#);
     test::Person.all()->filter(x|$x.yearOfStart == $endDateCalendar->toOne().fiscalYear.value)->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#);
+}
+
+function test::fetchOptionalCityMany(optionalCity:String[*]):Any[*]
+{
+    test::Person.all()->filter(p|$p.city->in($optionalCity))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::fetchOptionalAgeMany(optionalAge:Integer[*]):Any[*]
+{
+    test::Person.all()->filter(p|$p.age->in($optionalAge))->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::fetchOptionalSalaryMany(optionalSalary:Float[*]):Any[*]
+{
+    test::Person.all()->filter(p|$p.salary->in($optionalSalary))->graphFetch(#{test::Person{firstName,lastName,salary}}#)->serialize(#{test::Person{firstName,lastName,salary}}#)
+}
+
+function test::fetchOptionalDobMany(optionalDate:Date[*]):Any[*]
+{
+    test::Person.all()->filter(p|$p.dob->in($optionalDate))->graphFetch(#{test::Person{firstName,lastName,dob}}#)->serialize(#{test::Person{firstName,lastName,dob}}#)
+}
+
+function test::fetchOptionalDateTimeWithNoTZMany(optionalDateTime:DateTime[*]):Any[*]
+{
+    test::Person.all()->filter(p|$p.employmentDateTime->in($optionalDateTime))->graphFetch(#{test::Person{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
+}
+
+function test::fetchOptionalDateTimeWithTZMany(optionalDateTime:DateTime[*]):Any[*]
+{
+    test::Employment.all()->filter(e|$e.employmentDateTime->in($optionalDateTime))->graphFetch(#{test::Employment{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Employment{firstName,lastName,employmentDateTime}}#)
 }
 
 ###Mapping
@@ -148,6 +199,18 @@ Mapping test::Map
         value: [test::DB]fiscalCalendarTable.FISCAL_YEAR_VALUE
       )
     }
+
+  *test::Employment: Relational
+    {
+      ~primaryKey
+      (
+        [test::DB2]employmentTable.EMP_ID
+      )
+      ~mainTable [test::DB2]employmentTable
+      firstName: [test::DB2]employmentTable.FIRSTNAME,
+      lastName: [test::DB2]employmentTable.LASTNAME,
+      employmentDateTime : [test::DB2]employmentTable.EMPLOYMENT_DATETIME
+    }
 )
 
 ###Runtime
@@ -170,6 +233,23 @@ Runtime test::Runtime
           specification: LocalH2
           {
             testDataSetupCSV: 'default\nfiscalCalendarTable\nID,FISCAL_YEAR_VALUE\n111,2015\n222,2005\n333,2010\n---\ndefault\npersonTable\nID,FIRSTNAME,LASTNAME,CITY,AGE,SALARY,DOB,EMPLOYMENT_DATETIME,ACTIVE_EMPLOYMENT,YEAR_OF_START\n1,Peter,Smith,New York,,,1982-01-20,2012-05-20T13:10:52.501,,2015\n2,John,Johnson,,35,80000.75,,2005-03-15T18:47:52,N,2005\n3,Bob,Stevens,Dallas,25,75000.75,1997-12-16,,Y,2010\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ],
+    test::DB2:
+    [
+      connection_2:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB2;
+          type: H2;
+          timezone:+1000;
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nemploymentTable\nEMP_ID,FIRSTNAME,LASTNAME,EMPLOYMENT_DATETIME\n1,Peter,Smith,2012-05-20T13:10:52.501\n2,John,Johnson,2005-03-15T18:47:52\n3,Bob,Stevens,\n---';
           };
           auth: DefaultH2;
         }
