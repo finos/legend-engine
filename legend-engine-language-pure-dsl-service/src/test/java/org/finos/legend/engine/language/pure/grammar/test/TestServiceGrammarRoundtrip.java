@@ -1184,4 +1184,24 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n"
         );
     }
+
+    @Test
+    public void testInlinedExecutionService()
+    {
+        test("###Service\n" +
+                "Service service::SimpleProjectionService\n" +
+                "{\n" +
+                "  pattern: '/testUrl';\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Inline\n" +
+                "  {\n" +
+                "    query: |model::simple::Person.all()->project([x|$x.firstName, x|$x.lastName, x|$x.age], ['First Name', 'Last Name', 'Age'])->from(mapping::relational::simpleRelationalMapping, runtime::H2Runtime);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+    }
 }

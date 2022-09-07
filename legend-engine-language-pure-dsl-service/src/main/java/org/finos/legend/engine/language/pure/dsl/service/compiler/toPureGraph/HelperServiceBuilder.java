@@ -35,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureInlineExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
@@ -53,6 +54,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiE
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureInlineExecution_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionTest_Impl;
@@ -123,6 +125,12 @@ public class HelperServiceBuilder
                     ._executionKey(pureMultiExecution.executionKey)
                     ._func(HelperValueSpecificationBuilder.buildLambda(pureMultiExecution.func, context))
                     ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, context, executionKeyValues)));
+        }
+        else if (execution instanceof PureInlineExecution)
+        {
+            PureInlineExecution pureInlineExecution = (PureInlineExecution) execution;
+            return new Root_meta_legend_service_metamodel_PureInlineExecution_Impl("")
+                    ._func(HelperValueSpecificationBuilder.buildLambda(pureInlineExecution.func, context));
         }
         return getServiceCompilerExtensions(context).stream().flatMap(extension -> extension.getExtraServiceExecutionProcessors().stream()).map(processor -> processor.value(execution, context)).filter(Objects::nonNull).findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));

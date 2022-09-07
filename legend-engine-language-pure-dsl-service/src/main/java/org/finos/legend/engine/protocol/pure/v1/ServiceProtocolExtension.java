@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureInlineExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -48,6 +49,7 @@ public class ServiceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Execution.class)
                         .withDefaultSubType(PureSingleExecution.class)
+                        .withSubtype(PureInlineExecution.class, "pureInlineExecution")
                         .withSubtype(PureSingleExecution.class, "pureSingleExecution")
                         .withSubtype(PureMultiExecution.class, "pureMultiExecution")
                         .build(),

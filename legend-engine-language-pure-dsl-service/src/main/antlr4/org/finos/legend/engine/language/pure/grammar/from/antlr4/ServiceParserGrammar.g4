@@ -14,7 +14,7 @@ identifier:                             VALID_STRING | STRING
                                         | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                         | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
-                                        | SERVICE_SINGLE | SERVICE_MULTI
+                                        | SERVICE_SINGLE | SERVICE_MULTI | SERVICE_INLINE
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
@@ -71,7 +71,14 @@ serviceAutoActivateUpdates:             SERVICE_AUTO_ACTIVATE_UPDATES COLON BOOL
 
 serviceFunc:                            SERVICE_FUNCTION COLON combinedExpression SEMI_COLON
 ;
-serviceExec:                            SERVICE_EXECUTION COLON (singleExec|multiExec)
+serviceExec:                            SERVICE_EXECUTION COLON (inlineExec|singleExec|multiExec)
+;
+inlineExec:                             SERVICE_INLINE
+                                            BRACE_OPEN
+                                                (
+                                                    serviceFunc
+                                                )*
+                                            BRACE_CLOSE
 ;
 singleExec:                             SERVICE_SINGLE
                                             BRACE_OPEN

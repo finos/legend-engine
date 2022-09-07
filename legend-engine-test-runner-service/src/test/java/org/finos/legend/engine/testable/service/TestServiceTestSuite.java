@@ -2441,6 +2441,68 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testRelationalInlineService()
+    {
+        // setup
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-inline-service.pure");
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::SimpleRelationalInlineService");
+        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalInlineService");
+        Assert.assertTrue(testResult instanceof TestFailed);
+        TestFailed failedResult = (TestFailed) testResult;
+        AtomicTestId atomicTestId = failedResult.atomicTestId;
+        Assert.assertEquals(atomicTestId.atomicTestId, "test1");
+        Assert.assertEquals(atomicTestId.testSuiteId, "testSuite1");
+        List<AssertionStatus> statuses = failedResult.assertStatuses;
+        Assert.assertEquals(statuses.size(), 2);
+        // pass assertion
+        AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
+        Assert.assertEquals(status1.id, "shouldPass");
+        Assert.assertTrue(status1 instanceof AssertPass);
+        // fail assertion
+        AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
+        Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail jsonAssertFail = (EqualToJsonAssertFail) failStatus;
+        Assert.assertEquals("Actual result does not match Expected result", jsonAssertFail.message);
+        String expected_Expected =
+                "[ {\n" +
+                        "  \"Employees/First Name\" : \"JohnDIFF\",\n" +
+                        "  \"Employees/Last Name\" : \"Doe\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Nicole\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Time\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Apple\"\n" +
+                        "} ]";
+        String expected_Actual = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\",\n" +
+                "  \"Employees/Last Name\" : \"Doe\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Apple\"\n" +
+                "} ]";
+
+        MatcherAssert.assertThat(expected_Expected, JsonMatchers.jsonEquals(jsonAssertFail.expected));
+        MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
+    }
+
+    @Test
     public void testPassingRelationalWithSpecialEmbeddedData()
     {
         // setup

@@ -1124,4 +1124,65 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "PARSER error at [43:17-22]: Unexpected token 'actual'"
         );
     }
+
+    @Test
+    public void testInlineServiceExecution()
+    {
+        test("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'ownerName',\n" +
+                        "    'ownerName2'\n" +
+                        "  ];\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Inline\n" +
+                        "  {\n" +
+                        "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#);\n" +
+                        "    mapping: meta::myMapping;\n" +
+                        "    runtime: meta::myRuntime;\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "    testSuite1:\n" +
+                        "    {\n" +
+                        "      data:\n" +
+                        "      [\n" +
+                        "        connections:\n" +
+                        "        [\n" +
+                        "          connection1:\n" +
+                        "            ExternalFormat\n" +
+                        "            #{\n" +
+                        "              contentType: 'application/x.flatdata';\n" +
+                        "              data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                        "            }#\n" +
+                        "        ]\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n", "PARSER error at [15:12]: Unexpected token ':'");
+
+        test("###Service\n" +
+                        "Service meta::pure::myServiceSingle\n" +
+                        "{\n" +
+                        "  pattern: 'url/myUrl/';\n" +
+                        "  owners:\n" +
+                        "  [\n" +
+                        "    'ownerName',\n" +
+                        "    'ownerName2'\n" +
+                        "  ];\n" +
+                        "  documentation: 'this is just for context';\n" +
+                        "  autoActivateUpdates: true;\n" +
+                        "  execution: Inline\n" +
+                        "  {\n" +
+                        "    query: |demo::_NPerson.all()->graphFetch(#{demo::_NPerson{Age,Name}}#)->serialize(#{demo::_NPerson{Age,Name}}#)->from(meta::myMapping, meta::myRuntime);\n" +
+                        "  }\n" +
+                        "  testSuites:\n" +
+                        "  [\n" +
+                        "  ]\n" +
+                        "}\n",null);
+    }
 }

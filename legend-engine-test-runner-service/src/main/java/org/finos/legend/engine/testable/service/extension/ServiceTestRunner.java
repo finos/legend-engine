@@ -15,12 +15,20 @@
 
 package org.finos.legend.engine.testable.service.extension;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+import static org.finos.legend.engine.testable.service.extension.TestRuntimeBuilder.getTestRuntimeAndClosableResources;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -35,29 +43,21 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureInlineExecution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
+
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
@@ -68,9 +68,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.service.assertion.ServiceTestAssertionEvaluator;
-import org.finos.legend.engine.testable.service.connection.TestConnectionBuilder;
 import org.finos.legend.engine.testable.service.helper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
@@ -80,16 +80,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
 public class ServiceTestRunner implements TestRunner
 {
@@ -148,7 +140,7 @@ public class ServiceTestRunner implements TestRunner
                 pureSingleExecution.runtime = param.runtime;
                 pureSingleExecution.executionOptions = param.executionOptions;
 
-                List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, testIds, pureModel, data, routerExtensions, planTransformers);
+                List<TestResult> testResultsForKey = executeServiceTestSuite(pureSingleExecution, suite, data, testIds, pureModel, routerExtensions, planTransformers);
                 Map<String, TestResult> testResultsForKeyById = Iterate.groupByUniqueKey(testResultsForKey, e -> e.atomicTestId.atomicTestId);
 
                 testResultsForKeyById.forEach((key, value) -> testResultsByTestId.get(key).addTestResult(param.key, value));
@@ -158,7 +150,11 @@ public class ServiceTestRunner implements TestRunner
         }
         else if (service.execution instanceof PureSingleExecution)
         {
-            return executeSingleExecutionTestSuite((PureSingleExecution) service.execution, suite, testIds, pureModel, data, routerExtensions, planTransformers);
+            return executeServiceTestSuite((PureSingleExecution) service.execution, suite, data, testIds, pureModel, routerExtensions, planTransformers);
+        }
+        else if (service.execution instanceof PureInlineExecution)
+        {
+            return executeServiceTestSuite((PureInlineExecution) service.execution, suite, data, testIds, pureModel, routerExtensions, planTransformers);
         }
         else
         {
@@ -166,19 +162,38 @@ public class ServiceTestRunner implements TestRunner
         }
     }
 
-    private List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> executeSingleExecutionTestSuite(PureSingleExecution execution, ServiceTestSuite suite, List<String> testIds, PureModel pureModel, PureModelContextData data, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers)
+    private List<TestResult> executeServiceTestSuite(PureExecution execution, ServiceTestSuite suite, PureModelContextData data, List<String> testIds, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers)
     {
         List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> results = Lists.mutable.empty();
-        Pair<Runtime, List<Closeable>> runtimeWithCloseables = null;
+        List<Closeable> closeables = Lists.mutable.empty();
 
+        if (execution instanceof PureSingleExecution)
+        {
+            Pair<EngineRuntime, List<Closeable>> runtimeWithCloseables = getTestRuntimeAndClosableResources(((PureSingleExecution) execution).runtime, suite.testData, data);
+            Runtime testSuiteRuntime = runtimeWithCloseables.getOne();
+            PureSingleExecution testPureSingleExecution = shallowCopySingleExecution((PureSingleExecution) execution);
+            testPureSingleExecution.runtime = testSuiteRuntime;
+            executeServiceExecutionTestSuite(testPureSingleExecution, suite, testIds, pureModel, routerExtensions, planTransformers, runtimeWithCloseables.getTwo(), results);
+        }
+        else if (execution instanceof PureInlineExecution)
+        {
+            PureInlineExecution testPureInlineExecution = shallowCopyInlineExecution((PureInlineExecution) execution);
+            closeables = updateInlineExecutionFunctionAndFetchCloseables(testPureInlineExecution.func, suite.testData, data);
+            executeServiceExecutionTestSuite(testPureInlineExecution, suite, testIds, pureModel, routerExtensions, planTransformers, closeables, results);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Execution type : " + execution.getClass().getSimpleName() + " not supported with ServiceTestRunner");
+        }
+
+        return results;
+    }
+
+    private List<org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult> executeServiceExecutionTestSuite(PureExecution execution, ServiceTestSuite suite, List<String> testIds, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions, MutableList<PlanTransformer> planTransformers, List<Closeable> closeables, List<TestResult> results)
+    {
         try
         {
-            runtimeWithCloseables = getTestRuntimeAndClosableResources(execution.runtime, suite.testData, data);
-            Runtime testSuiteRuntime = runtimeWithCloseables.getOne();
-            PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(execution);
-            testPureSingleExecution.runtime = testSuiteRuntime;
-
-            ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+            ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(execution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
             JavaHelper.compilePlan(singleExecutionPlan, null);
 
@@ -200,9 +215,9 @@ public class ServiceTestRunner implements TestRunner
         }
         finally
         {
-            if (runtimeWithCloseables != null)
+            if (closeables != null)
             {
-                runtimeWithCloseables.getTwo().forEach(closeable ->
+                closeables.forEach(closeable ->
                 {
                     try
                     {
@@ -217,56 +232,6 @@ public class ServiceTestRunner implements TestRunner
         }
 
         return results;
-    }
-
-    private Pair<Runtime, List<Closeable>> getTestRuntimeAndClosableResources(Runtime runtime, TestData testData, PureModelContextData pureModelContextData)
-    {
-        List<Closeable> closeables = Lists.mutable.empty();
-        EngineRuntime engineRuntime = resolveRuntime(runtime, pureModelContextData);
-
-        EngineRuntime testRuntime = new EngineRuntime();
-        testRuntime.mappings = engineRuntime.mappings;
-        testRuntime.connections = Lists.mutable.empty();
-
-        for (StoreConnections storeConnections : engineRuntime.connections)
-        {
-            StoreConnections testStoreConnections = new StoreConnections();
-            testStoreConnections.store = storeConnections.store;
-            testStoreConnections.storeConnections = Lists.mutable.empty();
-
-            for (IdentifiedConnection identifiedConnection : storeConnections.storeConnections)
-            {
-                ConnectionTestData connectionTestData = ListIterate.detect(testData.connectionsTestData, connectionData -> connectionData.id.equals(identifiedConnection.id));
-
-                EmbeddedData embeddedData = null;
-                if (connectionTestData != null)
-                {
-                    if (connectionTestData.data instanceof DataElementReference)
-                    {
-                        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
-                        embeddedData = dataElement.data;
-                    }
-                    else
-                    {
-                        embeddedData = connectionTestData.data;
-                    }
-                }
-
-                Pair<Connection, List<Closeable>> connectionWithCloseables = identifiedConnection.connection.accept(new TestConnectionBuilder(embeddedData, pureModelContextData));
-
-                closeables.addAll(connectionWithCloseables.getTwo());
-
-                IdentifiedConnection testIdentifiedConnection = new IdentifiedConnection();
-                testIdentifiedConnection.id = identifiedConnection.id;
-                testIdentifiedConnection.connection = connectionWithCloseables.getOne();
-
-                testStoreConnections.storeConnections.add(testIdentifiedConnection);
-            }
-
-            testRuntime.connections.add(testStoreConnections);
-        }
-
-        return Tuples.pair(testRuntime, closeables);
     }
 
     private org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult executeServiceTest(ServiceTest serviceTest, SingleExecutionPlan executionPlan)
@@ -369,26 +334,17 @@ public class ServiceTestRunner implements TestRunner
         return shallowCopy;
     }
 
-    private static EngineRuntime resolveRuntime(Runtime runtime, PureModelContextData pureModelContextData)
+    private static PureInlineExecution shallowCopyInlineExecution(PureInlineExecution pureSingleExecution)
     {
-        if (runtime instanceof EngineRuntime)
-        {
-            return (EngineRuntime) runtime;
-        }
-        if (runtime instanceof LegacyRuntime)
-        {
-            return ((LegacyRuntime) runtime).toEngineRuntime();
-        }
-        if (runtime instanceof RuntimePointer)
-        {
-            String runtimeFullPath = ((RuntimePointer) runtime).runtime;
-            PackageableElement found = Iterate.detect(pureModelContextData.getElements(), e -> runtimeFullPath.equals(e.getPath()));
-            if (!(found instanceof PackageableRuntime))
-            {
-                throw new RuntimeException("Can't find runtime '" + runtimeFullPath + "'");
-            }
-            return ((PackageableRuntime) found).runtimeValue;
-        }
-        throw new UnsupportedOperationException("Unsupported runtime type: " + runtime.getClass().getName());
+        PureInlineExecution shallowCopy = new PureInlineExecution();
+        shallowCopy.func = pureSingleExecution.func;
+        return shallowCopy;
+    }
+
+    private List<Closeable> updateInlineExecutionFunctionAndFetchCloseables(Lambda lambda, TestData testData, PureModelContextData pureModelContextData)
+    {
+        List<Closeable> closeables = Lists.mutable.empty();
+        lambda.body = ListIterate.collect(lambda.body, vs -> vs.accept(new TestValueSpecificationBuilder(closeables, testData, pureModelContextData)));
+        return closeables;
     }
 }

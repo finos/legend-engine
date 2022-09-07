@@ -1,0 +1,58 @@
+###Service
+Service service::SimpleRelationalInlineService
+{
+  pattern: '/d2c48a9c-70fa-46e3-8173-c355e774004f';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Inline
+  {
+    query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name'])->from(execution::RelationalMapping, execution::Runtime);
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              data::RelationalData
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+                  }#;
+              }#,
+            shouldFail:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"JohnDIFF","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

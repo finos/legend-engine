@@ -1414,4 +1414,95 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         // classMappingId
         Assert.assertEquals(rootRelationalInstanceSetImplementation._id(), "simple_Item");
     }
+
+    @Test
+    public void testInlinedExecutionService()
+    {
+        PureModel model = test("###Service\n" +
+                "Service service::SimpleProjectionService\n" +
+                "{\n" +
+                "  pattern: '/testUrl';\n" +
+                "  documentation: '';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Inline\n" +
+                "  {\n" +
+                "    query: |model::simple::Person.all()->project([x|$x.firstName, x|$x.lastName, x|$x.age], ['First Name', 'Last Name', 'Age'])->from(mapping::relational::simpleRelationalMapping, runtime::H2Runtime);\n" +
+                "  }\n" +
+                "  testSuites: \n" +
+                "  [\n" +
+                "  ]\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database stores::dbInc\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRSTNAME VARCHAR(200),\n" +
+                "    LASTNAME VARCHAR(200),\n" +
+                "    AGE INTEGER,\n" +
+                "    ADDRESSID INTEGER,\n" +
+                "    FIRMID INTEGER,\n" +
+                "    MANAGERID INTEGER\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class model::simple::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping mapping::relational::simpleRelationalMapping\n" +
+                "(\n" +
+                "  model::simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [stores::dbInc]personTable.ID\n" +
+                "    )\n" +
+                "    ~mainTable [stores::dbInc]personTable\n" +
+                "    firstName: [stores::dbInc]personTable.FIRSTNAME,\n" +
+                "    age: [stores::dbInc]personTable.AGE,\n" +
+                "    lastName: [stores::dbInc]personTable.LASTNAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection runtime::connection::H2Connection\n" +
+                "{\n" +
+                "  store: stores::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime runtime::H2Runtime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    mapping::relational::simpleRelationalMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    stores::dbInc:\n" +
+                "    [\n" +
+                "      connection_1: runtime::connection::H2Connection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n").getTwo();
+        Assert.assertNotNull(model.getPackageableElement("service::SimpleProjectionService"));
+    }
 }

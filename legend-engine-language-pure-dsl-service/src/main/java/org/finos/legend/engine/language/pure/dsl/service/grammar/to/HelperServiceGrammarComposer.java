@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureInlineExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
@@ -69,6 +70,14 @@ public class HelperServiceGrammarComposer
             appendTabString(builder, baseIndentation + 1).append("query: ").append(pureMultiExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).append(";\n");
             appendTabString(builder, baseIndentation + 1).append("key: ").append(convertString(pureMultiExecution.executionKey, true)).append(";\n");
             builder.append(LazyIterate.collect(pureMultiExecution.executionParameters, executionParameter -> renderKeyedExecutionParameter(executionParameter, context)).makeString("\n"));
+            return builder.append("\n").append(getTabString(baseIndentation)).append("}\n").toString();
+        }
+        else if (execution instanceof PureInlineExecution)
+        {
+            PureInlineExecution pureInlineExecution = (PureInlineExecution) execution;
+            StringBuilder builder = new StringBuilder().append("Inline\n");
+            appendTabString(builder, baseIndentation).append("{\n");
+            appendTabString(builder, baseIndentation + 1).append("query: ").append(pureInlineExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).append(";");
             return builder.append("\n").append(getTabString(baseIndentation)).append("}\n").toString();
         }
         return unsupported(execution.getClass());

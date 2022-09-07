@@ -40,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureInlineExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -277,6 +278,17 @@ public class ServiceParseTreeWalker
             // execution parameters (indexed by execution key)
             pureMultiExecution.executionParameters = ListIterate.collect(pureMultiExecContext.execParameter(), this::visitKeyedExecutionParameter);
             return pureMultiExecution;
+        }
+        else if (ctx.inlineExec() != null)
+        {
+            ServiceParserGrammar.InlineExecContext pureInlineExecCtx = ctx.inlineExec();
+            PureInlineExecution pureInlineExecution = new PureInlineExecution();
+            pureInlineExecution.sourceInformation = walkerSourceInformation.getSourceInformation(pureInlineExecCtx);
+            // function/query
+            ServiceParserGrammar.ServiceFuncContext funcContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureInlineExecCtx.serviceFunc(), "query", pureInlineExecution.sourceInformation);
+            pureInlineExecution.func = visitLambda(funcContext.combinedExpression());
+
+            return pureInlineExecution;
         }
         throw new UnsupportedOperationException();
     }

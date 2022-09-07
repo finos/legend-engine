@@ -281,8 +281,11 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     {
         Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
         this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
+        GenericType runtimeGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         org.finos.legend.pure.m3.coreinstance.Package pack = this.context.pureModel.getOrCreatePackage(packageableRuntime._package);
-        metamodel._name(packageableRuntime.name)._package(pack);
+        metamodel._name(packageableRuntime.name)
+                ._package(pack)
+                ._classifierGenericType(runtimeGenericType);
         pack._childrenAdd(metamodel);
         return metamodel;
     }

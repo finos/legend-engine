@@ -59,6 +59,10 @@ Class meta::legend::service::metamodel::PureExecution extends Execution
    func : FunctionDefinition<Any>[1];
 }
 
+Class meta::legend::service::metamodel::PureInlineExecution extends PureExecution
+{
+}
+
 Class meta::legend::service::metamodel::PureSingleExecution extends PureExecution
 {
    mapping : Mapping[1];

@@ -11,6 +11,7 @@ TAGS:                               'tags';
 SERVICE:                            'Service';
 IMPORT:                             'import';
 
+SERVICE_INLINE:                     'Inline';
 SERVICE_SINGLE:                     'Single';
 SERVICE_MULTI:                      'Multi';
 

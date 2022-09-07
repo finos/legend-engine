@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExe
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureInlineExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -64,11 +65,29 @@ public class ServicePlanGenerator
         {
             return generateSingleExecutionPlan((PureSingleExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers);
         }
-        if (execution instanceof PureMultiExecution)
+        else if (execution instanceof PureMultiExecution)
         {
             return generateCompositeExecutionPlan((PureMultiExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers);
         }
-        throw new IllegalArgumentException("Unsupported execution type: " + execution);
+        else if (execution instanceof PureInlineExecution)
+        {
+            return generateSingleExecutionPlanForInlineExecution((PureInlineExecution) execution, context, pureModel, clientVersion, platform, planId, extensions, transformers);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unsupported execution type: " + execution);
+        }
+    }
+
+    public static SingleExecutionPlan generateSingleExecutionPlanForInlineExecution(PureInlineExecution inlineExecution, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers)
+    {
+        return generateSingleExecutionPlanForInlineExecution(inlineExecution, context, pureModel, clientVersion, platform, null, extensions, transformers);
+    }
+
+    public static SingleExecutionPlan generateSingleExecutionPlanForInlineExecution(PureInlineExecution inlineExecution, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers)
+    {
+        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(inlineExecution.func.body, inlineExecution.func.parameters, pureModel.getContext());
+        return PlanGenerator.generateExecutionPlan(lambda, null, null, context, pureModel, clientVersion, platform, planId, extensions, transformers);
     }
 
     public static SingleExecutionPlan generateSingleExecutionPlan(PureSingleExecution singleExecution, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers)

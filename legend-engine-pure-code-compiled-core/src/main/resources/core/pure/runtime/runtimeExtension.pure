@@ -23,7 +23,7 @@ Class meta::pure::runtime::EngineRuntime extends Runtime
 // NOTE: we don't need to process the rest of engine runtime for now
 }
 
-Class meta::pure::runtime::PackageableRuntime extends PackageableElement
+Class meta::pure::runtime::PackageableRuntime extends Runtime, PackageableElement
 {
    runtimeValue: meta::pure::runtime::EngineRuntime[1];
 }
