@@ -8,7 +8,7 @@ mvn --version
 gpg --version
 
 # setting env variables
-export MAVEN_OPTS="-Xms16g -Xmx30g"
+export MAVEN_OPTS="-Xms16g -Xmx24g"
 
 # running the build
 mvn -B -e -T 8 install
