@@ -17,6 +17,8 @@ package org.finos.legend.engine.server;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -135,6 +137,9 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.addBundle(new SessionAttributeBundle());
         bootstrap.addBundle(new MultiPartBundle());
         bootstrap.addBundle(new ErrorHandlingBundle<T>(serverConfiguration -> serverConfiguration.errorhandlingconfiguration));
+
+        // Enable variable substitution with environment variables
+        bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
 
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
         VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());

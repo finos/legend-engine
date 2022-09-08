@@ -717,6 +717,64 @@ meta::pure::mapping::modelToModel::test::alloy::simple::simpleM2MMappingEpochDat
   
 }
 
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::simpleGraphFetchAndSerialize() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::shared::dest::Person {firstName,lastName} }#;
+
+   let res = meta::pure::executionPlan::executionPlan(
+      |meta::pure::mapping::modelToModel::test::shared::dest::Person.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::simple::simpleModelMapping,
+      ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
+                                element=^meta::pure::mapping::modelToModel::ModelStore(),
+                                class=_S_Person,
+                                url='data:application/json,[{"fullName":"John Doe"},{"fullName":"Pierre XE"},{"fullName":"_Hey Yo"}'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected =
+   'PureExp\n'+
+   '(\n'+
+   '  type = String\n'+
+   '  expression = [Node Index:0] -> serialize(#{meta::pure::mapping::modelToModel::test::shared::dest::Person {firstName, lastName}}#)\n'+
+   '  (\n'+
+   '    GlobalGraphFetch\n'+
+   '    (\n'+
+   '      type = PartialClass[impls=[(meta::pure::mapping::modelToModel::test::shared::dest::Person | simpleModelMapping.meta_pure_mapping_modelToModel_test_shared_dest_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
+   '      resultSizeRange = *\n'+
+   '      store = MODEL\n'+
+   '      localGraphFetchExecutionNode = \n'+
+   '         InMemoryRootGraphFetch\n'+
+   '         (\n'+
+   '           type = PartialClass[impls=[(meta::pure::mapping::modelToModel::test::shared::dest::Person | simpleModelMapping.meta_pure_mapping_modelToModel_test_shared_dest_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
+   '           graphFetchTree = [meta_pure_mapping_modelToModel_test_shared_dest_Person/meta::pure::mapping::modelToModel::test::shared::dest::Person]{@(meta_pure_mapping_modelToModel_test_shared_dest_Person->)@[/firstName],@(meta_pure_mapping_modelToModel_test_shared_dest_Person->)@[/lastName]}\n'+
+   '           nodeIndex = 0\n'+
+   '           batchSize = 1\n'+
+   '           checked = false\n'+
+   '           (\n'+
+   '             StoreStreamReading\n'+
+   '             (\n'+
+   '               type = PartialClass[impls=[], propertiesWithParameters = [fullName]]\n'+
+   '               graphFetchTree = #{meta::pure::mapping::modelToModel::test::shared::src::_S_Person{fullName}}#\n'+
+   '               connection = JsonModelConnection(url = data:application/json,[{"fullName":"John Doe"},{"fullName":"Pierre XE"},{"fullName":"_Hey Yo"}, class = meta::pure::mapping::modelToModel::test::shared::src::_S_Person)\n'+
+   '               enableConstraints = true\n'+
+   '               checked = false\n'+
+   '             )\n'+
+   '           )\n'+
+   '           children = [\n'+
+   '              \n'+
+   '           ]\n'+
+   '         )\n'+
+   '      children = [\n'+
+   '         \n'+
+   '      ]\n'+
+   '    )\n'+
+   '  )\n'+
+   ')\n';
+   assertEquals($expected, $res->meta::pure::executionPlan::toString::planToString(meta::pure::extension::defaultExtensions()));
+}
+
 ###Pure
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::*;

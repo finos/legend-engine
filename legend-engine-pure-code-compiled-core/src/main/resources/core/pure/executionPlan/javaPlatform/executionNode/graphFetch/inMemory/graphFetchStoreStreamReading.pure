@@ -18,6 +18,7 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
@@ -29,7 +30,16 @@ import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::executionPlan::engine::java::typeInfo::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::*;
 import meta::pure::runtime::*;
+
+// To be removed when external format is ready
+Class <<doc.deprecated>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::LegendJavaGraphFetchStoreStreamReadingExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   dataRecordClassFromConnectionExtractors: Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
+   dataRecordTreeFromConnectionExtractors: Function<{Nil[1] -> meta::pure::graphFetch::RootGraphFetchTree<Any>[0..1]}>[*];
+   streamReaderMethodCodeGenerators: Function<{Conventions[1], String[1], meta::pure::metamodel::type::Class<Any>[1], Code[1] -> Function<{Nil[1] -> Code[1]}>[*]}>[0..1];
+}
 
 function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::prepareForStoreStreamReading(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug: DebugContext[1]):GenerationContext[1]
 {
@@ -51,11 +61,8 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
          ])
       })->removeDuplicates());
    
-   let connectionTree = $node.connection->match($extensions.plan_javaRuntime_graphFetchStream_getConnectionTree->concatenate([ 
-      json : JsonModelConnection[1] | #{JsonDataRecord {number, record}}#,
-      xml  : XmlModelConnection[1]  | #{XmlDataRecord {number, record}}#,
-      a    : Any[1]                 | []
-   ])->toOneMany());
+   let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
+   let connectionTree = $node.connection->match($streamReadingAdhocExtensions.dataRecordTreeFromConnectionExtractors->concatenate([a : Any[1] | []])->toOneMany());
    
    let currentNodeInfo = ^NodeInfo(path = $path, returnType = $returnType, graphFetchTrees = [$node.graphFetchTree]->concatenate($connectionTree));
 
@@ -64,11 +71,8 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
 
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::extension::Extension[*]): JavaType[1]
 {
-   let dataRecordClass = $connection->match($extensions.plan_javaRuntime_graphFetchStream_sourceTypeFromConnection->concatenate([
-      j : JsonModelConnection[1] | JsonDataRecord,
-      x : XmlModelConnection[1]  | XmlDataRecord,
-      a : Any[1]                 | JsonDataRecord
-   ])->toOneMany());
+   let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
+   let dataRecordClass = $connection->match($streamReadingAdhocExtensions.dataRecordClassFromConnectionExtractors->concatenate([a : Any[1] | JsonDataRecord])->toOneMany());
    
    ^SimpleJavaType(pureType = $dataRecordClass, javaType = $conventions->className($dataRecordClass));
 }
@@ -100,29 +104,8 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
 
    let storeStreamReadingContext = $conventions->iStoreStreamReadingExecutionNodeContextParam();   
 
-   let streamReaderMethodCodes = $connection->match($extensions.plan_javaRuntime_graphFetchStream_streamReaderMethodCodes->map(f| $f->eval($conventions, $storeStreamReadingContext))->concatenate([
-      {
-         json: JsonModelConnection[1] | 
-            $conventions->jsonReaderClass($path, $pureClass)
-               ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($json.url))->j_invoke('openStream', []))
-               ->j_return()
-               ->j_ioExTryCatch()
-      },
-      {
-         xml: XmlModelConnection[1] | 
-            $conventions->xmlReaderClass($path, $pureClass)
-               ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($xml.url))->j_invoke('openStream', []))
-               ->j_return()
-               ->j_ioExTryCatch()
-      },
-      {
-         model: ModelConnection[1] | 
-            let varName = $model.instances->values()->at(0)->get(0)->cast(@RoutedVariablePlaceHolder).name;
-            let typeArg = $storeStreamReadingContext->j_invoke('streamType', $conventions->className($pureClass)->j_field('class', javaClassType()), javaReflectType());
-            $conventions->streamReaderClass($path)
-               ->j_new($storeStreamReadingContext->j_invoke('getResult', [j_string($varName), $typeArg], javaStream($conventions->className($pureClass))))->j_return();
-      }
-   ])->toOneMany());
+   let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
+   let streamReaderMethodCodes = $connection->match($streamReadingAdhocExtensions.streamReaderMethodCodeGenerators->map(f| $f->eval($conventions, $path, $pureClass, $storeStreamReadingContext))->toOneMany());
    
    let executeClassWithImports = $conventions->planNodeClass('public', $path, 'Execute')
       ->usingKnownPackages($conventions->knownPackages())

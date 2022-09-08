@@ -17,10 +17,25 @@ import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::extension::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+
+Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaProhibitedFunctionsExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   {doc.doc = 'Functions not expected to be user facing and for which translation is not supported)'}
+   prohibitedFunctions: Function<Any>[*];
+}
+
+Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformDependencyUpdateExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   {doc.doc = 'To update conventions with platform dependencies'}
+   platformDependencyUpdate: Function<{Conventions[1], Extension[*]->Conventions[1]}>[0..1];
+}
 
 function meta::pure::executionPlan::engine::java::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
 {
-   newConventions($extensions)
+   let extraProhibitedFunctions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaProhibitedFunctionsExtension).prohibitedFunctions;
+
+   newConventions($extensions, $extraProhibitedFunctions)
       ->applyJavaEngineDependencies($extensions)
       ->registerBooleanLibrary()
       ->registerCollectionsLibrary()
@@ -32,5 +47,5 @@ function meta::pure::executionPlan::engine::java::engineConventions(extensions:m
       ->registerMultiplicityLibrary()
       ->registerStringLibrary()
       ->registerUnitLibrary()
-      ->registerRuntimeLibrary()
+      ->registerRuntimeLibrary();
 }

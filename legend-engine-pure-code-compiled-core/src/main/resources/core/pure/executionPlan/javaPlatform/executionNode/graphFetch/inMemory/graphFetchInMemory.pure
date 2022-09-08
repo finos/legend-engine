@@ -20,6 +20,7 @@ import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
@@ -34,11 +35,24 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::xStore::*;
 import meta::pure::milestoning::*;
 import meta::pure::extension::*;
 import meta::pure::runtime::*;
+
+Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::LegendJavaInMemoryGraphFetchExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   {doc.doc = 'Filter code generation'}
+   filterCodeGenerator:  Function<{InstanceSetImplementation[1], Code[1], Code[1..*], GenerationContext[1], DebugContext[1]->Function<{Nil[1]->Code[1..*]}>[*]}>[*];
+   
+   {doc.doc = 'Extract transform function from property mapping'}
+   mappingTransformExtractors : Function<{Nil[1]->FunctionDefinition<Any>[1]}>[*];
+
+   {doc.doc = 'Extract value transformer from property mapping'}
+   valueTransformerExtractors : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
+}
 
 function meta::pure::executionPlan::engine::java::graphFetch::inMemory::prepareForInMemoryGraphFetch(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
 {
@@ -582,10 +596,11 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
             {|
                assert($propertyMapping->isNotEmpty(), | 'No mapping found for property - \'' + $property.name->toOne() + '\'');
 
-               let transformFunction = $propertyMapping->toOne()->match([ppm : PurePropertyMapping[1] | $ppm.transform]->concatenate($extensions.java_graphFetch_inMemory_generatePropertyMapping1)->toOneMany());
+               let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
+               let transformFunction = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.mappingTransformExtractors->toOneMany());
                let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), $property->functionReturnMultiplicity());
                let javaExpression    = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
-               let valueTransformer  = $propertyMapping->toOne()->match([ppm : PurePropertyMapping[1] | $ppm.transformer]->concatenate($extensions.java_graphFetch_inMemory_generatePropertyMapping2)->toOneMany());
+               let valueTransformer  = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.valueTransformerExtractors->toOneMany());
                let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
                let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
 
@@ -610,18 +625,10 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::applyTypeFilter(set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
 {
-   print(if($debug.debug,|$debug.space+'filter generation\n', |''));
-   
-   let pureSetFilterGeneration = {ps : PureInstanceSetImplementation[1] |
-      if ($ps.filter->isNotEmpty(),
-          | $ps.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($context.conventions, $debug->indent())->j_if($withoutFilter, j_null()->j_return()),
-          | $withoutFilter
-      )
-   };
-   
-   let otherSetsFilterGeneration = $extensions.java_graphFetch_inMemory_applyTypeFilter->map(f|$f->evaluate([list($set), list($src), list($withoutFilter), list($context), list($debug)])->cast(@Function<{Nil[1]->Code[1..*]}>));
-   
-   $set->match($pureSetFilterGeneration->concatenate($otherSetsFilterGeneration)->toOneMany());
+   print(if($debug.debug,|$debug.space+'filter generation\n', |'')); 
+ 
+   let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
+   $set->match($inMemoryAdhocExtensions.filterCodeGenerator->map(f|$f->eval($set, $src, $withoutFilter, $context, $debug))->toOneMany());
 }
 
 

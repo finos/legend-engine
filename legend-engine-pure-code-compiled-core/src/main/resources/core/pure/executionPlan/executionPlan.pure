@@ -186,7 +186,7 @@ Class meta::pure::mapping::aggregationAware::AggregationAwareExecutionNode exten
 }
 
 
-Class meta::pure::executionPlan::EngineDependencies
+Class <<doc.deprecated>> meta::pure::executionPlan::EngineDependencies
 {
    dependencyMap: Map<Class<Any>, String>[1];
 
@@ -195,7 +195,7 @@ Class meta::pure::executionPlan::EngineDependencies
    }: String[1];
 }
 
-Class meta::pure::executionPlan::PlatformCodeGenerationConfig
+Class <<doc.deprecated>> meta::pure::executionPlan::PlatformCodeGenerationConfig
 {
    platform: Platform[1];
    planId: String[0..1];
@@ -203,7 +203,7 @@ Class meta::pure::executionPlan::PlatformCodeGenerationConfig
    graphFetchWithCachingFlow: Boolean[0..1];
 }
 
-Enum meta::pure::executionPlan::Platform
+Enum <<doc.deprecated>> meta::pure::executionPlan::Platform
 {
    JAVA
 }

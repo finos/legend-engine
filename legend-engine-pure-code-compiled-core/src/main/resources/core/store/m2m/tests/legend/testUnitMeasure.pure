@@ -103,6 +103,65 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
    assert(jsonEquivalent('{"weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Pound", "exponentValue":1}],"value":12.12548777530369}}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::units::unitMappingPlanGenerationTest() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::units::dest::HealthProfile {weight} }#;
+
+   let res = meta::pure::executionPlan::executionPlan(
+      |meta::pure::mapping::modelToModel::test::units::dest::HealthProfile.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::units::instanceIdentityMapping,
+      ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
+                                element=^meta::pure::mapping::modelToModel::ModelStore(),
+                                class=meta::pure::mapping::modelToModel::test::units::src::_HealthProfile,
+                                url='data:application/json,{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5}}'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   let expected =
+   'PureExp\n'+
+   '(\n'+
+   '  type = String\n'+
+   '  expression = [Node Index:0] -> serialize(#{meta::pure::mapping::modelToModel::test::units::dest::HealthProfile {weight}}#)\n'+
+   '  (\n'+
+   '    GlobalGraphFetch\n'+
+   '    (\n'+
+   '      type = PartialClass[impls=[(meta::pure::mapping::modelToModel::test::units::dest::HealthProfile | instanceIdentityMapping.meta_pure_mapping_modelToModel_test_units_dest_HealthProfile)], propertiesWithParameters = [weight]]\n'+
+   '      resultSizeRange = *\n'+
+   '      store = MODEL\n'+
+   '      localGraphFetchExecutionNode = \n'+
+   '         InMemoryRootGraphFetch\n'+
+   '         (\n'+
+   '           type = PartialClass[impls=[(meta::pure::mapping::modelToModel::test::units::dest::HealthProfile | instanceIdentityMapping.meta_pure_mapping_modelToModel_test_units_dest_HealthProfile)], propertiesWithParameters = [weight]]\n'+
+   '           graphFetchTree = [meta_pure_mapping_modelToModel_test_units_dest_HealthProfile/meta::pure::mapping::modelToModel::test::units::dest::HealthProfile]{@(meta_pure_mapping_modelToModel_test_units_dest_HealthProfile->)@[/weight]}\n'+
+   '           nodeIndex = 0\n'+
+   '           batchSize = 1\n'+
+   '           checked = false\n'+
+   '           (\n'+
+   '             StoreStreamReading\n'+
+   '             (\n'+
+   '               type = PartialClass[impls=[], propertiesWithParameters = [weight]]\n'+
+   '               graphFetchTree = #{meta::pure::mapping::modelToModel::test::units::src::_HealthProfile{weight}}#\n'+
+   '               connection = JsonModelConnection(url = data:application/json,{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5}}, class = meta::pure::mapping::modelToModel::test::units::src::_HealthProfile)\n'+
+   '               enableConstraints = true\n'+
+   '               checked = false\n'+
+   '             )\n'+
+   '           )\n'+
+   '           children = [\n'+
+   '              \n'+
+   '           ]\n'+
+   '         )\n'+
+   '      children = [\n'+
+   '         \n'+
+   '      ]\n'+
+   '    )\n'+
+   '  )\n'+
+   ')\n';
+   assertEquals($expected, $res->meta::pure::executionPlan::toString::planToString(meta::pure::extension::defaultExtensions()));
+}
+
+
 ###Mapping
 import meta::pure::mapping::modelToModel::test::units::src::*;
 import meta::pure::executionPlan::engine::java::*;
