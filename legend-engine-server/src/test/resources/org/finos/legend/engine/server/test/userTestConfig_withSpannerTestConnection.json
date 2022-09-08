@@ -83,12 +83,13 @@
     "Spanner": {
       "_type": "RelationalDatabaseConnection",
       "datasourceSpecification": {
+        "_type": "spanner",
         "projectId": "legend-integration-testing",
         "instanceId": "test-instance",
         "databaseId": "test-db"
       },
       "authenticationStrategy": {
-        "_type": "GCPApplicationDefaultCredentialsAuthenticationStrategy"
+        "_type": "gcpApplicationDefaultCredentials"
       },
       "type": "Spanner",
       "element": "",
