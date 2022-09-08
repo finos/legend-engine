@@ -1,0 +1,140 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::*;
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::engine::java::graphFetch::relational::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::relational::graphFetch::executionPlan::*;
+import meta::relational::mapping::*;
+
+function meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
+{
+   ^LegendJavaPlatformBindingExtension
+   (
+      platformId = legendJavaPlatformBindingId(),
+
+      id = 'RelationalLegendJavaPlatformBindingExtension',
+
+      // Node based extensions ------------------------------------------------------
+
+      supportedExecutionNodes = [
+         RelationalGraphFetchExecutionNode,
+         RelationalClassInstantiationExecutionNode,
+         CreateAndPopulateTempTableExecutionNode
+      ],
+
+      extraChildNodesWithIndex = {node: ExecutionNode[1] |
+         $node->match([
+            r: RelationalGraphFetchExecutionNode[1] | $r.children->size()->range()->map(x | pair($r.children->at($x), 'localChild' + $x->toString())),
+            n: ExecutionNode[1]                     | []
+         ])
+      },
+
+      updateGenerationContextForNode = {node: ExecutionNode[1], context: GenerationContext[1], path: String[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            r: RelationalGraphFetchExecutionNode[1]         | $r->prepareForRelationalGraphFetch($path, $context, $debug),
+            r: RelationalClassInstantiationExecutionNode[1] | $r->prepareForClassResult($path, $context, $debug),
+            n: ExecutionNode[1]                             | $context
+         ])
+      },
+
+      generateLegendJavaCodeForNode = {node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            {r: RelationalGraphFetchExecutionNode[1] |
+               let relationalGraphImplUpdateFunction = {impl: meta::external::language::java::metamodel::Class[1] |
+                  $impl->enrichForRelationalGraphExecution($r, $context, $extensions, $debug)
+               };
+               let baseProject  = $r->generateBaseProjectForLocalGraphFetchNode($path, $context, $relationalGraphImplUpdateFunction, $debug);
+               let storeProject = $r->generateRelationalStoreGraphFetchProject($path, $context, $extensions, $debug);
+
+               generatedCode(
+                  $baseProject->concatenate($storeProject)->toOneMany()->mergeProjects(),
+                  $storeProject->resolve($context.conventions->planNodeClass('public', $path, 'Execute'))
+               );
+            },
+            {r: RelationalClassInstantiationExecutionNode[1] |
+               $r.resultType->match([
+                  pc : PartialClassResultType[1] | $r->generateImplementionForRelationalPartialClassResult($path, $pc.propertiesWithParameters.property, $context, $debug),
+                  c  : ClassResultType[1]        | $r->generateImplementionForRelationalClassResult($path, $context, $debug)
+               ])
+            },
+            r: CreateAndPopulateTempTableExecutionNode[1] | $r->generateImplementationForCreateAndPopulateTempTableNode($path, $context, $debug),
+            n: ExecutionNode[1]                           | ^GeneratedCode()
+         ])
+      },
+
+      generateLegendJavaCodeForExtraChildNodes = {node: ExecutionNode[1], project: Project[0..1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            {r: RelationalGraphFetchExecutionNode[1] |
+               let transformedChildren = $r.children->size()->range()->map(x | $r.children->at($x)->generateLegendJavaPlatformBindingCode($path + '.localChild' + $x->toString(), $context, $extensions, $debug));
+               ^GeneratedNode
+               (
+                  node    = ^$r(children = $transformedChildren.node->cast(@RelationalGraphFetchExecutionNode)),
+                  project = $project->concatenate($transformedChildren.project)->mergeProjectsNullable()
+               );
+            },
+            n: ExecutionNode[1] | ^GeneratedNode(node = $node, project = $project)
+         ])
+      },
+
+      // ------------------------------------------------------ Node based extensions
+
+
+      // Adhoc extensions -----------------------------------------------------------      
+
+      adhocExtensions = [
+         
+         ^LegendJavaProhibitedFunctionsExtension
+         (
+            prohibitedFunctions = [
+               meta::relational::functions::columnProjectionsFromRoot_Any_MANY__NamedRelation_1__String_MANY__Boolean_$0_1$__Integer_$0_1$__RelationData_1_,
+               meta::relational::metamodel::execute::createTempTable_String_1__Column_MANY__Function_1__Boolean_1__DatabaseConnection_1__Nil_0_,
+               meta::relational::metamodel::execute::createTempTable_String_1__Column_MANY__Function_1__DatabaseConnection_1__Nil_0_,
+               meta::relational::metamodel::execute::dropTempTable_String_1__DatabaseConnection_1__Nil_0_,
+               meta::relational::metamodel::execute::executeInDb_String_1__DatabaseConnection_1__Integer_1__Integer_1__ResultSet_1_,
+               meta::relational::metamodel::execute::fetchDbColumnsMetaData_DatabaseConnection_1__String_$0_1$__String_$0_1$__String_$0_1$__ResultSet_1_,
+               meta::relational::metamodel::execute::fetchDbImportedKeysMetaData_DatabaseConnection_1__String_$0_1$__String_1__ResultSet_1_,
+               meta::relational::metamodel::execute::fetchDbPrimaryKeysMetaData_DatabaseConnection_1__String_$0_1$__String_1__ResultSet_1_,
+               meta::relational::metamodel::execute::fetchDbSchemasMetaData_DatabaseConnection_1__String_$0_1$__ResultSet_1_,
+               meta::relational::metamodel::execute::fetchDbTablesMetaData_DatabaseConnection_1__String_$0_1$__String_$0_1$__ResultSet_1_,
+               meta::relational::metamodel::execute::loadCsvToDbTable_String_1__Table_1__DatabaseConnection_1__Integer_$0_1$__Nil_0_,
+               meta::relational::metamodel::execute::loadValuesToDbTable_List_1__Table_1__DatabaseConnection_1__Nil_0_,
+               meta::relational::metamodel::execute::loadValuesToDbTable_List_MANY__Table_1__DatabaseConnection_1__Nil_0_,
+               meta::pure::functions::io::logActivities_Activity_MANY__Nil_0_
+            ]
+         ),
+
+         ^LegendJavaObjectReferenceParsingExtension
+         (
+            storeType = meta::relational::postProcessor::getObjectReferenceStoreType(),
+            generateObjectReferenceParserImpl = {args: Any[*], path: String[1], context: GenerationContext[1], debug: DebugContext[1] |
+               meta::pure::executionPlan::engine::java::getRelationalObjectReferenceParserHelperClass($args->cast(@String), $path, $context, $debug);
+            }
+         )
+
+      ]
+
+      // ----------------------------------------------------------- Adhoc extensions
+
+   )
+}

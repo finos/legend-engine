@@ -65,71 +65,12 @@ function <<access.private>> meta::external::store::service::extension::serviceSt
             $tree;
          }
       },
-      java_graphFetch_inMemory_applyTypeFilter = {
-         set:InstanceSetImplementation[1], src:Code[1], withoutFilter:Code[1..*], context:GenerationContext[1], debug:DebugContext[1] | [
-            rsi: RootServiceInstanceSetImplementation[1] | $withoutFilter,
-            esi: EmbeddedServiceStoreSetImplementation[1] | $withoutFilter
-         ]
-      },
-      java_graphFetch_inMemory_generatePropertyMapping1 = [
-         {spm : ServiceStorePropertyMapping[1] | let dummyLambda = {|'ok'};
-                                                 let gen = ^GenericType
-                                                            (
-                                                               rawType = LambdaFunction,
-                                                               typeArguments = ^GenericType
-                                                                                 (
-                                                                                    rawType = ^meta::pure::metamodel::type::FunctionType
-                                                                                             (
-                                                                                                parameters = [],
-                                                                                                returnType = $spm.property->functionReturnType(),
-                                                                                                returnMultiplicity= $spm.property->functionReturnMultiplicity()
-                                                                                             )
-                                                                                 )
-                                                            );
-                                                 let exp = ^SimpleFunctionExpression(func = $spm.property,
-                                                                                     genericType = $spm.property.genericType,
-                                                                                     importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
-                                                                                     multiplicity = $spm.property.multiplicity,
-                                                                                     parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $spm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
-                                                                                     propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $spm.property.name));
-                                                 ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);},
-         {epm : EmbeddedServiceStoreSetImplementation[1] | let dummyLambda = {|'ok'};
-                                                 let gen = ^GenericType
-                                                            (
-                                                               rawType = LambdaFunction,
-                                                               typeArguments = ^GenericType
-                                                                                 (
-                                                                                    rawType = ^meta::pure::metamodel::type::FunctionType
-                                                                                             (
-                                                                                                parameters = [],
-                                                                                                returnType = $epm.property->functionReturnType(),
-                                                                                                returnMultiplicity= $epm.property->functionReturnMultiplicity()
-                                                                                             )
-                                                                                 )
-                                                            );
-                                                 let exp = ^SimpleFunctionExpression(func = $epm.property,
-                                                                                     genericType = $epm.property.genericType,
-                                                                                     importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
-                                                                                     multiplicity = $epm.property.multiplicity,
-                                                                                     parametersValues = ^VariableExpression(genericType=^GenericType(rawType = $epm.property.owner->cast(@meta::pure::metamodel::type::Class<Any>)), multiplicity = PureOne, name = 'src'),
-                                                                                     propertyName = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = $epm.property.name));
-                                                 ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $exp);}
-      ],
-      java_graphFetch_inMemory_generatePropertyMapping2 = [
-         spm : ServiceStorePropertyMapping[1] |  [],
-         epm : EmbeddedServiceStoreSetImplementation[1] | []
-      ],
-      plan_javaRuntime_main_generatePlatformCode1 =
-            {path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
-               [
-                  s:ServiceParametersResolutionExecutionNode[1] | $s->generateImplementationForServiceParametersResolutionNode($path, $context, $debug)
-               ]
-            },
-      plan_javaRuntime_main_prepare2 =
-            {path:String[1], contextFromOtherNodes:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1] |
-               [
-                  l:LimitExecutionNode[1] | $l->prepareForLimitExecutionNode($path, $contextFromOtherNodes, $debug)
-               ]
-            }
+
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = meta::pure::extension::defaultExtensions().availablePlatformBindings->concatenate(
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+           meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension()
+         ])
+      )
    )
 }

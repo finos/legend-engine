@@ -38,45 +38,6 @@ import meta::pure::metamodel::type::*;
 
 import meta::pure::extension::*;
 
-function meta::external::shared::format::executionPlan::engine::java::planPrepareExternalFormatNodes(externalFormatContracts:ExternalFormatContract<Any>[*], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GenerationContext[1]}>[*]
-{
-  [
-    {node:DataQualityExecutionNode[1] | 
-      print(if($debug.debug,|$debug.space+'('+$path+') prepare DataQualityExecutionNode\n', |''));
-      let childNodeInfo   = $context->nodeInfosForPath($path + '.n1')->toOne();
-      $context->addNodeInfo(^$childNodeInfo(path=$path));
-    },
-    {node:ExternalFormatInternalizeExecutionNode[1] | 
-      let externalFormatContract = $externalFormatContracts->getExternalFormatContractForContentType($node.binding.contentType);
-      prepareExternalFormatInternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
-    },
-    {node:ExternalFormatExternalizeExecutionNode[1] | 
-      let externalFormatContract = $externalFormatContracts->getExternalFormatContractForContentType($node.binding.contentType);
-      prepareExternalFormatExternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
-    }
-  ]
-}
-
-function meta::external::shared::format::executionPlan::engine::java::planJavaGenerateExternalFormatNodes(externalFormatExtensions:ExternalFormatContract<Any>[*], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]): Function<{Nil[1]->GeneratedCode[1]}>[*]
-{
-  [
-    {node:ExternalFormatInternalizeExecutionNode[1] | 
-      let formatExtension = $externalFormatExtensions->getExternalFormatContractForContentType($node.binding.contentType);
-      let externalFormatJavaBindingDescriptor = $formatExtension.externalFormatPlanDescriptor.platformBindingDescriptors->filter(pb | $pb->instanceOf(ExternalFormatJavaBindingDescriptor))->cast(@ExternalFormatJavaBindingDescriptor);
-      assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
-      assert($externalFormatJavaBindingDescriptor.internalizeDescriptor->size() == 1, | 'Expected 1 internalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.internalizeDescriptor->size()->toString());
-      $externalFormatJavaBindingDescriptor.internalizeDescriptor->toOne().internalizeGenerator->eval($node, $path, $context, $debug);
-    },
-    {node:ExternalFormatExternalizeExecutionNode[1] | 
-      let formatExtension = $externalFormatExtensions->getExternalFormatContractForContentType($node.binding.contentType);
-      let externalFormatJavaBindingDescriptor = $formatExtension.externalFormatPlanDescriptor.platformBindingDescriptors->filter(pb | $pb->instanceOf(ExternalFormatJavaBindingDescriptor))->cast(@ExternalFormatJavaBindingDescriptor);
-      assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
-      assert($externalFormatJavaBindingDescriptor.externalizeDescriptor->size() == 1, | 'Expected 1 externalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.externalizeDescriptor->size()->toString());
-      $externalFormatJavaBindingDescriptor.externalizeDescriptor->toOne().externalizeGenerator->eval($node, $path, $context, $debug);
-    }
-  ]
-}
-
 function meta::external::shared::format::executionPlan::engine::java::prepareExternalFormatInternalizeExecutionNode(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatInternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
