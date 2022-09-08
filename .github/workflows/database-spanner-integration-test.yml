@@ -70,4 +70,3 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
           mvn -P run-spanner-integration -pl legend-engine-xt-relationalStore-executionPlan-connection-tests -Dtest=ExternalIntegration*Spanner test
-          mvn -P run-spanner-integration -pl legend-engine-xt-relationalStore-spanner-execution -Dtest=ExternalIntegration*Spanner* test
