@@ -94,10 +94,10 @@ public class MasteryParseTreeWalker
         source.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         MasteryParserGrammar.IdContext idContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.id(), "id", source.sourceInformation);
-        source.id = idContext.STRING().getText();
+        source.id = PureGrammarParserUtility.fromGrammarString(idContext.STRING().getText(), true);
 
         MasteryParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.description(), "description", source.sourceInformation);
-        source.description = descriptionContext.STRING().getText();
+        source.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
 
         MasteryParserGrammar.RecordStatusContext statusContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.recordStatus(), "status", source.sourceInformation);
         source.status = visitRecordStatus(statusContext);
@@ -121,7 +121,7 @@ public class MasteryParseTreeWalker
             ListIterator stringIterator = tagsContext.STRING().listIterator();
             while (stringIterator.hasNext())
             {
-                source.tags.add(((TerminalNode) stringIterator.next()).toString());
+                source.tags.add(PureGrammarParserUtility.fromGrammarString(stringIterator.next().toString(), true));
             }
         }
 
@@ -197,7 +197,7 @@ public class MasteryParseTreeWalker
         RecordSourcePartition partition = new RecordSourcePartition();
 
         MasteryParserGrammar.IdContext idContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.id(), "id", sourceInformation);
-        partition.id = idContext.STRING().getText();
+        partition.id = PureGrammarParserUtility.fromGrammarString(idContext.STRING().getText(), true);
 
         MasteryParserGrammar.TagsContext tagsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tags(), "tags", sourceInformation);
         if (tagsContext != null)
@@ -205,7 +205,7 @@ public class MasteryParseTreeWalker
             ListIterator stringIterator = tagsContext.STRING().listIterator();
             while (stringIterator.hasNext())
             {
-                partition.tags.add(((TerminalNode) stringIterator.next()).toString());
+                partition.tags.add(PureGrammarParserUtility.fromGrammarString(stringIterator.next().toString(), true));
             }
         }
         return partition;
