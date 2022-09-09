@@ -114,25 +114,6 @@ snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON
 dbRole:                                     ROLE COLON STRING SEMI_COLON
 ;
 
-spannerDatasourceSpecification:             SPANNER_DATA_SOURCE_SPECIFICATION
-                                                BRACE_OPEN
-                                                    (
-                                                        dbHost
-                                                        | dbPort
-                                                        | projectId
-                                                        | instanceId
-                                                        | databaseId
-                                                    )*
-                                                BRACE_CLOSE
-;
-
-databaseId:                                 DATABASE COLON STRING SEMI_COLON
-;
-instanceId:                                 INSTANCE COLON STRING SEMI_COLON
-;
-projectId:                                    PROJECT COLON STRING SEMI_COLON
-;
-
 region:                                     REGION COLON STRING SEMI_COLON
 ;
 endpointURL:                                 ENDPOINT_URL COLON STRING SEMI_COLON

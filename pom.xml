@@ -184,6 +184,8 @@
         <module>legend-engine-xt-relationalStore-spanner-pure</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
+        <module>legend-engine-xt-relationalStore-spanner-grammar</module>
+        <module>legend-engine-xt-relationalStore-spanner-protocol</module>
     </modules>
 
     <properties>

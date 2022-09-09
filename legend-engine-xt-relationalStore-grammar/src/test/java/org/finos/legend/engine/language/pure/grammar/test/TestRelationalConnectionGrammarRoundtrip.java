@@ -475,28 +475,6 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
     }
 
     @Test
-    public void testSpannerConnectionSpecification()
-    {
-        //language=TEXT
-        test("###Connection\n" +
-                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: store::Store;\n" +
-                "  type: Spanner;\n" +
-                "  specification: Spanner\n" +
-                "  {\n" +
-                "    projectId: 'spanner-emulator-test-1';\n" +
-                "    instanceId: 'test-instance-1';\n" +
-                "    databaseId: 'test-db';\n" +
-                "    host: 'localhost';\n" +
-                "    port: 9010;\n" +
-                "  };\n" +
-                "  auth: DelegatedKerberos;\n" +
-                "}\n"
-        );
-    }
-
-    @Test
     public void testEmulatorConnectionSpecification()
     {
         //language=TEXT

@@ -23,7 +23,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
 public class DataSourceSpecificationParseTreeWalker
@@ -168,25 +167,4 @@ public class DataSourceSpecificationParseTreeWalker
         return redshiftSpec;
     }
 
-    public SpannerDatasourceSpecification visitSpannerDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.SpannerDatasourceSpecificationContext dbSpecCtx)
-    {
-        SpannerDatasourceSpecification dsSpec = new SpannerDatasourceSpecification();
-        dsSpec.sourceInformation = code.getSourceInformation();
-        // project id
-        DataSourceSpecificationParserGrammar.ProjectIdContext projectIdCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.projectId(), "projectId", dsSpec.sourceInformation);
-        dsSpec.projectId = PureGrammarParserUtility.fromGrammarString(projectIdCtx.STRING().getText(), true);
-        // instanceId
-        DataSourceSpecificationParserGrammar.InstanceIdContext instanceIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.instanceId(), "instanceId", dsSpec.sourceInformation);
-        dsSpec.instanceId = PureGrammarParserUtility.fromGrammarString(instanceIdContext.STRING().getText(), true);
-        // databaseId
-        DataSourceSpecificationParserGrammar.DatabaseIdContext databaseIdCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.databaseId(), "databaseId", dsSpec.sourceInformation);
-        dsSpec.databaseId = PureGrammarParserUtility.fromGrammarString(databaseIdCtx.STRING().getText(), true);
-        // proxy host
-        DataSourceSpecificationParserGrammar.DbHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbHost(), "host", dsSpec.sourceInformation);
-        Optional.ofNullable(proxyHostContext).ifPresent(hostCtx -> dsSpec.proxyHost = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));
-        // proxy port
-        DataSourceSpecificationParserGrammar.DbPortContext proxyPortContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbPort(), "port", dsSpec.sourceInformation);
-        Optional.ofNullable(proxyPortContext).ifPresent(portCtx -> dsSpec.proxyPort = Integer.parseInt(portCtx.INTEGER().getText()));
-        return dsSpec;
-    }
 }
