@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1;
 
-import java.util.List;
-import java.util.Map;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -85,6 +83,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Databas
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
+
+import java.util.List;
+import java.util.Map;
 
 public class RelationalProtocolExtension implements PureProtocolExtension
 {

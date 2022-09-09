@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Function;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -44,6 +41,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.MappingEleme
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
@@ -67,6 +65,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 public class RelationalGrammarParserExtension implements IRelationalGrammarParserExtension
 {
@@ -161,6 +163,7 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
                     return parseDataSourceSpecification(code, p -> walker.visitSnowflakeDatasourceSpecification(code, p.snowflakeDatasourceSpecification()));
                 case "Redshift":
                     return parseDataSourceSpecification(code, p -> walker.visitRedshiftDatasourceSpecification(code, p.redshiftDatasourceSpecification()));
+
                 default:
                     return null;
             }
