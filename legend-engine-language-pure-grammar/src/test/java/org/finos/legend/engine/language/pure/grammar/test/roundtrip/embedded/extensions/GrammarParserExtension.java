@@ -12,10 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::json::*;
-import meta::alloy::metadataServer::*;
-import meta::pure::mapping::*;
+package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
-native function meta::legend::compile(s:String[1]):PackageableElement[*];
+import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 
-native function meta::legend::compileVS(s:String[1]):Any[1];
+public class GrammarParserExtension implements PureGrammarParserExtension
+{
+    @Override
+    public Iterable<? extends EmbeddedPureParser> getExtraEmbeddedPureParsers()
+    {
+        return Lists.mutable.with(new EmbeddedPureParserExtension());
+    }
+}
