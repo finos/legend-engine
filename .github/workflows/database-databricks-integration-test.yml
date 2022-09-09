@@ -63,7 +63,7 @@ jobs:
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global author.name "${GITHUB_ACTOR}"
       - name: Download patch
-        if: ${{ github.event.inputs.pullRequestId }} != ''
+        if: github.event.inputs.pullRequestId != ''
         run: |
           wget --output-document=run.diff http://patch-diff.githubusercontent.com/raw/finos/legend-engine/pull/${{ github.event.inputs.pullRequestId }}.diff
           git apply run.diff
