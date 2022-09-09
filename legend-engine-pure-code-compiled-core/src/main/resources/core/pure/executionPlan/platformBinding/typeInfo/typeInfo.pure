@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::lineage::scanProperties::*;
@@ -38,18 +39,11 @@ Class meta::pure::executionPlan::platformBinding::typeInfo::EnumerationTypeInfo 
    enumeration() { $this.type->cast(@meta::pure::metamodel::type::Enumeration<Any>) }: meta::pure::metamodel::type::Enumeration<Any>[1];
 }
 
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::typeInfo::ConstraintInfo
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::ConstraintInfo
 {
-   constraint:Constraint[1];
-}
-
-Class meta::pure::executionPlan::platformBinding::typeInfo::SupportedConstraintInfo extends ConstraintInfo
-{
-}
-
-Class meta::pure::executionPlan::platformBinding::typeInfo::AlwaysDefectConstraintInfo extends ConstraintInfo
-{
-   defectMessage: String[1];
+   id           : String[1];
+   constraint   : Constraint[1];
+   propertyTree : meta::pure::lineage::scanProperties::propertyTree::PropertyPathTree[1];
 }
 
 Class meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo extends TypeInfo
@@ -59,7 +53,7 @@ Class meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo extend
    qualifiedProperties : QualifiedProperty<Any>[*];
    constraints         : ConstraintInfo[*];
    isNewInstanceAllowed        : Boolean[1];
-   
+
    class() { $this.type->cast(@meta::pure::metamodel::type::Class<Any>) }: meta::pure::metamodel::type::Class<Any>[1];
 }
 
@@ -256,7 +250,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::valueProperties(i
    $info->allProperties($classInfo)->filter(p|$p->isPrimitiveValueProperty());
 }
 
-function meta::pure::executionPlan::platformBinding::typeInfo::classDependenciesViaPropertiesWithsubTypes(info:TypeInfoSet[1], class:Class<Any>[1]): Class<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::classDependenciesViaPropertiesWithSubTypes(info:TypeInfoSet[1], class:Class<Any>[1]): Class<Any>[*]
 {
    let cd = $info
       ->classPropertiesRecursiveWithsubTypes($class, [])
@@ -275,7 +269,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::classDependencies
 function meta::pure::executionPlan::platformBinding::typeInfo::enumDependenciesViaProperties(info:TypeInfoSet[1], class:Class<Any>[1]): Enumeration<Any>[*]
 {
    let directProperties     = $info->allProperties($class);
-   let dependencyProperties = $info->classDependenciesViaPropertiesWithsubTypes($class)->map(c| $info->allProperties($c));
+   let dependencyProperties = $info->classDependenciesViaPropertiesWithSubTypes($class)->map(c| $info->allProperties($c));
    
    $directProperties
       ->concatenate($dependencyProperties)
@@ -302,7 +296,15 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::typeInfoFromTree(info:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
 {
    let types = $tree->match([
-      r: RoutedGraphFetchTree[1]    | $r.sets->cast(@InstanceSetImplementation)->map(set| if($set.mappingClass->isNotEmpty(), | $set.mappingClass->toOne(), | $set.class)),
+      r: RoutedGraphFetchTree[1]    | if($r.sets->isNotEmpty(),
+                                         | $r.sets->cast(@InstanceSetImplementation)->map(set| if($set.mappingClass->isNotEmpty(), | $set.mappingClass->toOne(), | $set.class)),
+                                         {|
+                                            $r->match([
+                                               r: RoutedRootGraphFetchTree<Any>[1] | $r.class,
+                                               p: RoutedPropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType)
+                                            ])
+                                         }
+                                      ),
       r: RootGraphFetchTree<Any>[1] | $r.class,
       p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType) 
    ]);
@@ -341,46 +343,50 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo
       ->fold({class, infos| $infos->addConstraints($class)}, $typeInfos);
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addConstraints(typeInfos:TypeInfoSet[1], class:Class<Any>[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addConstraints(typeInfos:TypeInfoSet[1], class:Class<Any>[1]): TypeInfoSet[1]
 {
-   $class.constraints->fold({constraint, infos| $infos->addConstraint($class, $constraint)}, $typeInfos);
+   $class.constraints->toIndexed()->fold({constraint, infos| $infos->addConstraint($class, $constraint.second, $constraint.first)}, $typeInfos);
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addConstraint(typeInfos:TypeInfoSet[1], class:Class<Any>[1], constraint:Constraint[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addConstraint(typeInfos:TypeInfoSet[1], class:Class<Any>[1], constraint:Constraint[1]): TypeInfoSet[1]
 {
-   let classInfo         = $typeInfos->forClass($class);
-   let funcProperties    = $constraint.functionDefinition.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties();
-   let messageProperties = $constraint.messageFunction->map(f| $f.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties());
-   let allPaths          = $funcProperties->concatenate($messageProperties).result;
-   let missingProperties = $allPaths.values.property->removeDuplicates()->filter(p |!$typeInfos->containsProperty($p));
+   let classInfo           = $typeInfos->forClass($class);
+   let funcProperties      = $constraint.functionDefinition.expressionSequence->map(es | $es->evaluateAndDeactivate()->scanProperties());
+   let messageProperties   = $constraint.messageFunction->map(f| $f.expressionSequence->map(es | $es->evaluateAndDeactivate()->scanProperties()));
+   let allPaths            = $funcProperties->concatenate($messageProperties).result;
+   let propertyTree        = $allPaths->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree();
+   let propertiesUsed      = $propertyTree->propertiesFromTree();
+   let missingProperties   = $propertiesUsed->filter(p |!$typeInfos->containsProperty($p));
+   let newTypeInfos        = $missingProperties->fold(
+                                {prop, infos | if($prop->instanceOf(QualifiedProperty),
+                                                  | $infos->addQualifiedPropertyForTypeIfMissing($prop->cast(@QualifiedProperty<Any>), true),
+                                                  | $infos->addPropertyForTypeIfMissing($prop->cast(@Property<Nil,Any|*>), true))}
+                                , $typeInfos);
+   let id                  = $constraint.name->orElse($n->toString());
+   let constraintInfo      = ^ConstraintInfo(
+                                id             = $id,
+                                constraint     = $constraint,
+                                propertyTree   = $propertyTree->inlineQualifiedPropertyNodes()
+                              );
+   let newClassInfo        = $newTypeInfos->forClass($class);
+   let withConstraint      = ^$newClassInfo(constraints = $classInfo.constraints->filter(ci| $ci.constraint != $constraint)->add($constraintInfo));
 
-   let newTypeInfos = $missingProperties->fold(
-                           {prop, infos | if($prop->instanceOf(QualifiedProperty), 
-                                             | $infos->addQualifiedPropertyForTypeIfMissing($prop->cast(@QualifiedProperty<Any>), true), 
-                                             | $infos->addPropertyForTypeIfMissing($prop->cast(@Property<Nil,Any|*>), true))}
-                           , $typeInfos);
-   
-   let withConstraint    = $newTypeInfos->forClass($class)->addSupportedConstraint($constraint);
    $newTypeInfos->addOrReplace($withConstraint);
 }
 
-function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addSupportedConstraint(classInfo:ClassTypeInfo[1], constraint:Constraint[1]): ClassTypeInfo[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::propertiesFromTree(pTree:meta::pure::lineage::scanProperties::propertyTree::PropertyPathTree[1]): AbstractProperty<Any>[*]
 {
-   let constraintInfo = ^SupportedConstraintInfo(constraint=$constraint);
-   ^$classInfo(constraints = $classInfo.constraints->filter(ci| $ci.constraint != $constraint)->add($constraintInfo));
-}
-
-function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addAlwaysDefectConstraint(classInfo:ClassTypeInfo[1], constraint:Constraint[1], message:String[1]): ClassTypeInfo[1]
-{
-   let constraintInfo = ^AlwaysDefectConstraintInfo(constraint=$constraint, defectMessage=$message);
-   ^$classInfo(constraints = $classInfo.constraints->filter(ci| $ci.constraint != $constraint)->add($constraintInfo));
+   $pTree.value->match([
+      node: PropertyPathNode[1] | $node.property,
+      any : Any[1]              | []
+   ])->concatenate($pTree.children->map(child| $child->propertiesFromTree()));
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::classesInTree(tree:GraphFetchTree[1]): Class<Any>[*]
 {
    let class = $tree->match([
       r: RootGraphFetchTree<Any>[1] | $r.class,
-      p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->filter(t| $t->instanceOf(Class))->cast(@Class<Any>)
+      p: PropertyGraphFetchTree[1]  | $p.property.genericType.rawType->concatenate($p.subType)->filter(t| $t->instanceOf(Class))->cast(@Class<Any>)
    ]);
 
    $class->concatenate($tree.subTrees->map(st| $st->classesInTree()))->removeDuplicates();

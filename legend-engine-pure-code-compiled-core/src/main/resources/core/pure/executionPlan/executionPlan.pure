@@ -127,6 +127,11 @@ Class meta::pure::executionPlan::FreeMarkerConditionalExecutionNode extends meta
    falseBlock                    : ExecutionNode[0..1];
 }
 
+Class meta::pure::executionPlan::VariableResolutionExecutionNode extends meta::pure::executionPlan::ExecutionNode
+{
+   varName : String[1];
+}
+
 Class meta::pure::executionPlan::PlatformImplementation
 {
 }

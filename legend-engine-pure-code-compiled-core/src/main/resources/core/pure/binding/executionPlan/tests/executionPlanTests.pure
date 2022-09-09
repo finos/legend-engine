@@ -1,0 +1,641 @@
+
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::shared::format::functions::*;
+import meta::pure::graphFetch::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::tests::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::extension::*;
+
+Class meta::external::shared::format::executionPlan::tests::A
+[
+   a1: $this.i > 10,
+   $this.s->length() <= 15,
+   a2: $this.b.i > 10
+]
+{
+   i: Integer[1];
+   s: String[1];
+   b: B[1];
+   bs: B[*];
+}
+
+Class meta::external::shared::format::executionPlan::tests::B
+[
+   b1: $this.i > 10,
+   b2: $this.c.i > 10
+]
+{
+   i: Integer[1];
+   c: C[1];
+}
+
+Class meta::external::shared::format::executionPlan::tests::C
+[
+   c0: $this.i0 > 10
+]
+{
+   i: Integer[1];
+   i0: Integer[1];
+}
+
+Class meta::external::shared::format::executionPlan::tests::C1 extends meta::external::shared::format::executionPlan::tests::C
+[
+   c1: $this.i2 > 10
+]
+{
+   i2: Integer[1];
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesOnlyConstraintsUsingPropertiesGivenInSimpleTree(): Boolean[1]
+{
+   let tree = #{A {i}}#;
+
+   let java = makeJava($tree);
+
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                  '    {\n' +
+                  '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                  '        this.constraint_a1().ifPresent(result::add);\n' +
+                  '        return result;\n' +
+                  '    }\n';
+
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesMultipleConstraintsUsingPropertiesGivenInSimpleTree(): Boolean[1]
+{
+   let tree = #{A {i, s}}#;
+   let java = makeJava($tree);
+
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                  '    {\n' +
+                  '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                  '        this.constraint_a1().ifPresent(result::add);\n' +
+                  '        this.constraint_1().ifPresent(result::add);\n' +
+                  '        return result;\n' +
+                  '    }\n';
+
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesConstraintsUsingPropertiesGivenInMultiLevelTreeOne(): Boolean[1]
+{
+   let tree = #{A {i, s, b {i}}}#;
+   let java = makeJava($tree);
+
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        this.constraint_a1().ifPresent(result::add);\n' +
+                '        this.constraint_1().ifPresent(result::add);\n' +
+                '        this.constraint_a2().ifPresent(result::add);\n' +
+                '        if (this.getB() != null)\n' +
+                '        {\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getB();\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode(\"b\")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesConstraintsUsingPropertiesGivenInMultiLevelTreeMany(): Boolean[1]
+{
+   let tree = #{A {i, s, bs {i}}}#;
+   let java = makeJava($tree);
+   
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        this.constraint_a1().ifPresent(result::add);\n' +
+                '        this.constraint_1().ifPresent(result::add);\n' +
+                '        for (int i_0 = 0; i_0 < this.getBs().size(); i_0++)\n' +
+                '        {\n' +
+                '            int j_0 = i_0;\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getBs()\n' +
+                '                                                                                                                                          .get(i_0);\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesConstraintsUsingPropertiesGivenInMultiLevelTreeSubType(): Boolean[1]
+{
+   let tree = #{A {i, s, b{i, c{i}}, bs{i, c->subType(@meta::external::shared::format::executionPlan::tests::C1){i, i2}}}}#;
+   let java = makeJava($tree);
+
+   let expected1_0 = '        for (int i_0 = 0; i_0 < this.getBs().size(); i_0++)\n' +
+                '        {\n' +
+                '            int j_0 = i_0;\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getBs()\n' +
+                '                                                                                                                                          .get(i_0);\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_0.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            if (child_0.getC() != null)\n' +
+                '            {\n' +
+                '                meta_external_shared_format_executionPlan_tests_C1_Impl child_0_0 = (meta_external_shared_format_executionPlan_tests_C1_Impl) child_0.getC();\n' +
+                '                child_0_0.constraint_c1()\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("c")))\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                         .ifPresent(result::add);\n' +
+                '            }\n' +
+                '        }';
+   let expected1_1 = '        for (int i_1 = 0; i_1 < this.getBs().size(); i_1++)\n' +
+                '        {\n' +
+                '            int j_1 = i_1;\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_1 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getBs()\n' +
+                '                                                                                                                                          .get(i_1);\n' +
+                '            child_1.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_1)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_1.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_1)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            if (child_1.getC() != null)\n' +
+                '            {\n' +
+                '                meta_external_shared_format_executionPlan_tests_C1_Impl child_1_0 = (meta_external_shared_format_executionPlan_tests_C1_Impl) child_1.getC();\n' +
+                '                child_1_0.constraint_c1()\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("c")))\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("bs", j_1)))\n' +
+                '                         .ifPresent(result::add);\n' +
+                '            }\n' +
+                '        }';
+
+   let expected2_0 = '        if (this.getB() != null)\n' +
+                '        {\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getB();\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_0.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n';
+   let expected2_1 = '        if (this.getB() != null)\n' +
+                '        {\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_1 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getB();\n' +
+                '            child_1.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_1.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n';
+
+   assert(($java->contains($expected1_0) && $java->contains($expected2_1)) || ($java->contains($expected1_1) && $java->contains($expected2_0)));
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::tests::makeJava(tree:RootGraphFetchTree<Any>[1]): String[1]
+{
+   let typeInfos = newTypeInfoSet()
+      ->addForGraphFetchTree($tree)
+      ->addConstraintsForGraphFetchTree($tree);
+   let context = ^GenerationContext(typeInfos=$typeInfos, conventions=engineConventions([]));
+
+
+   javaClass('test.Something')
+      ->addMethod(cls| $cls->createConstraintCheckingForTree('path', $context, $tree, noDebug()).first)
+      ->inferImports()->classToString();
+}
+
+###Pure
+
+import meta::external::shared::format::binding::*;
+import meta::pure::dataQuality::*;
+import meta::external::shared::format::functions::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::executionPlan::tests::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::shared::functions::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::model::unit::*;
+import meta::pure::runtime::*;
+import meta::pure::extension::*;
+
+Class meta::external::shared::format::executionPlan::tests::Person
+[
+   firstNameNotEmpty : $this.firstName->isNotEmpty(),
+   lastNameNotEmpty : $this.lastName->isNotEmpty()
+]
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromRuntimeString(): Boolean[1]
+{
+  let binding    = testBinding();
+  let planString = buildPlan({data:String[1]| Person->internalize($binding, $data)});
+  let expected ='Sequence\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  (\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [data:String[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = false\n' +
+                '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = String\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromRuntimeByteStream(): Boolean[1]
+{
+  let binding    = testBinding();
+  let planString = buildPlan({stream:ByteStream[1]| Person->internalize($binding, $stream)});
+
+  let expected ='Sequence\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  (\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [stream:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = false\n' +
+                '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = stream\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromRuntimeUrl(): Boolean[1]
+{
+  let binding    = testBinding();
+  let planString = buildPlan({url:String[1]| Person->internalize($binding, ^Url(url=$url))});
+
+  let expected ='Sequence\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  (\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [url:String[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = false\n' +
+                '\n' +
+                '      (\n' +
+                '        UrlStream\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          requires = [url(String[1])]\n' +
+                '          url = ${url}\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromConstantString(): Boolean[1]
+{
+  let binding    = testBinding();
+  let planString = buildPlan({| Person->internalize($binding, 'FIRST_NAME,LAST_NAME\nFred,Bloggs')});
+
+  let expected = 
+        'ExternalFormat_Internalize\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+        '  enableConstraints = true\n' +
+        '  checked = false\n' +
+        '\n' +
+        '  (\n' +
+        '    Sequence\n' +
+        '    (\n' +
+        '      type = String\n' +
+        '      resultSizeRange = 1\n' +
+        '      (\n' +
+        '        Allocation\n' +
+        '        (\n' +
+        '          type = meta::pure::router::Void\n' +
+        '          name = internalizeVar$\n' +
+        '          value = \n' +
+        '            (\n' +
+        '              Constant\n' +
+        '              (\n' +
+        '                type = String\n' +
+        '                values=[FIRST_NAME,LAST_NAME\n' +
+        'Fred,Bloggs]\n' +
+        '              )\n' +
+        '            )\n' +
+        '        )\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = String\n' +
+        '          resultSizeRange = 1\n' +
+        '          varName = internalizeVar$\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromConstantUrl(): Boolean[1]
+{
+  let binding    = testBinding();
+  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))});
+
+  let expected =      
+        'ExternalFormat_Internalize\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+        '  enableConstraints = true\n' +
+        '  checked = false\n' +
+        '\n' +
+        '  (\n' +
+        '    UrlStream\n' +
+        '    (\n' +
+        '      type = ByteStream\n' +
+        '      url = file:/path/filename.csv\n' +
+        '\n' +
+        '    )\n' +
+        '  )\n' +
+        ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeCheck(): Boolean[1]
+{
+  let binding    = testBinding();
+  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->checked()});
+
+  let expected =  'ExternalFormat_Internalize\n' +
+                  '(\n' +
+                  '  type = Class[impls=]\n' +
+                  '  resultSizeRange = *\n' +
+                  '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                  '  enableConstraints = true\n' +
+                  '  checked = true\n' +
+                  '\n' +
+                  '  (\n' +
+                  '    UrlStream\n' +
+                  '    (\n' +
+                  '      type = ByteStream\n' +
+                  '      url = file:/path/filename.csv\n' +
+                  '\n' +
+                  '    )\n' +
+                  '  )\n' +
+                  ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeGraphFetch(): Boolean[1]
+{
+  let binding    = testBinding();
+  let gft = #{Person{firstName}}#;
+  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetch($gft)});
+
+  let expected ='ExternalFormat_Internalize\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '  enableConstraints = true\n' +
+                '  checked = false\n' +
+                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
+                '\n' +
+                '  (\n' +
+                '    UrlStream\n' +
+                '    (\n' +
+                '      type = ByteStream\n' +
+                '      url = file:/path/filename.csv\n' +
+                '\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeGraphFetchUnexpanded(): Boolean[1]
+{
+  let binding    = testBinding();
+  let gft = #{Person{firstName}}#;
+  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchUnexpanded($gft)});
+
+  let expected ='ExternalFormat_Internalize\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '  enableConstraints = true\n' +
+                '  checked = false\n' +
+                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName}}#\n' +
+                '\n' +
+                '  (\n' +
+                '    UrlStream\n' +
+                '    (\n' +
+                '      type = ByteStream\n' +
+                '      url = file:/path/filename.csv\n' +
+                '\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeGraphFetchCheckedUnexpanded(): Boolean[1]
+{
+  let binding    = testBinding();
+  let gft = #{Person{firstName}}#;
+  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchCheckedUnexpanded($gft)});
+
+  let expected ='ExternalFormat_Internalize\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '  enableConstraints = true\n' +
+                '  checked = true\n' +
+                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName}}#\n' +
+                '\n' +
+                '  (\n' +
+                '    UrlStream\n' +
+                '    (\n' +
+                '      type = ByteStream\n' +
+                '      url = file:/path/filename.csv\n' +
+                '\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeGraphFetchChecked(): Boolean[1]
+{
+  let binding    = testBinding();
+  let gft = #{Person{firstName}}#;
+  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchChecked($gft)});
+
+  let expected ='ExternalFormat_Internalize\n' +
+                '(\n' +
+                '  type = Class[impls=]\n' +
+                '  resultSizeRange = *\n' +
+                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '  enableConstraints = true\n' +
+                '  checked = true\n' +
+                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
+                '\n' +
+                '  (\n' +
+                '    UrlStream\n' +
+                '    (\n' +
+                '      type = ByteStream\n' +
+                '      url = file:/path/filename.csv\n' +
+                '\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';
+
+   assertEquals($expected, $planString);
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::tests::testBinding(): Binding[1]
+{
+  ^Binding(
+    name        = 'MyBinding',
+    package     = Person.package,
+    contentType = 'application/x.flatdata',
+    modelUnit   = ^ModelUnit()
+  );
+}
+
+function meta::external::shared::format::executionPlan::tests::buildPlan(query:FunctionDefinition<Any>[1]): String[1]
+{
+   let extensions = meta::external::shared::format::externalFormatExtension();
+   let plan = $query->buildPlan($extensions, false);
+   $plan->planToString(false, $extensions);
+}
+
+function meta::external::shared::format::executionPlan::tests::buildPlan(query:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*], generatePlatformCode:Boolean[1]): ExecutionPlan[1]
+{
+   let funcBody = $query.expressionSequence->at(0)->evaluateAndDeactivate();
+   let q        = inlineQualifiedProperties($funcBody, $query->openVariableValues()->toOne());
+   let newQuery = ^$query(expressionSequence=$q);
+
+   let plan     = executionPlan($newQuery, ^ExecutionContext(), $extensions, noDebug());
+   if($generatePlatformCode,
+      | $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), $extensions),
+      | $plan);
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::tests::inlineQualifiedProperties(vs: ValueSpecification[1], openVars:Map<String, List<Any>>[1]):ValueSpecification[1]
+{
+   $vs->match([
+      fe : FunctionExpression[1] | ^$fe(parametersValues = $fe.parametersValues->evaluateAndDeactivate()->map(x | $x->inlineQualifiedProperties($openVars))),
+      iv : InstanceValue[1] | ^$iv
+                              (
+                                 values = $iv.values->evaluateAndDeactivate()->map(val | $val->match([
+                                    l : LambdaFunction<Any>[1] | ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->at(0)->inlineQualifiedProperties($openVars)),
+                                    v : ValueSpecification[1] | $v->inlineQualifiedProperties($openVars),
+                                    a : Any[1] | $a
+                                 ]))
+
+                              ),
+      ve : VariableExpression[1] | let resolved = $ve->resolve(^Map<VariableExpression, ValueSpecification>(), $openVars); if($resolved->isEmpty(), | $ve, | $resolved->toOne());,
+      v  : ValueSpecification[1] | $v
+   ]);
+}

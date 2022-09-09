@@ -219,7 +219,7 @@ function <<test.Test>> meta::relational::tests::query::routing::multipleexpressi
    
    let routingResult = routeFunction($f, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
    assertEquals(1, $routingResult.functions->size());
-   assertEquals(' | {Platform> let firstFirmLegalName = [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)].legalName};\n   let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus();', $routingResult.functions->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
+   assertEquals(' | {Platform> let firstFirmLegalName = [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)].legalName};\n   {Platform> let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus()};', $routingResult.functions->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
 }
 
 function meta::relational::tests::query::routing::doSomething(a:Integer[1]):String[1]

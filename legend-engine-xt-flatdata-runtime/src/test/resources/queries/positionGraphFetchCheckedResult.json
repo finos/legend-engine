@@ -1,0 +1,80 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "defects": [
+        {
+          "id": "validLatitude",
+          "externalId": null,
+          "message": "Constraint :[validLatitude] violated in the Class GeographicPosition",
+          "enforcementLevel": "Error",
+          "ruleType": "ClassConstraint",
+          "ruleDefinerPath": "test::firm::model::GeographicPosition",
+          "path": []
+        }
+      ],
+      "source": {
+        "number": 1,
+        "lineNumber": 2,
+        "record": "123,132",
+        "recordValues": [
+          {
+            "address": "latitude",
+            "rawValue": "123"
+          },
+          {
+            "address": "longitude",
+            "rawValue": "132"
+          }
+        ]
+      },
+      "value": {
+        "longitude": 132
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "number": 2,
+        "lineNumber": 3,
+        "record": "12,13",
+        "recordValues": [
+          {
+            "address": "latitude",
+            "rawValue": "12"
+          },
+          {
+            "address": "longitude",
+            "rawValue": "13"
+          }
+        ]
+      },
+      "value": {
+        "longitude": 13
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "number": 3,
+        "lineNumber": 4,
+        "record": "13.123,14.176",
+        "recordValues": [
+          {
+            "address": "latitude",
+            "rawValue": "13.123"
+          },
+          {
+            "address": "longitude",
+            "rawValue": "14.176"
+          }
+        ]
+      },
+      "value": {
+        "longitude": 14.176
+      }
+    }
+  ]
+}

@@ -16,6 +16,8 @@ import meta::external::shared::format::binding::*;
 import meta::external::shared::format::executionPlan::*;
 
 import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*; 
 
 import meta::pure::extension::*;
 
@@ -32,19 +34,13 @@ function meta::external::shared::format::executionPlan::toString::printPlanNodeT
          $space + ')\n'
       },
       {node:ExternalFormatInternalizeExecutionNode[1] |
-         'ExternalFormat_Internalize\n' + 
+         'ExternalFormat_Internalize\n' +
          $space + '(' + header($node, $space, $extensions) + '\n' +
-         $space + '  binding = ' + $node.binding->elementToPath() + '\n' +
-         $node->childrenToString($space+'  ', $extensions) + '\n' +
-         $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
-         $space + ')\n'
-      },
-      {node:DataQualityExecutionNode[1] |
-         'DataQuality\n' +
-         $space + '(' + header($node, $space, $extensions) + '\n' +
+         $space + '  binding = ' + $node.binding->elementToPath() + '[' + $node.binding.contentType + ']\n' +
          $space + '  enableConstraints = ' + $node.enableConstraints->toString() + '\n' +
          $space + '  checked = ' + $node.checked->toString() + '\n' +
-         $node->childrenToString($space+'  ', $extensions) + '\n' +
+         if($node.tree->isEmpty(), | '', | $space + '  graphFetchTree = ' + $node.tree->toOne()->sortTree()->asString(true)->replace('\n', '')->replace(' ', '') + '\n') +
+         if($node.executionNodes->isEmpty(), |'', |$node->childrenToString($space+'  ', $extensions) + '\n') +
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
          $space + ')\n'
       },

@@ -14,15 +14,18 @@
 
 import meta::external::shared::format::executionPlan::engine::java::*;
 
+import meta::external::format::xml::contract::*;
 import meta::external::format::xml::executionPlan::*;
 import meta::external::format::xml::executionPlan::engine::java::*;
 import meta::external::format::xml::executionPlan::engine::java::internalize::*;
 import meta::external::format::xml::executionPlan::engine::java::serialize::*;
 
-function <<XsdPlanDescriptor.PlatformBindingDescriptor>> meta::external::format::xml::executionPlan::engine::java::xsdJavaBindingDescriptor():ExternalFormatJavaBindingDescriptor[1]
+function meta::external::format::xml::executionPlan::engine::java::xsdJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
 {
-  ^ExternalFormatJavaBindingDescriptor
+  ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
+    id                         = 'XSD LegendJavaPlatformBindingDescriptor',
+    externalFormatContract     = xsdFormatContract(),
     enginePlatformDependencies = meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()
   )

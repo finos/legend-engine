@@ -81,29 +81,43 @@ Class <<access.private>> meta::external::format::flatdata::executionPlan::engine
 function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for FlatData \n', |''));
-   
-   let bindingDetail   = $context->nodeInfosForPath($path).data->toOne();
-   assert($bindingDetail->instanceOf(FlatDataBindingDetail), | 'Detailed binding failed: ' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
-   let readableClasses = $bindingDetail->cast(@FlatDataBindingDetail).sectionBindingDetails.class;
-   let project         = $readableClasses->createDataClassesProject($path, $context, $debug->indent());
-   let schemaDataClass = $bindingDetail->cast(@FlatDataBindingDetail).schemaBindingDetail.class->map(c| $c->createSchemaDataClass($path, $context, $debug->indent()));
-   let specificsClass  = createInternalizeSpecificsClass($node, $bindingDetail->cast(@FlatDataBindingDetail), $path, $context);
 
-   $project
+   let bindingDetail    = $context->nodeInfosForPath($path).data->toOne();
+   assert($bindingDetail->instanceOf(FlatDataBindingDetail), | 'Detailed binding failed: ' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
+   let pureClass        = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let schemaClass      = $bindingDetail->cast(@FlatDataBindingDetail).schemaBindingDetail.class;
+   let dependentClass   = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass)->filter(c | $c != $schemaClass);
+
+   let baseProject      = if($schemaClass == $pureClass,
+                            | let mainClassProject = $pureClass->createSchemaDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
+                              let dependentProjects = $dependentClass->map(dc | $dc->createDataClassesProject($bindingDetail->cast(@FlatDataBindingDetail), $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=false, topLevelOnly=true), $debug->indent()));
+                              $mainClassProject->concatenate($dependentProjects)->toOneMany()->mergeProjects();,
+                            | let mainClassProject  = $pureClass->createDataClassesProject($bindingDetail->cast(@FlatDataBindingDetail), $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
+                              let dependentProjects = $dependentClass->map(dc | $dc->createDataClassesProject($bindingDetail->cast(@FlatDataBindingDetail), $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=false, topLevelOnly=true), $debug->indent()));
+                              let schemaDataClass   = $schemaClass->map(c| $c->createSchemaDataClass($path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=false, topLevelOnly=true), $debug->indent()));
+                              $mainClassProject->concatenate($dependentProjects)->concatenate($schemaDataClass)->toOneMany()->mergeProjects();
+                          );
+
+   let specificsClass   = createInternalizeSpecificsClass($node, $bindingDetail->cast(@FlatDataBindingDetail), $path, $context);
+
+   $baseProject
       ->addClasses($specificsClass)
-      ->concatenate($schemaDataClass)
-      ->toOneMany()->mergeProjects()
-      ->generatedCode($specificsClass);
+      ->generatedCode($specificsClass);  
 }
 
 function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createInternalizeSpecificsClass(node:ExternalFormatInternalizeExecutionNode[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
-{   
+{
+    let rootClass     = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+    let schemaSet     = $node.binding.schemaSet->toOne();
+    createInternalizeSpecificsClass($rootClass, $schemaSet, $bindingDetail, $path, $context);
+}
+
+function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createInternalizeSpecificsClass(rootClass:meta::pure::metamodel::type::Class<Any>[1], schemaSet:SchemaSet[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
    let conventions             = $context.conventions;
-   let rootClass               = $node.tree->toOne().class;   
    let rootInterface           = $conventions->className($rootClass);
    let contextType             = javaParameterizedType($conventions->className(_FlatDataContext), $rootInterface);
    let factoryType             = javaParameterizedType($conventions->className(_ParsedFlatDataToObject), $rootInterface);
-   let schemaSet               = $node.binding.schemaSet->toOne();
    let flatData                = $schemaSet.schemas->at(0).detail->cast(@FlatData);
    let maximumSchemaObjectSize = javaField('private', javaLong(), 'maximumSchemaObjectSize', j_long(0));
 
@@ -390,15 +404,15 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
    $bindingDetail.details->filter(c| $c.field == $field).property->toOne();
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createSchemaDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createSchemaDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext: ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createFileDataClass for '+$class->elementToPath()+'\n', |''));
 
-   let conventions = $context.conventions;
+   let conventions           = $context.conventions;
    
-   let stateNone     = javaField(['private', 'static'], javaInt(), 'STATE_NONE',      j_int(0));
-   let stateBuilt    = javaField(['private', 'static'], javaInt(), 'STATE_BUILT',     j_int(1));
-   let stateTooLarge = javaField(['private', 'static'], javaInt(), 'STATE_TOO_LARGE', j_int(2));
+   let stateNone             = javaField(['private', 'static'], javaInt(), 'STATE_NONE',      j_int(0));
+   let stateBuilt            = javaField(['private', 'static'], javaInt(), 'STATE_BUILT',     j_int(1));
+   let stateTooLarge         = javaField(['private', 'static'], javaInt(), 'STATE_TOO_LARGE', j_int(2));
 
    let maxSize               = javaField(['private', 'final'], javaLong(), 'maxSize');
    let maxSizeParam          = j_parameter(javaLong(), 'maxSize');
@@ -442,7 +456,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
                           |javaField('private', $p.javaType, $p.fieldName)
                        )
             )
-            ->addField(javaField('private', javaLong(), $p.sizeFieldName, j_int(0)))
+            ->addField(javaField('private', javaInt(), $p.sizeFieldName, j_int(0)))
             ->addField(javaField('private', javaInt(), $p.stateFieldName, j_this($jc)->j_field($stateNone)))
             ->addMethod({c|
                let field = j_this($c)->j_field($p.fieldName);
@@ -554,7 +568,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
    let schemaClass = $withPropertyMethods->addAlloyStoreObjectReferenceMethodsForClass($context);
    mergeProjects([
       newProject()->addClass($schemaClass),
-      $schemaClass->createConstraintCheckingForClass($class, $context, false, $debug)
+      $schemaClass->createConstraintCheckingForClass($class, [], $context, $constraintContext, $debug)
    ]);
 }
 

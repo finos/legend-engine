@@ -14,15 +14,18 @@
 
 import meta::external::shared::format::executionPlan::engine::java::*;
 
+import meta::external::format::flatdata::contract::*;
 import meta::external::format::flatdata::executionPlan::*;
 import meta::external::format::flatdata::executionPlan::engine::java::*;
 import meta::external::format::flatdata::executionPlan::engine::java::externalize::*;
 import meta::external::format::flatdata::executionPlan::engine::java::internalize::*;
 
-function <<FlatDataPlanDescriptor.PlatformBindingDescriptor>> meta::external::format::flatdata::executionPlan::engine::java::flatDataJavaBindingDescriptor():ExternalFormatJavaBindingDescriptor[1]
+function meta::external::format::flatdata::executionPlan::engine::java::flatDataJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
 {
-  ^ExternalFormatJavaBindingDescriptor
+  ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
+    id                         = 'FlatData LegendJavaPlatformBindingDescriptor',
+    externalFormatContract     = flatDataFormatContract(),
     enginePlatformDependencies = meta::external::format::flatdata::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     externalizeDescriptor      = getExternalFormatExternalizeJavaBindingDescriptor(),
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()

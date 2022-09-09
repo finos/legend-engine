@@ -31,14 +31,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegen
    let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
    let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
 
+   let baseProject        = $generationContext->generateTypes($debug);
    let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
+   let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();
 
    ^$plan
    (
       rootExecutionNode = $generatedNode.node,
-      globalImplementationSupport = if ($generatedNode.project->isEmpty() || $generatedNode.project->toOne()->allClasses()->isEmpty(),
+      globalImplementationSupport = if ($generatedProject->allClasses()->isEmpty(),
                                         | [],
-                                        | $generatedNode.project->toOne()->projectToImplementation()
+                                        | $generatedProject->projectToImplementation()
                                     )
    );
 }

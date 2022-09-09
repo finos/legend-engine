@@ -38,22 +38,60 @@ import meta::pure::metamodel::type::*;
 
 import meta::pure::extension::*;
 
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+
+import meta::pure::graphFetch::routing::*;
+import meta::pure::router::routing::*;
+import meta::pure::graphFetch::*;
+import meta::pure::runtime::*;
+import meta::pure::functions::meta::*;
+import meta::pure::graphFetch::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::external::shared::format::*;
+import meta::external::shared::format::binding::validation::*;
+import meta::pure::model::unit::*;
+
+function meta::external::shared::format::executionPlan::engine::java::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   createDataClassesProject($classes, $bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), $debug)
+}
+
+function meta::external::shared::format::executionPlan::engine::java::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') createDataClassesProject\n', |''));
+   mergeProjects($classes->map(c| $c->createDataClass($bindingDetail, $path, $context, $constraintContext, $debug->indent()))->toOneMany());
+}
+
+function meta::external::shared::format::executionPlan::engine::java::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
+{
+   let conventions = engineConventions(meta::external::shared::format::externalFormatExtension())->setBasePackageName($baseJavaPackage);
+
+   let package   = $packageName->pathToElement()->cast(@Package);
+   let classes   = $package.children->filter(pe| $pe->instanceOf(meta::pure::metamodel::type::Class))->cast(@meta::pure::metamodel::type::Class<Any>);
+   let typeInfos = $classes->fold({c, ti| $ti->addForClass($c, true, true, false, true)}, newTypeInfoSet());
+   let context   = ^GenerationContext(typeInfos=$typeInfos, conventions=$conventions);
+
+   let bindingDetail = ^SuccessfulBindingDetail(fetchMappedPropertiesForClass={c:meta::pure::metamodel::type::Class<Any>[1]| $typeInfos->allProperties($c)});
+
+   let project = mergeProjects(generateTypes($context, noDebug())->concatenate($classes->map(c| $c->createDataClass($bindingDetail, 'node', $context, noDebug())))->toOneMany());
+   newProject()->addClasses($project->allClasses()->map(cl | $cl->inferImports()));
+}
+
 function meta::external::shared::format::executionPlan::engine::java::prepareExternalFormatInternalizeExecutionNode(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatInternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
 
-   let externalFormatPlanDescriptor        = $externalFormatContract.externalFormatPlanDescriptor->toOne();
-   let externalFormatJavaBindingDescriptor = $externalFormatContract.externalFormatPlanDescriptor.platformBindingDescriptors->filter(pb | $pb->instanceOf(ExternalFormatJavaBindingDescriptor))->cast(@ExternalFormatJavaBindingDescriptor);
+   let externalFormatJavaBindingDescriptor = $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)->filter(d | $d.externalFormatContract.contentTypes->contains($node.binding.contentType));
    assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
    assert($externalFormatJavaBindingDescriptor.internalizeDescriptor->size() == 1, | 'Expected 1 internalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.internalizeDescriptor->size()->toString());
 
    let conventions                         = $context.conventions;
 
-   assert($node.tree->isNotEmpty(), |'Use case without graph fetch tree not yet supported');
-   let class                               = $node.tree->toOne().class;
+   let class                               = $node.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
    let simpleType                          = ^SimpleJavaType(pureType=$class, javaType=$conventions->className($class));
-   let sourceRecordTree                    = $externalFormatPlanDescriptor.sourceRecordTree;
-   let returnType                          = ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class)));
+   let sourceRecordTree                    = $externalFormatContract.sourceRecordTree->toOne();
+   let returnType                          = if($node.checked, | ^CheckedJavaType(checkedOf=$simpleType, source=^SimpleJavaType(pureType=$sourceRecordTree.class, javaType=$conventions->className($sourceRecordTree.class))), | $simpleType);
    let bindingDetail                       = if($externalFormatContract.externalFormatBindingValidator->isNotEmpty(), 
                                                 | $externalFormatContract.externalFormatBindingValidator->toOne()->eval($node.binding),
                                                 | []);
@@ -65,9 +103,12 @@ function meta::external::shared::format::executionPlan::engine::java::prepareExt
                                               );
    let contextWithNodeInfo                 = $context->addNodeInfo($nodeInfo);
 
+   let resolvedModel                       = $node.binding.modelUnit->resolve();
    let updatedTypeInfo                     = $context.typeInfos
-                                                ->addForGraphFetchTree($node.tree->toOne())
-                                                ->addForClassWithAllProperties($sourceRecordTree.class);
+                                                ->map(ti| $resolvedModel.classes     ->fold({cl, ti| $ti->addForClassWithAllProperties($cl)}, $ti))
+                                                ->map(ti| $resolvedModel.enumerations->fold({en, ti| $ti->addForType($en)},                   $ti))
+                                                ->map(ti| $ti->addForClassWithAllProperties($sourceRecordTree.class))
+                                                ->map(ti| if($node.tree->isEmpty(),| $ti->addConstraints($class),| $ti->addForGraphFetchTree($node.tree->toOne())->addConstraintsForGraphFetchTree($node.tree->toOne())));
 
    let newTypeInfos                        = if($externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->isNotEmpty(),
                                                 | $externalFormatJavaBindingDescriptor.internalizeDescriptor.internalizePreparator->toOne()->eval($node, $path, $contextWithNodeInfo->setTypeInfos($updatedTypeInfo), $debug),
@@ -80,7 +121,7 @@ function meta::external::shared::format::executionPlan::engine::java::prepareExt
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatExternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
 
-   let externalFormatJavaBindingDescriptor = $externalFormatContract.externalFormatPlanDescriptor.platformBindingDescriptors->filter(pb | $pb->instanceOf(ExternalFormatJavaBindingDescriptor))->cast(@ExternalFormatJavaBindingDescriptor);
+   let externalFormatJavaBindingDescriptor = $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)->filter(d | $d.externalFormatContract.contentTypes->contains($node.binding.contentType));
    assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
    assert($externalFormatJavaBindingDescriptor.externalizeDescriptor->size() == 1, | 'Expected 1 externalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.externalizeDescriptor->size()->toString());
 
@@ -102,25 +143,6 @@ function meta::external::shared::format::executionPlan::engine::java::prepareExt
    $contextWithNodeInfo->setTypeInfos($newTypeInfos);
 }
 
-function meta::external::shared::format::executionPlan::engine::java::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
-{
-   print(if($debug.debug,|$debug.space+'('+$path+') createDataClassesProject\n', |''));
-   mergeProjects($classes->map(c| $c->createDataClass($path, $context, $debug->indent()))->toOneMany());
-}
-
-function meta::external::shared::format::executionPlan::engine::java::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
-{
-   let conventions = engineConventions(meta::external::shared::format::externalFormatExtension())->setBasePackageName($baseJavaPackage);
-
-   let package   = $packageName->pathToElement()->cast(@Package);
-   let classes   = $package.children->filter(pe| $pe->instanceOf(meta::pure::metamodel::type::Class))->cast(@meta::pure::metamodel::type::Class<Any>);
-   let typeInfos = $classes->fold({c, ti| $ti->addForClass($c, true, true, false, true)}, newTypeInfoSet());
-   let context   = ^GenerationContext(typeInfos=$typeInfos, conventions=$conventions);
-
-   let project = mergeProjects(generateTypes($context, noDebug())->concatenate($classes->map(c| $c->createDataClass('node', $context, noDebug())))->toOneMany());
-   newProject()->addClasses($project->allClasses()->map(cl | $cl->inferImports()));
-}
-
 Class <<access.private>> meta::external::shared::format::executionPlan::engine::java::PropertyDetails
 {
    property          : AbstractProperty<Any>[1];
@@ -138,7 +160,12 @@ Class <<access.private>> meta::external::shared::format::executionPlan::engine::
    isViaAssociation() {$this.property.owner->instanceOf(Association)}: Boolean[1];
 }
 
-function meta::external::shared::format::executionPlan::engine::java::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::shared::format::executionPlan::engine::java::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+{
+   createDataClass($class, $bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), $debug)
+}
+
+function meta::external::shared::format::executionPlan::engine::java::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
    
@@ -146,13 +173,11 @@ function meta::external::shared::format::executionPlan::engine::java::createData
    let pureDate    = $conventions->className(PureDate);
    let defects     = j_variable(javaList($conventions->defectClass()), 'defects');
 
-   let mappedProperties = if(!$context->nodeInfosForPath($path).data->isEmpty(),
-                             |$context->nodeInfosForPath($path).data->toOne()->cast(@SuccessfulBindingDetail).mappedPropertiesForClass($class),
-                             |$context.typeInfos->allProperties($class));
+   let mappedProperties = $bindingDetail.mappedPropertiesForClass($class);
 
    let baseClass = $conventions->dataClass($class, $path)->addModifiers('public')
-      ->implements($conventions->className($class))
-      ->addIExternalData($class, $context);
+                               ->implements($conventions->className($class))
+                               ->addIExternalData($class, $context);
    
    let properties = $context.typeInfos->allProperties($class)->map(p|
       let fieldName     = $conventions->fieldName($p);
@@ -218,7 +243,7 @@ function meta::external::shared::format::executionPlan::engine::java::createData
             },
             {|
                $c ->addField(javaField('private', $p.javaType->toUnboxed(), $p.fieldName))
-                  ->addField(javaField('private', javaInt(), $p.sizeFieldName))
+                  ->addField(javaField('private', javaInt(), $p.sizeFieldName, j_int(0)))
                   ->addMethod({cls|
                      let field     = j_this($cls)->j_field($p.fieldName);
                      let fieldSize = j_this($cls)->j_field($p.sizeFieldName);
@@ -298,7 +323,8 @@ function meta::external::shared::format::executionPlan::engine::java::createData
         })
       ->addAlloyStoreObjectReferenceMethodsForClass($context);
 
-   let constraintChecking = $dataClass->createConstraintCheckingForClass($class, $context, $debug);
+
+   let constraintChecking = if($constraintContext.enableConstraints, | $dataClass->createConstraintCheckingForClass($class, $path, $context, $constraintContext, $debug), | newProject());
    let instanceSizing     = $dataClass->updateImplementationClassWithInstanceSizeMethods($context);
    mergeProjects(newProject()->concatenate([$constraintChecking, $instanceSizing])->toOneMany());
 }
@@ -397,12 +423,6 @@ function <<access.private>> meta::external::shared::format::executionPlan::engin
       | javaMethod('public', javaVoid(), $prop.adderName, $prop.adderParam, $impl)
    );
 }
-
-function meta::external::shared::format::executionPlan::engine::java::dataClass(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
-{
-  $conventions->planNodeClass([], $path, $conventions->identifier($class->elementToPath('_')) + '_Impl');
-}
-
 
 function meta::external::shared::format::executionPlan::engine::java::occursFromMultiplicity(mult:Multiplicity[1]): Pair<Code, Code>[1]
 {

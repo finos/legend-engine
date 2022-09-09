@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::shared::format::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::engine::*;
 import meta::external::shared::format::executionPlan::engine::java::*;
@@ -19,12 +20,16 @@ import meta::external::shared::format::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+
 import meta::pure::extension::*;
 
 import meta::external::language::java::transform::*;
 
-Class meta::external::shared::format::executionPlan::engine::java::ExternalFormatJavaBindingDescriptor extends ExternalFormatPlatformBindingDescriptor
+Class meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor extends LegendJavaPlatformBindingAdhocExtension
 {
+   id                         : String[1];
+   externalFormatContract     : ExternalFormatContract<Any>[1];
    enginePlatformDependencies : Function<{Conventions[1] -> Conventions[1]}>[1];
    externalizeDescriptor      : ExternalFormatExternalizeBindingDescriptor[0..1];
    internalizeDescriptor      : ExternalFormatInternalizeBindingDescriptor[0..1];
