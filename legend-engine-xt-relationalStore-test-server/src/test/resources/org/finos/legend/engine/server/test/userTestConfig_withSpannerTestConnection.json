@@ -1,7 +1,4 @@
 {
-  "deployment": {
-    "mode": "TEST_IGNORE_FUNCTION_MATCH"
-  },
   "logging": {
     "level": "error",
     "appenders": [
@@ -25,20 +22,6 @@
       "enabled": false
     }
   },
-  "opentracing": {
-    "elastic": "",
-    "zipkin": "",
-    "uri": "",
-    "authenticator": {
-      "principal": "",
-      "keytab": ""
-    }
-  },
-  "swagger": {
-    "title": "Legend Engine",
-    "resourcePackage": "org.finos.legend",
-    "uriPrefix": "/api"
-  },
   "server": {
     "type": "simple",
     "applicationContextPath": "/",
@@ -52,19 +35,6 @@
       "appenders": [
       ]
     }
-  },
-  "metadataserver": {
-    "pure": {
-      "host": "127.0.0.1",
-      "port": 8080
-    },
-    "alloy": {
-      "host": "127.0.0.1",
-      "port": 8075
-    }
-  },
-  "temporarytestdb": {
-    "port": 9099
   },
   "relationalexecution": {
     "tempPath": "/tmp/",
