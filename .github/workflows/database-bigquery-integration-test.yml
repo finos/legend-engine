@@ -21,7 +21,6 @@ env:
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 0 * * *" # every day at 00:00 on default/base branch
 

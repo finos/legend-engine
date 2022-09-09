@@ -68,4 +68,4 @@ jobs:
           MAVEN_OPTS: -Xmx4g
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
-        run: mvn -pl legend-engine-server -Dtest=Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite test
+        run: mvn -pl legend-engine-xt-relationalStore-test-server -Dtest=Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite test
