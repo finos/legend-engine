@@ -182,10 +182,10 @@
         <module>legend-engine-testable</module>
         <module>legend-engine-xt-relationalStore-spanner-execution</module>
         <module>legend-engine-xt-relationalStore-spanner-pure</module>
-        <module>legend-engine-executionPlan-execution-authorizer</module>
-        <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-relationalStore-spanner-grammar</module>
         <module>legend-engine-xt-relationalStore-spanner-protocol</module>
+        <module>legend-engine-executionPlan-execution-authorizer</module>
+        <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
     </modules>
 
     <properties>
@@ -719,6 +719,21 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -740,11 +755,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-bigquery-grammar</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-spanner-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

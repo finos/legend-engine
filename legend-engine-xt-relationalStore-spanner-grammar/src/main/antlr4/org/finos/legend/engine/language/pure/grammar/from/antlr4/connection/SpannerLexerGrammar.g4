@@ -6,3 +6,5 @@ SPANNER_DATA_SOURCE_SPECIFICATION:          'Spanner';
 PROJECT:                                    'projectId';
 INSTANCE:                                   'instanceId';
 DATABASE:                                   'databaseId';
+HOST:                                       'host';
+PORT:                                       'port';

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import java.util.Optional;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatabricksDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -23,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatabricksDatasourceSpecification_Impl;
@@ -34,8 +32,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_sp
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_StaticDatasourceSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_legend_connections_legend_specification_RedshiftDatasourceSpecification;
@@ -123,18 +119,6 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
             redshiftSpec._port(redshiftDatasourceSpecification.port);
             redshiftSpec._region(redshiftDatasourceSpecification.region);
             return redshiftSpec;
-        }
-        else if (datasourceSpecification instanceof SpannerDatasourceSpecification)
-        {
-            SpannerDatasourceSpecification spannerDatasourceSpecification = (SpannerDatasourceSpecification) datasourceSpecification;
-            Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification spannerSpec =
-                    new Root_meta_pure_alloy_connections_alloy_specification_SpannerDatasourceSpecification_Impl("");
-            spannerSpec._projectId(spannerDatasourceSpecification.projectId);
-            spannerSpec._instanceId(spannerDatasourceSpecification.instanceId);
-            spannerSpec._proxyHost(spannerDatasourceSpecification.proxyHost);
-            spannerSpec._proxyPort(Optional.ofNullable(spannerDatasourceSpecification.proxyPort).map(Integer::longValue).orElse(null));
-            spannerSpec._databaseId(spannerDatasourceSpecification.databaseId);
-            return spannerSpec;
         }
         return null;
     }

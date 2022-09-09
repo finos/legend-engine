@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1;
 
+import java.util.List;
+import java.util.Map;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -64,7 +66,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.data.RelationalCSVData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.EmbeddedRelationalPropertyMapping;
@@ -84,9 +85,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Databas
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
-
-import java.util.List;
-import java.util.Map;
 
 public class RelationalProtocolExtension implements PureProtocolExtension
 {
@@ -166,7 +164,6 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(SnowflakeDatasourceSpecification.class, "snowflake")
                         .withSubtype(DatabricksDatasourceSpecification.class, "databricks")
                         .withSubtype(RedshiftDatasourceSpecification.class, "redshift")
-                        .withSubtype(SpannerDatasourceSpecification.class, "spanner")
                         .build(),
 
                 // AuthenticationStrategy
