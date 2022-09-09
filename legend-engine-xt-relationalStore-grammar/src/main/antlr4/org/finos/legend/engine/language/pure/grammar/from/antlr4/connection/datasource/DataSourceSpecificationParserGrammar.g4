@@ -113,7 +113,6 @@ snowflakeQuotedIdentifiersIgnoreCase:       QUOTED_IDENTIFIERS_IGNORE_CASE COLON
 ;
 dbRole:                                     ROLE COLON STRING SEMI_COLON
 ;
-
 region:                                     REGION COLON STRING SEMI_COLON
 ;
 endpointURL:                                 ENDPOINT_URL COLON STRING SEMI_COLON

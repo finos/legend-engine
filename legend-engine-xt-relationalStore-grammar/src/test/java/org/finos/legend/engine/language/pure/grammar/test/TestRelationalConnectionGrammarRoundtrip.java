@@ -473,5 +473,4 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "}\n");
     }
-
 }

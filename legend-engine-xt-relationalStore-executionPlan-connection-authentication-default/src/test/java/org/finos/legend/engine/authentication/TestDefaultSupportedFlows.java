@@ -53,7 +53,7 @@ public class TestDefaultSupportedFlows
     @Parameterized.Parameters
     public static Collection<Object[]> data()
     {
-        return Arrays.asList(new Object[][]{
+        return Arrays.asList(new Object[][] {
                 {DatabaseType.H2, StaticDatasourceSpecification.class, TestDatabaseAuthenticationStrategy.class},
                 {DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class},
                 {DatabaseType.BigQuery, BigQueryDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class},
