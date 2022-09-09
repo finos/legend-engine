@@ -27,6 +27,8 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.ModelElementAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 
 public class LegendCompile
@@ -39,6 +41,16 @@ public class LegendCompile
         PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, null, "", metadata);
         // Extract Compiled created elements
         return extractCreatedElementFromCompiledGraph(data, pm);
+    }
+
+    public static ValueSpecification doCompileVS(String code, Metadata metadata)
+    {
+        // Parse
+        PureModelContextData data = PureGrammarParser.newInstance().parseModel("function a::f():Any[*]{" + code + "}");
+        // Compile
+        PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, null, "", metadata);
+        // Extract Compiled created elements
+        return ((ConcreteFunctionDefinition<Object>) extractCreatedElementFromCompiledGraph(data, pm).getFirst())._expressionSequence().getFirst();
     }
 
     private static MutableList<PackageableElement> extractCreatedElementFromCompiledGraph(PureModelContextData pureModelContextData, PureModel pureModel)
@@ -54,4 +66,5 @@ public class LegendCompile
                     return graphElement;
                 });
     }
+
 }

@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.List;
@@ -58,6 +59,7 @@ public class PureGrammarComposerContext
     public final List<Function2<InputData, PureGrammarComposerContext, String>> extraMappingTestInputDataComposers;
     public final List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> extraEmbeddedDataComposers;
     public final List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> extraTestAssertionComposers;
+    public final List<Function2<ValueSpecification, PureGrammarComposerContext, String>> extraEmbeddedPureComposers;
 
     protected PureGrammarComposerContext(Builder builder)
     {
@@ -75,6 +77,7 @@ public class PureGrammarComposerContext
         this.extraConnectionValueComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraConnectionValueComposers);
         this.extraMappingTestInputDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingTestInputDataComposers);
         this.extraEmbeddedDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedDataComposers);
+        this.extraEmbeddedPureComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedPureComposers);
         this.extraTestAssertionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraTestAssertionComposers);
     }
 
