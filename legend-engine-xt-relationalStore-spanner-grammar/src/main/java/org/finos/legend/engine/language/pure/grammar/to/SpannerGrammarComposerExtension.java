@@ -39,8 +39,8 @@ public class SpannerGrammarComposerExtension implements IRelationalGrammarCompos
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "projectId: " + convertString(spec.projectId, true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "instanceId: " + convertString(spec.instanceId, true) + ";\n" +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "databaseId: " + convertString(spec.databaseId, true) + ";\n" +
-                        (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.proxyHost, true) + ";\n" : "") +
-                        (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.proxyPort + ";\n" : "") +
+                        (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyHost: " + convertString(spec.proxyHost, true) + ";\n" : "") +
+                        (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyPort: " + spec.proxyPort + ";\n" : "") +
                         context.getIndentationString() + getTabString(baseIndentation) + "}";
             }
             return null;

@@ -13,8 +13,8 @@ identifier:                                 VALID_STRING
 spannerDatasourceSpecification:             SPANNER_DATA_SOURCE_SPECIFICATION
                                                 BRACE_OPEN
                                                     (
-                                                        dbHost
-                                                        | dbPort
+                                                        proxyHost
+                                                        | proxyPort
                                                         | projectId
                                                         | instanceId
                                                         | databaseId
@@ -28,7 +28,7 @@ instanceId:                                 INSTANCE COLON STRING SEMI_COLON
 ;
 projectId:                                    PROJECT COLON STRING SEMI_COLON
 ;
-dbPort:                                     PORT COLON INTEGER SEMI_COLON
+proxyPort:                                     PROXYPORT COLON INTEGER SEMI_COLON
 ;
-dbHost:                                     HOST COLON STRING SEMI_COLON
+proxyHost:                                     PROXYHOST COLON STRING SEMI_COLON
 ;

@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.test;
 
 import org.junit.Test;
 
-public class TestBigQueryConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
+public class TestSpannerConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
     public void testSpannerConnectionSpecification()
@@ -32,8 +32,8 @@ public class TestBigQueryConnectionGrammarRoundtrip extends TestGrammarRoundtrip
                 "    projectId: 'spanner-emulator-test-1';\n" +
                 "    instanceId: 'test-instance-1';\n" +
                 "    databaseId: 'test-db';\n" +
-                "    host: 'localhost';\n" +
-                "    port: 9010;\n" +
+                "    proxyHost: 'localhost';\n" +
+                "    proxyPort: 9010;\n" +
                 "  };\n" +
                 "  auth: GCPApplicationDefaultCredentials;\n" +
                 "}\n"
@@ -68,8 +68,8 @@ public class TestBigQueryConnectionGrammarRoundtrip extends TestGrammarRoundtrip
                 "    projectId: 'spanner-emulator-test-1';\n" +
                 "    instanceId: 'test-instance-1';\n" +
                 "    databaseId: 'test-db';\n" +
-                "    host: 'localhost';\n" +
-                "    port: 9010;\n" +
+                "    proxyHost: 'localhost';\n" +
+                "    proxyPort: 9010;\n" +
                 "  };\n" +
                 "  auth: GCPWorkloadIdentityFederation\n" +
                 "  {\n" +
@@ -87,8 +87,8 @@ public class TestBigQueryConnectionGrammarRoundtrip extends TestGrammarRoundtrip
                 "    projectId: 'spanner-emulator-test-1';\n" +
                 "    instanceId: 'test-instance-1';\n" +
                 "    databaseId: 'test-db';\n" +
-                "    host: 'localhost';\n" +
-                "    port: 9010;\n" +
+                "    proxyHost: 'localhost';\n" +
+                "    proxyPort: 9010;\n" +
                 "  };\n" +
                 "  auth: GCPWorkloadIdentityFederation\n" +
                 "  {\n" +

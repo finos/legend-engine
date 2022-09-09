@@ -54,10 +54,10 @@ public class SpannerGrammarParserExtension implements IRelationalGrammarParserEx
         SpannerParserGrammar.DatabaseIdContext databaseIdCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.databaseId(), "databaseId", dsSpec.sourceInformation);
         dsSpec.databaseId = PureGrammarParserUtility.fromGrammarString(databaseIdCtx.STRING().getText(), true);
         // proxy host
-        SpannerParserGrammar.DbHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbHost(), "host", dsSpec.sourceInformation);
+        SpannerParserGrammar.ProxyHostContext proxyHostContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.proxyHost(), "proxyHost", dsSpec.sourceInformation);
         Optional.ofNullable(proxyHostContext).ifPresent(hostCtx -> dsSpec.proxyHost = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true));
         // proxy port
-        SpannerParserGrammar.DbPortContext proxyPortContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbPort(), "port", dsSpec.sourceInformation);
+        SpannerParserGrammar.ProxyPortContext proxyPortContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.proxyPort(), "proxyPort", dsSpec.sourceInformation);
         Optional.ofNullable(proxyPortContext).ifPresent(portCtx -> dsSpec.proxyPort = Integer.parseInt(portCtx.INTEGER().getText()));
         return dsSpec;
     }
