@@ -25,24 +25,19 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
  */
 public interface ArtifactGenerationExtension
 {
-
+    /**
+     * Gives the key for the extension
+     *
+     * @return string
+     */
+    String getKey();
 
     /**
-     * Determines whether the extension can generate artifacts based on the element.
+     * Determines whether a packageable element can generate artifacts
      *
      * @return boolean flag indicating if the extension can generate artifacts
      */
     boolean canGenerate(PackageableElement element);
-
-
-    /**
-     * Gets root path where all artifacts will be stored
-     *
-     * @return root path
-     */
-
-    String getArtifactsRootPath();
-
 
     /**
      * Generates artifacts given a packageable element. Methods assumes element can generate
