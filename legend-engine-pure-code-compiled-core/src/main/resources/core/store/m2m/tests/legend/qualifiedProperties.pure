@@ -33,7 +33,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAMapping
    let mapping = simplifyBook;
    let runtime = testJsonRuntime(Book, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
 
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected=
@@ -76,7 +76,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstra
    let mapping = simplifyBookWithConstraint;
    let runtime = testJsonRuntime(BookWithConstraint, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
 
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected=
@@ -120,7 +120,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstra
    let mapping = simplifyBookWithConstraint;
    let runtime = testJsonRuntime(BookWithConstraint, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_13", "id":"978-0470229057"} ]}');
 
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected=
@@ -172,7 +172,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstra
    let mapping = simplifyBookWithConstraint2;
    let runtime = testJsonRuntime(Book, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
 
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected=
@@ -216,7 +216,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAConstra
    let mapping = simplifyBookWithConstraint2;
    let runtime = testJsonRuntime(Book, '{"title":"CODE", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"9780735611313"}, {"type":"ISBN_13", "id":"978-0735611313"} ]}');
 
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected=
@@ -268,7 +268,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAGraphFe
    let mapping = dataToBook;
    let runtime = testJsonRuntime(BookData, '{"title":"The Annotated Turing", "author":"Charles Petzold", "identifiers" : [ {"type":"ISBN_10", "id":"0470229055"}, {"type":"ISBN_13", "id":"978-0470229057"} ]}');
 
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected=

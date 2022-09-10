@@ -33,7 +33,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testTargetConstrain
                                 url='data:application/json,{"name":"FirmX"}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::Firm","message":"Constraint :[0] violated in the Class Firm"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"FirmX\\"}"},"value":{"name":"FirmX","employees":[]}},"value":{"name":"FirmX"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -50,7 +50,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnTypeWith
                                 class=_Firm, 
                                 url='data:application/json,{"name":"FirmX"}')),
                            ^ExecutionContext(enableConstraints=false),
-                         []
+                           meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"name":"FirmX"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -67,7 +67,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnSourceTy
                                 class=_Firm2, 
                                 url='data:application/json,{"name":"FirmX"}')),
                           ^ExecutionContext(enableConstraints=false),
-                        []
+                          meta::pure::extension::defaultExtensions()
                      );
   
    assert(jsonEquivalent('{"name":"FirmX"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -85,7 +85,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testSourceConstrain
                                 url='data:application/json,{"name":"FirmX","employees":[{"firstName":"David","lastName":"Roe"}]}'
                              )
                            ),
-                         []
+                           meta::pure::extension::defaultExtensions()
                   );
    
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm2","message":"Constraint :[0] violated in the Class _Firm2"},{"path":[{"propertyName":"employees","index":0}],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::_Person2","message":"Constraint :[0] violated in the Class _Person2"}],"source":{"number":1,"record":"{\\"name\\":\\"FirmX\\",\\"employees\\":[{\\"firstName\\":\\"David\\",\\"lastName\\":\\"Roe\\"}]}"},"value":{"name":"FirmX","employees":[{"firm":null,"address":null}]}},"value":{"name":"FirmX"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -103,7 +103,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testSourceConstrain
                              url='data:application/json,{"make" : "Ford", "engineSize" : "big", "numOfDoors" : 1}'
                              )
                            ),
-                           []
+                           meta::pure::extension::defaultExtensions()
                      );
 
   assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"make\\":\\"Ford\\",\\"engineSize\\":\\"big\\",\\"numOfDoors\\":1}"},"value":{"engineSize":"big","make":"Ford"}},"value":{"engineSize":"big"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -121,7 +121,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testSourceConstrain
                              url='data:application/json,{"id":"1"}'
                              )
                            ),
-                           []
+                           meta::pure::extension::defaultExtensions()
                        );
   
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"id\\":\\"1\\"}"},"value":{"id":"1"}},"value":{"id":"1"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -139,7 +139,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testIsEqualConstrai
                              url='data:application/json,{"b":true}'
                              )
                           ),
-                          []
+                          meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent( '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"b\\":true}"},"value":{"b":true}},"value":{"b":true}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -157,7 +157,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testIsDistinctConst
                              url='data:application/json,{"b":true}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"b\\":true}"},"value":{"b":true}},"value":{"b":true}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -175,7 +175,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnOptiona
                              url='data:application/json,{"n":5}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":5}"},"value":{"n":5}},"value":{"maybe":null,"i":5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -193,7 +193,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnOptiona
                              url='data:application/json,{"n":20}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::D","message":"Constraint :[0] violated in the Class D"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":20}"},"value":{"n":20}},"value":{"maybe":null,"i":20}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -211,7 +211,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
                              url='data:application/json,{"n":5}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":5}"},"value":{"n":5}},"value":{"i":5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -229,7 +229,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
                              url='data:application/json,{"n":20}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::E","message":"Unable to evaluate constraint [0]: No mapping for property \'expected\'"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":20}"},"value":{"n":20}},"value":{"i":20}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -248,7 +248,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
                              url='data:application/json,{"n":20}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::F","message":"Unable to evaluate constraint [0]: data not available - check your mappings"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":20}"},"value":{"n":20}},"value":{"i":20}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -266,7 +266,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
                              url='data:application/json,{"n":5}'
                              )
                          ),
-                        []
+                         meta::pure::extension::defaultExtensions()
                 );
 
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"n\\":5}"},"value":{"n":5}},"value":{"i":5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -283,7 +283,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
                         class = meta::pure::mapping::modelToModel::test::alloy::constraints::From,
                         url='data:application/json,{"id":20}'
                       )),
-                      []
+                      meta::pure::extension::defaultExtensions()
   );
 
   assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::Loan","message":"Constraint :[0] violated in the Class Loan"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"id\\":20}"},"value":{"id":20}},"value":{"id":20}}'->parseJSON(),
@@ -299,7 +299,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testIsDistinctConst
       |Product.all()->graphFetchChecked(#{Product{id,name,synonyms{type,name}}}#)->serialize(#{Product{id,name,synonyms{type,name}}}#),
       meta::pure::mapping::modelToModel::test::alloy::constraints::ProductMapping,
       ^Runtime(connections = ^JsonModelConnection(element =^ ModelStore(), class = _Product, url = 'data:application/json,' + $inputData)),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '['+
