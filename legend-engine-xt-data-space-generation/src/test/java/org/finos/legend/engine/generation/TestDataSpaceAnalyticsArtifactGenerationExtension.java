@@ -17,13 +17,17 @@ package org.finos.legend.engine.generation;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
@@ -33,6 +37,7 @@ import org.junit.Test;
 
 public class TestDataSpaceAnalyticsArtifactGenerationExtension
 {
+    private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
     private String getResourceAsString(String path)
     {
@@ -53,7 +58,7 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
     }
 
     @Test
-    public void testDataSpaceAnalyticsArtifactGenerationExtension()
+    public void testDataSpaceAnalyticsArtifactGenerationExtension() throws Exception
     {
         String pureModelString = getResourceAsString("models/DataspaceModel.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
@@ -70,7 +75,7 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
         Assert.assertEquals(dataSpaceAnalyticsResult.format, "json");
         Assert.assertEquals(dataSpaceAnalyticsResult.path, "AnalyticsResult.json");
         Assert.assertNotNull(dataSpaceAnalyticsResult.content);
-        Assert.assertNotEquals("", dataSpaceAnalyticsResult.content);
+        // assert the result is JSON of data space analysis result
+        objectMapper.readValue(dataSpaceAnalyticsResult.content, DataSpaceAnalysisResult.class);
     }
-
 }
