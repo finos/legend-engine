@@ -39,28 +39,14 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
     {
-        return authenticationStrategy ->
-        {
-            if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
-            {
-                return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
-            }
-            return null;
-        };
+        return authenticationStrategy -> null;
     }
 
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(
         List<OAuthProfile> oauthProfiles)
     {
-        return authenticationStrategy ->
-        {
-            if (authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
-            {
-                return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy();
-            }
-            return null;
-        };
+        return authenticationStrategy -> null;
     }
 
     @Override
