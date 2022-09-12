@@ -1,0 +1,124 @@
+###Diagram
+Diagram diagram::MyDiagram
+{
+  classView a6b8266b-395e-4308-a08a-8f9b44af6d53
+  {
+    class: model::target::_Firm;
+    position: (547.0,270.0);
+    rectangle: (159.0,72.0);
+  }
+  classView c41deda8-19be-4374-9260-8be50c32d3cd
+  {
+    class: model::target::_Person;
+    position: (1128.0,308.0);
+    rectangle: (122.0,44.0);
+  }
+  propertyView
+  {
+    property: model::target::_Firm.employees;
+    source: a6b8266b-395e-4308-a08a-8f9b44af6d53;
+    target: c41deda8-19be-4374-9260-8be50c32d3cd;
+    points: [(626.5,306.0),(1189.0,330.0)];
+  }
+}
+
+
+###DataSpace
+DataSpace dataSpace::_FirmDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::ModelToModelMapping;
+      defaultRuntime: mapping::ModelToModelRuntime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'Firm Dataspace';
+}
+
+
+###Pure
+Enum model::target::IncType
+{
+  LLC,
+  CORP
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::Firm
+{
+  employees: model::Person[1..*];
+  legalName: String[1];
+  type: String[1];
+}
+
+Class model::target::_Person
+{
+  fullName: String[1];
+}
+
+Class model::target::_Firm
+{
+  employees: model::target::_Person[1..*];
+  type: model::target::IncType[1];
+  name: String[1];
+}
+
+Class model::NotRelevant
+{
+}
+
+
+###Mapping
+Mapping mapping::ModelToModelMapping
+(
+  *model::target::_Person: Pure
+  {
+    ~src model::Person
+    fullName: $src.firstName + ' ' + $src.lastName
+  }
+  *model::target::_Firm: Pure
+  {
+    ~src model::Firm
+    employees[model_target__Person]: $src.employees,
+    type: EnumerationMapping model_target_IncType: $src.type,
+    name: $src.legalName
+  }
+
+  model::target::IncType: EnumerationMapping
+  {
+    LLC: ['llc'],
+    CORP: ['corp']
+  }
+)
+
+
+###Runtime
+Runtime mapping::ModelToModelRuntime
+{
+  mappings:
+  [
+    mapping::ModelToModelMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: model::Firm;
+          url: 'data:application/json,%7B%7D';
+        }
+      }#
+    ]
+  ];
+}

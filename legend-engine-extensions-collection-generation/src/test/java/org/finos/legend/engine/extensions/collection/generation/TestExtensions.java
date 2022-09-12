@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.extensions.collection.generation;
 
+import java.util.Set;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
@@ -25,6 +26,7 @@ import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationEx
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
+import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtensionLoader;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
@@ -93,7 +95,7 @@ public class TestExtensions
     @Test
     public void testExpectedArtifactGenerationExtensionsArePresent()
     {
-        assertHasExtensions(getExpectedArtifactGenerationExtensions(), ArtifactGenerationExtension.class);
+        assertHasExtensions(ArtifactGenerationExtensionLoader.extensions(), getExpectedArtifactGenerationExtensions(), ArtifactGenerationExtension.class);
     }
 
     @Test

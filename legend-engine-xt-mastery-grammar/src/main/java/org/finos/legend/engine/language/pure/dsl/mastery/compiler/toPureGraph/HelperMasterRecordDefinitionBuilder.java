@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import static java.util.Objects.isNull;
+
 public class HelperMasterRecordDefinitionBuilder
 {
     private static final String MASTERY_PACKAGE_PREFIX = "meta::pure::mastery::metamodel";
@@ -135,7 +137,7 @@ public class HelperMasterRecordDefinitionBuilder
             pureSource._id(protocolSource.id);
             pureSource._description(protocolSource.description);
             pureSource._status(context.resolveEnumValue(KEY_TYPE_FULL_PATH, protocolSource.status.name()));
-            pureSource._parseService(buildService(protocolSource.parseService, protocolSource, context));
+            pureSource._parseService(buildOptionalService(protocolSource.parseService, protocolSource, context));
             pureSource._transformService(buildService(protocolSource.transformService, protocolSource, context));
             pureSource._sequentialData(protocolSource.sequentialData);
             pureSource._stagedLoad(protocolSource.stagedLoad);
@@ -144,6 +146,15 @@ public class HelperMasterRecordDefinitionBuilder
             pureSource._tags(ListIterate.collect(protocolSource.tags, n -> n.toString()));
             pureSource._partitions(ListIterate.collect(protocolSource.partitions, n -> this.visitPartition(n)));
             return pureSource;
+        }
+
+        public static Root_meta_legend_service_metamodel_Service buildOptionalService(String service, RecordSource protocolSource, CompileContext context)
+        {
+            if (isNull(service))
+            {
+                return null;
+            }
+            return buildService(service, protocolSource, context);
         }
 
         public static Root_meta_legend_service_metamodel_Service buildService(String service, RecordSource protocolSource, CompileContext context)

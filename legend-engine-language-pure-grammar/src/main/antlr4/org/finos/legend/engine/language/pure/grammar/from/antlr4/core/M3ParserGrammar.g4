@@ -177,13 +177,13 @@ booleanPart:                                    (AND expression) | (OR  expressi
 ;
 functionVariableExpression:                     identifier COLON type multiplicity
 ;
-dsl:                                            dslGraphFetch | dslNavigationPath
+dsl:                                            dslExtension | dslNavigationPath
 ;
 dslNavigationPath:                              NAVIGATION_PATH_BLOCK
 ;
-dslGraphFetch:                                  ISLAND_OPEN (dslContent)*
+dslExtension:                                   ISLAND_OPEN (dslExtensionContent)*
 ;
-dslContent:                                     ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+dslExtensionContent:                            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 type:                                           (qualifiedName (LESS_THAN typeArguments? (PIPE multiplicityArguments)? GREATER_THAN)?)
                                                 |

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.mastery.grammar.to;
 
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertPath;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 
@@ -92,8 +94,8 @@ public class HelperMasteryGrammarComposer
         @Override
         public String visit(RecordSource val)
         {
-              return getTabString(indentLevel + 2) + "id: " + val.id + ";\n" +
-                    getTabString(indentLevel + 2) + "description: " + val.description + ";\n" +
+              return getTabString(indentLevel + 2) + "id: " + convertString(val.id, true) + ";\n" +
+                    getTabString(indentLevel + 2) + "description: " + convertString(val.description, true) + ";\n" +
                     getTabString(indentLevel + 2) + "status: " + val.status + ";\n" +
                       (val.parseService != null ? (getTabString(indentLevel + 2) + "parseService: " + val.parseService + ";\n") : "") +
                       getTabString(indentLevel + 2) + "transformService: " + val.transformService + ";\n" +
@@ -123,12 +125,12 @@ public class HelperMasteryGrammarComposer
 
     private static String renderTags(Tagable tagable, int indentLevel)
     {
-        return getTabString(indentLevel) + "tags: " + tagable.getTags().toString() + ";";
+        return getTabString(indentLevel) + "tags: [" + LazyIterate.collect(tagable.getTags(), t -> convertString(t, true)).makeString(", ") + "];";
     }
 
     private static String renderPartition(RecordSourcePartition partition, int indentLevel)
     {
-        StringBuffer strBuf = new StringBuffer().append(getTabString(indentLevel + 1)).append("id: ").append(partition.id).append(";");
+        StringBuffer strBuf = new StringBuffer().append(getTabString(indentLevel + 1)).append("id: ").append(convertString(partition.id, true)).append(";");
         strBuf.append((partition.getTags() != null && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
         return strBuf.toString();
     }

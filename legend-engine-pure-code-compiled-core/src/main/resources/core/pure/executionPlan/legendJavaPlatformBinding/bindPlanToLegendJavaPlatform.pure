@@ -27,12 +27,11 @@ import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
    assert($platformBindingConfig->instanceOf(LegendJavaPlatformBindingConfig), | 'Expected Legend Java platform binding config');
-   
-   let newExtensions      = if($extensions->isEmpty(), | meta::pure::extension::defaultExtensions(), | $extensions); // TODO: remove after updating M2M tests to pass default extensions
-   let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
-   let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $newExtensions, $debug);
 
-   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $newExtensions, $debug);
+   let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
+   let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
+
+   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
 
    ^$plan
    (
