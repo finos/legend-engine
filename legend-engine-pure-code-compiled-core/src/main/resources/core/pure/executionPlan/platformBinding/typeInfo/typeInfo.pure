@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::lineage::scanProperties::*;
@@ -22,45 +22,94 @@ import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::milestoning::*;
 
 
-function meta::pure::executionPlan::engine::java::typeInfo::newTypeInfoSet(): TypeInfoSet[1]
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet
+{
+   typeInfos: TypeInfo[*];
+}
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::typeInfo::TypeInfo
+{
+   type: meta::pure::metamodel::type::Type[1];
+}
+
+Class meta::pure::executionPlan::platformBinding::typeInfo::EnumerationTypeInfo extends TypeInfo
+{
+   enumeration() { $this.type->cast(@meta::pure::metamodel::type::Enumeration<Any>) }: meta::pure::metamodel::type::Enumeration<Any>[1];
+}
+
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::typeInfo::ConstraintInfo
+{
+   constraint:Constraint[1];
+}
+
+Class meta::pure::executionPlan::platformBinding::typeInfo::SupportedConstraintInfo extends ConstraintInfo
+{
+}
+
+Class meta::pure::executionPlan::platformBinding::typeInfo::AlwaysDefectConstraintInfo extends ConstraintInfo
+{
+   defectMessage: String[1];
+}
+
+Class meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo extends TypeInfo
+{
+   properties          : Property<Nil,Any|*>[*];
+   supertypes          : meta::pure::metamodel::type::Class<Any>[*];
+   qualifiedProperties : QualifiedProperty<Any>[*];
+   constraints         : ConstraintInfo[*];
+   isNewInstanceAllowed        : Boolean[1];
+   
+   class() { $this.type->cast(@meta::pure::metamodel::type::Class<Any>) }: meta::pure::metamodel::type::Class<Any>[1];
+}
+
+Class meta::pure::executionPlan::platformBinding::typeInfo::UnitTypeInfo extends TypeInfo
+{
+   measure: Measure[1];
+   conversionFunction: FunctionDefinition<Any>[1];
+
+   unit() { $this.type->cast(@Unit) }: Unit[1];
+}
+
+function meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet(): TypeInfoSet[1]
 {
    ^TypeInfoSet();
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForClasses(info:TypeInfoSet[1], classes: Class<Any>[*]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForClasses(info:TypeInfoSet[1], classes: Class<Any>[*]): TypeInfoSet[1]
 {
    $classes->fold({c, i| $i->addForClass($c)}, $info);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForType(info:TypeInfoSet[1], type:Type[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForType(info:TypeInfoSet[1], type:Type[1]): TypeInfoSet[1]
 {
    $info->addBasicTypeInfoIfMissing($type);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForClass(info:TypeInfoSet[1], class: Class<Any>[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForClass(info:TypeInfoSet[1], class: Class<Any>[1]): TypeInfoSet[1]
 {
    $info->addBasicTypeInfoIfMissing($class);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForClassesWithAllProperties(info:TypeInfoSet[1], classes: Class<Any>[*]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForClassesWithAllProperties(info:TypeInfoSet[1], classes: Class<Any>[*]): TypeInfoSet[1]
 {
    $classes->fold({c, i| $i->addForClassWithAllProperties($c)}, $info);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllProperties(info:TypeInfoSet[1], class: Class<Any>[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllProperties(info:TypeInfoSet[1], class: Class<Any>[1]): TypeInfoSet[1]
 {
    let basic          = $info->addBasicTypeInfoIfMissing($class);
    let plusProperties = $class.properties->fold({p, i| $i->addPropertyForClassIfMissing($class, $p)}, $basic);
    $class.qualifiedProperties->fold({q, i| $i->addQualifiedPropertyForClassIfMissing($class, $q)}, $plusProperties);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllPropertiesViaAssociations(info:TypeInfoSet[1], class:Class<Any>[1]) : TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations(info:TypeInfoSet[1], class:Class<Any>[1]) : TypeInfoSet[1]
 {
    let basic = $info->addBasicTypeInfoIfMissing($class);
    $class.propertiesFromAssociations->fold({p,i | $i->addPropertyForClassIfMissing($class, $p)}, $basic);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForClass(info:TypeInfoSet[1], class:Class<Any>[1], includeSimple:Boolean[1], includeComplex:Boolean[1], includeDerived:Boolean[1], includeAssociations:Boolean[1]) : TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForClass(info:TypeInfoSet[1], class:Class<Any>[1], includeSimple:Boolean[1], includeComplex:Boolean[1], includeDerived:Boolean[1], includeAssociations:Boolean[1]) : TypeInfoSet[1]
 {
    let basic       = $info->addBasicTypeInfoIfMissing($class);
    let plusSimple  = if($includeSimple,
@@ -89,69 +138,69 @@ function meta::pure::executionPlan::engine::java::typeInfo::addForClass(info:Typ
    $withAssoc->forClass($class).supertypes->fold({c, set | $set->addForClass($c, $includeSimple, $includeComplex, $includeDerived, $includeAssociations)}, $withAssoc);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addProperties(info:TypeInfoSet[1], properties:Property<Nil,Any|*>[*]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addProperties(info:TypeInfoSet[1], properties:Property<Nil,Any|*>[*]): TypeInfoSet[1]
 {
    $properties->fold({p, ti| $ti->addPropertyForTypeIfMissing($p, false)}, $info);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
 {
    $info->typeInfoFromTree($tree);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addConstraintsForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addConstraintsForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
 {
    $info->constraintInfoFromTree($tree);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::addForInstanceSetImplementations(info:TypeInfoSet[1], setImplementations:InstanceSetImplementation[*]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addForInstanceSetImplementations(info:TypeInfoSet[1], setImplementations:InstanceSetImplementation[*]): TypeInfoSet[1]
 {
    $info->typeInfoFromInstanceSetImplementations($setImplementations);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allClassInfos(info:TypeInfoSet[1]): ClassTypeInfo[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allClassInfos(info:TypeInfoSet[1]): ClassTypeInfo[*]
 {
    $info.typeInfos->filter(ti| $ti->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allEnumerationInfos(info:TypeInfoSet[1]): EnumerationTypeInfo[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allEnumerationInfos(info:TypeInfoSet[1]): EnumerationTypeInfo[*]
 {
    $info.typeInfos->filter(ti| $ti->instanceOf(EnumerationTypeInfo))->cast(@EnumerationTypeInfo);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allUnitInfos(info:TypeInfoSet[1]): UnitTypeInfo[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allUnitInfos(info:TypeInfoSet[1]): UnitTypeInfo[*]
 {
    $info.typeInfos->filter(ti| $ti->instanceOf(UnitTypeInfo))->cast(@UnitTypeInfo);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::forType(info:TypeInfoSet[1], type:Type[1]): TypeInfo[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::forType(info:TypeInfoSet[1], type:Type[1]): TypeInfo[1]
 {
    let forType = $info.typeInfos->filter(ti| $ti.type == $type);
    assert($forType->size() == 1, 'Type ' + if($forType->isEmpty(), |'missing', |'duplicated') + ': ' + $type->elementToPath());
    $forType->toOne();
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::forClass(info:TypeInfoSet[1], class:Class<Any>[1]): ClassTypeInfo[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::forClass(info:TypeInfoSet[1], class:Class<Any>[1]): ClassTypeInfo[1]
 {
    $info->forType($class)->cast(@ClassTypeInfo);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::forSupertypesOf(info:TypeInfoSet[1], class:Class<Any>[1]): ClassTypeInfo[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::forSupertypesOf(info:TypeInfoSet[1], class:Class<Any>[1]): ClassTypeInfo[*]
 {
    $info->forClass($class).supertypes->map(s| $info->forClass($s));
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::forEnumeration(info:TypeInfoSet[1], enumeration:Enumeration<Any>[1]): EnumerationTypeInfo[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::forEnumeration(info:TypeInfoSet[1], enumeration:Enumeration<Any>[1]): EnumerationTypeInfo[1]
 {
    $info->forType($enumeration)->cast(@EnumerationTypeInfo);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::forUnit(info:TypeInfoSet[1], unit:Unit[1]): UnitTypeInfo[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::forUnit(info:TypeInfoSet[1], unit:Unit[1]): UnitTypeInfo[1]
 {
    $info->forType($unit)->cast(@UnitTypeInfo);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::containsProperty(info:TypeInfoSet[1], property:AbstractProperty<Any>[1]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::containsProperty(info:TypeInfoSet[1], property:AbstractProperty<Any>[1]): Boolean[1]
 {
    let class = $property->ownerClass();
    $info.typeInfos
@@ -165,12 +214,12 @@ function meta::pure::executionPlan::engine::java::typeInfo::containsProperty(inf
         ]);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allProperties(info:TypeInfoSet[1], class:Class<Any>[1]): Property<Nil,Any|*>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allProperties(info:TypeInfoSet[1], class:Class<Any>[1]): Property<Nil,Any|*>[*]
 {
    $info->allProperties($info->forClass($class))
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): Property<Nil,Any|*>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): Property<Nil,Any|*>[*]
 {
    $classInfo.supertypes->fold(
       {supertype, properties|
@@ -181,12 +230,12 @@ function meta::pure::executionPlan::engine::java::typeInfo::allProperties(info:T
    );
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allQualifiedProperties(info:TypeInfoSet[1], class:Class<Any>[1]): QualifiedProperty<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allQualifiedProperties(info:TypeInfoSet[1], class:Class<Any>[1]): QualifiedProperty<Any>[*]
 {
    $info->allQualifiedProperties($info->forClass($class))
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::allQualifiedProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): QualifiedProperty<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::allQualifiedProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): QualifiedProperty<Any>[*]
 {
    $classInfo.supertypes->fold(
       {supertype, qualifiedProperties|
@@ -197,17 +246,17 @@ function meta::pure::executionPlan::engine::java::typeInfo::allQualifiedProperti
    );
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::valueProperties(info:TypeInfoSet[1], class:Class<Any>[1]): AbstractProperty<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::valueProperties(info:TypeInfoSet[1], class:Class<Any>[1]): AbstractProperty<Any>[*]
 {
    $info->valueProperties($info->forClass($class))
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::valueProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): AbstractProperty<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::valueProperties(info:TypeInfoSet[1], classInfo:ClassTypeInfo[1]): AbstractProperty<Any>[*]
 {
    $info->allProperties($classInfo)->filter(p|$p->isPrimitiveValueProperty());
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::classDependenciesViaPropertiesWithsubTypes(info:TypeInfoSet[1], class:Class<Any>[1]): Class<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::classDependenciesViaPropertiesWithsubTypes(info:TypeInfoSet[1], class:Class<Any>[1]): Class<Any>[*]
 {
    let cd = $info
       ->classPropertiesRecursiveWithsubTypes($class, [])
@@ -223,7 +272,7 @@ function meta::pure::executionPlan::engine::java::typeInfo::classDependenciesVia
       ->cast(@Class<Any>);
 }
 
-function meta::pure::executionPlan::engine::java::typeInfo::enumDependenciesViaProperties(info:TypeInfoSet[1], class:Class<Any>[1]): Enumeration<Any>[*]
+function meta::pure::executionPlan::platformBinding::typeInfo::enumDependenciesViaProperties(info:TypeInfoSet[1], class:Class<Any>[1]): Enumeration<Any>[*]
 {
    let directProperties     = $info->allProperties($class);
    let dependencyProperties = $info->classDependenciesViaPropertiesWithsubTypes($class)->map(c| $info->allProperties($c));
@@ -236,7 +285,7 @@ function meta::pure::executionPlan::engine::java::typeInfo::enumDependenciesViaP
       ->cast(@Enumeration<Any>);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::classPropertiesRecursiveWithsubTypes(info:TypeInfoSet[1], class:Class<Any>[1], visitedClasses:Class<Any>[*]):AbstractProperty<Any>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::classPropertiesRecursiveWithsubTypes(info:TypeInfoSet[1], class:Class<Any>[1], visitedClasses:Class<Any>[*]):AbstractProperty<Any>[*]
 {
    if($class->in($visitedClasses) || $class == Any,
       |[],
@@ -250,7 +299,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::c
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::typeInfoFromTree(info:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::typeInfoFromTree(info:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
 {
    let types = $tree->match([
       r: RoutedGraphFetchTree[1]    | $r.sets->cast(@InstanceSetImplementation)->map(set| if($set.mappingClass->isNotEmpty(), | $set.mappingClass->toOne(), | $set.class)),
@@ -284,7 +333,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::t
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::constraintInfoFromTree(typeInfos:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::constraintInfoFromTree(typeInfos:TypeInfoSet[1], tree:GraphFetchTree[1]): TypeInfoSet[1]
 {
    $tree->classesInTree()
       ->map(c| $c->concatenate($typeInfos->forClass($c).supertypes))
@@ -292,12 +341,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::c
       ->fold({class, infos| $infos->addConstraints($class)}, $typeInfos);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addConstraints(typeInfos:TypeInfoSet[1], class:Class<Any>[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addConstraints(typeInfos:TypeInfoSet[1], class:Class<Any>[1]): TypeInfoSet[1]
 {
    $class.constraints->fold({constraint, infos| $infos->addConstraint($class, $constraint)}, $typeInfos);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addConstraint(typeInfos:TypeInfoSet[1], class:Class<Any>[1], constraint:Constraint[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addConstraint(typeInfos:TypeInfoSet[1], class:Class<Any>[1], constraint:Constraint[1]): TypeInfoSet[1]
 {
    let classInfo         = $typeInfos->forClass($class);
    let funcProperties    = $constraint.functionDefinition.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties();
@@ -315,19 +364,19 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    $newTypeInfos->addOrReplace($withConstraint);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addSupportedConstraint(classInfo:ClassTypeInfo[1], constraint:Constraint[1]): ClassTypeInfo[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addSupportedConstraint(classInfo:ClassTypeInfo[1], constraint:Constraint[1]): ClassTypeInfo[1]
 {
    let constraintInfo = ^SupportedConstraintInfo(constraint=$constraint);
    ^$classInfo(constraints = $classInfo.constraints->filter(ci| $ci.constraint != $constraint)->add($constraintInfo));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addAlwaysDefectConstraint(classInfo:ClassTypeInfo[1], constraint:Constraint[1], message:String[1]): ClassTypeInfo[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addAlwaysDefectConstraint(classInfo:ClassTypeInfo[1], constraint:Constraint[1], message:String[1]): ClassTypeInfo[1]
 {
    let constraintInfo = ^AlwaysDefectConstraintInfo(constraint=$constraint, defectMessage=$message);
    ^$classInfo(constraints = $classInfo.constraints->filter(ci| $ci.constraint != $constraint)->add($constraintInfo));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::classesInTree(tree:GraphFetchTree[1]): Class<Any>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::classesInTree(tree:GraphFetchTree[1]): Class<Any>[*]
 {
    let class = $tree->match([
       r: RootGraphFetchTree<Any>[1] | $r.class,
@@ -337,7 +386,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::c
    $class->concatenate($tree.subTrees->map(st| $st->classesInTree()))->removeDuplicates();
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::typeInfoFromInstanceSetImplementations(info:TypeInfoSet[1], setImplementations:InstanceSetImplementation[*]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::typeInfoFromInstanceSetImplementations(info:TypeInfoSet[1], setImplementations:InstanceSetImplementation[*]): TypeInfoSet[1]
 {
    $setImplementations->fold(
       {set, updatedTypes |
@@ -351,12 +400,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::t
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addPropertyForTypeIfMissing(info:TypeInfoSet[1], property:Property<Nil,Any|*>[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForTypeIfMissing(info:TypeInfoSet[1], property:Property<Nil,Any|*>[1]): TypeInfoSet[1]
 {
   addPropertyForTypeIfMissing($info, $property, false);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addPropertyForTypeIfMissing(info:TypeInfoSet[1], property:Property<Nil,Any|*>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForTypeIfMissing(info:TypeInfoSet[1], property:Property<Nil,Any|*>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
     
    $property.owner->match([
@@ -374,7 +423,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    ]);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addPropertyForClassIfDefined(info:TypeInfoSet[1], class:Class<Any>[1], propertyName:String[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForClassIfDefined(info:TypeInfoSet[1], class:Class<Any>[1], propertyName:String[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    let property = $class.properties->concatenate($class.propertiesFromAssociations)->filter(p| $p.name == $propertyName);
    
@@ -400,12 +449,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    ]);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], property:Property<Nil,Any|*>[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], property:Property<Nil,Any|*>[1]): TypeInfoSet[1]
 {
   addPropertyForClassIfMissing($info, $class, $property, false);  
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], property:Property<Nil,Any|*>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], property:Property<Nil,Any|*>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {   
    let enriched  = $info->addBasicTypeInfoIfMissing($class, $isNewInstanceAllowed);
    let ti        = $enriched->forClass($class);
@@ -420,14 +469,14 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    $ti.supertypes->fold({c, tis| $tis->addPropertyForClassIfDefined($c, $property.name->toOne(), $isNewInstanceAllowed)}, $withProperty);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::sortProperties(properties:Property<Nil,Any|*>[*], class:Class<Any>[1]): Property<Nil,Any|*>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::sortProperties(properties:Property<Nil,Any|*>[*], class:Class<Any>[1]): Property<Nil,Any|*>[*]
 {
    let allProperties = $class->allProperties();
    let ordinal = {p:Property<Nil,Any|*>[1]| $allProperties->indexOf($p)};
    $properties->sort({p1,p2| $ordinal->eval($p1) - $ordinal->eval($p2)});
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addQualifiedPropertyForTypeIfMissing(info:TypeInfoSet[1], qualifiedProperty:QualifiedProperty<Any>[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addQualifiedPropertyForTypeIfMissing(info:TypeInfoSet[1], qualifiedProperty:QualifiedProperty<Any>[1]): TypeInfoSet[1]
 {
   // Note: we allow new instance creation within qualified properties if the return type is of primitive type
   // The check is done within the following function, thus we set the isNewInstanceAllowed flag to true and defer
@@ -435,7 +484,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
   addQualifiedPropertyForTypeIfMissing($info, $qualifiedProperty, true);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addQualifiedPropertyForTypeIfMissing(info:TypeInfoSet[1], qualifiedProperty:QualifiedProperty<Any>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addQualifiedPropertyForTypeIfMissing(info:TypeInfoSet[1], qualifiedProperty:QualifiedProperty<Any>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    let owningClass = $qualifiedProperty->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType->toOne()->cast(@Class<Any>);
    let isPrimitiveReturnType = $qualifiedProperty->isPrimitiveValueProperty();
@@ -443,7 +492,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    $info->addQualifiedPropertyForClassIfMissing($owningClass, $qualifiedProperty, $isNewInstanceAllowed && $isPrimitiveReturnType);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addQualifiedPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], qualifiedProperty:QualifiedProperty<Any>[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addQualifiedPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], qualifiedProperty:QualifiedProperty<Any>[1]): TypeInfoSet[1]
 {
   // Note: we allow new instance creation within qualified properties if the return type is of primitive type
   // The check is done within the following function, thus we set the isNewInstanceAllowed flag to true and defer
@@ -451,7 +500,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
   addQualifiedPropertyForClassIfMissing($info, $class, $qualifiedProperty, true);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addQualifiedPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], qualifiedProperty:QualifiedProperty<Any>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addQualifiedPropertyForClassIfMissing(info:TypeInfoSet[1], class:Class<Any>[1], qualifiedProperty:QualifiedProperty<Any>[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    let enriched = $info->addBasicTypeInfoIfMissing($class, $isNewInstanceAllowed);
    let ti       = $enriched->forClass($class);
@@ -477,30 +526,30 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addOrReplace(info:TypeInfoSet[1], newTypeInfo:TypeInfo[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addOrReplace(info:TypeInfoSet[1], newTypeInfo:TypeInfo[1]): TypeInfoSet[1]
 {
    ^$info(
       typeInfos=$info.typeInfos->filter(ti| !elementsEquals()->eval($ti.type, $newTypeInfo.type))->concatenate($newTypeInfo)
    );
 }
 
-function<<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], type:Type[1]):TypeInfoSet[1]
+function<<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], type:Type[1]):TypeInfoSet[1]
 {
   addBasicTypeInfoIfMissing($info, $type, false);
 }
 
-function<<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], type:Type[1], isNewInstanceAllowed:Boolean[1]):TypeInfoSet[1]
+function<<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], type:Type[1], isNewInstanceAllowed:Boolean[1]):TypeInfoSet[1]
 {
    
    addBasicTypeInfoIfMissing($info,[],$type, $isNewInstanceAllowed);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], seenClasses:Class<Any>[*], type:Type[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], seenClasses:Class<Any>[*], type:Type[1]): TypeInfoSet[1]
 {
   addBasicTypeInfoIfMissing($info, $seenClasses, $type, false);
 }
    
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], seenClasses:Class<Any>[*], type:Type[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicTypeInfoIfMissing(info:TypeInfoSet[1], seenClasses:Class<Any>[*], type:Type[1], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    if($info.typeInfos.type->contains($type),
       {| 
@@ -527,17 +576,17 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
 }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addEnumerationTypeInfo(info:TypeInfoSet[1], enumeration:Enumeration<Any>[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addEnumerationTypeInfo(info:TypeInfoSet[1], enumeration:Enumeration<Any>[1]): TypeInfoSet[1]
 {
    $info->addOrReplace(^EnumerationTypeInfo(type=$enumeration));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addBasicClassTypeInfo(info:TypeInfoSet[1], class:Class<Any>[1], seenClasses:Class<Any>[*]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicClassTypeInfo(info:TypeInfoSet[1], class:Class<Any>[1], seenClasses:Class<Any>[*]): TypeInfoSet[1]
 {
   addBasicClassTypeInfo($info, $class, $seenClasses, false);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addBasicClassTypeInfo(info:TypeInfoSet[1], class:Class<Any>[1], seenClasses:Class<Any>[*], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addBasicClassTypeInfo(info:TypeInfoSet[1], class:Class<Any>[1], seenClasses:Class<Any>[*], isNewInstanceAllowed:Boolean[1]): TypeInfoSet[1]
 {
    let supertypes          = $class->getGeneralizations();
    let newSeenClasses      = $seenClasses->concatenate($class);
@@ -552,7 +601,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    $withSupertypes->addOrReplace($classInfo);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::addUnitTypeInfo(info:TypeInfoSet[1], unit:Unit[1]): TypeInfoSet[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::addUnitTypeInfo(info:TypeInfoSet[1], unit:Unit[1]): TypeInfoSet[1]
 {
    let measure = $unit.measure->toOne();
    let conversionFunction = $unit.conversionFunction->toOne();
@@ -566,7 +615,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::a
    $info->addOrReplace($unitInfo);
 }
 
-function  <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::getGeneralizations(class:Type[1]):Class<Any>[*]
+function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::getGeneralizations(class:Type[1]):Class<Any>[*]
 {
    let generalizations = $class.generalizations->map(g | $g.general->cast(@GenericType).rawType->toOne())->cast(@Class<Any>);
    $generalizations
@@ -576,7 +625,7 @@ function  <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::
       ->cast(@Class<Any>);
 }
 
-function  <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::getSpecializations(class:Type[1]):Class<Any>[*]
+function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::getSpecializations(class:Type[1]):Class<Any>[*]
 {
    let specializations = $class.specializations->map(g | $g.specific->filter(t|$t->instanceOf(Class))->cast(@Class<Any>));
   
@@ -590,7 +639,7 @@ function  <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::
 
 // Comparator needed due to Alloy bug in metadata vs other deserialization
 // TODO Verify if this is still needed
-function  <<access.private>> meta::pure::executionPlan::engine::java::typeInfo::elementsEquals():Function<{PackageableElement[1],PackageableElement[1]->Boolean[1]}>[1]
+function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::elementsEquals():Function<{PackageableElement[1],PackageableElement[1]->Boolean[1]}>[1]
 {
    {pe1:PackageableElement[1], pe2:PackageableElement[1] | $pe1->elementToPath() == $pe2->elementToPath()};
 }

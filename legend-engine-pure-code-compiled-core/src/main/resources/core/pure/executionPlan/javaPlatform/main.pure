@@ -24,7 +24,7 @@ import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::*;
@@ -69,54 +69,6 @@ Class meta::pure::executionPlan::engine::java::CheckedJavaType extends JavaType
    source     : JavaType[0..1];
 }
 
-
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::TypeInfoSet
-{
-   typeInfos: TypeInfo[*];
-}
-
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::TypeInfo
-{
-   type: meta::pure::metamodel::type::Type[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::EnumerationTypeInfo extends TypeInfo
-{
-   enumeration() { $this.type->cast(@meta::pure::metamodel::type::Enumeration<Any>) }: meta::pure::metamodel::type::Enumeration<Any>[1];
-}
-
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::ConstraintInfo
-{
-   constraint:Constraint[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::SupportedConstraintInfo extends ConstraintInfo
-{
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::AlwaysDefectConstraintInfo extends ConstraintInfo
-{
-   defectMessage: String[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::ClassTypeInfo extends TypeInfo
-{
-   properties          : Property<Nil,Any|*>[*];
-   supertypes          : meta::pure::metamodel::type::Class<Any>[*];
-   qualifiedProperties : QualifiedProperty<Any>[*];
-   constraints         : ConstraintInfo[*];
-   isNewInstanceAllowed        : Boolean[1];
-   
-   class() { $this.type->cast(@meta::pure::metamodel::type::Class<Any>) }: meta::pure::metamodel::type::Class<Any>[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::UnitTypeInfo extends TypeInfo
-{
-   measure: Measure[1];
-   conversionFunction: FunctionDefinition<Any>[1];
-
-   unit() { $this.type->cast(@Unit) }: Unit[1];
-}
 
 Class meta::pure::executionPlan::engine::java::GeneratedCode
 {

@@ -25,7 +25,7 @@ import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;

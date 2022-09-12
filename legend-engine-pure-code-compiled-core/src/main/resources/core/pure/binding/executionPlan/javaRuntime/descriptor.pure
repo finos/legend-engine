@@ -17,7 +17,7 @@ import meta::external::shared::format::executionPlan::engine::*;
 import meta::external::shared::format::executionPlan::engine::java::*;
 
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
 import meta::pure::extension::*;
 
