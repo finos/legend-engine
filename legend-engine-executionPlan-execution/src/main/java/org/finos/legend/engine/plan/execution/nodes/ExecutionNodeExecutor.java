@@ -178,7 +178,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(FunctionParametersValidationNode functionParametersValidationNode)
     {
-        FunctionParametersParametersValidation.validate(Lists.immutable.withAll(functionParametersValidationNode.functionParameters), this.executionState);
+        FunctionParametersParametersValidation.validate(Lists.immutable.withAll(functionParametersValidationNode.functionParameters), functionParametersValidationNode.validationContext, this.executionState);
         return new ConstantResult(true);
     }
 

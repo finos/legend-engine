@@ -170,6 +170,17 @@ Class meta::pure::executionPlan::ErrorExecutionNode extends meta::pure::executio
 Class meta::pure::executionPlan::FunctionParametersValidationNode extends meta::pure::executionPlan::ExecutionNode
 {
    functionParameters : FunctionParameter[*];
+   validationContext : ValidationContext[*];
+}
+
+Class meta::pure::executionPlan::ValidationContext
+{
+}
+
+Class meta::pure::executionPlan::EnumValidationContext extends ValidationContext
+{
+   varName: String[1];
+   validEnumValues: String[*];
 }
 
 Class meta::pure::executionPlan::FunctionParameter

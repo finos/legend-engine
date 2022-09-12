@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-
 import java.util.List;
 
-public class FunctionParametersValidationNode extends ExecutionNode
+public class EnumValidationContext extends ValidationContext
 {
-    public List<Variable> functionParameters;
-    public List<ValidationContext> validationContext;
+    public String varName;
+    public List<String> validEnumValues;
 
     @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
+    public <T> T accept(ValidationContextVisitor<T> validationContextVisitor)
     {
-        return executionNodeVisitor.visit(this);
+        return validationContextVisitor.visit(this);
     }
 }

@@ -30,6 +30,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -202,7 +203,7 @@ public class TestParametersValidation
         for (Object validValue : validValues)
         {
             ExecutionState state = newExecutionState(parameter.name, validValue);
-            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), state);
+            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), new ArrayList<>(), state);
             Object actualValue = ((ConstantResult) state.getResult(parameter.name)).getValue();
             if (normalizer == null)
             {
@@ -216,7 +217,7 @@ public class TestParametersValidation
 
         for (Object invalidValue : invalidValues)
         {
-            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), newExecutionState(parameter.name, invalidValue)));
+            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), new ArrayList<>(), newExecutionState(parameter.name, invalidValue)));
             Assert.assertEquals(getExpectedExceptionMessage(cls, invalidValue, exceptionSuffix), e.getMessage());
         }
     }
@@ -228,7 +229,7 @@ public class TestParametersValidation
         for (List<?> validValue : validValues)
         {
             ExecutionState state = newExecutionState(parameter.name, validValue);
-            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), state);
+            FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), new ArrayList<>(), state);
             Object actualValue = ((ConstantResult) state.getResult(parameter.name)).getValue();
             if ((normalizer == null) || (validValue == null))
             {
@@ -242,7 +243,7 @@ public class TestParametersValidation
 
         for (Object invalidValue : invalidValues)
         {
-            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), newExecutionState(parameter.name, invalidValue)));
+            IllegalArgumentException e = Assert.assertThrows(String.valueOf(invalidValue), IllegalArgumentException.class, () -> FunctionParametersParametersValidation.validate(Lists.immutable.with(parameter), new ArrayList<>(), newExecutionState(parameter.name, invalidValue)));
             String expectedPrefix = getExpectedExceptionMessagePrefix(cls);
             String message = e.getMessage();
             if ((message == null) || !message.startsWith(expectedPrefix))
