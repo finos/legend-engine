@@ -34,7 +34,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canHandleNilWhileMapping
       |Target.all()->graphFetch($tree)->serialize($tree),
       mapWithNil,
       testJsonRuntime(Source, '{"i":0}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -57,7 +57,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canHandleNonNilWhileMapp
       |Target.all()->graphFetch($tree)->serialize($tree),
       mapWithNil,
       testJsonRuntime(Source, '{"i":1}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -79,7 +79,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canHandleSimplePropertyM
       |Target.all()->graphFetch($tree)->serialize($tree),
       mapToNil,
       testJsonRuntime(Source, '{"i":1}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -101,7 +101,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canHandleComplexProperty
       |Target.all()->graphFetch($tree)->serialize($tree),
       mapToNilComplexProperty,
       testJsonRuntime(Source, '{"i":1}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();

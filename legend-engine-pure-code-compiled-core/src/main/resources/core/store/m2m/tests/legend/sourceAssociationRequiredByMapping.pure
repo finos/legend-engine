@@ -39,7 +39,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canNavigateSourceAssocia
                                 class=Firm, 
                                 url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
                              )
-      ),[]
+      ),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"names":"Pierre,Dave"}'->parseJSON(), $result.values->toOne()->parseJSON()));

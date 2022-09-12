@@ -37,7 +37,7 @@ meta::pure::mapping::modelToModel::test::alloy::units::testUnitToUnitIdentityMap
                                 class=_HealthProfile,
                                 url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
                              )
-      ),[]
+      ),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -57,7 +57,7 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
                                 class=_HealthProfile,
                                 url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
                              )
-      ),[]
+      ),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"fullName":"Teddy Dean","weightValue":5.5,"weightUnit":"meta::pure::unit::Mass~Kilogram"}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -77,7 +77,7 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
                                 class=_DecomposedHealthProfile,
                                 url='data:application/json,{"fullName":"Teddy Dean","weightUnit":"meta::pure::unit::Mass~Kilogram","weightValue":5.5}'
                              )
-      ),[]
+      ),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'->parseJSON(), $result.values->toOne()->parseJSON()));
@@ -97,7 +97,7 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
                                 class=_ClassWithKilogram,
                                 url='data:application/json,{"weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
                              )
-      ),[]
+      ),meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Pound", "exponentValue":1}],"value":12.12548777530369}}'->parseJSON(), $result.values->toOne()->parseJSON()));
