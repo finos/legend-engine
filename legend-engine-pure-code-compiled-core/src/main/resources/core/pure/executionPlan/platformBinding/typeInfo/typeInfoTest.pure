@@ -108,7 +108,7 @@ Enum meta::pure::executionPlan::platformBinding::typeInfo::tests::Side
    BUY, SELL
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::Car
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::Car
 [
    wheelsOn: $this.wheels->forAll(w| $w.attached),
    canRoll: $this.allRound,
@@ -123,7 +123,7 @@ Class meta::alloy::test::runtime::java::typeInfo::Car
    }: Boolean[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::Wheel
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::Wheel
 {
    attached: Boolean[1];
    round: Boolean[1];

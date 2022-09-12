@@ -39,7 +39,7 @@ Class meta::pure::executionPlan::platformBinding::typeInfo::EnumerationTypeInfo 
    enumeration() { $this.type->cast(@meta::pure::metamodel::type::Enumeration<Any>) }: meta::pure::metamodel::type::Enumeration<Any>[1];
 }
 
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::ConstraintInfo
+Class <<typemodifiers.abstract>> meta::pure::executionPlan::platformBinding::typeInfo::ConstraintInfo
 {
    id           : String[1];
    constraint   : Constraint[1];
@@ -348,7 +348,7 @@ function meta::pure::executionPlan::platformBinding::typeInfo::addConstraints(ty
    $class.constraints->toIndexed()->fold({constraint, infos| $infos->addConstraint($class, $constraint.second, $constraint.first)}, $typeInfos);
 }
 
-function meta::pure::executionPlan::platformBinding::typeInfo::addConstraint(typeInfos:TypeInfoSet[1], class:Class<Any>[1], constraint:Constraint[1]): TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::typeInfo::addConstraint(typeInfos:TypeInfoSet[1], class:Class<Any>[1], constraint:Constraint[1], n:Integer[1]): TypeInfoSet[1]
 {
    let classInfo           = $typeInfos->forClass($class);
    let funcProperties      = $constraint.functionDefinition.expressionSequence->map(es | $es->evaluateAndDeactivate()->scanProperties());
