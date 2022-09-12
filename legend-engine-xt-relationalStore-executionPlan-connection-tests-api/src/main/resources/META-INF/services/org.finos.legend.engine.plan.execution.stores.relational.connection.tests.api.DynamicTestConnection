@@ -1,3 +1,0 @@
-org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.H2AlloyServer
-org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.SqlServerTestContainers
-org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections.PostgresTestContainers

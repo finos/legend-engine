@@ -54,6 +54,12 @@ public class TestTestConnectionBuilder
             "  class : anything::class;\n" +
             "  url : 'executor:default';\n" +
             "}\n" +
+            "\n" +
+            "ServiceStoreConnection demo::serviceStoreConnection\n" +
+            "{\n" +
+            "  store: test::serviceStore;\n" +
+            "  baseUrl: 'http://baseUrl';\n" +
+            "}\n" +
             "\n\n" +
             "###Data" +
             "\n" +
@@ -78,7 +84,42 @@ public class TestTestConnectionBuilder
             "            </firm>';\n" +
             "  }#\n" +
             "}\n" +
-            "\n";
+            "\n" +
+            "Data demo::ServiceStoreData\n" +
+            "{\n" +
+            "  ServiceStore\n" +
+            "  #{\n" +
+            "    [\n" +
+            "      {\n" +
+            "        request:\n" +
+            "        {\n" +
+            "          method: GET;\n" +
+            "          url: '/employees';\n" +
+            "        };\n" +
+            "        response:\n" +
+            "        {\n" +
+            "          body:\n" +
+            "            ExternalFormat\n" +
+            "            #{\n" +
+            "              contentType: 'application/json';\n" +
+            "              data: '[\\n" +
+            "                       {\\n" +
+            "                           \"firstName\": \"FirstName A\",\\n" +
+            "                           \"lastName\": \"LastName A\",\\n" +
+            "                           \"firmId\": \"A\"\\n" +
+            "                       },\\n" +
+            "                       {\\n" +
+            "                           \"firstName\": \"FirstName B\",\\n" +
+            "                           \"lastName\": \"LastName B\",\\n" +
+            "                           \"firmId\": \"B\"\\n" +
+            "                       }\\n" +
+            "                     ]\\n';\n" +
+            "            }#;\n" +
+            "        };\n" +
+            "      }\n" +
+            "    ]\n" +
+            "  }#\n" +
+            "}\n";
 
     private static final PureModelContextData data = PureGrammarParser.newInstance().parseModel(GRAMMAR);
 
@@ -187,4 +228,41 @@ public class TestTestConnectionBuilder
         Assert.assertEquals("data:application/xml;base64,IDw/eG1sIHZlcnNpb249IjEuMCIgZW5jb2Rpbmc9InV0Zi04Ij8+CiAgICAgICAgICAgIDxmaXJtPgogICAgICAgICAgICAgICAgPG5hbWU+QWNtZSBDby48L25hbWU+CiAgICAgICAgICAgICAgICA8cmFua2luZz4yPC9yYW5raW5nPgogICAgICAgICAgICA8L2Zpcm0+", testXmlModelConnection.url);
     }
 
+    @Test
+    public void testServiceStoreTestConnectionBuilder() throws IOException
+    {
+        EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::ServiceStoreData")).data;
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        PackageableConnection serviceStoreConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::serviceStoreConnection".equals(ele.getPath()));
+
+        Pair<Connection, List<Closeable>> testConnectionWithCloseables = serviceStoreConnection.connectionValue.accept(testConnectionBuilder);
+
+        Assert.assertTrue(testConnectionWithCloseables.getOne() instanceof ServiceStoreConnection);
+        Assert.assertEquals(1, testConnectionWithCloseables.getTwo().size());
+
+        ServiceStoreConnection testServiceStoreConnection = (ServiceStoreConnection) testConnectionWithCloseables.getOne();
+
+        Assert.assertEquals("test::serviceStore", testServiceStoreConnection.element);
+        Assert.assertTrue(testServiceStoreConnection.baseUrl.startsWith("http://127.0.0.1:"));
+
+        testConnectionWithCloseables.getTwo().get(0).close();
+    }
+
+    @Test
+    public void testServiceStoreTestConnectionBuilderExceptionInAbsenceOfData()
+    {
+        EmbeddedData embeddedData = null;
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        PackageableConnection serviceStoreConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::serviceStoreConnection".equals(ele.getPath()));
+
+        try
+        {
+            serviceStoreConnection.connectionValue.accept(testConnectionBuilder);
+            Assert.fail("Expected Exception");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals(e.getMessage(), "No test data provided for connection type 'ServiceStoreConnection'. Either you need to provide test data for the connection type or connection type is not supported.");
+        }
+    }
 }

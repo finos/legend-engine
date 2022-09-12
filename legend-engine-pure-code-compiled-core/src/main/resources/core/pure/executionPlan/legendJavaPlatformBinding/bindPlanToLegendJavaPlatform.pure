@@ -1,0 +1,191 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::graphFetch::executionPlan::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+
+function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
+{
+   assert($platformBindingConfig->instanceOf(LegendJavaPlatformBindingConfig), | 'Expected Legend Java platform binding config');
+
+   let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
+   let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
+
+   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
+
+   ^$plan
+   (
+      rootExecutionNode = $generatedNode.node,
+      globalImplementationSupport = if ($generatedNode.project->isEmpty() || $generatedNode.project->toOne()->allClasses()->isEmpty(),
+                                        | [],
+                                        | $generatedNode.project->toOne()->projectToImplementation()
+                                    )
+   );
+}
+
+// Prepare generation context ---------------------------------------------------------
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::prepareGenerationContext(plan: ExecutionPlan[1], legendJavaConfig: LegendJavaPlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): GenerationContext[1]
+{
+   let conventions  = engineConventions($extensions);
+   let pathAdjusted = if ($legendJavaConfig.planId->isEmpty(), 
+                          | $conventions, 
+                          | $conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$legendJavaConfig.planId->toOne()))
+                      );
+
+   let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted);
+
+   let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList();
+   
+   // TODO Move Interface/Enum/Unit generation to here
+   ^$preparedContext(baseProject=$preparedContext.conventions->fundamentals($debug));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::prepareForLegendJavaPlatformBinding(node: ExecutionNode[1], path: String[1], initialContext: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):GenerationContext[1]
+{
+   let childNodesWithIndex      = $node.executionNodes->size()->range()->map(i | pair($node.executionNodes->at($i), 'n' + toString($i + 1)));
+   let extraChildNodesWithIndex = $node->extraChildNodesWithIndex($extensions);
+
+   let updatedContextForChildren = $childNodesWithIndex->concatenate($extraChildNodesWithIndex)->fold({child, agg |
+      $child.first->prepareForLegendJavaPlatformBinding($path + '.' + $child.second, $agg, $extensions, $debug)
+   }, $initialContext);
+   
+   let supportingExtension = $node->supportingLegendJavaExtension($extensions);
+   
+   if ($supportingExtension.updateGenerationContextForNode->isNotEmpty(),
+       | $supportingExtension.updateGenerationContextForNode->toOne()->eval($node, $updatedContextForChildren, $path, $extensions, $debug),
+       | $node->match([
+            g:GlobalGraphFetchExecutionNode[1]       | $g->prepareForGlobalGraphFetchNode($path, $updatedContextForChildren, $debug),
+            p:PureExpressionPlatformExecutionNode[1] | $p->prepareForPlatformNode($path, $updatedContextForChildren, $extensions, $debug),
+            p:PlatformMergeExecutionNode[1]          | $p->prepareForPlatformMergeNode($path, $updatedContextForChildren, $extensions, $debug),
+            p:PlatformUnionExecutionNode[1]          | $p->prepareForPlatformUnionNode($path, $updatedContextForChildren, $extensions, $debug),      
+            e:ExecutionNode[1]                       | $updatedContextForChildren
+         ])
+   );
+}
+
+// --------------------------------------------------------- Prepare generation context
+
+
+
+
+// Generate Java Code -----------------------------------------------------------------
+
+function meta::pure::executionPlan::platformBinding::legendJava::generateLegendJavaPlatformBindingCode(node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): GeneratedNode[1]
+{
+   let supportingExtension = $node->supportingLegendJavaExtension($extensions);
+
+   let generated = if ($supportingExtension.generateLegendJavaCodeForNode->isNotEmpty(),
+                       | $supportingExtension.generateLegendJavaCodeForNode->toOne()->eval($node, $path, $context, $extensions, $debug),
+                       | $node->match([
+                            p:PureExpressionPlatformExecutionNode[1] | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
+                            e:ExecutionNode[1]                       | ^GeneratedCode()
+                         ])
+                   );
+
+   let generatedChildren = $node.executionNodes->generateLegendJavaPlatformBindingCodeForChildNodes(1, $path, $context, $extensions, $debug);
+
+   let newNode     = ^$node(executionNodes = $generatedChildren.node, implementation = $generated.implementation);
+   let fullProject = $generated.project->concatenate($generatedChildren.project)->concatenate($context.baseProject)->mergeProjectsNullable();
+
+   if ($supportingExtension.generateLegendJavaCodeForExtraChildNodes->isNotEmpty(),
+       | $supportingExtension.generateLegendJavaCodeForExtraChildNodes->toOne()->eval($newNode, $fullProject, $path, $context, $extensions, $debug),
+       | $newNode->match([
+            {g:GlobalGraphFetchExecutionNode[1] |
+               let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generateLegendJavaPlatformBindingCode($path + '.globalChild' + $x->toString(), $context, $extensions, $debug));
+               let transformedLocal = $g.localGraphFetchExecutionNode->generateLegendJavaPlatformBindingCode($path + localGraphFetchNodePathPrefix(), $context, $extensions, $debug);
+               ^GeneratedNode(
+                  node = ^$g
+                         (
+                            children = $transformedChildren.node->cast(@GlobalGraphFetchExecutionNode),
+                            localGraphFetchExecutionNode = $transformedLocal.node->cast(@LocalGraphFetchExecutionNode)
+                         ),
+                  project = $fullProject->concatenate($transformedChildren.project)->concatenate($transformedLocal.project)->mergeProjectsNullable()
+               );
+            },
+            {f:FreeMarkerConditionalExecutionNode[1] |
+               let transformedTrueBlock = $f.trueBlock->generateLegendJavaPlatformBindingCode($path + '.trueBlock', $context, $extensions, $debug);
+               let transformedFalseBlock = if($f.falseBlock->isEmpty(), |[], |$f.falseBlock->toOne()->generateLegendJavaPlatformBindingCode($path + '.falseBlock', $context, $extensions, $debug));
+               ^GeneratedNode(
+                  node = ^$f
+                         (
+                            trueBlock = $transformedTrueBlock.node,
+                            falseBlock = $transformedFalseBlock.node
+                         ),
+                  project = $fullProject->concatenate($transformedTrueBlock.project)->concatenate($transformedFalseBlock.project)->mergeProjectsNullable()
+               );
+            },
+            {e:ExecutionNode[1] | ^GeneratedNode(node = $newNode, project = $fullProject)}
+         ])
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::generateLegendJavaPlatformBindingCodeForChildNodes(nodes: ExecutionNode[*], childNo: Integer[1], parentPath: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): GeneratedNode[*]
+{
+   $nodes->head()->match([
+      n0:ExecutionNode[0] | [],
+      n :ExecutionNode[1] | $n->generateLegendJavaPlatformBindingCode($parentPath + '.n' + $childNo->toString(), $context, $extensions, $debug)->concatenate(
+                               $nodes->tail()->generateLegendJavaPlatformBindingCodeForChildNodes($childNo + 1, $parentPath, $context, $extensions, $debug)
+                            )
+   ]);
+}
+
+// ----------------------------------------------------------------- Generate Java Code
+
+
+
+// Utilities --------------------------------------------------------------------------
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::supportingLegendJavaExtension(node: ExecutionNode[1], extensions: Extension[*]): LegendJavaPlatformBindingExtension[0..1]
+{
+   let platformBinding = $extensions->extractPlatformBindingById(legendJavaPlatformBindingId());
+   let legendJavaExtensions = $platformBinding.platformBindingExtensions->cast(@LegendJavaPlatformBindingExtension);
+
+   let supports = $legendJavaExtensions->filter(x | $x.supportedExecutionNodes->exists(e | $node->type()->_subTypeOf($e)));
+   assert($supports->size() <= 1, | 'Found many legend java platform binding extensions ' + $supports.id->joinStrings('[', ', ', '] ') +
+                                    'which support node type : ' + $node->type()->elementToPath());
+
+   $supports->first();
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::extraChildNodesWithIndex(node: ExecutionNode[1], extensions: Extension[*]): Pair<ExecutionNode, String>[*]
+{
+   let supportingExtension = $node->supportingLegendJavaExtension($extensions);
+   
+   if ($supportingExtension.extraChildNodesWithIndex->isNotEmpty(), 
+       | $supportingExtension.extraChildNodesWithIndex->toOne()->eval($node),
+       | $node->match([
+            {f:FreeMarkerConditionalExecutionNode[1] |
+               pair($f.trueBlock, 'trueBlock')->concatenate(
+                  if($f.falseBlock->isNotEmpty(), | pair($f.falseBlock->toOne(), 'falseBlock'), | [])
+               )
+            },
+            {g:GlobalGraphFetchExecutionNode[1] |
+               $g.children->size()->range()->map(x | pair($g.children->at($x), 'globalChild' + $x->toString()))->concatenate(pair($g.localGraphFetchExecutionNode, 'localGraph'))
+            },
+            {e:ExecutionNode[1] | []}
+         ])
+   );
+}
+
+// -------------------------------------------------------------------------- Utilities

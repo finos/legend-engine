@@ -46,6 +46,11 @@ public interface PureGrammarParserExtension
         return Collections.emptyList();
     }
 
+    default Iterable<? extends EmbeddedPureParser> getExtraEmbeddedPureParsers()
+    {
+        return Collections.emptyList();
+    }
+
     default Iterable<? extends TestAssertionParser> getExtraTestAssertionParsers()
     {
         return Collections.emptyList();

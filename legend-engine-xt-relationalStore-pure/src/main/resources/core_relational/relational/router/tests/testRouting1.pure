@@ -209,6 +209,19 @@ function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingPure
    assertEquals('A chicken', $result.values);
 }
 
+function <<test.Test>> meta::relational::tests::query::routing::multipleexpressions::testPlatformExpressionDependencyOnAFromExpression():Boolean[1]
+{
+   let f = {| let firstFirmLegalName = Firm.all()->meta::pure::mapping::from(simpleRelationalMapping, testRuntime())->at(0).legalName;
+      
+              let otherLegalName = $firstFirmLegalName + 'Test';
+      
+            };
+   
+   let routingResult = routeFunction($f, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
+   assertEquals(1, $routingResult.functions->size());
+   assertEquals(' | {Platform> let firstFirmLegalName = [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)].legalName};\n   let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus();', $routingResult.functions->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
+}
+
 function meta::relational::tests::query::routing::doSomething(a:Integer[1]):String[1]
 {
    let b = 10;

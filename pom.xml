@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.14.6-SNAPSHOT</version>
+    <version>3.15.4-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -87,14 +87,15 @@
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>
-        <module>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</module>
         <module>legend-engine-xt-relationalStore-pure</module>
         <module>legend-engine-xt-relationalStore-postgres-execution-tests</module>
         <module>legend-engine-xt-relationalStore-api</module>
         <module>legend-engine-xt-relationalStore-grammar</module>
         <module>legend-engine-xt-relationalStore-protocol</module>
+        <module>legend-engine-xt-relationalStore-test-server</module>
 
         <module>legend-engine-xt-relationalStore-sqlserver-execution</module>
+        <module>legend-engine-xt-relationalStore-sqlserver-execution-tests</module>
         <module>legend-engine-xt-relationalStore-sqlserver-pure</module>
 
         <module>legend-engine-xt-relationalStore-bigquery-execution</module>
@@ -173,6 +174,7 @@
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-api</module>
         <module>legend-engine-server</module>
+        <module>legend-engine-test-server-shared</module>
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
@@ -183,7 +185,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.6.0</legend.pure.version>
+        <legend.pure.version>3.6.1</legend.pure.version>
         <legend.shared.version>0.22.0</legend.shared.version>
 
         <!-- SONAR -->
@@ -656,11 +658,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-tests-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -701,7 +698,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1148,6 +1155,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-server</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-server-shared</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1720,6 +1732,11 @@
             <dependency>
                 <groupId>io.dropwizard</groupId>
                 <artifactId>dropwizard-jetty</artifactId>
+                <version>${dropwizard.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-configuration</artifactId>
                 <version>${dropwizard.version}</version>
             </dependency>
             <dependency>

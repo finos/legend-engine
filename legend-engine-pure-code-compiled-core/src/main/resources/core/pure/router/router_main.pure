@@ -285,7 +285,7 @@ function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n
    print(if($debug.debug,|'\nExecuting:\n',|''));
    let results = $routed.functions->evaluateAndDeactivate()->fold({f:FunctionDefinition<Any>[1],a:Result<X|*>[1]|
                       let clusterVS = $f.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $exeCtx, $routed.advancedRouting, $extensions, $debug);
+                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $clusterVS->at(0).exeCtx, $routed.advancedRouting, $extensions, $debug);
                       let values = if ($a.values->isEmpty(),
                                         |$res.values,
                                         |if($a.values->at(0)->instanceOf(TabularDataSet),

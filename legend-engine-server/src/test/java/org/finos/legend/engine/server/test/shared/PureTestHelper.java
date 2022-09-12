@@ -29,6 +29,7 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.server.Server;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -60,30 +61,10 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
-import java.util.Objects;
 
 public class PureTestHelper
 {
     private static final ThreadLocal<ServersState> state = new ThreadLocal<>();
-
-    public static boolean initClientVersionIfNotAlreadySet(String defaultClientVersion)
-    {
-        boolean isNotSet = System.getProperty("alloy.test.clientVersion") == null && System.getProperty("legend.test.clientVersion") == null;
-        if (isNotSet)
-        {
-            System.setProperty("alloy.test.clientVersion", defaultClientVersion);
-            System.setProperty("legend.test.clientVersion", defaultClientVersion);
-            System.setProperty("alloy.test.serverVersion", "v1");
-            System.setProperty("legend.test.serverVersion", "v1");
-        }
-        return isNotSet;
-    }
-
-    public static void cleanUp()
-    {
-        System.clearProperty("alloy.test.clientVersion");
-        System.clearProperty("legend.test.clientVersion");
-    }
 
     @Ignore
     public static TestSetup wrapSuite(Function0<Boolean> init, Function0<TestSuite> suiteBuilder)
@@ -98,7 +79,7 @@ public class PureTestHelper
         TestSuite suite = suiteBuilder.value();
         if (shouldCleanUp)
         {
-            cleanUp();
+            PureWithEngineHelper.cleanUp();
         }
         return new TestSetup(suite)
         {
@@ -120,16 +101,15 @@ public class PureTestHelper
                 state.remove();
                 if (this.shouldCleanUp)
                 {
-                    cleanUp();
+                    PureWithEngineHelper.cleanUp();
                 }
                 System.out.println("STOP");
             }
         };
     }
 
-    public static ServersState initEnvironment(boolean withH2, String serverConfigFilePath) throws Exception
+    private static ServersState initEnvironment(boolean withH2, String serverConfigFilePath) throws Exception
     {
-        int engineServerPort = DynamicPortGenerator.generatePort();
         int metadataServerPort = DynamicPortGenerator.generatePort();
         int relationalDBPort = DynamicPortGenerator.generatePort();
 
@@ -137,7 +117,7 @@ public class PureTestHelper
 
         if (withH2)
         {
-            // Relational
+            // Start h2 server
             h2Server = AlloyH2Server.startServer(relationalDBPort);
             System.out.println("H2 database started on port:" + relationalDBPort);
         }
@@ -146,8 +126,7 @@ public class PureTestHelper
         TestMetaDataServer metadataServer = new TestMetaDataServer(metadataServerPort, true);
         System.out.println("Metadata server started on port:" + metadataServerPort);
 
-        // Start engine server
-        System.setProperty("dw.server.connector.port", String.valueOf(engineServerPort));
+        // Set drop wizard vars for metadata server and h2
         System.setProperty("dw.metadataserver.pure.port", String.valueOf(metadataServerPort));
         if (withH2)
         {
@@ -155,27 +134,15 @@ public class PureTestHelper
             System.setProperty("dw.relationalexecution.temporarytestdb.port", String.valueOf(relationalDBPort));
         }
 
-
-        System.out.println("Found Config file: " + Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource(serverConfigFilePath)).getFile());
-
-        TestServer server = new TestServer();
-        server.run("server", Objects.requireNonNull(PureTestHelper.class.getClassLoader().getResource(serverConfigFilePath)).getFile());
-
-        System.out.println("Alloy server started on port:" + engineServerPort);
-
-        // Pure client configuration (to call the engine server)
+        // Pure client configuration (to call the metadata and h2 server)
         System.setProperty("test.metadataserver.pure.port", String.valueOf(metadataServerPort));
         if (withH2)
         {
             System.setProperty("alloy.test.h2.port", String.valueOf(relationalDBPort));
             System.setProperty("legend.test.h2.port", String.valueOf(relationalDBPort));
         }
-        System.setProperty("alloy.test.server.host", "127.0.0.1");
-        System.setProperty("alloy.test.server.port", String.valueOf(engineServerPort));
-        System.setProperty("legend.test.server.host", "127.0.0.1");
-        System.setProperty("legend.test.server.port", String.valueOf(engineServerPort));
-        System.out.println("Pure client configured to reach engine server");
 
+        Server server = PureWithEngineHelper.initEngineServer(serverConfigFilePath, () -> new Server<>());
         return new ServersState(server, metadataServer, h2Server);
     }
 

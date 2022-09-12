@@ -112,7 +112,7 @@ meta::pure::mapping::modelToModel::test::alloy::merge::testSimplemerge():Any[*]
    ]
                ),
       
-      []);
+      meta::pure::extension::defaultExtensions());
 
    let json = $result.values->toOne();
    let expected = '{"firstName":"John","lastName":"Smith","address":{"street":"Main st"},"age":10}';
@@ -146,7 +146,7 @@ meta::pure::mapping::modelToModel::test::alloy::merge::testMergeNonRoot():Any[*]
    ]
                ),
       
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -184,7 +184,7 @@ meta::pure::mapping::modelToModel::test::alloy::merge::mergeObjectsModelChainMap
                   )
       ]
       
-   ),[]);
+   ),meta::pure::extension::defaultExtensions());
 
    let json = $result.values->toOne();
    let expected = '{"fullName":"John Smith"}';

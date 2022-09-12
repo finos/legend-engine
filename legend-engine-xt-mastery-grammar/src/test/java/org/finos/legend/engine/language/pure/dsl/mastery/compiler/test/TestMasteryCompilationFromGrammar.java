@@ -308,44 +308,44 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         {
             if (i == 0)
             {
-                assertEquals("\'widget-file-single-partition\'", source._id());
+                assertEquals("widget-file-single-partition", source._id());
                 assertEquals("Development", source._status().getName());
                 assertEquals(true, source._sequentialData());
                 assertEquals(false, source._stagedLoad());
                 assertEquals(true, source._createPermitted());
                 assertEquals(false, source._createBlockedException());
-                assertEquals("[\'Refinitive DSP\']", source._tags().toString());
+                assertEquals("[Refinitive DSP]", source._tags().toString());
                 ListIterate.forEachWithIndex(source._partitions().toList(), (partition, j) ->
                 {
-                    assertEquals("\'partition-1\'", partition._id());
-                    assertEquals("[\'Equity\', \'Global\', \'Full-Universe\']", partition._tags().toString());
+                    assertEquals("partition-1", partition._id());
+                    assertEquals("[Equity, Global, Full-Universe]", partition._tags().toString());
                 });
             }
             else if (i == 1)
             {
-                assertEquals("\'widget-file-multiple-partitions\'", source._id());
+                assertEquals("widget-file-multiple-partitions", source._id());
                 assertEquals("Production", source._status().getName());
                 assertEquals(false, source._sequentialData());
                 assertEquals(true, source._stagedLoad());
                 assertEquals(false, source._createPermitted());
                 assertEquals(true, source._createBlockedException());
-                assertEquals("[\'Refinitive DSP Delta Files\']", source._tags().toString());
+                assertEquals("[Refinitive DSP Delta Files]", source._tags().toString());
                 ListIterate.forEachWithIndex(source._partitions().toList(), (partition, j) ->
                 {
                     if (j == 0)
                     {
-                        assertEquals("\'ASIA-Equity\'", partition._id());
-                        assertEquals("[\'Equity\', \'ASIA\']", partition._tags().toString());
+                        assertEquals("ASIA-Equity", partition._id());
+                        assertEquals("[Equity, ASIA]", partition._tags().toString());
                     }
                     else if (j == 1)
                     {
-                        assertEquals("\'EMEA-Equity\'", partition._id());
-                        assertEquals("[\'Equity\', \'EMEA\']", partition._tags().toString());
+                        assertEquals("EMEA-Equity", partition._id());
+                        assertEquals("[Equity, EMEA]", partition._tags().toString());
                     }
                     else if (j == 2)
                     {
-                        assertEquals("\'US-Equity\'", partition._id());
-                        assertEquals("[\'Equity\', \'US\']", partition._tags().toString());
+                        assertEquals("US-Equity", partition._id());
+                        assertEquals("[Equity, US]", partition._tags().toString());
                     }
                     else
                     {
@@ -359,6 +359,19 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 fail("Didn't expect a source at index:" + i);
             }
         });
+    }
+
+    @Test
+    public void testMasteryMinimumCorrectModel()
+    {
+        Pair<PureModelContextData, PureModel> result = test(MINIMUM_CORRECT_MASTERY_MODEL);
+        PureModel model = result.getTwo();
+
+        PackageableElement packageableElement = model.getPackageableElement("alloy::mastery::WidgetMasterRecord");
+        assertNotNull(packageableElement);
+        assertTrue(packageableElement instanceof Root_meta_pure_mastery_metamodel_MasterRecordDefinition);
+        Root_meta_pure_mastery_metamodel_MasterRecordDefinition masterRecordDefinition = (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) packageableElement;
+        assertEquals("Widget", masterRecordDefinition._modelClass()._name());
     }
 
     private void assertPureLambdas(List list)

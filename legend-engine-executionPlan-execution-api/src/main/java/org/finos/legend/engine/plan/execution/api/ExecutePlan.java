@@ -134,7 +134,7 @@ public class ExecutePlan
         }
         catch (Exception ex)
         {
-            MetricsHandler.observeError("execute");
+            MetricsHandler.observeError(LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, ex, null);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
     }

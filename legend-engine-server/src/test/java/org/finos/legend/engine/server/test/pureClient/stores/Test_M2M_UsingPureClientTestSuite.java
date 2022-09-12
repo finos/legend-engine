@@ -17,6 +17,7 @@ package org.finos.legend.engine.server.test.pureClient.stores;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
+import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
@@ -29,7 +30,7 @@ public class Test_M2M_UsingPureClientTestSuite extends TestSuite
     public static Test suite() throws Exception
     {
         return wrapSuite(
-                () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
+                () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                 () ->
                 {
                     CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();

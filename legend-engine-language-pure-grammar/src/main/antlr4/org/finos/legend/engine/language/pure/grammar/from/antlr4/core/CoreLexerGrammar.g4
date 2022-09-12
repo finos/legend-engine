@@ -8,7 +8,7 @@ import CoreFragmentGrammar;
 WHITESPACE:                                 Whitespace      -> skip;
 COMMENT:                                    Comment         -> skip;
 LINE_COMMENT:                               LineComment     -> skip;
-ISLAND_OPEN:                                '#{'            -> pushMode (ISLAND_MODE);
+ISLAND_OPEN:                                '#'  (~[#{])* '{'-> pushMode (ISLAND_MODE);
 
 
 // -------------------------------------- TYPE --------------------------------------

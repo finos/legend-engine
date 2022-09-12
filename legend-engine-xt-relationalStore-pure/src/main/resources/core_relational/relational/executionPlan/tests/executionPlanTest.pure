@@ -1232,6 +1232,35 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanForExecutionOpt
       '    )\n'+
       '  )\n'+
       ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
+      let executionOption = $executionOptionContext->validateAndReturnExecutionOptionOfType(DummyExecutionOption);
+      assertEquals(true, $executionOption->toOne()->instanceOf(DummyExecutionOption));
+}
+
+function meta::pure::executionPlan::tests::withContext(tds: TabularDataSet[1]):TabularDataSet[1]
+{
+  $tds;
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testRoutingContextBuilderFunctions():Boolean[1]
+{
+  let dummyExtension = ^Extension(
+                            type = 'dummy',
+                            serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
+                            routeContextBuilderFunctions={fe:FunctionExpression[1]| if($fe.func == meta::pure::executionPlan::tests::withContext_TabularDataSet_1__TabularDataSet_1_,
+                                                                                                        | ^ExecutionContext(),|[]);}
+                         );
+  let extensions = meta::relational::extension::relationalExtensions()->add($dummyExtension); 
+  let result = executionPlan({|Person.all()->project([col(p|$p.firstName, '"firstName"', 'doc1'), col(p|$p.lastName, 'lastName')])->withContext();}, simpleRelationalMapping, meta::relational::tests::testRuntime(), $extensions);                      
+  
+  //creates plan with execution context
+  assertEquals(
+    'Relational\n' +
+    '(\n' +
+    '  type = TDS[("firstName", String, VARCHAR(200), "doc1"), (lastName, String, VARCHAR(200), "")]\n' +
+    '  resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200))]\n' +
+    '  sql = select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"\n' +
+    '  connection = TestDatabaseConnection(type = "H2")\n' +
+    ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));                               
 }
 
 Class meta::pure::executionPlan::tests::Struct
@@ -1632,7 +1661,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionNow(
 
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n' +
@@ -1706,7 +1735,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
 
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n' +
@@ -1809,7 +1838,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
 
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n' +
@@ -1881,7 +1910,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::javaGenerationLetVariab
                                                                       ->project([x|$x.classification($asOf).type], ['classificationType'])->distinct();};
 
    let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n'+
@@ -2477,10 +2506,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::classPathsInfluencedByP
 
    let unbound = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   let withoutPlanId        = $unbound->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withoutPlanId        = $unbound->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
    let withoutPlanIdPackage = $withoutPlanId.globalImplementationSupport->cast(@JavaPlatformImplementation).classes.package->removeDuplicates();
 
-   let withPlanId           = $unbound->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA, planId='abc'), relationalExtensions());
+   let withPlanId           = $unbound->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(planId='abc'), relationalExtensions());
    let withPlanIdPackage    = $withPlanId.globalImplementationSupport->cast(@JavaPlatformImplementation).classes.package->removeDuplicates();
 
    assertEquals('_pure.plan.root.n1.n1', $withoutPlanIdPackage);
@@ -2580,7 +2609,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWi
   let runtime = meta::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-  let withJava = $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+  let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
    
  
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
@@ -2611,7 +2640,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWi
   let runtime = meta::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-  let withJava = $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+  let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
    
  
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;

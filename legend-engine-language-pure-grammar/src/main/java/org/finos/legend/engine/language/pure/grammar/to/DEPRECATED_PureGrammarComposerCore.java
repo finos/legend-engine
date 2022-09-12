@@ -633,7 +633,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(ValueSpecification valueSpecification)
     {
-        return unsupported(valueSpecification.getClass());
+        PureGrammarComposerContext context = this.toContext();
+        Optional<String> valueSpecString = context.extraEmbeddedPureComposers.stream().map(composer -> composer.value(valueSpecification, context)).filter(Objects::nonNull).findFirst();
+        return valueSpecString.orElseGet(() -> unsupported(valueSpecification.getClass()));
     }
 
     @Override

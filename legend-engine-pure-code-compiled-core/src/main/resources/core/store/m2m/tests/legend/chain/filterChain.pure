@@ -43,7 +43,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::filter::filterOnSourceToB
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =
@@ -98,7 +98,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::filter::filterOnBridgeToD
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =
@@ -213,7 +213,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::filter::filterOnBothMappi
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =

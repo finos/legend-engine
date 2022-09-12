@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +81,11 @@ public interface PureGrammarComposerExtension
     }
 
     default List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
+    {
+        return new ArrayList<>();
+    }
+
+    default List<Function2<ValueSpecification, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
     {
         return new ArrayList<>();
     }
