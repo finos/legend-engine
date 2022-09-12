@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::engine::java::typeInfo::*;
-import meta::alloy::test::runtime::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::tests::*;
 
-Enum meta::alloy::test::runtime::java::typeInfo::Colour
+Enum meta::pure::executionPlan::platformBinding::typeInfo::tests::Colour
 {
    RED, GREEN, BLUE
 }
 
-Enum meta::alloy::test::runtime::java::typeInfo::Measure
+Enum meta::pure::executionPlan::platformBinding::typeInfo::tests::Measure
 {
    b, Kb, Mb, Gb, Tb
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::Memory
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::Memory
 {
    amount  : Integer[1];
-   measure : meta::alloy::test::runtime::java::typeInfo::Measure[1];
+   measure : meta::pure::executionPlan::platformBinding::typeInfo::tests::Measure[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::A
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::A
 {
    s   : String[1];
    f   : Float[1];
@@ -40,60 +40,60 @@ Class meta::alloy::test::runtime::java::typeInfo::A
    ram : Memory[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::B extends A
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::B extends A
 {
    i    : Integer[1];
    d    : Decimal[1];
    disk : Memory[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::C
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::C
 {
    s      : String[1];
    someAs : A[*];
    moreAs : A[*];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::E
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::E
 {
    s: String[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::F
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::F
 {
    s   : String[1];
    ssd : Memory[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::G
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::G
 {
    s: String[1];
 }
 
-Association meta::alloy::test::runtime::java::typeInfo::E_F
+Association meta::pure::executionPlan::platformBinding::typeInfo::tests::E_F
 {
    e : E[1];
    fs: F[*];
 }
 
-Association meta::alloy::test::runtime::java::typeInfo::E_G
+Association meta::pure::executionPlan::platformBinding::typeInfo::tests::E_G
 {
    e : E[1];
    gs: G[*];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::H extends A
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::H extends A
 {
    i: Integer[1];
    b: Boolean[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::I extends B, H
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::I extends B, H
 {
    s: String[1];
 }
 
-Class meta::alloy::test::runtime::java::typeInfo::Trade
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::Trade
 [
    if($this.side->isEmpty() || $this.side == Side.BUY, |$this.quantity > 0, |$this.quantity < 0)
 ]
@@ -102,12 +102,12 @@ Class meta::alloy::test::runtime::java::typeInfo::Trade
    side: Side[0..1];
 }
 
-Enum meta::alloy::test::runtime::java::typeInfo::Side
+Enum meta::pure::executionPlan::platformBinding::typeInfo::tests::Side
 {
    BUY, SELL
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphAddsInheritesOnlyOnce(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphAddsInheritesOnlyOnce(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{I {s, f, sd, c, i, d, b}}#);
    assertEquals(5, $typeInfos.typeInfos->size());
@@ -121,7 +121,7 @@ function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphAdds
    assertProperties(['s', 'f', 'sd', 'c', 'i', 'd', 'b'], $typeInfos->allProperties(I), I);
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphIncludesOnlySpecifiedClassProperties(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphIncludesOnlySpecifiedClassProperties(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{C {s, someAs {s, f, sd, c}}}#);
    assertEquals(3, $typeInfos.typeInfos->size());
@@ -131,7 +131,7 @@ function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphIncl
    assertEquals(Colour, $typeInfos->forEnumeration(Colour).enumeration());
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphMergesForTrees(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphMergesForTrees(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{C {s, someAs {s, f}}}#)->addForGraphFetchTree(#{C {moreAs {sd, c}}}#);
    assertEquals(3, $typeInfos.typeInfos->size());
@@ -141,7 +141,7 @@ function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphMerg
    assertEquals(Colour, $typeInfos->forEnumeration(Colour).enumeration());
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphIncludesOnlySpecifiedAssociations(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphIncludesOnlySpecifiedAssociations(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{E {s, fs {s}}}#);
    assertEquals(2, $typeInfos.typeInfos->size());
@@ -150,38 +150,38 @@ function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testGraphIncl
    assertTypeInfo(['s', 'e'], [], $typeInfos->forClass(F));
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testClassDependenciesViaProperties(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testClassDependenciesViaProperties(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{E {fs {ssd}}}#);
    assertClasses([F, Memory], $typeInfos->classDependenciesViaPropertiesWithsubTypes(E), E, 'classDependenciesViaProperties');
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testEnumDependenciesViaProperties(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testEnumDependenciesViaProperties(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{E {fs {ssd {amount,measure}}}}#);
-   assert($typeInfos->enumDependenciesViaProperties(E)->containsAll(meta::alloy::test::runtime::java::typeInfo::Measure), |'Unexpected enums: ' + $typeInfos->enumDependenciesViaProperties(E)->map(e| $e->enumName())->joinStrings(','));
+   assert($typeInfos->enumDependenciesViaProperties(E)->containsAll(meta::pure::executionPlan::platformBinding::typeInfo::tests::Measure), |'Unexpected enums: ' + $typeInfos->enumDependenciesViaProperties(E)->map(e| $e->enumName())->joinStrings(','));
 }
 
-function <<test.Test>> meta::alloy::test::runtime::java::typeInfo::testAddingConstraintsAddsEnum(): Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testAddingConstraintsAddsEnum(): Boolean[1]
 {
    let tree      = #{Trade {quantity}}#;
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree($tree)->addConstraintsForGraphFetchTree($tree);
    assertEquals(Side, $typeInfos->forEnumeration(Side).enumeration());
 }
 
-function <<access.private>> meta::alloy::test::runtime::java::typeInfo::assertTypeInfo(expectedProperties:String[*], expectedSupertypes:Type[*], actual:ClassTypeInfo[1]): Boolean[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::tests::assertTypeInfo(expectedProperties:String[*], expectedSupertypes:Type[*], actual:ClassTypeInfo[1]): Boolean[1]
 {
    assertProperties($expectedProperties, $actual.properties, $actual.type);
    assertClasses($expectedSupertypes, $actual.supertypes, $actual.type, 'supertypes');
 }
 
-function <<access.private>> meta::alloy::test::runtime::java::typeInfo::assertProperties(expectedProperties:String[*], actual:AbstractProperty<Any>[*], type:Type[1]): Boolean[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::tests::assertProperties(expectedProperties:String[*], actual:AbstractProperty<Any>[*], type:Type[1]): Boolean[1]
 {
    assertEquals($expectedProperties->size(), $actual->size(), 'For type %s, properties: expected [%s], actual: [%s]', [$type.name->toOne(), $expectedProperties->joinStrings(','), $actual.name->joinStrings(',')]);
    assert($actual.name->containsAll($expectedProperties),     'For type %s, properties: expected [%s], actual: [%s]', [$type.name->toOne(), $expectedProperties->joinStrings(','), $actual.name->joinStrings(',')]);
 }
 
-function <<access.private>> meta::alloy::test::runtime::java::typeInfo::assertClasses(expectedClasses:Type[*], actual:Class<Any>[*], type:Type[1], purpose:String[1]): Boolean[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::tests::assertClasses(expectedClasses:Type[*], actual:Class<Any>[*], type:Type[1], purpose:String[1]): Boolean[1]
 {
    assertEquals($expectedClasses->size(), $actual->size(), 'For type %s, %s: expected [%s], actual: [%s]', [$type.name->toOne(), $purpose, $expectedClasses.name->joinStrings(','), $actual.name->joinStrings(',')]);
    assert($actual->containsAll($expectedClasses),          'For type %s, %s: expected [%s], actual: [%s]', [$type.name->toOne(), $purpose, $expectedClasses.name->joinStrings(','), $actual.name->joinStrings(',')]);
