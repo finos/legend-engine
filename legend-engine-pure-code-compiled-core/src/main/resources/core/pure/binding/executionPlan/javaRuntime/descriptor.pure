@@ -28,7 +28,6 @@ import meta::external::language::java::transform::*;
 
 Class meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor extends LegendJavaPlatformBindingAdhocExtension
 {
-   id                         : String[1];
    externalFormatContract     : ExternalFormatContract<Any>[1];
    enginePlatformDependencies : Function<{Conventions[1] -> Conventions[1]}>[1];
    externalizeDescriptor      : ExternalFormatExternalizeBindingDescriptor[0..1];

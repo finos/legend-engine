@@ -24,7 +24,6 @@ function meta::external::format::xml::executionPlan::engine::java::xsdJavaBindin
 {
   ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
-    id                         = 'XSD LegendJavaPlatformBindingDescriptor',
     externalFormatContract     = xsdFormatContract(),
     enginePlatformDependencies = meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()

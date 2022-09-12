@@ -101,7 +101,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
       ^LegendJavaPlatformBindingExtension
       (
         platformId = legendJavaPlatformBindingId(),
-        id = $externalFormatLegendJavaPlatformBindingDescriptor.id,
+        id = $externalFormatLegendJavaPlatformBindingDescriptor.externalFormatContract.id + ' ExternalFormatLegendJavaPlatformBindingDescriptor',
         adhocExtensions = $externalFormatLegendJavaPlatformBindingDescriptor
       );
 

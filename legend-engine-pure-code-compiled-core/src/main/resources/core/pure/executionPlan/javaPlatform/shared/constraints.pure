@@ -391,7 +391,7 @@ function meta::pure::executionPlan::engine::java::createLegacyAllConstraintsMeth
                        {|
                           $allConstraints->filter(c | !$c.constraint.name->in($constraintContext.constraintsToExclude))->toNumbered() 
                             ->map(nc| j_this($jClass)->j_invoke(constraintMethodName($nc.second), [], javaOptional($defect))->j_invoke('ifPresent', $result->j_methodReference('add', javaFunctionType($defect, javaVoid())), javaVoid()))
-                            ->concatenate($propertyConstraintCalls)
+                            ->concatenate($propertyConstraintCalls->sortBy(pc | $pc->codeToString($jClass)))
                        },
                        | []
                     )

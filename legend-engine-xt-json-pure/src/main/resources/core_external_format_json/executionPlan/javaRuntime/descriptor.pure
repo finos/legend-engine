@@ -24,7 +24,6 @@ function meta::external::format::json::executionPlan::engine::java::jsonSchemaJa
 {
   ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
-    id                         = 'Json LegendJavaPlatformBindingDescriptor',
     externalFormatContract     = jsonSchemaFormatContract(),
     enginePlatformDependencies = meta::external::format::json::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     externalizeDescriptor      = getExternalFormatExternalizeJavaBindingDescriptor(),

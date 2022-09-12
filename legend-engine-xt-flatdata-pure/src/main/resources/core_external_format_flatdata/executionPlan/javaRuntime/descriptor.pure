@@ -24,7 +24,6 @@ function meta::external::format::flatdata::executionPlan::engine::java::flatData
 {
   ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
-    id                         = 'FlatData LegendJavaPlatformBindingDescriptor',
     externalFormatContract     = flatDataFormatContract(),
     enginePlatformDependencies = meta::external::format::flatdata::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     externalizeDescriptor      = getExternalFormatExternalizeJavaBindingDescriptor(),
