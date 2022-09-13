@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM openjdk:11.0.15-bullseye
+FROM openjdk:11.0.16-bullseye
 COPY target/legend-engine-server-*.jar /app/bin/
 CMD java -cp /app/bin/*-shaded.jar \
 -XX:+ExitOnOutOfMemoryError \
