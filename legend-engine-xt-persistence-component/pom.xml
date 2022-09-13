@@ -37,6 +37,32 @@
         <junit-jupiter.version>5.4.0</junit-jupiter.version>
     </properties>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven.javadoc.plugin.version}</version>
+                    <configuration>
+                        <skip>${javadoc.skip}</skip>
+                        <source>8</source>
+                        <doclint>none</doclint>
+                        <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations</sourcepath>
+
+                        <additionalDependencies>
+                            <additionalDependency>
+                                <groupId>javax.annotation</groupId>
+                                <artifactId>javax.annotation-api</artifactId>
+                                <version>1.3.2</version>
+                            </additionalDependency>
+                        </additionalDependencies>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
     <dependencyManagement>
         <dependencies>
             <!-- IMMUTABLES -->
