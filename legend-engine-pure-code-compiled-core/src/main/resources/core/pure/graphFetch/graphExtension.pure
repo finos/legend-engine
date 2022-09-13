@@ -407,7 +407,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          let childSetImpls = $returnType->match([
             {c:Class<Any>[1]|
                let childSIs = $tgtPgft->match([
-                  r:RoutedPropertyGraphFetchTree[1] | $r.sets,
+                  r:RoutedPropertyGraphFetchTree[1] | if($r.sets->isNotEmpty(), |$r.sets, |$setImplementation.parent.rootClassMappingByClass($c)),
                   r:PropertyGraphFetchTree[1]       | $setImplementation.parent.rootClassMappingByClass($c)
                ]);
 
