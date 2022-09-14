@@ -14,6 +14,7 @@
 
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::tests::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
 
 Enum meta::pure::executionPlan::platformBinding::typeInfo::tests::Colour
 {
@@ -107,6 +108,27 @@ Enum meta::pure::executionPlan::platformBinding::typeInfo::tests::Side
    BUY, SELL
 }
 
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::Car
+[
+   wheelsOn: $this.wheels->forAll(w| $w.attached),
+   canRoll: $this.allRound,
+   always: true
+]
+{
+   wheels: Wheel[3..*];
+
+   allRound()
+   {
+      $this.wheels->forAll(w| $w.round)
+   }: Boolean[1];
+}
+
+Class meta::pure::executionPlan::platformBinding::typeInfo::tests::Wheel
+{
+   attached: Boolean[1];
+   round: Boolean[1];
+}
+
 function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testGraphAddsInheritesOnlyOnce(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{I {s, f, sd, c, i, d, b}}#);
@@ -153,7 +175,7 @@ function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tes
 function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testClassDependenciesViaProperties(): Boolean[1]
 {
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree(#{E {fs {ssd}}}#);
-   assertClasses([F, Memory], $typeInfos->classDependenciesViaPropertiesWithsubTypes(E), E, 'classDependenciesViaProperties');
+   assertClasses([F, Memory], $typeInfos->classDependenciesViaPropertiesWithSubTypes(E), E, 'classDependenciesViaProperties');
 }
 
 function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testEnumDependenciesViaProperties(): Boolean[1]
@@ -167,6 +189,38 @@ function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tes
    let tree      = #{Trade {quantity}}#;
    let typeInfos = newTypeInfoSet()->addForGraphFetchTree($tree)->addConstraintsForGraphFetchTree($tree);
    assertEquals(Side, $typeInfos->forEnumeration(Side).enumeration());
+   assertEquals('0', $typeInfos->forClass(Trade).constraints.id);
+   assertEquals('root\n' +
+                ' c_Trade\n' +
+                '  p_Trade.quantity\n' +
+                '  p_Trade.side\n',
+                $typeInfos->forClass(Trade).constraints.propertyTree->toOne()->printTree(''));
+}
+
+function <<test.Test>> meta::pure::executionPlan::platformBinding::typeInfo::tests::testAddingConstraintsProperties(): Boolean[1]
+{
+   let tree      = #{Car {wheels{attached}}}#;
+   let typeInfos = newTypeInfoSet()->addForGraphFetchTree($tree)->addConstraintsForGraphFetchTree($tree);
+
+   let c0 = $typeInfos->forClass(Car).constraints->at(0);
+   assertEquals('wheelsOn', $c0.id);
+   assertEquals('root\n' +
+                ' c_Car\n' +
+                '  p_Car.wheels\n' +
+                '   p_Wheel.attached\n',
+                $c0.propertyTree->printTree(''));
+
+   let c1 = $typeInfos->forClass(Car).constraints->at(1);
+   assertEquals('canRoll', $c1.id);
+   assertEquals('root\n' +
+                ' c_Car\n' +
+                '  p_Car.wheels\n' +
+                '   p_Wheel.round\n',
+                $c1.propertyTree->printTree(''));
+
+   let c2 = $typeInfos->forClass(Car).constraints->at(2);
+   assertEquals('always', $c2.id);
+   assertEquals('root\n', $c2.propertyTree->printTree(''));
 }
 
 function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::tests::assertTypeInfo(expectedProperties:String[*], expectedSupertypes:Type[*], actual:ClassTypeInfo[1]): Boolean[1]

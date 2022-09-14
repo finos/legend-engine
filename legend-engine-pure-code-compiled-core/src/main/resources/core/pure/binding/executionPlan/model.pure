@@ -29,17 +29,6 @@ import meta::pure::runtime::*;
 // Execution Nodes to be used with binding
 // ------------------------------------------------------------------------------------------------------------------------
 
-Class meta::external::shared::format::executionPlan::DataQualityExecutionNode extends ExecutionNode
-{
-   enableConstraints : Boolean[1];
-   checked           : Boolean[1];   
-}
-
-Class meta::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
-{
-   url : String[1];
-}
-
 Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode extends ExecutionNode
 {
    checked : Boolean[1];      
@@ -48,10 +37,17 @@ Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeEx
 
 Class meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
-   binding : Binding[1];
-   tree    : RootGraphFetchTree<Any>[0..1]; 
-   
-   config  : ExternalFormatInternalizeConfig[0..1];
+   binding           : Binding[1];
+   tree              : RootGraphFetchTree<Any>[0..1]; 
+   enableConstraints : Boolean[1];
+   checked           : Boolean[1];
+
+   config            : ExternalFormatInternalizeConfig[0..1];   
+}
+
+Class meta::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
+{
+   url : String[1];
 }
 
 // ------------------------------------------------------------------------------------------------------------------------
@@ -67,9 +63,14 @@ Class meta::external::shared::format::executionPlan::UrlStreamExternalSource ext
    url : String[1];
 }
 
-Class meta::external::shared::format::executionPlan::ExecutionNodeExternalSource extends ExternalSource
+// ------------------------------------------------------------------------------------------------------------------------
+// URL
+// ------------------------------------------------------------------------------------------------------------------------
+
+//TODO: check this - move this to m3
+Class meta::pure::metamodel::type::Url
 {
-   node : ExecutionNode[1];
+   url : String[1];
 }
 
 // ------------------------------------------------------------------------------------------------------------------------

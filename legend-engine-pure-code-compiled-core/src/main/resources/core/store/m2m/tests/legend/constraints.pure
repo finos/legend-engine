@@ -238,7 +238,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 { serverVersion.start='v1_20_0' }
-meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappedRequiredComplextTypeFieldCanFail():Boolean[1]
+meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappedRequiredComplexTypeFieldCanFail():Boolean[1]
 {
    let result = execute(|F.all()->graphFetchChecked(#{F { i }}#)->serialize(#{F { i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2fExpectedNotMapped,
@@ -256,7 +256,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 { serverVersion.start='v1_20_0' }
-meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappedRequiredComplextTypeFieldCanSucceed():Boolean[1]
+meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappedRequiredComplexTypeFieldCanSucceed():Boolean[1]
 {
    let result = execute(|F.all()->graphFetchChecked(#{F { i }}#)->serialize(#{F { i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2fExpectedNotMapped,
@@ -274,7 +274,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 { serverVersion.start='v1_20_0' }
-meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappedRequiredComplextTypeViaQualifiedPropertyCanCompile():Boolean[1]
+meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappedRequiredComplexTypeViaQualifiedPropertyCanCompile():Boolean[1]
 {
   let result = execute(|meta::pure::mapping::modelToModel::test::alloy::constraints::Loan.all()->graphFetchChecked(#{meta::pure::mapping::modelToModel::test::alloy::constraints::Loan {id}}#)->serialize(#{meta::pure::mapping::modelToModel::test::alloy::constraints::Loan {id}}#),
                       meta::pure::mapping::modelToModel::test::alloy::constraints::LoanMapping,

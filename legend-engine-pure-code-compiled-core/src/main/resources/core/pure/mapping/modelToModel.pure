@@ -666,7 +666,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryG
       g : InMemoryCrossStoreGraphFetchExecutionNode[1] |
          'InMemoryCrossStoreGraphFetch\n' +
          $space + '(' + header($g, $space, $extensions) + '\n'+
-         $space + '  graphFetchTree = ' + $g.graphFetchTree->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
+         $space + '  graphFetchTree = ' + $g.graphFetchTree->sortTree()->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
          $space + '  nodeIndex = ' + $g.nodeIndex->toString() + '\n' +
          if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
          if($g.batchSize->isEmpty(), | '', | $space + '  batchSize = ' + $g.batchSize->toOne()->toString() + '\n') +
@@ -680,7 +680,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryG
       g : InMemoryRootGraphFetchExecutionNode[1] |
          'InMemoryRootGraphFetch\n' + 
          $space + '(' + header($g, $space, $extensions) + '\n'+
-         $space + '  graphFetchTree = ' + $g.graphFetchTree->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
+         $space + '  graphFetchTree = ' + $g.graphFetchTree->sortTree()->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
          $space + '  nodeIndex = ' + $g.nodeIndex->toString() + '\n' +   
          if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
          if($g.batchSize->isEmpty(), | '', | $space + '  batchSize = ' + $g.batchSize->toOne()->toString() + '\n') +
@@ -692,7 +692,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryG
       g : InMemoryPropertyGraphFetchExecutionNode[1] | 
          'InMemoryPropertyGraphFetch\n' + 
          $space + '(' + header($g, $space, $extensions) + '\n'+
-         $space + '  graphFetchTree = ' + $g.graphFetchTree->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
+         $space + '  graphFetchTree = ' + $g.graphFetchTree->sortTree()->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
          $space + '  nodeIndex = ' + $g.nodeIndex->toString() + '\n' +   
          if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
          $space + '  children = ' + $g.children->map(x | inMemoryGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
@@ -705,7 +705,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStre
 {
    'StoreStreamReading\n' + 
    $space + '(' + header($node, $space, $extensions) + '\n'+
-   $space + '  graphFetchTree = ' + $node.graphFetchTree->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
+   $space + '  graphFetchTree = ' + $node.graphFetchTree->sortTree()->asString(true)->replace('\n', '')->replace(' ', '') + '\n' +
    $space + '  connection = ' + $node.connection->meta::pure::executionPlan::toString::connectionToString($extensions) + '\n' +
    $space + '  enableConstraints = ' + $node.enableConstraints->toString() + '\n' +   
    $space + '  checked = ' + $node.checked->toString() + '\n' +   

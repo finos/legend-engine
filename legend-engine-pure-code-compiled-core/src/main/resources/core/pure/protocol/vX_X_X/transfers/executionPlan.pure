@@ -147,6 +147,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                resultType = $f.resultType->transformResultType($mapping, $extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
             ),
+         v:meta::pure::executionPlan::VariableResolutionExecutionNode[1]|  
+            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableResolutionExecutionNode(
+                _type      = 'varResolution',
+                resultType = $v.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                varName    = $v.varName
+            ),
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::StoreStreamReadingExecutionNode(
                _type = 'storeStreamReading',

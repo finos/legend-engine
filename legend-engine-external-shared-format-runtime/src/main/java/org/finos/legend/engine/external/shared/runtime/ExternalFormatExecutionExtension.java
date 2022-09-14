@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.shared.runtime;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.Constrained;
@@ -24,6 +25,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -84,7 +86,9 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
         }
 
-        return extension.executeInternalizeExecutionNode(node, profiles, executionState);
+        InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
+        StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, profiles, executionState);
+        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
     }
 
     private Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -95,14 +99,24 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
         }
 
-        return extension.executeExternalizeExecutionNode(node, profiles, executionState);
+        Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(profiles, executionState));
+        return extension.executeExternalizeExecutionNode(node, result, profiles, executionState);
     }
 
     private Result executeUrlStream(UrlStreamExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
-            InputStream inputStream = UrlFactory.create(node.url).openStream();
+            String url;
+            if (node.requiredVariableInputs == null || node.requiredVariableInputs.isEmpty())
+            {
+                url = node.url;
+            }
+            else
+            {
+                url = FreeMarkerExecutor.process(node.url, executionState);
+            }
+            InputStream inputStream = UrlFactory.create(url).openStream();
             return new InputStreamResult(inputStream);
         }
         catch (IOException e)
@@ -116,12 +130,16 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         ExecutionNode inputNode = node.executionNodes().getAny();
         Result input = inputNode.accept(new ExecutionNodeExecutor(profiles, executionState));
         StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult) input;
+        return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
+    }
 
+    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, boolean checked, boolean enableConstraints)
+    {
         Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
-        Stream<IChecked<?>> withConstraints = node.enableConstraints
+        Stream<IChecked<?>> withConstraints = enableConstraints
                 ? checkedStream.map(this::applyConstraints)
                 : checkedStream;
-        if (node.checked)
+        if (checked)
         {
             return new StreamingObjectResult<>(withConstraints, streamingObjectResult.getResultBuilder(), streamingObjectResult);
         }

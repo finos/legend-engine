@@ -22,7 +22,6 @@ function meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], grap
    $collection;
 }
 
-
 function meta::pure::graphFetch::execution::graphFetch<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1], batchSize: Integer[1]):T[*]
 {
    assert($batchSize > 1, | 'Batch size should be positive');
@@ -36,9 +35,27 @@ function meta::pure::graphFetch::execution::graphFetchChecked<T>(collection: T[*
    $collection->map(e|^Checked<T>(value=$e));
 }
 
+function meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):Checked<T>[*]
+{
+   fail('Not implemented!');
+   $collection->map(e|^Checked<T>(value=$e));
+}
+
+function meta::pure::graphFetch::execution::graphFetchUnexpanded<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):T[*]
+{
+   fail('Not implemented!');
+   $collection;
+}
+
 function meta::pure::graphFetch::execution::graphFetchFunctions():Function<Any>[*]
 {
- [meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_]  
+  [
+    meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, 
+    meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, 
+    meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, 
+    meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
+    meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_
+  ] 
 }
 
 function meta::pure::graphFetch::execution::serialize<T>(collection: T[*], graphFetchTree: RootGraphFetchTree<T>[1]):String[1]

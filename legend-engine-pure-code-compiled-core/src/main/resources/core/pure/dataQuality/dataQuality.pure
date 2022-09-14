@@ -47,3 +47,9 @@ Class meta::pure::dataQuality::RelativePathNode
    propertyName : String[1];
    index        : Integer[0..1];
 }
+
+function meta::pure::dataQuality::checked<T>(collection: T[*]):Checked<T>[*]
+{
+   fail('Not implemented!');
+   $collection->map(e|^Checked<T>(value=$e));
+}
