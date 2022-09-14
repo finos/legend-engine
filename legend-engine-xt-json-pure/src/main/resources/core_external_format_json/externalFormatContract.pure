@@ -15,14 +15,18 @@
 import meta::external::format::json::binding::validation::*;
 import meta::external::format::json::contract::*;
 import meta::external::format::json::executionPlan::*;
+import meta::external::format::json::executionPlan::engine::java::*;
 import meta::external::format::json::metamodel::*;
 import meta::external::format::json::metamodel::internalize::*;
 import meta::external::format::json::transformation::fromPure::*;
 import meta::external::format::json::transformation::toPure::*;
 
 import meta::external::shared::format::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 
 import meta::pure::extension::*;
+
+import meta::pure::mapping::modelToModel::*;
 
 function meta::external::format::json::contract::jsonSchemaFormatContract(): ExternalFormatContract<JsonSchema>[1]
 {
@@ -38,7 +42,7 @@ function meta::external::format::json::contract::jsonSchemaFormatContract(): Ext
       externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_,
 
       internalizeConfig                = JsonSchemaInternalizeConfig,
-      externalFormatPlanDescriptor     = jsonSchemaExecutionPlanDescriptor()
+      sourceRecordTree                 = #{JsonDataRecord {number, record}}#
    )
 }
 
@@ -47,6 +51,9 @@ function meta::external::format::json::extension::jsonSchemaFormatExtension(): E
    ^Extension
    (
       type                     = 'External Format - JsonSchema',
-      availableExternalFormats = jsonSchemaFormatContract()
+      availableExternalFormats = jsonSchemaFormatContract(),
+
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = externalFormatLegendJavaPlatformBinding(jsonSchemaJavaBindingDescriptor())
    )
 }

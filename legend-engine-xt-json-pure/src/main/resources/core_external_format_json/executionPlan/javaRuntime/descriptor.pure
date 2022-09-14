@@ -14,15 +14,17 @@
 
 import meta::external::shared::format::executionPlan::engine::java::*;
 
+import meta::external::format::json::contract::*;
 import meta::external::format::json::executionPlan::*;
 import meta::external::format::json::executionPlan::engine::java::*;
 import meta::external::format::json::executionPlan::engine::java::internalize::*;
 import meta::external::format::json::executionPlan::engine::java::externalize::*;
 
-function <<JsonSchemaPlanDescriptor.PlatformBindingDescriptor>> meta::external::format::json::executionPlan::engine::java::jsonSchemaJavaBindingDescriptor():ExternalFormatJavaBindingDescriptor[1]
+function meta::external::format::json::executionPlan::engine::java::jsonSchemaJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
 {
-  ^ExternalFormatJavaBindingDescriptor
+  ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
+    externalFormatContract     = jsonSchemaFormatContract(),
     enginePlatformDependencies = meta::external::format::json::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     externalizeDescriptor      = getExternalFormatExternalizeJavaBindingDescriptor(),
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()

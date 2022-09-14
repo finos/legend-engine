@@ -37,16 +37,48 @@ function meta::external::shared::format::functions::externalize<T>(collection: C
    'Not impemented!';
 }
 
+function meta::external::shared::format::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], data:String[1]):T[*]
+{
+   fail('Implemented by execution plans');
+   [];
+}
+
+function meta::external::shared::format::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], stream:ByteStream[1]):T[*]
+{
+   fail('Implemented by execution plans');
+   [];
+}
+
+function meta::external::shared::format::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], url:Url[1]):T[*]
+{
+   fail('Implemented by execution plans');
+   [];
+}
+
 // TODO Can we avoid these?
 function meta::external::shared::format::functions::isSerialize(fe:FunctionExpression[1]):Boolean[1]
 {
-   $fe.func->in(serializeFunctions());
+   $fe.func->in(externalizeFunctions());
 }
 
-function meta::external::shared::format::functions::serializeFunctions():Function<Any>[*]
+function meta::external::shared::format::functions::internalizeFunctions():Function<Any>[*]
+{
+   [
+      internalize_Class_1__Binding_1__String_1__T_MANY_,
+      internalize_Class_1__Binding_1__ByteStream_1__T_MANY_,
+      internalize_Class_1__Binding_1__Url_1__T_MANY_
+   ]
+}
+
+function meta::external::shared::format::functions::externalizeFunctions():Function<Any>[*]
 {
    [
       externalize_T_MANY__Binding_1__String_1_,
       externalize_Checked_MANY__Binding_1__String_1_
    ]
+}
+
+function meta::external::shared::format::functions::bindingRouterFunctions():Function<Any>[*]
+{
+  internalizeFunctions()->concatenate(externalizeFunctions());
 }

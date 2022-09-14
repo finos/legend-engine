@@ -81,7 +81,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <searchTransitive>true</searchTransitive>
                                     <excludes>
@@ -234,6 +234,16 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

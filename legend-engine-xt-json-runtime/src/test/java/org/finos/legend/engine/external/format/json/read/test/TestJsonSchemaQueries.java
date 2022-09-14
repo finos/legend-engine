@@ -16,131 +16,283 @@ package org.finos.legend.engine.external.format.json.read.test;
 
 import net.javacrumbs.jsonunit.JsonMatchers;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ModelToSchemaGenerationTest;
 import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQueries;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.engine.shared.core.url.InputStreamProvider;
+import org.finos.legend.engine.shared.core.url.NamedInputStream;
+import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.hamcrest.MatcherAssert;
+import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.List;
 
 public class TestJsonSchemaQueries extends TestExternalFormatQueries
 {
-    List<Root_meta_pure_extension_Extension> formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
+    @BeforeClass
+    public static void setup()
+    {
+        formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
+    }
 
     @Test
-    public void testDeserializeJsonWithGeneratedSchema()
+    public void testInternalizeWithDynamicByteStream()
     {
         String modelGrammar = firmModel();
         ModelUnit modelUnit = new ModelUnit();
         modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
         PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
 
-        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
-                grammar,
-                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                resource("queries/peopleTestData.json"),
-                formatExtensions);
+                "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resource("queries/peopleTestData.json")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
     }
 
     @Test
-    public void testDeserializeJsonWithFullTree()
-    {
-        String modelGrammar = firmModel();
-        ModelUnit modelUnit = new ModelUnit();
-        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
-
-        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
-        String result = runTest(generated,
-                grammar,
-                "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                resource("queries/firmTreeTestData.json"),
-                formatExtensions);
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
-    }
-
-    @Test
-    public void testDeserializeJsonWithDefects()
-    {
-        String modelGrammar = firmModel();
-        ModelUnit modelUnit = new ModelUnit();
-        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
-
-        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
-        String result = runTest(generated,
-                grammar,
-                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                resource("queries/firmTreeDefectsData.json"),
-                formatExtensions);
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeDefectsResult.json")));
-    }
-
-    @Test
-    public void testDeserializeAndSerializeJsonWithGeneratedSchema()
+    public void testInternalizeWithDynamicString()
     {
         String modelGrammar = firmModel();
         ModelUnit modelUnit = new ModelUnit();
         modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
         PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
 
-        String grammar = firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::gen::TestBinding");
         String result = runTest(generated,
-                grammar,
-                "|test::firm::model::Person.all()->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding)",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                resource("queries/peopleTestData.json"),
-                formatExtensions);
+                "data:String[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resourceAsString("queries/peopleTestData.json")));
 
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/externalizePeopleCheckedResult.json")));
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
     }
 
     @Test
-    public void testDeserializeAndSerializeJsonWithFullTree()
+    public void testInternalizeWithStaticString()
     {
-        String grammar = serializedFirmModel() + "\n\n" + jsonSchema() + "\n\n" + firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::Binding");
-        String result = runTest(null,
-                grammar,
-                "|test::firm::model::Firm.all()->graphFetch(" + fullTree() + ")->externalize(test::Binding)",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                resource("queries/firmTreeTestData.json"),
-                formatExtensions);
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String data = resourceAsString("queries/peopleTestData.json").replace("\n", "\\n").replace("'", "\\'");
+
+        String result = runTest(generated,
+                "|test::firm::model::Person->internalize(test::gen::TestBinding, '" + data + "')->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resourceAsString("queries/peopleTestData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeWithDynamicUrl()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "url:String[1]|test::firm::model::Person->internalize(test::gen::TestBinding, ^Url(url = $url))->checked()->serialize(" + personTree() + ")",
+                Maps.mutable.with("url", "executor:myUrl"),
+                new NamedInputStreamProvider(Collections.singletonList(new NamedInputStream("myUrl", resource("queries/peopleTestData.json")))));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeWithStaticUrl()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "|test::firm::model::Person->internalize(test::gen::TestBinding, ^Url(url = 'executor:default'))->checked()->serialize(" + personTree() + ")",
+                new InputStreamProvider(resource("queries/peopleTestData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeWithGraphFetch()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetch(" + personTree() + ")->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resource("queries/peopleTestData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleGraphFetchResult.json")));
+    }
+
+    @Test
+    public void testInternalizeWithGraphFetchAndDefects()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String positionTree = "#{test::firm::model::GeographicPosition{longitude}}#"; // latitude property skipped on purpose to test graphFetch expands tree scope to include constraint on latitude
+
+        try
+        {
+            runTest(generated,
+                    "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetch(" + positionTree + ")->serialize(" + positionTree + ")",
+                    Maps.mutable.with("data", resource("queries/positions.json")));
+            Assert.fail("Expected exception to be raised. Not found any");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("java.lang.IllegalStateException: Constraint :[validLatitude] violated in the Class GeographicPosition", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testInternalizeWithGraphFetchChecked()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String positionTree = "#{test::firm::model::GeographicPosition{longitude}}#"; // latitude property skipped on purpose to test graphFetch expands tree scope to include constraint on latitude
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + positionTree + ")->serialize(" + positionTree + ")",
+                Maps.mutable.with("data", resource("queries/positions.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/positionGraphFetchCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeWithGraphFetchUnexpanded()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String positionTree = "#{test::firm::model::GeographicPosition{longitude}}#";
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetchUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
+                Maps.mutable.with("data", resource("queries/positions.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/positionGraphFetchUnexpandedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeWithGraphFetchUnexpandedChecked()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String positionTree = "#{test::firm::model::GeographicPosition{longitude}}#";
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::GeographicPosition->internalize(test::gen::TestBinding, $data)->graphFetchCheckedUnexpanded(" + positionTree + ")->serialize(" + positionTree + ")",
+                Maps.mutable.with("data", resource("queries/positions.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/positionGraphFetchCheckedUnexpandedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeJsonWithGeneratedSchema()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + personTree() + ")->serialize(" + personTree() + ")",
+                Maps.mutable.with("data", resource("queries/peopleTestData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeJsonWithFullTree()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::gen::TestBinding, $data)->graphFetch(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                Maps.mutable.with("data", resource("queries/firmTreeTestData.json")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
     }
 
     @Test
-    public void testDeserializeAndSerializeJsonWithDefects()
+    public void testInternalizeJsonWithDefects()
     {
-        String grammar = serializedFirmModel() + "\n\n" + jsonSchema() + "\n\n" + firmSelfMapping() + urlStreamRuntime("test::firm::mapping::SelfMapping", "test::Binding");
-        String result = runTest(null,
-                grammar,
-                "|test::firm::model::Firm.all()->graphFetchChecked(" + fullTree() + ")->externalize(test::Binding)",
-                "test::firm::mapping::SelfMapping",
-                "test::runtime",
-                resource("queries/firmTreeDefectsData.json"),
-                formatExtensions);
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Firm", "test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + fullTree() + ")->serialize(" + fullTree() + ")",
+                Maps.mutable.with("data", resource("queries/firmTreeDefectsData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeDefectsResult.json")));
+    }
+
+    @Test
+    public void testInternalizeAndExternalizeJsonWithGeneratedSchema()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding)",
+                Maps.mutable.with("data", resource("queries/peopleTestData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/externalizePeopleCheckedResult.json")));
+    }
+
+    @Test
+    public void testInternalizeAndExternalizeJsonWithFullTree()
+    {
+        String grammar = serializedFirmModel() + "\n\n" + jsonSchema();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::Binding, $data)->graphFetch(" + fullTree() + ")->externalize(test::Binding)",
+                Maps.mutable.with("data", resource("queries/firmTreeTestData.json")));
+
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeResult.json")));
+    }
+
+    @Test
+    public void testInternalizeAndExternalizeJsonWithDefects()
+    {
+        String grammar = serializedFirmModel() + "\n\n" + jsonSchema();
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+
+        String result = runTest(modelData,
+                "data:ByteStream[1]|test::firm::model::Firm->internalize(test::Binding, $data)->graphFetchChecked(" + fullTree() + ")->externalize(test::Binding)",
+                Maps.mutable.with("data", resource("queries/firmTreeDefectsData.json")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/firmTreeDefectsResult.json")));
     }

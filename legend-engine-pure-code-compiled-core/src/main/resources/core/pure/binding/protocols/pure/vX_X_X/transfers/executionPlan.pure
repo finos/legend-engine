@@ -17,17 +17,6 @@ import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::s
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformDataQualityNode(node:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
-{
-   ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode(
-      _type             = 'dataQuality',
-      resultType        = $node.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-      resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
-      enableConstraints = $node.enableConstraints,
-      checked           = $node.checked
-   );
-}
-
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external::shared::format::transformUrlStreamNode(node:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode(
@@ -57,6 +46,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::external:
       resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
       tree              = $node.tree->map(t| $t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], ^Map<String,List<Any>>(), $extensions))->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RootGraphFetchTree),
       binding           = $node.binding->elementToPath(),
+      enableConstraints = $node.enableConstraints,
+      checked           = $node.checked,
       contentType       = $node.binding.contentType
    );
 }

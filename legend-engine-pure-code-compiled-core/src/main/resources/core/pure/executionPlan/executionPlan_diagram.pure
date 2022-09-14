@@ -421,6 +421,18 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_16(
+        type=meta::pure::executionPlan::VariableResolutionExecutionNode,
+        position=(1408.37335, 427.87320),
+        width=215.37500,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     GeneralizationView gview_0(
         source=cview_2,
         target=cview_1,
@@ -524,6 +536,15 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
         source=cview_15,
         target=cview_1,
         points=[(213.81962,498.19324),(215.28059,376.39018),(625.46735,252.79086),(809.50000,146.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_16,
+        target=cview_1,
+        points=[(1516.06085,449.87320),(1513.37335,368.87320),(997.37335,250.87320),(809.50000,146.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,

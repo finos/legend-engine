@@ -1,0 +1,37 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "defects": [],
+      "source": {
+        "number": 1,
+        "record": "<GeographicPosition latitude=\"123\" longitude=\"132\"/>"
+      },
+      "value": {
+        "longitude": 132
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "number": 2,
+        "record": "<GeographicPosition latitude=\"12\" longitude=\"13\"/>"
+      },
+      "value": {
+        "longitude": 13
+      }
+    },
+    {
+      "defects": [],
+      "source": {
+        "number": 3,
+        "record": "<GeographicPosition latitude=\"13.123\" longitude=\"14.176\"/>"
+      },
+      "value": {
+        "longitude": 14.176
+      }
+    }
+  ]
+}

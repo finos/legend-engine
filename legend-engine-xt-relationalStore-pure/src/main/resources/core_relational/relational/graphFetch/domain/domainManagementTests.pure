@@ -91,17 +91,17 @@ function <<access.private>> meta::relational::graphFetch::domain::tests::checkPl
       'PureExp\n' +
       '(\n' +
       '  type = String\n' +
-      '  expression = [Node Index:0] -> serialize(#{meta::pure::graphFetch::domain::tests::Firm {legalName, employees {lastName}}}#)\n' +
+      '  expression =  -> serialize(#{meta::pure::graphFetch::domain::tests::Firm {legalName, employees {lastName}}}#)\n' +
       '  (\n' +
       '    GlobalGraphFetch\n' +
       '    (\n' +
-      '      type = PartialClass[impls=[(meta::pure::graphFetch::domain::tests::Firm | TestMapping.meta_pure_graphFetch_domain_tests_Firm)], propertiesWithParameters = [legalName, employees]]\n' +
+      '      type = PartialClass[impls=[(meta::pure::graphFetch::domain::tests::Firm | TestMapping.meta_pure_graphFetch_domain_tests_Firm)], propertiesWithParameters = [employees, legalName]]\n' +
       '      resultSizeRange = 0..1\n' +
       '      store = meta::relational::graphFetch::domain::tests::TestStore\n' +
       '      localGraphFetchExecutionNode = \n' +
       '         RelationalGraphFetch\n' +
       '         (\n' +
-      '           type = PartialClass[impls=[(meta::pure::graphFetch::domain::tests::Firm | TestMapping.meta_pure_graphFetch_domain_tests_Firm)], propertiesWithParameters = [legalName, employees]]\n' +
+      '           type = PartialClass[impls=[(meta::pure::graphFetch::domain::tests::Firm | TestMapping.meta_pure_graphFetch_domain_tests_Firm)], propertiesWithParameters = [employees, legalName]]\n' +
       '           nodeIndex = 0\n' +
       '           relationalNode = \n' +
       '              SQL\n' +
@@ -142,7 +142,7 @@ function <<access.private>> meta::relational::graphFetch::domain::tests::checkPl
       'PureExp\n' +
       '(\n' +
       '  type = String\n' +
-      '  expression = [Node Index:0] -> serialize(#{meta::pure::graphFetch::domain::tests::Person {firstName}}#)\n' +
+      '  expression =  -> serialize(#{meta::pure::graphFetch::domain::tests::Person {firstName}}#)\n' +
       '  (\n' +
       '    GlobalGraphFetch\n' +
       '    (\n' +

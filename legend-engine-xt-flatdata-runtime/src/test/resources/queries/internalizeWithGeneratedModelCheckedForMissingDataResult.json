@@ -1,0 +1,139 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "defects": [
+        {
+          "id": null,
+          "externalId": null,
+          "message": "Failed to read 'Product' not present in the source",
+          "enforcementLevel": "Critical",
+          "ruleType": "InvalidInput",
+          "ruleDefinerPath": "test::tradeSchema",
+          "path": []
+        }
+      ],
+      "source": {
+        "number": 1,
+        "lineNumber": 2,
+        "record": ",10,2021-06-04T15:04:21.232Z,12.32,USD,EUR,2.4,2021-06-09,2021-06-04T15:12:31.000Z,2022-06-04,5",
+        "recordValues": [
+          {
+            "address": "Product",
+            "rawValue": ""
+          },
+          {
+            "address": "Quantity",
+            "rawValue": "10"
+          },
+          {
+            "address": "Trade Time",
+            "rawValue": "2021-06-04T15:04:21.232Z"
+          },
+          {
+            "address": "Price",
+            "rawValue": "12.32"
+          },
+          {
+            "address": "Price Ccy",
+            "rawValue": "USD"
+          },
+          {
+            "address": "Settlement Ccy",
+            "rawValue": "EUR"
+          },
+          {
+            "address": "Settlement Rate",
+            "rawValue": "2.4"
+          },
+          {
+            "address": "Settlement Date",
+            "rawValue": "2021-06-09"
+          },
+          {
+            "address": "Confirmed At",
+            "rawValue": "2021-06-04T15:12:31.000Z"
+          },
+          {
+            "address": "Expiry Date",
+            "rawValue": "2022-06-04"
+          },
+          {
+            "address": "Executions",
+            "rawValue": "5"
+          }
+        ]
+      },
+      "value": null
+    },
+    {
+      "defects": [],
+      "source": {
+        "number": 2,
+        "lineNumber": 3,
+        "record": "P2,20,2021-06-04T15:04:21.999Z,34.7,EUR,,,2021-06-09,,,",
+        "recordValues": [
+          {
+            "address": "Product",
+            "rawValue": "P2"
+          },
+          {
+            "address": "Quantity",
+            "rawValue": "20"
+          },
+          {
+            "address": "Trade Time",
+            "rawValue": "2021-06-04T15:04:21.999Z"
+          },
+          {
+            "address": "Price",
+            "rawValue": "34.7"
+          },
+          {
+            "address": "Price Ccy",
+            "rawValue": "EUR"
+          },
+          {
+            "address": "Settlement Ccy",
+            "rawValue": ""
+          },
+          {
+            "address": "Settlement Rate",
+            "rawValue": ""
+          },
+          {
+            "address": "Settlement Date",
+            "rawValue": "2021-06-09"
+          },
+          {
+            "address": "Confirmed At",
+            "rawValue": ""
+          },
+          {
+            "address": "Expiry Date",
+            "rawValue": ""
+          },
+          {
+            "address": "Executions",
+            "rawValue": ""
+          }
+        ]
+      },
+      "value": {
+        "product": "P2",
+        "quantity": 20,
+        "tradeTime": "2021-06-04T15:04:21.999",
+        "price": 34.7,
+        "priceCcy": "EUR",
+        "settlementCcy": null,
+        "settlementRate": null,
+        "settlementDate": "2021-06-09",
+        "confirmedAt": null,
+        "expiryDate": null,
+        "executions": null
+      }
+    }
+  ]
+}

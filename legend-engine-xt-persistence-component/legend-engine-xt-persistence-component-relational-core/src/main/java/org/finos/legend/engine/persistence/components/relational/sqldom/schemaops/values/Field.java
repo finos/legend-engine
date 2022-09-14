@@ -1,0 +1,96 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values;
+
+import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
+
+public class Field extends Value
+{
+    private Table table;
+    private String name;
+    private String quoteIdentifier;
+
+    public Field(String name, String quoteIdentifier)
+    {
+        this.name = name;
+        this.quoteIdentifier = quoteIdentifier;
+    }
+
+    public Field(Table table, String name, String quoteIdentifier, String alias)
+    {
+        super(alias);
+        this.table = table;
+        this.name = name;
+        this.quoteIdentifier = quoteIdentifier;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    @Override
+    public void genSql(StringBuilder builder) throws SqlDomException
+    {
+        genSqlWithoutAlias(builder);
+        super.genSql(builder);
+    }
+
+    @Override
+    public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
+    {
+        validate();
+        if (table != null && StringUtils.notEmpty(table.getAlias()))
+        {
+            builder.append(table.getAlias()).append(".");
+        }
+        builder.append(SqlGenUtils.getQuotedField(name, quoteIdentifier));
+    }
+
+    public void genSqlWithNameOnly(StringBuilder builder) throws SqlDomException
+    {
+        validate();
+        builder.append(SqlGenUtils.getQuotedField(name, quoteIdentifier));
+    }
+
+    @Override
+    public void push(Object node)
+    {
+        if (node instanceof Table)
+        {
+            table = (Table) node;
+        }
+        else if (node instanceof String)
+        {
+            name = (String) node;
+        }
+    }
+
+    void validate() throws SqlDomException
+    {
+        if (StringUtils.empty(name))
+        {
+            throw new SqlDomException("Field name is empty");
+        }
+    }
+}
