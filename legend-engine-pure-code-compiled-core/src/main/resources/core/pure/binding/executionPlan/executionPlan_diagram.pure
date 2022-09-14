@@ -27,18 +27,6 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_2(
-        type=meta::external::shared::format::executionPlan::DataQualityExecutionNode,
-        position=(313.00000, 667.00000),
-        width=181.36377,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_1(
         type=meta::pure::executionPlan::ExecutionNode,
         position=(621.00000, 461.00000),
@@ -111,14 +99,6 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
         color=#FFFFCC,
         lineWidth=1.0)
 
-    GeneralizationView gview_0(
-        source=cview_2,
-        target=cview_1,
-        points=[(370.00000,711.00000),(624.00000,592.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_1(
         source=cview_4,

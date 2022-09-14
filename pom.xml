@@ -49,6 +49,7 @@
         <module>legend-engine-xt-protobuf</module>
         <module>legend-engine-xt-protobuf-pure</module>
 
+        <module>legend-engine-xt-persistence-component</module>
         <module>legend-engine-xt-persistence-grammar</module>
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>

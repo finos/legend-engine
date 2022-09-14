@@ -27,31 +27,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::execut
 
 Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
-   contentType : String[1];
-   binding     : String[1];
-   tree        : RootGraphFetchTree[0..1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatSerializeExecutionNode extends ExecutionNode
-{
-   checked : Boolean[1];
-   binding : String[1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::ExternalFormatDeserializeExecutionNode extends ExecutionNode
-{
-   pathOffset : meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::PathReference[0..1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::PathReference
-{
-   _type: String[1];
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode extends ExecutionNode
-{
+   contentType       : String[1];
+   binding           : String[1];
    enableConstraints : Boolean[1];
    checked           : Boolean[1];
+   tree              : RootGraphFetchTree[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode

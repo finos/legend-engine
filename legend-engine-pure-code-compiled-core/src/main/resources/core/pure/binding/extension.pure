@@ -38,6 +38,13 @@ import meta::pure::runtime::*;
 import meta::pure::store::platform::executionPlan::generation::*;
 import meta::pure::store::platform::extension::*;
 
+
+import meta::pure::store::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::routing::*;
+import meta::external::shared::format::binding::validation::*;
+
+
 function meta::external::shared::format::externalFormatExtension(): Extension[1]
 {
   meta::external::shared::format::externalFormatExtension('externalFormat')
@@ -51,7 +58,7 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
       availableFeatures          = ^FeatureExtension
                                    (
                                      id = 'ExternalFormat',
-                                     shouldStopRouting = serializeFunctions(),
+                                     shouldStopRouting = bindingRouterFunctions(),
                                      printConnectionToString = printConnection_Extension_MANY__Function_MANY_,
                                      printPlanNodeToString = {space:String[1], extensions:Extension[*] | printPlanNodeToString($space, $extensions)}
                                   ),
@@ -73,14 +80,19 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
 
 function <<access.private>> meta::external::shared::format::executionPlan_generation_nodeForPlatformFunctionExpression(): PureFunctionToProcessFunctionPair[*]
 {
-   let processor = {fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], debug:DebugContext[1] |
-                         externalizeFunctionProcessor($fe, $runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $debug);};
-   serializeFunctions()->map(func | ^PureFunctionToProcessFunctionPair(first = $func, second = $processor));
+   let externalizer  = {fe:FunctionExpression[1], state : PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1] |
+                            externalizeFunctionProcessor($fe, $state, $extensions, $debug);
+                          };
+   let internalizer  = {fe:FunctionExpression[1], state : PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1] |
+                            internalizeFunctionProcessor($fe, $state, $debug);
+                          };
+   externalizeFunctions()->map(func | ^PureFunctionToProcessFunctionPair(first = $func, second = $externalizer))
+    ->concatenate(internalizeFunctions()->map(func | ^PureFunctionToProcessFunctionPair(first = $func, second = $internalizer)));
 }
 
-function <<access.private>> meta::external::shared::format::externalizeFunctionProcessor(fe:FunctionExpression[1], runtime:Runtime[0..1], inScopeVars : Map<String, List<Any>>[1], advancedRouting: Boolean[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function <<access.private>> meta::external::shared::format::externalizeFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let children        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->meta::pure::store::platform::executionPlan::generation::processValueSpecification($runtime, $inScopeVars, $advancedRouting, $exeCtx, $extensions, $debug)->toOneMany();
+   let children        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug)->toOneMany();
 
    let bindingArg      = $fe.parametersValues->at(1);
    assert($bindingArg->instanceOf(InstanceValue), 'Only literal binding is supported');
@@ -97,6 +109,60 @@ function <<access.private>> meta::external::shared::format::externalizeFunctionP
    );
 }
 
+function meta::external::shared::format::internalizeFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let checked            = $state.checked->isTrue();
+   let graphFetchTree     = $state.graphContext.graphFetchTree;
+   let enableConstraints  = $state.exeCtx.enableConstraints->isEmpty() || $state.exeCtx.enableConstraints->toOne();
+   let bindingArg         = $fe.parametersValues->at(1);
+
+   assert($bindingArg->instanceOf(InstanceValue), 'Only literal binding is supported');
+   let binding            = $bindingArg->cast(@InstanceValue).values->cast(@Binding)->toOne();
+
+   let classArg           = $fe.parametersValues->at(0);
+   assert($classArg->instanceOf(InstanceValue), 'Only literal class is supported');
+   let class              = $classArg->cast(@InstanceValue).values->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   
+   ^ExternalFormatInternalizeExecutionNode
+   (
+      resultType        = ^ClassResultType(type=$class),
+      resultSizeRange   = ZeroMany,
+      binding           = $binding,
+      enableConstraints = $enableConstraints,
+      checked           = $checked,
+      tree              = $graphFetchTree,
+      executionNodes    = generateSourceNodeFromFunctionExpression($fe),
+      fromCluster       = ^ClusteredValueSpecification(val = $fe, store = ^meta::pure::store::platform::metamodel::PlatformStore(package=::), s = meta::pure::store::platform::contract::platformStoreContract(), executable=true, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([])) //TODO: this should be updated once routing is uplifted to handle binding correctly
+   );
+}
+
+function meta::external::shared::format::generateSourceNodeFromFunctionExpression(fe:FunctionExpression[1]): ExecutionNode[1]
+{
+   $fe.parametersValues->at(2)->match([
+                                        var:VariableExpression[1] | ^VariableResolutionExecutionNode(varName=$var.name->toOne(), resultType = ^DataTypeResultType(type = $var.genericType.rawType->toOne())),
+                                        ins:InstanceValue[1]      | assert($ins.values->size() == 1 && $ins.values->toOne()->instanceOf(String), | 'Expected single string value as parameter for internalize. Please contact dev team with this issue!');
+
+                                                                    let varName           = 'internalizeVar$';
+                                                                    let allocationNode    = ^AllocationExecutionNode(varName        = $varName, 
+                                                                                                                     executionNodes = ^ConstantExecutionNode(values=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(type = String)),
+                                                                                                                     resultType     = ^VoidResultType(type = Void));
+                                                                    let varResolutionNode = ^VariableResolutionExecutionNode(varName         = $varName,
+                                                                                                                             resultType      = ^DataTypeResultType(type = String),
+                                                                                                                             resultSizeRange = PureOne);
+
+                                                                    ^SequenceExecutionNode(executionNodes = [$allocationNode, $varResolutionNode], resultType = ^DataTypeResultType(type = String), resultSizeRange = PureOne);,
+                                        fe:FunctionExpression[1]  | assert($fe.func == new_Class_1__String_1__KeyExpression_MANY__T_1_, 'Url must be created using new (^)');
+                                                                    let url = $fe.parametersValues->at(2)->cast(@InstanceValue).values
+                                                                                                          ->cast(@KeyExpression)
+                                                                                                          ->filter(kv|$kv.key.values == 'url')
+                                                                                                          ->toOne().expression;
+                                                                    $url->match([
+                                                                      var:VariableExpression[1] | ^UrlStreamExecutionNode(url='${' + $var.name->toOne() + '}', resultType = ^DataTypeResultType(type = ByteStream), requiredVariableInputs = ^VariableInput(name = $var.name->toOne(), multiplicity = $var.multiplicity, type = $var.genericType.rawType->toOne())),
+                                                                      ins:InstanceValue[1]      | ^UrlStreamExecutionNode(url=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(type = ByteStream))
+                                                                    ]);
+                                      ]);
+}
+
 function <<access.private>> meta::external::shared::format::serializerExtensionName(version:String[1]): String[1]
 {
    'meta::protocols::pure::' + $version + '::external::shared::format::serializerExtension_String_1__SerializerExtension_1_'
@@ -107,7 +173,6 @@ function meta::external::shared::format::printConnection(extensions:Extension[*]
    [
       {ext:ExternalFormatConnection[1] |
          let source = $ext.externalSource->match([
-            e:ExecutionNodeExternalSource[1] | 'Execution Node Source',
             u:UrlStreamExternalSource[1] | 'url="'+$u.url+'"'
          ]);
          'binding="'+$ext.element->cast(@Binding)->elementToPath()+'", source=('+$source+')';

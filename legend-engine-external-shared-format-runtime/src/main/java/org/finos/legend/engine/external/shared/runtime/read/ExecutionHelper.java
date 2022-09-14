@@ -14,12 +14,13 @@
 
 package org.finos.legend.engine.external.shared.runtime.read;
 
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public class ExecutionHelper
 {
@@ -29,21 +30,28 @@ public class ExecutionHelper
         {
             return ((InputStreamResult) result).getInputStream();
         }
+        else if (result instanceof ConstantResult)
+        {
+            Object value = ((ConstantResult) result).getValue();
+            InputStream stream;
+
+            if (value instanceof InputStream)
+            {
+                stream = (InputStream) value;
+            }
+            else if (value instanceof String)
+            {
+                stream = new ByteArrayInputStream(((String) value).getBytes(StandardCharsets.UTF_8));
+            }
+            else
+            {
+                throw new RuntimeException("Expected input stream or string, found : " + value.getClass().getSimpleName());
+            }
+            return stream;
+        }
         else
         {
             throw new IllegalStateException("Unsupported result type for external formats: " + result.getClass().getSimpleName());
-        }
-    }
-
-    public static String locationFromSourceNode(ExecutionNode executionNode)
-    {
-        if (executionNode instanceof UrlStreamExecutionNode)
-        {
-            return ((UrlStreamExecutionNode) executionNode).url;
-        }
-        else
-        {
-            throw new IllegalStateException("Unsupported child node type for external formats: " + executionNode.getClass().getSimpleName());
         }
     }
 }

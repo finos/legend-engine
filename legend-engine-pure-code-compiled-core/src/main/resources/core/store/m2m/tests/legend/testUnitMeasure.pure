@@ -123,7 +123,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    'PureExp\n'+
    '(\n'+
    '  type = String\n'+
-   '  expression = [Node Index:0] -> serialize(#{meta::pure::mapping::modelToModel::test::units::dest::HealthProfile {weight}}#)\n'+
+   '  expression =  -> serialize(#{meta::pure::mapping::modelToModel::test::units::dest::HealthProfile {weight}}#)\n'+
    '  (\n'+
    '    GlobalGraphFetch\n'+
    '    (\n'+
