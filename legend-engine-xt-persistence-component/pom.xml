@@ -30,6 +30,8 @@
 
     <modules>
         <module>legend-engine-xt-persistence-component-logical-plan</module>
+        <module>legend-engine-xt-persistence-component-physical-plan</module>
+        <module>legend-engine-xt-persistence-component-relational-core</module>
     </modules>
 
     <properties>
