@@ -66,6 +66,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Platfo
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PlatformUnionExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.VariableResolutionExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
@@ -132,6 +133,15 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         else if (executionNode instanceof PlatformMergeExecutionNode)
         {
             return executionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+        }
+        else if (executionNode instanceof VariableResolutionExecutionNode)
+        {
+            Result res = executionState.getResult(((VariableResolutionExecutionNode) executionNode).varName);
+            if (res == null)
+            {
+                throw new RuntimeException("Expected result for variable : " + ((VariableResolutionExecutionNode) executionNode).varName + ". No result found !");
+            }
+            return res;
         }
 
         return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));

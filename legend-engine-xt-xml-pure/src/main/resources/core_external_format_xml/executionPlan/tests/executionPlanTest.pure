@@ -77,81 +77,41 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::xml::execut
    let tree = #{Person {firstName, lastName}}#;
 
    let plan = executionPlan(
-      |Person.all()->graphFetchChecked($tree)->externalize($binding),
-      SelfMapping,
-      ^Runtime(
-         connections = ^ExternalFormatConnection(
-            element        = $binding,
-            externalSource = ^UrlStreamExternalSource(url = 'executor:default')
-         )
-      ),
+      |Person->internalize($binding, ^Url(url = 'executor:default'))->graphFetchChecked($tree)->externalize($binding),
       ^ExecutionContext(),
       $extensions,
       noDebug()
    );
 
-  //  let boundPlan = $plan->generatePlatformCode(^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
-  //  $boundPlan->planToString(true, $extensions)->println();
-
    let planString = $plan->planToString(false, $extensions);
    
-   let expected = 'ExternalFormat_Externalize\n'+
-                  '(\n'+
-                  '  type = String\n'+
-                  '  resultSizeRange = 1\n'+
-                  '  checked = true\n'+
-                  '  binding = meta::external::format::xml::executionPlan::test::TestBinding\n'+
-                  '\n'+
-                  '  (\n'+
-                  '    GlobalGraphFetch\n'+
-                  '    (\n'+
-                  '      type = PartialClass[impls=[(meta::external::format::xml::executionPlan::test::Person | SelfMapping.meta_external_format_xml_executionPlan_test_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '      resultSizeRange = *\n'+
-                  '      store = MODEL\n'+
-                  '      localGraphFetchExecutionNode = \n'+
-                  '         InMemoryRootGraphFetch\n'+
-                  '         (\n'+
-                  '           type = PartialClass[impls=[(meta::external::format::xml::executionPlan::test::Person | SelfMapping.meta_external_format_xml_executionPlan_test_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '           graphFetchTree = [meta_external_format_xml_executionPlan_test_Person/meta::external::format::xml::executionPlan::test::Person]{@(meta_external_format_xml_executionPlan_test_Person->)@[/firstName],@(meta_external_format_xml_executionPlan_test_Person->)@[/lastName]}\n'+
-                  '           nodeIndex = 0\n'+
-                  '           batchSize = 1\n'+
-                  '           checked = true\n'+
-                  '           (\n'+
-                  '             DataQuality\n'+
-                  '             (\n'+
-                  '               type = PartialClass[impls=[], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '               resultSizeRange = *\n'+
-                  '               enableConstraints = true\n'+
-                  '               checked = true\n'+
-                  '\n'+
-                  '               (\n'+
-                  '                 ExternalFormat_Internalize\n'+
-                  '                 (\n'+
-                  '                   type = PartialClass[impls=[], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '                   resultSizeRange = *\n'+
-                  '                   binding = meta::external::format::xml::executionPlan::test::TestBinding\n'+
-                  '\n'+
-                  '                   (\n'+
-                  '                     UrlStream\n'+
-                  '                     (\n'+
-                  '                       type = String\n'+
-                  '                       url = executor:default\n'+
-                  '\n'+
-                  '                     )\n'+
-                  '                   )\n'+
-                  '                 )\n'+
-                  '               )\n'+
-                  '             )\n'+
-                  '           )\n'+
-                  '           children = [\n'+
-                  '              \n'+
-                  '           ]\n'+
-                  '         )\n'+
-                  '      children = [\n'+
-                  '         \n'+
-                  '      ]\n'+
-                  '    )\n'+
-                  '  )\n'+
+   let expected = 'ExternalFormat_Externalize\n' +
+                  '(\n' +
+                  '  type = String\n' +
+                  '  resultSizeRange = 1\n' +
+                  '  checked = true\n' +
+                  '  binding = meta::external::format::xml::executionPlan::test::TestBinding\n' +
+                  '\n' +
+                  '  (\n' +
+                  '    ExternalFormat_Internalize\n' +
+                  '    (\n' +
+                  '      type = Class[impls=]\n' +
+                  '      resultSizeRange = *\n' +
+                  '      binding = meta::external::format::xml::executionPlan::test::TestBinding[application/xml]\n' +
+                  '      enableConstraints = true\n' +
+                  '      checked = true\n' +
+                  '      graphFetchTree = #{meta::external::format::xml::executionPlan::test::Person{firstName,lastName}}#\n' +
+                  '\n' +
+                  '      (\n' +
+                  '        UrlStream\n' +
+                  '        (\n' +
+                  '          type = ByteStream\n' +
+                  '          url = executor:default\n' +
+                  '\n' +
+                  '        )\n' +
+                  '      )\n' +
+                  '    )\n' +
+                  '  )\n' +
                   ')\n';
 
    assertEquals($expected, $planString);   
@@ -161,18 +121,3 @@ function meta::external::format::xml::executionPlan::test::xsType(type: String[1
 {
    ^QName(localPart=$type, namespace='http://www.w3.org/2001/XMLSchema');
 }
-
-###Mapping
-
-import meta::external::format::xml::executionPlan::test::*;
-
-Mapping meta::external::format::xml::executionPlan::test::SelfMapping
-(
-   Person: Pure
-   {
-      ~src Person
-      
-      firstName   : $src.firstName,
-      lastName    : $src.lastName
-   }
-)

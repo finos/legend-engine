@@ -15,11 +15,14 @@
 import meta::external::format::flatdata::binding::validation::*;
 import meta::external::format::flatdata::contract::*;
 import meta::external::format::flatdata::executionPlan::*;
+import meta::external::format::flatdata::executionPlan::engine::java::*;
+import meta::external::format::flatdata::executionPlan::model::*;
 import meta::external::format::flatdata::metamodel::*;
 import meta::external::format::flatdata::transformation::fromPure::*;
 import meta::external::format::flatdata::transformation::toPure::*;
 
 import meta::external::shared::format::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 
 import meta::pure::extension::*;
 
@@ -36,7 +39,7 @@ function meta::external::format::flatdata::contract::flatDataFormatContract(): E
       externalFormatFromPureDescriptor = flatDataFromPureDescriptor(),
       externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_,
 
-      externalFormatPlanDescriptor     = flatDataExecutionPlanDescriptor()
+      sourceRecordTree                 = #{RawFlatData {number, lineNumber, record, recordValues {address, rawValue}}}#
    )
 }
 
@@ -45,6 +48,9 @@ function meta::external::format::flatdata::extension::flatDataFormatExtension():
    ^Extension
    (
       type                     = 'External Format - FlatData',
-      availableExternalFormats = flatDataFormatContract()
+      availableExternalFormats = flatDataFormatContract(),
+
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = externalFormatLegendJavaPlatformBinding(flatDataJavaBindingDescriptor())
    )
 }

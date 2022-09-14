@@ -989,11 +989,6 @@ function meta::external::language::java::transform::addFunctionCoder(library:Con
 // --- Factory methods for Conventions
 // ----------------------------------------------------------------------------------------------------------
 
-function <<doc.deprecated>> meta::external::language::java::transform::newConventions(extensions : meta::pure::extension::Extension[*]): Conventions[1]
-{
-   newConventions($extensions, [])
-}
-
 function meta::external::language::java::transform::newConventions(extensions : meta::pure::extension::Extension[*], extraProhibitedFunctions : Function<Any>[*]): Conventions[1]
 {
    let result = ^Conventions

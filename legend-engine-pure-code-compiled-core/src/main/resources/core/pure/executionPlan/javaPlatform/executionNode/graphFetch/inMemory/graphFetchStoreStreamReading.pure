@@ -27,7 +27,7 @@ import meta::pure::executionPlan::engine::java::graphFetch::stream::*;
 import meta::pure::executionPlan::engine::java::graphFetch::xml::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::*;
@@ -90,10 +90,13 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
                               model : ModelConnection[1]     | true,
                               other : Any[1]                 | false
                            ]);
-   let readableClasses   = if($genReader, | $pureClass->concatenate($context.typeInfos->classDependenciesViaPropertiesWithsubTypes($pureClass)), | []);
+   let readableClasses   = if($genReader, | $pureClass->concatenate($context.typeInfos->classDependenciesViaPropertiesWithSubTypes($pureClass)), | []);
    let readableEnums     = if($genReader, | $context.typeInfos->enumDependenciesViaProperties($pureClass), | []);
    
-   let dataClassesProject = $readableClasses->map(rc | $rc->createStreamReadingDataClass($path, $context, $node.checked || $node.enableConstraints, $debug->indent()));
+   let constraintContext  = if($node.checked || $node.enableConstraints,
+                               |^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), 
+                               |[]);
+   let dataClassesProject = $readableClasses->map(rc | $rc->createStreamReadingDataClass($path, $context, $constraintContext, $debug->indent()));
 
    let storeReaderProject = $connection->match([
       json  : JsonModelConnection[1] | createJsonReading($pureClass, $conventions->className($pureClass), $path, $readableClasses, $readableEnums, $context, $debug->indent()),
@@ -138,7 +141,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
    'read_'+ $conventions->identifier($type->elementToPath('_'));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::createStreamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], createConstraintChecking:Boolean[1], debug:DebugContext[1]): Project[1]
+function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::createStreamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[0..1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
 
@@ -147,7 +150,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
    let classWithFields = $class->streamReadingDataClass($path, $conventions)
       ->usingKnownPackages($conventions->knownPackages())
       ->imports($conventions->standardImports())
-      ->imports(if($createConstraintChecking, | $conventions->constrainedImports(), | []))
+      ->imports(if($constraintContext->isNotEmpty(), | $conventions->constrainedImports(), | []))
       ->implements($conventions->className($class))
       ->addConstructor(javaConstructor([], [], ''))
       ->map({dc | 
@@ -174,5 +177,5 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
       newProject()->addClass($classWithFields),
       $classWithFields->createQualifiedPropertiesForClass($context.typeInfos->allQualifiedProperties($class), $context, $debug->indent()),
       $classWithFields->imports($conventions->className(IReferencedObject))->createAlloyStoreObjectReferenceMethodsForClass($context, $debug->indent())
-   ]->concatenate(if($createConstraintChecking, | $classWithFields->imports($conventions->checkedClass())->createConstraintCheckingForClass($class, $context, $debug->indent()), | []))->toOneMany());
+   ]->concatenate(if($constraintContext->isNotEmpty(), | $classWithFields->imports($conventions->checkedClass())->createConstraintCheckingForClass($class, $path, $context, $constraintContext->toOne(), $debug->indent()), | []))->toOneMany());
 }

@@ -20,9 +20,12 @@ on:
   push:
     branches:
       - master
+    paths:
+      - "**/Dockerfile"
   pull_request:
-    branches:
-      - "**"
+    paths:
+      - "**/Dockerfile"
+  workflow_dispatch: {}
 
 jobs:
   release:

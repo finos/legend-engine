@@ -72,6 +72,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FreeMarkerConditi
    falseBlock                    : ExecutionNode[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableResolutionExecutionNode extends ExecutionNode
+{
+   varName : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation
 {
    _type : String[1];

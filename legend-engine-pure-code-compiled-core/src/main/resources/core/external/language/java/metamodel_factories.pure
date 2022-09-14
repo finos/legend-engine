@@ -3111,6 +3111,7 @@ function <<access.private>> meta::external::language::java::factory::smartJavaLa
            ->addMethodIfMissing(javaMethod(javaInt(),     'compareTo',        [javaParam(javaString(), 'x')]))
            ->addMethodIfMissing(javaMethod(javaBoolean(), 'endsWith',         [javaParam(javaString(), 'x')]))
            ->addMethodIfMissing(javaMethod(javaBoolean(), 'equalsIgnoreCase', [javaParam(javaString(), 'x')]))
+           ->addMethodIfMissing(javaMethod(javaArray(javaByte()), 'getBytes', []))
            ->addMethodIfMissing(javaMethod(javaInt(),     'indexOf',          [javaParam(javaString(), 'x')]))
            ->addMethodIfMissing(javaMethod(javaInt(),     'length',           []))
            ->addMethodIfMissing(javaMethod(javaBoolean(), 'matches',          [javaParam(javaString(), 'str'), javaParam(javaString(), 'regexp')]))
@@ -3249,8 +3250,11 @@ function <<access.private>> meta::external::language::java::factory::smartJavaUt
    if($class.simpleName == 'Iterator',
       | $class->addMethodIfMissing(javaMethod(javaBoolean(), 'hasNext', []))
               ->addMethodIfMissing(javaMethod($elementType,  'next',    [])),
+      |
+   if($class.simpleName == 'Optional',
+      | $class->addMethodIfMissing(javaMethod(javaVoid(), 'ifPresent', javaParam(javaConsumer($elementType), 'x'))),
       | $class
-   ))));
+   )))));
 }
 
 function <<access.private>> meta::external::language::java::factory::smartJavaUtilStream(in:meta::external::language::java::metamodel::ParameterizedType[1]): meta::external::language::java::metamodel::Class[1]
@@ -3450,12 +3454,19 @@ function <<access.private>> meta::external::language::java::factory::project::me
          
          let newlyDefinedMethods = $class.methods->filter({newMethod|
             let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
-            assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| println($existingMethod.bodyCode); 
-                                                                                                                                                  println($newMethod.bodyCode); 
-                                                                                                                                                  println($existingMethod.bodyCode == $newMethod.bodyCode); 
-                                                                                                                                                  println($existingMethod.bodyCode->cast(@Block).statements->at(0) == $newMethod.bodyCode->cast(@Block).statements->at(0)); 
-                                                                                                                                                  println($existingMethod.bodyCode->cast(@Block).statements->at(1) == $newMethod.bodyCode->cast(@Block).statements->at(1)); 
-                                                                                                                                                  'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
+            let newlyDefinedMethods = $class.methods->filter({newMethod|
+                let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
+                assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
+                                                                                                                                                        c:Code[1] | println($c->codeToString()),
+                                                                                                                                                        x:Code[0] | println($existingMethod.body->toOne())
+                                                                                                                                                      ]);
+                                                                                                                                                      $newMethod.bodyCode->match([
+                                                                                                                                                        c:Code[1] | println($c->codeToString()),
+                                                                                                                                                        x:Code[0] | println($newMethod.body->toOne())
+                                                                                                                                                      ]);
+                                                                                                                                                      'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
+                $existingMethod->isEmpty();
+             });
             $existingMethod->isEmpty();
          });
          let methods = $existing.methods->concatenate($newlyDefinedMethods);

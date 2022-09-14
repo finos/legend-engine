@@ -696,7 +696,18 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
                   groupBy = $merge.groupBy,
                   paths = $ids->zip($paths)
                )
+               ->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions) 
    );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateNonTerminalGroupByQueryWithEmptyGroupingColumns(select: TdsSelectSqlQuery[1], state: State[1], extensions: Extension[*]): TdsSelectSqlQuery[1]
+{
+   // Non terminal group by operation with empty group by cols needs to be wrapped in a subselect
+   // Else, it can cause problems like 'where' clause getting generated for aggregated columns (which is invalid)
+   if ($select.groupBy->isEmpty() && ($state.functionExpressionStack->size() > 1),
+       | $select->isolateTdsSelect($extensions),
+       | $select
+   )
 }
 
 function  meta::relational::functions::pureToSqlQuery::processObjectGroupByWithWindowSubSet(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -4134,7 +4145,7 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
            select = ^$select(columns = $groupByColumns->concatenate($newColumns),
                              groupBy = $groupByColumns->cast(@Alias),
                              paths = $pathInfos
-                    )
+                    )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions)
         )
       ,|
         let alias = ^TableAlias(name = 'aggreg', relationalElement=$select);
@@ -4157,7 +4168,7 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
                                     columns = $groupByAliases->concatenate($newColumns),
                                     groupBy = $groupByAliases,
                                     paths = $pathInfos
-                               ),
+                               )->isolateNonTerminalGroupByQueryWithEmptyGroupingColumns($state, $extensions),
                   currentTreeNode = if($nestedQuery.currentTreeNode->isEmpty(), | $nestedQuery.currentTreeNode, | $nestedQuery.currentTreeNode->toOne()->findOneNode($nestedQuery.select.data->toOne(), $newData))
         );
    );
