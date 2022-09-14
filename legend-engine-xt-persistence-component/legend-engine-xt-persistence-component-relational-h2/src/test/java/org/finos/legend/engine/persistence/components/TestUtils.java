@@ -30,6 +30,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.JDBCType;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +38,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class TestUtils
 {
@@ -781,9 +785,15 @@ public class TestUtils
         return "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'";
     }
 
-    public static String getCheckDataTypeFromTableSql(String tableName, String columnName)
+    public static String getCheckDataTypeFromTableSql(Connection connection, String database, String schema, String tableName, String columnName) throws SQLException
     {
-        return "SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='" + tableName + "' and COLUMN_NAME ='" + columnName + "'";
+        ResultSet result = connection.getMetaData().getColumns(database, schema, tableName, columnName);
+        String dataType = "";
+        if (result.next())
+        {
+            dataType = JDBCType.valueOf(result.getInt("DATA_TYPE")).name();
+        }
+        return dataType;
     }
 
     private static List<String[]> readCsvData(String path) throws IOException

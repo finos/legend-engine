@@ -42,6 +42,8 @@ import static org.finos.legend.engine.persistence.components.TestUtils.mainTable
 import static org.finos.legend.engine.persistence.components.TestUtils.name;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
+import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
 
 class AlterTest extends BaseTest
 {
@@ -88,8 +90,8 @@ class AlterTest extends BaseTest
         insertMainData(inputPath);
 
         // Assert column is of type BIGINT before operation
-        List<Map<String, Object>> result = h2Sink.executeQuery(TestUtils.getCheckDataTypeFromTableSql(mainTableName, incomeName));
-        Assertions.assertEquals("BIGINT", result.get(0).get("DATA_TYPE"));
+        String dataType = TestUtils.getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName);
+        Assertions.assertEquals("BIGINT", dataType);
 
         // Generate and execute schema evolution plan
         Operation changeDataType = Alter.of(mainTable, Alter.AlterOperation.CHANGE_DATATYPE, incomeChanged, Optional.empty());
