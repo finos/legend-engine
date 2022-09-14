@@ -107,8 +107,8 @@ class AlterTest extends BaseTest
         TestUtils.assertFileAndTableDataEquals(expectedNewSchema.toArray(new String[]{}), expectedPath, actualTableData);
 
         // Assert column is of type INTEGER after operation
-        result = h2Sink.executeQuery(TestUtils.getCheckDataTypeFromTableSql(mainTableName, incomeName));
-        Assertions.assertEquals("INTEGER", result.get(0).get("DATA_TYPE"));
+        dataType = TestUtils.getCheckDataTypeFromTableSql(h2Sink.connection(), testDatabaseName, testSchemaName, mainTableName, incomeName);
+        Assertions.assertEquals("INTEGER", dataType);
     }
 
     @Test
