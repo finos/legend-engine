@@ -524,17 +524,15 @@ public class Handlers
                         m(h("meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> ps.size() == 3))
                 )
         );
+        register("meta::pure::dataQuality::checked_T_MANY__Checked_MANY_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.pureModel.getType("meta::pure::dataQuality::Checked"))._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"));
         register("meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.pureModel.getType("meta::pure::dataQuality::Checked"))._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"));
+        register("meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
+        register("meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.pureModel.getType("meta::pure::dataQuality::Checked"))._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"));
         register(m(
                         m(h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
                         m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                         m(h("meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()) && "AlloySerializationConfig".equals(ps.get(2)._genericType()._rawType()._name()))),
                         m(h("meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 3))
-                )
-        );
-        register(m(
-                        m(h("meta::external::shared::format::functions::externalize_Checked_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
-                        m(h("meta::external::shared::format::functions::externalize_T_MANY__Binding_1__String_1_", false, ps -> res("String", "one"), ps -> ps.size() == 2))
                 )
         );
 

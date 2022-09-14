@@ -20,16 +20,13 @@ import org.finos.legend.engine.external.format.flatdata.read.IFlatDataDeserializ
 import org.finos.legend.engine.external.format.flatdata.write.FlatDataWriter;
 import org.finos.legend.engine.external.format.flatdata.write.IFlatDataSerializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
-import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
 import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSerializeResult;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
-import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
@@ -52,7 +49,7 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
@@ -61,11 +58,9 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
             IFlatDataDeserializeExecutionNodeSpecifics<?> specifics = (IFlatDataDeserializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
             // TODO Allow size to vary when run from jar
             specifics.setMaximumSchemaObjectSize(DEFAULT_MAX_SCHEMA_OBJECT_SIZE);
+
             FlatDataContext<?> context = specifics.createContext();
-
-            InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
-
-            FlatDataReader<?> deserializer = new FlatDataReader<>(context, stream);
+            FlatDataReader<?> deserializer = new FlatDataReader<>(context, inputStream);
             return new StreamingObjectResult<>(deserializer.startStream());
         }
         catch (Exception e)
@@ -75,15 +70,13 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
-            ExecutionNode inputNode = node.executionNodes().getAny();
-            Result input = inputNode.accept(new ExecutionNodeExecutor(profiles, executionState));
             Stream inputStream = node.checked
-                    ? ExternalFormatRuntime.unwrapCheckedStream(((StreamingObjectResult) input).getObjectStream())
-                    : ((StreamingObjectResult) input).getObjectStream();
+                    ? ExternalFormatRuntime.unwrapCheckedStream(((StreamingObjectResult) result).getObjectStream())
+                    : ((StreamingObjectResult) result).getObjectStream();
 
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);

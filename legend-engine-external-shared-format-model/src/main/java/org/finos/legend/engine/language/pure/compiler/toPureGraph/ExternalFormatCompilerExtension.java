@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
@@ -23,8 +24,11 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +57,27 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
         ImmutableList<String> versions = PureClientVersions.versionsSince("v1_21_0");
         List<String> elements = versions.collect(v -> "meta::protocols::pure::" + v + "::external::shared::format::serializerExtension_String_1__SerializerExtension_1_").toList();
         return ListIterate.collect(elements, this::registerElement);
+    }
+
+    @Override
+    public List<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> getExtraFunctionExpressionBuilderRegistrationInfoCollectors()
+    {
+        return Collections.singletonList((handlers) ->
+                Lists.mutable.with(
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::externalize_Checked_MANY__Binding_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::externalize_T_MANY__Binding_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
+                                )
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "String".equals(ps.get(2)._genericType()._rawType()._name()))),
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "ByteStream".equals(ps.get(2)._genericType()._rawType()._name()))),
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__Url_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && ps.get(2)._genericType()._rawType()._name().endsWith("Url")))
+                                )
+                        )
+                ));
     }
 
     private Procedure<Procedure2<String, List<String>>> registerElement(String element)

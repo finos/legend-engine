@@ -6,15 +6,8 @@
     {
       "defects": [],
       "source": {
-        "defects": [],
-        "source": {
-          "number": 1,
-          "record": "<firm name=\"Acme Inc.\" ranking=\"2\"/>"
-        },
-        "value": {
-          "name": "Acme Inc.",
-          "ranking": 2
-        }
+        "number": 1,
+        "record": "<firm name=\"Acme Inc.\" ranking=\"2\"/>"
       },
       "value": {
         "name": "Acme Inc.",
@@ -24,15 +17,8 @@
     {
       "defects": [],
       "source": {
-        "defects": [],
-        "source": {
-          "number": 2,
-          "record": "<firm name=\"Globex Corp\"/>"
-        },
-        "value": {
-          "name": "Globex Corp",
-          "ranking": null
-        }
+        "number": 2,
+        "record": "<firm name=\"Globex Corp\"/>"
       },
       "value": {
         "name": "Globex Corp",
@@ -42,15 +28,8 @@
     {
       "defects": [],
       "source": {
-        "defects": [],
-        "source": {
-          "number": 3,
-          "record": "<firm name=\"Widget Engineering\" ranking=\"1\"/>"
-        },
-        "value": {
-          "name": "Widget Engineering",
-          "ranking": 1
-        }
+        "number": 3,
+        "record": "<firm name=\"Widget Engineering\" ranking=\"1\"/>"
       },
       "value": {
         "name": "Widget Engineering",
@@ -60,15 +39,8 @@
     {
       "defects": [],
       "source": {
-        "defects": [],
-        "source": {
-          "number": 4,
-          "record": "<firm name=\"Allied British Plastics\" ranking=\"39\"/>"
-        },
-        "value": {
-          "name": "Allied British Plastics",
-          "ranking": 39
-        }
+        "number": 4,
+        "record": "<firm name=\"Allied British Plastics\" ranking=\"39\"/>"
       },
       "value": {
         "name": "Allied British Plastics",

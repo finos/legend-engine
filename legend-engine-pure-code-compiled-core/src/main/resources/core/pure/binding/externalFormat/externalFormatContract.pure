@@ -15,8 +15,6 @@
 import meta::external::shared::format::*;
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::validation::*;
-import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::engine::*;
 import meta::external::shared::format::metamodel::*;
 import meta::external::shared::format::transformation::toPure::*;
 import meta::external::shared::format::transformation::fromPure::*;
@@ -52,7 +50,7 @@ Class meta::external::shared::format::ExternalFormatContract<T>
    externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
    internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
    
-   externalFormatPlanDescriptor     : ExternalFormatPlanDescriptor[0..1];
+   sourceRecordTree                 : RootGraphFetchTree<Any>[0..1];
 }
 
 Class meta::external::shared::format::ExternalFormatToPureDescriptor<U>
@@ -105,17 +103,6 @@ Class <<typemodifiers.abstract>> meta::external::shared::format::ExternalFormatE
 }
 
 Class <<typemodifiers.abstract>> meta::external::shared::format::ExternalFormatInternalizeConfig
-{
-
-}
-
-Class meta::external::shared::format::executionPlan::ExternalFormatPlanDescriptor
-{ 
-  sourceRecordTree           : RootGraphFetchTree<Any>[1];
-  platformBindingDescriptors : ExternalFormatPlatformBindingDescriptor[*];
-}
-
-Class meta::external::shared::format::executionPlan::engine::ExternalFormatPlatformBindingDescriptor
 {
 
 }

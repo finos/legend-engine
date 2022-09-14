@@ -283,19 +283,19 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
                   let returnedClass   = $tree.class->toOne();
 
                   assert($tree->isNotEmpty(), 'Deserialization without Graph Fetch Tree not yet supported');
-                  let deserializeNode = ^meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode
-                                        (
-                                            resultType      = ^PartialClassResultType(
-                                                                type=$returnedClass,
-                                                                propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
-                                                              ),
-                                            resultSizeRange = ZeroMany,
-                                            tree            = $tree,
-                                            binding         = $connection->cast(@meta::external::shared::format::executionPlan::ExternalFormatConnection).element->cast(@meta::external::shared::format::binding::Binding),
-                                            executionNodes  = $sourceNode
-                                        );
-
-                  meta::external::shared::format::executionPlan::generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
+                  ^meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode
+                  (
+                      resultType        = ^PartialClassResultType(
+                                            type=$returnedClass,
+                                            propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                                          ),
+                      resultSizeRange   = ZeroMany,
+                      tree              = $tree,
+                      binding           = $connection->cast(@meta::external::shared::format::executionPlan::ExternalFormatConnection).element->cast(@meta::external::shared::format::binding::Binding),
+                      executionNodes    = $sourceNode,
+                      enableConstraints = $enableConstraints,
+                      checked           = $checked
+                  );
                }
             ]->concatenate($dflt)->toOneMany())->toOne();
 }
