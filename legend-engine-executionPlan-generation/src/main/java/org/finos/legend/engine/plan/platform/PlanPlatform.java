@@ -39,9 +39,4 @@ public enum PlanPlatform
     {
         return this.platformBinder.bindPlanToPlatform(plan, planId, pureModel, extensions);
     }
-
-    org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum getPureEnumValue(PureModel pureModel)
-    {
-        return pureModel.getEnumValue("meta::pure::executionPlan::Platform", name());
-    }
 }

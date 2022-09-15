@@ -149,18 +149,6 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 
 
 
-
-function <<doc.deprecated>> meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
-{
-   meta::pure::executionPlan::generatePlatformCode($plan, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
-}
-
-function <<doc.deprecated>> meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
-{
-   assert($config.platform == Platform.JAVA, 'Platform Not Supported: ' + $config.platform.name);
-   meta::pure::executionPlan::generatePlatformCode($plan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(planId = $config.planId), $extensions, $debug);
-}
-
 function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    meta::pure::executionPlan::generatePlatformCode($plan, $platformId, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
