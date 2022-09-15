@@ -72,9 +72,7 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
           MAVEN_OPTS: -Xmx4g
         run: |
-          mvn compile -pl legend-engine-xt-persistence-component/legend-engine-xt-persistence-component-logical-plan
-          mvn compile -pl legend-engine-xt-persistence-component/legend-engine-xt-persistence-component-physical-plan
-          mvn compile -pl legend-engine-xt-persistence-component/legend-engine-xt-persistence-component-relational-core
+          mvn install -DskipTests=true
           mvn javadoc:javadoc deploy -P docker-snapshot
       - name: Upload Test Results
         if: always()
