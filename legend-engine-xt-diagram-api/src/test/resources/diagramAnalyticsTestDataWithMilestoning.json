@@ -1,0 +1,144 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Class1",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "propClass1",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Class2",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "propClass2",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "processingtemporal"
+        }
+      ]
+    },
+    {
+      "_type": "association",
+      "name": "Class12Assoc",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fromClass1",
+          "type": "model::Class1"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fromClass2",
+          "type": "model::Class2"
+        }
+      ]
+    },
+    {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "model::Class1",
+          "id": "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+          "position": {
+            "x": 360.844970703125,
+            "y": 49
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 148.748046875
+          }
+        },
+        {
+          "class": "model::Class2",
+          "id": "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+          "position": {
+            "x": 696.844970703125,
+            "y": 95
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 159.41796875
+          }
+        }
+      ],
+      "generalizationViews": [],
+      "name": "MyDiagram",
+      "package": "model",
+      "propertyViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 776.553955078125,
+                "y": 124
+              },
+              {
+                "x": 435.218994140625,
+                "y": 78
+              }
+            ]
+          },
+          "property": {
+            "class": "model::Class2",
+            "property": "fromClass1"
+          },
+          "sourceView": "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+          "targetView": "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07"
+        },
+        {
+          "line": {
+            "points": [
+              {
+                "x": 435.218994140625,
+                "y": 78
+              },
+              {
+                "x": 776.553955078125,
+                "y": 124
+              }
+            ]
+          },
+          "property": {
+            "class": "model::Class1",
+            "property": "fromClass2"
+          },
+          "sourceView": "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+          "targetView": "690e89d4-23e9-46e8-8543-c89c22cc9e15"
+        }
+      ]
+    }
+  ]
+}
