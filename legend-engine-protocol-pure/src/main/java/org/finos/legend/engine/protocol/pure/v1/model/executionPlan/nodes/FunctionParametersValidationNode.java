@@ -21,7 +21,7 @@ import java.util.List;
 public class FunctionParametersValidationNode extends ExecutionNode
 {
     public List<Variable> functionParameters;
-    public List<ValidationContext> validationContext;
+    public List<ParameterValidationContext> parameterValidationContext;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

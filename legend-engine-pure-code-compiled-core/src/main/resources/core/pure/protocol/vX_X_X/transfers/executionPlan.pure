@@ -101,7 +101,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
               _type = 'function-parameters-validation',
               resultType = $exp.resultType->transformResultType($mapping, $extensions),
               functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()))),
-              validationContext = $exp.validationContext->map(p | $p->match([
+              parameterValidationContext = $exp.parameterValidationContext->map(p | $p->match([
                                                                               e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext')
                                                                             ]))
 

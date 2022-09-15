@@ -25,12 +25,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 // NOTE: due to plan generator producing duplicated _type field, we need to enable this
 @JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class ValidationContext
+public abstract class ParameterValidationContext
 {
-    public ValidationContext()
+    public String varName;
+
+    public ParameterValidationContext()
     {
         // DO NOT DELETE: this resets the default constructor for Jackson
     }
 
-    public abstract <T> T accept(ValidationContextVisitor<T> validationContextVisitor);
+    public abstract <T> T accept(ParameterValidationContextVisitor<T> validationContextVisitor);
 }

@@ -16,13 +16,12 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
 import java.util.List;
 
-public class EnumValidationContext extends ValidationContext
+public class EnumValidationContext extends ParameterValidationContext
 {
-    public String varName;
     public List<String> validEnumValues;
 
     @Override
-    public <T> T accept(ValidationContextVisitor<T> validationContextVisitor)
+    public <T> T accept(ParameterValidationContextVisitor<T> validationContextVisitor)
     {
         return validationContextVisitor.visit(this);
     }

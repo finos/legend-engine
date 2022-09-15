@@ -136,17 +136,17 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecu
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode extends ExecutionNode
 {
    functionParameters:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[*];
-   validationContext : meta::protocols::pure::vX_X_X::metamodel::executionPlan::ValidationContext[*];
+   parameterValidationContext : meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ValidationContext
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext
 {
    _type : String[1];
+   varName: String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ValidationContext
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext
 {
-   varName: String[1];
    validEnumValues: String[*];
 }
 

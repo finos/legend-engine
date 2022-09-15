@@ -422,7 +422,7 @@ public class TestServiceRunner
     @Test
     public void testServiceWithInvalidEnumParam()
     {
-        this.testServiceExecutionWithEnumParamException("test::EnumParamEqualOpFilter", "eType", "CONTRCT", "Invalid provided parameter(s): [Value CONTRCT is not a valid enum value for test::EmployeeType]");
+        this.testServiceExecutionWithEnumParamException("test::EnumParamEqualOpFilter", "eType", "CONTRCT", "Invalid provided parameter(s): [Invalid enum value CONTRCT for test::EmployeeType, valid enum values: [CONTRACT, FULL_TIME]]");
     }
 
     @Test
