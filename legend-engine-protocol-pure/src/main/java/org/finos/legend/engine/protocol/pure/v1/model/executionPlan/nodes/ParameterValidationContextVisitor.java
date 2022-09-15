@@ -14,18 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-
-import java.util.List;
-
-public class FunctionParametersValidationNode extends ExecutionNode
+public interface ParameterValidationContextVisitor<T>
 {
-    public List<Variable> functionParameters;
-    public List<ParameterValidationContext> parameterValidationContext;
-
-    @Override
-    public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
-    {
-        return executionNodeVisitor.visit(this);
-    }
+    T visit(EnumValidationContext enumValidationContext);
 }

@@ -18,16 +18,18 @@ import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class FunctionParameterProcessor
 {
-    public static void processParameters(RichIterable<Variable> functionParameters, ExecutionState executionState)
+    public static void processParameters(RichIterable<Variable> functionParameters, List<ParameterValidationContext> parameterValidationContext, ExecutionState executionState)
     {
-        getAllVariablesProvidedAsStream(functionParameters.toList(), executionState).forEach((Variable param) -> processStreamParameter(param, executionState));
+        getAllVariablesProvidedAsStream(functionParameters.toList(), executionState).forEach((Variable param) -> processStreamParameter(param, parameterValidationContext, executionState));
     }
 
     private static RichIterable<Variable> getAllVariablesProvidedAsStream(RichIterable<Variable> functionParameters, ExecutionState executionState)
@@ -39,7 +41,7 @@ class FunctionParameterProcessor
         });
     }
 
-    private static void processStreamParameter(Variable param, ExecutionState executionState)
+    private static void processStreamParameter(Variable param, List<ParameterValidationContext> parameterValidationContext, ExecutionState executionState)
     {
         String paramName = param.name;
         try
@@ -47,7 +49,7 @@ class FunctionParameterProcessor
             Stream paramValue = (Stream) ((ConstantResult) executionState.getResult(paramName)).getValue();
             Stream updatedParamValue = paramValue.map(val ->
             {
-                ValidationResult validationResult = FunctionParametersParametersValidation.validate(param, val);
+                ValidationResult validationResult = FunctionParametersParametersValidation.validate(param, parameterValidationContext, val);
                 if (validationResult.isValid())
                 {
                     return FunctionParametersNormalizer.normalizeParameterValue(param, val);

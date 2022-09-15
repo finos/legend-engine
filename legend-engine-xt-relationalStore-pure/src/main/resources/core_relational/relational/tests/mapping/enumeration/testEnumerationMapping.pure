@@ -19,6 +19,7 @@ import meta::pure::metamodel::tds::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 
+import meta::relational::functions::asserts::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::join::*;
@@ -322,4 +323,14 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testPro
     assertEquals(['My Product', ProductSynonymType.CUSIP], $tds.rows->at(0).values);
     assertEquals(['My Product', ProductSynonymType.GS_NUMBER], $tds.rows->at(1).values);
     assertEquals(['My Product 2', ProductSynonymType.CUSIP], $tds.rows->at(2).values);
+}
+
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testProjectWithIfWhereEnumEqualsClassProp():Boolean[1]
+{
+  let result = execute(|meta::relational::tests::model::simple::Synonym.all()->project([p|if($p.type == meta::relational::tests::model::simple::ProductSynonymType.CUSIP,|$p.name,|$p.typeAsString)], ['ress']), meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+  assertSameElements(['CUSIP1', 'ISIN', 'CUSIP2', 'ISIN', 'CUSIP3', 'ISIN'], $result.values.rows.values);
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 6);
+  assertSameSQL('select case when "root".TYPE = \'CUSIP\' then "root".NAME else "root".TYPE end as "ress" from productSchema.synonymTable as "root"', $result);
 }

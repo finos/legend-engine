@@ -1,0 +1,159 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Relational
+Database test::DB
+(
+    Table employeeTable
+    (
+      ID INT PRIMARY KEY,
+      name VARCHAR(200),
+      employeeType VARCHAR(200),
+      active VARCHAR(200)
+    )
+)
+
+###Pure
+Class test::Employee
+{
+    id: Integer[1];
+    name: String[1];
+    employeeType: test::EmployeeType[0..1];
+    active: test::YesNo[0..1];
+}
+
+Enum test::EmployeeType
+{
+    CONTRACT,
+    FULL_TIME
+}
+
+Enum test::YesNo
+{
+    YES,
+    NO
+}
+
+function test::EnumParamEqualOpFilter(eType: test::EmployeeType[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|$x.employeeType == $eType)->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
+}
+
+function test::EnumParamInOpFilter(eType: test::EmployeeType[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|$x.employeeType->in($eType))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
+}
+
+function test::EnumParamNotEqualOpFilter(eType: test::EmployeeType[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|!($x.employeeType == $eType))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
+}
+
+function test::EnumParamNotInOpFilter(eType: test::EmployeeType[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|!($x.employeeType->in($eType)))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
+}
+
+function test::EnumParamIfOpFilter(yesOrNo: test::YesNo[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->project([x|$x.id, x|if($yesOrNo == test::YesNo.NO,|'InActive User',|$x.name)], ['ID', 'Name'])
+}
+
+function test::EnumParamIfOpFilterWithClassProp(yesOrNo: test::YesNo[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->project([x|$x.id, x|if($yesOrNo == $x.active,|$x.name,|'InActive User')], ['ID', 'Name'])
+}
+
+function test::IfOpFilterEnumValueWithClassProp(str: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->project([x|$x.id, x|if($x.active == test::YesNo.NO,|'InActive User',|$x.name)], ['ID', 'Name'])
+}
+
+function test::EnumParamStringParamFilters(eType: test::EmployeeType[1], eName: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|$eType == $x.employeeType)->filter(x|$x.name->in($eName))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])->distinct()
+}
+
+function test::MultipleEnumParamsInOPEqualOpFilter(eType: test::EmployeeType[1], yesOrNo: test::YesNo[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|$x.employeeType->in($eType))->filter(x|$x.active == $yesOrNo)->project([x|$x.id], ['ID'])
+}
+
+function test::MultipleEnumParamsNotInOPEqualOpFilter(eType: test::EmployeeType[1], yesOrNo: test::YesNo[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|$x.active == $yesOrNo)->filter(x|!($x.employeeType->in($eType)))->project([x|$x.id], ['ID'])
+}
+
+function test::MultipleEnumParamsNotInOPNotEqualOpFilter(eType: test::EmployeeType[1], yesOrNo: test::YesNo[1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|!($x.employeeType->in($eType)))->filter(x|$x.active != $yesOrNo)->project([x|$x.id], ['ID'])
+}
+
+###Mapping
+Mapping test::Map
+(
+  *test::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [test::DB]employeeTable.ID
+    )
+    ~mainTable [test::DB]employeeTable
+    id: [test::DB]employeeTable.ID,
+    name: [test::DB]employeeTable.name,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [test::DB]employeeTable.employeeType,
+    active : EnumerationMapping ActiveMapping : [test::DB]employeeTable.active
+  }
+
+  test::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    CONTRACT: ['FTC', 'FTO'],
+    FULL_TIME: 'FTE'
+  }
+
+  test::YesNo: EnumerationMapping ActiveMapping
+  {
+    YES: 1,
+    NO: 0
+  }
+)
+
+###Runtime
+Runtime test::Runtime
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_1:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nemployeeTable\nID,name,employeeType,active\n101,Alice,FTC,0\n102,Bob,FTE,1\n103,Curtis,FTO,0\n104,Bob,FTCC,1\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
