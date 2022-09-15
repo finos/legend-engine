@@ -60,6 +60,12 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::String;\n" +
                 "      defaultRuntime: model::Runtime;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      name: 'Context 2';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
@@ -82,6 +88,12 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "  [\n" +
                 "    {\n" +
                 "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      name: 'Context 2';\n" +
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::String;\n" +
                 "      defaultRuntime: model::Runtime;\n" +
