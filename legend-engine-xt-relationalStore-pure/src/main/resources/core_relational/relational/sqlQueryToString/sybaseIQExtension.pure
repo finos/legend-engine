@@ -30,10 +30,33 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
       joinStringsProcessor = processJoinStringsOperationForSybaseIQ_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSybaseIQ_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForSybaseIQ_String_1__DbConfig_1__String_1_,
-      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierForSybaseIQ_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processIdentifierForSybaseIQ(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->meta::relational::functions::sqlQueryToString::sybaseIQ::processIdentifierWithQuoteChar('"', $dbConfig);
+}
+
+function meta::relational::functions::sqlQueryToString::sybaseIQ::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
+{
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier) || (!$identifier->isCStyleIdentifier() && !isFreeMarkerIdentifier($identifier)),
+    | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
+    | $identifier
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::sybaseIQ::isCStyleIdentifier(identifier:String[1]):Boolean[1]
+{
+  $identifier->matches('[a-zA-Z_][a-zA-Z0-9_$]*')
+}
+
+function meta::relational::functions::sqlQueryToString::sybaseIQ::isFreeMarkerIdentifier(identifier:String[1]):Boolean[1]
+{
+  $identifier->startsWith('${')
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getLiteralProcessorsForSybaseIQ():Map<Type,LiteralProcessor>[1]
