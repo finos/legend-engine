@@ -16,6 +16,7 @@ package org.finos.legend.engine.testable.mapping.extension;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
@@ -118,7 +119,7 @@ public class MappingTestRunner implements TestRunner
         {
             for (Test test : suite.tests)
             {
-                if (testIds.isEmpty() || testIds.contains(test.id))
+                if (testIds.contains(test.id))
                 {
                     org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeMappingTest((MappingTest) test, pureMapping, pureModel, planTransformers, routerExtensions);
                     testResult.testable = getElementFullPath(pureMapping, pureModel.getExecutionSupport());
@@ -181,7 +182,7 @@ public class MappingTestRunner implements TestRunner
         {
             LambdaFunction<?> pureLambda = HelperValueSpecificationBuilder.buildLambda(test.query, new CompileContext.Builder(pureModel).build());
             SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(pureLambda, pureMapping, this.runtime, null, pureModel,this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
-            Result result = this.executor.execute(executionPlan);
+            Result result = this.executor.execute(executionPlan, Maps.mutable.empty(), null, Lists.mutable.empty());
 
             org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult;
 

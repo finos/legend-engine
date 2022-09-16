@@ -208,8 +208,8 @@ public class MappingParseTreeWalker
             Binding binding = new Binding();
             ModelUnit modelUnit = new ModelUnit();
             modelUnit.packageableElementIncludes = ((ModelStoreData) data).instances.keySet().stream().collect(Collectors.toList());
-            binding.name = "JohnDoeBinding";
-            binding._package = "default::m2m";
+            binding.name = "default__generatedBindingForTestData";
+            binding._package = "generated";
             binding.modelUnit = modelUnit;
             binding.contentType = "application/json";    //default content type
             this.section.elements.add(binding.getPath());

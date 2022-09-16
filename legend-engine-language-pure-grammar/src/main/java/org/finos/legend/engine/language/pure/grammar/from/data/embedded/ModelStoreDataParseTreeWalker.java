@@ -84,11 +84,15 @@ public class ModelStoreDataParseTreeWalker
                     PackageableElementPtr ptr = new PackageableElementPtr();
                     ptr.fullPath = ((DataElementReference) embeddedData).dataElement;
                     PackageableElementPtr bindingPtr = new PackageableElementPtr();
-                    bindingPtr.fullPath = "default::m2m::JohnDoeBinding";
+                    bindingPtr.fullPath = "generated::default__generatedBindingForTestData";
                     Pair pair = new Pair();
                     pair.first = bindingPtr;
                     pair.second = ptr;
                     instances = pair;
+                }
+                else
+                {
+                    throw new EngineException("Please provide reference of the data element (the package of the data element)");
                 }
             }
             if (result.instances.containsKey(fullPath))
