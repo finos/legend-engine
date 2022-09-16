@@ -20,22 +20,25 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ParameterValidationContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FunctionParametersParametersValidation
 {
 
-    public static void validate(RichIterable<Variable> functionParameters, ExecutionState executionState)
+    public static void validate(RichIterable<Variable> functionParameters, List<ParameterValidationContext> parameterValidationContext, ExecutionState executionState)
     {
         Map<String, Result> providedParameterValues = executionState.getResults();
         validateNoMissingMandatoryParamaters(functionParameters, providedParameterValues);
-        validateParameterValues(functionParameters, providedParameterValues);
+        validateParameterValues(functionParameters, parameterValidationContext, providedParameterValues);
         FunctionParametersNormalizer.normalizeParameters(functionParameters, executionState);
-        FunctionParameterProcessor.processParameters(functionParameters, executionState);
+        FunctionParameterProcessor.processParameters(functionParameters, parameterValidationContext, executionState);
     }
 
     private static void validateNoMissingMandatoryParamaters(RichIterable<Variable> externalParameters, Map<String, Result> providedParameterValues)
@@ -53,12 +56,12 @@ public class FunctionParametersParametersValidation
         return multiplicity.lowerBound == 0 && multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "*" : multiplicity.lowerBound == multiplicity.getUpperBoundInt() ? String.valueOf(multiplicity.lowerBound) : multiplicity.lowerBound + ".." + (multiplicity.getUpperBoundInt() == Integer.MAX_VALUE ? "*" : multiplicity.getUpperBoundInt());
     }
 
-    private static void validateParameterValues(RichIterable<Variable> externalParameters, Map<String, Result> providedParameterValues)
+    private static void validateParameterValues(RichIterable<Variable> externalParameters, List<ParameterValidationContext> parameterValidationContext, Map<String, Result> providedParameterValues)
     {
         MutableList<ValidationResult> inValidProvidedParameters = externalParameters
                 .asLazy()
                 .select(ep -> providedParameterValues.containsKey(ep.name))
-                .collect(v -> FunctionParametersParametersValidation.validate(v, ((ConstantResult) providedParameterValues.get(v.name)).getValue()))
+                .collect(v -> FunctionParametersParametersValidation.validate(v, parameterValidationContext, ((ConstantResult) providedParameterValues.get(v.name)).getValue()))
                 .reject(ValidationResult::isValid)
                 .toList();
         if (!inValidProvidedParameters.isEmpty())
@@ -67,12 +70,21 @@ public class FunctionParametersParametersValidation
         }
     }
 
-    public static ValidationResult validate(Variable var, Object value)
+    public static ValidationResult validate(Variable var, List<ParameterValidationContext> parameterValidationContext, Object value)
     {
         FunctionParameterTypeValidator validator = FunctionParameterTypeValidator.externalParameterTypeValidator(var._class);
         if (validator == null)
         {
-            return ValidationResult.errorValidationResult("Unknown external parameter type: " + var._class + ", valid external parameter types: " + FunctionParameterTypeValidator.getExternalParameterTypes().makeString("[", ", ", "]"));
+            ValidationResult result = null;
+            for (ParameterValidationContext context : parameterValidationContext.stream().filter(c -> c.varName.equals(var.name)).collect(Collectors.toList()))
+            {
+                result = context.accept(new ParameterValidationContextExecutor(var, value));
+                if (result != null && !result.isValid())
+                {
+                    return result;
+                }
+            }
+            return result == null ? ValidationResult.errorValidationResult("Unknown external parameter type: " + var._class + ", valid external parameter types: " + FunctionParameterTypeValidator.getExternalParameterTypes().makeString("[", ", ", "]")) : ValidationResult.successValidationResult();
         }
         if (value instanceof Stream)
         {

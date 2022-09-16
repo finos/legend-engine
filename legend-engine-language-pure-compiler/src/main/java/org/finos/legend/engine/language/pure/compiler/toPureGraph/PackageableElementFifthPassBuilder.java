@@ -83,7 +83,12 @@ public class PackageableElementFifthPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Mapping mapping)
     {
-        return null;
+        final org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = this.context.pureModel.getMapping(this.context.pureModel.buildPackageString(mapping._package, mapping.name), mapping.sourceInformation);
+        if (mapping.classMappings != null)
+        {
+            mapping.classMappings.forEach(cm -> cm.accept(new ClassMappingThirdPassBuilder(this.context, pureMapping)));
+        }
+        return pureMapping;
     }
 
     @Override
