@@ -2997,7 +2997,7 @@ function meta::relational::functions::pureToSqlQuery::processDynaFunction(f:Func
    let res = ^$operation(select = $state.inFilter->if(
                            | let unSupportedBiTemporalProcessing = $mergedSQL.filteringOperation->isEmpty() && $operation.milestoningContext->isNotEmpty() && $operation.milestoningContext->toOne()->isBiTemporalMilestoningTopLevelAnd($f.func);
                              if($unSupportedBiTemporalProcessing ,| $mergedSQL
-                                                                 ,| ^$mergedSQL(filteringOperation = newDynaFunction($f.func.functionName->toOne(), $mergedSQL.filteringOperation)));,
+                                                                 ,| ^$mergedSQL(filteringOperation = newDynaFunction($f.func.functionName->toOne(), if($parameterSQL->isEmpty(), | [], |$mergedSQL.filteringOperation))));,
                            | ^$mergedSQL
                              (
                                 columns = newDynaFunction($f.func.functionName->toOne(), $mergedSQL.columns)
@@ -3460,7 +3460,7 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
    let rootSelect = ^SelectWithCursor(
                        select = ^SelectSQLQuery(
                                   filteringOperation = if(isGetAll($leftSidePure),
-                                                          |[],
+                                                          |$leftSide.select.filteringOperation,
                                                           |$state.inFilter->if( | $leftSide.select.filteringOperation,
                                                                                 | let byPassedLeft = $leftSidePure->byPassRouterInfo();
                                                                                   let isDataTypeInput = $byPassedLeft.genericType.rawType->isNotEmpty() && $byPassedLeft.genericType.rawType->toOne()->instanceOf(DataType);
@@ -3770,8 +3770,13 @@ function meta::relational::functions::pureToSqlQuery::buildExistsAsJoinWithNullC
          let allColumns = $joinAliases->concatenate($existsFilter.groupBy)->removeDuplicates({a,b| $a == $b });
 
          assertFalse($joinAliases->isEmpty(),'Cant find any aliases right side of exists ->');
-
-         let existsSubSelect = ^$existsFilter(distinct=true,columns = $allColumns, extraFilteringOperation=[], groupBy=if($existsFilter.groupBy->isNotEmpty(),|$allColumns,|[]));
+         
+         let existsSubSelectFilter = if ($expression.parametersValues->size() == 1, |$rootExtraFilteringOperations, |[]);
+         let existsSubSelect = ^$existsFilter(distinct = true,
+                                              columns = $allColumns, 
+                                              extraFilteringOperation = [], 
+                                              filteringOperation = $existsFilter.filteringOperation->concatenate($existsSubSelectFilter)->andFilters($extensions), 
+                                              groupBy=if($existsFilter.groupBy->isNotEmpty(),|$allColumns,|[]));
 
          print(if(!$context.debug, |'',
                  | $context.space+'   (S)Exists condition result>  '+$existsSubSelect->printDebugQuery($context.space, $extensions)));
@@ -4952,22 +4957,22 @@ function meta::relational::functions::pureToSqlQuery::removeUnionColumnsAndJoins
 
 function meta::relational::functions::pureToSqlQuery::removeSelectColumnsAndJoins(s:SelectSQLQuery[1], ctn:RelationalTreeNode[0..1]):Pair<SelectSQLQuery, RelationalTreeNode>[1]
 {
-        let oldNode = if($s.leftSideOfFilter->isEmpty(),| $ctn,| $s.leftSideOfFilter)->toOne();
-        let newNode = $oldNode.alias.relationalElement->match([
-                                                                 u:Union[1] | let alias = $oldNode.alias;
-                                                                              let newAlias = ^$alias(relationalElement=removeUnionColumnsAndJoins($u));
-                                                                              ^$oldNode(childrenData = [], alias=$newAlias);,
-                                                                 a:Any[1] |   ^$oldNode(childrenData=[]);
-                                                             ]);
-        let newRoot = $s.data->toOne()->replaceTreeNode($oldNode, $newNode)->cast(@RootJoinTreeNode);
-        let allNodes = $newRoot->getAllNodes()->cast(@RelationalTreeNode);
-        let newSelect = ^$s(columns = [],
-                            data = $newRoot,
-                            filteringOperation = [],
-                            savedFilteringOperation = $s.savedFilteringOperation->map(p|pair(if($p.first == $oldNode,|$newNode,|$p.first), $p.second))->filter(s|$allNodes->contains($s.first)),
-                            leftSideOfFilter = [],
-                            extraFilteringOperation = []);
-        pair($newSelect, $newNode);
+  let oldNode = if($s.leftSideOfFilter->isEmpty(),| $ctn,| $s.leftSideOfFilter)->toOne();
+  let newNode = $oldNode.alias.relationalElement->match([
+                                                            u:Union[1] | let alias = $oldNode.alias;
+                                                                        let newAlias = ^$alias(relationalElement=removeUnionColumnsAndJoins($u));
+                                                                        ^$oldNode(childrenData = [], alias=$newAlias);,
+                                                            a:Any[1] |   ^$oldNode(childrenData=[]);
+                                                        ]);
+  let newRoot = $s.data->toOne()->replaceTreeNode($oldNode, $newNode)->cast(@RootJoinTreeNode);
+  let allNodes = $newRoot->getAllNodes()->cast(@RelationalTreeNode);
+  let newSelect = ^$s(columns = [],
+                      data = $newRoot,
+                      filteringOperation = [],
+                      savedFilteringOperation = $s.savedFilteringOperation->map(p|pair(if($p.first == $oldNode,|$newNode,|$p.first), $p.second))->filter(s|$allNodes->contains($s.first)),
+                      leftSideOfFilter = [],
+                      extraFilteringOperation = []);
+  pair($newSelect, $newNode);
 }
 
 function meta::relational::functions::pureToSqlQuery::removeColumnsAndJoins(query:SelectWithCursor[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
