@@ -1002,6 +1002,19 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::testJoinByColAfter
    meta::relational::functions::asserts::assertSameSQL('select "unionalias_0"."First Name" as "First Name", "unionalias_0"."Age_1" as "Age_1", "unionalias_0"."First Name_2" as "First Name_2", "unionalias_0"."Age" as "Age" from (select "unionalias_1"."First Name" as "First Name", "unionalias_1"."Age_1" as "Age_1", "unionalias_3"."First Name_2" as "First Name_2", "unionalias_3"."Age" as "Age" from (select "unionalias_2"."First Name" as "First Name", "unionalias_2"."Age_1" as "Age_1" from (select "root".FIRSTNAME as "First Name", "root".AGE as "Age_1" from personTable as "root" UNION ALL select "root".FIRSTNAME as "First Name", "root".AGE as "Age_1" from personTable as "root") as "unionalias_2") as "unionalias_1" left outer join (select "unionalias_2"."First Name_2" as "First Name_2", "unionalias_2"."Age" as "Age" from (select "root".FIRSTNAME as "First Name_2", "root".AGE as "Age" from personTable as "root" UNION ALL select "root".FIRSTNAME as "First Name_2", "root".AGE as "Age" from personTable as "root") as "unionalias_2") as "unionalias_3" on ("unionalias_1"."First Name" = "unionalias_3"."First Name_2")) as "unionalias_0"',$result);
 }
 
+function meta::relational::tests::tds::tdsJoin::twoDBRunTimeSybaseIQ():	meta::pure::runtime::Runtime[1]
+{
+   ^meta::pure::runtime::Runtime
+   (
+      connections = [^TestDatabaseConnection(
+                        element = dbInc,
+                        type=DatabaseType.SybaseIQ
+                    ),^TestDatabaseConnection(
+                        element = database2,
+                        type=DatabaseType.SybaseIQ
+                    )]
+   );
+}
 
 function meta::relational::tests::tds::tdsJoin::twoDBRunTime():	meta::pure::runtime::Runtime[1]
 {

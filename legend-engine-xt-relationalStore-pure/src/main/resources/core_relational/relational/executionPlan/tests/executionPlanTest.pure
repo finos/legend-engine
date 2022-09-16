@@ -1513,6 +1513,121 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBRenameColumns():Bo
    true;
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSpaceIdentifierSybaseIQ():Boolean[1]
+{
+    let result = executionPlan({|
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'first name'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
+        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('first name')=='Adam' &&   $f.getString('legalName')=='Firm X')
+        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, meta::relational::tests::tds::tdsJoin::twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
+
+    assertEquals('Sequence\n'+
+    '(\n'+
+     '  type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '  (\n'+
+     '    Allocation\n'+
+     '    (\n'+
+     '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '      name = tdsVar1_0\n'+
+     '      value = \n'+
+     '        (\n'+
+     '          Relational\n'+
+     '          (\n'+
+     '            type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '            resultColumns = [("first name", VARCHAR(200)), ("eID", INT)]\n'+
+     '            sql = select \"root\".FIRSTNAME as \"first name\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
+     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '          )\n'+
+     '        )\n'+
+     '    )\n'+
+     '    Relational\n'+
+     '    (\n'+
+     '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '      resultColumns = [("first name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      sql = select "tdsvar1_0_0"."first name" as "first name", "tdsvar1_0_0".eID as "eID", "tdsvar1_0_0"."fID" as "fID", "tdsvar1_0_0"."legalName" as "legalName" from (select * from (${tdsVar1_0}) as "tdsvar1_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar1_0_1".eID = "firmtable_0"."fID")) as "tdsvar1_0_0" where ("tdsvar1_0_0"."first name" = \'Adam\' and "tdsvar1_0_0"."legalName" = \'Firm X\')\n'+
+     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '    )\n'+
+     '  )\n'+
+    ')\n'
+    , $result->planToString(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestNonAlphaNumericIdentifierSybaseIQ():Boolean[1]
+{
+    let result = executionPlan({|
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'first#name'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
+        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('first#name')=='Adam' &&   $f.getString('legalName')=='Firm X')
+        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, meta::relational::tests::tds::tdsJoin::twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
+
+    assertEquals('Sequence\n'+
+    '(\n'+
+     '  type = TDS[(first#name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '  (\n'+
+     '    Allocation\n'+
+     '    (\n'+
+     '      type = TDS[(first#name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '      name = tdsVar1_0\n'+
+     '      value = \n'+
+     '        (\n'+
+     '          Relational\n'+
+     '          (\n'+
+     '            type = TDS[(first#name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '            resultColumns = [("first#name", VARCHAR(200)), ("eID", INT)]\n'+
+     '            sql = select \"root\".FIRSTNAME as \"first#name\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
+     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '          )\n'+
+     '        )\n'+
+     '    )\n'+
+     '    Relational\n'+
+     '    (\n'+
+     '      type = TDS[(first#name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '      resultColumns = [("first#name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      sql = select "tdsvar1_0_0"."first#name" as "first#name", "tdsvar1_0_0".eID as "eID", "tdsvar1_0_0"."fID" as "fID", "tdsvar1_0_0"."legalName" as "legalName" from (select * from (${tdsVar1_0}) as "tdsvar1_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar1_0_1".eID = "firmtable_0"."fID")) as "tdsvar1_0_0" where ("tdsvar1_0_0"."first#name" = \'Adam\' and "tdsvar1_0_0"."legalName" = \'Firm X\')\n'+
+     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '    )\n'+
+     '  )\n'+
+    ')\n'
+    , $result->planToString(meta::relational::extension::relationalExtensions()));
+}
+
+
+function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestAlphaNumericIdentifierSybaseIQ():Boolean[1]
+{
+    let result = executionPlan({|
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'firstname'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
+        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('firstname')=='Adam' &&   $f.getString('legalName')=='Firm X')
+        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, meta::relational::tests::tds::tdsJoin::twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
+
+    assertEquals('Sequence\n'+
+    '(\n'+
+     '  type = TDS[(firstname, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '  (\n'+
+     '    Allocation\n'+
+     '    (\n'+
+     '      type = TDS[(firstname, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '      name = tdsVar1_0\n'+
+     '      value = \n'+
+     '        (\n'+
+     '          Relational\n'+
+     '          (\n'+
+     '            type = TDS[(firstname, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '            resultColumns = [("firstname", VARCHAR(200)), ("eID", INT)]\n'+
+     '            sql = select \"root\".FIRSTNAME as \"firstname\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
+     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '          )\n'+
+     '        )\n'+
+     '    )\n'+
+     '    Relational\n'+
+     '    (\n'+
+     '      type = TDS[(firstname, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '      resultColumns = [("firstname", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      sql = select "tdsvar1_0_0".firstname as "firstname", "tdsvar1_0_0".eID as "eID", "tdsvar1_0_0"."fID" as "fID", "tdsvar1_0_0"."legalName" as "legalName" from (select * from (${tdsVar1_0}) as "tdsvar1_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar1_0_1".eID = "firmtable_0"."fID")) as "tdsvar1_0_0" where ("tdsvar1_0_0".firstname = \'Adam\' and "tdsvar1_0_0"."legalName" = \'Firm X\')\n'+
+     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '    )\n'+
+     '  )\n'+
+    ')\n'
+    , $result->planToString(meta::relational::extension::relationalExtensions()));
+}
+
 function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBExtend():Boolean[1]
 {
     let result = executionPlan({|
