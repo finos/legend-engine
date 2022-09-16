@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure;
 
+import java.util.Iterator;
+import java.util.ServiceLoader;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
@@ -22,13 +24,33 @@ public class PureClientVersions
 {
     public static ImmutableList<String> versions = Lists.immutable.with("v1_0_0", "v1_1_0", "v1_2_0", "v1_3_0", "v1_4_0", "v1_5_0", "v1_6_0", "v1_7_0", "v1_8_0", "v1_9_0", "v1_10_0", "v1_11_0", "v1_12_0", "v1_13_0", "v1_14_0", "v1_15_0", "v1_16_0", "v1_17_0", "v1_18_0", "v1_19_0", "v1_20_0", "v1_21_0", "v1_22_0", "v1_23_0", "v1_24_0", "v1_25_0", "v1_26_0", "vX_X_X");
     public static ImmutableList<String> versionsSameCase = versions.collect(String::toLowerCase);
+    static PureClientVersionProvider pureClientVersionProvider = loadPureClientVersionProvider();
 
     static
     {
         assert !hasRepeatedVersions(versions) : "Repeated version id :" + versions.toBag().selectByOccurrences(i -> i > 1).toSet().makeString("[", ", ", "]");
     }
 
-    public static String production = "v1_26_0";
+    public static String production = pureClientVersionProvider.getActiveVersion();
+
+    private static PureClientVersionProvider loadPureClientVersionProvider()
+    {
+        PureClientVersionProvider provider;
+        Iterator<PureClientVersionProvider> providers = ServiceLoader.load(PureClientVersionProvider.class).iterator();
+        if (providers.hasNext())
+        {
+            provider = providers.next();
+            if (providers.hasNext())
+            {
+                throw new IllegalStateException("Found more than one PureClientVersionProvider in classpath");
+            }
+        }
+        else
+        {
+            provider = DefaultPureClientVersionProvider.DEFAULT_PROVIDER;
+        }
+        return provider;
+    }
 
     static boolean hasRepeatedVersions(ImmutableList<String> versions)
     {
