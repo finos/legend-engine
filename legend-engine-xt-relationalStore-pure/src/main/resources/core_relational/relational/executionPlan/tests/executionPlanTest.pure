@@ -2281,7 +2281,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionAgg(
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(FirstName, String, "", ""), (PersonCount, Integer, INT, "")]\n'+
+      '  type = TDS[(FirstName, String, VARCHAR(200), ""), (PersonCount, Integer, INT, "")]\n'+
       '  resultColumns = [("FirstName", ""), ("PersonCount", "")]\n'+
       '  sql = select substring("root".fullname, 0, LOCATE(\' \', "root".fullname)) as "FirstName", count(substring("root".fullname, (LOCATE(\' \', "root".fullname) + 1), char_length("root".fullname))) as "PersonCount" from SPerson as "root" group by "FirstName"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -2838,4 +2838,19 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWi
   assertSameElements([], $employeesTree.constraintsExclusions);
   assertSameElements(['duplicateEmployee'], $innerFirmTree.constraintsExclusions);
 
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testGroupByWithGroupingOnConstantColumn():Boolean[1]
+{
+   let generatedPlan = executionPlan({|Address.all()->groupBy([x | 'constant'], [agg(x | $x.name, y | $y->count())], ['Constant', 'Constant Count'])}, simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Relational\n' +
+            '(\n' +
+            '  type = TDS[(Constant, String, VARCHAR(8), \"\"), (Constant Count, Integer, INT, \"\")]\n' +
+            '  resultColumns = [(\"Constant\", \"\"), (\"Constant Count\", \"\")]\n' +
+            '  sql = select \'constant\' as \"Constant\", count(\"root\".NAME) as \"Constant Count\" from addressTable as \"root\" group by \"Constant\"\n' +
+            '  connection = TestDatabaseConnection(type = \"H2\")\n' +
+            ')\n';
+   assertEquals($expected, $result);
+   assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
