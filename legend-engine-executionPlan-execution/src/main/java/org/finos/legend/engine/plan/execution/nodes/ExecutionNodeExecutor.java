@@ -62,8 +62,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Functi
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.GraphFetchM2MExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.MultiResultSequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PlatformMergeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PlatformUnionExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.PureExpressionPlatformExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SequenceExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.VariableResolutionExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
@@ -106,6 +109,41 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(ExecutionNode executionNode)
     {
+        if (executionNode instanceof PlatformUnionExecutionNode)
+        {
+            List<StreamingObjectResult<?>> streamingObjectResults = ListIterate.collect(executionNode.executionNodes, node -> (StreamingObjectResult<?>) node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
+
+            Result childResult = new Result("success")
+            {
+                @Override
+                public <T> T accept(ResultVisitor<T> resultVisitor)
+                {
+                    throw new RuntimeException("Not implemented");
+                }
+
+                @Override
+                public void close()
+                {
+                    streamingObjectResults.forEach(StreamingObjectResult::close);
+                }
+            };
+
+            return new StreamingObjectResult<>(streamingObjectResults.stream().flatMap(StreamingObjectResult::getObjectStream), streamingObjectResults.get(0).getResultBuilder(), childResult);
+        }
+        else if (executionNode instanceof PlatformMergeExecutionNode)
+        {
+            return executionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+        }
+        else if (executionNode instanceof VariableResolutionExecutionNode)
+        {
+            Result res = executionState.getResult(((VariableResolutionExecutionNode) executionNode).varName);
+            if (res == null)
+            {
+                throw new RuntimeException("Expected result for variable : " + ((VariableResolutionExecutionNode) executionNode).varName + ". No result found !");
+            }
+            return res;
+        }
+
         return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
     }
 
@@ -150,7 +188,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(FunctionParametersValidationNode functionParametersValidationNode)
     {
-        FunctionParametersParametersValidation.validate(Lists.immutable.withAll(functionParametersValidationNode.functionParameters), this.executionState);
+        FunctionParametersParametersValidation.validate(Lists.immutable.withAll(functionParametersValidationNode.functionParameters), functionParametersValidationNode.parameterValidationContext, this.executionState);
         return new ConstantResult(true);
     }
 

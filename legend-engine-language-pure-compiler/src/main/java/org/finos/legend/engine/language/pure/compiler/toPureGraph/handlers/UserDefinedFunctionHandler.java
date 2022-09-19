@@ -14,14 +14,15 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.Dispatch;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ReturnInference;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 
 public class UserDefinedFunctionHandler extends FunctionHandler
 {
-    public UserDefinedFunctionHandler(String name, Function<?> func, ReturnInference returnInference, Dispatch dispatch)
+    public UserDefinedFunctionHandler(PureModel pureModel, String name, Function<?> func, ReturnInference returnInference, Dispatch dispatch)
     {
-        super(name, func, returnInference, dispatch);
+        super(pureModel, name, func, returnInference, dispatch);
     }
 }

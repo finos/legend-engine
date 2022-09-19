@@ -127,10 +127,52 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testSimpleServiceForOptionalDateTimeWithTimeZone()
+    {
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTimeWithTZ", "optionalDateTimeWithTZ", "2012-05-20T03:10:52.501", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+    }
+
+    @Test
     public void testSimpleServiceForOptionalBoolean()
     {
         this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", true, "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}", "[]");
         this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", false, "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalString_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalCityMany", "optionalCity", Arrays.asList("New York","Dallas"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalInteger_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalAgeMany", "optionalAge", Arrays.asList(25,35), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalFloat_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalSalaryMany", "optionalSalary", Arrays.asList(80000.75,75000.75), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"salary\":75000.75}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDate_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalDobMany", "optionalDate", Arrays.asList("1982-01-20","1997-12-16"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"dob\":\"1997-12-16\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDateTimeWithNoTZ_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithNoTZMany", "optionalDateTime", Arrays.asList("2005-03-15T18:47:52", "2012-05-20T13:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
+    }
+
+    @Test
+    public void testSimpleServiceForOptionalDateTimeWithTZ_Many()
+    {
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithTZMany", "optionalDateTime", Arrays.asList("2005-03-15T08:47:52", "2012-05-20T03:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
     }
 
     @Test
@@ -309,6 +351,155 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
         String result1 = simpleRelationalServiceRunner.run(serviceRunnerInput1);
         Assert.assertEquals("{\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\"},{\"name\":\"First Name\",\"type\":\"String\"},{\"name\":\"Last Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[1,\"f1\",\"l1\"]}]}", result1);
+    }
+
+    private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
+    {
+        private String argName;
+
+        EnumParamServiceRunner(String fetchFunction, String argName)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/enumServiceParameter.pure", fetchFunction), true);
+            this.argName = argName;
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
+                    .withParameter(this.argName, serviceRunnerInput.getArgs().get(0))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private void testServiceExecutionWithEnumParam(String fetchFunction, String argName, Object parameter, String expectedResult)
+    {
+        EnumParamServiceRunner enumParamServiceRunner = new EnumParamServiceRunner(fetchFunction, argName);
+        ServiceRunnerInput serviceRunnerInputWithEnumParameter = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(parameter))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = enumParamServiceRunner.run(serviceRunnerInputWithEnumParameter);
+        Assert.assertEquals(expectedResult, result);
+    }
+
+    private void testServiceExecutionWithEnumParamException(String fetchFunction, String argName, Object parameter, String expectedResult)
+    {
+        EnumParamServiceRunner enumParamServiceRunner = new EnumParamServiceRunner(fetchFunction, argName);
+        ServiceRunnerInput serviceRunnerInputWithEnumParameter = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(parameter))
+                .withSerializationFormat(SerializationFormat.PURE);
+        Exception e = Assert.assertThrows(RuntimeException.class, () -> enumParamServiceRunner.run(serviceRunnerInputWithEnumParameter));
+        Assert.assertEquals(expectedResult, e.getMessage());
+    }
+
+    @Test
+    public void testServiceWithEnumParamEqualOpFilter()
+    {
+        this.testServiceExecutionWithEnumParam("test::EnumParamEqualOpFilter", "eType", "FULL_TIME", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[102,\"Bob\",\"FULL_TIME\"]}]}");
+    }
+
+    @Test
+    public void testServiceWithEnumParamInOpFilter()
+    {
+        this.testServiceExecutionWithEnumParam("test::EnumParamInOpFilter", "eType", "CONTRACT", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]}]}");
+    }
+
+    @Test
+    public void testServiceWithEnumParamNotEqualOpFilter()
+    {
+        this.testServiceExecutionWithEnumParam("test::EnumParamNotEqualOpFilter", "eType", "CONTRACT", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[102,\"Bob\",\"FULL_TIME\"]},{\"values\":[104,\"Bob\",null]}]}");
+    }
+
+    @Test
+    public void testServiceWithEnumParamNotInOpFilter()
+    {
+        this.testServiceExecutionWithEnumParam("test::EnumParamNotInOpFilter", "eType", "FULL_TIME", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]},{\"values\":[104,\"Bob\",null]}]}");
+    }
+
+    @Test
+    public void testServiceWithInvalidEnumParam()
+    {
+        this.testServiceExecutionWithEnumParamException("test::EnumParamEqualOpFilter", "eType", "CONTRCT", "Invalid provided parameter(s): [Invalid enum value CONTRCT for test::EmployeeType, valid enum values: [CONTRACT, FULL_TIME]]");
+    }
+
+    @Test
+    public void testServiceWithEnumParamIfOpFilter()
+    {
+        this.testServiceExecutionWithEnumParam("test::EnumParamIfOpFilter", "yesOrNo", "NO", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"InActive User\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"InActive User\"]}]}");
+    }
+
+    @Test
+    public void testServiceWithEnumParamIfOpFilterWithClassProp()
+    {
+        this.testServiceExecutionWithEnumParam("test::EnumParamIfOpFilterWithClassProp", "yesOrNo", "YES", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
+    }
+
+    @Test
+    public void testServiceWithIfOpFilterEnumValueWithClassProp()
+    {
+        this.testServiceExecutionWithEnumParam("test::IfOpFilterEnumValueWithClassProp", "str", "random", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
+    }
+
+    private static class EnumMultipleParamServiceRunner extends AbstractServicePlanExecutor
+    {
+        private String argName1;
+        private String argName2;
+
+        EnumMultipleParamServiceRunner(String fetchFunction, String argName1, String argName2)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/enumServiceParameter.pure", fetchFunction), true);
+            this.argName1 = argName1;
+            this.argName2 = argName2;
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            List<String> args = (List<String>) serviceRunnerInput.getArgs().get(0);
+            newExecutionBuilder()
+                    .withParameter(this.argName1, args.get(0))
+                    .withParameter(this.argName2, args.get(1))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private void testServiceExecutionWithMultipleEnumParam(String fetchFunction, String argName1, String argName2, Object parameter, String expectedResult)
+    {
+        EnumMultipleParamServiceRunner enumMultipleParamServiceRunner = new EnumMultipleParamServiceRunner(fetchFunction, argName1, argName2);
+        ServiceRunnerInput serviceRunnerInputWithEnumParameter = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(parameter))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = enumMultipleParamServiceRunner.run(serviceRunnerInputWithEnumParameter);
+        Assert.assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testServiceWithEnumParamStringParamFilters()
+    {
+        this.testServiceExecutionWithMultipleEnumParam("test::EnumParamStringParamFilters", "eType", "eName", Arrays.asList("CONTRACT", "Alice"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]}]}");
+    }
+
+    @Test
+    public void testServiceWithMultipleEnumParamsInOPEqualOpFilter()
+    {
+        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsInOPEqualOpFilter", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "NO"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[]}");
+    }
+
+    @Test
+    public void testServiceWithMultipleEnumParamsNotInOPEqualOpFilter()
+    {
+        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsNotInOPEqualOpFilter", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "YES"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[{\"values\":[104]}]}");
+    }
+
+    @Test
+    public void testServiceWithMultipleEnumParamsNotInOPNotEqualOpFilter()
+    {
+        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsNotInOPNotEqualOpFilter", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "YES"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[{\"values\":[101]},{\"values\":[103]}]}");
     }
 
     @Test

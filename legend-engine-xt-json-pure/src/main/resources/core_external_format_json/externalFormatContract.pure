@@ -1,0 +1,59 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::binding::validation::*;
+import meta::external::format::json::contract::*;
+import meta::external::format::json::executionPlan::*;
+import meta::external::format::json::executionPlan::engine::java::*;
+import meta::external::format::json::metamodel::*;
+import meta::external::format::json::metamodel::internalize::*;
+import meta::external::format::json::transformation::fromPure::*;
+import meta::external::format::json::transformation::toPure::*;
+
+import meta::external::shared::format::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+
+import meta::pure::extension::*;
+
+import meta::pure::mapping::modelToModel::*;
+
+function meta::external::format::json::contract::jsonSchemaFormatContract(): ExternalFormatContract<JsonSchema>[1]
+{
+   ^ExternalFormatContract<JsonSchema>
+   (
+      id                               = 'JSON',
+      contentTypes                     = 'application/json',
+
+      externalFormatMetamodel          = JsonSchema,
+
+      externalFormatToPureDescriptor   = jsonSchemaToPureDescriptor(),
+      externalFormatFromPureDescriptor = jsonSchemaFromPureDescriptor(),
+      externalFormatBindingValidator   = bindDetails_Binding_1__BindingDetail_1_,
+
+      internalizeConfig                = JsonSchemaInternalizeConfig,
+      sourceRecordTree                 = #{JsonDataRecord {number, record}}#
+   )
+}
+
+function meta::external::format::json::extension::jsonSchemaFormatExtension(): Extension[1]
+{
+   ^Extension
+   (
+      type                     = 'External Format - JsonSchema',
+      availableExternalFormats = jsonSchemaFormatContract(),
+
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = externalFormatLegendJavaPlatformBinding(jsonSchemaJavaBindingDescriptor())
+   )
+}

@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.extern
 
 import java.util.List;
 
+@Deprecated
 public class JsonProtocolExtension implements PureProtocolExtension
 {
     @Override

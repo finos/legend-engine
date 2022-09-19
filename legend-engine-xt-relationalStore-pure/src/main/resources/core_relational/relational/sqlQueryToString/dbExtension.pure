@@ -421,21 +421,24 @@ function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLS
 function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], dbTimeZone:String[0..1]): String[1]
 {
    let noPropertyPath              = $v.propertyPath->isEmpty();
+   let optionalHandler             = if($v->isOptionalPlaceHolder() && $noPropertyPath,|'![]',|'');
    let placeHolderWithPath         = $v.name+if($noPropertyPath,|'',|'.')+$v.propertyPath->map(p|$p.name)->joinStrings('.');
    let resolvedPlaceHolder         = if($type == String,
                                            | $placeHolderWithPath->convertStringToSQLString(),
-                                           | $placeHolderWithPath);
+                                           | $placeHolderWithPath) + $optionalHandler;
 
    let isPossibleDateTimeType      = [Date, DateTime]->contains($v.type);
    let possiblyApplyDateTzFunction = if($isPossibleDateTimeType,| processDatePlaceHolder($resolvedPlaceHolder, $dbTimeZone),| $resolvedPlaceHolder);
 
    if($v->isCollectionPlaceHolder(),
       |if($resolvedPlaceHolder == $possiblyApplyDateTzFunction,
-         |'${renderCollection('+$resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"'+ $suffix + '\" ' + placeHolderDefaultValue() +')}',
-         |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+$dbTimeZone->toOne()+']" '+ '\",\" \"' + $prefix + '\" \"'+ $suffix + '\" ' + placeHolderDefaultValue() +')}'),
-      |if($v.multiplicity->isNotEmpty() && $v.multiplicity->toOne()->isZeroOne() && $resolvedPlaceHolder == $possiblyApplyDateTzFunction,
-          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + '![] ' + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
-          |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix)
+         |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}',
+         |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'),
+      |if($v->isOptionalPlaceHolder(),
+          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
+          |if($type->instanceOf(Enumeration),
+              |$prefix + '\'${'+$possiblyApplyDateTzFunction+'}\'' + $suffix,
+              |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix))
       );
 }
 
@@ -456,25 +459,34 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getPr
 function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:Extension[*]):String[1]
 {
    let freeMarkerOpMap = getFreeMarkerOperationMap();
-   let res = $freeMarkerOpMap->get($freeMarkerOp.name);
+   let opMapRes = $freeMarkerOpMap->get($freeMarkerOp.name);
+   let res = if($opMapRes->isEmpty() && $freeMarkerOp.name->contains('enumMap_'),
+                | ^ToSql(format= $freeMarkerOp.name + '(%s)'),
+                | $opMapRes);
+
    assert($res->isNotEmpty(),  | $freeMarkerOp.name + 'freeMarker Operation is not supported!');
 
    let processedParams = $freeMarkerOp.parameters->map(p | $p->match([
                                                                f:FreeMarkerOperationHolder[1] | $f->processFreeMarkerOperationHolder($dbConfig, $format, $generationState, $config, true, $extensions);,
-                                                               l:Literal[1]                   | $l.value->match([v:VarPlaceHolder[1] | if($v.multiplicity->isNotEmpty() && $v.multiplicity->toOne()->isZeroOne(), |$v.name + '![]', |$v.name);,
+                                                               l:Literal[1]                   | $l.value->match([v:VarPlaceHolder[1] | if($v->isOptionalPlaceHolder(), |$v.name + '![]', |$v.name);,
                                                                                                                  a:Any[1]            | $a->toString();]),
                                                                a:RelationalOperationElement[1]| '\'' + $a->processOperation($dbConfig, $format, $generationState, $config, $extensions)->replace('\'', '\\\'') + '\'';
    ]));
    let params = if($res.transform->isEmpty(), | $processedParams, | $res.transform->toOne()->eval($processedParams));
 
-   if($nestedFreeMarkerOperationHolder, |format($res->toOne().format, $params), |'(${' + format($res->toOne().format, $params) + '})');
+   if($nestedFreeMarkerOperationHolder,
+      |format($res->toOne().format, $params),
+      |if($freeMarkerOp.name->contains('enumMap_') || $freeMarkerOp.name == 'equalEnumOpSelector',
+        |'${' + format($res->toOne().format, $params) + '}',
+        |'(${' + format($res->toOne().format, $params) + '})'));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::getFreeMarkerOperationMap():Map<String, ToSql>[1]
 {
    let freeMarkerOpMap = [
       pair('variableCollectionSize', ^ToSql(format='collectionSize(%s)')),
-      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)'))
+      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)')),
+      pair('equalEnumOpSelector', ^ToSql(format='equalEnumOperationSelector(%s, %s, %s)'))
    ]->newMap();
 }
 
@@ -490,6 +502,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let isNonSystemTz = $dbTimeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($dbTimeZone->toOne());
    if($isNonSystemTz,|'GMTtoTZ( "['+$dbTimeZone->toOne()+']" '+$dateParameter+')'
                     ,| $dateParameter);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::isOptionalPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
+{
+   $v.multiplicity->isNotEmpty() && eq($v.multiplicity->toOne()->meta::pure::functions::multiplicity::getLowerBound(), 0);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isCollectionPlaceHolder(v:VarPlaceHolder[1]):Boolean[1]
@@ -607,7 +624,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                                                                                                                      );
                                                                                          );
                                                           );,
-                       rOp: RelationalOperationElement[1] | 'not ' + $rOp->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc)
+                       rOp: RelationalOperationElement[1] | if($rOp->instanceOf(FreeMarkerOperationHolder) && $rOp->cast(@FreeMarkerOperationHolder).name == 'equalEnumOpSelector',
+                                                                | let params = $rOp->cast(@FreeMarkerOperationHolder).parameters;
+                                                                  '${equalEnumOperationSelector(' + $params->at(0)->cast(@FreeMarkerOperationHolder).name + '(' + $params->at(0)->cast(@FreeMarkerOperationHolder).parameters->cast(@Literal).value->cast(@VarPlaceHolder).name->toOne() + '), \'' + processNotIn($params->at(1)->cast(@DynaFunction), $sgc) + '\', \'' + processNotEqual($params->at(2)->cast(@DynaFunction), $sgc) + '\')}';,
+                                                                | 'not ' + $rOp->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc));
                     ]);
 }
 
@@ -620,9 +640,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let processedRight = $processedParams->at(1);
    let orNull =   if($left->instanceOf(Literal) && $right->instanceOf(Literal),
                      | '',
-                     | if(!$left->instanceOf(Literal) && $right->instanceOf(Literal),
+                     | if(!$left->instanceOf(Literal) && ($right->instanceOf(Literal) || $right->instanceOf(FreeMarkerOperationHolder)),
                           |' OR ' + $processedLeft + ' is null',
-                          |if ($left->instanceOf(Literal) && !$right->instanceOf(Literal),
+                          |if (($left->instanceOf(Literal) || $left->instanceOf(FreeMarkerOperationHolder)) && !$right->instanceOf(Literal),
                                |' OR ' + $processedRight + ' is null',
                                | ' OR ' + $processedLeft + ' is null' + ' AND ' + $processedRight + ' is not null' + ' OR ' + $processedLeft + ' is not null' + ' AND ' + $processedRight + ' is null'
                               )

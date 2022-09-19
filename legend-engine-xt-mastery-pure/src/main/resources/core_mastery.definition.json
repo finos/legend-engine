@@ -1,0 +1,5 @@
+{
+    "name" : "core_mastery",
+    "pattern" : "(meta::pure::mastery)(::.*)?",
+    "dependencies" : ["platform", "core"]
+}

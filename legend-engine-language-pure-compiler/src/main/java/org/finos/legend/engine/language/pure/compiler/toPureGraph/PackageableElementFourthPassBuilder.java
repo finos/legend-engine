@@ -68,7 +68,17 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
     @Override
     public PackageableElement visit(Enumeration _enum)
     {
-        return null;
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<?> targetEnum = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<?>)this.context.pureModel.getType(this.context.pureModel.buildPackageString(_enum._package, _enum.name), _enum.sourceInformation);
+
+        if (targetEnum._generalizations().isEmpty())
+        {
+            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))
+                    ._general(this.context.pureModel.getGenericType("meta::pure::metamodel::type::Any"))
+                    ._specific(targetEnum);
+            targetEnum._generalizationsAdd(g);
+        }
+
+        return targetEnum;
     }
 
     @Override
@@ -109,7 +119,9 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
 
         if (targetClass._generalizations().isEmpty())
         {
-            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("")._general(this.context.pureModel.getGenericType("meta::pure::metamodel::type::Any"))._specific(targetClass);
+            Generalization g = new Root_meta_pure_metamodel_relationship_Generalization_Impl("", null, this.context.pureModel.getClass("meta::pure::metamodel::relationship::Generalization"))
+                                ._general(this.context.pureModel.getGenericType("meta::pure::metamodel::type::Any"))
+                                ._specific(targetClass);
             targetClass._generalizationsAdd(g);
         }
 

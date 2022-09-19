@@ -71,6 +71,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveTy
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
+import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.PackageableMultiplicity;
@@ -98,12 +99,14 @@ import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.finos.legend.pure.runtime.java.compiled.metadata.ClassCache;
 import org.finos.legend.pure.runtime.java.compiled.metadata.FunctionCache;
+import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataLazy;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -113,7 +116,7 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = LoggerFactory.getLogger("Alloy Execution Server");
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
-    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName));
+    private static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories().select(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_")).collect(CodeRepository::getName));
     private final CompiledExecutionSupport executionSupport;
     private final DeploymentMode deploymentMode;
     private final PureModelProcessParameter pureModelProcessParameter;
@@ -141,24 +144,31 @@ public class PureModel implements IPureModel
     final MutableMap<String, Root_meta_pure_runtime_PackageableRuntime> packageableRuntimesIndex = Maps.mutable.empty();
     final MutableMap<String, Runtime> runtimesIndex = Maps.mutable.empty();
 
+    public static final PureModel CORE_PURE_MODEL = getCorePureModel();
+
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode)
     {
-        this(pure, pm, null, deploymentMode, new PureModelProcessParameter());
+        this(pure, pm, null, deploymentMode, new PureModelProcessParameter(), null);
     }
 
-    public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this(pure, pm, null, deploymentMode, pureModelProcessParameter);
+        this(pure, pm, null, deploymentMode, pureModelProcessParameter, metaData);
     }
 
     public PureModel(PureModelContextData pure, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode)
     {
-        this(pure, pm, classLoader, deploymentMode, new PureModelProcessParameter());
+        this(pure, pm, classLoader, deploymentMode, new PureModelProcessParameter(), null);
     }
 
-    public PureModel(PureModelContextData pureModelContextData, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter)
+    public PureModel(PureModelContextData pureModelContextData, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this.extensions = CompilerExtensions.fromAvailableExtensions();
+        this(pureModelContextData, CompilerExtensions.fromAvailableExtensions(), pm, classLoader, deploymentMode, pureModelProcessParameter, metaData);
+    }
+
+    public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
+    {
+        this.extensions = extensions;
         List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = this.extensions.getExtraPostValidators();
 
         if (classLoader == null)
@@ -173,7 +183,7 @@ public class PureModel implements IPureModel
             console.disable();
             this.executionSupport = new CompiledExecutionSupport(
                     new JavaCompilerState(null, classLoader),
-                    new CompiledProcessorSupport(classLoader, new MetadataWrapper(this.root, METADATA_LAZY, this), Sets.mutable.empty()),
+                    new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
                     null,
                     new PureCodeStorage(null, new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(
                             CodeRepository.newPlatformCodeRepository(),
@@ -187,6 +197,11 @@ public class PureModel implements IPureModel
                     null,
                     Sets.mutable.empty()
             );
+
+            this.typesIndex.put("Package", this.executionSupport.getMetadataAccessor().getClass("Package"));
+            this.immutables.add("Package");
+            this.modifyRootClassifier();
+
             registerElementsForPathToElement();
 
             long start = System.currentTimeMillis();
@@ -212,7 +227,6 @@ public class PureModel implements IPureModel
             scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
 
             // Processing
-
             PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
 
             // First pass -> ensure all packageable elements are resolved as early as possible.
@@ -289,9 +303,33 @@ public class PureModel implements IPureModel
         catch (Exception e)
         {
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
-            // TODO: we need to have a better strategy to throw compilation error instead of the generic exeception
+            // TODO: we need to have a better strategy to throw compilation error instead of the generic exception
             throw e;
         }
+    }
+
+    private static PureModel getCorePureModel()
+    {
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), null, null, null, new PureModelProcessParameter(), null);
+    }
+
+    private void modifyRootClassifier()
+    {
+        try
+        {
+            Field f = Package_Impl.class.getDeclaredField("classifier");
+            f.setAccessible(true);
+            f.set(this.root, this.typesIndex.get("Package"));
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Package getRoot()
+    {
+        return root;
     }
 
     public void addWarnings(Iterable<Warning> warnings)
@@ -429,6 +467,7 @@ public class PureModel implements IPureModel
 
         // Fourth pass - qualifiers
         pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
+        pure.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
         pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
     }
@@ -456,6 +495,8 @@ public class PureModel implements IPureModel
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
+        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+
     }
 
     public void loadConnectionsAndRuntimes(PureModelContextDataIndex pure)
@@ -783,12 +824,13 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile getProfile_safe(String fullPath)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(fullPath);
+        String pathWithTypeReference = addPrefixToTypeReference(fullPath);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile = this.profilesIndex.get(pathWithTypeReference);
         if (profile == null)
         {
             try
             {
-                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + fullPath);
+                profile = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile) executionSupport.getMetadata("meta::pure::metamodel::extension::Profile", "Root::" + pathWithTypeReference);
             }
             catch (Exception e)
             {
@@ -796,7 +838,7 @@ public class PureModel implements IPureModel
             }
             if (profile != null)
             {
-                this.profilesIndex.put(fullPath, profile);
+                this.profilesIndex.put(pathWithTypeReference, profile);
             }
         }
         return profile;
@@ -939,7 +981,7 @@ public class PureModel implements IPureModel
 
     public GenericType getGenericType(Type type)
     {
-        return this.typesGenericTypeIndex.getIfAbsentPut(buildTypeId(type), () -> new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(type));
+        return this.typesGenericTypeIndex.getIfAbsentPut(buildTypeId(type), () -> new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(type));
     }
 
     public String buildTypeId(Type type)
@@ -1061,9 +1103,9 @@ public class PureModel implements IPureModel
                 ._upperBound(multiplicity.isInfinite() ? new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("") : new Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl("")._value((long) multiplicity.getUpperBoundInt()));
     }
 
-    public static GenericType buildFunctionType(MutableList<VariableExpression> parameters, GenericType returnType, Multiplicity returnMultiplicity)
+    public static GenericType buildFunctionType(MutableList<VariableExpression> parameters, GenericType returnType, Multiplicity returnMultiplicity, PureModel pureModel)
     {
-        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(new Root_meta_pure_metamodel_type_FunctionType_Impl("")._parameters(parameters)._returnType(returnType)._returnMultiplicity(returnMultiplicity));
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(new Root_meta_pure_metamodel_type_FunctionType_Impl("", null, pureModel.getClass("meta::pure::metamodel::type::FunctionType"))._parameters(parameters)._returnType(returnType)._returnMultiplicity(returnMultiplicity));
     }
 
     public String buildPackageString(String pack, String name)
@@ -1114,7 +1156,7 @@ public class PureModel implements IPureModel
             {
                 throw new EngineException("Can't create package with reserved name '" + name + "'");
             }
-            child = new Package_Impl(name)._name(name)._package(parent);
+            child = new Package_Impl(name, null, this.getClass("Package"))._name(name)._package(parent);
             parent._childrenAdd(child);
         }
 

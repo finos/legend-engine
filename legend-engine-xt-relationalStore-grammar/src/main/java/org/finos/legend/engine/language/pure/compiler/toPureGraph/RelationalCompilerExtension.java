@@ -117,7 +117,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 {
                     org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name);
 
-                    database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")
+                    database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                             ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
 
                     context.pureModel.storesIndex.put(context.pureModel.buildPackageString(srcDatabase._package, srcDatabase.name), database);
@@ -169,7 +169,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         if (classMapping.mainTable != null)
                         {
                             Relation pureTable = HelperRelationalBuilder.getRelation(classMapping.mainTable, context);
-                            mainTableAlias = new Root_meta_relational_metamodel_TableAlias_Impl("")
+                            mainTableAlias = new Root_meta_relational_metamodel_TableAlias_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableAlias"))
                                     ._relationalElement(pureTable)
                                     ._database(HelperRelationalBuilder.resolveDatabase(classMapping.mainTable.getDb(), classMapping.mainTable.sourceInformation, context));
                         }
@@ -184,7 +184,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         }
                         if (!classMapping.groupBy.isEmpty())
                         {
-                            res._groupBy(new Root_meta_relational_mapping_GroupByMapping_Impl("")._columns(groupByColumns));
+                            res._groupBy(new Root_meta_relational_mapping_GroupByMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::GroupByMapping"))._columns(groupByColumns));
                         }
                         MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings = Lists.mutable.empty();
                         MutableMap<String, TableAlias> tableAliasesMap = Maps.mutable.empty();
@@ -208,11 +208,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                             if (tables.size() == 1 && databases.size() == 1)
                             {
-                                mainTableAlias = new Root_meta_relational_metamodel_TableAlias_Impl("");
+                                mainTableAlias = new Root_meta_relational_metamodel_TableAlias_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableAlias"));
                                 mainTableAlias._relationalElement(tables.toList().getFirst());
                                 mainTableAlias._database(databases.toList().getFirst());
                                 res._mainTableAlias(mainTableAlias);
-                                HelperRelationalBuilder.enhanceEmbeddedMappingsWithRelationalOperationElement(embeddedRelationalPropertyMappings, res);
+                                HelperRelationalBuilder.enhanceEmbeddedMappingsWithRelationalOperationElement(embeddedRelationalPropertyMappings, res, context);
                             }
                         }
 
@@ -305,7 +305,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (associationMapping instanceof RelationalAssociationMapping)
                     {
                         RelationalAssociationMapping relationalAssociationImplementation = (RelationalAssociationMapping) associationMapping;
-                        RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("");
+                        RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::RelationalAssociationImplementation"));
                         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(relationalAssociationImplementation.association, associationMapping.sourceInformation);
                         MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings = Lists.mutable.empty();
                         MutableList<Store> stores = ListIterate.collect(relationalAssociationImplementation.stores, context::resolveStore);
@@ -332,7 +332,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
-                        Root_meta_pure_alloy_connections_RelationalDatabaseConnection relational = new Root_meta_pure_alloy_connections_RelationalDatabaseConnection_Impl("");
+                        Root_meta_pure_alloy_connections_RelationalDatabaseConnection relational = new Root_meta_pure_alloy_connections_RelationalDatabaseConnection_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::RelationalDatabaseConnection"));
                         HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
@@ -411,9 +411,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                             ? table._columns().select(c -> c instanceof Column).collect(c -> (Column) c).detect(c -> c._name().equals(col))
                             : null
                     ).select(Objects::nonNull);
-                    fksByTable.put(table, new Root_meta_pure_functions_collection_List_Impl("")._values(columns));
+                    fksByTable.put(table, new Root_meta_pure_functions_collection_List_Impl("", null, context.pureModel.getClass("meta::pure::functions::collection::List"))._values(columns));
                 });
-                return new Root_meta_relational_runtime_RelationalExecutionContext_Impl("")
+                return new Root_meta_relational_runtime_RelationalExecutionContext_Impl("", null, context.pureModel.getClass("meta::relational::runtime::RelationalExecutionContext"))
                         ._queryTimeOutInSeconds(relationalContext.queryTimeOutInSeconds)
                         ._enableConstraints(relationalContext.enableConstraints)
                         ._addDriverTablePkForProject(relationalContext.addDriverTablePkForProject)
@@ -520,8 +520,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             if (valueSpecification instanceof DatabaseInstance)
             {
                 DatabaseInstance databaseInstance = (DatabaseInstance) valueSpecification;
-                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
-                        ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("")._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
+                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                        ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::relational::metamodel::Database")))
                         ._multiplicity(context.pureModel.getMultiplicity("one"))
                         ._values(Lists.mutable.with(context.resolveStore(databaseInstance.fullPath, databaseInstance.sourceInformation)));
             }
@@ -538,7 +538,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             {
                 MapperPostProcessor mapper = (MapperPostProcessor) processor;
 
-                Root_meta_pure_alloy_connections_MapperPostProcessor p = HelperRelationalDatabaseConnectionBuilder.createMapperPostProcessor(mapper);
+                Root_meta_pure_alloy_connections_MapperPostProcessor p = HelperRelationalDatabaseConnectionBuilder.createMapperPostProcessor(mapper, context);
 
                 PostProcessorWithParameter f =
                         core_relational_relational_runtime_connection_postprocessor.Root_meta_pure_alloy_connections_tableMapperPostProcessor_MapperPostProcessor_1__PostProcessorWithParameter_1_(p, context.pureModel.getExecutionSupport());
@@ -565,7 +565,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     {
         return Lists.mutable.with((strategy, context) ->
         {
-            AuthenticationStrategyBuilder authenticationStrategyBuilder = new AuthenticationStrategyBuilder();
+            AuthenticationStrategyBuilder authenticationStrategyBuilder = new AuthenticationStrategyBuilder(context);
             return strategy.accept(authenticationStrategyBuilder);
         });
     }

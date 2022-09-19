@@ -31,12 +31,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.xml.XmlDeserializeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.external.format.xml.XmlSerializeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 
+@Deprecated
 public class XmlExecutionExtension implements ExecutionExtension
 {
     @Override
@@ -75,13 +77,25 @@ public class XmlExecutionExtension implements ExecutionExtension
             IXmlDeserializeExecutionNodeSpecifics specifics = (IXmlDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
             InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
-            String location = ExecutionHelper.locationFromSourceNode(node.executionNodes().getFirst());
+            String location = locationFromSourceNode(node.executionNodes().getFirst());
             XmlReader<?> deserializer = new XmlReader(specifics, stream, location);
             return new StreamingObjectResult<>(deserializer.startStream());
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private String locationFromSourceNode(ExecutionNode executionNode)
+    {
+        if (executionNode instanceof UrlStreamExecutionNode)
+        {
+            return ((UrlStreamExecutionNode) executionNode).url;
+        }
+        else
+        {
+            throw new IllegalStateException("Unsupported child node type for external formats: " + executionNode.getClass().getSimpleName());
         }
     }
 }

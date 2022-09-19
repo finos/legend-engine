@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.11.1-SNAPSHOT</version>
+        <version>3.16.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-xt-protobuf-protocol</artifactId>
@@ -44,6 +44,7 @@
                                 <argument>meta::external::format::protobuf::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.protobuf3.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
+                                <argument>meta::external::format::protobuf::metamodel::ProtobufSchema</argument>
                             </arguments>
                             <classpathScope>test</classpathScope>
                         </configuration>

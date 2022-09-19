@@ -38,15 +38,15 @@ public class RelationalEmbeddedDataCompiler
         if (embeddedData instanceof RelationalCSVData)
         {
             RelationalCSVData relationalData = (RelationalCSVData) embeddedData;
-            Root_meta_relational_metamodel_data_RelationalCSVData data_relationalData = new Root_meta_relational_metamodel_data_RelationalCSVData_Impl("");
+            Root_meta_relational_metamodel_data_RelationalCSVData data_relationalData = new Root_meta_relational_metamodel_data_RelationalCSVData_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::data::RelationalCSVData"));
             MutableMap<String, List<String>> schemaTableMap = Maps.mutable.empty();
-            data_relationalData._tables(ListIterate.collect(relationalData.tables, t -> compileTable(t, schemaTableMap)));
+            data_relationalData._tables(ListIterate.collect(relationalData.tables, t -> compileTable(t, schemaTableMap, context)));
             return data_relationalData;
         }
         return null;
     }
 
-    public static Root_meta_relational_metamodel_data_RelationalCSVTable compileTable(RelationalCSVTable element, MutableMap<String, List<String>> schemaTableMap)
+    public static Root_meta_relational_metamodel_data_RelationalCSVTable compileTable(RelationalCSVTable element, MutableMap<String, List<String>> schemaTableMap, CompileContext context)
     {
         if (schemaTableMap.get(element.schema) != null)
         {
@@ -61,7 +61,7 @@ public class RelationalEmbeddedDataCompiler
         {
             schemaTableMap.put(element.schema, Lists.mutable.with(element.table));
         }
-        Root_meta_relational_metamodel_data_RelationalCSVTable table = new Root_meta_relational_metamodel_data_RelationalCSVTable_Impl("");
+        Root_meta_relational_metamodel_data_RelationalCSVTable table = new Root_meta_relational_metamodel_data_RelationalCSVTable_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::data::RelationalCSVTable"));
         table._table(element.table);
         table._schema(element.schema);
         table._values(element.values);

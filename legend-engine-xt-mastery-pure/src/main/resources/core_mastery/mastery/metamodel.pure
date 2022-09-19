@@ -1,0 +1,147 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class {doc.doc = 'Defines a Master Record and all configuration required for managing it in a mastering platform.'}
+meta::pure::mastery::metamodel::MasterRecordDefinition extends PackageableElement
+{
+  {doc.doc = 'The class of data that is managed in this Master Record.'}
+  modelClass : meta::pure::metamodel::type::Class<Any>[1];
+
+  {doc.doc = 'The identity resolution configuration used to identify a record in the master store using the inputs provided, the inputs usually do not contain the primary key.'}
+  identityResolution : meta::pure::mastery::metamodel::identity::IdentityResolution[1];
+
+  {doc.doc = 'Defines how child collections should compare objects for equality, required for collections that contain objects that do not have an equality key stereotype defined.'}
+  collectionEquality: meta::pure::mastery::metamodel::identity::CollectionEquality[0..*];
+  
+  {doc.doc = 'The sources of records to be loaded into the master.'}
+  sources: meta::pure::mastery::metamodel::RecordSource[0..*];
+}
+
+
+Class <<typemodifiers.abstract>> {doc.doc='A source of data records to be curated into the master, by specifying the connection RecordSource can be from a File, Kafka, Alloy Service (Pull API) or RESTful (Push API).'}
+meta::pure::mastery::metamodel::RecordSource
+{
+  {doc.doc='A unique ID defined for the source that is used by the operational control plane to trigger and manage the resulting sourcing session.'}
+  id: String[1];
+
+  {doc.doc='Depending on the liveStatus certain controls are introduced, for example a Production status introduces warnings on mopdel changes that are not backwards compatible.'}
+  status: meta::pure::mastery::metamodel::RecordSourceStatus[1];
+  
+  {doc.doc='Description of the RecordSource suitable for end users.'}
+  description: String[1];
+
+  {doc.doc='Sources have at least one partition to support parameters (e.g. filename), schedules and SLOs that may vary for the different functional partitions in which the data is delivered. (For e.g. see Bloomberg equity files)'}
+  partitions: meta::pure::mastery::metamodel::RecordSourcePartition[1..*];
+  
+  {doc.doc='An optional service that converts raw data into a SourceModel, e.g. commonly used to parse CSVs into a Legend model defined in Studio.'}
+  parseService: meta::legend::service::metamodel::Service[0..1]; 
+
+  {doc.doc='A service that returns teh source data in the class defined for the MasterRecordDefinition, this can be a model-to-model transformation from a SourceModel or a Legend Service that extracts the data from any source supported by Legend.'}
+  transformService: meta::legend::service::metamodel::Service[1];
+  
+  {doc.doc='Indicates if the data has to be processed sequentially, e.g. a delta source on Kafka that provides almost realtime changes, a record may appear more than once so processing in order is important.'}
+  sequentialData: Boolean[0..1];
+
+  {doc.doc='The data must be loaded fully into a staging store before beginning processing, e.g. the parse and transform into the SourceModel groups records that may be anywhere in the file and they need to be processed as an atomic SourceModel.'}
+  stagedLoad: Boolean[0..1]; 
+  
+  {doc.doc='Determines if the source will create a new record if the incoming data does not resolve to an existing record.'}
+  createPermitted: Boolean[0..1];
+
+  {doc.doc='If the source is not permitted to create a record determine if an exception should be rasied.'}
+  createBlockedException: Boolean[0..1];
+
+  {doc.doc='A collection of tags used to label the source, typically used to classify the data loaded e.g. an asset class, region, etc...'}
+  tags: String[*];
+}
+
+Class {doc.doc='A functional partion of a RecordSource splitting a source into logical sections, this is a common practice for many data vendors (see Bloomberg Equity File). Partions can have different parameters (e.g. filename), schedules and SLOs.'}
+meta::pure::mastery::metamodel::RecordSourcePartition
+{
+  {doc.doc='A unique ID defined for the partition that is used by the operational control plane to trigger and manage the resulting sourcing session.'}
+  id: String[1];
+
+  {doc.doc='A collection of tags used to label the partition, typically used to classify the data loaded e.g. an asset class, region, etc...'}
+  tags: String[*]; 
+}
+
+Enum {doc.doc = 'Release status used to apply controls on models and configuration to preserve lineage and provenance.'}
+meta::pure::mastery::metamodel::RecordSourceStatus 
+{
+  Development,
+  TestOnly,
+  Production,
+  Dormant,
+  Decommissioned
+}
+
+
+/*************************
+ * Resolution and Equality
+ *************************/
+
+Class {doc.doc = 'Defines how to resolve a single incoming record to match a single record in the master store, handling cases when the primary key is not provided in the input and defines the scope of uniqueness to prevent the creation of duplicate records.'}
+meta::pure::mastery::metamodel::identity::IdentityResolution
+{
+  {doc.doc = 'The master record class that this identity resolution applies to. (May be used outside of a MasterRecordDefinition so cannot infer.)'}
+  modelClass : Class<Any>[1];
+
+  {doc.doc = 'The set of queries used to identify a single record in the master store. Not required if the Master record has a single equality key field defined (using model stereotypes) that is not generated.'}
+  resolutionQueries : meta::pure::mastery::metamodel::identity::ResolutionQuery[0..*];
+}
+
+Class {doc.doc = 'Defines queries used for identity resolution to identify a master record instance to update and prevent duplicates from being created.'}
+meta::pure::mastery::metamodel::identity::ResolutionQuery
+{
+  {doc.doc='Expressions that refer to attributes used to generate queries that are executed on the master store.'}
+  queries : meta::pure::metamodel::function::LambdaFunction<{Any[1],StrictDate[0..1]->Any[*]}>[1..*]; //TODO in compiler check that parameter and return type are of same type, via subclass of LambdaFunction?
+  
+  {doc.doc='The key type used to define influences how to generate queries issued against the store and validate the results of query execution.'}
+  keyType : meta::pure::mastery::metamodel::identity::ResolutionKeyType[1];
+
+  {doc.doc='The query precedence applied when there are more than one ResoultionQuery definitions on an IdentityResolution, 1 is hiughest.'}
+  precedence : Integer[1];
+}
+
+Enum {doc.doc = 'Types of resolution keys.'}
+meta::pure::mastery::metamodel::identity::ResolutionKeyType
+{
+  {doc.doc = 'Validated against equality key (defined as model stereotypes) to ensure it is an actual PK and fail resolution if the field is provided and a single match is not found.'}
+  GeneratedPrimaryKey,
+
+  {doc.doc = 'Validated against equality key (defined as model stereotypes) to ensure it is an an actual PK and create a new record if a match is not found.'}
+  SuppliedPrimaryKey,
+
+  {doc.doc = 'If an AlternateKey is specified then at least one is required in the input record or resolution fails, if supplied data has a curationModel filed specified and it is "Create" then the input source is attempting to create a new record (e.g. from UI) therefore block if existing record found.'}
+  AlternateKey, 
+
+  {doc.doc = 'Used for matching to records in the store if supplied but no validation is applied.'}
+  Optional
+}
+
+
+Class {doc.doc='Defines how child collections should compare objects for equality, required for collections that contain objects that do not have a primary key defined (by an equality key stereotype on the model).'}
+meta::pure::mastery::metamodel::identity::CollectionEquality 
+{
+  {doc.doc = 'The class of data that the equality function is applied to when it exists in a collection.'}
+  modelClass : meta::pure::metamodel::type::Class<Any>[1];
+
+  {doc.doc = 'The functions applied to elements in the collection, if all functions return true then the objects are equal.'}
+  equalityFunctions: meta::pure::metamodel::function::LambdaFunction<{Any[1],Any[1]->Boolean[1]}>[1];
+
+  //{doc.doc = 'The path of the collection for which the equality functions apply, this enables the same class to have different equality functions in different collections in a model. (Will be added when a use case is found and when PropertyPathElement is supported in Studio.)'}
+  //collectionPath: meta::pure::metamodel::path::PropertyPathElement[1];
+}
+
+

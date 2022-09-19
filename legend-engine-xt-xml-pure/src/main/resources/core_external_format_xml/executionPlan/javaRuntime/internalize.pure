@@ -1,0 +1,288 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::xml::binding::validation::*;
+import meta::external::format::xml::executionPlan::*;
+import meta::external::format::xml::executionPlan::model::*;
+import meta::external::format::xml::executionPlan::engine::java::*;
+import meta::external::format::xml::executionPlan::engine::java::internalize::*;
+import meta::external::format::xml::metamodel::*;
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::transform::*;
+
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::validation::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::executionPlan::engine::*;
+import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::metamodel::*;
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+
+import meta::pure::extension::*;
+
+import meta::pure::graphFetch::*;
+
+import meta::pure::metamodel::serialization::grammar::*;
+
+
+// ========================================================================================================================================================
+// Descriptor
+// ========================================================================================================================================================
+
+function meta::external::format::xml::executionPlan::engine::java::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
+{
+  ^ExternalFormatInternalizeBindingDescriptor
+  (
+    internalizeGenerator  = {node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]| generateForInternalize($node, $path, $context, $debug)}
+  );
+}
+
+// ========================================================================================================================================================
+// Generate
+// ========================================================================================================================================================
+
+function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+{
+   print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for XSD\n', |''));
+
+   let stream             = j_parameter(javaInputStream(), 'stream');
+   let rootClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let dependentClasses   = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($rootClass);
+   let readableClasses    = $rootClass->concatenate($dependentClasses);
+
+   // TODO [internalize] proper XML binding
+   let bindingDetail      = ^meta::external::shared::format::binding::validation::SuccessfulBindingDetail(fetchMappedPropertiesForClass={cl:meta::pure::metamodel::type::Class<Any>[1]|$context.typeInfos->allProperties($cl)});
+
+   let rootClassProject   = $rootClass->createDataClassesProject($bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
+   let project            = if($dependentClasses->isEmpty(),
+                              | $rootClassProject,
+                              | $rootClassProject->concatenate($dependentClasses->map(dc | $dc->createDataClassesProject($bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=false, topLevelOnly=true), $debug->indent())))->toOneMany()->mergeProjects()
+                              );
+   let readerClass        = createReaderClass($node, $path, $context);
+
+   $project->addClasses($readerClass)->generatedCode($readerClass);
+}
+
+function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::createReaderClass(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conventions = $context.conventions;
+   let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let ctxParam    = j_parameter(javaParameterizedType($conventions->className(_DeserializeContext), javaWildcard()), 'context');
+
+   $context.conventions->readerClass($path, $rootClass)
+      ->implements($conventions->className(_IXmlDeserializeExecutionNodeSpecifics))
+      ->addReadNoSchemaMethod($ctxParam, $node, $path, $context);
+}
+
+function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::addReadNoSchemaMethod(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conventions = $context.conventions;
+   let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+
+   $jc->addMethod(cls|
+           javaMethod('public', javaVoid(), 'read', $ctxParam,
+              j_new(
+                 $conventions->className(h_Document),
+                 j_new(
+                    $conventions->className(h_AnySurroundingElements),
+                    j_this($jc)->j_invoke($context.conventions->elementMethodName($rootClass), [$ctxParam, j_long(1), j_long(1), j_null()], $conventions->className(h_Element))
+                 )
+              )->j_invoke('process', $ctxParam)
+           )
+        )
+        ->addMethods(c| $c->createClassElementNoSchemaMethods($ctxParam, $rootClass, [], $path, $context));
+}
+
+Class <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::PropertyCodes
+{
+   elementVar    : Code[1];
+   elementInit   : Code[1];
+   attributeVar  : Code[0..1];
+   attributeInit : Code[0..1];
+   calledMethods : meta::external::language::java::metamodel::Method[*];
+
+   elementDeclare()   { $this.elementVar->j_declare($this.elementInit); }: Code[1];
+   attributeDeclare() { $this.attributeVar->map(v| $v->j_declare($this.attributeInit->toOne())); }: Code[0..1];
+}
+
+function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::createClassElementNoSchemaMethods(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], class:meta::pure::metamodel::type::Class<Any>[1], property:Property<Nil,Any|*>[0..1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[*]
+{
+   let conventions = $context.conventions;
+   let reverseProp = if($property->isNotEmpty() && $property.owner->toOne()->instanceOf(Association),
+                        | $property.owner->cast(@Association).properties->filter(p| $p != $property)->toOne(),
+                        | []
+                     );
+
+   let dataClass   = $conventions->dataClass($class, $path);
+   let factory     = $dataClass->j_field('FACTORY', $conventions->className(_IExternalDataFactory));
+
+   let propertyCodes = $context.typeInfos->allProperties($class)
+      ->filter(p| $p != $reverseProp)
+      ->map({p|
+         let propType  = $p->functionReturnType().rawType->toOne();
+         if($propType->instanceOf(meta::pure::metamodel::type::Class),
+            {|
+               let propClass  = $propType->cast(@meta::pure::metamodel::type::Class<Any>);
+               let getAdder   = $dataClass->j_invoke('_getAdderForProperty', j_string($p.name->toOne()), $conventions->className(_ExternalDataAdder))->j_cast($conventions->className(_ExternalDataObjectAdder));
+               let propOccurs = occursFromMultiplicity($p.multiplicity);
+               let elementVar = j_variable($conventions->className(h_Element), $conventions->identifier($p.name->toOne() + 'Element'));
+
+               ^PropertyCodes(
+                  elementVar    = $elementVar,
+                  elementInit   = j_this($jc)->j_invoke($context.conventions->elementMethodName($propClass), [$ctxParam, $propOccurs.first, $propOccurs.second, $getAdder], $conventions->className(h_Element)),
+                  calledMethods = createClassElementNoSchemaMethods($jc, $ctxParam, $propClass, $p, $path, $context)
+               );
+            },
+            | $p->codePrimitivePropertyNoSchema($dataClass, $ctxParam, $context)
+         );
+   });
+
+   let minOccursParam = j_parameter(javaLong(), 'minOccurs');
+   let maxOccursParam = j_parameter(javaLong(), 'maxOccurs');
+   let adderParam     = j_parameter($conventions->className(_ExternalDataObjectAdder), 'adder');
+
+   let classElementVar     = j_variable($conventions->className(h_Element), '_element');
+   let classElementName    = j_conditional($adderParam->j_eq(j_null()),
+                                j_string($class.name->toOne()),
+                                $adderParam->j_invoke('getPropertyName', [], javaString())
+                             );
+   let classElementParams  = [$minOccursParam, $maxOccursParam, $classElementName, $factory, $adderParam];
+   let classElementDeclare = $classElementVar->j_declare(
+                                j_conditional($maxOccursParam->j_le(j_long(1)),
+                                   $conventions->className(h_Element)->j_invoke('ofLenient', $classElementParams, $conventions->className(h_Element)),
+                                   $conventions->className(h_FlexCollectionElement)->j_invoke('ofLenient', $classElementParams, $conventions->className(h_Element))
+                                )
+                             );
+   let withAttrsAdded      = $propertyCodes.attributeVar->fold({v, c| $c->j_invoke('add', $v, $conventions->className(h_Element))}, $classElementVar);
+
+   let elementVars         = $propertyCodes.elementVar;
+   let choiceVar           = j_variable($conventions->className(h_Choice), '_choice');
+   let choiceOf            = $conventions->className(h_Choice)->j_invoke('of', [j_long(0), javaLongMax()]);
+   let choiceWithElements  = $elementVars->fold({v, c| $c->j_invoke('add', $v, $conventions->className(h_Choice))}, $choiceOf);
+   let choiceDeclare       = if($elementVars->isEmpty(),
+                                | [],
+                                | $choiceVar->j_declare($choiceWithElements)
+                             );
+   let withChoiceAdded     = if($elementVars->isEmpty(),
+                                | $withAttrsAdded,
+                                | $withAttrsAdded->j_invoke('add', $choiceVar, $conventions->className(h_Element))
+                             );
+
+   javaMethod('private', $conventions->className(h_Element), $conventions->elementMethodName($class), [$ctxParam, $minOccursParam, $maxOccursParam, $adderParam],
+      $propertyCodes.attributeDeclare
+         ->concatenate($propertyCodes.elementDeclare)
+         ->concatenate($choiceDeclare)
+         ->concatenate($classElementDeclare)
+         ->concatenate(j_return($withChoiceAdded))
+   )->concatenate($propertyCodes.calledMethods)->removeDuplicatesBy(m| $m.name);
+}
+
+function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::codePrimitivePropertyNoSchema(prop:Property<Nil,Any|*>[1], dataClass:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], context:GenerationContext[1]): PropertyCodes[1]
+{
+   let conventions = $context.conventions;
+   let pureDate    = $conventions->className(PureDate);
+
+   let attributeVar = j_variable($conventions->className(h_Attribute), $conventions->identifier($prop.name->toOne() + 'Attribute'));
+   let elementVar   = j_variable($conventions->className(h_Element), $conventions->identifier($prop.name->toOne() + 'Element'));
+   let pOccurs      = occursFromMultiplicity($prop.multiplicity);
+
+   let propType  = $prop->functionReturnType().rawType->toOne();
+   let javaType  = $conventions->pureTypeToJavaType($prop);
+   let itemType  = if($javaType->isJavaList(), |$javaType->elementType(), |$javaType)->toUnboxed();
+
+   let getAdder  = $dataClass->j_invoke('_getAdderForProperty', j_string($prop.name->toOne()), $conventions->className(_ExternalDataAdder));
+   let addTo     = if($propType->instanceOf(meta::pure::metamodel::type::Enumeration),
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddEnumToObject), [$dataClass, $itemType]);
+                         let simpleTypeHandler = $ctxParam->j_invoke('stringSimpleTypeHandler', [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaString()));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler, $itemType->j_field('class')]);
+                      },
+                      |
+                   if($itemType == javaBoolean(),
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddBooleanToObject), $dataClass);
+                         let simpleTypeHandler = $ctxParam->j_invoke('booleanSimpleTypeHandler', [], $conventions->className(_BooleanSimpleTypeHandler));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler]);
+                      },
+                      |
+                   if($itemType == javaLong(),
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddLongToObject), $dataClass);
+                         let simpleTypeHandler = $ctxParam->j_invoke('longSimpleTypeHandler', [], $conventions->className(_LongSimpleTypeHandler));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler]);
+                      },
+                      |
+                   if($itemType == javaDouble(),
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddDoubleToObject), $dataClass);
+                         let simpleTypeHandler = $ctxParam->j_invoke('doubleSimpleTypeHandler', [], $conventions->className(_DoubleSimpleTypeHandler));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler]);
+                      },
+                      |
+                   if($itemType == javaString(),
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddObjectToObject), [$dataClass, javaString()]);
+                         let simpleTypeHandler = $ctxParam->j_invoke('stringSimpleTypeHandler', [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaString()));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler]);
+                      },
+                      |
+                   if($itemType == $pureDate,
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddObjectToObject), [$dataClass, javaTemporal()]);
+                         let simpleTypeHandler = $ctxParam->j_invoke(if($propType == StrictDate, |'dateSimpleTypeHandler', |'datetimeSimpleTypeHandler'), [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaTemporal()));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler]);
+                      },
+                      |
+                   if($itemType == javaBigDecimal(),
+                      {|
+                         let addToType         = javaParameterizedType($conventions->className(_AddObjectToObject), [$dataClass, javaBigDecimal()]);
+                         let simpleTypeHandler = $ctxParam->j_invoke('decimalSimpleTypeHandler', [], javaParameterizedType($conventions->className(_SimpleTypeHandler), javaBigDecimal()));
+                         j_new($addToType, [$getAdder, $simpleTypeHandler]);
+                      },
+                      {|
+                         fail('Unsupported type ' + $itemType->meta::external::language::java::serialization::typeToString());
+                         j_null();
+                      }
+                   )))))));
+
+   let textContentType  = javaParameterizedType($conventions->className(h_TextContent), $dataClass);
+   let textContent      = j_new($textContentType, $addTo);
+   let attributeAllowed = $prop.multiplicity == ZeroOne || $prop.multiplicity == PureOne;
+
+   ^PropertyCodes(
+      elementVar    = $elementVar,
+      elementInit   = $conventions->className(h_Element)->j_invoke('ofLenient', [$pOccurs.first, $pOccurs.second, j_string($prop.name->toOne())])->j_invoke('add', $textContent, $conventions->className(h_Element)),
+      attributeVar  = if($attributeAllowed, |$attributeVar, |[]),
+      attributeInit = if($attributeAllowed, |$conventions->className(h_Attribute)->j_invoke('ofLenient', [j_long(0), $pOccurs.second, j_string($prop.name->toOne()), $addTo]), |[])
+   );
+}
+
+function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::elementMethodName(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1]): String[1]
+{
+   'element_' + $conventions->identifier($class->elementToPath('_'));
+}
+
+function meta::external::format::xml::executionPlan::engine::java::internalize::readerClass(conventions:Conventions[1], path:String[1], cls:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->planNodeClass('public', $path, 'XmlReader_' + $conventions->identifier($cls->elementToPath('_')));
+}

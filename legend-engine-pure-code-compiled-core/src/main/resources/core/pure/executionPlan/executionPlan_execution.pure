@@ -63,7 +63,7 @@ function meta::pure::executionPlan::buildVariableTemplateString(name:String[1], 
 
 function meta::pure::executionPlan::buildVariableCollectionSizeString(name:String[1]): String[1]
 {
-   '${collectionSize('+$name+')}'
+   '${collectionSize('+$name+'![])}'
 }
 
 function meta::pure::executionPlan::allNodes(node: ExecutionNode[1], extensions:meta::pure::extension::Extension[*]): ExecutionNode[*]

@@ -41,10 +41,12 @@ import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
+import meta::pure::functions::collection::*;
 
 function meta::pure::executionPlan::tests::templateFunctionsList():String[*]
 {
    ['<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>',
+    '<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(",")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>', 
     '<#function collectionSize collection> <#return collection?size?c> </#function>',
     '<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause></#if></#function>',
     '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix></#if></#function>'];
@@ -80,12 +82,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root"."time" as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root"."active" = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root"."active" = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root"."time" as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root"."active" = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root"."active" = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "SybaseIQ")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.SybaseIQ, $expectedPlan);                     
 }
 
@@ -103,12 +104,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "DB2")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-                                   
    assertPlanGenerationForOptionalParameter(DatabaseType.DB2, $expectedPlan);
 }
 
@@ -126,12 +126,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Sybase")\n'+
                      '    )\n'+
                      '  )\n'+
-                     ')\n'; 
-   
+                     ')\n';
    assertPlanGenerationForOptionalParameter(DatabaseType.Sybase, $expectedPlan); 
 }
 
@@ -149,12 +148,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "MemSQL")\n'+
                      '    )\n'+
                      '  )\n'+
-                     ')\n'; 
-   
+                     ')\n';
    assertPlanGenerationForOptionalParameter(DatabaseType.MemSQL, $expectedPlan);
 }
 
@@ -172,12 +170,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Snowflake")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.Snowflake, $expectedPlan);
 }
 
@@ -195,12 +192,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "" "" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "" "" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Presto")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.Presto, $expectedPlan);
 }
 
@@ -218,12 +214,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Redshift")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.Redshift, $expectedPlan);
 }
 
@@ -241,12 +236,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "BigQuery")\n'+
                      '    )\n'+
                      '  )\n'+
-                     ')\n'; 
-   
+                     ')\n';
    assertPlanGenerationForOptionalParameter(DatabaseType.BigQuery, $expectedPlan);
 }
 
@@ -264,12 +258,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Composite")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.Composite, $expectedPlan);
 }
 
@@ -287,12 +280,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Hive")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.Hive, $expectedPlan);
 }
 
@@ -310,12 +302,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "Text\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = Text\\\'Y\\\' then Text\\\'true\\\' else Text\\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "Boolean\\\'" "\\\'" "null")}\', \'case when "root".active = Text\\\'Y\\\' then Text\\\'true\\\' else Text\\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "Text\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = Text\\\'Y\\\' then Text\\\'true\\\' else Text\\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "Boolean\\\'" "\\\'" "null")}\', \'case when "root".active = Text\\\'Y\\\' then Text\\\'true\\\' else Text\\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "Postgres")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.Postgres, $expectedPlan);
 }
 
@@ -333,12 +324,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![]  "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![]  "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select "root".time as "Time" from interactionTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'"root".ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'"root".ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when "root".active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "H2")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameter(DatabaseType.H2, $expectedPlan);
 }
 
@@ -357,12 +347,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '    (\n'+
                   '      type = TDS[(Name, String, VARCHAR(200), "")]\n'+
                   '      resultColumns = [("Name", VARCHAR(200))]\n'+
-                  '      sql = select "root".NAME as "Name" from addressTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'"root".STREET = ${varPlaceHolderToString(optionalStreet![]  "\\\'" "\\\'" "null")}\', \'"root".STREET is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'${varPlaceHolderToString(optionalStreet![]  "\\\'" "\\\'" "null")} = "root".STREET\', \'"root".STREET is null\')}))\n'+
+                  '      sql = select "root".NAME as "Name" from addressTable as "root" where ((${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'"root".STREET = ${varPlaceHolderToString(optionalStreet![] "\\\'" "\\\'" "null")}\', \'"root".STREET is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalStreet![], \'${varPlaceHolderToString(optionalStreet![] "\\\'" "\\\'" "null")} = "root".STREET\', \'"root".STREET is null\')}))\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
@@ -385,12 +374,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalPnl![], \'"orderPnlView_d#2_d#2_m5".pnl = ${varPlaceHolderToString(optionalPnl![]  "" "" "null")}\', \'"orderPnlView_d#2_d#2_m5".pnl is null\')})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalPnl![], \'"orderPnlView_d#2_d#2_m5".pnl = ${varPlaceHolderToString(optionalPnl![] "" "" "null")}\', \'"orderPnlView_d#2_d#2_m5".pnl is null\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
@@ -413,13 +401,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("age", INT), ("lastName", VARCHAR(200))]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalAge![], \'"root".AGE = ${varPlaceHolderToString(optionalAge![]  "" "" "null")}\', \'"root".AGE is null\')})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalAge![], \'"root".AGE = ${varPlaceHolderToString(optionalAge![] "" "" "null")}\', \'"root".AGE is null\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
@@ -442,21 +428,18 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Location | simpleRelationalMappingInc.meta_relational_tests_model_simple_Location)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("place", VARCHAR(200)), ("censusdate", DATE)]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".PLACE as "place", "root".date as "censusdate" from locationTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalCensusDate![], \'"root".date = ${varPlaceHolderToString(optionalCensusDate![]  "\\\'" "\\\'" "null")}\', \'"root".date is null\')})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".PLACE as "place", "root".date as "censusdate" from locationTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalCensusDate![], \'"root".date = ${varPlaceHolderToString(optionalCensusDate![] "\\\'" "\\\'" "null")}\', \'"root".date is null\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithNoTimeZone():Boolean[1]
 {
-   let connectionWithNoTimeZone = ^TestDatabaseConnection(element = db, type=DatabaseType.H2);
-   let runtime = ^Runtime(connections = $connectionWithNoTimeZone);
-   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
@@ -472,25 +455,39 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                   '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(optionalSettlementDateTime![]  "\\\'" "\\\'" "null")}\', \'"root".settlementDateTime is null\')})\n'+
-                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(optionalSettlementDateTime![] "\\\'" "\\\'" "null")}\', \'"root".settlementDateTime is null\')})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
-function <<test.Test, test.ToFix>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithTimeZone():Boolean[1]
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameterDateTimeWithTimeZone():Boolean[1]
 {
-   // VarPlaceHolder logic for DateTime datatype when timeZone is provided is not handled when its multiplicity has lowerBound as Zero.
-   // Should return a SQL that can handle the case when DateTime variable with TimeZone does not have a value during execution.
-   let connectionEST = ^TestDatabaseConnection(element = db, type=DatabaseType.H2, timeZone='US/Arizona');
-   let runtime = ^Runtime(connections = $connectionEST);
-   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalSettlementDateTime:DateTime[0..1]|Order.all()->filter(o|$o.settlementDateTime == $optionalSettlementDateTime)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
-   false;
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalSettlementDateTime:DateTime[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where (${optionalVarPlaceHolderOperationSelector(optionalSettlementDateTime![], \'"root".settlementDateTime = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalSettlementDateTime![]) "\\\'" "\\\'" "null")}\', \'"root".settlementDateTime is null\')})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEquals($expected, $result);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwoOptionalParametersString():Boolean[1]
@@ -511,7 +508,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![]  "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(optionalRight![]  "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![] "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(optionalRight![] "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
@@ -538,7 +535,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalIntLeft![], optionalVarPlaceHolderOperationSelector(optionalIntRight![], \'${varPlaceHolderToString(optionalIntLeft![]  "" "" "null")} = ${varPlaceHolderToString(optionalIntRight![]  "" "" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalIntRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalIntLeft![], optionalVarPlaceHolderOperationSelector(optionalIntRight![], \'${varPlaceHolderToString(optionalIntLeft![] "" "" "null")} = ${varPlaceHolderToString(optionalIntRight![] "" "" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalIntRight![], \'1 = 0\', \'1 = 1\'))})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
@@ -565,12 +562,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalFloatLeft![], optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'${varPlaceHolderToString(optionalFloatLeft![]  "" "" "null")} = ${varPlaceHolderToString(optionalFloatRight![]  "" "" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalFloatLeft![], optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'${varPlaceHolderToString(optionalFloatLeft![] "" "" "null")} = ${varPlaceHolderToString(optionalFloatRight![] "" "" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalFloatRight![], \'1 = 0\', \'1 = 1\'))})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
@@ -593,21 +589,18 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalDateLeft![], optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'${varPlaceHolderToString(optionalDateLeft![]  "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(optionalDateRight![]  "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalDateLeft![], optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'${varPlaceHolderToString(optionalDateLeft![] "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(optionalDateRight![] "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalDateRight![], \'1 = 0\', \'1 = 1\'))})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwoOptionalParametersDateTimeWithNoTimeZone():Boolean[1]
 {
-   let connectionWithNoTimeZone = ^TestDatabaseConnection(element = db, type=DatabaseType.H2);
-   let runtime = ^Runtime(connections = $connectionWithNoTimeZone);
-   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
    let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    let expected = 'Sequence\n'+
                   '(\n'+
@@ -623,17 +616,42 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwo
                   '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
                   '      resultSizeRange = *\n'+
                   '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
-                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![]  "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(optionalRight![]  "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
-                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(optionalLeft![] "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(optionalRight![] "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
-
    assertEquals($expected, $result);
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
-function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithTwoOptionalParameterDateTimeWithTimeZone():Boolean[1]
+{
+   let generatedPlan = executionPlan({optionalLeft: DateTime[0..1], optionalRight :DateTime[0..1]|Address.all()->filter(a|$optionalLeft==$optionalRight)}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
+   let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '  resultSizeRange = *\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [optionalLeft:DateTime[0..1], optionalRight:DateTime[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = Class[impls=(meta::relational::tests::model::simple::Address | simpleRelationalMappingInc.meta_relational_tests_model_simple_Address)]\n'+
+                  '      resultSizeRange = *\n'+
+                  '      resultColumns = [("pk_0", INT), ("name", VARCHAR(200)), ("street", VARCHAR(100)), ("type", INT), ("comments", VARCHAR(100))]\n'+
+                  '      sql = select "root".ID as "pk_0", "root".NAME as "name", "root".STREET as "street", "root".TYPE as "type", "root".COMMENTS as "comments" from addressTable as "root" where (${optionalVarPlaceHolderOperationSelector(optionalLeft![], optionalVarPlaceHolderOperationSelector(optionalRight![], \'${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalLeft![]) "\\\'" "\\\'" "null")} = ${varPlaceHolderToString(GMTtoTZ( "[US/Arizona]" optionalRight![]) "\\\'" "\\\'" "null")}\', \'1 = 0\'), optionalVarPlaceHolderOperationSelector(optionalRight![], \'1 = 0\', \'1 = 1\'))})\n'+
+                  '      connection = DatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+   assertEquals($expected, $result);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_SybaseIQ():Boolean[1]
 {  
    let func = {optionalAgeLowerLimit: Integer[0..1], optionalAgeHigherLimit: Integer[0..1]|Person.all()->filter(p|$p.age>$optionalAgeLowerLimit && ($p.age<=$optionalAgeHigherLimit))->project(col(a|$a.firstName, 'firstName'))};
    let expectedPlan ='Sequence\n'+
@@ -648,13 +666,12 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThan
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
                      '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")}))\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")}))\n'+
                      '      connection = DatabaseConnection(type = "SybaseIQ")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
-   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan); 
+   assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThanEqualsWithOptionalParameter_H2():Boolean[1]      
@@ -672,12 +689,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testGreaterThanLessThan
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
                      '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")}))\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")} is not null) and "root".AGE > ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")} is not null) and "root".AGE <= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")}))\n'+
                      '      connection = DatabaseConnection(type = "H2")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.H2, $expectedPlan); 
 }
 
@@ -696,12 +712,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThan
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
                      '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")} is not null) and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")} is not null) and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")}))\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")} is not null) and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")} is not null) and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")}))\n'+
                      '      connection = DatabaseConnection(type = "SybaseIQ")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.SybaseIQ, $expectedPlan); 
 }
 
@@ -720,12 +735,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::testLessThanGreaterThan
                      '    (\n'+
                      '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
                      '      resultColumns = [("firstName", VARCHAR(200))]\n'+
-                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")} is not null) and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![]  "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")} is not null) and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![]  "" "" "null")}))\n'+
+                     '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where ((("root".AGE is not null and ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")} is not null) and "root".AGE < ${varPlaceHolderToString(optionalAgeLowerLimit![] "" "" "null")}) and (("root".AGE is not null and ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")} is not null) and "root".AGE >= ${varPlaceHolderToString(optionalAgeHigherLimit![] "" "" "null")}))\n'+
                      '      connection = DatabaseConnection(type = "H2")\n'+
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
    assertPlanGenerationForOptionalParameterWithGreaterThanLessThan($func, DatabaseType.H2, $expectedPlan); 
 }
 
@@ -773,6 +787,188 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForMu
    assertEquals($expectedPlan, $result);
 }
 
+
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualAndInWithEnumParameter():Boolean[1]
+{
+   let generatedPlanForEqual = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type == $eType)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForEqual = $generatedPlanForEqual->planToString(meta::relational::extension::relationalExtensions());
+
+   let generatedPlanForIn = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type->in($eType))->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForIn = $generatedPlanForIn->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [eType:meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
+                  '      resultColumns = [("name", VARCHAR(200)), ("type", VARCHAR(20))]\n'+
+                  '      sql = select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\')}\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+
+   assertEquals($expected, $resultForEqual);
+   assertEquals($expected, $resultForIn);
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams(), $generatedPlanForEqual.processingTemplateFunctions);
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams(), $generatedPlanForIn.processingTemplateFunctions);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterNotEqualAndNotInWithEnumParameter():Boolean[1]
+{
+   let generatedPlanForNotEqual = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type != $eType)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForNotEqual = $generatedPlanForNotEqual->planToString(meta::relational::extension::relationalExtensions());
+
+   let generatedPlanForNotIn = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|!($p.type->in($eType)))->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForNotIn = $generatedPlanForNotIn->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [eType:meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
+                  '      resultColumns = [("name", VARCHAR(200)), ("type", VARCHAR(20))]\n'+
+                  '      sql = select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'("root".type not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}) OR "root".type is null)\', \'("root".type <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)} OR "root".type is null)\')}\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+
+   assertEquals($expected, $resultForNotEqual);
+   assertEquals($expected, $resultForNotIn);
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams(), $generatedPlanForNotEqual.processingTemplateFunctions);
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams(), $generatedPlanForNotIn.processingTemplateFunctions);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualAndInWithMultipleEnumParameters():Boolean[1]
+{
+   let generatedPlanForEqualAndIn = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type->in($eType))->filter(p|$p.active == $yesOrNo)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForEqualAndIn = $generatedPlanForEqualAndIn->planToString(meta::relational::extension::relationalExtensions());
+   assertEquals($resultForEqualAndIn, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\')} and ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\')}'));
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']), $generatedPlanForEqualAndIn.processingTemplateFunctions);
+
+
+   let generatedPlanForEqualAndNotEqual = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type == $eType)->filter(p|$p.active != $yesOrNo)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForEqualAndNotEqual = $generatedPlanForEqualAndNotEqual->planToString(meta::relational::extension::relationalExtensions());
+   assertEquals($resultForEqualAndNotEqual, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\')} and ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'("root".active not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}) OR "root".active is null)\', \'("root".active <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)} OR "root".active is null)\')}'));
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']), $generatedPlanForEqualAndNotEqual.processingTemplateFunctions);
+
+
+   let generatedPlanForNotEqualAndNotIn = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|!($p.type->in($eType)))->filter(p|$p.active != $yesOrNo)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForNotEqualAndNotIn = $generatedPlanForNotEqualAndNotIn->planToString(meta::relational::extension::relationalExtensions());
+   assertEquals($resultForNotEqualAndNotIn, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'("root".type not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}) OR "root".type is null)\', \'("root".type <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)} OR "root".type is null)\')} and ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'("root".active not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}) OR "root".active is null)\', \'("root".active <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)} OR "root".active is null)\')}'));
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']), $generatedPlanForNotEqualAndNotIn.processingTemplateFunctions);
+}
+
+
+function meta::pure::executionPlan::tests::fetchExecutionPlanStringForEnumParams(sqlExp : String[1]):String[1]
+{
+  'Sequence\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [eType:meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo:meta::relational::tests::mapping::enumeration::model::domain::YesNo[1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
+                  '      resultColumns = [("name", VARCHAR(200)), ("type", VARCHAR(20))]\n'+
+                  '      sql = ' + $sqlExp + '\n' +
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+}
+
+function meta::pure::executionPlan::tests::fetchDynamicTemplateFunctionsForEnumParams():String[*]
+{
+  //  templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo inputVal> <#assign enumMap = { "CONTRACT":"\'FTC\', \'FTO\'", "FULL_TIME":"\'FTE\'" }> <#return enumMap[inputVal]> </#function>', 
+  //                                        '<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']);
+   templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo inputVal> <#assign enumMap = { "CONTRACT":"\'FTC\', \'FTO\'", "FULL_TIME":"\'FTE\'" }> <#return enumMap[inputVal]> </#function>']);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterInProject():Boolean[1]
+{
+   let generatedPlanForIf = executionPlan({yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->project([x|if($yesOrNo == meta::relational::tests::mapping::enumeration::model::domain::YesNo.NO,|'InActive User',|$x.name), x|$x.active], ['name','active'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [yesOrNo:meta::relational::tests::mapping::enumeration::model::domain::YesNo[1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '      resultColumns = [("name", ""), ("active", INT)]\n'+
+                  '      sql = select case when \'${yesOrNo}\' = \'NO\' then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+
+   assertEquals($expected, $resultForIf);
+   assertSameElements(templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']),
+                      $generatedPlanForIf.processingTemplateFunctions);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterWithClassPropInProject():Boolean[1]
+{
+   let generatedPlanForIf = executionPlan({yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->project([x|if($yesOrNo == $x.active,|$x.name,|'InActive User'), x|$x.active], ['name','active'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [yesOrNo:meta::relational::tests::mapping::enumeration::model::domain::YesNo[1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '      resultColumns = [("name", ""), ("active", INT)]\n'+
+                  '      sql = select case when ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\')} then "root".name else \'InActive User\' end as "name", "root".active as "active" from employeeTable as "root"\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+
+   assertEquals($expected, $resultForIf);
+   assertSameElements(templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']),
+                      $generatedPlanForIf.processingTemplateFunctions);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testIfOpFilterEnumValueWithClassPropInProject():Boolean[1]
+{
+   let generatedPlanForIf = executionPlan({| meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->project([x|if(meta::relational::tests::mapping::enumeration::model::domain::YesNo.NO == $x.active,|'InActive User',|$x.name), x|$x.active], ['name','active'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Relational\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  resultColumns = [("name", ""), ("active", INT)]\n'+
+                  '  sql = select case when "root".active = 0 then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
+                  '  connection = TestDatabaseConnection(type = "H2")\n'+
+                  ')\n';
+
+   assertEquals($expected, $resultForIf);
+   assertSameElements(templateFunctionsList(), $generatedPlanForIf.processingTemplateFunctions);
+}
+
 function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDateTimeConstantParameterNoTimeZone():Boolean[1]
 {
    let planWithString = executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(%2019-4-8T18:00:00, []);
@@ -800,12 +996,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
    let expected = 'Relational (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]   sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'2019-04-08 13:00:00\'   connection = TestDatabaseConnection(type = "H2") ) ';
    assertEquals($expected, $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'2019-04-08 13:00:00\'') != -1);
-   assertSameElements(['<#function GMTtoTZ tz paramDate><#return (tz+" "+paramDate)?date.@alloyDate></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>',
+   assertSameElements(['<#function GMTtoTZ tz paramDate><#if paramDate?is_enumerable && !paramDate?has_content><#return paramDate><#else><#return (tz+" "+paramDate)?date.@alloyDate></#if></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>',
                        '<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>',
                        '<#function collectionSize collection> <#return collection?size?c> </#function>',
                        '<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause></#if></#function>',
-                       '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix></#if></#function>']
-                       ,$planWithString.first.processingTemplateFunctions);
+                       '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix></#if></#function>',
+                       '<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(",")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>'],
+                       $planWithString.first.processingTemplateFunctions);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDateTimeVariableNoTimeZone():Boolean[1]
@@ -825,12 +1022,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
    let expected = 'Sequence (   type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]   resultSizeRange = *   (     FunctionParametersValidationNode     (       functionParameters = [dt:DateTime[1]]     )     Relational     (       type = Class[impls=(meta::relational::tests::model::simple::Order | simpleRelationalMapping.meta_relational_tests_model_simple_Order)]       resultSizeRange = *       resultColumns = [("pk_0", INT), ("id", INT), ("quantity", INT), ("date", DATE), ("settlementDateTime", TIMESTAMP), ("pnl", FLOAT), ("zeroPnl", "")]       sql = select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime", "orderpnlview_0".pnl as "pnl", case when "orderpnlview_0".pnl = 0 then \'true\' else \'false\' end as "zeroPnl" from orderTable as "root" left outer join (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) left outer join accountTable as "accounttable_0" on ("ordertable_1".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_1".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "orderpnlview_0" on ("orderpnlview_0".ORDER_ID = "root".ID) where "root".settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'       connection = TestDatabaseConnection(type = "H2")     )   ) ) ';
    assertEquals($expected, $planAsString);
    assert($planAsString->indexOf('settlementDateTime = \'${GMTtoTZ( "[US/Arizona]" dt)}\'') != -1);
-   assertSameElements(['<#function GMTtoTZ tz paramDate><#return (tz+" "+paramDate)?date.@alloyDate></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>',
+   assertSameElements(['<#function GMTtoTZ tz paramDate><#if paramDate?is_enumerable && !paramDate?has_content><#return paramDate><#else><#return (tz+" "+paramDate)?date.@alloyDate></#if></#function><#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue><#assign result = [] /><#list collection as c><#assign result = [prefix + (timeZone+" "+c)?date.@alloyDate + suffix] + result></#list><#return result?reverse?join(separator, defaultValue)></#function>',
                        '<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>',
                        '<#function collectionSize collection> <#return collection?size?c> </#function>',
                        '<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause></#if></#function>',
-                       '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix></#if></#function>']
-                       ,$planWithString.first.processingTemplateFunctions);
+                       '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix></#if></#function>',
+                       '<#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(",")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>'],
+                       $planWithString.first.processingTemplateFunctions);
 }
 
 function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone(timeZone:String[0..1]):Pair<ExecutionPlan, String>[1]
@@ -1220,6 +1418,35 @@ function <<test.Test>> meta::pure::executionPlan::tests::testPlanForExecutionOpt
       '    )\n'+
       '  )\n'+
       ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
+      let executionOption = $executionOptionContext->validateAndReturnExecutionOptionOfType(DummyExecutionOption);
+      assertEquals(true, $executionOption->toOne()->instanceOf(DummyExecutionOption));
+}
+
+function meta::pure::executionPlan::tests::withContext(tds: TabularDataSet[1]):TabularDataSet[1]
+{
+  $tds;
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testRoutingContextBuilderFunctions():Boolean[1]
+{
+  let dummyExtension = ^Extension(
+                            type = 'dummy',
+                            serializerExtension =  meta::relational::extension::relationalSerializerExtension_String_1__String_1_,
+                            routeContextBuilderFunctions={fe:FunctionExpression[1]| if($fe.func == meta::pure::executionPlan::tests::withContext_TabularDataSet_1__TabularDataSet_1_,
+                                                                                                        | ^ExecutionContext(),|[]);}
+                         );
+  let extensions = meta::relational::extension::relationalExtensions()->add($dummyExtension); 
+  let result = executionPlan({|Person.all()->project([col(p|$p.firstName, '"firstName"', 'doc1'), col(p|$p.lastName, 'lastName')])->withContext();}, simpleRelationalMapping, meta::relational::tests::testRuntime(), $extensions);                      
+  
+  //creates plan with execution context
+  assertEquals(
+    'Relational\n' +
+    '(\n' +
+    '  type = TDS[("firstName", String, VARCHAR(200), "doc1"), (lastName, String, VARCHAR(200), "")]\n' +
+    '  resultColumns = [("firstName", VARCHAR(200)), ("lastName", VARCHAR(200))]\n' +
+    '  sql = select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"\n' +
+    '  connection = TestDatabaseConnection(type = "H2")\n' +
+    ')\n', $result->planToString(meta::relational::extension::relationalExtensions()));                               
 }
 
 Class meta::pure::executionPlan::tests::Struct
@@ -1620,7 +1847,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionNow(
 
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n' +
@@ -1694,7 +1921,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
 
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n' +
@@ -1797,7 +2024,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
 
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
 
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n' +
@@ -1869,7 +2096,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::javaGenerationLetVariab
                                                                       ->project([x|$x.classification($asOf).type], ['classificationType'])->distinct();};
 
    let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   let withJava = $res->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
 
    let expectedJava =
    'Sequence\n'+
@@ -2153,7 +2380,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {name:String[*] |_Person.all()->filter(x | $x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.MemSQL)), meta::relational::extension::relationalExtensions()
    );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>1048576))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="MemSQL"))Constant(type=Stringvalues=[select`temptableforin_name_0`.ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas`temptableforin_name_0`]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select`root`.fullnameas`fullName`fromPersonas`root`where`root`.fullnamein(${inFilterClause_name})connection=DatabaseConnection(type="MemSQL"))))';
+   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>1048576))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="MemSQL"))Constant(type=Stringvalues=[select`temptableforin_name_0`.ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas`temptableforin_name_0`]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select`root`.fullnameas`fullName`fromPersonas`root`where`root`.fullnamein(${inFilterClause_name})connection=DatabaseConnection(type="MemSQL"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
@@ -2163,7 +2390,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {name:String[*] |_Person.all()->filter(x | !$x.fullName->in($name))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Snowflake)), meta::relational::extension::relationalExtensions()
    );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where("root".fullnamenotin(${inFilterClause_name})OR"root".fullnameisnull)connection=DatabaseConnection(type="Snowflake"))))';
+   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where("root".fullnamenotin(${inFilterClause_name})OR"root".fullnameisnull)connection=DatabaseConnection(type="Snowflake"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
@@ -2173,7 +2400,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {lengths:Integer[*] |_Person.all()->filter(x | $x.fullName->length()->in($lengths))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions()
    );
-   let expected = 'Sequence(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"wherechar_length("root".fullname)in(${renderCollection(lengths",""""""null")})connection=DatabaseConnection(type="H2"))))';
+   let expected = 'Sequence(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"wherechar_length("root".fullname)in(${renderCollection(lengths![]",""""""null")})connection=DatabaseConnection(type="H2"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
@@ -2183,7 +2410,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {lengths:Integer[*] |_Person.all()->filter(x | $x.fullName->length()->in($lengths))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.MemSQL)), meta::relational::extension::relationalExtensions()
    );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Allocation(type=Stringname=inFilterClause_lengthsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(lengths,"Stream")||((collectionSize(lengths)?number)>1048576))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[lengths]tempTableName=tempTableForIn_lengthstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="MemSQL"))Constant(type=Stringvalues=[select`temptableforin_lengths_0`.ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_lengthsas`temptableforin_lengths_0`]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(lengths",""""""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select`root`.fullnameas`fullName`fromPersonas`root`wherechar_length(`root`.fullname)in(${inFilterClause_lengths})connection=DatabaseConnection(type="MemSQL"))))';
+   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[lengths:Integer[*]])Allocation(type=Stringname=inFilterClause_lengthsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(lengths,"Stream")||((collectionSize(lengths![])?number)>1048576))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[lengths]tempTableName=tempTableForIn_lengthstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="MemSQL"))Constant(type=Stringvalues=[select`temptableforin_lengths_0`.ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_lengthsas`temptableforin_lengths_0`]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(lengths![]",""""""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select`root`.fullnameas`fullName`fromPersonas`root`wherechar_length(`root`.fullname)in(${inFilterClause_lengths})connection=DatabaseConnection(type="MemSQL"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
@@ -2193,7 +2420,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {name:String[*] |_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in(['A', 'B']))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.SybaseIQ)), meta::relational::extension::relationalExtensions()
    );
-   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>250000))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="SybaseIQ"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(\'A\',\'B\')connection=DatabaseConnection(type="SybaseIQ"))))';
+   let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>250000))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="SybaseIQ"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(\'A\',\'B\')connection=DatabaseConnection(type="SybaseIQ"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
@@ -2203,8 +2430,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       {name:String[*], name1:String[*]|_Person.all()->filter(x | $x.fullName->in($name))->filter(x | $x.fullName->in($name1))->project([x | $x.fullName], ['fullName']);},
       meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.DB2)), meta::relational::extension::relationalExtensions()
    );
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))',
-      'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1)?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))'];
+   let expected = ['RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))',
+      'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[*],name1:String[*]])Allocation(type=Stringname=inFilterClause_namevalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name,"Stream")||((collectionSize(name![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name]tempTableName=tempTableForIn_nametempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_nameas"temptableforin_name_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name![]",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_name1value=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(name1,"Stream")||((collectionSize(name1![])?number)>32767))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name1]tempTableName=tempTableForIn_name1tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=DatabaseConnection(type="DB2"))Constant(type=Stringvalues=[select"temptableforin_name1_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_name1as"temptableforin_name1_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(name1![]",""\'""\'""null")}])))))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(${inFilterClause_name})and"root".fullnamein(${inFilterClause_name1})connection=DatabaseConnection(type="DB2"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
 }
 
@@ -2212,8 +2439,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 {
    let res = executionPlan({ids:Integer[*], dates:Date[*]|Trade.all()->filter(t|$t.settlementDateTime->in($dates) && $t.id->in($ids))->project([x | $x.id], ['TradeId'])},
                            simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.Snowflake)), meta::relational::extension::relationalExtensions());
-   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids",""""""null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=DatabaseConnection(type="Snowflake"))))',
-      'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids",""""""null")}])))))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates)?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates",""\'""\'""null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=DatabaseConnection(type="Snowflake"))))'];
+   let expected = ['RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'""null")}])))))Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]",""""""null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=DatabaseConnection(type="Snowflake"))))',
+                   'RelationalBlockExecutionNode(type=TDS[(TradeId,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[ids:Integer[*],dates:Date[*]])Allocation(type=Stringname=inFilterClause_idsvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(ids,"Stream")||((collectionSize(ids![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[ids]tempTableName=tempTableForIn_idstempTableColumns=[(ColumnForStoringInCollection,INT)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_ids_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_idsas"temptableforin_ids_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(ids![]",""""""null")}])))))Allocation(type=Stringname=inFilterClause_datesvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(dates,"Stream")||((collectionSize(dates![])?number)>16348))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[dates]tempTableName=tempTableForIn_datestempTableColumns=[(ColumnForStoringInCollection,TIMESTAMP)]connection=DatabaseConnection(type="Snowflake"))Constant(type=Stringvalues=[select"temptableforin_dates_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_datesas"temptableforin_dates_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(dates![]",""\'""\'""null")}])))))Relational(type=TDS[(TradeId,Integer,INT,"")]resultColumns=[("TradeId",INT)]sql=select"root".IDas"TradeId"fromtradeTableas"root"where("root".settlementDateTimein(${inFilterClause_dates})and"root".IDin(${inFilterClause_ids}))connection=DatabaseConnection(type="Snowflake"))))'];
    assert($expected->contains($res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions())));
 }
 
@@ -2223,6 +2450,30 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
                            meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connections=^TestDatabaseConnection(element = relationalDB, type=DatabaseType.H2)), meta::relational::extension::relationalExtensions());
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[1]])Allocation(type=meta::pure::functions::collection::Listname=tempVarForIn_4value=(Constant(type=meta::pure::functions::collection::Listvalues=[[[John,Peter,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50]]])))CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[name,tempVarForIn_4]tempTableName=tempTableForIn_4tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(select"temptableforin_4_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_4as"temptableforin_4_0")connection=TestDatabaseConnection(type="H2"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testPlanGenerationForInWithCollectionParameterHavingTimeZoneForH2():Boolean[1]
+{
+   let generatedPlan = executionPlan({optionalDateTime:DateTime[*] |Trade.all()->filter(t|$t.settlementDateTime->in($optionalDateTime))->project([x | $x.id], ['TradeId'])}, simpleRelationalMapping, ^Runtime(connections=^DatabaseConnection(element = relationalDB, type=DatabaseType.H2, timeZone='US/Arizona')), meta::relational::extension::relationalExtensions());
+   let result = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
+   let expectedPlan ='Sequence\n'+
+                     '(\n'+
+                     '  type = TDS[(TradeId, Integer, INT, "")]\n'+
+                     '  (\n'+
+                     '    FunctionParametersValidationNode\n'+
+                     '    (\n'+
+                     '      functionParameters = [optionalDateTime:DateTime[*]]\n'+
+                     '    )\n'+
+                     '    Relational\n'+
+                     '    (\n'+
+                     '      type = TDS[(TradeId, Integer, INT, "")]\n'+
+                     '      resultColumns = [("TradeId", INT)]\n'+
+                     '      sql = select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (${renderCollectionWithTz(optionalDateTime![] "[US/Arizona]" "," "\'" "\'" "null")})\n'+
+                     '      connection = DatabaseConnection(type = "H2")\n'+
+                     '    )\n'+
+                     '  )\n'+
+                     ')\n';
+   assertEquals($expectedPlan, $result);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithTimeZone():Boolean[1]
@@ -2244,7 +2495,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       '    (\n'+
       '      type = TDS[(TradeId, Integer, INT, \"\")]\n'+
       '      resultColumns = [(\"TradeId\", INT)]\n'+
-      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".settlementDateTime in (${renderCollectionWithTz(dates \"[US/Arizona]\" \",\" \"Timestamp\'\" \"\'\" \"null\")})\n'+
+      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".settlementDateTime in (${renderCollectionWithTz(dates![] \"[US/Arizona]\" \",\" \"Timestamp\'\" \"\'\" \"null\")})\n'+
       '      connection = DatabaseConnection(type = \"Presto\")\n'+
       '    )\n'+
       '  )\n'+
@@ -2271,7 +2522,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
       '    (\n'+
       '      type = TDS[(TradeId, Integer, INT, \"\")]\n'+
       '      resultColumns = [(\"TradeId\", INT)]\n'+
-      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".tradeDate in (${renderCollection(dates \",\" \"convert(DATE, \'\" \"\', 101)\" \"null\")})\n'+
+      '      sql = select \"root\".ID as \"TradeId\" from tradeTable as \"root\" where \"root\".tradeDate in (${renderCollection(dates![] \",\" \"convert(DATE, \'\" \"\', 101)\" \"null\")})\n'+
       '      connection = DatabaseConnection(type = \"Sybase\")\n'+
       '    )\n'+
       '  )\n'+
@@ -2441,10 +2692,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::classPathsInfluencedByP
 
    let unbound = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   let withoutPlanId        = $unbound->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+   let withoutPlanId        = $unbound->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
    let withoutPlanIdPackage = $withoutPlanId.globalImplementationSupport->cast(@JavaPlatformImplementation).classes.package->removeDuplicates();
 
-   let withPlanId           = $unbound->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA, planId='abc'), relationalExtensions());
+   let withPlanId           = $unbound->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(planId='abc'), relationalExtensions());
    let withPlanIdPackage    = $withPlanId.globalImplementationSupport->cast(@JavaPlatformImplementation).classes.package->removeDuplicates();
 
    assertEquals('_pure.plan.root.n1.n1', $withoutPlanIdPackage);
@@ -2508,7 +2759,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
                                                              ));
    let graph = #{Product{name}}#;
    let result = executionPlan({|Product.all()->graphFetch($graph)->serialize($graph)}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
-   assertEquals('PureExp(type=Stringexpression=[NodeIndex:0]->serialize(#{meta::relational::tests::model::simple::Product{name}}#)(GlobalGraphFetch(type=PartialClass[impls=[(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)],propertiesWithParameters=[name]]resultSizeRange=*store=meta::relational::tests::dblocalGraphFetchExecutionNode=RelationalGraphFetch(type=PartialClass[impls=[(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)],propertiesWithParameters=[name]]nodeIndex=0relationalNode=SQL(type=meta::pure::metamodel::type::AnyresultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root"."ID"as"pk_0","root"."NAME"as"name"from"productSchema"."productTable"as"root"connection=TestDatabaseConnection(type="H2"))children=[])children=[])))', $result->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+   assertEquals('PureExp(type=Stringexpression=->serialize(#{meta::relational::tests::model::simple::Product{name}}#)(GlobalGraphFetch(type=PartialClass[impls=[(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)],propertiesWithParameters=[name]]resultSizeRange=*store=meta::relational::tests::dblocalGraphFetchExecutionNode=RelationalGraphFetch(type=PartialClass[impls=[(meta::relational::tests::model::simple::Product|simpleRelationalMapping.meta_relational_tests_model_simple_Product)],propertiesWithParameters=[name]]nodeIndex=0relationalNode=SQL(type=meta::pure::metamodel::type::AnyresultColumns=[("pk_0",INT),("name",VARCHAR(200))]sql=select"root"."ID"as"pk_0","root"."NAME"as"name"from"productSchema"."productTable"as"root"connection=TestDatabaseConnection(type="H2"))children=[])children=[])))', $result->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithLocalH2ConnectionWithSQL():Boolean[1]
@@ -2544,7 +2795,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWi
   let runtime = meta::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-  let withJava = $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+  let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
    
  
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
@@ -2575,7 +2826,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportGraphFetchWi
   let runtime = meta::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
-  let withJava = $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), relationalExtensions());
+  let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensions());
    
  
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;

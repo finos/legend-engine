@@ -74,6 +74,7 @@ function meta::pure::executionPlan::engine::java::registerCollectionsLibrary(con
          fc3(slice_T_MANY__Integer_1__Integer_1__T_MANY_,                        {ctx,collection,limit1,limit2 | $collection->j_streamOf()->js_skip(pinToZero($limit1))->js_limit($limit2->j_minus(pinToZero($limit1)))}),
          fc2(take_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $collection->j_streamOf()->js_limit($limit)}),
          fc2(union_T_MANY__T_MANY__T_MANY_,                                      {ctx,collection1,collection2  | javaStream()->j_invoke('concat', [$collection1->j_streamOf(), $collection2->j_streamOf()], javaStream($ctx.returnType()->elementType()))->js_distinct()}),
+         fc2(defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_,                     {ctx,collection1,collection2  | j_conditional($collection1->j_streamOf()->js_count()->j_eq(j_int(0)), $library->j_invoke('toOneMany', $collection2, $ctx.returnType()), $library->j_invoke('toOneMany', $collection1, $ctx.returnType()))}),
 
          fc2(contains_Any_MANY__Any_1__Boolean_1_,                               {ctx,collection,obj           | if($collection.type->isJavaList(), |$collection->j_invoke('contains', $obj), |javaObjects()->j_invoke('equals', [$collection, $obj]))}),
          fc2(exists_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_anyMatch($func)}),

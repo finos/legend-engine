@@ -2243,4 +2243,13 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "    main::Person.all(%2020-12-12, %2020-12-13).firm(%latest, %latest)  \n" +
                 "} \n");
     }
+
+    @Test
+    public void testCompilationForEmbeddedPureExtension()
+    {
+        test("function x::f(): Any[*]\n" +
+                "{\n" +
+                "   let x = #Test{My random Parser #Test{ OK OK } Yo}#;" +
+                "}\n");
+    }
 }

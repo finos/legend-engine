@@ -47,7 +47,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedProp
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =
@@ -183,7 +183,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedProp
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =

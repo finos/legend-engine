@@ -34,6 +34,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.GraphFetchTreeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -1069,7 +1070,7 @@ public class DomainParseTreeWalker
         }
         else if (ctx.dsl() != null)
         {
-            dsl = this.visitDsl(ctx.dsl());
+            dsl = this.visitDsl(ctx.dsl(), this.walkerSourceInformation);
             assert dsl != null;
             if (dsl.size() > 1)
             {
@@ -1129,11 +1130,32 @@ public class DomainParseTreeWalker
         return result;
     }
 
-    private ListIterable<ValueSpecification> visitDsl(DomainParserGrammar.DslContext ctx)
+    private ListIterable<ValueSpecification> visitDsl(DomainParserGrammar.DslContext ctx, ParseTreeWalkerSourceInformation parentWalkerSourceInformation)
     {
-        if (ctx.dslGraphFetch() != null)
+        if (ctx.dslExtension() != null)
         {
-            return this.visitGraphFetchTree(ctx.dslGraphFetch());
+            String open = ctx.dslExtension().ISLAND_OPEN().getText();
+            String openTag = open.substring(1, open.length() - 1).trim();
+            if ("".equals(openTag))
+            {
+                return this.visitGraphFetchTree(ctx.dslExtension());
+            }
+            else
+            {
+                TerminalNode islandOpen = ctx.dslExtension().ISLAND_OPEN();
+                int startLine = islandOpen.getSymbol().getLine();
+                int lineOffset = parentWalkerSourceInformation.getLineOffset() + startLine - 1;
+                int columnOffset = (startLine == 1 ? parentWalkerSourceInformation.getColumnOffset() : 0) + islandOpen.getSymbol().getCharPositionInLine() + islandOpen.getSymbol().getText().length();
+                ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(parentWalkerSourceInformation).withLineOffset(lineOffset).withColumnOffset(columnOffset).build();
+                SourceInformation sourceInformation = parentWalkerSourceInformation.getSourceInformation(ctx);
+                EmbeddedPureParser embeddedPureParser = this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParser(openTag);
+                if (embeddedPureParser == null)
+                {
+                    throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(p -> p.getType()).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+                }
+                String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), c -> c.getText()).makeString("").trim();
+                return embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions());
+            }
         }
         else if (ctx.dslNavigationPath() != null)
         {
@@ -1164,11 +1186,11 @@ public class DomainParseTreeWalker
     }
 
     // TODO: add another island mode in M3 for this when we support path (which starts with #/)
-    public ListIterable<ValueSpecification> visitGraphFetchTree(DomainParserGrammar.DslGraphFetchContext ctx)
+    public ListIterable<ValueSpecification> visitGraphFetchTree(DomainParserGrammar.DslExtensionContext ctx)
     {
         // NOTE: we want to preserve the spacing so we can correctly produce source information in the dispatched parser
         StringBuilder graphFetchStringBuilder = new StringBuilder();
-        for (DomainParserGrammar.DslContentContext fragment : ctx.dslContent())
+        for (DomainParserGrammar.DslExtensionContentContext fragment : ctx.dslExtensionContent())
         {
             graphFetchStringBuilder.append(fragment.getText());
         }

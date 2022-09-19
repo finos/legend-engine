@@ -563,7 +563,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 return new RelationalResultToPureTDSToObjectSerializer(this);
             case CSV:
                 return new RelationalResultToCSVSerializer(this, true);
-            case CSV_FIXED:
+            case CSV_TRANSFORMED:
                 return new RelationalResultToCSVSerializerWithTransformersApplied(this, true);
             case DEFAULT:
                 return new RelationalResultToJsonDefaultSerializer(this);

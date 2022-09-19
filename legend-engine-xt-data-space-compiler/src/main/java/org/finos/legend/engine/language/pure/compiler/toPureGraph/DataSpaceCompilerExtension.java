@@ -51,7 +51,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                 Lists.fixedSize.with(PackageableRuntime.class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping.class, Diagram.class),
                 (dataSpace, context) ->
                 {
-                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = new Root_meta_pure_metamodel_dataSpace_DataSpace_Impl("")._name(dataSpace.name);
+                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = new Root_meta_pure_metamodel_dataSpace_DataSpace_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpace"))._name(dataSpace.name);
                     this.dataSpacesIndex.put(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name), metamodel);
                     return metamodel;
                 },
@@ -59,7 +59,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                 {
                     Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = this.dataSpacesIndex.get(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
                     metamodel._stereotypes(ListIterate.collect(dataSpace.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)));
-                    metamodel._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("")._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
+                    metamodel._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
 
                     // execution context
                     if (dataSpace.executionContexts.isEmpty())
@@ -74,7 +74,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                         {
                             throw new EngineException("Execution context '" + executionContext.name + "' default runtime is not compatible with mapping", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                         }
-                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("")
+                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
                                 ._name(executionContext.name)
                                 ._description(executionContext.description)
                                 ._mapping(mapping)
@@ -98,7 +98,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                         Root_meta_pure_metamodel_dataSpace_DataSpaceSupportInfo supportInfo = null;
                         if (dataSpace.supportInfo instanceof DataSpaceSupportEmail)
                         {
-                            supportInfo = new Root_meta_pure_metamodel_dataSpace_DataSpaceSupportEmail_Impl("")._address(((DataSpaceSupportEmail) dataSpace.supportInfo).address);
+                            supportInfo = new Root_meta_pure_metamodel_dataSpace_DataSpaceSupportEmail_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceSupportEmail"))._address(((DataSpaceSupportEmail) dataSpace.supportInfo).address);
                         }
                         metamodel._supportInfo(supportInfo);
                     }

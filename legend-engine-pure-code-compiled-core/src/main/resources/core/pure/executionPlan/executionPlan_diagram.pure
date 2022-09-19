@@ -268,7 +268,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_2(
         type=meta::pure::executionPlan::AllocationExecutionNode,
         position=(247.00000, 420.00000),
-        width=165.31343,
+        width=165.34766,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -292,7 +292,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_4(
         type=meta::pure::executionPlan::ErrorExecutionNode,
         position=(472.00000, 420.00000),
-        width=136.67164,
+        width=136.68945,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -304,7 +304,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_5(
         type=meta::pure::executionPlan::FreeMarkerConditionalExecutionNode,
         position=(536.00000, 481.00000),
-        width=238.00000,
+        width=238.03906,
         height=72.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -316,7 +316,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_3(
         type=meta::pure::executionPlan::ConstantExecutionNode,
         position=(360.00000, 482.00000),
-        width=159.32835,
+        width=159.34180,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -328,7 +328,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_6(
         type=meta::pure::executionPlan::FunctionParametersValidationNode,
         position=(669.00000, 420.00000),
-        width=243.71642,
+        width=243.72217,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -340,7 +340,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_8(
         type=meta::pure::executionPlan::PureExpressionPlatformExecutionNode,
         position=(785.07656, 482.95694),
-        width=247.34328,
+        width=247.39063,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -364,7 +364,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_12(
         type=meta::pure::executionPlan::SequenceExecutionNode,
         position=(1200.19350, 428.99491),
-        width=164.00000,
+        width=164.03516,
         height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -376,7 +376,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_11(
         type=meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode,
         position=(1066.04554, 482.74937),
-        width=246.76119,
+        width=246.76758,
         height=72.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -388,8 +388,44 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     TypeView cview_13(
         type=meta::pure::executionPlan::MultiResultSequenceExecutionNode,
         position=(1323.59541, 483.54036),
-        width=228.65672,
+        width=228.69922,
         height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::executionPlan::PlatformUnionExecutionNode,
+        position=(-1.54793, 421.73144),
+        width=190.00977,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::pure::executionPlan::PlatformMergeExecutionNode,
+        position=(118.13798, 483.19324),
+        width=191.36328,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::pure::executionPlan::VariableResolutionExecutionNode,
+        position=(1408.37335, 427.87320),
+        width=215.37500,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -400,7 +436,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_0(
         source=cview_2,
         target=cview_1,
-        points=[(329.65672,442.00000),(328.00000,371.00000),(666.12607,258.87320),(666.00000,226.00000)],
+        points=[(329.67383,442.00000),(328.00000,371.00000),(666.12607,258.87320),(666.00000,226.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -409,7 +445,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_1(
         source=cview_3,
         target=cview_1,
-        points=[(439.66418,504.00000),(439.00000,370.00000),(702.12607,257.87320),(701.00000,225.00000)],
+        points=[(439.67090,504.00000),(439.00000,370.00000),(702.12607,257.87320),(701.00000,225.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -418,7 +454,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_2(
         source=cview_4,
         target=cview_1,
-        points=[(540.33582,442.00000),(541.00000,365.00000),(732.12607,257.87320),(731.00000,228.00000)],
+        points=[(540.34473,442.00000),(541.00000,365.00000),(732.12607,257.87320),(731.00000,228.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -427,7 +463,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_3(
         source=cview_5,
         target=cview_1,
-        points=[(648.00000,492.00000),(646.00000,364.00000),(761.12607,257.87320),(760.00000,230.00000)],
+        points=[(648.01953,492.00000),(646.00000,364.00000),(761.12607,257.87320),(760.00000,230.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -436,7 +472,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_4(
         source=cview_6,
         target=cview_1,
-        points=[(794.00000,440.00000),(792.00000,223.00000)],
+        points=[(794.00287,440.00000),(792.00000,223.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -445,7 +481,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_5(
         source=cview_8,
         target=cview_1,
-        points=[(928.07656,492.95694),(929.38010,353.39682),(822.20307,258.65998),(823.00000,223.00000)],
+        points=[(928.10023,492.95694),(929.38010,353.39682),(822.20307,258.65998),(823.00000,223.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -463,7 +499,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_7(
         source=cview_11,
         target=cview_1,
-        points=[(1187.75331,500.76524),(1184.88249,349.56907),(888.58339,258.28078),(889.18871,218.46859)],
+        points=[(1187.75650,500.76524),(1184.88249,349.56907),(888.58339,258.28078),(889.18871,218.46859)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -472,7 +508,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_8(
         source=cview_12,
         target=cview_1,
-        points=[(1282.19350,443.99491),(1279.61933,355.31070),(917.89685,256.74610),(916.93991,230.90878)],
+        points=[(1282.21108,443.99491),(1279.61933,355.31070),(917.89685,256.74610),(916.93991,230.90878)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -481,7 +517,34 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
     GeneralizationView gview_9(
         source=cview_13,
         target=cview_1,
-        points=[(1381.96862,505.54993),(1378.18393,360.09539),(951.38967,255.78917),(950.43273,226.12409)],
+        points=[(1381.98987,505.54993),(1378.18393,360.09539),(951.38967,255.78917),(950.43273,226.12409)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_14,
+        target=cview_1,
+        points=[(93.45695,436.73144),(93.03950,380.46489),(598.30266,243.28322),(809.50000,146.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_15,
+        target=cview_1,
+        points=[(213.81962,498.19324),(215.28059,376.39018),(625.46735,252.79086),(809.50000,146.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_16,
+        target=cview_1,
+        points=[(1516.06085,449.87320),(1513.37335,368.87320),(997.37335,250.87320),(809.50000,146.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -491,7 +554,7 @@ Diagram meta::pure::executionPlan::diagram::ExecutionNodeDiagram(width=0.0, heig
         property=meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode.localGraphFetchExecutionNode,
         source=cview_10,
         target=cview_11
-,        points=[(963.57652,672.74641),(1267.17914,669.18629),(1266.22221,535.21500)],
+,        points=[(963.57652,672.74641),(1267.17914,669.18629),(1266.22540,535.21500)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

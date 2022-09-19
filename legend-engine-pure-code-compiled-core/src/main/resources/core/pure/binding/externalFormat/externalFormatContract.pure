@@ -1,0 +1,113 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::*;
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::binding::validation::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::shared::format::transformation::toPure::*;
+import meta::external::shared::format::transformation::fromPure::*;
+
+import meta::pure::generation::metamodel::*;
+
+import meta::pure::graphFetch::*;
+
+import meta::pure::metamodel::path::*;
+
+import meta::pure::model::unit::*;
+
+Class meta::external::shared::format::ExternalFormatContract<T>
+[
+  externalFormatMetamodelType : checkSuperType($this.externalFormatMetamodel, SchemaDetail)
+]
+{
+   id                               : String[1];   
+   contentTypes                     : String[*];
+   
+   externalFormatMetamodel          : Class<T>[1];
+
+   externalFormatToPureDescriptor   : ExternalFormatToPureDescriptor<SchemaToModelConfiguration>[0..1];
+   externalFormatFromPureDescriptor : ExternalFormatFromPureDescriptor<ModelToSchemaConfiguration>[0..1];
+   externalFormatBindingValidator   : Function<{Binding[1] -> BindingDetail[1]}>[0..1];
+   validateBinding(binding:Binding[1])
+   {
+      if($this.externalFormatBindingValidator->isEmpty(),
+         | fail('External Format - ' + $this.id + ' does not support binding validation');@BindingDetail;,
+         | $this.externalFormatBindingValidator->toOne()->eval($binding););
+   }:BindingDetail[1];
+
+   externalizeConfig                : Class<ExternalFormatExternalizeConfig>[0..1];
+   internalizeConfig                : Class<ExternalFormatInternalizeConfig>[0..1];
+   
+   sourceRecordTree                 : RootGraphFetchTree<Any>[0..1];
+}
+
+Class meta::external::shared::format::ExternalFormatToPureDescriptor<U>
+[
+  configurationType : checkSuperType($this.configuration, SchemaToModelConfiguration)
+]
+{
+  configuration        : Class<U>[1];
+  generator            : Function<{SchemaSet[1], U[1] -> PackageableElement[*]}>[1];
+  generatorWithDebug   : Function<{SchemaSet[1], U[1] -> PackageableElement[*]}>[0..1];
+  defaultConfig        : U[1];
+
+  generate(schemaSet:SchemaSet[1], config:U[1])
+  {
+    $this.generator->eval($schemaSet, $config)
+  }:PackageableElement[*];
+  generateWithDebug(schemaSet:SchemaSet[1], config:U[1])
+  {
+    if($this.generatorWithDebug->isEmpty(),
+      | fail('External Format does not support model generation with debug');@SchemaSet;,
+      | $this.generatorWithDebug->toOne()->eval($schemaSet, $config););
+  }:PackageableElement[*];
+}
+
+Class meta::external::shared::format::ExternalFormatFromPureDescriptor<V>
+[
+  configurationType : checkSuperType($this.configuration, ModelToSchemaConfiguration)
+]
+{
+  configuration        : Class<V>[1];
+  generator            : Function<{ModelUnit[1], V[1] -> SchemaSet[1]}>[1];
+  generatorWithDebug   : Function<{ModelUnit[1], V[1] -> SchemaSet[1]}>[0..1];
+  defaultConfig        : V[1];
+
+  generate(modelUnit:ModelUnit[1], config:V[1])
+  {
+    $this.generator->eval($modelUnit, $config)
+  }:SchemaSet[1];
+  generateWithDebug(modelUnit:ModelUnit[1], config:V[1])
+  {
+    if($this.generatorWithDebug->isEmpty(),
+      | fail('External Format does not support schema generation with debug');@SchemaSet;,
+      | $this.generatorWithDebug->toOne()->eval($modelUnit, $config););
+  }:SchemaSet[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::shared::format::ExternalFormatExternalizeConfig
+{
+
+}
+
+Class <<typemodifiers.abstract>> meta::external::shared::format::ExternalFormatInternalizeConfig
+{
+
+}
+
+function <<access.private>> meta::external::shared::format::checkSuperType(actualType: Class<Any>[1], expectedType: Class<Any>[1]):Boolean[1]
+{
+  $actualType->getAllClassGeneralisations()->contains($expectedType);
+}

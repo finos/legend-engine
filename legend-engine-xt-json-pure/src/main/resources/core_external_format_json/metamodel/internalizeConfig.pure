@@ -1,0 +1,41 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::json::metamodel::internalize::*;
+import meta::external::shared::format::binding::*;
+import meta::pure::metamodel::path::*;
+
+import meta::pure::graphFetch::*;
+import meta::pure::extension::*;
+import meta::pure::runtime::*;
+
+Class meta::external::format::json::metamodel::internalize::JsonPathReference
+{
+   path    : String[1];
+}
+
+Class meta::external::format::json::metamodel::internalize::JsonSchemaInternalizeConfig extends meta::external::shared::format::ExternalFormatInternalizeConfig
+{
+   pathReference : JsonPathReference[0..1];
+}
+
+function meta::external::format::json::metamodel::internalize::generateJsonSchemaInternalizeConfig(path:Path<Nil,Any|*>[1]): JsonSchemaInternalizeConfig[1]
+{
+   let pathString = $path.path->filter(ele | $ele->instanceOf(PropertyPathElement))->cast(@PropertyPathElement).property.name->joinStrings('/', '/', '');
+   
+   ^JsonSchemaInternalizeConfig
+   (
+     pathReference = ^JsonPathReference(path = $pathString)
+   );
+}

@@ -20,6 +20,15 @@ import meta::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 
+function <<test.Test>> meta::relational::tests::query::function::testFilterEnumOnClassProp():Boolean[1]
+{
+   let eType = meta::relational::tests::model::simple::ProductSynonymType.CUSIP;
+   let result = execute(|Synonym.all()->filter(s|$s.type == $eType), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements(['CUSIP1', 'CUSIP2', 'CUSIP3'], $result.values.name);
+   assertSize($result.values, 3);
+   assertSameSQL('select "root".ID as "pk_0", "root".NAME as "name", "root".TYPE as "typeAsString", "root".TYPE as "type" from productSchema.synonymTable as "root" where "root".TYPE = \'CUSIP\'', $result);
+}
+
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingPlusFunction():Boolean[1]
 {
    let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName + ' Great') == 'Firm X Great'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());

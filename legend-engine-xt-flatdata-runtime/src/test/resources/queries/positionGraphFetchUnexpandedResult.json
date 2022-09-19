@@ -1,0 +1,16 @@
+{
+  "builder": {
+    "_type": "json"
+  },
+  "values": [
+    {
+      "longitude": 132
+    },
+    {
+      "longitude": 13
+    },
+    {
+      "longitude": 14.176
+    }
+  ]
+}

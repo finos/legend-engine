@@ -149,26 +149,24 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 
 
 
-
-function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
+function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   meta::pure::executionPlan::generatePlatformCode($plan, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
+   meta::pure::executionPlan::generatePlatformCode($plan, $platformId, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
 }
 
-function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
 {
-   assert($config.platform == Platform.JAVA, 'Platform Not Supported: ' + $config.platform.name);
-   meta::pure::executionPlan::engine::java::generatePlatformCode($plan, $config, $extensions, $debug);
+   let platformBinding = $extensions->meta::pure::executionPlan::platformBinding::extractPlatformBindingById($platformId);
+   $platformBinding.bindPlanToPlatform->eval($plan, $config, $extensions, $debug);
 }
-
-
 
 
 function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
 {
+   let enumValidationContext = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration))->map(e | ^meta::pure::executionPlan::EnumValidationContext(varName = $e.name, validEnumValues = $e.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id())));
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
    if($f->instanceOf(LambdaFunction) && $planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
-                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean));
+                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $enumValidationContext);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
                                                                                            e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
                                                                          ,| $node);
@@ -268,12 +266,25 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:RootGraphFetchTree<Any>[0..1], enableConstraints:Boolean[1], checked:Boolean[1], extensions:meta::pure::extension::Extension[*], dflt:Function<{Nil[1]->ExecutionNode[1]}>[*]):ExecutionNode[1]
 {
    $c->match([
-               {x:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] | 
-                  let binding         = $x.element->cast(@meta::external::shared::format::binding::Binding);
-                  let formatExtension = $extensions.availableExternalFormats->meta::external::shared::format::getExtensionForContentType($binding.contentType);
-                  let sourceNode      = meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource($x.externalSource);
-                  let deserializeNode = $formatExtension.generateDeserializeNode->eval($x, $sourceNode, $tree);
-                  meta::external::shared::format::executionPlan::generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
+               {connection:meta::external::shared::format::executionPlan::ExternalFormatConnection[1] |
+                  let binding         = $connection.element->cast(@meta::external::shared::format::binding::Binding);
+                  let sourceNode      = meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource($connection.externalSource);
+                  let returnedClass   = $tree.class->toOne();
+
+                  assert($tree->isNotEmpty(), 'Deserialization without Graph Fetch Tree not yet supported');
+                  ^meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode
+                  (
+                      resultType        = ^PartialClassResultType(
+                                            type=$returnedClass,
+                                            propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                                          ),
+                      resultSizeRange   = ZeroMany,
+                      tree              = $tree,
+                      binding           = $connection->cast(@meta::external::shared::format::executionPlan::ExternalFormatConnection).element->cast(@meta::external::shared::format::binding::Binding),
+                      executionNodes    = $sourceNode,
+                      enableConstraints = $enableConstraints,
+                      checked           = $checked
+                  );
                }
             ]->concatenate($dflt)->toOneMany())->toOne();
 }
@@ -281,8 +292,15 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):Boolean[1]
 {
    let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
-   assert($executionOptionsList->size() <= 1, |'Execution Option List provided has two or more instances of the following Execution Options' + $execOption.name->toOne());
+   assert($executionOptionsList->size() <= 1, |'Execution Option :' + $execOption.name->toOne() + 'has more than one instance specified in the context');
    $executionOptionsList->isNotEmpty();
+}
+
+function meta::pure::executionPlan::validateAndReturnExecutionOptionOfType(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):ExecutionOption[1]
+{
+   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   assert($executionOptionsList->size() == 1, |'Execution Option:' + $execOption.name->toOne() + 'not mentioned or mentioned more than once as part of the context');
+   $executionOptionsList->head()->toOne();
 }
 
 function meta::pure::executionPlan::stubExecutionOptionParameters(execOptionCtx: ExecutionOptionContext[1], extensions: meta::pure::extension::Extension[*]):PlanVarPlaceHolder[*]

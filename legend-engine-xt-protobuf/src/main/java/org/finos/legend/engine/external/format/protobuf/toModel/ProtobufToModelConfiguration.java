@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.external.format.protobuf.toModel;
 
-import org.finos.legend.engine.external.shared.format.model.toModel.SchemaToModelConfiguration;
+import org.finos.legend.engine.external.shared.format.model.transformation.toModel.SchemaToModelConfiguration;
 
 public class ProtobufToModelConfiguration extends SchemaToModelConfiguration
 {

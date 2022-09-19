@@ -72,6 +72,11 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FreeMarkerConditi
    falseBlock                    : ExecutionNode[0..1];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableResolutionExecutionNode extends ExecutionNode
+{
+   varName : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation
 {
    _type : String[1];
@@ -131,6 +136,18 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecu
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode extends ExecutionNode
 {
    functionParameters:meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable[*];
+   parameterValidationContext : meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext[*];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext
+{
+   _type : String[1];
+   varName: String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ParameterValidationContext
+{
+   validEnumValues: String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode extends ExecutionNode
