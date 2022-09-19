@@ -58,4 +58,4 @@ jobs:
           MAVEN_OPTS: -Xmx4g
           REDSHIFT_INTEGRATION_USER1_NAME: ${{ secrets.REDSHIFT_INTEGRATION_USER1_NAME }}
           REDSHIFT_INTEGRATION_USER1_PASSWORD: ${{ secrets.REDSHIFT_INTEGRATION_USER1_PASSWORD }}
-        run: mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite" test
+        run: mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite" test

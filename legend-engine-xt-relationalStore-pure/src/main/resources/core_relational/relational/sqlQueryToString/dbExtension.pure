@@ -436,7 +436,9 @@ function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:Var
          |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'),
       |if($v->isOptionalPlaceHolder(),
           |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
-          |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix)
+          |if($type->instanceOf(Enumeration),
+              |$prefix + '\'${'+$possiblyApplyDateTzFunction+'}\'' + $suffix,
+              |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix))
       );
 }
 
@@ -457,7 +459,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getPr
 function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:Extension[*]):String[1]
 {
    let freeMarkerOpMap = getFreeMarkerOperationMap();
-   let res = $freeMarkerOpMap->get($freeMarkerOp.name);
+   let opMapRes = $freeMarkerOpMap->get($freeMarkerOp.name);
+   let res = if($opMapRes->isEmpty() && $freeMarkerOp.name->contains('enumMap_'),
+                | ^ToSql(format= $freeMarkerOp.name + '(%s)'),
+                | $opMapRes);
+
    assert($res->isNotEmpty(),  | $freeMarkerOp.name + 'freeMarker Operation is not supported!');
 
    let processedParams = $freeMarkerOp.parameters->map(p | $p->match([
@@ -468,14 +474,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    ]));
    let params = if($res.transform->isEmpty(), | $processedParams, | $res.transform->toOne()->eval($processedParams));
 
-   if($nestedFreeMarkerOperationHolder, |format($res->toOne().format, $params), |'(${' + format($res->toOne().format, $params) + '})');
+   if($nestedFreeMarkerOperationHolder,
+      |format($res->toOne().format, $params),
+      |if($freeMarkerOp.name->contains('enumMap_') || $freeMarkerOp.name == 'equalEnumOpSelector',
+        |'${' + format($res->toOne().format, $params) + '}',
+        |'(${' + format($res->toOne().format, $params) + '})'));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::getFreeMarkerOperationMap():Map<String, ToSql>[1]
 {
    let freeMarkerOpMap = [
       pair('variableCollectionSize', ^ToSql(format='collectionSize(%s)')),
-      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)'))
+      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)')),
+      pair('equalEnumOpSelector', ^ToSql(format='equalEnumOperationSelector(%s, %s, %s)'))
    ]->newMap();
 }
 
@@ -613,7 +624,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                                                                                                                      );
                                                                                          );
                                                           );,
-                       rOp: RelationalOperationElement[1] | 'not ' + $rOp->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc)
+                       rOp: RelationalOperationElement[1] | if($rOp->instanceOf(FreeMarkerOperationHolder) && $rOp->cast(@FreeMarkerOperationHolder).name == 'equalEnumOpSelector',
+                                                                | let params = $rOp->cast(@FreeMarkerOperationHolder).parameters;
+                                                                  '${equalEnumOperationSelector(' + $params->at(0)->cast(@FreeMarkerOperationHolder).name + '(' + $params->at(0)->cast(@FreeMarkerOperationHolder).parameters->cast(@Literal).value->cast(@VarPlaceHolder).name->toOne() + '), \'' + processNotIn($params->at(1)->cast(@DynaFunction), $sgc) + '\', \'' + processNotEqual($params->at(2)->cast(@DynaFunction), $sgc) + '\')}';,
+                                                                | 'not ' + $rOp->maybeWrapAsBooleanOperation($sgc)->processOperation($sgc));
                     ]);
 }
 
@@ -626,9 +640,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let processedRight = $processedParams->at(1);
    let orNull =   if($left->instanceOf(Literal) && $right->instanceOf(Literal),
                      | '',
-                     | if(!$left->instanceOf(Literal) && $right->instanceOf(Literal),
+                     | if(!$left->instanceOf(Literal) && ($right->instanceOf(Literal) || $right->instanceOf(FreeMarkerOperationHolder)),
                           |' OR ' + $processedLeft + ' is null',
-                          |if ($left->instanceOf(Literal) && !$right->instanceOf(Literal),
+                          |if (($left->instanceOf(Literal) || $left->instanceOf(FreeMarkerOperationHolder)) && !$right->instanceOf(Literal),
                                |' OR ' + $processedRight + ' is null',
                                | ' OR ' + $processedLeft + ' is null' + ' AND ' + $processedRight + ' is not null' + ' OR ' + $processedLeft + ' is not null' + ' AND ' + $processedRight + ' is null'
                               )

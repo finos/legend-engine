@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.pure.api.test.inMemory;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -27,18 +28,17 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.pure.generated.core_pure_extensions_functions;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 public class TestExecuteFunctionExecutionPlan
@@ -48,10 +48,11 @@ public class TestExecuteFunctionExecutionPlan
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(functionGrammar);
         PureModel pureModelForFunction = Compiler.compile(pmcd, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, null);
         ConcreteFunctionDefinition<?> concreteFxn = pureModelForFunction.getConcreteFunctionDefinition_safe(funcName);
-        Root_meta_pure_executionPlan_ExecutionPlan executionPlanInPure = core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__ExecutionPlan_1_(concreteFxn, new Root_meta_pure_mapping_Mapping_Impl(""), new Root_meta_pure_runtime_Runtime_Impl(""), CompiledSupport.toPureCollection(Collections.emptyList()), pureModelForFunction.getExecutionSupport());
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(pureModelForFunction.getExecutionSupport());
+        Root_meta_pure_executionPlan_ExecutionPlan executionPlanInPure = core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__ExecutionPlan_1_(concreteFxn, new Root_meta_pure_mapping_Mapping_Impl(""), new Root_meta_pure_runtime_Runtime_Impl(""), extensions, pureModelForFunction.getExecutionSupport());
         PlanPlatform platform = PlanPlatform.JAVA;
-        executionPlanInPure = platform.bindPlan(executionPlanInPure, null, pureModelForFunction, CompiledSupport.toPureCollection(Collections.emptyList()));
-        SingleExecutionPlan singleExecPlan = PlanGenerator.transformExecutionPlan(executionPlanInPure, pureModelForFunction, "vX_X_X", null, CompiledSupport.toPureCollection(Collections.emptyList()), LegendPlanTransformers.transformers);
+        executionPlanInPure = platform.bindPlan(executionPlanInPure, null, pureModelForFunction, extensions);
+        SingleExecutionPlan singleExecPlan = PlanGenerator.transformExecutionPlan(executionPlanInPure, pureModelForFunction, "vX_X_X", null, extensions, LegendPlanTransformers.transformers);
         Result result = PlanExecutor.newPlanExecutor().execute(singleExecPlan, params);
         return result;
     }

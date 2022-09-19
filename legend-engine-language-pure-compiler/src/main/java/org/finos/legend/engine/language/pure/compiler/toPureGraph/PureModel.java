@@ -495,6 +495,8 @@ public class PureModel implements IPureModel
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
         pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
+        pure.mappings.forEach(el -> visitWithErrorHandling(el, new PackageableElementFifthPassBuilder(this.getContext(el))));
+
     }
 
     public void loadConnectionsAndRuntimes(PureModelContextDataIndex pure)

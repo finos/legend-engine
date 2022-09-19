@@ -1,0 +1,68 @@
+{
+  "logging": {
+    "level": "error",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "pac4j": {
+    "clients": [
+      {
+        "org.pac4j.core.client.direct.AnonymousClient": {
+        }
+      }
+    ]
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 6060
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9099
+    },
+    "flowProviderClass": "org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type": "legendDefault"
+    }
+  },
+  "testConnectionsToEnable" : ["Redshift"],
+  "staticTestConnections" : {
+    "Redshift" : {
+      "_type": "RelationalDatabaseConnection",
+      "datasourceSpecification": {
+        "_type": "redshift",
+        "host": "redshift-load-balancer-cb907ffe8879f6c2.elb.us-east-1.amazonaws.com",
+        "port": 5439,
+        "databaseName": "integration_db1",
+        "clusterID": "",
+        "region": "us-east-1"
+      },
+      "authenticationStrategy": {
+        "_type": "userNamePassword",
+        "baseVaultReference": "",
+        "userNameVaultReference": "REDSHIFT_INTEGRATION_USER1_NAME",
+        "passwordVaultReference": "REDSHIFT_INTEGRATION_USER1_PASSWORD"
+      },
+      "type": "Redshift",
+      "element" : "",
+      "databaseType": "Redshift",
+      "postProcessors": [],
+      "postProcessorWithParameter": []
+    }
+  }
+}

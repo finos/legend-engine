@@ -32,7 +32,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testSimpleUnionAtPropert
       |TargetRoot.all()->graphFetch($tree)->serialize($tree),
       simplePropertyUnionMap,
       testJsonRuntime(Source, '{"prop":"A"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -52,7 +52,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testMultiLevelUnion():An
       |TargetRoot.all()->graphFetch($tree)->serialize($tree),
       multiLevelUnionMapping,
       testJsonRuntime(Source, '{"prop":"A"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -72,7 +72,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testLargeUnionAtProperty
       |TargetRoot.all()->graphFetch($tree)->serialize($tree),
       largePropertyUnionMap,
       testJsonRuntime(Source, '{"prop":"A"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -92,7 +92,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::testDisjointUnionWithOpt
       |MainClass.all()->graphFetch($tree)->serialize($tree),
       simpleDisjointUnionMap,
       testJsonRuntime(InputClass, '{"firstName":"Bob", "union1_field" : "A", "union2_field" : "B"}'),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let json = $result.values->toOne();
@@ -399,7 +399,7 @@ meta::pure::mapping::modelToModel::test::alloy::union::testUnionSubTypeSource() 
       meta::pure::mapping::modelToModel::test::alloy::union::UnionOnSubType,
      testJsonRuntime(_S_Firm,
                              $source
-                             ),[]
+                             ),meta::pure::extension::defaultExtensions()
       );
    assert(jsonEquivalent('{"legalName":"FINOS","employees":[{"firstName":"Person Super"},{"firstName":"CC"},{"firstName":"A1A"},{"firstName":"A2A"},{"firstName":"BB"}]}'->parseJSON(), $result.values->toOne()->parseJSON()));
 

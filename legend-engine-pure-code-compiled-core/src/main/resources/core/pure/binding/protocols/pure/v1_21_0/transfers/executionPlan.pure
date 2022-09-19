@@ -17,17 +17,6 @@ import meta::protocols::pure::v1_21_0::transformation::fromPureGraph::external::
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 
-function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::external::shared::format::transformDataQualityNode(node:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
-{
-   ^meta::protocols::pure::v1_21_0::metamodel::external::shared::format::executionPlan::DataQualityExecutionNode(
-      _type             = 'dataQuality',
-      resultType        = $node.resultType->meta::protocols::pure::v1_21_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
-      resultSizeRange   = $node.resultSizeRange->map(s| $s->meta::protocols::pure::v1_21_0::transformation::fromPureGraph::domain::transformMultiplicity()),
-      enableConstraints = $node.enableConstraints,
-      checked           = $node.checked
-   );
-}
-
 function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::external::shared::format::transformUrlStreamNode(node:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:Extension[*]): ExecutionNode[1]
 {
    ^meta::protocols::pure::v1_21_0::metamodel::external::shared::format::executionPlan::UrlStreamExecutionNode(

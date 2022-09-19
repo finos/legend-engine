@@ -42,47 +42,6 @@ function meta::pure::executionPlan::engine::java::addJacksonSupport(conventions:
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::engine::java::jacksonParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
-{
-   let pureDate = $conventions->className(PureDate);
-
-   if($type == String, 
-      | $parser+'.getText()', 
-      | 
-   if($type == Boolean,
-      | $parser+'.getBooleanValue()', 
-      | 
-   if($type == Integer,
-      | $parser+'.getLongValue()', 
-      | 
-   if($type == Float,
-      | $parser+'.getDoubleValue()', 
-      | 
-   if($type == Decimal,
-      | '('+$parser+'.getCurrentToken() == '+$conventions->tokenType('VALUE_STRING')+' ? new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getText()) : '+$parser+'.getDecimalValue())',
-      | 
-   if($type == Number,
-      | '('+$parser+'.getCurrentToken() == '+$conventions->tokenType('VALUE_STRING')+' ? new '+$conventions->codeType(javaClass('java.math.BigDecimal'))->codeToString()+'('+$parser+'.getText()) : ('+$parser+'.getCurrentToken() == '+$conventions->tokenType('VALUE_NUMBER_INT')+' ? '+$parser+'.getLongValue() : '+$parser+'.getDoubleValue()))',
-      | 
-   if($type == StrictDate,
-      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
-      | 
-   if($type == DateTime,
-      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
-      | 
-   if($type == Date,
-      | $conventions->codeType($pureDate)->codeToString()+'.parsePureDate('+$parser+'.getText())',
-      | 
-   if($type->instanceOf(meta::pure::metamodel::type::Enumeration),
-      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
-      |
-   if($type->instanceOf(Unit) || $type->instanceOf(Measure),
-      | $conventions->codeType($conventions->pureTypeToJavaType($type, PureOne))->codeToString()+'.valueOf('+$parser+'.getText())',
-      | fail('Unsupported type: ' + $type.name->toOne());
-        '';
-   )))))))))));
-}
-
 function meta::pure::executionPlan::engine::java::jsonNodeGetter(conventions:Conventions[1], node:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
 {
    let pureDate = $conventions->className(PureDate);

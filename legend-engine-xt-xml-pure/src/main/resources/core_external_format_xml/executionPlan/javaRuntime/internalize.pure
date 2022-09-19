@@ -36,7 +36,7 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
 import meta::pure::extension::*;
 
@@ -65,12 +65,20 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for XSD\n', |''));
 
-   let stream         = j_parameter(javaInputStream(), 'stream');
-   let rootClass      = $node.tree->toOne().class;
+   let stream             = j_parameter(javaInputStream(), 'stream');
+   let rootClass          = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
+   let dependentClasses   = $context.typeInfos->classDependenciesViaPropertiesWithSubTypes($rootClass);
+   let readableClasses    = $rootClass->concatenate($dependentClasses);
 
-   let readableClasses = $rootClass->concatenate($context.typeInfos->classDependenciesViaPropertiesWithsubTypes($rootClass));
-   let project         = $readableClasses->createDataClassesProject($path, $context, $debug->indent());
-   let readerClass     = createReaderClass($node, $path, $context);
+   // TODO [internalize] proper XML binding
+   let bindingDetail      = ^meta::external::shared::format::binding::validation::SuccessfulBindingDetail(fetchMappedPropertiesForClass={cl:meta::pure::metamodel::type::Class<Any>[1]|$context.typeInfos->allProperties($cl)});
+
+   let rootClassProject   = $rootClass->createDataClassesProject($bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=$node.enableConstraints, topLevelOnly=$node.tree->isEmpty(), graphFetchTree=$node.tree), $debug->indent());
+   let project            = if($dependentClasses->isEmpty(),
+                              | $rootClassProject,
+                              | $rootClassProject->concatenate($dependentClasses->map(dc | $dc->createDataClassesProject($bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=false, topLevelOnly=true), $debug->indent())))->toOneMany()->mergeProjects()
+                              );
+   let readerClass        = createReaderClass($node, $path, $context);
 
    $project->addClasses($readerClass)->generatedCode($readerClass);
 }
@@ -78,7 +86,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
 function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::createReaderClass(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
-   let rootClass   = $node.tree->toOne().class;
+   let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    let ctxParam    = j_parameter(javaParameterizedType($conventions->className(_DeserializeContext), javaWildcard()), 'context');
 
    $context.conventions->readerClass($path, $rootClass)
@@ -89,7 +97,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
 function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::addReadNoSchemaMethod(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
-   let rootClass   = $node.tree->toOne().class;
+   let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
 
    $jc->addMethod(cls|
            javaMethod('public', javaVoid(), 'read', $ctxParam,

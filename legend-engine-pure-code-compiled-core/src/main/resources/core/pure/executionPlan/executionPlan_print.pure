@@ -56,7 +56,8 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          e:FunctionParametersValidationNode[1] | 'FunctionParametersValidationNode\n'+ $space+ '(' + '\n'+ $space +'  functionParameters = '+  $e.functionParameters->map(p|$p.name+':'+$p.type->elementToPath()+ '[' + printMultiplicity($p.multiplicity->toOne()) + ']')->makeString('[',', ',']')+'\n'+$space+')\n',
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
-         i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions)
+         i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions),
+         v:VariableResolutionExecutionNode[1] | 'VariableResolution\n' + $space + '(' + header($v, $space, $extensions) + '\n' + $space + '  varName = ' + $v.varName + '\n' + $v->childrenToString($space+'  ', $extensions) + '\n' + $space + ')\n'
       ])->toOneMany()
    );
    $space + $root;
@@ -107,7 +108,7 @@ function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:
    $e->match(
       $extensions.executionPlanExtensions().printTypeToString->map(e|$e->eval($space, $extensions))->concatenate(
       [
-         partialClassResultType : PartialClassResultType[1]|'PartialClass[impls=['+$partialClassResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+'], propertiesWithParameters = ['+$partialClassResultType.propertiesWithParameters->map(x | if($x.property->instanceOf(Property), | $x.property.name->toOne(), | $x.parameters->map(x | $x->asString())->joinStrings($x.property.name->toOne() + '(', ', ', ')')))->joinStrings(', ')+']]',
+         partialClassResultType : PartialClassResultType[1]|'PartialClass[impls=['+$partialClassResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+'], propertiesWithParameters = ['+$partialClassResultType.propertiesWithParameters->map(x | if($x.property->instanceOf(Property), | $x.property.name->toOne(), | $x.parameters->map(x | $x->asString())->joinStrings($x.property.name->toOne() + '(', ', ', ')')))->sort()->joinStrings(', ')+']]',
          classResultType : ClassResultType[1]|'Class[impls='+$classResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+']'+if($classResultType.genericType->isEmpty(), |'', |'\n'+$space+'         as '+$classResultType.genericType->toOne()->printGenericType()),
          e:ResultType[1] | $e.type->elementToPath()
       ])->toOneMany()

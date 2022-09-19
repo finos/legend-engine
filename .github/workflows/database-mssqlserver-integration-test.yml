@@ -58,4 +58,4 @@ jobs:
       - name: Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -pl legend-engine-xt-relationalStore-executionPlan-connection-tests  -Dtest="ExternalIntegration*SqlServer*" test
+        run: mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests  -Dtest="ExternalIntegration*SqlServer*" test

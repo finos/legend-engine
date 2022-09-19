@@ -20,11 +20,12 @@ import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
@@ -206,6 +207,12 @@ function meta::pure::executionPlan::engine::java::referencedObjectReference(conv
    $identifier;
 }
 
+Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaDataRecordClassesExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   {doc.doc = 'Data record classes (which should not extend IReferencedObject interface)'}
+   dataRecordClasses: meta::pure::metamodel::type::Class<Any>[*];
+}  
+
 function meta::pure::executionPlan::engine::java::generateInterfaceForClass(typeInfo: ClassTypeInfo[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    print(if($debug.debug,|$debug.space+'generateInterfaceForClass: \''+$typeInfo.type.name->toOne()+'\'\n', |''));
@@ -230,7 +237,7 @@ function meta::pure::executionPlan::engine::java::generateInterfaceForClass(type
       $withPropertyGetters
    );
    
-   let dataRecordClass   = [JsonDataRecord, XmlDataRecord]->concatenate($conventions.extensions.plan_javaRuntime_common_generateInterfaceForClass);
+   let dataRecordClass   = $conventions.extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaDataRecordClassesExtension).dataRecordClasses;
    let iReferencedObject = $conventions->className(IReferencedObject);
    if($typeInfo.class->in($dataRecordClass),
       |$withQualifiedPropertyGetters,
@@ -336,3 +343,7 @@ function meta::pure::executionPlan::engine::java::instanceSizeIdentifier():Strin
    'instanceSize$'
 }
 
+function meta::pure::executionPlan::engine::java::dataClass(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
+{
+   $conventions->planNodeClass([], $path, $conventions->identifier($class->elementToPath('_')) + '_Impl');
+}

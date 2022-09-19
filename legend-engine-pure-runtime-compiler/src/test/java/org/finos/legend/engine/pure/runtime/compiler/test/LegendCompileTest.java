@@ -93,6 +93,20 @@ public abstract class LegendCompileTest
                    "assertEquals('oeoeoeo', $x.content);");
     }
 
+    @Test
+    public void testValueSpecification()
+    {
+        test("let x =  meta::legend::compileVS('1');\n" +
+                   "assertEquals(1, $x);");
+    }
+
+    @Test
+    public void testValueSpecificationEmbeddedPure()
+    {
+        test("let x =  meta::legend::compileVS('#Test{X X Test}#');\n" +
+                "assertEquals('X X Test', $x);");
+    }
+
 
 
 

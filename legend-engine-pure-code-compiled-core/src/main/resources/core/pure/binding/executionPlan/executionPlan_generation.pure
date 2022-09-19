@@ -19,22 +19,10 @@ import meta::pure::executionPlan::*;
 
 import meta::pure::extension::*;
 
-function meta::external::shared::format::executionPlan::generateDataQualityNode(deserializeNode:ExecutionNode[1], enableConstraints:Boolean[1], checked:Boolean[1]): ExecutionNode[1]
-{
-   ^DataQualityExecutionNode(
-      resultType        = $deserializeNode.resultType,
-      resultSizeRange   = $deserializeNode.resultSizeRange,
-      enableConstraints = $enableConstraints,
-      checked           = $checked,
-      executionNodes    = $deserializeNode
-   );
-}
-
 function meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource(externalSource:ExternalSource[1]): ExecutionNode[1]
 {
    $externalSource->match([
       u:UrlStreamExternalSource[1]     | generateUrlStreamExecutionNode($u),
-      e:ExecutionNodeExternalSource[1] | $e.node,
       e:ExternalSource[1]              | fail('External source format not supported !!'); @ExecutionNode;
    ]);
 }

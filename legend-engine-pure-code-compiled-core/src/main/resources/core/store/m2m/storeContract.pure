@@ -26,7 +26,10 @@ function meta::pure::mapping::modelToModel::contract::modelStoreContract():Store
      planExecution = meta::pure::mapping::modelToModel::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
      planCrossGraphFetchExecution = meta::pure::mapping::modelToModel::contract::planCrossGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__String_1__Boolean_1__Boolean_1__Map_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
-
+     printConnectionToString =  {extensions:meta::pure::extension::Extension[*]|
+                                  [
+                                        mc:PureModelConnection[1] | modelToModelConnectionToString($mc, $extensions)
+                                  ]},                                                          
      localGetterOverrideMapped = meta::pure::mapping::modelToModel::contract::getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_,
      localGetterOverrideNonMapped = meta::pure::mapping::modelToModel::contract::getterOverrideNonMapped_Any_1__Property_1__Any_MANY_,
 
@@ -51,7 +54,7 @@ function meta::pure::mapping::modelToModel::contract::execution(sq:meta::pure::m
 function meta::pure::mapping::modelToModel::contract::supports(f:FunctionExpression[1]):Boolean[1]
 {
    $f.func == meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
-      || ($f.func->isWithinPackage(meta::pure) && !($f->isSerialize() || $f->isLetFunction()));
+      || ($f.func->isWithinPackage(meta::pure) && !($f->isSerialize() || $f->isLetFunction() || $f.func->in([meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_])));
 }
 
 function meta::pure::mapping::modelToModel::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extension:Extension[*], debug:DebugContext[1]):ExecutionNode[1]

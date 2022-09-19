@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.14.6-SNAPSHOT</version>
+        <version>3.16.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -104,6 +104,14 @@
             <artifactId>legend-pure-code-compiled-platform-java</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <!-- PURE -->
+
+        <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <!-- ENGINE -->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -113,7 +121,5 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-        <!-- PURE -->
-
     </dependencies>
 </project>
