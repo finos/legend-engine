@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package java.org.finos.legend.engine.testable.connection;
+package org.finos.legend.engine.testable.connection;
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
