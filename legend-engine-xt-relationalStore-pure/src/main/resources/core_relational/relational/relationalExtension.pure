@@ -139,7 +139,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
                                    | ^meta::relational::metamodel::datatype::Timestamp(),
                                    | if($d.type == StrictDate,
                                         | ^meta::relational::metamodel::datatype::Date(),
-                                        | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();
+                                        | if($failOnMatchFailure, | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();, |[]);
                                      )
                                 )
                            )
@@ -808,7 +808,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
          'minus',
          list([
             pair(
-               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>) == $params->at(1)->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>)},
+               {params: RelationalOperationElement[*] | ($params->size() == 1) || ($params->at(0)->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>) == $params->at(1)->inferRelationalType()->genericType().rawType->toOne()->cast(@Class<Any>))},
                {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
             )
          ])
