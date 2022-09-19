@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::mapping::*;

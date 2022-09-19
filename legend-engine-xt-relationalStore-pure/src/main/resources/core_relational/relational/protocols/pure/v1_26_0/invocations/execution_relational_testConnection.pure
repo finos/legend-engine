@@ -1,0 +1,258 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::alloy::connections::*;
+import meta::relational::runtime::*;
+import meta::protocols::pure::v1_26_0::invocation::execution::testConnection::*;
+import meta::json::*;
+import meta::pure::functions::io::http::*;
+import meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::*;
+import meta::protocols::pure::v1_26_0::metamodel::domain::*;
+import meta::protocols::pure::v1_26_0::metamodel::store::relational::mapping::*;
+import meta::protocols::pure::v1_26_0::metamodel::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::functions::meta::*;
+import meta::protocols::pure::v1_26_0::transformation::toPureGraph::store::relational::*;
+import meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::*;
+import meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::*;
+import meta::protocols::pure::v1_26_0::metamodel::store::relational::element::*;
+import meta::protocols::pure::v1_26_0::transformation::toPureGraph::model::*;
+
+function meta::protocols::pure::v1_26_0::invocation::execution::testConnection::getTestConnection(dbType:DatabaseType[1], host:String[1], port:Integer[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
+{
+   let resp= executeHTTPRaw(^URL(host=$host, port=$port , path='/api/pure/v1/utilities/tests/connections/'+ $dbType->toString()),
+                             HTTPMethod.GET ,
+                             'application/json',
+                             []
+                            );
+
+   if($resp.statusCode != 200,
+       | println($resp.statusCode->toString()+' \''+$resp.entity->replace('\\n', '\n')->replace('\\t', '')+'\''),
+       |   
+          let res = $resp.entity->toOne()->toString();
+          $res -> meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::buildRelationalDatabaseConnection($extensions);
+      );
+}
+
+
+function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::buildRelationalDatabaseConnection(connectionJSON:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[0..1]
+{
+  let protocolConn = meta::json::fromJSON($connectionJSON, 
+                  meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::RelationalDatabaseConnection ,
+                 ^JSONDeserializationConfig( 
+                                            typeKeyName='_type',
+                                            failOnUnknownProperties=false ,
+                                            retainTypeField=true,
+                                            typeLookup = [
+                                                            pair('delegatedKerberos', 'DelegatedKerberosAuthenticationStrategy'),
+                                                            pair('middleTierUserNamePassword', 'MiddleTierUserNamePasswordAuthenticationStrategy'),
+                                                            pair('userNamePassword', 'UserNamePasswordAuthenticationStrategy'),
+                                                            pair('h2Default', 'DefaultH2AuthenticationStrategy'),
+                                                            pair('test', 'TestDatabaseAuthenticationStrategy'),
+                                                            pair('snowflakePublic', 'SnowflakePublicAuthenticationStrategy'),
+                                                            pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
+                                                            pair('apiToken', 'ApiTokenAuthenticationStrategy'),
+                                                            pair('gcpWorkloadIdentityFederationWithAWS','GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy'),
+
+                                                            pair('static', 'StaticDatasourceSpecification'),
+                                                            pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
+                                                            pair('h2Local', 'LocalH2DatasourceSpecification('),
+                                                            pair('snowflake', 'SnowflakeDatasourceSpecification'),
+                                                            pair('bigQuery', 'BigQueryDatasourceSpecification'),
+                                                            pair('databricks', 'DatabricksDatasourceSpecification'),
+                                                            pair('redshift', 'RedshiftDatasourceSpecification')
+                                                          ]
+                                            )
+                );
+  let pureConn = $protocolConn->meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformRelationalDatabaseConnection($extensions);
+  $pureConn->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection); 
+}
+
+
+function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformRelationalDatabaseConnection(conn : meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::RelationalDatabaseConnection[1] , extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::RelationalDatabaseConnection[1]
+{
+  let element = if($conn.element=='',                       // legend test server sends '' as element for testConnections , as store is not known before hand
+                  | ^Database(name='dummyDB'),
+                  | $conn.element->pathToElement()
+                  );
+
+  let type =  extractEnumValue(meta::relational::runtime::DatabaseType, $conn.type);
+  
+  ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+              timeZone = $conn.timeZone,
+              quoteIdentifiers = $conn.quoteIdentifiers,
+              element = $element,
+              type = $type,
+              datasourceSpecification = $conn.datasourceSpecification->meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformDatasourceSpecification($extensions),
+              authenticationStrategy = $conn.authenticationStrategy->meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformAuthenticationStrategy($extensions),
+              postProcessors = $conn.postProcessors->meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformPostProcessors($extensions)
+            );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformAuthenticationStrategy(a: meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1]
+{  
+  // TODO - deserializer extensions ?
+
+  $a->match([
+      d:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::DelegatedKerberosAuthenticationStrategy[1] |
+          ^meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy(
+              // _type = 'delegatedKerberos',
+              serverPrincipal = $d.serverPrincipal
+          ),
+      mup:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy[1] |
+          ^meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy(
+              // _type = 'middleTierUsernamePassword',
+              vaultReference = $mup.vaultReference
+          ),
+      u:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::UserNamePasswordAuthenticationStrategy[1] |
+          ^meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy(
+              // _type = 'userNamePassword',
+              baseVaultReference = $u.baseVaultReference,
+              userNameVaultReference = $u.userNameVaultReference,
+              passwordVaultReference = $u.passwordVaultReference
+            ),
+      d:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::DefaultH2AuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::DefaultH2AuthenticationStrategy(
+            // _type = 'h2Default'
+         ),
+      t:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::TestDatabaseAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(
+            // _type = 'test'
+         ),
+      s:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::SnowflakePublicAuthenticationStrategy[1] |
+        ^meta::pure::alloy::connections::alloy::authentication::SnowflakePublicAuthenticationStrategy(
+            // _type = 'snowflakePublic',
+            privateKeyVaultReference = $s.privateKeyVaultReference,
+            passPhraseVaultReference = $s.passPhraseVaultReference,
+            publicUserName = $s.publicUserName
+        ),
+      b:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::GCPApplicationDefaultCredentialsAuthenticationStrategy(
+            // _type = 'gcpApplicationDefaultCredentials'
+         ),
+      l:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::ApiTokenAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::ApiTokenAuthenticationStrategy(
+            // _type = 'apiToken',
+            apiToken = $l.apiToken
+         ),
+      b:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentityFederationAuthenticationStrategy(
+            // _type = 'gcpWorkloadIdentityFederationWithAWS',
+            serviceAccountEmail = $b.serviceAccountEmail,
+            additionalGcpScopes = $b.additionalGcpScopes
+         )
+   ]);
+}
+
+function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformDatasourceSpecification(ds: meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]
+{
+   $ds->match([
+      s:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::StaticDatasourceSpecification[1] |
+         ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(
+            // _type = 'static',
+            host = $s.host,
+            port = $s.port,
+            databaseName = $s.databaseName
+         ),
+      e:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::EmbeddedH2DatasourceSpecification[1] |
+         ^meta::pure::alloy::connections::alloy::specification::EmbeddedH2DatasourceSpecification(
+            // _type = 'h2Embedded',
+            databaseName = $e.databaseName,
+            directory = $e.directory,
+            autoServerMode = $e.autoServerMode
+         ),
+      l:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification[1] |
+         ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(
+            //  _type = 'h2Local',
+             testDataSetupCsv = $l.testDataSetupCsv,
+             testDataSetupSqls = $l.testDataSetupSqls
+         ),
+      s:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::SnowflakeDatasourceSpecification[1] |
+        ^meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification(
+            // _type = 'snowflake',
+            accountName = $s.accountName,
+            region = $s.region,
+            warehouseName = $s.warehouseName,
+            databaseName = $s.databaseName,
+            cloudType = $s.cloudType,
+            quotedIdentifiersIgnoreCase = $s.quotedIdentifiersIgnoreCase,
+            proxyHost = $s.proxyHost,
+            proxyPort = $s.proxyPort,
+            nonProxyHosts = $s.nonProxyHosts,
+            accountType = if($s.accountType->isEmpty(),|[],
+                             |extractEnumValue(meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType, $s.accountType->toOne())),
+            organization = $s.organization,
+            role = $s.role
+        ),
+      b:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification[1] |
+         ^meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification(
+            //  _type = 'bigQuery',
+             projectId = $b.projectId,
+             defaultDataset = $b.defaultDataset
+         ),
+      d:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
+          ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
+              // _type = 'databricks',
+              hostname = $d.hostname,
+              port = $d.port,
+              protocol = $d.protocol,
+              httpPath = $d.httpPath
+         ),
+     r:meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification[1] |
+          ^meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification(
+              //  _type = 'redshift',
+                clusterID = $r.clusterID,
+                port =$r.port,
+                region = $r.region,
+                databaseName = $r.databaseName,
+                endpointURL = $r.endpointURL,
+                host = $r.host 
+         )   
+   ]);
+}
+
+function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformPostProcessors(processors:meta::protocols::pure::v1_26_0::metamodel::store::relational::postProcessor::PostProcessor[*], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::PostProcessor[*]
+{
+   $processors->map(processor |
+      $processor->match([
+         m:meta::protocols::pure::v1_26_0::metamodel::store::relational::postProcessor::MapperPostProcessor[1] | ^meta::pure::alloy::connections::MapperPostProcessor(
+            // _type = 'mapper',
+            mappers = transformPostProcessorMappers($m.mappers))
+      ]
+      )
+   );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::toPureGraph::connection::transformPostProcessorMappers(mappers:meta::protocols::pure::v1_26_0::metamodel::store::relational::postProcessor::Mapper[*]):meta::pure::alloy::connections::Mapper[*]
+{
+   $mappers->map(mapper |
+                   $mapper->match([
+                      t:meta::protocols::pure::v1_26_0::metamodel::store::relational::postProcessor::TableNameMapper[1] | ^meta::pure::alloy::connections::TableNameMapper(
+                        //  _type = 'table',
+                         schema = ^meta::pure::alloy::connections::SchemaNameMapper(
+                            // _type = 'schema',
+                            from = $t.schema.from,
+                            to = $t.schema.to
+                         ),
+                         from = $t.from,
+                         to = $t.to
+                      ),
+                      s:meta::protocols::pure::v1_26_0::metamodel::store::relational::postProcessor::SchemaNameMapper[1] | ^meta::pure::alloy::connections::SchemaNameMapper(
+                        //  _type = 'schema',
+                         from = $s.from,
+                         to = $s.to
+                      )
+                   ])
+                )
+}

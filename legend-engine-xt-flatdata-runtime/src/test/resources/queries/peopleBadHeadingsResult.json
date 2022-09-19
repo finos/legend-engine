@@ -7,89 +7,75 @@
       {
         "id": null,
         "externalId": null,
-        "message": "No Input Available",
+        "message": "Heading firstName missing for mandatory column",
         "enforcementLevel": "Critical",
-        "ruleType": "NoInput",
-        "ruleDefinerPath": "test::firm::model::Person",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "test::gen::TestSchemaSet",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Heading lastName missing for mandatory column",
+        "enforcementLevel": "Critical",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "test::gen::TestSchemaSet",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Heading isAlive missing for mandatory column",
+        "enforcementLevel": "Critical",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "test::gen::TestSchemaSet",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Heading heightInMeters missing for mandatory column",
+        "enforcementLevel": "Critical",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "test::gen::TestSchemaSet",
+        "path": []
+      },
+      {
+        "id": null,
+        "externalId": null,
+        "message": "Header row is invalid. Skipping all data in this section.",
+        "enforcementLevel": "Critical",
+        "ruleType": "InvalidInput",
+        "ruleDefinerPath": "test::gen::TestSchemaSet",
         "path": []
       }
     ],
     "source": {
-      "defects": [
+      "number": 0,
+      "lineNumber": 1,
+      "record": "First Name,Last Name,Date Of Birth,Is Alive,Height In Meters",
+      "recordValues": [
         {
-          "id": null,
-          "externalId": null,
-          "message": "Heading firstName missing for mandatory column",
-          "enforcementLevel": "Critical",
-          "ruleType": "InvalidInput",
-          "ruleDefinerPath": "test::gen::TestSchemaSet",
-          "path": []
+          "address": "First Name",
+          "rawValue": "First Name"
         },
         {
-          "id": null,
-          "externalId": null,
-          "message": "Heading lastName missing for mandatory column",
-          "enforcementLevel": "Critical",
-          "ruleType": "InvalidInput",
-          "ruleDefinerPath": "test::gen::TestSchemaSet",
-          "path": []
+          "address": "Last Name",
+          "rawValue": "Last Name"
         },
         {
-          "id": null,
-          "externalId": null,
-          "message": "Heading isAlive missing for mandatory column",
-          "enforcementLevel": "Critical",
-          "ruleType": "InvalidInput",
-          "ruleDefinerPath": "test::gen::TestSchemaSet",
-          "path": []
+          "address": "Date Of Birth",
+          "rawValue": "Date Of Birth"
         },
         {
-          "id": null,
-          "externalId": null,
-          "message": "Heading heightInMeters missing for mandatory column",
-          "enforcementLevel": "Critical",
-          "ruleType": "InvalidInput",
-          "ruleDefinerPath": "test::gen::TestSchemaSet",
-          "path": []
+          "address": "Is Alive",
+          "rawValue": "Is Alive"
         },
         {
-          "id": null,
-          "externalId": null,
-          "message": "Header row is invalid. Skipping all data in this section.",
-          "enforcementLevel": "Critical",
-          "ruleType": "InvalidInput",
-          "ruleDefinerPath": "test::gen::TestSchemaSet",
-          "path": []
+          "address": "Height In Meters",
+          "rawValue": "Height In Meters"
         }
-      ],
-      "source": {
-        "number": 0,
-        "lineNumber": 1,
-        "record": "First Name,Last Name,Date Of Birth,Is Alive,Height In Meters",
-        "recordValues": [
-          {
-            "address": "First Name",
-            "rawValue": "First Name"
-          },
-          {
-            "address": "Last Name",
-            "rawValue": "Last Name"
-          },
-          {
-            "address": "Date Of Birth",
-            "rawValue": "Date Of Birth"
-          },
-          {
-            "address": "Is Alive",
-            "rawValue": "Is Alive"
-          },
-          {
-            "address": "Height In Meters",
-            "rawValue": "Height In Meters"
-          }
-        ]
-      },
-      "value": null
+      ]
     },
     "value": null
   }

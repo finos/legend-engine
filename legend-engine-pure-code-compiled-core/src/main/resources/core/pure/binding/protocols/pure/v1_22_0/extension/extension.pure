@@ -27,7 +27,6 @@ function meta::protocols::pure::v1_22_0::external::shared::format::serializerExt
       transfers_executionPlan_transformNode =
          {mapping:Mapping[1], extensions:Extension[*] |
             [
-               d:meta::external::shared::format::executionPlan::DataQualityExecutionNode[1] | transformDataQualityNode($d, $mapping, $extensions),
                u:meta::external::shared::format::executionPlan::UrlStreamExecutionNode[1]   | transformUrlStreamNode($u, $mapping, $extensions)
             ]
          }

@@ -1,0 +1,399 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::*;
+import meta::json::*;
+import meta::pure::store::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::milestoning::*;
+import meta::pure::mapping::*;
+import meta::protocols::pure::v1_26_0::transformation::fromPureGraph::*;
+
+Class <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::AllTypes
+{
+   classes : Class<Any>[*];
+   enumerations : Enumeration<Any>[*];
+   measures : Measure[*];
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildPureModelContextPointer(pointers:meta::protocols::pure::v1_26_0::metamodel::PackageableElementPointer[*], baseVersion:String[1], protocol:Protocol[1]):meta::protocols::pure::v1_26_0::metamodel::PureModelContextPointer[1]
+{
+   ^meta::protocols::pure::v1_26_0::metamodel::PureModelContextPointer
+   (
+      _type='pointer',
+      serializer = $protocol,
+      sdlcInfo= ^meta::protocols::pure::v1_26_0::metamodel::PureSDLC
+                (
+                   _type = 'pure',
+                   baseVersion = $baseVersion,
+                   version = 'none',
+                   packageableElementPointers = $pointers
+                )
+   )
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findInheritedTypes(classes:Class<Any>[*]):Type[*]
+{
+   let inherittedClasses    = $classes->map(class| $class->getAllClassGeneralisations())->filter(c|!$c->isWithinPackage(meta::pure::metamodel))->filter(c|!$c->in($classes))->remove(Any);
+   let typeUsedByInheritted = $inherittedClasses.properties->map(f|$f->functionReturnType().rawType);
+   $inherittedClasses->concatenate($typeUsedByInheritted)->removeDuplicates()->remove(Any);
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::scan(v:ValueSpecification[1]):Type[*]
+{
+    $v->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::scan([])->distinct()
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::scan(v:Any[1], visited:FunctionDefinition<Any>[*]):Type[*]
+{
+   let matchClass = [c:Class<Any>[1]| $c,
+                     e:Enumeration<Any>[1]| $e,
+                     a:Any[*]| [] ];
+
+   $v->match(
+      [
+         {fe:FunctionExpression[1]|
+            let params = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->scan($visited));
+            let func = $fe.func->scan($visited);
+            $fe.genericType.rawType->concatenate($params)->concatenate($func);
+         },
+         i:InstanceValue[1]         | $i.values->map(v | $v->scan($visited)),
+         k:meta::pure::functions::lang::KeyExpression[1]         | $k.expression->scan($visited);,
+         lf :LambdaFunction<Any>[1] | $lf.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan($visited)),
+         v:VariableExpression[1]    | [],
+         {cfd:ConcreteFunctionDefinition<Any>[1]|
+            if ($cfd->in($visited) || ($cfd->elementToPath()->startsWith('meta::') && not($cfd->meta::alloy::isMetaAlloyTestDependency())),
+                | [],
+                | let newVisited = $visited->concatenate($cfd);
+                  $cfd.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan($newVisited));
+            );
+         },
+         a: Any[1] | $a
+
+      ]
+   )->map(a | $a->match($matchClass))->filter(c|$c->meta::alloy::isMetaAlloyTestDependency() || !$c->elementToPath()->startsWith('meta::'));
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::excludeTypes(types:Type[*], validPackages:String[*]):Type[*]
+{
+   $types->remove(Any)
+         ->removeDuplicates()
+         ->filter(c|let p = $c->elementToPath();
+                    !$c->instanceOf(MappingClass) && $validPackages->fold({a,b|$b || $p->startsWith($a)}, false);
+         );
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::process(path:String[1], area:String[1]):String[*]
+{
+   let n = $area+'::';
+   let l = $n->length();
+   let index = $path->indexOf('::', $l);
+   let dms = if($index == -1,
+                |$path,
+                |let name = $path->substring($l, $index);
+                 ['apps','datamarts']->map(c|$c+'::'+$name);
+             );
+   $dms->concatenate(['apps::model', 'model']);
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::navigateAssos(subset:Type[*], alreadyProcessed:Type[*], validPackages:String[*]):Type[*]
+{
+   let classes = $subset->filter(c|$c->instanceOf(Class) && !$c->instanceOf(MappingClass))->cast(@Class<Any>);
+   let res = $classes->map(c|$c.properties->concatenate($c.propertiesFromAssociations)->map(f|$f->functionReturnType().rawType)
+                              ->concatenate(
+                                 $c.qualifiedProperties->concatenate($c.qualifiedPropertiesFromAssociations)->evaluateAndDeactivate()
+                                 ->filter(p|!$p->hasGeneratedMilestoningPropertyStereotype())
+                                 ->map(q|let fType = $q->functionType();
+                                         let params = $fType.parameters->map(p|$p.genericType.rawType);
+                                         $params->concatenate($fType.returnType.rawType)->concatenate($q.expressionSequence->map(x|$x->scan()));
+                                 )
+                              )
+                               ->concatenate(
+                                  $c.constraints->map(c|$c.functionDefinition.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan()))
+                               )
+
+                        );
+
+   let filteredClasses = $classes->excludeTypes($validPackages)->cast(@Class<Any>);
+
+   let newAll =  $filteredClasses
+                 ->concatenate($filteredClasses->map(c|$c->getAllClassGeneralisations()))
+                 ->concatenate($filteredClasses->map(c|$c->allSpecializations()))
+                 ->concatenate($res)
+                 ->excludeTypes($validPackages);
+
+   let set = $newAll->removeAllOptimized($alreadyProcessed);
+   if ($set->isEmpty(),
+       |$alreadyProcessed,
+       |$set->navigateAssos($alreadyProcessed->concatenate($set), $validPackages)
+   );
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllTypes(seedTypes:Type[*], validPackages:String[*]):AllTypes[1]
+{
+   let directTypes    = $seedTypes->navigateAssos($seedTypes, $validPackages)->removeDuplicates()->remove(Any);
+   let inheritedTypes = $directTypes->filter(t|$t->instanceOf(Class))->cast(@Class<Any>)->findInheritedTypes();
+   let allTypes       = $directTypes->concatenate($inheritedTypes)->removeDuplicates()->remove(Any)->filter(t|!$t->isWithinPackage(meta::pure::metamodel));
+   ^AllTypes(classes = $allTypes->filter(t|$t->instanceOf(Class))->cast(@Class<Any>),
+             enumerations = $allTypes->filter(t|$t->instanceOf(Enumeration))->cast(@Enumeration<Any>),
+             measures = $allTypes->filter(t|$t->instanceOf(Measure))->cast(@Measure));
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllAssociations(classes:meta::pure::metamodel::type::Class<Any>[*]):Association[*]
+{
+    $classes->map(c|$c.propertiesFromAssociations).owner->removeDuplicates()->cast(@Association)
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllStoreIncludes(store:meta::pure::store::Store[1]):meta::pure::store::Store[*]
+{
+   $store->concatenate($store.includes->map(s|$s->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllStoreIncludes()))->removeDuplicates();
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllMappingIncludes(mapping:meta::pure::mapping::Mapping[1]):meta::pure::mapping::Mapping[*]
+{
+   $mapping->concatenate($mapping.includes->map(s|$s.included->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllMappingIncludes()))->removeDuplicates();
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findValidPathsFromPackage(p:PackageableElement[1]):String[*]
+{
+   let path = $p->elementToPath();
+   let sameArea = if ($path->startsWith('model'),
+       |['apps::model', 'model'],
+       |if($path->startsWith('datamarts'),
+           |process($path,'datamarts'),
+           |if($path->startsWith('apps'),
+              |process($path,'apps'),
+              |[]
+            )
+        )
+   );
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findValidPaths(p:Type[*], extensions:meta::pure::extension::Extension[*]):String[*]
+{
+    $p->cast(@PackageableElement)->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findValidPaths($extensions);
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findValidPaths(p:PackageableElement[*], extensions:meta::pure::extension::Extension[*]):String[*]
+{
+   let validForTests = ['meta::java::generation::tests', 'meta::external', 'meta::pure::tests', 'apps::pure', 'apps::global']->concatenate($extensions.validTestPackages);
+   $validForTests->concatenate($p->map(op|$op->findValidPathsFromPackage()))->removeDuplicates();
+}
+
+function <<access.protected>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::enumerationMappings(m:Mapping[1]):EnumerationMapping<Any>[*]
+{
+   $m.enumerationMappings->concatenate($m.includes.included->map(i|$i->enumerationMappings()))
+}
+
+function  meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findTypesFromPureInstanceSetImplementation(p:PureInstanceSetImplementation[1]):Type[*]
+{
+   let srcClass = $p.srcClass->cast(@Class<Any>);
+   $p.class->concatenate($srcClass)
+      ->concatenate($srcClass.constraints->map(c|$c.functionDefinition.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan())))
+      ->concatenate($srcClass.constraints->map(c|$c.messageFunction.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan())))
+      ->concatenate($p.propertyMappings->filter(x | $x->instanceOf(PurePropertyMapping))->cast(@PurePropertyMapping).transform.expressionSequence->evaluateAndDeactivate()->map(e|$e->scan()));
+}
+
+function <<access.private>> meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::PackageableElement[*]
+{
+   buildDomain($found, $associations, {p:Profile[1]|!$p->elementToPath()->startsWith('meta')}, $extensions)
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildDomain(found:AllTypes[1], associations:Association[*], profileFilter:Function<{Profile[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::PackageableElement[*]
+{
+   let profiles = $found.classes->map(c | $c.stereotypes.profile->concatenate($c.taggedValues.tag.profile)
+                                                                ->concatenate($c.properties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))
+                                                                ->concatenate($c.qualifiedProperties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile))))
+                  ->concatenate($found.enumerations->cast(@AnnotatedElement)->map(e|$e.stereotypes.profile->concatenate($e.taggedValues.tag.profile)))
+                  ->concatenate($associations->map(a|$a.stereotypes.profile->concatenate($a.taggedValues.tag.profile)
+                                                                           ->concatenate($a.properties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))
+                                                                           ->concatenate($a.qualifiedProperties->map(p|$p.stereotypes.profile->concatenate($p.taggedValues.tag.profile)))
+                                                  )
+                               )
+                  ->removeDuplicates()
+                  ->filter($profileFilter);
+   $found.classes->map(c | $c->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::domain::transformClass($extensions))
+     ->concatenate($associations->map(c | $c->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::domain::transformAssociation($extensions)))
+     ->concatenate($found.enumerations->map(e | $e->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::domain::transformEnum()))
+     ->concatenate($profiles->map(p |$p->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::transformProfile($extensions)
+                                   ))
+     ->concatenate($found.measures->map(m|$m->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::domain::transformMeasure($extensions)));
+}
+
+function  meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllTypesFromMapping(m:Mapping[1], extensions:meta::pure::extension::Extension[*]):AllTypes[1]
+{
+   $m.classMappings()->map(c| $c->match($extensions.serializerExtension('v1_26_0')->cast(@meta::protocols::pure::v1_26_0::extension::SerializerExtension_v1_26_0).scan_buildBasePureModel_findAllTypesFromMapping->concatenate(
+                                        [p:PureInstanceSetImplementation[1]| $p->findTypesFromPureInstanceSetImplementation(),
+                                         s:SetImplementation[1] |$s.class
+                                         ])->toOneMany()
+                                     )
+                       )
+   ->concatenate($m->enumerationMappings().enumeration)
+   ->concatenate($m->enumerationMappings()->map(e|$e.enumValueMappings.sourceValues->type()->filter(t|$t->instanceOf(Class) || $t->instanceOf(Enumeration))->remove(Nil)))
+   ->removeDuplicates()->remove(Any)
+   ->findAllTypes($m->findValidPaths($extensions));
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::extractStores(si:SetImplementation[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::pure::store::Store[*]
+{
+   $si->match($extensions.serializerExtension('v1_26_0')->cast(@meta::protocols::pure::v1_26_0::extension::SerializerExtension_v1_26_0).scan_buildBasePureModel_extractStores->map(e|$e->eval($m, $extensions))->concatenate([
+               ins: OperationSetImplementation[1] | [],
+               p: PureInstanceSetImplementation[1] | []
+            ])->toOneMany()
+      );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::processProperties(pmi:PropertyMappingsImplementation[1], m:Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::pure::store::Store[*]
+{
+   $pmi.propertyMappings->map(pm|$pm->match($extensions.serializerExtension('v1_26_0')->cast(@meta::protocols::pure::v1_26_0::extension::SerializerExtension_v1_26_0).scan_buildBasePureModel_processProperties->map(e|$e->eval($m, $extensions))->concatenate(
+                                          [
+                                             a:Any[*]|[]
+                                          ]
+                                          )->toOneMany()
+                                 )
+                             );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllTypesFromPackage(ps:Package[*], extensions:meta::pure::extension::Extension[*]):AllTypes[1]
+{
+   $ps->map(p|$p->getAllPackageElements(true))->removeDuplicates()->filter(c|$c->instanceOf(Type))->cast(@Type)->findAllTypes($ps->findValidPaths($extensions));
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromMapping(gm:Mapping[*], toOrigin:Function<{Mapping[1], Protocol[1]->meta::protocols::pure::v1_26_0::metamodel::PureModelContextPointer[0..1]}>[1], extensions:meta::pure::extension::Extension[*]):meta::pure::functions::collection::Pair<meta::pure::functions::collection::List<Store>, meta::protocols::pure::v1_26_0::metamodel::PureModelContextData>[1]
+{
+   let allMappings = $gm->map(x | $x->findAllMappingIncludes())->removeDuplicates();
+
+   // Stores  ---------------
+   let classMappingStores = $allMappings->map(m|$m.classMappings->map(s|$s->extractStores($m, $extensions)));
+
+   let associationStores = $allMappings->map(m|$m.associationMappings).stores;
+
+   let storesFromInclude = $allMappings->map(m|let i = $m.includes.storeSubstitutions; $i->map(k|[$k.original, $k.substitute]););
+
+   let stores = $classMappingStores
+                ->concatenate($associationStores)
+                ->concatenate($storesFromInclude)
+                ->map(s|$s->concatenate($s->match(
+                                              $extensions.serializerExtension('v1_26_0')->cast(@meta::protocols::pure::v1_26_0::extension::SerializerExtension_v1_26_0).scan_buildBasePureModel_buildPureModelFromMapping1->concatenate(
+                                              [
+                                                 a:Any[1]|[]
+                                              ])->toOneMany()
+                                             )
+                                       )
+                )->map(s|$s->findAllStoreIncludes())
+                ->removeDuplicatesBy(a|$a->elementToPath())
+                ->concatenate($extensions.serializerExtension('v1_26_0')->cast(@meta::protocols::pure::v1_26_0::extension::SerializerExtension_v1_26_0).scan_buildBasePureModel_buildPureModelFromMapping2);
+
+   // Domain ----------------
+   let foundClasses = $gm->fold({x, y | let alltype = $x->findAllTypesFromMapping($extensions);
+                                        ^$y(classes = $y.classes->concatenate($alltype.classes)->removeDuplicates(),
+                                           enumerations = $y.enumerations->concatenate($alltype.enumerations)->removeDuplicates());}, ^AllTypes());
+
+   let associations = $foundClasses.classes->findAllAssociations();
+
+   let found = ^$foundClasses(classes = $foundClasses.classes->concatenate($associations.properties.genericType.rawType)->removeDuplicates()->cast(@Class<Any>));
+
+   //SecureViews Necessities
+
+   // Result ----------------
+   let protocol = ^Protocol(name='pure', version='v1_26_0');
+   pair(list($stores),
+        ^meta::protocols::pure::v1_26_0::metamodel::PureModelContextData
+        (
+           _type = 'data',
+           serializer = $protocol,
+           origin = $toOrigin->eval($gm, $protocol),
+           elements = buildDomain($found, $associations, $extensions)
+                        ->concatenate($allMappings->map(m|$m->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::mapping::transformMapping($extensions)))
+                        ->concatenate($stores->map(store|$store->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::store::transformStore($extensions)))
+        )
+   );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromPackage(ps:Package[*], baseVersion:String[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::PureModelContextData[1]
+{
+   let found = findAllTypesFromPackage($ps, $extensions);
+   let associations = $found.classes->findAllAssociations();
+   let protocol = ^Protocol(name='pure', version='v1_26_0');
+   ^meta::protocols::pure::v1_26_0::metamodel::PureModelContextData
+   (
+      _type = 'data',
+      serializer = $protocol,
+      origin = buildPureModelContextPointer($ps->map(p|^meta::protocols::pure::v1_26_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_26_0::metamodel::PackageableElementType.PACKAGE, path=$p->elementToPath())), $baseVersion, $protocol),
+      elements = buildDomain($found, $associations, $extensions)
+   );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromStore(store:meta::pure::store::Store[1], baseVersion:String[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::PureModelContextData[1]
+{
+   let stores = $store->map(s|$s->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::store::transformStore($extensions));
+   let protocol = ^Protocol(name='pure', version='v1_26_0');
+   ^meta::protocols::pure::v1_26_0::metamodel::PureModelContextData
+   (
+      _type = 'data',
+      serializer = $protocol,
+      origin = buildPureModelContextPointer(^meta::protocols::pure::v1_26_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_26_0::metamodel::PackageableElementType.STORE, path=$store->elementToPath()), $baseVersion, $protocol),
+      elements = $stores
+   );
+}
+
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromMapping(gm:Mapping[*], extensions:meta::pure::extension::Extension[*]):meta::pure::functions::collection::Pair<meta::pure::functions::collection::List<Store>, meta::protocols::pure::v1_26_0::metamodel::PureModelContextData>[1]
+{
+   let toOrigin = {m:Mapping[1], p:Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::v1_26_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_26_0::metamodel::PackageableElementType.MAPPING, path=$m->elementToPath()), '-1', $p)};
+   buildBasePureModelFromMapping($gm, $toOrigin, $extensions);
+}
+
+
+//----------------------
+// Access using Strings
+//----------------------
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromMappingStr(mappingStr:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let gm = $mappingStr->pathToElement()->cast(@Mapping);
+   let toOrigin = {m:Mapping[1], p:Protocol[1] | buildPureModelContextPointer(^meta::protocols::pure::v1_26_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_26_0::metamodel::PackageableElementType.MAPPING, path=$gm->elementToPath()), '-1', $p)};
+   buildBasePureModelFromMapping($gm, $toOrigin, $extensions).second->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromPackageStr(packageStr:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let gm = $packageStr->pathToElement()->cast(@Package);
+   buildBasePureModelFromPackage($gm, '-1', $extensions)->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromStoreStr(packageStr:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let gm = $packageStr->pathToElement()->cast(@Store);
+   buildBasePureModelFromStore($gm, '-1', $extensions)->toJsonBeta(^JSONSerializationConfig(typeKeyName='__TYPE', includeType=false, fullyQualifiedTypePath=false, serializeQualifiedProperties=false, serializePackageableElementName=false, removePropertiesWithEmptyValues=true));
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildPureModelFromType(type:Type[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::PureModelContextData[1]
+{
+   let found = $type->meta::protocols::pure::v1_26_0::transformation::fromPureGraph::findAllTypes($type->findValidPaths($extensions));
+   let associations = $found.classes->findAllAssociations();
+
+   let protocol = ^Protocol(name='pure', version='v1_26_0');
+   ^meta::protocols::pure::v1_26_0::metamodel::PureModelContextData
+   (
+      _type = 'data',
+      serializer = $protocol,
+      origin = buildPureModelContextPointer(^meta::protocols::pure::v1_26_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_26_0::metamodel::PackageableElementType.CLASS, path=$type->elementToPath()), '-1', $protocol),
+      elements = buildDomain($found, $associations, $extensions)
+   );
+}
+
+function meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildPureModelFromPackage(ps:Package[*], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_26_0::metamodel::PureModelContextData[1]
+{
+   meta::protocols::pure::v1_26_0::transformation::fromPureGraph::buildBasePureModelFromPackage($ps, '-1', $extensions);
+}

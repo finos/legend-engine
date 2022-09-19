@@ -188,9 +188,9 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
          
-   let typeInfo = meta::pure::executionPlan::engine::java::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::engine::java::enrichTypeInfos($cls, []);
+   let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::engine::java::enrichTypeInfos($cls, []);
     
-   let props = $typeInfo->meta::pure::executionPlan::engine::java::typeInfo::allProperties($cls);
+   let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
    
    let proto = $conventions->implClassName($cls)->addModifiers(['public']);
                                       
@@ -198,8 +198,8 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
    let dep = newDependency(
       $name,
         {state |
-            let clsTypeInfo = $typeInfo.typeInfos->filter(t | $t->instanceOf(meta::pure::executionPlan::engine::java::typeInfo::ClassTypeInfo))
-                                        ->cast(@meta::pure::executionPlan::engine::java::typeInfo::ClassTypeInfo)
+            let clsTypeInfo = $typeInfo.typeInfos->filter(t | $t->instanceOf(meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo))
+                                        ->cast(@meta::pure::executionPlan::platformBinding::typeInfo::ClassTypeInfo)
                                         ->filter(c | $c.class() == $cls);
 
             assert($clsTypeInfo->size() == 1, 'Error: found multiple type infos for class');
@@ -251,17 +251,17 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
    $invoke->dependsOn($dep);
 }
 
-function meta::pure::executionPlan::engine::java::enrichTypeInfos(infos:meta::pure::executionPlan::engine::java::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::engine::java::typeInfo::TypeInfoSet[1]
+function meta::pure::executionPlan::engine::java::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]
 {
    if($seen->contains($for),
       | $infos,
       {|
          let withCls = $infos
-            ->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllProperties($for)
-            ->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllPropertiesViaAssociations($for);
+            ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllProperties($for)
+            ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations($for);
 
          let nowSeen = $seen->concatenate($for);
-         $withCls->meta::pure::executionPlan::engine::java::typeInfo::forClass($for).supertypes->fold({super, inf| $inf->meta::pure::executionPlan::engine::java::enrichTypeInfos($super, $nowSeen)}, $withCls);
+         $withCls->meta::pure::executionPlan::platformBinding::typeInfo::forClass($for).supertypes->fold({super, inf| $inf->meta::pure::executionPlan::engine::java::enrichTypeInfos($super, $nowSeen)}, $withCls);
       }
    );
 }

@@ -14,14 +14,23 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 
 public class ExternalFormatInternalizeExecutionNode extends ExecutionNode
 {
-    public String contentType;
+    @JsonProperty(required = true)
     public String binding;
+
+    @JsonProperty(required = true)
+    public String contentType;
+
+    public boolean enableConstraints;
+
+    public boolean checked;
+
     public RootGraphFetchTree tree;
 
     @Override

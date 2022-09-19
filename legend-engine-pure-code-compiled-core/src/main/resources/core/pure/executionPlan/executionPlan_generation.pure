@@ -149,18 +149,6 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 
 
 
-
-function <<doc.deprecated>> meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
-{
-   meta::pure::executionPlan::generatePlatformCode($plan, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
-}
-
-function <<doc.deprecated>> meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
-{
-   assert($config.platform == Platform.JAVA, 'Platform Not Supported: ' + $config.platform.name);
-   meta::pure::executionPlan::generatePlatformCode($plan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(planId = $config.planId), $extensions, $debug);
-}
-
 function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    meta::pure::executionPlan::generatePlatformCode($plan, $platformId, $config, $extensions, if(isOptionSet('DebugPlatformCodeGen'), |debug(), |noDebug()));
@@ -175,9 +163,10 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 
 function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
 {
+   let enumValidationContext = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration))->map(e | ^meta::pure::executionPlan::EnumValidationContext(varName = $e.name, validEnumValues = $e.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id())));
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
    if($f->instanceOf(LambdaFunction) && $planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
-                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean));
+                                                                             let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $enumValidationContext);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
                                                                                            e:ExecutionNode[1]|^SequenceExecutionNode(executionNodes=[$functionParametersValidationNode, $e], resultType=$e.resultType, resultSizeRange=$e.resultSizeRange)]);
                                                                          ,| $node);
@@ -283,19 +272,19 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
                   let returnedClass   = $tree.class->toOne();
 
                   assert($tree->isNotEmpty(), 'Deserialization without Graph Fetch Tree not yet supported');
-                  let deserializeNode = ^meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode
-                                        (
-                                            resultType      = ^PartialClassResultType(
-                                                                type=$returnedClass,
-                                                                propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
-                                                              ),
-                                            resultSizeRange = ZeroMany,
-                                            tree            = $tree,
-                                            binding         = $connection->cast(@meta::external::shared::format::executionPlan::ExternalFormatConnection).element->cast(@meta::external::shared::format::binding::Binding),
-                                            executionNodes  = $sourceNode
-                                        );
-
-                  meta::external::shared::format::executionPlan::generateDataQualityNode($deserializeNode, $enableConstraints, $checked);
+                  ^meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode
+                  (
+                      resultType        = ^PartialClassResultType(
+                                            type=$returnedClass,
+                                            propertiesWithParameters = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(x | $x->map(x | ^PropertyWithParameters(property = $x.property, parameters = $x.parameters)))
+                                          ),
+                      resultSizeRange   = ZeroMany,
+                      tree              = $tree,
+                      binding           = $connection->cast(@meta::external::shared::format::executionPlan::ExternalFormatConnection).element->cast(@meta::external::shared::format::binding::Binding),
+                      executionNodes    = $sourceNode,
+                      enableConstraints = $enableConstraints,
+                      checked           = $checked
+                  );
                }
             ]->concatenate($dflt)->toOneMany())->toOne();
 }

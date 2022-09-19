@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::metamodel::diagram::analytics::modelCoverage::*;
+import meta::pure::milestoning::*;
 
 Class <<access.private>> meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult
 {
@@ -58,11 +59,11 @@ function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramMod
   ));
 
   let prunedClasses = $classes->map(c|^$c(
-    properties = $c.properties->map(p|^$p(
+    properties = $c.properties->reverseMilestoningTransforms()->map(p|^$p(
       stereotypes = [],
       taggedValues = []
     )),
-    qualifiedProperties = $c.qualifiedProperties->map(p|^$p(
+    qualifiedProperties = $c.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>)->map(p|^$p(
       stereotypes = [],
       taggedValues = []
     )),
@@ -81,18 +82,22 @@ function meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramMod
   ));
 
   // NOTE: prune here so we don't have to do analytics to find the used profiles
-  let prunedAssociations = $associations->map(a|^$a(
-    stereotypes = [],
-    taggedValues = [],
-    properties = $a.properties->map(p|^$p(
+  let prunedAssociations = $associations->map(a|
+    let props = $a.properties->reverseMilestoningTransforms()->cast(@Property<Nil,Any|*>)->map(p|^$p(
       stereotypes = [],
       taggedValues = []
-    )),
-    qualifiedProperties = $a.qualifiedProperties->map(p|^$p(
+    ));
+    let newProps = [$props->at(0), $props->at(1)];
+    ^$a(
       stereotypes = [],
-      taggedValues = []
-    ))
-  ));
+      taggedValues = [],
+      properties = $newProps,
+      qualifiedProperties = $a.qualifiedProperties->reverseMilestoningTransforms()->cast(@QualifiedProperty<Any>)->map(p|^$p(
+        stereotypes = [],
+        taggedValues = []
+      ))
+    );
+  );
 
   // profile
   // NOTE: we don't support showing tagged values and stereotypes for properties at the moment

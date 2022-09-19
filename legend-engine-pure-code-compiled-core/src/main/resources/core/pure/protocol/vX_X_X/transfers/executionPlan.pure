@@ -100,8 +100,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode(
               _type = 'function-parameters-validation',
               resultType = $exp.resultType->transformResultType($mapping, $extensions),
-              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())))
-           ),
+              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()))),
+              parameterValidationContext = $exp.parameterValidationContext->map(p | $p->match([
+                                                                              e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext')
+                                                                            ]))
+
+            ),
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
             (
@@ -146,6 +150,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                _type = 'freeMarkerConditionalExecutionNode',
                resultType = $f.resultType->transformResultType($mapping, $extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
+            ),
+         v:meta::pure::executionPlan::VariableResolutionExecutionNode[1]|  
+            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableResolutionExecutionNode(
+                _type      = 'varResolution',
+                resultType = $v.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                varName    = $v.varName
             ),
          f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::graphFetch::store::inMemory::StoreStreamReadingExecutionNode(

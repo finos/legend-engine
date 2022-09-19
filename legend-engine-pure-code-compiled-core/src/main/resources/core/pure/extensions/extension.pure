@@ -13,15 +13,11 @@
 // limitations under the License.
 
 import meta::java::metamodel::*;
-import meta::external::language::java::metamodel::*;
-import meta::external::language::java::metamodel::project::*;
-import meta::external::language::java::transform::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
 import meta::pure::tds::schema::*;
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::clustering::*;
 import meta::pure::mapping::*;
@@ -60,25 +56,6 @@ Class meta::pure::extension::Extension
   // Platform binding -------------------------------------------------------------------------
   availablePlatformBindings : meta::pure::executionPlan::platformBinding::PlatformBinding[*];
   // ------------------------------------------------------------------------- Platform binding
-
-
-  // Bind plan to platform
-   <<doc.deprecated>> java_conventions_defaultProhibitedFunctions : Function<Any>[*];
-   <<doc.deprecated>> java_graphFetch_graphFetchCommon_generateCodeForLocalGraphFetchNode : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->Project[1]}>[*]}>[0..1];
-   <<doc.deprecated>> java_graphFetch_graphFetchCommon_updateImplementationClassWithStoreSpecificFieldsAndMethods : Function<{meta::external::language::java::metamodel::Class[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->Project[1]}>[*]}>[0..1];
-   <<doc.deprecated>> java_graphFetch_inMemory_applyTypeFilter : Function<{InstanceSetImplementation[1], Code[1], Code[1..*], GenerationContext[1], DebugContext[1]->Function<{Nil[1]->Code[*]}>[*]}>[0..1];
-   <<doc.deprecated>> java_graphFetch_inMemory_generatePropertyMapping1 : Function<{Nil[1]->FunctionDefinition<Any>[1]}>[*];
-   <<doc.deprecated>> java_graphFetch_inMemory_generatePropertyMapping2 : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
-   <<doc.deprecated>> java_parseObjectReference_getParseObjectReferenceImplClass : Function<{String[1], Any[*], String[1], GenerationContext[1], DebugContext[1]->meta::external::language::java::metamodel::Class[0..1]}>[0..1];
-   <<doc.deprecated>> plan_javaRuntime_main_prepare1 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[0..1];
-   <<doc.deprecated>> plan_javaRuntime_main_prepare2 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GenerationContext[1]}>[*]}>[0..1];
-   <<doc.deprecated>> plan_javaRuntime_main_generatePlatformCode1 : Function<{String[1], GenerationContext[1], Extension[*], DebugContext[1] -> Function<{Nil[1]->GeneratedCode[1]}>[*]}>[0..1];
-   <<doc.deprecated>> plan_javaRuntime_main_generatePlatformCode2 : Function<{String[1], Mapping[1], GenerationContext[1], Extension[*], Project[0..1], DebugContext[1] -> Function<{Nil[1]->GeneratedNode[1]}>[*]}>[0..1];
-   <<doc.deprecated>> plan_javaRuntime_common_generateInterfaceForClass : meta::pure::metamodel::type::Class<Any>[*];
-   <<doc.deprecated>> plan_javaRuntime_enginePlatformDependencies_conventions : Function<{Conventions[1], Extension[*]->Conventions[1]}>[0..1];
-   <<doc.deprecated>> plan_javaRuntime_graphFetchStream_getConnectionTree : Function<{Nil[1] -> RootGraphFetchTree<Any>[0..1]}>[*];
-   <<doc.deprecated>> plan_javaRuntime_graphFetchStream_sourceTypeFromConnection : Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
-   <<doc.deprecated>> plan_javaRuntime_graphFetchStream_streamReaderMethodCodes : Function<{Conventions[1],Code[1]->Function<{Nil[1] -> Code[1]}>[*]}>[0..1];
 
   // ExecutePlan
   executionPlan_execution_processNode : Function<{Mapping[1], Runtime[1], Pair<VariableExpression, Any>[*], meta::pure::extension::Extension[*] -> Function<{Nil[1] -> Result<Any|*>[1]}>[*]}>[0..1];

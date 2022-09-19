@@ -106,9 +106,9 @@ function meta::pure::router::combine(first:List<PermutationSet>[*], second:Permu
 
 function meta::pure::router::deepByPassRouterInfo(value:Any[1]):Any[1]
 {
-   $value->evaluateAndDeactivate()->match([r:ExtendedRoutedValueSpecification[1] | $r.value->deepByPassRouterInfo(), 
+   $value->evaluateAndDeactivate()->match([r:ExtendedRoutedValueSpecification[1] | $r.value->deepByPassRouterInfo(),
                                              v:NoSetRoutedValueSpecification[1]    | $v.value->deepByPassRouterInfo(),
-                                             f:FunctionRoutedValueSpecification[1] | $f.value->deepByPassRouterInfo(), 
+                                             f:FunctionRoutedValueSpecification[1] | $f.value->deepByPassRouterInfo(),
                                              e:FunctionExpression[1]               | ^$e(parametersValues = $e->evaluateAndDeactivate().parametersValues->map(x | $x->deepByPassRouterInfo())->cast(@ValueSpecification)),
                                              f:FunctionDefinition<Any>[1]          | ^$f(expressionSequence=$f.expressionSequence->map(x | $x->deepByPassRouterInfo())->cast(@ValueSpecification)),
                                              i:InstanceValue[1]                    | ^$i(values = $i.values->map(x | $x->deepByPassRouterInfo())),
@@ -123,7 +123,7 @@ function meta::pure::router::byPassValueSpecificationWrapper(v:ValueSpecificatio
                c: ClusteredValueSpecification[1]|byPassValueSpecificationWrapper($c.val),
                e: ExtendedRoutedValueSpecification[1]|byPassValueSpecificationWrapper($e.value),
                n: NonExecutableValueSpecification[1]|byPassValueSpecificationWrapper($n.values->toOne()->cast(@ValueSpecification)),
-               v: ValueSpecification[1] | $v]);                               
+               v: ValueSpecification[1] | $v]);
 }
 
 function meta::pure::router::isSerializeOnGraphFetch(vs:ValueSpecification[1]):Boolean[1]
@@ -142,11 +142,11 @@ function meta::pure::router::isUnionOnGraphFetch(vs:ValueSpecification[1]):Boole
 function meta::pure::router::isUnionOnGraphFetch(vs:ValueSpecification[1], recurse:Boolean[1]):Boolean[1]
 {
    let unionFunctions = [concatenate_T_MANY__T_MANY__T_MANY_, union_T_MANY__T_MANY__T_MANY_];
-   
-   $vs->instanceOf(FunctionExpression) 
-   && $unionFunctions->contains($vs->cast(@FunctionExpression).func) 
+
+   $vs->instanceOf(FunctionExpression)
+   && $unionFunctions->contains($vs->cast(@FunctionExpression).func)
    && $vs->cast(@FunctionExpression).parametersValues->map(v|$v->byPassValueSpecificationWrapper())
-                                                    ->forAll(v| $v->instanceOf(FunctionExpression) 
+                                                    ->forAll(v| $v->instanceOf(FunctionExpression)
                                                              && ($v->cast(@FunctionExpression).func->in(meta::pure::graphFetch::execution::graphFetchFunctions()) || ($recurse && $v->isUnionOnGraphFetch($recurse))));
 }
 
@@ -222,7 +222,7 @@ function meta::pure::router::isSerializeFunction(fe:ValueSpecification[1]):Boole
 
 function meta::pure::router::extractLetVariableName(v:ValueSpecification[1]):String[0..1]
 {
- if($v->isLetFunction(),| $v->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->at(0)->cast(@String),| []);  
+ if($v->isLetFunction(),| $v->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->at(0)->cast(@String),| []);
 }
 
 
@@ -267,8 +267,8 @@ function meta::pure::functions::collection::buildConcatenate(v:ValueSpecificatio
                 let serialize = $funcExprs->at(0)->cast(@FunctionExpression);
                 ^$serialize(parametersValues=$concat->concatenate($serialize.parametersValues->evaluateAndDeactivate()->tail()));
           })
-   ];   
-   
+   ];
+
    $v->buildConcatenate($concatenate, $genericType, $dispatch);
 
 }
@@ -277,7 +277,7 @@ function meta::pure::functions::collection::buildConcatenate(v:ValueSpecificatio
 
 
 function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<X|n>[1]
-{ 
+{
    let routingStarted = now();
    let routed = $rq.fn->routeFunction($m, $runtime, $exeCtx, $extensions, $debug);
    let routingElapsedTimeInNanoSecond = ($routingStarted->dateDiff(now(),DurationUnit.MILLISECONDS)) * 1000000;
@@ -314,19 +314,34 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensi
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {
+   let expressions     = $f.expressionSequence->evaluateAndDeactivate();
+
+   assert($expressions->init()->forAll(vs| $vs->isLetFunction()), 'In FunctionDefinition with many expressions, all except last should be let expressions');
    //validate ::execute(..) not present
    let l = {|[]};
-   $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a | let expression = if($vs->isLetFunction(),| $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1),| $vs);
+   let initStatements = $expressions->init()->fold(
+    {vs, a |
                                                                  let varName = $vs->meta::pure::router::extractLetVariableName();
-                                                               
-                                                                 if ($expression->meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification([meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_])->isNotEmpty()
-                                                                           ,|  let f = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
+
+      if($vs->usesFrom(),
+        {|
+          let f = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
                                                                               let routed = routeFunction($f, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), $exeCtx, $a.second, $extensions, $debug);
-                                                                              let vars = if($varName->isNotEmpty(),| $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
-                                                                                                                  ,| $a.second);
+          let vars = if($varName->isNotEmpty(),
+                       | $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
+                       | $a.second
+                     );
                                                                               let temp = $routed.functions->toOne();
-                                                                              ^$a(first=^RoutingResult(functions=^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>), advancedRouting=$a.first.advancedRouting || $routed.advancedRouting), second = $vars);
-                                                                           ,| assert($vs->isLetFunction(),'In FunctionDefinition with many expressionSequences, non ..::from($mapping, $runtime) calls should be part of a let expression');
+          ^$a(
+            first = ^RoutingResult(
+              functions       = ^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
+              advancedRouting = $a.first.advancedRouting || $routed.advancedRouting
+            ),
+            second = $vars
+          );
+        },
+        {|
+          let expression  = $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1);
                                                                               let varExprs = $vs->findVariableExpressionsInValueSpecification();
                                                                               let inScopeVars = $a.second->keyValues();
 
@@ -334,16 +349,47 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
                                                                               assert($unavailableVars->isEmpty(),'Unable to resolve var(s): '+$unavailableVars->joinStrings());
 
                                                                               let unResolvedVars = $varExprs->filter(v|let resolved = $a.second->get($v.name); $resolved->isEmpty() || $resolved.values->isEmpty() || $resolved.values->at(0)->instanceOf(RoutedVariablePlaceHolder););
-                                                                              let res = if($unResolvedVars->isNotEmpty(),| let unRoutedFunction = ^$l(expressionSequence = $vs);
+          if($unResolvedVars->isNotEmpty(),
+            {|
+              let unRoutedFunction = ^$l(expressionSequence = $vs);
                                                                                                                            let vars = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
                                                                                                                            let temp = $unRoutedFunction->toOne();
                                                                                                                            ^$a(first=^RoutingResult(functions=^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>), advancedRouting=$a.first.advancedRouting), second=$vars);
-                                                                                                                        ,| let re = $vs->reactivate($a.second);
+            },
+            {|
+              let re = $vs->reactivate($a.second);
                                                                                                                            let vars = $a.second->put($varName->toOne(), ^List<Any>(values=$re));
                                                                                                                            ^$a(first=$a.first, second = $vars);
+            }
+          );
+        }
+      );
+    },
+    pair(^RoutingResult(advancedRouting=false), $f->openVariableValues())
+  );
+
+  let vs      = $expressions->last()->toOne();
+  let varName = $vs->meta::pure::router::extractLetVariableName();
+  let vars    = if($varName->isNotEmpty(),
+                       | $initStatements.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
+                       | $initStatements.second
                                                                                                                          );
+   let newF   = ^$l(
+                  expressionSequence    = $vs,
+                  openVariables         = $vars->keys(),
+                  classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=$f->functionType()))
                                                                      );
-                                                        }, pair(^RoutingResult(advancedRouting=false), $f->openVariableValues())).first;
+   let routed = routeFunction($newF, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), $exeCtx, $vars, $extensions, $debug);
+   let temp   = $routed.functions->toOne();
+   ^RoutingResult(
+     functions       = ^$temp(expressionSequence = $initStatements.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
+     advancedRouting = $initStatements.first.advancedRouting || $routed.advancedRouting
+   );
+}
+
+function <<access.private>> meta::pure::router::usesFrom(vs:ValueSpecification[1]):Boolean[1]
+{
+   $vs->meta::pure::functions::meta::findExpressionsForFunctionInValueSpecification([meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_])->isNotEmpty();
 }
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
