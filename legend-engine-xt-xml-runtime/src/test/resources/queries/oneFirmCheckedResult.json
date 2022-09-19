@@ -5,15 +5,8 @@
   "values": {
     "defects": [],
     "source": {
-      "defects": [],
-      "source": {
-        "number": 1,
-        "record": "<firm name=\"Acme Co.\" ranking=\"2\"/>"
-      },
-      "value": {
-        "name": "Acme Co.",
-        "ranking": 2
-      }
+      "number": 1,
+      "record": "<firm name=\"Acme Co.\" ranking=\"2\"/>"
     },
     "value": {
       "name": "Acme Co.",

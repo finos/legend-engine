@@ -21,25 +21,26 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
    assert($platformBindingConfig->instanceOf(LegendJavaPlatformBindingConfig), | 'Expected Legend Java platform binding config');
-   
-   let newExtensions      = if($extensions->isEmpty(), | meta::pure::extension::defaultExtensions(), | $extensions); // TODO: remove after updating M2M tests to pass default extensions
-   let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
-   let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $newExtensions, $debug);
 
-   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $newExtensions, $debug);
+   let legendJavaConfig   = $platformBindingConfig->cast(@LegendJavaPlatformBindingConfig);
+   let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
+
+   let baseProject        = $generationContext->generateTypes($debug);
+   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
+   let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();
 
    ^$plan
    (
       rootExecutionNode = $generatedNode.node,
-      globalImplementationSupport = if ($generatedNode.project->isEmpty() || $generatedNode.project->toOne()->allClasses()->isEmpty(),
+      globalImplementationSupport = if ($generatedProject->allClasses()->isEmpty(),
                                         | [],
-                                        | $generatedNode.project->toOne()->projectToImplementation()
+                                        | $generatedProject->projectToImplementation()
                                     )
    );
 }

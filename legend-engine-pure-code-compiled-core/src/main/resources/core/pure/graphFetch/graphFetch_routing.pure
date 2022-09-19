@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::lineage::scanProperties::*;
+import meta::pure::milestoning::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::mapping::*;
@@ -24,6 +25,7 @@ import meta::pure::graphFetch::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::functions::collection::*;
+import meta::pure::extension::*;
 
 Class <<access.private>> meta::pure::graphFetch::routing::PropertyMappingInfo
 {
@@ -43,7 +45,7 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
                                                                                                                                             | $routedProperty->deepByPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->byPassRouterInfo()->cast(@FunctionExpression).func->cast(@AbstractProperty<Any>));
                                                                                                 let propertyMappings = if($routedProperty->instanceOf(ExtendedRoutedValueSpecification), |if($prop.subType->isEmpty(), | $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->cast(@ExtendedRoutedValueSpecification).propertyMapping
                                                                                                                                                                                                                      , | let subTypeSetIDs = $routedProperty->cast(@ExtendedRoutedValueSpecification).sets->meta::pure::router::routing::resolveOperation($mapping).id;
-                                                                                                                                                                                                                         $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->cast(@ExtendedRoutedValueSpecification).propertyMapping->filter(x | $x.targetSetImplementationId->in($subTypeSetIDs));)
+                                                                                                                                                                                                                         $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->filter(x| $x->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification).propertyMapping->filter(x | $x.targetSetImplementationId->in($subTypeSetIDs));)
                                                                                                                                                                                        , |[]);
                                                                                                 let sets = if($propertyMappings->isNotEmpty(),|$propertyMappings->map(pm | $mapping.classMappingById($pm.targetSetImplementationId)),|if($routedProperty->instanceOf(ExtendedRoutedValueSpecification),|$routedProperty->cast(@ExtendedRoutedValueSpecification).sets->resolveOperation($mapping),|[]))->removeDuplicates();
                                                                                                 let resolvedPropertyMappings = if ($property->instanceOf(Property) && $sets->isNotEmpty() && $propertyMappings->isEmpty(),
@@ -194,12 +196,12 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
    let dummyLambda = {|'ok'};
    let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug()).functions->evaluateAndDeactivate()->toOne();
    let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ClusteredValueSpecification).val->cast(@ExtendedRoutedValueSpecification);
-   
+
    let extended = if($exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne(),
                      | $root->ensureConstraintsRequirementsForMappedProperties($mapping),
                      | $root
                   );
-   
+
    let routedTree = ^RoutedRootGraphFetchTree<Any>
                      (
                         subTrees = $extended.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($rootGetAllExpression, $mapping, $extensions)),
@@ -241,6 +243,7 @@ function <<access.private>> meta::pure::graphFetch::routing::ensureConstraintsRe
    });
    ^$forThisTree(subTrees=$newSubTrees);
 }
+
 function <<access.private>> meta::pure::graphFetch::routing::checkForConstraintsExclusion(tree:PropertyGraphFetchTree[1], class:Class<Any>[1], mapping: Mapping[1]): GraphFetchTree[1]
 {
   let allConstraints = $class->getAllTypeGeneralisations()->filter(x| $x->instanceOf(ElementWithConstraints))->cast(@ElementWithConstraints).constraints;
@@ -254,12 +257,14 @@ function <<access.private>> meta::pure::graphFetch::routing::checkForConstraints
   ^ExtendedPropertyGraphFetchTree(property=$tree.property, subTrees=$tree.subTrees, constraintsExclusions=$constraintsToExclude);
 }
 
-function <<access.private>> meta::pure::graphFetch::routing::excludeIfAbsentInGraph(f:FunctionDefinition<Any>[1], node:GraphFetchTree[1], class:Class<Any>[1]): Boolean[1]
+function <<access.private>> meta::pure::graphFetch::routing::excludeIfAbsentInGraph(f:FunctionDefinition<Any>[1], gfTree:PropertyGraphFetchTree[1], class:Class<Any>[1]): Boolean[1]
 {
-  let properties = $node.subTrees->filter(n | $n->instanceOf(PropertyGraphFetchTree))->map(n | $n->cast(@PropertyGraphFetchTree).property);
-  let pathsForConstraint = pathsForConstraintFunctions($class, $f)->removeDuplicates();
+  let pathsForConstraint        = pathsForConstraintFunctions($class, $f)->removeDuplicates();
+  let qualifiedPropertyPaths    = $pathsForConstraint->filter(path| $path.values->exists(x| $x.property->instanceOf(QualifiedProperty)));
+  let inlinedPropertyTree       = $pathsForConstraint->buildPropertyTree()->inlineQualifiedPropertyNodes();
+  let inlinedGraphTree          = $inlinedPropertyTree->propertyTreeToGraphFetchTree($class);
 
-  $pathsForConstraint->size() > $properties->size();
+  !canEvaluateForTree($inlinedGraphTree, $gfTree->propertyGraphFetchTreeToRootGraphFetchTree());
 }
 
 function <<access.private>> meta::pure::graphFetch::routing::requiredPropertiesAreMapped(functions:FunctionDefinition<Any>[*], class:Class<Any>[1], mapping: Mapping[1]):Boolean[1]
@@ -299,7 +304,9 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
    let propertyApplicationExporession = createFunctionApplicationForPropertyGraphFetchTree($prop, $functionExpression);
    
    let dummyLambda = {|'ok'};
-   let routedFunctions = ^$dummyLambda(expressionSequence = $propertyApplicationExporession)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug()).functions->evaluateAndDeactivate();
+   let cls = $functionExpression.genericType.rawType->toOne()->cast(@Class<Any>);
+   // TODO Only allow no mapping routing for expanded (sub)trees
+   let routedFunctions  = ^$dummyLambda(expressionSequence = $propertyApplicationExporession)->routeFunction($mapping, ^Runtime(), $extensions, noDebug()).functions->evaluateAndDeactivate();
 
    if($routedFunctions->isNotEmpty(),
       |  let routedFunction = $routedFunctions->toOne();
@@ -321,7 +328,19 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
                                                          gft  :GraphFetchTree[1]                | []
                                                         ])
           );
-     ,|[]);
+     ,|^RoutedPropertyGraphFetchTree
+          (
+             subTrees = $prop.subTrees->map(x | $x->cast(@PropertyGraphFetchTree)->routePropertyGraphFetchTree($propertyApplicationExporession, $mapping, $extensions)),
+             property = $prop.property,
+             alias = $prop.alias,
+             subType = $prop.subType,
+             sets = [],
+             propertyMapping = [],
+             parameters = $prop.parameters,
+             requiredQualifiedProperties = $prop->match([epgft:ExtendedPropertyGraphFetchTree[1]| $epgft.requiredQualifiedProperties, 
+                                                         gft  :GraphFetchTree[1]                | []
+                                                        ])
+          ););
 }
 
 

@@ -25,7 +25,7 @@ import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::executionPlan::engine::java::serialize::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 
 
@@ -48,8 +48,8 @@ function <<access.private>> meta::pure::executionPlan::engine::java::prepareForE
       |let cls          = $resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>);
        let multiplicity = if($p.resultSizeRange->isEmpty(), | ZeroMany, | $p.resultSizeRange->toOne());
 
-       let newInfo      = $context.typeInfos->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllProperties($cls)
-                                            ->meta::pure::executionPlan::engine::java::typeInfo::addForClassWithAllPropertiesViaAssociations($cls);
+       let newInfo      = $context.typeInfos->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllProperties($cls)
+                                            ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations($cls);
 
        ^$context(typeInfos=$newInfo, nodeInfos=$context.nodeInfos->concatenate(^NodeInfo(path=$path, returnType=^SimpleJavaType(pureType=$cls, javaType=$context.conventions->pureTypeToJavaType($cls, $multiplicity)))));,
       |$context);

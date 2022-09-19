@@ -64,7 +64,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
       },
       ^Mapping(),
       ^Runtime(),
-      []
+      meta::pure::extension::defaultExtensions()
    );
    
    let expected = '['+
@@ -116,7 +116,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
       },
       ^Mapping(),
       ^Runtime(),
-      []
+      meta::pure::extension::defaultExtensions()
    );
    
    let expected = '['+

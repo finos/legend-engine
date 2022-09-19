@@ -18,15 +18,15 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.xml.read.IXmlDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.xml.read.XmlReader;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
-import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
-import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
-import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.VariableResolutionExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.InputStream;
@@ -44,7 +44,7 @@ public class XsdRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
@@ -52,14 +52,29 @@ public class XsdRuntimeExtension implements ExternalFormatRuntimeExtension
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IXmlDeserializeExecutionNodeSpecifics specifics = (IXmlDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
-            InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
-            String location = ExecutionHelper.locationFromSourceNode(node.executionNodes().getFirst());
-            XmlReader<?> deserializer = new XmlReader(specifics, stream, location);
+            String location = idFromSourceNode(node.executionNodes().getFirst());
+            XmlReader<?> deserializer = new XmlReader<>(specifics, inputStream, location);
             return new StreamingObjectResult<>(deserializer.startStream());
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private String idFromSourceNode(ExecutionNode executionNode)
+    {
+        if (executionNode instanceof UrlStreamExecutionNode)
+        {
+            return ((UrlStreamExecutionNode) executionNode).url;
+        }
+        else if (executionNode instanceof VariableResolutionExecutionNode)
+        {
+            return ((VariableResolutionExecutionNode) executionNode).varName;
+        }
+        else
+        {
+            return "unknown";
         }
     }
 }

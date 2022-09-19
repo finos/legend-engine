@@ -46,7 +46,7 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], debug:DebugContext[1], wrapInInstantiationNode: Boolean[1], extensions:Extension[*]):ExecutionNode[1]
 {
-   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@DatabaseConnection), $extensions);
+   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $extensions);
    let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m), | $sqlNode);
    let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
    if($nodes->size()>1,
@@ -128,7 +128,7 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
 
 }
 
-function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:DatabaseConnection[1], extensions:Extension[*]):ExecutionNode[1]
+function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):ExecutionNode[1]
 {
    let sql = sqlQueryToString($query, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
 
@@ -138,7 +138,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
       resultColumns = $query->match([sel:SelectSQLQuery[1] | $sel.columns->map(c| ^SQLResultColumn(label = $c->columnLabel($connection, $extensions), dataType = $c->getRelationalTypeFromRelationalOperationElement()->translateCoreTypeToDbSpecificType(^TranslationContext(dbType = $connection.type)))), a:Any[1] | []]),
       resultType = ^ResultType(type = Any),
       connection = $connection->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection),
-      supportFunctions = relationalPlanSupportFunctions($connection)
+      supportFunctions = relationalPlanSupportFunctions($connection)->concatenate($enumMapSupportFunctions)
    );
 
 }
@@ -170,9 +170,24 @@ function <<access.private>> meta::relational::mapping::getRelationalTypeFromRela
    ])->cast(@meta::relational::metamodel::datatype::DataType);
 }
 
+function <<access.private>> meta::relational::mapping::addEnumMapSupportFunctions(sq:meta::pure::mapping::StoreQuery[1], m:Mapping[1]):String[*]
+{
+   let enumParam = $sq.inScopeVars->keyValues().second->map(p | $p.values)->filter(e | $e->instanceOf(PlanVarPlaceHolder))->map(p | $p->cast(@PlanVarPlaceHolder).type)->filter(e | $e->instanceOf(Enumeration));
+   let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),
+                                      |$m.enumerationMappings->filter(e | $e.enumeration->in($enumParam))->map(enum | let concatStr = if($enum.enumValueMappings->at(0).sourceValues->type() == String, |'\'', |'');
+                                                                                                                      let enumHashMap = $enum.enumValueMappings->map(e | '"'+ $e.enum->cast(@Enum).name +'":"'+ $concatStr + $e.sourceValues->makeString('\', \'') + $concatStr + '"')->makeString(', ');
+                                                                                                                      '<#function enumMap_' + fetchEnumFullPath($enum) + ' inputVal> <#assign enumMap = {'->concatenate($enumHashMap)->concatenate('}> <#return enumMap[inputVal]> </#function>')->makeString(' ');),
+                                      |[]);
+}
+
+function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<Any>[*]):String[1]
+{
+  $enum.parent->toOne()->elementToPath()->replace('::', '_') + '_' + $enum.name->toOne();
+}
+
 function meta::relational::mapping::relationalPlanSupportFunctions(c:DatabaseConnection[1]):String[*]
 {
-   if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction());
+   if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction())->concatenate(equalEnumOperationSelectorFunction());
 }
 
 function meta::relational::mapping::varPlaceHolderToStringFunction():String[*]
@@ -192,6 +207,17 @@ function meta::relational::mapping::optionalVarPlaceHolderOperationSelectorFunct
             '<#return trueClause>'+
          '<#else>'+
             '<#return falseClause></#if>'+
+   '</#function>';   
+}
+
+function meta::relational::mapping::equalEnumOperationSelectorFunction():String[1]
+{
+   '<#function equalEnumOperationSelector enumVal inDyna equalDyna>'+
+        '<#assign enumList = enumVal?split(",")>'+
+        '<#if enumList?size = 1>'+
+            '<#return equalDyna>'+
+         '<#else>'+
+            '<#return inDyna></#if>'+
    '</#function>';   
 }
 

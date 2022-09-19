@@ -230,6 +230,7 @@ Mapping meta::analytics::mapping::modelCoverage::test::sampleModelToModelMapping
 (
   meta::analytics::mapping::modelCoverage::test::_Person: Pure
   {
+    ~src meta::analytics::mapping::modelCoverage::test::Person
     fullName: 'Full Name'
   }
   meta::analytics::mapping::modelCoverage::test::_LegalEntity: Pure

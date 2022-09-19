@@ -43,7 +43,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '{"name":"|$Firm1$|"}';
@@ -70,7 +70,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = 
@@ -125,7 +125,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '{"name":"|$Firm1$|","employees":[{"fullName":"|$Person1$|"},{"fullName":"|$Person2$|"}]}';
@@ -155,7 +155,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =
@@ -234,7 +234,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =
@@ -285,7 +285,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerial
             ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
          ]
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected =
@@ -409,13 +409,13 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::testJsonModelConn
                           ]
                        );
 
-   let simpleQueryResult = execute($simpleQuery, SrcToBridgeMapping, $runtime, []).values;
+   let simpleQueryResult = execute($simpleQuery, SrcToBridgeMapping, $runtime, meta::pure::extension::defaultExtensions()).values;
    assertJsonStringsEqual(
          '{"name":"$Firm1$"}',
          $simpleQueryResult
       );
 
-   let chainedQueryResult = execute($chainedQuery, BridgeToDestMapping, $runtime, []).values;
+   let chainedQueryResult = execute($chainedQuery, BridgeToDestMapping, $runtime, meta::pure::extension::defaultExtensions()).values;
    assertJsonStringsEqual(
       '{"name":"|$Firm1$|"}',
       $chainedQueryResult

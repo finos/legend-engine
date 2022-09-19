@@ -606,6 +606,9 @@ function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:
       meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,
       meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_,
       meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
+      meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
+      meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
+      meta::pure::dataQuality::checked_T_MANY__Checked_MANY_,
       meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
       meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_,
       meta::pure::tds::tdsRows_TabularDataSet_1__TDSRow_MANY_,
@@ -960,9 +963,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
               let secondPass = if ($f->in([meta::pure::functions::lang::subType_Any_m__T_1__T_m_, meta::pure::functions::lang::whenSubType_Any_1__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_$0_1$__T_1__T_$0_1$_, meta::pure::functions::lang::whenSubType_Any_MANY__T_1__T_MANY_]),
                                       | let first = $secondPassPre->at(0);
                                         let second = $secondPassPre->at(1);
-                                        let firstValue = $first.value->toOne()->cast(@ExtendedRoutedValueSpecification);
-                                        let oldValue = $firstValue.sets;
-//                                        $second->println();
+                                        let firstValue = $first.value->toOne()->cast(@ValueSpecification);
                                         let castedExtendInfo = $second.value->toOne()->cast(@ExtendedRoutedValueSpecification)->evaluateAndDeactivate();
                                         ^$first(value = $firstValue->propogateSubType($castedExtendInfo.id,$castedExtendInfo.sets, $extensions))->add($second);,
                                       | $secondPassPre

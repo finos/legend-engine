@@ -34,7 +34,7 @@ meta::pure::mapping::modelToModel::test::alloy::filter::canFilterInAMapping() : 
    let mapping = filterMapping;
    let runtime = testJsonRuntime(_Person, '[{"fullName":"Pierre Doe", "firm": {"name":"X"}},{"fullName":"A. Only One", "firm": {"name":"X"}}]');
    
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected= '{"lastName":"A. Only One"}';
@@ -85,7 +85,7 @@ meta::pure::mapping::modelToModel::test::alloy::filter::canFilterInAMappingOnChi
    let mapping = filterMapping;
    let runtime = testJsonRuntime(_Firm, '{"name":"X", "employees":[{"fullName":"Pierre Doe"},{"fullName":"A. Only One"}]}');
    
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected= '{"employees"[{"lastName":"A. Only One"}]}';
@@ -106,7 +106,7 @@ meta::pure::mapping::modelToModel::test::alloy::filter::canExecuteFilterAtSetLev
    let mapping = setFilterMapping;
    let runtime = testJsonRuntime(_D, '[{"id" : 1, "e" : {"id" : 1}}, {"id" : 2, "e" : {"id" : 2}}]');
    
-   let result = execute($func, $mapping, $runtime, []);
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
 
    let expected= '[{"id" : 1, "e" : null}, {"id" : 2, "e" : {"id" : 2}}]';
