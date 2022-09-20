@@ -676,11 +676,8 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
    //Functions
    let funcPathInformation = $functions->map(f|let index = $functions->indexOf($f);
                                                let p = $preProcessedFuncs->at($index);
-                                               let pureType = $f->functionReturnType().rawType->toOne();
-                                               let relationalType = $p.element->cast(@SelectWithCursor).select.groupBy->map(c | $c->meta::relational::functions::typeInference::inferRelationalType(false))->first();
                                                ^PathInformation(propertyMapping = if($p.currentPropertyMapping->isEmpty(),|[],|$p.currentPropertyMapping->at(0)),
-                                                                type = $pureType,
-                                                                relationalType = $relationalType);
+                                                                type = $f->functionReturnType().rawType->toOne());
                                                        );
 
    //Add types for Aggregations
