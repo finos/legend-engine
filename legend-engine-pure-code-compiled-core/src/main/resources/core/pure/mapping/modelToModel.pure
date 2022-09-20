@@ -425,7 +425,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::getPopula
     $pm.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->findPropertiesInValueSpecification()->filter(p | $p.owner == $rootClass || $p.owner->cast(@Class<Any>)->meta::pure::functions::meta::_subTypeOf($rootClass));
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planModelChainConnectionGraphFetchExecution(fe: FunctionExpression[1], mcc: ModelChainConnection[1], sourceTreeExtended: RootGraphFetchTree<Any>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], ext: RoutedValueSpecification[0..1], inScopeVars: Map<String, List<Any>>[1], populatedXStorePropertiesInScope:AbstractProperty<Any>[*], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
+function <<access.public>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planModelChainConnectionGraphFetchExecution(fe: FunctionExpression[1], mcc: ModelChainConnection[1], sourceTreeExtended: RootGraphFetchTree<Any>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], ext: RoutedValueSpecification[0..1], inScopeVars: Map<String, List<Any>>[1], populatedXStorePropertiesInScope:AbstractProperty<Any>[*], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let functionParams    = $fe.parametersValues->evaluateAndDeactivate();
    let leftExpr          = $functionParams->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
