@@ -118,14 +118,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     role: String [0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
-{
-    projectId:String[1];
-    defaultDataset:String[1];
-    proxyHost: String[0..1];
-    proxyPort: String[0..1];
-}
-
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::TestDatabaseConnection extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::DatabaseConnection
 {
    testDataSetupCsv : String[0..1];
