@@ -1184,4 +1184,51 @@ public class TestServiceStoreMappingCompilationFromGrammar
 
         Assert.assertEquals(5, result.getTwo().getMapping("meta::external::store::service::showcase::mapping::ServiceStoreMapping")._classMappings().size());
     }
+
+
+    @Test
+    public void testRecursiveModelWithServiceStore()
+    {
+        // TODO: this test should pass once we have addressed https://github.com/finos/legend-engine/issues/953
+        String grammar = "###Pure\n" +
+                "import meta::external::store::service::showcase::domain::*;\n" +
+                "\n" +
+                "Class meta::external::store::service::showcase::domain::Firm\n" +
+                "{\n" +
+                "    firmName     : String[1];\n" +
+                "    firmId       : Integer[1];\n" +
+                "    subsidiaries : Firm[*];\n" +
+                "}\n" +
+                "\n" +
+                "###ServiceStore\n" +
+                "ServiceStore meta::external::store::service::showcase::store::FirmServiceStore\n" +
+                "(\n" +
+                "   Service FirmService\n" +
+                "   (\n" +
+                "      path     : '/firms';\n" +
+                "      method   : GET;\n" +
+                "      security : [];\n" +
+                "      response : [meta::external::store::service::showcase::domain::Firm <- meta::external::store::service::showcase::store::FirmResponseSchemaBinding];\n" +
+                "   )\n" +
+                ")\n" +
+                "\n" +
+                "###ExternalFormat\n" +
+                "Binding meta::external::store::service::showcase::store::FirmResponseSchemaBinding\n" +
+                "{\n" +
+                "  contentType   : 'application/json';\n" +
+                "  modelIncludes : [\n" +
+                "                    meta::external::store::service::showcase::domain::Firm\n" +
+                "                  ];\n" +
+                "}\n\n" +
+                "###Mapping\n" +
+                "Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping\n" +
+                "(\n" +
+                "    *meta::external::store::service::showcase::domain::Firm: ServiceStore\n" +
+                "    {\n" +
+                "        ~service [meta::external::store::service::showcase::store::FirmServiceStore] FirmService\n" +
+                "    }\n" +
+                ")\n\n";
+
+        test(grammar, "COMPILATION error at [35:5-38:5]: Non serializable model mapped with Service Store Mapping");
+    }
 }
