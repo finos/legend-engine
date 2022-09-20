@@ -98,7 +98,7 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
        let pureRuntime = ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));
 
        let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, ^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
+       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
        []; ,               
      | 
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
@@ -106,8 +106,8 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
        let pureRuntime = ^Runtime(connections=$connWithDb);
 
        let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, ^meta::pure::executionPlan::PlatformCodeGenerationConfig(platform=meta::pure::executionPlan::Platform.JAVA), $extensions);
-
+       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
+                             
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
        let values = $res.values->cast(@T);
        ^Result<T|m>(values = $values, activities= $res.activities);
