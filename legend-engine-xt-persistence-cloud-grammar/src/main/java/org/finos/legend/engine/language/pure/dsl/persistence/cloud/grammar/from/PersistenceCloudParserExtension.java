@@ -56,7 +56,7 @@ public class PersistenceCloudParserExtension implements IPersistenceParserExtens
         }
 
         CharStream input = CharStreams.fromString(code.getCode());
-        ParserErrorListener errorListener = new PersistenceCloudParserErrorListener(code.getWalkerSourceInformation());
+        ParserErrorListener errorListener = new ParserErrorListener(code.getWalkerSourceInformation(), PersistenceCloudLexerGrammar.VOCABULARY);
         PersistenceCloudLexerGrammar lexer = new PersistenceCloudLexerGrammar(input);
         PersistenceCloudParserGrammar parser = new PersistenceCloudParserGrammar(new CommonTokenStream(lexer));
 
