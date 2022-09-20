@@ -18,7 +18,6 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test;
@@ -1188,9 +1187,9 @@ public class TestServiceStoreMappingCompilationFromGrammar
 
 
     @Test
-    @Ignore
     public void testRecursiveModelWithServiceStore()
     {
+        // TODO: this test should pass once we have addressed https://github.com/finos/legend-engine/issues/953
         String grammar = "###Pure\n" +
                 "import meta::external::store::service::showcase::domain::*;\n" +
                 "\n" +
@@ -1230,6 +1229,6 @@ public class TestServiceStoreMappingCompilationFromGrammar
                 "    }\n" +
                 ")\n\n";
 
-        Pair<PureModelContextData, PureModel> result = test(grammar);
+        test(grammar, "COMPILATION error at [35:5-38:5]: Non serializable model mapped with Service Store Mapping");
     }
 }
