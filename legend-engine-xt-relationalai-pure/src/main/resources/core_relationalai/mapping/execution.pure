@@ -158,8 +158,8 @@ function <<access.private>> meta::rel::mapping::execution(
                             ->with([
                               rel('output')
                                 ->appl(label('query'))
-                                ->headAtom([var('i'), var('x')])
-                                ->def($expr->atom([var('i'), var('x')]))
+                                ->headAtom(var('x'))
+                                ->def($expr->atom(var('x')))
                             ])
                             ->with($rules.second)
                         );
@@ -298,15 +298,14 @@ function <<access.private>> meta::rel::mapping::propertyOutputs(
             ->pair(
               rel('output')
                 ->appl($pair.first)
-                ->appl(var('i'))
                 ->def(
                   $pair.second
                     ->appl(var('x'))
-                    ->from(var('x')
+                    ->for(var('x')
                       ->where(
                         rel('output')
                           ->appl(label('query'))
-                          ->atom([var('i'), var('x')])
+                          ->atom(var('x'))
                       )
                     )
                 )

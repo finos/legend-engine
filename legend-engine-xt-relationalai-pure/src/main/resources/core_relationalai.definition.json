@@ -1,5 +1,5 @@
 {
     "name" : "core_relationalai",
-    "pattern" : "(meta)(::.*)?",
+    "pattern" : "(meta::rel)(::.*)?",
     "dependencies" : ["platform", "core", "core_relational"]
 }

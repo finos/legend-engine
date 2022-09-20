@@ -3,7 +3,7 @@ import meta::rel::test::query::models::simple::*;
 import meta::rel::mapping::*;
 import meta::rel::utils::assert::*;
 
-function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): Any[*] {
+/*function <<test.Test>> meta::rel::test::query::simple::testQueryAllPersons(): Any[*] {
   let rai = testConnection(schema());
 
   assertEqualRel(
@@ -85,3 +85,4 @@ function <<test.Test>> meta::rel::test::query::simple::testMap(): Any[*] {
       ->rel()
   );
 }
+*/
