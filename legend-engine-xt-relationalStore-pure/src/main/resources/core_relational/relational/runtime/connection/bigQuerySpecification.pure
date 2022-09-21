@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Uncomment below once versions v1_26_0 and below in relationalStore-pure are retired
+// Uncomment below once versions v1_26_0 and below in relationalStore-pure are retired and delete the corresponding file from relationalStore-pure
 
 // Class meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 // {
