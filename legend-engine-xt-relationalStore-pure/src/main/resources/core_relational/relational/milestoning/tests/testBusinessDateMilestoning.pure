@@ -51,7 +51,7 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testC
 {
    let busDate = %2015-10-16;
    let result = validate(|ProductWithConstraint1c.all($busDate),meta::relational::tests::milestoning::milestoningmapwithconstraints, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure parent (this) milestoning context propagated through project\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join (select distinct "systemtable_0".name from ProductTable as "root" left outer join SystemTable as "systemtable_0" on ("root".referenceSystemName = "systemtable_0".name) left outer join (select "systemdescriptiontable_1".systemName as systemName, "systemdescriptiontable_1".description as description from SystemDescriptionTable as "systemdescriptiontable_1" where "systemdescriptiontable_1".from_z <= \'2015-10-16\' and "systemdescriptiontable_1".thru_z > \'2015-10-16\') as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName)) as "producttable_1" on ("root".referenceSystemName = "producttable_1".name) where not (not "producttable_1".name is null) and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+   assertSameSQL('select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure parent (this) milestoning context propagated through project\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" where not (not (not exists(select 1 from SystemTable as "systemtable_0" left outer join (select "systemdescriptiontable_1".systemName as systemName, "systemdescriptiontable_1".description as description from SystemDescriptionTable as "systemdescriptiontable_1" where "systemdescriptiontable_1".from_z <= \'2015-10-16\' and "systemdescriptiontable_1".thru_z > \'2015-10-16\') as "systemdescriptiontable_0" on ("systemtable_0".name = "systemdescriptiontable_0".systemName) where "root".referenceSystemName = "systemtable_0".name))) and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testConstraintUsageOfThisMilestoningContext2():Boolean[1]
@@ -761,4 +761,59 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testD
 {
     let tds = execute(|Order.all()->project([col(x | $x.id, 'ID'), col(x | $x.product(%latest).classification.product.id, 'PROD ID'), col(x | $x.product(%latest).classification.description, 'PROD CLASSIFICATION')]), milestoningUnionMapWithOrderNonUnion, testRuntime(), meta::relational::extension::relationalExtensions()).values->toOne();
     assertEquals(['1,TDSNull,TDSNull', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4', '2,2,STOCK DESC-V4'],$tds.rows->map(r|$r.values->makeString(',')));
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningFilterPropagationThroughFilter():Boolean[1]
+{
+   let result = execute(|Product.all(%2015-8-15)->filter(p|$p.orders->filter(o | $o.id == 1)->isNotEmpty())->project([p|$p.name],['name']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
+   
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" where not (not exists(select 1 from OrderTable as "ordertable_0" where "ordertable_0".id = 1 and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\' and "ordertable_0".prodFk = "root".id)) and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningFilterPropagationThroughNestedFilter():Boolean[1]
+{
+   let result = execute(|Product.all(%2015-8-15)->filter(p|$p.orders->filter(o | $o.id == 1).description->isNotEmpty())->project([p|$p.name],['name']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
+   
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join OrderTable as "ordertable_0" on ("ordertable_0".prodFk = "root".id) left outer join (select distinct "orderdescriptiontable_0".id from ProductTable as "root" left outer join OrderTable as "ordertable_1" on ("ordertable_1".prodFk = "root".id) left outer join OrderDescriptionTable as "orderdescriptiontable_0" on ("ordertable_1".id = "orderdescriptiontable_0".id and "orderdescriptiontable_0".id = 1) where "ordertable_1".id = 1 and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\') as "producttable_1" on ("ordertable_0".id = "producttable_1".id and "producttable_1".id = 1) where ("ordertable_0".id = 1 and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\' and not "producttable_1".id is null) and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\'', $result);
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningFilterPropagationWithNowInFilter():Boolean[1]
+{
+   // Note: Using now in test deliberately to safegaurd change in sql gen flow. Since change depends on variable date hence not asserting on values but sql
+   let result = execute(|Product.all(%2015-8-15)->filter(p|$p.orders.orderDate->toOne() < now())->project([p|$p.name],['name']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join OrderTable as "ordertable_0" on ("ordertable_0".prodFk = "root".id) where "ordertable_0".orderDate < current_timestamp() and "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\'', $result);
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::businessdate::testMilestoningFilterPropagationThroughProject():Boolean[1]
+{
+   let result = execute(|Product.all(%2015-8-15)->project([p|$p.name, p|$p.orders->filter(o | $o.id == 1)->isNotEmpty()],['name', 'check']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName,true'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertSameSQL('select "root".name as "name", not "producttable_1".prodFk is null as "check" from ProductTable as "root" left outer join (select distinct "ordertable_0".prodFk from ProductTable as "root" left outer join OrderTable as "ordertable_0" on ("ordertable_0".prodFk = "root".id) where "ordertable_0".id = 1) as "producttable_1" on ("producttable_1".prodFk = "root".id) where "root".from_z <= \'2015-08-15\' and "root".thru_z > \'2015-08-15\'', $result);
+
+   /*
+      Generates below SQL
+      Problem is that the subquery also has ProductTable as root but has no milestoning filters on from_z and thruz_z
+   
+      select 
+          "root".name as "name", 
+          not "producttable_1".prodFk is null as "check" 
+      from ProductTable as "root" 
+          left outer join (
+              select distinct 
+                  "ordertable_0".prodFk 
+              from ProductTable as "root"  <------------ Milestoned product table in subquery but no filters
+                  left outer join OrderTable as "ordertable_0"
+                   on ("ordertable_0".prodFk = "root".id) 
+              where "ordertable_0".id = 1
+           ) as "producttable_1"
+           on ("producttable_1".prodFk = "root".id) 
+      where "root".from_z <= '2022-01-01' and "root".thru_z > '2022-01-01'
+   
+   */
 }
