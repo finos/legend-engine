@@ -14,15 +14,21 @@
 
 package org.finos.legend.engine.plan.execution.stores.service;
 
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.service.activity.SecuritySchemeProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.LimitExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RestServiceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ServiceParametersResolutionExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
@@ -40,6 +46,15 @@ public class ServiceStoreExecutionExtension implements IServiceStoreExecutionExt
                 return executionNode.accept(executionState.getStoreExecutionState(StoreType.Service).getVisitor(profiles, executionState));
             }
             return null;
+        }));
+    }
+
+    public List<Function5<SecurityScheme, AuthenticationSpecification, HttpClientBuilder, RequestBuilder,MutableList<CommonProfile>, Boolean>> getExtraSecuritySchemeProcessors()
+    {
+        return Collections.singletonList(((securityScheme, authTokenGenerationSpecification, clientBuilder,requestBuilder,  profiles) ->
+        {
+            SecuritySchemeProcessor securitySchemeProcessor = new SecuritySchemeProcessor(authTokenGenerationSpecification, clientBuilder,requestBuilder, profiles);
+            return securitySchemeProcessor.visit(securityScheme);
         }));
     }
 }

@@ -197,5 +197,6 @@
             <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

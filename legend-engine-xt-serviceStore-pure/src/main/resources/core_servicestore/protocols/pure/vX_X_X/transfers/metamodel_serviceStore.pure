@@ -15,15 +15,19 @@
 ###Pure
 import meta::pure::extension::*;
 import meta::external::store::service::metamodel::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::*;
+import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::*;
+import meta::pure::functions::collection::*;
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStore(s:ServiceStore[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore(
-      _type       = 'serviceStore',
-      description = $s.description,
-      name        = $s.name->toOne(),
-      package     = if($s.package->isEmpty(), |[], |$s.package->toOne()->elementToPath()),
-      elements    = $s.elements->map(e | $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement($extensions))
+      _type             = 'serviceStore',
+      description       = $s.description,
+      name              = $s.name->toOne(),
+      package           = if($s.package->isEmpty(), |[], |$s.package->toOne()->elementToPath()),
+      securitySchemes   = $s.securitySchemes->toOne()->keyValues()->map(e | pair($e.first, $e.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)))->newMap(),
+      elements          = $s.elements->map(e | $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformServiceStoreElement($extensions))
    )
 }
 
@@ -78,7 +82,30 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::se
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme(a:SecurityScheme[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme[1]
 {
    $a->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('serviceStore')->cast(@meta::protocols::pure::vX_X_X::extension::store::service::ServiceStoreModuleSerializerExtension).transfers_securityScheme_transformSecurityScheme->concatenate([
-      a:SecurityScheme[1]      | fail('Unsupported Authentication Strategy'); ^meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme(_type = 'unknown');
+      h:meta::external::store::service::metamodel::SimpleHttpSecurityScheme[1] |
+        ^meta::protocols::pure::vX_X_X::metamodel::store::service::SimpleHttpSecurityScheme(
+            _type = 'http',
+            id = $h.id,
+            scheme = $h.scheme
+        ),
+      a:meta::external::store::service::metamodel::ApiKeySecurityScheme[1] |
+        ^meta::protocols::pure::vX_X_X::metamodel::store::service::ApiKeySecurityScheme(
+            _type = 'apiKey',
+            id = $a.id,
+            location = $a.location,
+            keyName = $a.keyName
+        ),
+      o:meta::external::store::service::metamodel::OauthSecurityScheme[1] |
+        ^meta::protocols::pure::vX_X_X::metamodel::store::service::OauthSecurityScheme(
+            _type = 'oauth',
+            id = $o.id,
+            scope = $o.scope
+        ),
+      other: meta::external::store::service::metamodel::SecurityScheme[1] |
+         ^meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme(
+            _type = 'unknown',
+            id = 'unknown'
+         )
    ])->toOneMany())
 }
 

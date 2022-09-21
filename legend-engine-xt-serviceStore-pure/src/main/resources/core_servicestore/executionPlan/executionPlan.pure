@@ -29,6 +29,7 @@ Class meta::external::store::service::executionPlan::nodes::RestServiceExecution
    params                 : ServiceParameter[*];
    requestBodyDescription : RequestBodyDescription[0..1];
    securitySchemes        : SecurityScheme[*];
+   authSpecs              : Map<String,AuthenticationTokenGenerationSpecification>[0..1];
 }
 
 Class meta::external::store::service::executionPlan::nodes::RequestBodyDescription

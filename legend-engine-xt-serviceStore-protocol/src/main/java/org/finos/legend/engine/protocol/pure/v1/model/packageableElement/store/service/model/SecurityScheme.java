@@ -14,11 +14,28 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-public abstract class SecurityScheme
-{
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = SimpleHttpSecurityScheme.class, name = "http"),
+        @JsonSubTypes.Type(value = ApiKeySecurityScheme.class, name = "api"),
+        @JsonSubTypes.Type(value = OauthSecurityScheme.class, name = "oauth")
+
+})
+public abstract class SecurityScheme {
+
+    public String id;
     public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(SecuritySchemeVisitor<T> securitySchemeVisitor);
+
 }

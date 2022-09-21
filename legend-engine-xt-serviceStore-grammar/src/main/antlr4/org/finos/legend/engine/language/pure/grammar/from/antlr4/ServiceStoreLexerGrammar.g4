@@ -10,6 +10,7 @@ SERVICE_STORE:                                   'ServiceStore';
 DESCRIPTION:                                     'description';
 SERVICE_GROUP:                                   'ServiceGroup';
 SERVICE:                                         'Service';
+SECURITY_SCHEMES:                                'SecuritySchemes';
 
 PATH:                                            'path';
 
@@ -39,3 +40,14 @@ PARAM_MAPPING:                                   '~paramMapping';
 
 INVERTED_ARROW:                                  '<-';
 QUOTED_STRING:                                   ('"' ( EscSeq | ~["\r\n] )*  '"');
+
+
+
+// -------------------------------------- ISLAND ---------------------------------------
+BRACE_OPEN:                    '{' -> pushMode (SECURITY_SCHEME_ISLAND_MODE);
+
+
+mode SECURITY_SCHEME_ISLAND_MODE;
+SECURITY_SCHEME_ISLAND_OPEN: '{' -> pushMode (SECURITY_SCHEME_ISLAND_MODE);
+SECURITY_SCHEME_ISLAND_CLOSE: '}' -> popMode;
+SECURITY_SCHEME_CONTENT: (~[{}])+;

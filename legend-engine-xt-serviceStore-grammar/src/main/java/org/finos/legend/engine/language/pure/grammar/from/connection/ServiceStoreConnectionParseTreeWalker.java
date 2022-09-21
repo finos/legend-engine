@@ -14,15 +14,24 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.connection;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.connection.authentication.AuthenticationSpecificationSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.extensions.IServiceStoreGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ServiceStoreConnectionParseTreeWalker
 {
@@ -52,7 +61,37 @@ public class ServiceStoreConnectionParseTreeWalker
         connectionValue.baseUrl = PureGrammarParserUtility.fromIdentifier(baseUrlCtx.identifier());
 
         validateUrl(connectionValue.baseUrl, this.walkerSourceInformation.getSourceInformation(baseUrlCtx));
+
+        ServiceStoreConnectionParserGrammar.AuthenticationContext authContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.authentication(), "authentication", connectionValue.sourceInformation);
+        connectionValue.authSpecs = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthSpecification).stream().collect(Collectors.toMap(Pair::getOne,Pair::getTwo, (u,v) -> u, LinkedHashMap::new));
+
     }
+
+    private Pair<String, AuthenticationSpecification> visitAuthSpecification(ServiceStoreConnectionParserGrammar.AuthSpecificationObjectContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        ServiceStoreConnectionParserGrammar.SingleAuthSpecificationContext specContext = ctx.singleAuthSpecification();
+        AuthenticationSpecificationSourceCode code = new AuthenticationSpecificationSourceCode(
+                specContext.getText(),
+                specContext.authSpecificationType().getText(),
+                sourceInformation,
+                ParseTreeWalkerSourceInformation.offset(walkerSourceInformation, specContext.getStart())
+        );
+
+
+        List<IServiceStoreGrammarParserExtension> extensions = IServiceStoreGrammarParserExtension.getExtensions();
+        AuthenticationSpecification spec = IServiceStoreGrammarParserExtension.process(code, ListIterate.flatCollect(extensions, IServiceStoreGrammarParserExtension::getExtraAuthenticationGenerationSpecificationParsers));
+
+        if (spec == null)
+        {
+            throw new EngineException("Unsupported syntax", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+        }
+
+        String securitySchemeId = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        return Tuples.pair(securitySchemeId,spec);
+    }
+
 
     private void validateUrl(String url, SourceInformation sourceInformation)
     {

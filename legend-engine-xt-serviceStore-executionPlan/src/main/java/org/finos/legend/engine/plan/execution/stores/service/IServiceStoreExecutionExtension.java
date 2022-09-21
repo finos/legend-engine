@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.service;
 
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.eclipse.collections.api.block.function.Function3;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -33,7 +35,7 @@ public interface IServiceStoreExecutionExtension extends ExecutionExtension
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreExecutionExtension.class));
     }
 
-    default List<Function3<SecurityScheme, HttpClientBuilder, MutableList<CommonProfile>, Boolean>> getExtraSecuritySchemeProcessors()
+    default List<Function5<SecurityScheme, AuthenticationSpecification, HttpClientBuilder, RequestBuilder, MutableList<CommonProfile>, Boolean>> getExtraSecuritySchemeProcessors()
     {
         return FastList.newList();
     }

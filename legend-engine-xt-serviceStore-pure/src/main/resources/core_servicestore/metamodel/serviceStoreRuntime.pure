@@ -14,6 +14,7 @@
 
 import meta::pure::runtime::*;
 import meta::external::store::service::metamodel::*;
+import meta::external::store::service::metamodel::runtime::*;
 
 Class meta::external::store::service::metamodel::runtime::ServiceStoreConnection extends Connection
 [
@@ -21,4 +22,30 @@ Class meta::external::store::service::metamodel::runtime::ServiceStoreConnection
 ]
 {
    baseUrl: String[1];
+   authSpecs: Map<String,AuthenticationTokenGenerationSpecification>[0..1];
+}
+
+//TODO: Rename this metamodel
+Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::runtime::AuthenticationTokenGenerationSpecification
+{
+
+}
+
+Class meta::external::store::service::metamodel::runtime::OauthTokenGenerationSpecification extends meta::external::store::service::metamodel::runtime::AuthenticationTokenGenerationSpecification
+{
+   grantType: OauthGrantType[1];
+   clientId: String[1];
+   clientSecretVaultReference: String[1];
+   authServerUrl: String[1];
+}
+
+Class meta::external::store::service::metamodel::runtime::UsernamePasswordGenerationSpecification extends meta::external::store::service::metamodel::runtime::AuthenticationTokenGenerationSpecification
+{
+   username: String[1];
+   password: String[1];
+}
+
+Enum meta::external::store::service::metamodel::runtime::OauthGrantType
+{
+   ClientCredentials
 }

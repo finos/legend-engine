@@ -35,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
@@ -98,10 +99,15 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
                 ServiceStoreConnection serviceStoreConnection = (ServiceStoreConnection) connectionValue;
 
                 return Tuples.pair(ServiceStoreGrammarParserExtension.SERVICE_STORE_CONNECTION_TYPE,
-                        context.getIndentationString() + "{\n" +
+                        context.getIndentationString()  +  "{\n" +
                                 context.getIndentationString() + getTabString() + "store: " + serviceStoreConnection.element + ";\n" +
                                 context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";\n" +
-                                context.getIndentationString() + "}");
+                                context.getIndentationString() + getTabString() + "authSpecs: [\n" +
+                                serviceStoreConnection.authSpecs.entrySet().stream().map(entry
+                                         -> HelperServiceStoreGrammarComposer.renderTokenGenerationSpecification(entry.getKey(),entry.getValue(), 2))
+                                        .collect(Collectors.joining(",\n")) +
+                                "\n" + context.getIndentationString() + getTabString() + "];" +
+                                context.getIndentationString() + "\n}");
             }
             return null;
         });
@@ -112,4 +118,5 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
     {
         return Collections.singletonList(ServiceStoreEmbeddedDataComposer::composeServiceStoreEmbeddedData);
     }
-}
+
+    }

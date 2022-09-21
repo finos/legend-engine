@@ -34,7 +34,7 @@ function meta::external::store::service::executionPlan::toString::serviceStoreEx
    $space+'  mimeType = '+$s.mimeType +'\n'+
    $space+'  params = '+$s.params->map(p | $p->serviceParamToString())->joinStrings('[', ', ' ,']') +'\n'+
    if($s.requestBodyDescription->isNotEmpty(), |$space+'  requestBodyDescription = ' + $s.requestBodyDescription->toOne().resultKey + '(' + $s.requestBodyDescription->toOne().mimeType +')\n', |'') +
-   $space+'  securitySchemes = '+$s.securitySchemes->map(sec | $sec->securitySchemeToString($extensions))->joinStrings('[', ', ' ,']') +'\n'+
+   //$space+'  securitySchemes = '+$s.securitySchemes->map(sec | $sec->securitySchemeToString($extensions))->joinStrings('[', ', ' ,']') +'\n'+
    $s.implementation->printImplementation('implementation', $space+'  ', $extensions) +'\n'+
    $space+')\n'
 }

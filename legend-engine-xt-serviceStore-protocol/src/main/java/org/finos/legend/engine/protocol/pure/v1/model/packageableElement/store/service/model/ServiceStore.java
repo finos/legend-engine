@@ -25,6 +25,7 @@ public class ServiceStore extends Store
 {
     @JsonAlias({"description", "docLink"})
     public String description;
+    public List<SecurityScheme> securitySchemes = Collections.emptyList();
     public List<ServiceStoreElement> elements = Collections.emptyList();
 
     @Override

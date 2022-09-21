@@ -15,8 +15,9 @@ import meta::protocols::pure::vX_X_X::metamodel::store::service::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStore extends meta::protocols::pure::vX_X_X::metamodel::store::Store
 {
-   description : String[0..1];
-   elements    : ServiceStoreElement[*];
+   description     : String[0..1];
+   securitySchemes : Map<String,SecurityScheme>[0..1];
+   elements        : ServiceStoreElement[*];
 }
 
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceStoreElement
@@ -91,6 +92,23 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::SerializationFor
 Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
 {
    _type    : String[1];
+   id       : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::SimpleHttpSecurityScheme extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
+{
+   scheme : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::ApiKeySecurityScheme extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
+{
+   location : String[1];
+   keyName : String [1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::service::OauthSecurityScheme extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
+{
+   scope : String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceGroupPtr

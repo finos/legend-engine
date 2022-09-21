@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -22,7 +23,6 @@ import org.finos.legend.pure.generated.Root_meta_external_store_service_metamode
 
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.function.Function;
 
 public interface IServiceStoreCompilerExtension extends CompilerExtension
 {
@@ -31,7 +31,7 @@ public interface IServiceStoreCompilerExtension extends CompilerExtension
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreCompilerExtension.class));
     }
 
-    default List<Function<SecurityScheme, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
+    default List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
     {
         return FastList.newList();
     }

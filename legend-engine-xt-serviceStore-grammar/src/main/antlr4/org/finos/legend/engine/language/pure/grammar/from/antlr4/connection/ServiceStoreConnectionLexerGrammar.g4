@@ -6,3 +6,13 @@ import CoreLexerGrammar;
 
 STORE:                                  'store';
 BASE_URL:                               'baseUrl';
+AUTH_SPECS:                             'authSpecs';
+
+// -------------------------------------- ISLAND ---------------------------------------
+BRACE_OPEN:                    '{' -> pushMode (AUTH_SPECIFICATION_ISLAND_MODE);
+
+
+mode AUTH_SPECIFICATION_ISLAND_MODE;
+AUTH_SPECIFICATION_ISLAND_OPEN: '{' -> pushMode (AUTH_SPECIFICATION_ISLAND_MODE);
+AUTH_SPECIFICATION_ISLAND_CLOSE: '}' -> popMode;
+AUTH_SPECIFICATION_CONTENT: (~[{}])+;

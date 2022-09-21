@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -25,10 +26,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParameterBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.FloatTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IdentifiedSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IntegerTypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OAuthTokenGenerationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OauthSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroup;
@@ -37,16 +43,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordSpecification;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Function;
 
 import static org.finos.legend.engine.language.pure.grammar.from.ServiceStoreParseTreeWalker.SERVICE_MAPPING_PATH_PREFIX;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public class HelperServiceStoreGrammarComposer
 {
@@ -61,10 +69,17 @@ public class HelperServiceStoreGrammarComposer
         {
             builder.append("description : ").append("'").append(serviceStore.description).append("'").append(";\n\n");
         }
+
+        renderSecuritySchemes(serviceStore.securitySchemes, builder, baseIndentation);
         renderServiceStoreElements(serviceStore.elements, builder, baseIndentation);
 
         builder.append(")");
         return builder.toString();
+    }
+
+    public static void renderSecuritySchemes(List<SecurityScheme> securitySchemes, StringBuilder builder, int baseIndentation)
+    {
+        builder.append(getTabString(baseIndentation + 1)).append("SecuritySchemes ").append(": ").append("[\n").append(LazyIterate.collect(securitySchemes, s -> visitSecurityScheme(s,baseIndentation + 2)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
     }
 
     private static void renderServiceStoreElements(List<ServiceStoreElement> elements, StringBuilder builder, int baseIndentation)
@@ -105,7 +120,7 @@ public class HelperServiceStoreGrammarComposer
         }
         builder.append(getTabString(baseIndentation + 1)).append("response : ").append(renderTypeReference(service.response)).append(";\n");
         builder.append(getTabString(baseIndentation + 1)).append("security : [")
-                .append(String.join(",", ListIterate.collect(service.security, HelperServiceStoreGrammarComposer::renderAuthenticationStrategy)))
+                .append(String.join(",", ListIterate.collect(service.security, s -> renderSecurity(s,baseIndentation))))
                 .append("];\n");
 
         builder.append(getTabString(baseIndentation)).append(")\n");
@@ -195,16 +210,46 @@ public class HelperServiceStoreGrammarComposer
         return builder.toString();
     }
 
-    private static String renderAuthenticationStrategy(SecurityScheme securityScheme)
+    private static String visitSecurityScheme(SecurityScheme _scheme, int baseIndentation)
     {
-        List<Function<SecurityScheme, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
+        if (_scheme instanceof SimpleHttpSecurityScheme)
+        {
+            SimpleHttpSecurityScheme scheme = (SimpleHttpSecurityScheme) _scheme;
+            return getTabString(baseIndentation) + scheme.id + " : Http\n" +
+                     getTabString(baseIndentation) + "{\n" +
+                     getTabString(baseIndentation + 1) + "scheme : " + convertString(scheme.scheme, true) + ";\n" +
+                     getTabString(baseIndentation) + "}";
+        }
+        else if (_scheme instanceof ApiKeySecurityScheme)
+        {
+            ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
+            return getTabString(baseIndentation) + scheme.id + " : ApiKey\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "location : " + convertString(scheme.location, true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+        else if (_scheme instanceof OauthSecurityScheme)
+        {
+            OauthSecurityScheme scheme = (OauthSecurityScheme) _scheme;
+            return getTabString(baseIndentation) + scheme.id + " : Oauth\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "scopes : [" + LazyIterate.collect(scheme.scopes, s -> convertString(s, true)).makeString(",") + "];\n" +
+                    getTabString(baseIndentation) + "}";
+        }
 
-        return ListIterate
-                .collect(processors, processor -> processor.apply(securityScheme))
-                .select(Objects::nonNull)
-                .getFirstOptional()
-                .orElseThrow(() -> new EngineException("Unsupported SecurityScheme - " + securityScheme.getClass().getSimpleName(), securityScheme.sourceInformation, EngineErrorType.PARSER));
+        return null;
     }
+
+    private static String renderSecurity(SecurityScheme securityScheme, int baseIndentation)
+    {
+        if (securityScheme instanceof IdentifiedSecurityScheme)
+        {
+            return ((IdentifiedSecurityScheme) securityScheme).id;
+        }
+        return unsupported(securityScheme.getClass(), "Security Scheme type");
+
+         }
 
     // -------------------------------------- CLASS MAPPING --------------------------------------
 
@@ -319,5 +364,32 @@ public class HelperServiceStoreGrammarComposer
         {
             return renderServiceGroupPath(serviceGroupPtr.parent) + "." + serviceGroupPtr.serviceGroup;
         }
+    }
+
+    public static String renderTokenGenerationSpecification(String securityScheme, AuthenticationSpecification a, int baseIndentation)
+    {
+        if (a instanceof OAuthTokenGenerationSpecification)
+        {
+            OAuthTokenGenerationSpecification spec = (OAuthTokenGenerationSpecification) a;
+            return getTabString(baseIndentation) + securityScheme +
+                    " : OauthTokenGenerationSpecification\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "grantType : " + convertString(spec.grantType.toString(), true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "clientId : " + convertString(spec.clientId, true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "clientSecretVaultReference : " + convertString(spec.clientSecretVaultReference, true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "authServerUrl : " + convertString(spec.authServerUrl, true) + ";\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+        else if (a instanceof UsernamePasswordSpecification)
+        {
+            UsernamePasswordSpecification spec = (UsernamePasswordSpecification) a;
+            return  getTabString(baseIndentation) + securityScheme +
+                    " : UsernamePasswordSpecification\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "username : " + convertString(spec.username.toString(), true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "password : " + convertString(spec.password.toString(), true) + ";\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+        return null;
     }
 }

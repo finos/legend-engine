@@ -76,7 +76,7 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 scope.span().setTag("raw url", ((RestServiceExecutionNode) executionNode).url);
                 scope.span().setTag("method", ((RestServiceExecutionNode) executionNode).method.toString());
                 RestServiceExecutionNode node = (RestServiceExecutionNode) executionNode;
-                return ServiceExecutor.executeHttpService(node.url, node.params, node.requestBodyDescription, node.method, node.mimeType, node.securitySchemes, this.executionState, this.profiles);
+                return ServiceExecutor.executeHttpService(node.url, node.params, node.requestBodyDescription, node.method, node.mimeType, node.securitySchemes, node.authSpecs, this.executionState, this.profiles);
             }
         }
         else if (executionNode instanceof ServiceParametersResolutionExecutionNode)

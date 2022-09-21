@@ -19,9 +19,8 @@ import io.opentracing.util.GlobalTracer;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -30,7 +29,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -44,10 +42,12 @@ import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.service.activity.ServiceStoreExecutionActivity;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RequestBodyDescription;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Location;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
+import org.finos.legend.engine.shared.core.function.Function5;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.InputStream;
@@ -63,7 +63,7 @@ import java.util.Objects;
 
 public class ServiceExecutor
 {
-    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
+    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, Map<String, AuthenticationSpecification> authSpecs, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -110,29 +110,27 @@ public class ServiceExecutor
         }
 
 
-        InputStream response = executeRequest(httpMethod, uri, headers, requestBodyEntity, mimeType, securitySchemes, profiles);
+        InputStream response = executeRequest(httpMethod, uri, headers, requestBodyEntity, mimeType, securitySchemes, authSpecs, profiles);
         return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(urlProcessedWithQueryParams)));
     }
 
-    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
+    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, Map<String, AuthenticationSpecification> authSpecs, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
-        HttpUriRequest request;
+        RequestBuilder requestBuilder;
         switch (httpMethod)
         {
             case GET:
-                request = new HttpGet(uri);
+                requestBuilder = RequestBuilder.get(uri);
                 break;
             case POST:
-                HttpPost postRequest = new HttpPost(uri);
-                postRequest.setEntity(requestBodyDescription);
-                request = postRequest;
+                requestBuilder = RequestBuilder.post(uri).setEntity(requestBodyDescription);
                 break;
             default:
                 throw new UnsupportedOperationException("The HTTP method " + httpMethod + " is not supported");
         }
-        ListIterate.forEach(headers, header -> request.addHeader(header));
+        headers.forEach(requestBuilder::addHeader);
 
         try
         {
@@ -140,10 +138,11 @@ public class ServiceExecutor
 
             if (securitySchemes != null)
             {
-                securitySchemes.forEach(securityScheme -> processSecurityScheme(clientBuilder, profiles, securityScheme));
+                securitySchemes.forEach(securityScheme -> processSecurityScheme(clientBuilder, requestBuilder, profiles, securityScheme,authSpecs.get(securityScheme.id)));
             }
 
             CloseableHttpClient httpClient = clientBuilder.build();
+            HttpUriRequest request = requestBuilder.build();
             CloseableHttpResponse httpResponse = httpClient.execute(request);
 
             int statusCode = httpResponse.getStatusLine().getStatusCode();
@@ -217,11 +216,11 @@ public class ServiceExecutor
         return ListIterate.collectIf(headerParams, param -> (state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
-    private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)
+    private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, RequestBuilder requestBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme, AuthenticationSpecification authSpecification)
     {
-        List<Function3<SecurityScheme, HttpClientBuilder, MutableList<CommonProfile>, Boolean>> processors = ListIterate.flatCollect(IServiceStoreExecutionExtension.getExtensions(), ext -> ext.getExtraSecuritySchemeProcessors());
+        List<Function5<SecurityScheme, AuthenticationSpecification, HttpClientBuilder, RequestBuilder, MutableList<CommonProfile>, Boolean>> processors = ListIterate.flatCollect(IServiceStoreExecutionExtension.getExtensions(), ext -> ext.getExtraSecuritySchemeProcessors());
 
-        ListIterate.collect(processors, processor -> processor.value(securityScheme, httpClientBuilder, profiles))
+        ListIterate.collect(processors, processor -> processor.value(securityScheme, authSpecification, httpClientBuilder, requestBuilder, profiles))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new RuntimeException("No processor found for given security scheme. Unsupported SecurityScheme - " + securityScheme.getClass().getSimpleName()));

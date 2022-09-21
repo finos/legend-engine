@@ -15,4 +15,5 @@
 Class meta::protocols::pure::vX_X_X::extension::store::service::ServiceStoreModuleSerializerExtension extends meta::protocols::pure::vX_X_X::extension::ModuleSerializerExtension
 {
    transfers_securityScheme_transformSecurityScheme : Function<{Nil[1] -> meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme[1]}>[*];
+   transfers_authTokenGenerationSpecification_transformAuthTokenGenerationSpecification : Function<{Nil[1] -> meta::protocols::pure::vX_X_X::metamodel::connection::store::service::AuthenticationTokenGenerationSpecification[1]}>[*];
 }

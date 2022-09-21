@@ -17,6 +17,7 @@ import meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::
 
 import meta::protocols::pure::vX_X_X::metamodel::store::service::*;
 import meta::protocols::pure::vX_X_X::metamodel::store::service::mapping::*;
+import meta::protocols::pure::vX_X_X::metamodel::connection::store::service::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RestServiceExecutionNode extends meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
 {
@@ -26,6 +27,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::R
    params          : ServiceParameter[*];
    requestBodyDescription : RequestBodyDescription[0..1];
    securitySchemes : SecurityScheme[*];
+   authSpecs       : Map<String,AuthenticationTokenGenerationSpecification>[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RequestBodyDescription
