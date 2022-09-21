@@ -510,5 +510,5 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testF
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.BigQuery, $expectedPlan);
+   meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParameter(DatabaseType.BigQuery, $expectedPlan);
 }
