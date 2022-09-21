@@ -490,7 +490,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = (1 - 4 * (2 + 3)) * 4\n" +
+                "   let a = (1 - (4 * (2 + 3))) * 4\n" +
                 "}\n");
     }
 
@@ -499,7 +499,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = 4 + 1 * (2 + 3) * 4 + (2 + 3) * 4\n" +
+                "   let a = (4 + (1 * (2 + 3) * 4)) + ((2 + 3) * 4)\n" +
                 "}\n");
     }
 
@@ -508,7 +508,35 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
                 "{\n" +
-                "   let a = 4 + (1 - 2) / (2 + 3) * (1 - 4 - 5)\n" +
+                "   let a = 4 + (((1 - 2) / (2 + 3)) * (1 - 4 - 5))\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testMathParenthesis3()
+    {
+        test("function f(s: Integer[1], s2: Interger[2]): String[1]\n" +
+                "{\n" +
+                "   let a = 1 / (2 / 3);\n" +
+                "   let a = 1 * (2 * 3);\n" +
+                "   let a = 1 - (2 - 3);\n" +
+                "   let a = 1 + (2 + 3);\n" +
+                "   let a = (8 / 4) * 2;\n" +
+                "   let a = 8 / (4 * 2);\n" +
+                "   let a = (8 * 4) / 2;\n" +
+                "   let a = 8 * (4 / 2);\n" +
+                "   let a = (8 * 4) + 2;\n" +
+                "   let a = 8 * (4 + 2);\n" +
+                "   let a = (8 + 4) * 2;\n" +
+                "   let a = 8 + (4 * 2);\n" +
+                "   let a = (1 - (4 * (2 + 3))) * 4;\n" +
+                "   let a = ((1 - (4 * 2)) + 3) * 4;\n" +
+                "   let a = (1 - (4 * 2)) + (3 * 4);\n" +
+                "   let a = 1 + 4 + 2 + 3 + 4;\n" +
+                "   let a = (1 + 2) - (3 - 4);\n" +
+                "   let a = 1 + 2 <= 3 - 4;\n" +
+                "   let a = (8 <= 4) + 2;\n" +
+                "   let a = 8 + 4 <= 2;\n" +
                 "}\n");
     }
 
