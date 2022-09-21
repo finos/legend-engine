@@ -18,18 +18,18 @@ import meta::pure::alloy::connections::*;
 import meta::pure::functions::meta::*;
 import meta::pure::test::*;
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::postgres::runSQLQueryTestsParam(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::postgres::runTests(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Postgres, meta::relational::extension::relationalExtensions());
 
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+  meta::relational::tests::dbSpecificTests
           ->collectParameterizedTests('Postgres',
                 ^DbTestConfig(dbType=DatabaseType.Postgres, connection=$connection), [],
-                meta::relational::tests::dbSpecificTests::postgres::runSQLQueryTestsParamFilter_FunctionDefinition_1__Boolean_1_
+                meta::relational::tests::dbSpecificTests::postgres::testsFilter_FunctionDefinition_1__Boolean_1_
                 );
 }
 
-function meta::relational::tests::dbSpecificTests::postgres::runSQLQueryTestsParamFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::relational::tests::dbSpecificTests::postgres::testsFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
 {
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = ['concat' , 'dayOfMonth', 'dayOfWeekNumber', 'firstDayOfMonth', 'firstDayOfQuarter',
