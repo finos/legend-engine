@@ -1,0 +1,139 @@
+###Pure
+Class test::Person
+{
+  name: String[1];
+}
+
+Class test::ServiceResult
+{
+   ID: String[1];
+   NAME: String[1];
+}
+
+###Mapping
+Mapping test::Mapping ()
+
+###Relational
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER,
+    NAME VARCHAR(100)
+  )
+  Table personTable_staging
+  (
+    ID INTEGER,
+    NAME VARCHAR(100)
+  )
+)
+###Service
+Service test::Service
+{
+  pattern : 'test';
+  documentation : 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::Person[1]|$src.name;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      connections: [];
+    }#;
+  }
+  test: Single
+  {
+    data: 'test';
+    asserts: [];
+  }
+}
+
+###Persistence
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::TestDatabase;
+    }
+    ingestMode: AppendOnly
+    {
+      filterDuplicates: false;
+      auditing: None;
+    }
+    targetShape: Flat
+    {
+      targetName: 'personTable';
+      modelClass: test::ServiceResult;
+    }
+  }
+   tests:
+   [
+     test1:
+     {
+       testBatches:
+       [
+         testBatch1:
+         {
+           data:
+           {
+             connection:
+             {
+               ExternalFormat
+               #{
+                 contentType: 'application/json';
+                 data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]';
+               }#
+             }
+           }
+           assert:
+           {
+             assert1:
+              EqualToJson
+              #{
+               expected :
+               ExternalFormat
+               #{
+                 contentType: 'application/json';
+                 data: '[{"ID":1, "NAME":"CHLOE"},{"ID":2, "NAME":"BRAD"}]';
+               }#;
+              }#
+           }
+         },
+         testBatch2:
+         {
+           data:
+           {
+             connection:
+             {
+               ExternalFormat
+               #{
+                 contentType: 'application/json';
+                 data: '[{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]';
+               }#
+             }
+           }
+           assert:
+           {
+             assert1:
+               EqualToJson
+               #{
+                 expected :
+                 ExternalFormat
+                 #{
+                   contentType: 'application/json';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]';
+                 }#;
+               }#
+           }
+         }
+       ]
+       isTestDataFromServiceOutput: true;
+     }
+   ]
+}

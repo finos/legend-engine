@@ -134,3 +134,10 @@ MERGE_STRATEGY_NO_DELETES:                  'NoDeletes';
 MERGE_STRATEGY_DELETE_INDICATOR:            'DeleteIndicator';
 MERGE_STRATEGY_DELETE_INDICATOR_FIELD:      'deleteField';
 MERGE_STRATEGY_DELETE_INDICATOR_VALUES:     'deleteValues';
+
+PERSISTENCE_TESTS:                          'tests';
+PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT:  'isTestDataFromServiceOutput';
+PERSISTENCE_TEST_BATCHES:                   'testBatches';
+PERSISTENCE_TEST_DATA:                      'data';
+PERSISTENCE_TEST_CONNECTION_DATA:           'connection';
+PERSISTENCE_TEST_ASSERT:                    'assert';

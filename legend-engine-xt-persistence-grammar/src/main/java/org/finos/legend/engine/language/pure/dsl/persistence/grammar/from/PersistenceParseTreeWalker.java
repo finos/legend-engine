@@ -14,12 +14,17 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -28,6 +33,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
@@ -72,6 +81,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -85,15 +95,17 @@ public class PersistenceParseTreeWalker
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
     private final List<Function<TriggerSourceCode, Trigger>> triggerProcessors;
+    private final PureGrammarParserContext context;
 
     private final PersistenceContextParseTreeWalker persistenceContextWalker;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, PersistenceContextParseTreeWalker persistenceContextWalker)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, PersistenceContextParseTreeWalker persistenceContextWalker, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.triggerProcessors = triggerProcessors;
+        this.context = context;
         this.persistenceContextWalker = persistenceContextWalker;
     }
 
@@ -148,6 +160,10 @@ public class PersistenceParseTreeWalker
         // notifier
         PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
         persistence.notifier = notifierContext == null ? new Notifier() : visitNotifier(notifierContext);
+
+        // test
+        PersistenceParserGrammar.TestsContext persistenceTestsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tests(), "tests", persistence.sourceInformation);
+        persistence.tests = persistenceTestsContext == null ? null : ListIterate.collect(persistenceTestsContext.test(), this::visitPersistenceTest);
 
         return persistence;
     }
@@ -300,6 +316,98 @@ public class PersistenceParseTreeWalker
     private String visitPagerDutyUrl(PersistenceParserGrammar.PagerDutyUrlContext ctx)
     {
         return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
+    }
+
+    /**********
+     * test
+     **********/
+
+    private PersistenceTest visitPersistenceTest(PersistenceParserGrammar.TestContext ctx)
+    {
+        PersistenceTest persistenceTest = new PersistenceTest();
+        persistenceTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        persistenceTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        // testBatches
+        PersistenceParserGrammar.PersistenceTestBatchesContext testBatchesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistenceTestBatches(), "testBatches", persistenceTest.sourceInformation);
+        if (testBatchesContext != null)
+        {
+            persistenceTest.testBatches = testBatchesContext.persistenceTestBatch().stream().map(testBatch -> visitTestBatch(testBatch, testBatchesContext.persistenceTestBatch().indexOf(testBatch))).collect(Collectors.toCollection(ArrayList::new));
+        }
+
+        // isTestDataFromServiceOutput
+        PersistenceParserGrammar.IsTestDataFromServiceOutputContext isTestDataFromServiceOutputContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.isTestDataFromServiceOutput(), "isTestDataFromServiceOutput", persistenceTest.sourceInformation);
+        if (isTestDataFromServiceOutputContext != null)
+        {
+            persistenceTest.isTestDataFromServiceOutput = Boolean.parseBoolean(PureGrammarParserUtility.fromIdentifier(isTestDataFromServiceOutputContext.identifier()));
+        }
+
+        return persistenceTest;
+    }
+
+    private PersistenceTestBatch visitTestBatch(PersistenceParserGrammar.PersistenceTestBatchContext ctx, int index)
+    {
+        PersistenceTestBatch testBatch = new PersistenceTestBatch();
+        testBatch.batchId = index;
+        testBatch.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        testBatch.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        // testData
+        PersistenceParserGrammar.PersistenceTestDataContext testDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persistenceTestData(), "data", testBatch.sourceInformation);
+        if (testDataContext == null)
+        {
+            throw new EngineException("TestData cannot be empty or null within Persistence TestBatch", testBatch.sourceInformation, EngineErrorType.PARSER);
+        }
+        testBatch.testData = visitPersistenceTestData(testDataContext);
+
+        // assert
+        if (ctx.persistenceTestBatchAssert(0) == null)
+        {
+            throw new EngineException("Assert cannot be null within Persistence TestBatch", testBatch.sourceInformation, EngineErrorType.PARSER);
+        }
+        PersistenceParserGrammar.PersistenceTestAssertContext testAssertsContext = ctx.persistenceTestBatchAssert(0).persistenceTestAssert();
+        if (testAssertsContext == null)
+        {
+            throw new EngineException("Assert cannot be empty within Persistence TestBatch", testBatch.sourceInformation, EngineErrorType.PARSER);
+        }
+        testBatch.assertions = visitPersistenceTestAssert(testAssertsContext);
+
+        return testBatch;
+    }
+
+    private TestData visitPersistenceTestData(PersistenceParserGrammar.PersistenceTestDataContext ctx)
+    {
+        TestData testData = new TestData();
+
+        testData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        PersistenceParserGrammar.PersistenceTestConnectionDataContext testConnectionDataContext = ctx.persistenceTestConnectionData();
+        if (testConnectionDataContext == null)
+        {
+            throw new EngineException("TestConnectionData cannot be empty or null within Persistence TestBatch TestData", testData.sourceInformation, EngineErrorType.PARSER);
+        }
+        testData.connection = visitPersistenceTestConnectionData(testConnectionDataContext);
+
+        return testData;
+    }
+
+    private ConnectionTestData visitPersistenceTestConnectionData(PersistenceParserGrammar.PersistenceTestConnectionDataContext ctx)
+    {
+        ConnectionTestData connectionData = new ConnectionTestData();
+
+        connectionData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        connectionData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+
+        return connectionData;
+    }
+
+    private List<TestAssertion> visitPersistenceTestAssert(PersistenceParserGrammar.PersistenceTestAssertContext ctx)
+    {
+        TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+        testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        List<TestAssertion> testAssertions = new ArrayList<>();
+        testAssertions.add(testAssertion);
+        return testAssertions;
     }
 
     /**********
