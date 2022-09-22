@@ -17,6 +17,8 @@ package org.finos.legend.engine.server;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -72,6 +74,7 @@ import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
@@ -133,6 +136,11 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.addBundle(new LegendPac4jBundle<>(serverConfiguration -> serverConfiguration.pac4j));
         bootstrap.addBundle(new SessionAttributeBundle());
         bootstrap.addBundle(new MultiPartBundle());
+        bootstrap.addBundle(new ErrorHandlingBundle<T>(serverConfiguration -> serverConfiguration.errorhandlingconfiguration));
+
+        // Enable variable substitution with environment variables
+        bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
+
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
         VaultFactory.withVaultConfigurationExtensions(bootstrap.getObjectMapper());
         ObjectMapperFactory.withStandardConfigurations(bootstrap.getObjectMapper());

@@ -60,7 +60,7 @@ public class MasteryParserExtension implements PureGrammarParserExtension
     private static SourceCodeParserInfo getMasteryParserInfo(SectionSourceCode sectionSourceCode)
     {
         CharStream input = CharStreams.fromString(sectionSourceCode.code);
-        ParserErrorListener errorListener = new MasteryParserErrorListener(sectionSourceCode.walkerSourceInformation);
+        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation, MasteryLexerGrammar.VOCABULARY);
         MasteryLexerGrammar lexer = new MasteryLexerGrammar(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);

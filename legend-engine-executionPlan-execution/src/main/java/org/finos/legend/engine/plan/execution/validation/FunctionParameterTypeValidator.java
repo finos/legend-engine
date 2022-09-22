@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.result.freemarker.PlanDateParameterDateFormat;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -191,7 +192,22 @@ abstract class FunctionParameterTypeValidator
         }
     };
 
-    private static final ImmutableMap<String, FunctionParameterTypeValidator> VALIDATORS = Lists.immutable.with(strictDateValidator, dateTimeValidator, dateValidator, integerValidator, floatValidator, decimalValidator, booleanValidator, stringValidator).groupByUniqueKey(FunctionParameterTypeValidator::getType);
+    private static final FunctionParameterTypeValidator byteStreamValidator = new FunctionParameterTypeValidator("ByteStream")
+    {
+        @Override
+        protected boolean isValidJavaType(Object parameterValue)
+        {
+            return parameterValue instanceof InputStream;
+        }
+
+        @Override
+        protected boolean canParse(String parameterValue)
+        {
+            return false;
+        }
+    };
+
+    private static final ImmutableMap<String, FunctionParameterTypeValidator> VALIDATORS = Lists.immutable.with(strictDateValidator, dateTimeValidator, dateValidator, integerValidator, floatValidator, decimalValidator, booleanValidator, stringValidator, byteStreamValidator).groupByUniqueKey(FunctionParameterTypeValidator::getType);
 
     private final String type;
 

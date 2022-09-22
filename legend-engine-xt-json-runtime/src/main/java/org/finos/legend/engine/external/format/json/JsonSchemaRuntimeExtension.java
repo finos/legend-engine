@@ -17,9 +17,7 @@ package org.finos.legend.engine.external.format.json;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
-import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;
-import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeSerializerHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.DefaultExecutionNodeContext;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
@@ -52,7 +50,7 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
     }
 
     @Override
-    public Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
@@ -60,8 +58,8 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
             Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
             IJsonDeserializeExecutionNodeSpecifics specifics = (IJsonDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
-            InputStream stream = ExecutionHelper.inputStreamFromResult(node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState))));
-            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(stream), false, true);
+            // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally
+            StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(specifics.streamReader(inputStream), false, true);
 
             Stream<?> objectStream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(storeObjectsIterator, Spliterator.ORDERED), false);
             return new StreamingObjectResult<>(objectStream);
@@ -73,7 +71,7 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
     }
 
     @Override
-    public Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try
         {
@@ -87,10 +85,9 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
             Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executionClassName, executionState, profiles);
 
             org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics nodeSpecifics = (org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics) clazz.newInstance();
-            Result childResult = node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, executionState));
-            IExecutionNodeContext context = new DefaultExecutionNodeContext(executionState, childResult);
+            IExecutionNodeContext context = new DefaultExecutionNodeContext(executionState, result);
 
-            return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, null, childResult, context);
+            return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, null, result, context);
         }
         catch (InstantiationException | IllegalAccessException e)
         {

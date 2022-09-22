@@ -24,7 +24,7 @@ import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::*;
@@ -43,7 +43,6 @@ Class meta::pure::executionPlan::engine::java::GenerationContext
    conventions               : Conventions[1];
    nodeInfos                 : NodeInfo[*];
    baseProject               : Project[0..1];
-   graphFetchWithCachingFlow : Boolean[0..1];
 }
 
 Class meta::pure::executionPlan::engine::java::NodeInfo
@@ -71,54 +70,6 @@ Class meta::pure::executionPlan::engine::java::CheckedJavaType extends JavaType
 }
 
 
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::TypeInfoSet
-{
-   typeInfos: TypeInfo[*];
-}
-
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::TypeInfo
-{
-   type: meta::pure::metamodel::type::Type[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::EnumerationTypeInfo extends TypeInfo
-{
-   enumeration() { $this.type->cast(@meta::pure::metamodel::type::Enumeration<Any>) }: meta::pure::metamodel::type::Enumeration<Any>[1];
-}
-
-Class <<typemodifiers.abstract>> meta::pure::executionPlan::engine::java::typeInfo::ConstraintInfo
-{
-   constraint:Constraint[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::SupportedConstraintInfo extends ConstraintInfo
-{
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::AlwaysDefectConstraintInfo extends ConstraintInfo
-{
-   defectMessage: String[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::ClassTypeInfo extends TypeInfo
-{
-   properties          : Property<Nil,Any|*>[*];
-   supertypes          : meta::pure::metamodel::type::Class<Any>[*];
-   qualifiedProperties : QualifiedProperty<Any>[*];
-   constraints         : ConstraintInfo[*];
-   isNewInstanceAllowed        : Boolean[1];
-   
-   class() { $this.type->cast(@meta::pure::metamodel::type::Class<Any>) }: meta::pure::metamodel::type::Class<Any>[1];
-}
-
-Class meta::pure::executionPlan::engine::java::typeInfo::UnitTypeInfo extends TypeInfo
-{
-   measure: Measure[1];
-   conversionFunction: FunctionDefinition<Any>[1];
-
-   unit() { $this.type->cast(@Unit) }: Unit[1];
-}
-
 Class meta::pure::executionPlan::engine::java::GeneratedCode
 {
    project: Project[0..1];
@@ -137,30 +88,6 @@ Class meta::pure::executionPlan::engine::java::GeneratedNode
 // --- Plan generation
 // ----------------------------------------------------------------------------------------------------------
 
-function meta::pure::executionPlan::engine::java::generatePlatformCode(e:ExecutionPlan[1], config:PlatformCodeGenerationConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
-{
-   let conventions     = engineConventions($extensions);
-   let pathAdjusted    = if($config.planId->isEmpty(), 
-                            |$conventions, 
-                            |$conventions->setBasePackageName($conventions.basePackageName+'.'+$conventions->identifier('plan_'+$config.planId->toOne()))
-                         );
-   let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted, graphFetchWithCachingFlow=$config.graphFetchWithCachingFlow);
-   let preparedContext = $e.rootExecutionNode->prepare('root', $initialContext, $extensions, $debug)->meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList();
-   
-   // TODO Move Interface/Enum/Unit generation to here
-   let context = ^$preparedContext(baseProject=$preparedContext.conventions->fundamentals($debug));
-   
-   let generated     = $e.rootExecutionNode->generatePlatformCode('root', $e.mapping, $context, $extensions, $debug);
-   
-   ^$e
-   (
-      rootExecutionNode = $generated.node,
-      globalImplementationSupport = if($generated.project->isEmpty() || $generated.project->toOne()->allClasses()->isEmpty(),
-                                       | [],
-                                       | $generated.project->toOne()->projectToImplementation()
-                                    )
-   );
-}
 
 function meta::pure::executionPlan::engine::java::projectToImplementation(project:Project[1]):JavaPlatformImplementation[1]
 {   
@@ -179,93 +106,11 @@ function meta::pure::executionPlan::engine::java::projectToImplementation(projec
     );
 }
 
-
-function meta::pure::executionPlan::engine::java::prepare(node:ExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
-{    
-   let contextFromChildren = $node.executionNodes->prepareChildNodes(1, $path, $context, $extensions, $debug);
-   
-   let contextFromOtherNodes = $node->match($extensions.plan_javaRuntime_main_prepare1->map(x|$x->eval($path, $contextFromChildren, $extensions, $debug))->concatenate([
-      f:FreeMarkerConditionalExecutionNode[1] |
-         let contextFromTrueBlock = $f.trueBlock->prepare($path+'.trueBlock', $contextFromChildren, $extensions, $debug);
-         if($f.falseBlock->isEmpty(), |$contextFromTrueBlock, |$f.falseBlock->toOne()->prepare($path+'.falseBlock', $contextFromTrueBlock, $extensions, $debug));,
-      g:GlobalGraphFetchExecutionNode[1] | 
-         let contextFromGlobalChildren = $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.globalChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren);
-         $g.localGraphFetchExecutionNode->prepare($path+localGraphFetchNodePathPrefix(), $contextFromGlobalChildren, $extensions, $debug);,
-      g:InMemoryGraphFetchExecutionNode[1] | 
-         $g.children->size()->range()->fold({x, ctx | $g.children->at($x)->prepare($path+'.localChild' + $x->toString(), $ctx, $extensions, $debug)}, $contextFromChildren),
-      e:ExecutionNode[1] | $contextFromChildren
-   ])->toOneMany());
-
-   $node->match($extensions.plan_javaRuntime_main_prepare2->map(x|$x->eval($path, $contextFromOtherNodes, $extensions, $debug))->concatenate([
-      g:GlobalGraphFetchExecutionNode[1]             | $g->prepareForGlobalGraphFetchNode($path, $contextFromOtherNodes, $debug),
-      g:InMemoryGraphFetchExecutionNode[1]           | $g->prepareForInMemoryGraphFetch($path, $contextFromOtherNodes, $debug),
-      g:StoreStreamReadingExecutionNode[1]           | $g->prepareForStoreStreamReading($path, $contextFromOtherNodes, $extensions, $debug),
-      p:PureExpressionPlatformExecutionNode[1]       | $p->prepareForPlatformNode($path, $contextFromOtherNodes, $extensions, $debug),
-      p:PlatformMergeExecutionNode[1]                | $p->prepareForPlatformMergeNode($path, $contextFromOtherNodes, $extensions, $debug),
-      p:PlatformUnionExecutionNode[1]                | $p->prepareForPlatformUnionNode($path, $contextFromOtherNodes, $extensions, $debug),      
-      e:ExecutionNode[1]                             |  $contextFromOtherNodes
-   ])->toOneMany());
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList(context:GenerationContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList(context:GenerationContext[1]):GenerationContext[1]
 {
    let cls = $context.typeInfos.typeInfos->filter(t|$t->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->filter(c| !$c.isNewInstanceAllowed); //TODO: remove the not in the last filter
    let oldConventions = $context.conventions; 
    ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = $cls->map(c|$c.class())));
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::prepareChildNodes(nodes:ExecutionNode[*], childNo:Integer[1], parentPath:String[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
-{
-   $nodes->head()->match([
-      {n0:ExecutionNode[0] |
-         $context
-      },
-      {n:ExecutionNode[1] |
-         let newContext = $n->prepare($parentPath+'.n'+$childNo->toString(), $context, $extensions, $debug);
-         $nodes->tail()->prepareChildNodes($childNo+1, $parentPath, $newContext, $extensions, $debug);
-      }
-   ]);
-}
-
-function meta::pure::executionPlan::engine::java::generatePlatformCode(node:ExecutionNode[1], path:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedNode[1]
-{
-   let generated = $node->match($extensions.plan_javaRuntime_main_generatePlatformCode1->map(e|$e->eval($path, $context, $extensions, $debug))->concatenate([
-      l:LocalGraphFetchExecutionNode[1]              | $l->generateCodeForLocalGraphFetchNode($path, $context, $extensions, $debug),
-      l:StoreStreamReadingExecutionNode[1]           | $l->generateCodeForStoreStreamReadingExecutionNode($path, $context, $extensions, $debug),
-      p:PureExpressionPlatformExecutionNode[1]       | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
-      e:ExecutionNode[1]                             | ^GeneratedCode()
-   ])->toOneMany());
-
-   let children    = $node.executionNodes->generateChildNodes(1, $path, $mapping, $context, $extensions, $debug);
-
-   let allProjects = $generated.project->concatenate($children.project)->concatenate($context.baseProject);
-   let fullProject = $allProjects->mergeProjectsNullable();
-
-   let newNode = ^$node(executionNodes=$children.node, implementation=$generated.implementation);
-
-   $newNode->match($extensions.plan_javaRuntime_main_generatePlatformCode2->map(e|$e->eval($path, $mapping, $context, $extensions, $fullProject, $debug))->concatenate([
-      g:GlobalGraphFetchExecutionNode[1] |
-         let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.globalChild' + $x->toString(), $mapping, $context, $extensions, $debug));
-         let transformedLocal = $g.localGraphFetchExecutionNode->generatePlatformCode($path+localGraphFetchNodePathPrefix(), $mapping, $context, $extensions, $debug);
-         let transformedLocalNode = $transformedLocal.node->cast(@LocalGraphFetchExecutionNode);
-         ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@GlobalGraphFetchExecutionNode), localGraphFetchExecutionNode = $transformedLocalNode), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)->concatenate($transformedLocal.project)));,
-      g:InMemoryGraphFetchExecutionNode[1] | 
-         let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generatePlatformCode($path+'.localChild' + $x->toString(), $mapping, $context, $extensions, $debug));
-         ^GeneratedNode(node=^$g(children = $transformedChildren.node->cast(@InMemoryGraphFetchExecutionNode)), project = mergeProjectsNullable($fullProject->concatenate($transformedChildren.project)));,
-      f:FreeMarkerConditionalExecutionNode[1] |
-         let transformedTrueBlock = $f.trueBlock->generatePlatformCode($path+'.trueBlock', $mapping, $context, $extensions, $debug);
-         let transformedFalseBlock = if($f.falseBlock->isEmpty(), |[], |$f.falseBlock->toOne()->generatePlatformCode($path+'.falseBlock', $mapping, $context, $extensions, $debug));
-         ^GeneratedNode(node=^$f(trueBlock = $transformedTrueBlock.node, falseBlock = $transformedFalseBlock.node), project = mergeProjectsNullable($fullProject->concatenate($transformedTrueBlock.project)->concatenate($transformedFalseBlock.project)));,
-      e:ExecutionNode[1] | ^GeneratedNode(node=$newNode, project=$fullProject)
-   ])->toOneMany());
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::generateChildNodes(nodes:ExecutionNode[*], childNo:Integer[1], parentPath:String[1], mapping:Mapping[1], context:GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedNode[*]
-{
-   $nodes->head()->match([
-      n0:ExecutionNode[0] | [],
-      n :ExecutionNode[1] | $n->generatePlatformCode($parentPath+'.n'+$childNo->toString(), $mapping, $context, $extensions, $debug)->concatenate($nodes->tail()->generateChildNodes($childNo+1, $parentPath, $mapping, $context, $extensions, $debug))
-   ]);
 }
 
 function meta::pure::executionPlan::engine::java::generatedCode(project:Project[1], entryPoint:meta::external::language::java::metamodel::Class[1]):GeneratedCode[1]

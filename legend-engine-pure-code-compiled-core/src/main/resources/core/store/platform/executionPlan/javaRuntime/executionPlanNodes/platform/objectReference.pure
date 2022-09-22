@@ -19,13 +19,25 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::executionPlan::engine::java::serialize::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
+
+
+Class meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::LegendJavaObjectReferenceParsingExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   {doc.doc = 'Store type to filter the right extension'}
+   storeType: String[1];
+
+   {doc.doc = 'Given arguments, path, generation context and debug context, generates object reference parser class'}
+   generateObjectReferenceParserImpl: Function<{Any[*], String[1], GenerationContext[1], DebugContext[1] -> meta::external::language::java::metamodel::Class[1]}>[1];
+}
 
 function <<access.private>> meta::pure::executionPlan::engine::java::isParseObjectReferences(fe:FunctionExpression[1]):Boolean[1]
 {
@@ -53,9 +65,10 @@ function meta::pure::executionPlan::engine::java::generateImplementationForParse
    let objectRefParserIface  = getObjectReferenceParserHelperInterface($path, $context);
    let objectRefParserVar    = j_variable($objectRefParserIface, 'objectReferenceParserHelper');
    
-   let objectRefParserImpls  = $extensions.java_parseObjectReference_getParseObjectReferenceImplClass->map(f | $f->eval($storeType, $args, $path, $context, $debug));
-   assert($objectRefParserImpls->size() == 1, | 'Expected 1 Implementation of ObjectReferenceParserHelper for storeType - ' + $storeType + ' Found - ' + $objectRefParserImpls->size()->toString());
-   let objectRefParserImpl   = $objectRefParserImpls->toOne();
+   let objectRefExtensions   = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaObjectReferenceParsingExtension);
+   let filteredExtensions    = $objectRefExtensions->filter(e | $e.storeType == $storeType);
+   assert($filteredExtensions->size() == 1, | 'Expected 1 Implementation of ObjectReferenceParserHelper for storeType - ' + $storeType + ' Found - ' + $filteredExtensions->size()->toString());
+   let objectRefParserImpl   = $filteredExtensions->toOne().generateObjectReferenceParserImpl->eval($args, $path, $context, $debug);
    
    let executionContextVar   = iExecutionNodeContextParam($context.conventions);
 

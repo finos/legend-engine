@@ -163,9 +163,84 @@ public class TestFreemarker
         Assert.assertEquals("final collectionSize :1000", result1.trim());
     }
 
+    @Test
+    public void testEnumPlaceHolderEqualInOp() throws Exception
+    {
+        String testQuery = "select distinct \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where ${equalEnumOperationSelector(enumMap_test_Map_CaseTypeMapping(cType), '\"root\".CASE_TYPE in (${enumMap_test_Map_CaseTypeMapping(cType)})', '\"root\".CASE_TYPE = ${enumMap_test_Map_CaseTypeMapping(cType)}')}";
+        Map vars1 = new HashMap<>();
+        vars1.put("cType", "Active");
+        String result = RelationalExecutor.process(testQuery, vars1, functionTemplates());
+        Assert.assertEquals("select distinct \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where \"root\".CASE_TYPE in ('A1', 'A2', 'A3')", result);
+        Map vars2 = new HashMap<>();
+        vars2.put("cType", "Deaths");
+        result = RelationalExecutor.process(testQuery, vars2, functionTemplates());
+        Assert.assertEquals("select distinct \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where \"root\".CASE_TYPE = 'D1'", result);
+    }
+
+    @Test
+    public void testEnumPlaceHolderNotEqualInOp() throws Exception
+    {
+        String testQuery = "select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where ${equalEnumOperationSelector(enumMap_test_Map_CaseTypeMapping(cType), '(\"root\".CASE_TYPE not in (${enumMap_test_Map_CaseTypeMapping(cType)}) OR \"root\".CASE_TYPE is null)', '(\"root\".CASE_TYPE <> ${enumMap_test_Map_CaseTypeMapping(cType)} OR \"root\".CASE_TYPE is null)')}";
+        Map vars1 = new HashMap<>();
+        vars1.put("cType", "Active");
+        String result = RelationalExecutor.process(testQuery, vars1, functionTemplates());
+        Assert.assertEquals("select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where (\"root\".CASE_TYPE not in ('A1', 'A2', 'A3') OR \"root\".CASE_TYPE is null)", result);
+        Map vars2 = new HashMap<>();
+        vars2.put("cType", "Deaths");
+        result = RelationalExecutor.process(testQuery, vars2, functionTemplates());
+        Assert.assertEquals("select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where (\"root\".CASE_TYPE <> 'D1' OR \"root\".CASE_TYPE is null)", result);
+    }
+
+    @Test
+    public void testEnumPlaceHolderMultipleEqualInOp() throws Exception
+    {
+        String testQuery = "select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where ${equalEnumOperationSelector(enumMap_test_Map_CaseTypeMapping(cType), '\"root\".CASE_TYPE in (${enumMap_test_Map_CaseTypeMapping(cType)})', '\"root\".CASE_TYPE = ${enumMap_test_Map_CaseTypeMapping(cType)}')} and ${equalEnumOperationSelector(enumMap_test_Map_CountryMapping(coType), '\"root\".COUNTRY in (${enumMap_test_Map_CountryMapping(coType)})', '\"root\".COUNTRY = ${enumMap_test_Map_CountryMapping(coType)}')}";
+        Map vars = new HashMap<>();
+        vars.put("cType", "Active");
+        vars.put("coType", "AMEA");
+        String result = RelationalExecutor.process(testQuery, vars, functionTemplates());
+        Assert.assertEquals("select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where \"root\".CASE_TYPE in ('A1', 'A2', 'A3') and \"root\".COUNTRY in ('USA', 'America')", result);
+    }
+
+    @Test
+    public void testEnumPlaceHolderMultipleNotEqualNotInOp() throws Exception
+    {
+        String testQuery = "select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where ${equalEnumOperationSelector(enumMap_test_Map_CaseTypeMapping(cType), '(\"root\".CASE_TYPE not in (${enumMap_test_Map_CaseTypeMapping(cType)}) OR \"root\".CASE_TYPE is null)', '(\"root\".CASE_TYPE <> ${enumMap_test_Map_CaseTypeMapping(cType)} OR \"root\".CASE_TYPE is null)')} and ${equalEnumOperationSelector(enumMap_test_Map_CountryMapping(coType), '(\"root\".COUNTRY not in (${enumMap_test_Map_CountryMapping(coType)}) OR \"root\".COUNTRY is null)', '(\"root\".COUNTRY <> ${enumMap_test_Map_CountryMapping(coType)} OR \"root\".COUNTRY is null)')}";
+        Map vars = new HashMap<>();
+        vars.put("cType", "Active");
+        vars.put("coType", "AMEA");
+        String result = RelationalExecutor.process(testQuery, vars, functionTemplates());
+        Assert.assertEquals("select \"root\".CASE_TYPE as \"caseType\", \"root\".FIPS as \"fips\" from testTable as \"root\" where (\"root\".CASE_TYPE not in ('A1', 'A2', 'A3') OR \"root\".CASE_TYPE is null) and (\"root\".COUNTRY not in ('USA', 'America') OR \"root\".COUNTRY is null)", result);
+    }
+
+    @Test
+    public void testEnumPlaceHolderIfOp() throws Exception
+    {
+        String testQuery1 = "select distinct case when ${equalEnumOperationSelector(enumMap_test_Map_CountryMapping(coType), 'EMEA in (${enumMap_test_Map_CountryMapping(coType)})', 'EMEA = ${enumMap_test_Map_CountryMapping(coType)}')} then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"";
+        Map vars1 = new HashMap<>();
+        vars1.put("coType", "EMEA");
+        String result1 = RelationalExecutor.process(testQuery1, vars1, functionTemplates());
+        Assert.assertEquals("select distinct case when EMEA = 'UK' then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"", result1);
+        String testQuery2 = "select distinct case when ${equalEnumOperationSelector(enumMap_test_Map_CountryMapping(coType), 'AMEA in (${enumMap_test_Map_CountryMapping(coType)})', 'AMEA = ${enumMap_test_Map_CountryMapping(coType)}')} then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"";
+        Map vars2 = new HashMap<>();
+        vars2.put("coType", "AMEA");
+        String result2 = RelationalExecutor.process(testQuery2, vars2, functionTemplates());
+        Assert.assertEquals("select distinct case when AMEA in ('USA', 'America') then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"", result2);
+        String testQuery3 = "select case when ${equalEnumOperationSelector(enumMap_test_Map_CountryMapping(coType), '\"root\".COUNTRY in (${enumMap_test_Map_CountryMapping(coType)})', '\"root\".COUNTRY = ${enumMap_test_Map_CountryMapping(coType)}')} then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"";
+        Map vars3 = new HashMap<>();
+        vars3.put("coType", "EMEA");
+        String result3 = RelationalExecutor.process(testQuery3, vars3, functionTemplates());
+        Assert.assertEquals("select case when \"root\".COUNTRY = 'UK' then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"", result3);
+        String testQuery4 = "select case when '${coType}' = 'EMEA' then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"";
+        Map vars4 = new HashMap<>();
+        vars4.put("coType", "EMEA");
+        String result4 = RelationalExecutor.process(testQuery4, vars4, functionTemplates());
+        Assert.assertEquals("select case when 'EMEA' = 'EMEA' then \"root\".COUNTY else \"root\".COUNTY end as \"county\", \"root\".FIPS as \"fips\" from testTable as \"root\"", result4);
+    }
+
     public static String functionTemplates()
     {
-        return collectionTemplate() + "\n" + collectionSizeTemplate() + "\n" + renderCollectionWithDefaultTemplate();
+        return collectionTemplate() + "\n" + collectionSizeTemplate() + "\n" + renderCollectionWithDefaultTemplate() + "\n" + enumMap_test_Map_CaseTypeMapping() + "\n" +  enumMap_test_Map_CountryMapping() + "\n" + equalEnumOperationSelector();
     }
 //corresponds to function templates coming with plan
 
@@ -176,6 +251,33 @@ public class TestFreemarker
                 "<#return collection?join(separator)>" +
                 "</#function>"
                 + "\n";
+    }
+
+    public static String equalEnumOperationSelector()
+    {
+        return  "<#function equalEnumOperationSelector enumVal inDyna equalDyna>" +
+                    "<#assign enumList = enumVal?split(\",\")>" +
+                    "<#if enumList?size = 1>" +
+                        "<#return equalDyna>" +
+                    "<#else>" +
+                        "<#return inDyna></#if>" +
+                "</#function>";
+    }
+
+    public static String enumMap_test_Map_CaseTypeMapping()
+    {
+        return "<#function enumMap_test_Map_CaseTypeMapping inputVal>" +
+                "<#assign enumMap = { \"Active\":\"'A1', 'A2', 'A3'\", \"Deaths\":\"'D1'\", \"Confirmed\":\"'C1'\", \"Recovered\":\"'R1'\" }>" +
+                "<#return enumMap[inputVal]>" +
+                "</#function>";
+    }
+
+    public static String enumMap_test_Map_CountryMapping()
+    {
+        return "<#function enumMap_test_Map_CountryMapping inputVal>" +
+                "<#assign enumMap = { \"EMEA\":\"'UK'\", \"AMEA\":\"'USA', 'America'\", \"ASIA\":\"'Asia'\" }>" +
+                "<#return enumMap[inputVal]>" +
+                "</#function>";
     }
 
     public static String renderCollectionWithDefaultTemplate()

@@ -60,7 +60,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::enumTypeDep
    let name = $type->elementToPath();
    let dep = newDependency(
       $name,
-        {state |    let typeInfo = meta::pure::executionPlan::engine::java::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::engine::java::typeInfo::addForType($type);
+        {state |    let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::platformBinding::typeInfo::addForType($type);
                     let project = meta::pure::executionPlan::engine::java::generateInterfacesAndEnums($conventions, $typeInfo, $debug);
                     $state->addDependencyProject($name, $project);
         });  

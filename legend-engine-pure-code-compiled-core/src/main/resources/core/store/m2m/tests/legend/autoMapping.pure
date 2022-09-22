@@ -41,7 +41,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::mapSourceToTargetBasedOn
                                 url='data:application/json,{"name":"Acme Corp", "employees":[{"firstName":"Fred","lastName":"Bloggs", "age":37}, {"firstName":"John","lastName":"Doe", "age": 43}]}'
                              )
       ),
-      []
+      meta::pure::extension::defaultExtensions()
    );
 
    let expected = '{"name":"Acme Corp", "employees":[{"firstName":"Fred","lastName":"Bloggs", "age":37}, {"firstName":"John","lastName":"Doe", "age": 43}]}';

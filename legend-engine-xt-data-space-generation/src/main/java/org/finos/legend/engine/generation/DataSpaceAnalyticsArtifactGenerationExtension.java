@@ -14,7 +14,11 @@
 
 package org.finos.legend.engine.generation;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.List;
 import org.finos.legend.engine.analytics.DataSpaceAnalyticsHelper;
 import org.finos.legend.engine.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -24,20 +28,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.Collections;
-import java.util.List;
-
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
-import static org.finos.legend.pure.generated.platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_;
-
 public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGenerationExtension
 {
+    public final String ROOT_PATH = "dataSpace-analytics";
 
-    public final String ROOT_PATH = "data-space-analytics";
     public static ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
+    @Override
+    public String getKey()
+    {
+        return ROOT_PATH;
+    }
 
     @Override
     public boolean canGenerate(PackageableElement element)
@@ -46,14 +51,9 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
     }
 
     @Override
-    public String getArtifactsRootPath()
-    {
-        return ROOT_PATH;
-    }
-
-    @Override
     public List<Artifact> generate(PackageableElement element, PureModel pureModel, PureModelContextData data, String clientVersion)
     {
+        String fileName = "AnalyticsResult.json";
         String dataSpacePath = getElementFullPath(element, pureModel.getExecutionSupport());
         Assert.assertTrue(this.canGenerate(element), () -> "DataSpace analytics only supports dataSpace elements");
         Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) element;
@@ -63,15 +63,12 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
         try
         {
             String stringResult = objectMapper.writeValueAsString(result);
-            String filePath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(element, "/", pureModel.getExecutionSupport()) + ".json";
-            Artifact output = new Artifact(stringResult, filePath, "json");
+            Artifact output = new Artifact(stringResult, fileName, "json");
             return Collections.singletonList(output);
-
         }
-        catch (Exception ignored)
+        catch (Exception exception)
         {
-            // ignore
+            throw new EngineException("Can't serialize data space analysis result", exception);
         }
-        return null;
     }
 }

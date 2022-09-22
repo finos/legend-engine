@@ -142,7 +142,7 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     @Override
     public ConstantResult visit(EnumValue enumValue)
     {
-        throw new UnsupportedOperationException("Unsupported value specification type");
+        return new ConstantResult(enumValue.value);
     }
 
     @Override

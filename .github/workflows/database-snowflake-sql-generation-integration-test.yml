@@ -59,4 +59,4 @@ jobs:
           MAVEN_OPTS: -Xmx4g
           SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY }}
           SNOWFLAKE_INTEGRATION_USER1_PASSWORD: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PASSWORD }}
-        run: mvn -pl legend-engine-server -Dtest="Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite" test
+        run: mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite" test

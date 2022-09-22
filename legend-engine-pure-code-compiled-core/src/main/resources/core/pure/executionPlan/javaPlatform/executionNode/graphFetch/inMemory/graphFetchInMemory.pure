@@ -20,13 +20,14 @@ import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -34,11 +35,24 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
+import meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::xStore::*;
 import meta::pure::milestoning::*;
 import meta::pure::extension::*;
 import meta::pure::runtime::*;
+
+Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::LegendJavaInMemoryGraphFetchExtension extends LegendJavaPlatformBindingAdhocExtension
+{
+   {doc.doc = 'Filter code generation'}
+   filterCodeGenerator:  Function<{InstanceSetImplementation[1], Code[1], Code[1..*], GenerationContext[1], DebugContext[1]->Function<{Nil[1]->Code[1..*]}>[*]}>[*];
+
+   {doc.doc = 'Extract transform function from property mapping'}
+   mappingTransformExtractors : Function<{Nil[1]->FunctionDefinition<Any>[1]}>[*];
+
+   {doc.doc = 'Extract value transformer from property mapping'}
+   valueTransformerExtractors : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
+}
 
 function meta::pure::executionPlan::engine::java::graphFetch::inMemory::prepareForInMemoryGraphFetch(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
 {
@@ -125,34 +139,26 @@ function meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichFo
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreRootNodeProject(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryRootGraphFetch\n', |''));
-   if ($node->nodeIsMerged(),
+   if($node->nodeIsMerged(),
       | meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreMergeRootNodes($node,$path,$context,$extensions,$debug);,
-       |
+      | let conventions    = $context.conventions;
+        let graphFetchTree = $node.graphFetchTree->cast(@RoutedGraphFetchTree);
 
-            let conventions    = $context.conventions;
-            let graphFetchTree = $node.graphFetchTree->cast(@RoutedGraphFetchTree);
+        let graphImpl      = $node->graphImplClass($path, $context);
+        let currentSet     = $graphFetchTree.sets->toOne()->cast(@InstanceSetImplementation);
+        let input          = j_parameter(javaObject(), 'input');
 
-            let graphImpl      = $node->graphImplClass($path, $context);
-            let currentSet     = $graphFetchTree.sets->toOne()->cast(@InstanceSetImplementation);
-            let input          = j_parameter(javaObject(), 'input');
+        let executeClassWithImports = $context.conventions->planNodeClass('public', $path, 'Execute')
+                                                          ->implements($conventions->className(IInMemoryRootGraphFetchExecutionNodeSpecifics));
 
-            let executeClassWithImports = $context.conventions->planNodeClass('public', $path, 'Execute')
-               ->usingKnownPackages($conventions->knownPackages())
-               ->imports($conventions->standardImports())
-               ->imports([IReferencedObject, GraphInstance, IStoreStreamReadingExecutionNodeContext, IInMemoryRootGraphFetchMergeExecutionNodeSpecifics]->map(x | $conventions->className($x)))
-               ->implements($conventions->className(IInMemoryRootGraphFetchExecutionNodeSpecifics));
-
-            let transformMethodCodes = $input->setTransformerCodes($currentSet, $graphFetchTree, $graphImpl, true, true, $context, $extensions, $debug);
-   let transformMethod      = javaMethod(['public'], javaObject(), 'transform', [$input], $transformMethodCodes);
+        let transformMethodCodes = $input->setTransformerCodes($currentSet, $graphFetchTree, $graphImpl, true, true, $context, $extensions, $debug);
+        let transformMethod      = javaMethod(['public'], javaObject(), 'transform', [$input], $transformMethodCodes);
    
-   let executeClass   = $executeClassWithImports->addMethod($transformMethod);
-   let executeProject = newProject()->addClasses($executeClass);
-   let allProjects    = $executeProject->concatenate($transformMethodCodes->dependencies()->resolveAndGetProjects())->toOneMany();
-   $allProjects->mergeProjects();
-
+        let executeClass   = $executeClassWithImports->addMethod($transformMethod);
+        let executeProject = newProject()->addClasses($executeClass);
+        let allProjects    = $executeProject->concatenate($transformMethodCodes->dependencies()->resolveAndGetProjects())->toOneMany();
+        $allProjects->mergeProjects();
      );
-
-
 }
 
 
@@ -254,7 +260,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
       let parentSet = $pm.owner->toOne()->cast(@InstanceSetImplementation);
       let parentSrc = j_parameter($conventions->className($parentSet->sourceClass($extensions)), 'src');
       let transform = $parentSet->generatePropertyMappingTransform($property, $pm, $parentSrc, $conventions, $extensions, $debug->indent());
-      j_lambda($parentSrc, $transform);
+      j_lambda($parentSrc, $transform->toOne());
    });
    
    let targetSetTransformers = $propertyMappings->map({pm |
@@ -512,8 +518,8 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
                          let propertyValues = $inScopeSubTrees->map({st |
                             let prop = $st.property->cast(@Property<Nil,Any|*>);
                             let propertyMapping =  $set->propertyMappingsByPropertyName($prop.name->toOne())->head();
-                            $set->generatePropertyMappingTransform($prop, $propertyMapping, $src, $conventions, $extensions, $debug->indent());
-                      
+                            let value = $set->generatePropertyMappingTransform($prop, $propertyMapping, $src, $conventions, $extensions, $debug->indent());
+                            $value->map(v| pair($prop, $v));
                          });
                          let milestoneDateGetter   = {strategy: SingleDateTemporalStrategy[1] |
                             let propertyName = temporalStrategyToPropertyName($strategy);
@@ -530,7 +536,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
                                                          | [$milestoneDateGetter->eval(^ProcessingTemporal()), $milestoneDateGetter->eval(^BusinessTemporal())],
                                                          | []
                                                      )));
-                         $result->objectCreationCodes($graphImplClass, $set, $src, $milestoningDateValues->concatenate($inScopeSubTrees.property->cast(@Property<Nil,Any|*>)->zip($propertyValues)), $wrapAsGraphInstance, $conventions);
+                         $result->objectCreationCodes($graphImplClass, $set, $src, $milestoningDateValues->concatenate($propertyValues), $wrapAsGraphInstance, $conventions);
                    );
    
    [$src->j_declare($input->j_cast($srcJavaClass))]->concatenate($set->applyTypeFilter($src, $transform, $context, $extensions, $debug->indent()))->toOneMany();
@@ -548,7 +554,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Property mapping helpers */
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[0..1]
 {  
    print(if($debug.debug,|$debug.space+'generatePropertyMappingTransform: \''+$property.name->toOne()+'\'\n', |''));
    
@@ -572,7 +578,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
          ));
       },
       {|
-         if ($isNoMappingDefaultToEmpty || $isMergedUnMappedProperty,
+         if($isNoMappingDefaultToEmpty || $isMergedUnMappedProperty,
             {| 
                if (isJavaList($propertyJavaType), 
                    | $propertyJavaType->j_emptyList(), 
@@ -580,25 +586,29 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
                )
             },
             {|
-               assert($propertyMapping->isNotEmpty(), | 'No mapping found for property - \'' + $property.name->toOne() + '\'');
+               if($propertyMapping->isNotEmpty(),
+                  {|
+                    let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
+                    let transformFunction = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.mappingTransformExtractors->toOneMany());
+                    let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), $property->functionReturnMultiplicity());
+                    let javaExpression    = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
+                    let valueTransformer  = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.valueTransformerExtractors->toOneMany());
+                    let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
+                    let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
 
-               let transformFunction = $propertyMapping->toOne()->match([ppm : PurePropertyMapping[1] | $ppm.transform]->concatenate($extensions.java_graphFetch_inMemory_generatePropertyMapping1)->toOneMany());
-               let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), $property->functionReturnMultiplicity());
-               let javaExpression    = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
-               let valueTransformer  = $propertyMapping->toOne()->match([ppm : PurePropertyMapping[1] | $ppm.transformer]->concatenate($extensions.java_graphFetch_inMemory_generatePropertyMapping2)->toOneMany());
-               let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $debug->indent()));
-               let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
-
-               if ($returnType == $code.type,
-                   |$code,
-                   |
-               if ($returnType->isJavaList() && ($returnType->elementTypeOfJavaList() == $code.type->toBoxed()),
-                   |$code->j_listOf($returnType),
-                   |
-               if ($returnType->isJavaList(),
-                   |$code->j_listOf($returnType),
-                   |$code->j_cast($returnType)
-               )));
+                    if ($returnType == $code.type,
+                        |$code,
+                        |
+                    if ($returnType->isJavaList() && ($returnType->elementTypeOfJavaList() == $code.type->toBoxed()),
+                        |$code->j_listOf($returnType),
+                        |
+                    if ($returnType->isJavaList(),
+                        |$code->j_listOf($returnType),
+                        |$code->j_cast($returnType)
+                    )));
+                  },
+                  | []
+                )
             }
          )
       }
@@ -611,17 +621,9 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::applyTypeFilter(set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
 {
    print(if($debug.debug,|$debug.space+'filter generation\n', |''));
-   
-   let pureSetFilterGeneration = {ps : PureInstanceSetImplementation[1] |
-      if ($ps.filter->isNotEmpty(),
-          | $ps.filter.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($context.conventions, $debug->indent())->j_if($withoutFilter, j_null()->j_return()),
-          | $withoutFilter
-      )
-   };
-   
-   let otherSetsFilterGeneration = $extensions.java_graphFetch_inMemory_applyTypeFilter->map(f|$f->evaluate([list($set), list($src), list($withoutFilter), list($context), list($debug)])->cast(@Function<{Nil[1]->Code[1..*]}>));
-   
-   $set->match($pureSetFilterGeneration->concatenate($otherSetsFilterGeneration)->toOneMany());
+
+   let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
+   $set->match($inMemoryAdhocExtensions.filterCodeGenerator->map(f|$f->eval($set, $src, $withoutFilter, $context, $debug))->toOneMany());
 }
 
 

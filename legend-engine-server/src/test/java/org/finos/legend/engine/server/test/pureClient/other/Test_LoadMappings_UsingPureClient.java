@@ -17,6 +17,7 @@ package org.finos.legend.engine.server.test.pureClient.other;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
+import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
 public class Test_LoadMappings_UsingPureClient extends TestSuite
@@ -24,7 +25,7 @@ public class Test_LoadMappings_UsingPureClient extends TestSuite
     public static Test suite()
     {
         return PureTestHelper.wrapSuite(
-                () -> PureTestHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
+                () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                 () ->
                 {
                     CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();

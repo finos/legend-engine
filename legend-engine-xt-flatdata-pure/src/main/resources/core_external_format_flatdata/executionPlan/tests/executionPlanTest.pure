@@ -14,159 +14,181 @@
 
 import meta::external::format::flatdata::executionPlan::test::*;
 import meta::external::format::flatdata::metamodel::*;
-
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::executionPlan::tests::*;
 import meta::external::shared::format::functions::*;
 import meta::external::shared::format::metamodel::*;
 import meta::external::shared::functions::*;
-
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
-
 import meta::pure::graphFetch::execution::*;
-
 import meta::pure::mapping::modelToModel::*;
-
 import meta::pure::model::unit::*;
-
 import meta::pure::runtime::*;
 
 Class meta::external::format::flatdata::executionPlan::test::Person
+[
+   $this.firstName->length() > 1
+]
 {
    firstName : String[1];
    lastName  : String[1];
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::test::flatDataNodesChecked(): Boolean[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::test::getTestBinding():Binding[1]
 {
-   let extensions = meta::external::shared::format::externalFormatExtension()->concatenate(meta::external::format::flatdata::extension::flatDataFormatExtension());
-   
    let schemaSet = ^SchemaSet(
-      name    = 'TestSchema',
-      package = meta::external::format::flatdata::executionPlan::test,
-      format  = 'FlatData',
-      schemas = ^Schema(
-         id = 'default.flatdata',
-         detail  = ^FlatData(
-            sections = ^FlatDataSection(
-               name              = 'Person',
-               driverId          = 'DelimitedWithHeadings',
-               sectionProperties = [
-                  ^FlatDataProperty(name='scope.untilEof', value=true),
-                  ^FlatDataProperty(name='delimiter', value=',') 
-               ],
-               recordType        = ^FlatDataRecordType(
-                  fields = [
-                     ^FlatDataRecordField(label='First Name', type=^FlatDataString(optional=false)),
-                     ^FlatDataRecordField(label='Last Name',  type=^FlatDataString(optional=false))
-                  ]
+         name    = 'TestSchema',
+         package = meta::external::format::flatdata::executionPlan::test,
+         format  = 'FlatData',
+         schemas = ^Schema(
+            id = 'default.flatdata',
+            detail  = ^FlatData(
+               sections = ^FlatDataSection(
+                  name              = 'Person',
+                  driverId          = 'DelimitedWithHeadings',
+                  sectionProperties = [
+                     ^FlatDataProperty(name='scope.untilEof', value=true),
+                     ^FlatDataProperty(name='delimiter', value=',')
+                  ],
+                  recordType        = ^FlatDataRecordType(
+                     fields = [
+                        ^FlatDataRecordField(label='First Name', type=^FlatDataString(optional=false)),
+                        ^FlatDataRecordField(label='Last Name',  type=^FlatDataString(optional=false))
+                     ]
+                  )
                )
             )
          )
-      )
-   );
-   
-   let binding = ^Binding(
+      );
+
+   ^Binding(
       name        = 'TestBinding',
       package     = meta::external::format::flatdata::executionPlan::test,
       schemaSet   = $schemaSet,
       contentType = 'application/x.flatdata',
-      modelUnit   = newModelUnit()->include(Person)
+      modelUnit   = newModelUnit()->include(meta::external::format::flatdata::executionPlan::test::Person)
    );
-   
-   let tree = #{Person {firstName, lastName}}#;
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::test::flatDataNodesChecked(): Boolean[1]
+{
+   let extensions = meta::external::shared::format::externalFormatExtension();
+
+   let binding = getTestBinding();
+
+   let tree = #{meta::external::format::flatdata::executionPlan::test::Person {firstName, lastName}}#;
 
    let plan = executionPlan(
-      |Person.all()->graphFetchChecked($tree)->externalize($binding),
-      SelfMapping,
-      ^Runtime(
-         connections = ^ExternalFormatConnection(
-            element        = $binding,
-            externalSource = ^UrlStreamExternalSource(url = 'executor:default')
-         )
-      ),
+      |meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, ^Url(url = 'executor:default'))->graphFetchChecked($tree)->externalize($binding),
       ^ExecutionContext(),
       $extensions,
       noDebug()
    );
-  //  $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), $extensions)->planToString(true, $extensions)->println();
 
    let planString = $plan->planToString(false, $extensions);
-   
-   let expected = 'ExternalFormat_Externalize\n'+
-                  '(\n'+
-                  '  type = String\n'+
-                  '  resultSizeRange = 1\n'+
-                  '  checked = true\n'+
-                  '  binding = meta::external::format::flatdata::executionPlan::test::TestBinding\n'+
-                  '\n'+
-                  '  (\n'+
-                  '    GlobalGraphFetch\n'+
-                  '    (\n'+
-                  '      type = PartialClass[impls=[(meta::external::format::flatdata::executionPlan::test::Person | SelfMapping.meta_external_format_flatdata_executionPlan_test_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '      resultSizeRange = *\n'+
-                  '      store = MODEL\n'+
-                  '      localGraphFetchExecutionNode = \n'+
-                  '         InMemoryRootGraphFetch\n'+
-                  '         (\n'+
-                  '           type = PartialClass[impls=[(meta::external::format::flatdata::executionPlan::test::Person | SelfMapping.meta_external_format_flatdata_executionPlan_test_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '           graphFetchTree = [meta_external_format_flatdata_executionPlan_test_Person/meta::external::format::flatdata::executionPlan::test::Person]{@(meta_external_format_flatdata_executionPlan_test_Person->)@[/firstName],@(meta_external_format_flatdata_executionPlan_test_Person->)@[/lastName]}\n'+
-                  '           nodeIndex = 0\n'+
-                  '           batchSize = 1\n'+
-                  '           checked = true\n'+
-                  '           (\n'+
-                  '             DataQuality\n'+
-                  '             (\n'+
-                  '               type = PartialClass[impls=[], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '               resultSizeRange = *\n'+
-                  '               enableConstraints = true\n'+
-                  '               checked = true\n'+
-                  '\n'+
-                  '               (\n'+
-                  '                 ExternalFormat_Internalize\n'+
-                  '                 (\n'+
-                  '                   type = PartialClass[impls=[], propertiesWithParameters = [firstName, lastName]]\n'+
-                  '                   resultSizeRange = *\n'+
-                  '                   binding = meta::external::format::flatdata::executionPlan::test::TestBinding\n'+
-                  '\n'+
-                  '                   (\n'+
-                  '                     UrlStream\n'+
-                  '                     (\n'+
-                  '                       type = String\n'+
-                  '                       url = executor:default\n'+
-                  '\n'+
-                  '                     )\n'+
-                  '                   )\n'+
-                  '                 )\n'+
-                  '               )\n'+
-                  '             )\n'+
-                  '           )\n'+
-                  '           children = [\n'+
-                  '              \n'+
-                  '           ]\n'+
-                  '         )\n'+
-                  '      children = [\n'+
-                  '         \n'+
-                  '      ]\n'+
-                  '    )\n'+
-                  '  )\n'+
-                  ')\n';
 
-   assertEquals($expected, $planString);   
+   let expected = 
+        'ExternalFormat_Externalize\n' +
+        '(\n' +
+        '  type = String\n' +
+        '  resultSizeRange = 1\n' +
+        '  checked = true\n' +
+        '  binding = meta::external::format::flatdata::executionPlan::test::TestBinding\n' +
+        '\n' +
+        '  (\n' +
+        '    ExternalFormat_Internalize\n' +
+        '    (\n' +
+        '      type = Class[impls=]\n' +
+        '      resultSizeRange = *\n' +
+        '      binding = meta::external::format::flatdata::executionPlan::test::TestBinding[application/x.flatdata]\n' +
+        '      enableConstraints = true\n' +
+        '      checked = true\n' +
+        '      graphFetchTree = #{meta::external::format::flatdata::executionPlan::test::Person{firstName,lastName}}#\n' +
+        '\n' +
+        '      (\n' +
+        '        UrlStream\n' +
+        '        (\n' +
+        '          type = ByteStream\n' +
+        '          url = executor:default\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        ')\n';
+
+   assertEquals($expected, $planString);
 }
 
-###Mapping
+function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
+{
+   let extensions = [meta::external::shared::format::externalFormatExtension(), meta::external::format::flatdata::extension::flatDataFormatExtension()];
+   let binding = getTestBinding();
 
-import meta::external::format::flatdata::executionPlan::test::*;
+   let plan = buildPlan({| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'stringConstant')}, $extensions, true);
+   let planString = $plan->planToString(false, $extensions);
+  
+   let expectedPlan = 
+        'ExternalFormat_Internalize\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  binding = meta::external::format::flatdata::executionPlan::test::TestBinding[application/x.flatdata]\n' +
+        '  enableConstraints = true\n' +
+        '  checked = false\n' +
+        '\n' +
+        '  (\n' +
+        '    Sequence\n' +
+        '    (\n' +
+        '      type = String\n' +
+        '      resultSizeRange = 1\n' +
+        '      (\n' +
+        '        Allocation\n' +
+        '        (\n' +
+        '          type = meta::pure::router::Void\n' +
+        '          name = internalizeVar$\n' +
+        '          value = \n' +
+        '            (\n' +
+        '              Constant\n' +
+        '              (\n' +
+        '                type = String\n' +
+        '                values=[stringConstant]\n' +
+        '              )\n' +
+        '            )\n' +
+        '        )\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = String\n' +
+        '          resultSizeRange = 1\n' +
+        '          varName = internalizeVar$\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        '  implementation\n' +
+        '  (\n' +
+        '    calls = _pure.plan.root.FlatDataDeserializeSpecifics\n' +
+        '  )\n' +
+        ')\n';
 
-Mapping meta::external::format::flatdata::executionPlan::test::SelfMapping
-(
-   Person: Pure
-   {
-      ~src Person
-      
-      firstName   : $src.firstName,
-      lastName    : $src.lastName
-   }
-)
+   assertEquals($expectedPlan, $planString);
+
+   let impl = $plan.globalImplementationSupport->toOne()->cast(@JavaPlatformImplementation);
+
+   let allConstraintsSource = $impl.classes->filter(c| $c.name == 'meta_external_format_flatdata_executionPlan_test_Person_Impl').source->toOne();
+   let expectedAllConstraintsMethod = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        if (!context.visited.contains(this))\n' +
+                '        {\n' +
+                '            context.visited.add(this);\n' +
+                '            this.constraint_0().ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+
+   assert($allConstraintsSource->contains($expectedAllConstraintsMethod));
+}

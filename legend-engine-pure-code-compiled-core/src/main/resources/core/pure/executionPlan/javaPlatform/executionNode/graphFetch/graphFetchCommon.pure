@@ -23,7 +23,7 @@ import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::graphFetch::common::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::functions::hash::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
@@ -55,25 +55,16 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::localGraph
    '.localGraph'
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::generateCodeForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions:Extension[*], debug:DebugContext[1]):GeneratedCode[1]
+function meta::pure::executionPlan::engine::java::graphFetch::common::generateBaseProjectForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], debug:DebugContext[1]): Project[1]
 {
-   let implProject   = if($node.resultType->instanceOf(ClassResultType)  &&!$node->meta::pure::graphFetch::executionPlan::nodeIsMerged() ,| generateGraphNodeImplementation($node, $context, $path, $extensions, $debug), | []);
+   let implProject   = if($node.resultType->instanceOf(ClassResultType)  &&!$node->meta::pure::graphFetch::executionPlan::nodeIsMerged() ,| generateGraphNodeImplementation($node, $context, $path, $storeSpecificGraphImplUpdates, $debug), | []);
    let globalProject = if($node.parentIndex->isNotEmpty(), | newProject(), | generateTypes($context, $debug)); // Avoid generating interfaces and enums multiple times and merging later. Do it only at root nodes (which do not have parent index)
-   let storeProject  = $node->match([
-      i : meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug)
-   ]->concatenate(
-      $extensions.java_graphFetch_graphFetchCommon_generateCodeForLocalGraphFetchNode->map(f|$f->eval($path, $context, $extensions, $debug))
-   )->toOneMany());
-
-   generatedCode(
-      mergeProjects($implProject->concatenate([$globalProject, $storeProject])->toOneMany()),
-      $storeProject->resolve($context.conventions->planNodeClass('public', $path, 'Execute'))
-   );
+   $implProject->concatenate($globalProject)->toOneMany()->mergeProjects();
 }
 
 function meta::pure::executionPlan::engine::java::graphFetch::common::typeFromStoreLocalNode(storeLocalNode: LocalGraphFetchExecutionNode[1]):meta::pure::metamodel::type::Class<Any>[1]
 {
-   if ($storeLocalNode.resultType->cast(@ClassResultType).setImplementations->size() > 1,
+   if ($storeLocalNode.resultType->cast(@ClassResultType).setImplementations->size() != 1,
        | $storeLocalNode.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>),
        | let setImpl = $storeLocalNode.resultType->cast(@ClassResultType).setImplementations->toOne()->cast(@InstanceSetImplementation);
          $setImpl.mappingClass->isNotEmpty()->if(| $setImpl.mappingClass->toOne(), | $setImpl.class);
@@ -94,13 +85,13 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplC
       ->implements($interface);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], extensions:Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], debug: DebugContext[1]):Project[1]
 {
    let resultClass       = $node->typeFromStoreLocalNode();
    let implClass         = graphImplClass($node, $path, $context);
    let implProject       = newProject()->addClasses($implClass);
    let propertiesProject = $implClass->updateImplementationClassWithProperties($node, $resultClass, $context);
-   let storeProject      = $implClass->updateImplementationClassWithStoreSpecificFieldsAndMethods($node, $context, $extensions, $debug);
+   let storeProject      = $storeSpecificGraphImplUpdates->eval($implClass);
    let mergedProject     = mergeProjects([$implProject, $propertiesProject, $storeProject]);
    let withSizeMethods   = $mergedProject->resolve($implClass)->updateImplementationClassWithInstanceSizeMethods($context);
    let mergedProjectWithSizeMethods = mergeProjects([$mergedProject, $withSizeMethods]);
@@ -171,13 +162,6 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    }, $implClass);
 
    newProject()->addClasses($withProperties);
-}
-
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithStoreSpecificFieldsAndMethods(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Project[1]
-{
-   $node->match([
-      i : meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $implClass->meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichForInMemoryGraphExecution($i, $context, $extensions, $debug)
-   ]->concatenate($extensions.java_graphFetch_graphFetchCommon_updateImplementationClassWithStoreSpecificFieldsAndMethods->map(f|$f->eval($implClass, $context, $extensions, $debug)))->toOneMany())
 }
 
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]

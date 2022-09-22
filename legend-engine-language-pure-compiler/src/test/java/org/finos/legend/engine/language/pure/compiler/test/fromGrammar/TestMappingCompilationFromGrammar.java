@@ -192,214 +192,6 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
-    public void testNewCallsValidationInMappings()
-    {
-        String models = "Class test::A\n" +
-                "{\n" +
-                "   b: test::B[0..*];\n" +
-                "}\n" +
-                "Class test::B\n" +
-                "{\n" +
-                "   primeId: String[0..*];\n" +
-                "}\n" +
-                "Class test::C\n" +
-                "{\n" +
-                "   id: String[0..*];\n" +
-                "}\n";
-
-        test(models +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   \n" +
-                "   test::A : Pure\n" +
-                "             {\n" +
-                "                ~src test::C\n" +
-                "                b : ^test::B(primeId=$src.id)\n" +
-                "             }\n" +
-                "   \n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId\n" +
-                "             }\n" +
-                "   \n" +
-                ")","COMPILATION error at [14:1-29:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
-                );
-
-        test(models +
-                "function test::F1(id: String[*]): test::B[1]\n" +
-                "{\n" +
-                "   ^test::B(primeId=$id);\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   \n" +
-                "   test::A : Pure\n" +
-                "             {\n" +
-                "                ~src test::C\n" +
-                "                b : $src.id->test::F1()\n" +
-                "             }\n" +
-                "   \n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId\n" +
-                "             }\n" +
-                "   \n" +
-                ")","COMPILATION error at [18:1-33:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
-        );
-
-        test(models +
-                "function test::F1(id: String[*]): String[*]\n" +
-                "{\n" +
-                "   let m = ^test::B(primeId=$id);\n" +
-                "   $id;\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   \n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId->test::F1()\n" +
-                "             }\n" +
-                "   \n" +
-                ")"
-        );
-
-        test(models +
-                "function test::F1(id: String[*]): test::B[1]\n" +
-                "{\n" +
-                "   let id2 = $id;\n" +
-                "   let x = ^test::C(id=$id);\n" +
-                "   ^test::B(primeId=$id2);\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   \n" +
-                "   test::A : Pure\n" +
-                "             {\n" +
-                "                ~src test::C\n" +
-                "                b : $src.id->test::F1()\n" +
-                "             }\n" +
-                "   \n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId\n" +
-                "             }\n" +
-                "   \n" +
-                ")","COMPILATION error at [20:1-35:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
-        );
-
-        test(models +
-                "function test::F1(id: String[*]): test::B[1]\n" +
-                "{\n" +
-                "   test::F2($id);\n" +
-                "}\n" +
-                "function test::F2(id: String[*]): test::B[1]\n" +
-                "{\n" +
-                "   ^test::B(primeId=$id);\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   \n" +
-                "   test::A : Pure\n" +
-                "             {\n" +
-                "                ~src test::C\n" +
-                "                b : $src.id->test::F1()\n" +
-                "             }\n" +
-                "   \n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId\n" +
-                "             }\n" +
-                "   \n" +
-                ")","COMPILATION error at [22:1-37:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
-        );
-
-        test(models +
-                "function test::F1(id: String[*]): test::B[1]\n" +
-                "{\n" +
-                "   let id2 = test::F1($id);\n" +
-                "   ^test::B(primeId=$id2);\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   \n" +
-                "   test::A : Pure\n" +
-                "             {\n" +
-                "                ~src test::C\n" +
-                "                b : $src.id->test::F1()\n" +
-                "             }\n" +
-                "   \n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId\n" +
-                "             }\n" +
-                "   \n" +
-                ")","COMPILATION error at [19:1-34:1]: The new function/operator(^) on target class is unsupported in property mappings, violated in property 'test_A.b' of mapping 'test::map'"
-        );
-
-        test(models +
-                "Class test::D\n" +
-                "[\n" +
-                "   testConstraint:test::constraintFunction()\n" +
-                "]\n" +
-                "{\n" +
-                "   b: test::B[1];\n" +
-                "}\n" +
-                "function test::constraintFunction(): Boolean[1]\n" +
-                "{\n" +
-                "   ^test::B();\n" +
-                "   assertEquals(true, true);\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   test::D : Pure\n" +
-                "             {\n" +
-                "                ~src test::D\n" +
-                "                b : $src.b\n" +
-                "             }\n" +
-
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId\n" +
-                "             }\n" +
-                "   \n" +
-                ")"
-        );
-
-        test(models +
-                "function test::F1(id: String[*]): String[*]\n" +
-                "{\n" +
-                "   toString(^test::B(primeId=$id));\n" +
-                "}\n" +
-                "###Mapping\n" +
-                "Mapping test::map\n" +
-                "(\n" +
-                "   test::B : Pure\n" +
-                "             {\n" +
-                "                ~src test::B\n" +
-                "                primeId : $src.primeId->test::F1()\n" +
-                "             }\n" +
-                "   \n" +
-                ")"
-        );
-
-    }
-
-    @Test
     public void testClassMappingsRootsCount()
     {
         String models = "Class test::A  {\n" +
@@ -1087,7 +879,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 // intentionally mess up spacing to check walker source information processing
                 "       lastName :          1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:28]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not a subtype of 'String'");
+                ")", "COMPILATION error at [7:28]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
         test("Class test::Person{lastName:String[1];}\n" +
                 "###Mapping\n" +
                 "Mapping a::mapping\n" +
@@ -1098,7 +890,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       lastName :          \n" +
                 "                       1\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [8:24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not a subtype of 'String'");
+                ")", "COMPILATION error at [8:24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
         // check walker source information processing for mapping element
         test("Class test::Person{lastName:String[1];}\n" +
                 "###Mapping\n" +
@@ -1107,7 +899,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   test::Person : Pure\n" +
                 // intentionally mess up spacing to check walker source information processing for mapping element
                 "              {    lastName :              1 }\n" +
-                ")", "COMPILATION error at [6:44]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not a subtype of 'String'");
+                ")", "COMPILATION error at [6:44]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
     }
 
     @Test
@@ -1192,7 +984,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "   {\n" +
                 "       lastName : [1, 2]\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:19-24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not a subtype of 'String'");
+                ")", "COMPILATION error at [7:19-24]: Error in class mapping 'a::mapping' for property 'lastName' - Type error: 'Integer' is not in the class hierarchy of 'String'");
     }
 
     @Test
@@ -1246,7 +1038,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       ~src test::OtherPerson\n" +
                 "       lastName : '1'\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [8:25-28]: Error in class mapping 'a::mapping' for property 'employees' - Type error: 'test::SrcPerson' is not a subtype of 'test::OtherPerson'");
+                ")", "COMPILATION error at [8:25-28]: Error in class mapping 'a::mapping' for property 'employees' - Type error: 'test::SrcPerson' is not in the class hierarchy of 'test::OtherPerson'");
     }
 
     @Test
@@ -1284,7 +1076,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       CORP : [1],\n" +
                 "       LLC : [2]\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not a subtype of 'Integer'");
+                ")", "COMPILATION error at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not in the class hierarchy of 'Integer'");
     }
 
     @Test
@@ -1322,7 +1114,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       CORP : [test::Other.bla],\n" +
                 "       LLC : [test::Other.bla]\n" +
                 "   }\n" +
-                ")\n", "COMPILATION error at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not a subtype of 'test::Other'");
+                ")\n", "COMPILATION error at [7:41-43]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'String' is not in the class hierarchy of 'test::Other'");
     }
 
     @Test
@@ -1341,7 +1133,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "       CORP : [test::Other.bla],\n" +
                 "       LLC : [test::Other.bla]\n" +
                 "   }\n" +
-                ")\n", "COMPILATION error at [7:55-58]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'test::IncType' is not a subtype of 'test::Other'");
+                ")\n", "COMPILATION error at [7:55-58]: Error in class mapping 'a::mapping' for property 'incType' - Type error: 'test::IncType' is not in the class hierarchy of 'test::Other'");
     }
 
     @Test
@@ -1780,4 +1572,308 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  }\n" +
                 ")");
     }
+
+    @Test
+    public void testOperationWithSubtype()
+
+
+    {
+
+
+        String model = "###Pure\n" +
+                "Class example::Person\n" +
+                "{\n" +
+                "  firstName:String[0..1];\n" +
+                "  lastName: String[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class example::_S_PersonA extends example::_S_Person\n" +
+                "{\n" +
+                "   aName    : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class example::_S_PersonB extends example::_S_Person\n" +
+                "{\n" +
+                "   bName    : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "Class example::_S_Person\n" +
+                "{\n" +
+                "   fullName      : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "Class example::_S_Cat\n" +
+                "{\n" +
+                "   fullName      : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "Class example::_S_Firm\n" +
+                "{\n" +
+                "  name:String[1];\n" +
+                "  sourceEmployees:example::_S_Person[*];\n" +
+                "  sourceEmployeesA:example::_S_PersonA[*];\n" +
+
+                "}\n" +
+                "\n" +
+                "Class example::Firm\n" +
+                "{\n" +
+                "\n" +
+                "  legalName:String[1];\n" +
+                "  employees:example::Person[*];\n" +
+                "}\n";
+
+        test(model + "\n###Mapping\n" +
+                "Mapping example::MappingwithNill\n" +
+                "   (\n" +
+                " example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees     : []\n" +
+                "            }\n" +
+                "\n" +
+                "   example::Person  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonA\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+
+                "\n" +
+
+                ")\n");
+
+        test(model + "\n###Mapping\n" +
+                "Mapping example::MappingwithSubtype\n" +
+                "   (\n" +
+                " example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees     : $src.sourceEmployeesA\n" +
+                "            }\n" +
+                "\n" +
+
+                "   example::Person  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_Person\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src->cast(@example::_S_PersonA).aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+
+                "\n" +
+
+                ")\n");
+
+        test(model + "\n###Mapping\n" +
+                "Mapping example::UnionOnSubTypeinclude\n" +
+                "   (\n" +
+                " example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees[personUnion]     : $src.sourceEmployees\n" +
+                "            }\n" +
+                "\n" +
+                "   *example::Person[personUnion] : Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(A1,Cat)\n" +
+                "   }\n" +
+                "   example::Person[A1]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonA\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+                "\n" +
+                "     example::Person[Cat]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_Cat\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+                ")\n", "COMPILATION error at [53:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
+
+        test(model +
+
+                "\n###Mapping\n" +
+                "Mapping example::UnionOnSubType\n" +
+                "   (\n" +
+                "include example::UnionOnSubTypeinclude " +
+                "example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees[personUnion]     : $src.sourceEmployees\n" +
+                "            })\n" +
+
+
+                "Mapping example::UnionOnSubTypeinclude\n" +
+                "   (\n" +
+                "   *example::Person[personUnion] : Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(A1,Cat)\n" +
+                "   }\n" +
+                "   example::Person[A1]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonA\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+                "\n" +
+                "     example::Person[Cat]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_Cat\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+                ")\n", "COMPILATION error at [53:50-64]: Error in class mapping 'example::UnionOnSubType' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
+
+
+        test(model + "\n###Mapping\n" +
+                "Mapping example::UnionOnSubTypeinclude\n" +
+                "   (\n" +
+                " example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees[personUnion]     : $src.sourceEmployees\n" +
+                "            }\n" +
+                "\n" +
+                "   *example::Person[personUnion] : Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(R,A1,B)\n" +
+                "   }\n" +
+                "   example::Person[R]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_Person\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' '))+' Super',\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }" +
+                "   example::Person[A1]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonA\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+
+                "\n" +
+                "    example::Person[B]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonB\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.bName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                ")\n");
+
+        test(model + "\n###Mapping\n" +
+                "Mapping example::UnionOnSubTypeinclude\n" +
+                "   (\n" +
+                "   *example::Person[personUnion] : Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(R,A1,B)\n" +
+                "   }\n" +
+
+                " example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees[personUnion]     : $src.sourceEmployees\n" +
+                "            }\n" +
+                "\n" +
+                "   example::Person[R]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_Person\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' '))+' Super',\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }" +
+
+                "   example::Person[A1]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonA\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+
+                "\n" +
+                "    example::Person[B]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonB\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.bName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                ")\n");
+
+
+        test(model + "\n###Mapping\n" +
+                "Mapping example::UnionOnSubTypeinclude\n" +
+                "   (\n" +
+                "   *example::Person[personUnion] : Operation {\n" +
+                "      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(A1,Cat)\n" +
+                "   }\n" +
+
+                " example::Firm : Pure\n" +
+                "            {\n" +
+                "               ~src example::_S_Firm\n" +
+                "\n" +
+                "               legalName        : $src.name,\n" +
+                "               employees[personUnion]     : $src.sourceEmployees\n" +
+                "            }\n" +
+                "\n" +
+
+                "   example::Person[A1]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_PersonA\n" +
+                "     ~filter $src.fullName  == 'A1 Person'\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) + $src.aName,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+                "\n" +
+                "     example::Person[Cat]  : Pure\n" +
+                "   {\n" +
+                "      ~src example::_S_Cat\n" +
+                "      firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')) ,\n" +
+                "      lastName : $src.fullName->substring($src.fullName->indexOf(' ') + 1, $src.fullName->length())\n" +
+                "\n" +
+                "   }\n" +
+                "\n" +
+                ")\n", "COMPILATION error at [56:50-64]: Error in class mapping 'example::UnionOnSubTypeinclude' for property 'employees' - Type error: 'example::_S_Person' is not in the class hierarchy of 'example::_S_Cat'");
+
+
+    }
+
+
 }
