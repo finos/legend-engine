@@ -331,6 +331,7 @@ public class TestExtensions
                 .with("core_mastery")
                 .with("core_persistence_cloud")
                 .with("core_relational")
+                .with("core_relational_bigquery")
                 .with("core_servicestore")
                 .with("core_text");
     }
