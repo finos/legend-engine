@@ -20,4 +20,12 @@ Class meta::protocols::pure::v1_26_0::extension::RelationalModuleSerializerExten
    transfers_connection_transformDatasourceSpecification : Function<{Nil[1] -> meta::protocols::pure::v1_26_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1]}>[*];
    transfers_connection_transformPostProcessorParameters : Function<{Nil[1] -> meta::protocols::pure::v1_26_0::metamodel::store::relational::PostProcessorParameter[1]}>[*];
    transfers_milestoning_transformMilestoning : Function<{Nil[1]->meta::protocols::pure::v1_26_0::metamodel::store::relational::Milestoning[1]}>[*];
+   reverse_transfers_typeLookups: Pair<String, String>[*];
+   reverse_transfers_connection_transformAuthenticationStrategy : Function<{Nil[1] -> meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1]}>[*];
+   reverse_transfers_connection_transformDatasourceSpecification : Function<{Nil[1] -> meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]}>[*];
+}
+
+Profile meta::protocols::pure::v1_26_0::extension::RelationalModule
+{
+   stereotypes: [SerializerExtension];
 }

@@ -12,12 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Delete this file once versions v1_26_0 and below are retired and uncomment the corresponding file in relationalStore-bigquery-pure
-
-Class meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
     projectId:String[1];
     defaultDataset:String[1];
-    proxyHost: String[0..1];
-    proxyPort: String[0..1];
 }

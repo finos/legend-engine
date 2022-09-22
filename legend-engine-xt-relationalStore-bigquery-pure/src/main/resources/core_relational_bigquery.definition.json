@@ -1,5 +1,5 @@
 {
   "name" : "core_relational_bigquery",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::bigQuery|meta::relational::tests::dbSpecificTests::bigQuery)(::.*)?",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::bigQuery|meta::relational::tests::dbSpecificTests::bigQuery|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
   "dependencies" : ["platform", "core", "core_relational"]
 }
