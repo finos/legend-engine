@@ -1,0 +1,214 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::operations::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::routing::*;
+import meta::pure::runtime::*;
+
+function meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
+{
+  ^StoreMappingRoutingStrategy(mapping = $mapping, 
+                               runtime = $runtime, 
+                               isParentMap=false, 
+                               propertyMap = ^PropertyMap(), 
+                               setsByDepth=^Map<String, PermutationSet>(), 
+                               classMappingsByClass=$mapping->buildClassMappingsByClassMap(),
+                               processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__RoutingStrategy_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
+                               processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__RoutingStrategy_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_);
+}
+
+function <<access.private>> meta::pure::router::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], s:RoutingState[1], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
+{
+   let strategy     = $routingStrategy->cast(@StoreMappingRoutingStrategy);
+   let mapping      = $strategy.mapping;
+   let runtime      = $strategy.runtime;
+   
+   let state        = ^$s(depth = $s.depth + $c->varToString());
+   let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping.rootClassMappingByClass($c)->potentiallyResolveOperation($mapping), |$strategy.toChooseSet);
+   // Possible when the mapping is 'embedded'
+   if ($classMapping->isEmpty(),
+      | print(if($debug.debug,|$debug.space+'~>C) ('+$state.sets->size()->toString()+') '+$state.value->toOne()->toString()+'\n',|''));
+        $state;,
+      | let existingSet = $state->findExistingPemutationSet($debug);
+        let existingSetCanBeUsed = $existingSet->permutationSetOnlyHasImplementation($classMapping);
+        let newID = if($existingSetCanBeUsed,
+                      | $existingSet->toOne().id->cast(@Integer),
+                      | $state.counter+1
+                    )->toString();
+
+        let routed = ^StoreMappingRoutedValueSpecification(genericType = $i.genericType,
+                                                           multiplicity = $i.multiplicity,
+                                                           id = $newID,
+                                                           sets = $classMapping,
+                                                           runtime = $runtime,
+                                                           mapping = $mapping,
+                                                           executionContext = $executionContext,
+                                                           value = $i);
+
+        let newSet = if (!$existingSetCanBeUsed,|^PermutationSet(id = $state.counter+1, sets = $classMapping),|[]);
+
+        let res = ^$state(
+                       counter = if (!$existingSetCanBeUsed,|$state.counter+1,|$state.counter),
+                       sets = if (!$existingSetCanBeUsed,|$state.sets->add($newSet->toOne()),|$state.sets),
+                       setsByDepth = if (!$existingSetCanBeUsed,
+                                            |let setByD = $state.setsByDepth;
+                                             $setByD->put(getSetPath($state), $newSet->toOne());,
+                                            |$state.setsByDepth
+                                     ),
+                       value = $routed
+                  );
+        print(if($debug.debug,|$debug.space+'~>C) ('+$res.sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
+        $res;
+    );
+}
+
+function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+{
+   let mapping = $routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
+   let runtime = $routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
+
+   let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $routingStrategy, $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
+   let newPV   = $results.value->cast(@ValueSpecification)->toOneMany();
+   let preLast = $results->last()->toOne();
+
+   let res = if($results.value->size() == 1 && $results.value->toOne()->instanceOf(InstanceValue),
+                | let val  = $results.value->toOne()->cast(@InstanceValue).values->map(v | $p->eval($v));
+                  let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
+                  let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
+                  ^$last(value = $iv);,
+                | if (!$v.shouldBeRouted,
+                      | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())))->evaluateAndDeactivate();,
+                      | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
+
+                        print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
+                        let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
+                        if($targetType->instanceOf(DataType),
+                           |let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
+
+                            let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
+                            let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
+
+                            let classMappings = $classes->map( c | $v.classMappingsForClass($c->cast(@Class<Any>)));
+
+                            let classMapping = if ($classMappings->isEmpty() && !$subTypes->isEmpty(),
+                                                      | //look for direct mapping of base class, as none of the sub types have mappings
+                                                        //Ideally (per Pierre) these mappings should not be allowed
+                                                          $v.classMappingsForClass($sourceClass->cast(@Class<Any>)),
+                                                      | $classMappings);
+
+                            let resolvedClassMappings = if($classMapping->isNotEmpty(),
+                                                            | $classMapping,
+                                                            | $subTypes->map(s|$s->cast(@Class<Any>)->getClassMappings($v))->removeDuplicates());
+                            assert($resolvedClassMappings != [], | 'The class \''+$sourceClass.name->toOne()+'\' can\'t be found in the mapping \''+$mapping.name->toOne()+'\'');
+                            if ($resolvedClassMappings->isEmpty(),
+                                |^$last(value=^$fe(parametersValues = $newPV));,
+                                | let r = ^StoreMappingRoutedValueSpecification(
+                                              genericType = $fe.genericType,
+                                              multiplicity = $fe.multiplicity,
+                                              id = $last.counter->toString(),
+                                              sets = $resolvedClassMappings,
+                                              runtime = $runtime,
+                                              mapping = $mapping,
+                                              executionContext = $executionContext,
+                                              value = ^$fe(parametersValues = $newPV)
+                                          );
+                                  ^$last(value= $r);
+                            );,
+                          | let propId = $v.lambdaContext->toOne()+$fe->propToString($vars, $inScopeVars);
+                            let found = $v.propertyMap.v->filter(p|$p.first == $propId);
+                            if (!$found->isEmpty(),
+                                | let routed = $found.second->toOne();
+                                  ^$last(
+                                    value= $routed
+                                  );,
+                                | let foundSets = $p->findMappingsFromProperty($mapping, $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]), $v, $extensions);//is this for embedded?
+                                  if ($foundSets->isEmpty(),
+                                    |^$last(value=^$fe(parametersValues = $newPV)),
+                                    | // Can't assert because of embedded
+                                      //assert(!$foundSets->isEmpty(), $targetType.name+' :(');
+                                      
+                                      let existingSet = $last->findExistingPemutationSet($debug);
+                                      let existingSetCanBeUsed  = $existingSet->permutationSetOnlyHasImplementation($foundSets);
+                                      let newID = if($existingSetCanBeUsed,
+                                                  |$existingSet->toOne().id,
+                                                  |$last.counter+1
+                                                  )->toString();
+    
+
+                                      let added = ^StoreMappingRoutedValueSpecification(
+                                                        genericType = $fe.genericType,
+                                                        multiplicity = $fe.multiplicity,
+                                                        id = $newID,
+                                                        sets = $foundSets,
+                                                        runtime = $runtime,
+                                                        mapping = $mapping,
+                                                        executionContext = $executionContext,
+                                                        value = ^$fe(parametersValues = $newPV)
+                                                    );
+                                      let oldPropertyMap = $last.propertyMap;
+                                      let newSet = if (!$existingSetCanBeUsed,|^PermutationSet(id = $last.counter+1, sets = $foundSets),|[]);
+
+                                      ^$last(
+                                          counter = if (!$existingSetCanBeUsed,|$last.counter+1,|$last.counter),
+                                          sets = if (!$existingSetCanBeUsed,|$last.sets->add($newSet->toOne()),|$last.sets),
+                                          setsByDepth = if (!$existingSetCanBeUsed,|let setByD = $last.setsByDepth;$setByD->put(getSetPath($last), $newSet->toOne());,|$last.setsByDepth),
+                                          propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),
+                                          value= $added
+                                      );
+                                  );
+                            );
+                        );
+                   ));
+   print(if($debug.debug,|$debug.space+'~>FEP) ('+$res.sets->size()->toString()+') '+$res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
+   $res;
+}
+
+function meta::pure::router::routing::getSetPath(state:RoutingState[1]):String[1]
+{
+   let setPath = $state.pathPrefix->makeString() + $state.depth
+}
+
+function meta::pure::router::routing::findExistingSet(state:RoutingState[1], debug:DebugContext[1]):Integer[0..1]
+{
+   let setPath = getSetPath($state);
+   print(if($debug.debug,|$debug.space+'Looking for:"'+$setPath+'"',|''));
+   let permutationSet = $state.setsByDepth->get($setPath);
+   let res = if($permutationSet->isEmpty(),|[],|$permutationSet->toOne().id->cast(@Integer));
+   print(if($debug.debug,|if($res->isEmpty(),|' -> Not Found\n', |' -> Found : '+$permutationSet->toOne().id->toString()+'\n'),|''));
+   $res;
+}
+
+function meta::pure::router::routing::findExistingPemutationSet(state:RoutingState[1], debug:DebugContext[1]):PermutationSet[0..1]
+{
+   let setPath = getSetPath($state);
+   print(if($debug.debug,|$debug.space+'Looking for:"'+$setPath+'"',|''));
+   let permutationSet = $state.setsByDepth->get($setPath);
+   print(if($debug.debug,|if($permutationSet->isEmpty(),|' -> Not Found\n', |' -> Found : '+$permutationSet->toOne().id->toString()+'\n'),|''));
+   $permutationSet;
+}
+
+function meta::pure::router::routing::permutationSetOnlyHasImplementation( perm:PermutationSet[0..1],   set:SetImplementation[*]):Boolean[1]
+{
+   if($perm->isEmpty()||($set->size() > 1)||($set->size() == 0),
+     |false,
+     | let setImplementationIDs = $perm->toOne().sets.id;
+       if($setImplementationIDs->size()>1 || $setImplementationIDs == $set.id,
+           |true,
+           |false
+          );
+   )
+}

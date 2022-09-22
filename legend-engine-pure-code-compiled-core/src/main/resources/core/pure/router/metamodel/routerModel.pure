@@ -45,3 +45,95 @@ Class meta::pure::router::PlatformRoutedValueSpecification extends ExtendedRoute
 {
    
 }
+
+
+// =========================================================================================
+// Routing Strategies
+// =========================================================================================
+
+###Pure
+import meta::pure::extension::*;
+import meta::pure::mapping::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::routing::*;
+import meta::pure::runtime::*;
+
+Class meta::pure::router::routing::PermutationSet
+{
+   id : Integer[1];
+   sets : SetImplementation[*];
+}
+
+Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
+{
+   // Process Class
+   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], RoutingStrategy[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
+   processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
+   {
+     $this.processClass->eval($c, $i, $state, $this, $executionContext, $debug)  
+   }: RoutingState[1];
+
+   // Process Property
+   processProperty : Function<{Property<Nil,Any|*>[1], FunctionExpression[1], RoutingState[1], RoutingStrategy[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
+   processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1])
+   {
+     $this.processProperty->evaluate([list($p), list($fe), list($state), list($this), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);  
+   }: RoutingState[1];
+}
+
+Class meta::pure::router::metamodel::StoreRoutingStrategy extends RoutingStrategy
+{
+   runtime     : Runtime[1];
+}
+
+Class meta::pure::router::metamodel::StoreMappingRoutingStrategy extends StoreRoutingStrategy
+{
+   mapping     : Mapping[1];
+   sets        : PermutationSet[*];
+   propertyMap : PropertyMap[1];
+   setsByDepth : Map<String,PermutationSet>[1];
+   isParentMap : Boolean[1];
+   toChooseSet : SetImplementation[0..1];
+   
+   classMappingsByClass:Map<Class<Any>,List<SetImplementation>>[1];         //TODO: check this move to mapping
+
+   classMappingsForClass(class:Class<Any>[1])
+   {
+      $this.classMappingsByClass->get($class)->map(l | $l.values)
+   }:SetImplementation[*];
+}
+
+Class meta::pure::router::metamodel::ExternalFormatRoutingStrategy extends RoutingStrategy
+{
+   binding     : meta::external::shared::format::binding::Binding[1];
+}
+
+Class meta::pure::router::metamodel::PlatformRoutingStrategy extends RoutingStrategy
+{
+   
+}
+
+// =========================================================================================
+// Graph Fetch Tree Models
+// =========================================================================================
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::mapping::*;
+
+Class meta::pure::graphFetch::routing::RoutedGraphFetchTree extends GraphFetchTree
+{
+   sets : SetImplementation[*];
+   requiredQualifiedProperties: QualifiedProperty<Any>[*];
+   constraintsExclusions: String[*];
+}
+
+Class meta::pure::graphFetch::routing::RoutedRootGraphFetchTree<T> extends RoutedGraphFetchTree, RootGraphFetchTree<T>
+{
+}
+
+Class meta::pure::graphFetch::routing::RoutedPropertyGraphFetchTree extends RoutedGraphFetchTree, PropertyGraphFetchTree
+{
+   propertyMapping : PropertyMapping[*];
+}

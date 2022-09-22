@@ -22,6 +22,7 @@ import meta::pure::metamodel::path::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::builder::*;
 import meta::pure::router::clustering::*;
+import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::store::platform::*;
@@ -90,44 +91,45 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
    let l = {|[]};
    let initStatements = $expressions->init()->fold(
     {vs, a |
-                                                                 let varName = $vs->meta::pure::router::extractLetVariableName();
+      let varName = $vs->extractLetVariableName();
 
       if($vs->usesFrom(),
         {|
-          let f = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
-                                                                              let routed = routeFunction($f, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), $exeCtx, $a.second, $extensions, $debug);
-          let vars = if($varName->isNotEmpty(),
-                       | $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
-                       | $a.second
-                     );
-                                                                              let temp = $routed.functions->toOne();
+          let f      = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
+          let routed = routeFunction($f, getRoutingStrategyFromMappingAndRuntime(^Mapping(name = ''), ^meta::pure::runtime::Runtime()), $exeCtx, $a.second, $extensions, $debug);       //TODO: check this remove empty mappinga nd runtime
+          let vars   = if($varName->isNotEmpty(),
+                         | $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
+                         | $a.second
+                       );
+          let temp   = $routed.functions->toOne();
           ^$a(
-            first = ^RoutingResult(
+first = ^RoutingResult(
               functions       = ^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)
             ),
             second = $vars
           );
         },
         {|
-          let expression  = $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1);
-                                                                              let varExprs = $vs->findVariableExpressionsInValueSpecification();
-                                                                              let inScopeVars = $a.second->keyValues();
+          let expression      = $vs->cast(@FunctionExpression).parametersValues->evaluateAndDeactivate()->at(1);
+          let varExprs        = $vs->findVariableExpressionsInValueSpecification();
+          let inScopeVars     = $a.second->keyValues();
 
-                                                                              let unavailableVars = $varExprs.name->removeAllOptimized($inScopeVars.first);
-                                                                              assert($unavailableVars->isEmpty(),'Unable to resolve var(s): '+$unavailableVars->joinStrings());
+          let unavailableVars = $varExprs.name->removeAllOptimized($inScopeVars.first);
+          assert($unavailableVars->isEmpty(), 'Unable to resolve var(s): ' + $unavailableVars->joinStrings());
 
-                                                                              let unResolvedVars = $varExprs->filter(v|let resolved = $a.second->get($v.name); $resolved->isEmpty() || $resolved.values->isEmpty() || $resolved.values->at(0)->instanceOf(RoutedVariablePlaceHolder););
+          let unResolvedVars  = $varExprs->filter(v|let resolved = $a.second->get($v.name);
+                                                    $resolved.values->isEmpty() || $resolved.values->at(0)->instanceOf(RoutedVariablePlaceHolder););
           if($unResolvedVars->isNotEmpty(),
             {|
               let unRoutedFunction = ^$l(expressionSequence = $vs);
-                                                                                                                           let vars = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
-                                                                                                                           let temp = $unRoutedFunction->toOne();
-                                                                                                                           ^$a(first=^RoutingResult(functions=^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)), second=$vars);
+              let vars = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
+              let temp = $unRoutedFunction->toOne();
+              ^$a(first=^RoutingResult(functions=^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)), second=$vars);
             },
             {|
               let re = $vs->reactivate($a.second);
-                                                                                                                           let vars = $a.second->put($varName->toOne(), ^List<Any>(values=$re));
-                                                                                                                           ^$a(first=$a.first, second = $vars);
+              let vars = $a.second->put($varName->toOne(), ^List<Any>(values=$re));
+              ^$a(first=$a.first, second = $vars);
             }
           );
         }
@@ -136,39 +138,26 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
     pair(^RoutingResult(), $f->openVariableValues())
   );
 
-  let vs      = $expressions->last()->toOne();
-  let varName = $vs->meta::pure::router::extractLetVariableName();
-  let vars    = if($varName->isNotEmpty(),
-                       | $initStatements.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
-                       | $initStatements.second
-                                                                                                                         );
-   let newF   = ^$l(
-                  expressionSequence    = $vs,
-                  openVariables         = $vars->keys(),
-                  classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=$f->functionType()))
-                                                                     );
-   let routed = routeFunction($newF, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), $exeCtx, $vars, $extensions, $debug);
-   let temp   = $routed.functions->toOne();
+   let vs      = $expressions->last()->toOne();
+   let varName = $vs->extractLetVariableName();
+   let vars    = if($varName->isNotEmpty(),
+                   | $initStatements.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
+                   | $initStatements.second);
+   let newF    = ^$l(expressionSequence    = $vs,
+                     openVariables         = $vars->keys(),
+                     classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=$f->functionType())));
+
+   let routed  = routeFunction($newF, getRoutingStrategyFromMappingAndRuntime(^Mapping(name = ''), ^meta::pure::runtime::Runtime()), $exeCtx, $vars, $extensions, $debug);              //TODO: check this remove empty mappinga nd runtime
+   let temp    = $routed.functions->toOne();
    ^RoutingResult(
      functions       = ^$temp(expressionSequence = $initStatements.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)
    );
 }
 
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {
-   routeFunction($f, $mapping, $runtime, ^ExecutionContext(), $extensions, $debug);
-}
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
-{
-   routeFunction($f, $mapping, $runtime, $exeCtx, [], $extensions, $debug)
-}
-
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
-{
-   let expectedFuncParamSize = 0;
-   //assertEquals($expectedFuncParamSize, $f->functionType().parameters->size(), 'Error'+$f->functionType().parameters->size()->toString());
+   let mapping = $routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;   //TODO: check this TO BE REMOVED
+   let runtime = $routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;   //TODO: check this TO BE REMOVED
 
    let fOpenVariables = $f->openVariableValues();
    let openVariables = if($inScopeVars->isNotEmpty(),| assert($fOpenVariables->keys()->intersection($inScopeVars)->isEmpty(),'Routing : unable to determine open variables for FunctionDefinition, suplied inScopeVars and FunctionDefinitionOpenVariables intersect');
@@ -179,8 +168,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping
    print(if($debug.debug,|$debug.space+'Processing Mappings:\n',|''));
    let processedCollection = processCollection( ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', isParentMap=false, propertyMap = ^PropertyMap(), setsByDepth=^Map<String, PermutationSet>(), classMappingsByClass=$mapping->buildClassMappingsByClassMap()),
                                                 $f.expressionSequence->evaluateAndDeactivate(),
-                                                $mapping,
-                                                $runtime,
+                                                $routingStrategy,
                                                 $exeCtx,
                                                 newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),
                                                 $openVariables,

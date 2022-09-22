@@ -1,0 +1,30 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::router::metamodel::*;
+import meta::pure::router::routing::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+
+Class meta::pure::router::extension::RouterExtension
+{
+  // routing
+  shouldStopRouting : Function<Any>[*];
+  routeFunctionExpressions : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], RoutingStrategy[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*];
+  connectionEquality : Function<{Connection[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
+
+  // Execution
+  traceQueryInfoBuilder : Function<{FunctionDefinition<Any>[1], Mapping[1], meta::pure::runtime::Runtime[1] -> String[1]}>[0..1];
+}
