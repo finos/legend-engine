@@ -48,7 +48,7 @@ function meta::external::shared::format::utils::purifyName(s:String[1], firstLow
       ->map(w| $w->substring(0, 1)->toUpper() + $w->substring(1)->toLower())
       ->joinStrings('');
 
-   if($firstLower,
+   if($firstLower, 
       | $cleaned->substring(0, 1)->toLower() + $cleaned->substring(1),
       | $cleaned
    );
@@ -58,28 +58,28 @@ function <<access.private>> meta::external::shared::format::utils::handleNonAlph
 {
    $word->chunk(1)
       ->fold(
-         {ch, l|
-            if($ch->isAlphaNumeric(),
-               | list($l.values->init()->add($l.values->last()->toOne() + $ch)),
+         {ch, l| 
+            if($ch->isAlphaNumeric(), 
+               | list($l.values->init()->add($l.values->last()->toOne() + $ch)), 
                | list($l.values->add($ch->handleNonAlphaNumeric())->add(''))
             )
          },
          list('')
       )
-      .values->filter(w| $w->length() > 0);
+      .values->filter(w| $w->length() > 0);                         
 }
 
 function <<access.private>> meta::external::shared::format::utils::handleNonAlphaNumeric(ch:String[1]): String[1]
 {
-    if($ch=='&', |'and',
-   |if($ch=='%', |'percent',
-   |if($ch=='!', |'bang',
-   |if($ch=='??????', |'gbp',
-   |if($ch=='$', |'dollar',
-   |if($ch=='*', |'star',
-   |if($ch=='@', |'at',
-   |if($ch=='#', |'number',
-   |if($ch=='?', |'question',
+    if($ch=='&', |'and', 
+   |if($ch=='%', |'percent', 
+   |if($ch=='!', |'bang', 
+   |if($ch=='??????', |'gbp', 
+   |if($ch=='$', |'dollar', 
+   |if($ch=='*', |'star', 
+   |if($ch=='@', |'at', 
+   |if($ch=='#', |'number', 
+   |if($ch=='?', |'question', 
    |              ''
    )))))))));
 }
