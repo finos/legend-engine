@@ -19,7 +19,6 @@
     "mongoDb": "${MONGODB_NAME}",
     "clients": [
       {
-        "org.pac4j.core.client.direct.AnonymousClient": {},
         "org.finos.legend.server.pac4j.gitlab.GitlabClient": {
           "name": "gitlab",
           "clientId": "${GITLAB_APP_ID}",

@@ -14,7 +14,7 @@
 
 FROM openjdk:11.0.16-bullseye
 COPY target/legend-engine-server-*.jar /app/bin/
-COPY target/classes/docker/config /config
+COPY src/main/resources/docker/config /config
 CMD java -cp /app/bin/*-shaded.jar \
 -XX:+ExitOnOutOfMemoryError \
 -XX:MaxRAMPercentage=60 \
