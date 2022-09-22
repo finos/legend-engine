@@ -62,17 +62,17 @@
   },
   "metadataserver": {
     "pure": {
-      "host": "127.0.0.1",
-      "port": 8090
+      "host": "${METADATA_PURE_HOST}",
+      "port": ${METADATA_PURE_PORT}
     },
     "alloy": {
-      "host": "127.0.0.1",
-      "port": 8090,
+      "host": "${METADATA_ALLOY_HOST}",
+      "port": ${METADATA_ALLOY_PORT},
       "prefix": "/depot/api"
     }
   },
   "temporarytestdb": {
-    "port": 9092
+    "port": ${TEMP_DB_PORT}
   },
   "relationalexecution": {
     "tempPath": "/tmp/"
