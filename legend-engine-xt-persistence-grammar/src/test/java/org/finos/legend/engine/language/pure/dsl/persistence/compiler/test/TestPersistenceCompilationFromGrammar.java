@@ -1324,7 +1324,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n", "PARSER error at [83:9-96:9]: Assert cannot be null within Persistence TestBatch");
+                "}\n", "PARSER error at [83:9-96:9]: Field 'asserts' is required");
     }
 
     @Test
