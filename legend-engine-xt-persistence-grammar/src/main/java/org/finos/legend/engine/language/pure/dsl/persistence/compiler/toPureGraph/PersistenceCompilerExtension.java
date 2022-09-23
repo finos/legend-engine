@@ -75,7 +75,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
                             purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
-                            purePersistence._tests(HelperPersistenceBuilder.buildTest(persistence, context));
+                            purePersistence._tests(HelperPersistenceBuilder.buildTests(persistence, context));
                         }
                 ),
                 Processor.newProcessor(
@@ -114,7 +114,12 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
             else if (trigger instanceof CronTrigger)
             {
                 CronTrigger cronTrigger = (CronTrigger) trigger;
-                return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::trigger::CronTrigger"))._minutes(cronTrigger.minutes)._hours(cronTrigger.hours)._dayOfMonth(cronTrigger.dayOfMonth)._month(cronTrigger.month)._dayOfWeek(cronTrigger.dayOfWeek);
+                return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::trigger::CronTrigger"))
+                    ._minutes(cronTrigger.minutes)
+                    ._hours(cronTrigger.hours)
+                    ._dayOfMonth(cronTrigger.dayOfMonth)
+                    ._month(cronTrigger.month)
+                    ._dayOfWeek(cronTrigger.dayOfWeek);
             }
             return null;
         });

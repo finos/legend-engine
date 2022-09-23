@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -35,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
@@ -209,46 +209,49 @@ public class HelperPersistenceBuilder
         return sink.accept(new SinkBuilder(context));
     }
 
-    public static RichIterable<? extends Test> buildTest(Persistence persistence, CompileContext context)
+    public static RichIterable<? extends Test> buildTests(Persistence persistence, CompileContext context)
     {
-        if (persistence.tests != null)
+        if (persistence.tests == null)
         {
-            List<String> testIds = ListIterate.collect(persistence.tests, test -> test.id);
-            List<String> duplicateTestIds = testIds.stream().filter(e -> Collections.frequency(testIds, e) > 1).distinct().collect(Collectors.toList());
-
-            if (!duplicateTestIds.isEmpty())
-            {
-                throw new EngineException("Multiple persistenceTest found with ids : '" + String.join(",", duplicateTestIds) + "'", persistence.sourceInformation, EngineErrorType.COMPILATION);
-            }
-
-            return ListIterate.collect(persistence.tests, test ->
-            {
-                Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
-                purePersistenceTest._id(test.id);
-                purePersistenceTest._isTestDataFromServiceOutput(test.isTestDataFromServiceOutput);
-
-                if (test.testBatches != null)
-                {
-                    List<String> testBatchIds = ListIterate.collect(test.testBatches, testBatch -> testBatch.id);
-                    List<String> duplicateTestBatchIds = testBatchIds.stream().filter(e -> Collections.frequency(testBatchIds, e) > 1).distinct().collect(Collectors.toList());
-                    if (!duplicateTestBatchIds.isEmpty())
-                    {
-                        throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateTestBatchIds) + "'", persistence.sourceInformation, EngineErrorType.COMPILATION);
-                    }
-                    purePersistenceTest._testBatches(ListIterate.collect(test.testBatches, testBatch ->
-                    {
-                        Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
-                        pureTestBatch._id(testBatch.id);
-                        pureTestBatch._batchId((long) test.testBatches.indexOf(testBatch));
-                        pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(testBatch.testData, context, new ProcessingContext("Persistence '" + context.pureModel.buildPackageString(persistence._package, persistence.name) + "' First Pass")));
-                        pureTestBatch._assertions(ListIterate.collect(testBatch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, new ProcessingContext("Persistence '" + context.pureModel.buildPackageString(persistence._package, persistence.name) + "' First Pass")))));
-                        return pureTestBatch;
-                    }));
-                }
-                return purePersistenceTest;
-            });
+            return Lists.immutable.empty();
         }
-        return new FastList();
+
+        List<String> testIds = ListIterate.collect(persistence.tests, test -> test.id);
+        List<String> duplicateTestIds = testIds.stream().filter(e -> Collections.frequency(testIds, e) > 1).distinct().collect(Collectors.toList());
+
+        if (!duplicateTestIds.isEmpty())
+        {
+            throw new EngineException("Multiple persistenceTest found with ids : '" + String.join(",", duplicateTestIds) + "'", persistence.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        return ListIterate.collect(persistence.tests, test -> buildPersistenceTest(test, persistence, context));
+    }
+
+    private static Root_meta_pure_persistence_metamodel_PersistenceTest buildPersistenceTest(PersistenceTest test, Persistence persistence, CompileContext context)
+    {
+        Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
+        purePersistenceTest._id(test.id);
+        purePersistenceTest._isTestDataFromServiceOutput(test.isTestDataFromServiceOutput);
+
+        if (test.testBatches != null)
+        {
+            List<String> testBatchIds = ListIterate.collect(test.testBatches, testBatch -> testBatch.id);
+            List<String> duplicateTestBatchIds = testBatchIds.stream().filter(e -> Collections.frequency(testBatchIds, e) > 1).distinct().collect(Collectors.toList());
+            if (!duplicateTestBatchIds.isEmpty())
+            {
+                throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateTestBatchIds) + "'", test.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            purePersistenceTest._testBatches(ListIterate.collect(test.testBatches, testBatch ->
+            {
+                Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
+                pureTestBatch._id(testBatch.id);
+                pureTestBatch._batchId(test.testBatches.indexOf(testBatch));
+                pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(testBatch.testData, context, new ProcessingContext("Persistence '" + context.pureModel.buildPackageString(persistence._package, persistence.name) + "' First Pass")));
+                pureTestBatch._assertions(ListIterate.collect(testBatch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, new ProcessingContext("Persistence '" + context.pureModel.buildPackageString(persistence._package, persistence.name) + "' First Pass")))));
+                return pureTestBatch;
+            }));
+        }
+        return purePersistenceTest;
     }
 
     public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)

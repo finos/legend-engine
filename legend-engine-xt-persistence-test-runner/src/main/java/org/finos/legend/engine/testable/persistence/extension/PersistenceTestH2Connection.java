@@ -39,7 +39,7 @@ public class PersistenceTestH2Connection
 
     Connection getConnection()
     {
-        // Close connection to close any left over open connections
+        // Close connection to close any leftover open connections
         closeConnection();
         Properties properties = new Properties();
         properties.put("DATABASE_TO_UPPER", false);
@@ -88,5 +88,4 @@ public class PersistenceTestH2Connection
             }
         }
     }
-
 }

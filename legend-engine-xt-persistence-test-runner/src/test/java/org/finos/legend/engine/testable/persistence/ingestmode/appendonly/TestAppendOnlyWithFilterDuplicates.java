@@ -22,7 +22,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-
 public class TestAppendOnlyWithFilterDuplicates extends TestPersistenceBase
 {
     @Test
@@ -46,6 +45,4 @@ public class TestAppendOnlyWithFilterDuplicates extends TestPersistenceBase
         assertTrue(result instanceof TestPassed);
         Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
     }
-
-
 }
