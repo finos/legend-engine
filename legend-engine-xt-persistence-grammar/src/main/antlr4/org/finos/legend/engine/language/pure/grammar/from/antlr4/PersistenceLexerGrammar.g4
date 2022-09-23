@@ -140,4 +140,4 @@ PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT:  'isTestDataFromServiceOutput';
 PERSISTENCE_TEST_BATCHES:                   'testBatches';
 PERSISTENCE_TEST_DATA:                      'data';
 PERSISTENCE_TEST_CONNECTION_DATA:           'connection';
-PERSISTENCE_TEST_ASSERT:                    'assert';
+PERSISTENCE_TEST_ASSERTS:                   'asserts';

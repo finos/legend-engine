@@ -14,7 +14,7 @@ identifier:                                 VALID_STRING | STRING
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
                                             | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_PLATFORM | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
-                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERT | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
+                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_DATABASE | SINK_BINDING
@@ -546,7 +546,7 @@ embeddedData:                           identifier ISLAND_OPEN ( embeddedDataCon
 ;
 embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
-persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERT COLON BRACKET_OPEN ( persistenceTestAssert ( COMMA persistenceTestAssert)* )? BRACKET_CLOSE
+persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERTS COLON BRACKET_OPEN ( persistenceTestAssert ( COMMA persistenceTestAssert)* )? BRACKET_CLOSE
 ;
 persistenceTestAssert:                  identifier COLON testAssertion
 ;
