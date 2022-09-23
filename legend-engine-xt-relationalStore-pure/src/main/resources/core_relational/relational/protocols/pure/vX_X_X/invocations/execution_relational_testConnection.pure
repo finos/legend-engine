@@ -54,7 +54,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                             typeKeyName='_type',
                                             failOnUnknownProperties=false ,
                                             retainTypeField=true,
-                                            typeLookup = [
+                                            typeLookup = $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).reverse_transfers_typeLookups->concatenate([
                                                             pair('delegatedKerberos', 'DelegatedKerberosAuthenticationStrategy'),
                                                             pair('middleTierUserNamePassword', 'MiddleTierUserNamePasswordAuthenticationStrategy'),
                                                             pair('userNamePassword', 'UserNamePasswordAuthenticationStrategy'),
@@ -69,10 +69,9 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
                                                             pair('h2Local', 'LocalH2DatasourceSpecification('),
                                                             pair('snowflake', 'SnowflakeDatasourceSpecification'),
-                                                            pair('bigQuery', 'BigQueryDatasourceSpecification'),
                                                             pair('databricks', 'DatabricksDatasourceSpecification'),
                                                             pair('redshift', 'RedshiftDatasourceSpecification')
-                                                          ]
+                                                          ])
                                             )
                 );
   let pureConn = $protocolConn->meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformRelationalDatabaseConnection($extensions);
@@ -102,9 +101,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
 
 function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformAuthenticationStrategy(a: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy[1]
 {  
-  // TODO - deserializer extensions ?
-
-  $a->match([
+  $a->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).reverse_transfers_connection_transformAuthenticationStrategy->concatenate([
       d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::DelegatedKerberosAuthenticationStrategy[1] |
           ^meta::pure::alloy::connections::alloy::authentication::DelegatedKerberosAuthenticationStrategy(
               // _type = 'delegatedKerberos',
@@ -152,12 +149,12 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
          )
-   ]);
+   ])->toOneMany());
 }
 
 function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformDatasourceSpecification(ds: meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification[1], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]
 {
-   $ds->match([
+   $ds->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('relational')->cast(@meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension).reverse_transfers_connection_transformDatasourceSpecification->concatenate([
       s:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::StaticDatasourceSpecification[1] |
          ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(
             // _type = 'static',
@@ -195,12 +192,6 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             organization = $s.organization,
             role = $s.role
         ),
-      b:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification[1] |
-         ^meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification(
-            //  _type = 'bigQuery',
-             projectId = $b.projectId,
-             defaultDataset = $b.defaultDataset
-         ),
       d:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatabricksDatasourceSpecification[1] |
           ^meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification(
               // _type = 'databricks',
@@ -219,7 +210,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                 endpointURL = $r.endpointURL,
                 host = $r.host 
          )   
-   ]);
+   ])->toOneMany());
 }
 
 function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection::transformPostProcessors(processors:meta::protocols::pure::vX_X_X::metamodel::store::relational::postProcessor::PostProcessor[*], extensions:meta::pure::extension::Extension[*]):meta::pure::alloy::connections::PostProcessor[*]

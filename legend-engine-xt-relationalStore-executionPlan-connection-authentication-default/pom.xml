@@ -141,13 +141,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- Guava -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-        <!-- Guava -->
-
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

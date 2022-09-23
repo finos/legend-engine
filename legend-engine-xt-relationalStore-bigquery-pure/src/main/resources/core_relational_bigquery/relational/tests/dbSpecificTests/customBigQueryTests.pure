@@ -13,7 +13,7 @@
 // limitations under the License.
 
 ###Pure
-Class meta::relational::sqlQueryToString::tests::bigquery::domain::Person
+Class meta::relational::tests::dbSpecificTests::bigQuery::domain::Person
 {
    firstName: String[1];
    lastName: String[1];
@@ -21,14 +21,14 @@ Class meta::relational::sqlQueryToString::tests::bigquery::domain::Person
    key:Integer[1];
 }
 
-Class meta::relational::sqlQueryToString::tests::bigquery::domain::Thing
+Class meta::relational::tests::dbSpecificTests::bigQuery::domain::Thing
 {
    name: String[1];
    id: Integer[1];
 }
 
 ###Relational
-Database meta::relational::sqlQueryToString::tests::bigquery::db::bqDb
+Database meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb
 (
    Table "person table" (ID INT PRIMARY KEY, firstName VARCHAR(200), lastName VARCHAR(200), age INT, key INT)
    Schema dataset1
@@ -40,11 +40,11 @@ Database meta::relational::sqlQueryToString::tests::bigquery::db::bqDb
 )
 
 ###Mapping
-Mapping meta::relational::sqlQueryToString::tests::bigquery::mapping::simpleRelationalMappingPersonForBQ
+Mapping meta::relational::tests::dbSpecificTests::bigQuery::mapping::simpleRelationalMappingPersonForBQ
 (
-   meta::relational::sqlQueryToString::tests::bigquery::domain::Person : Relational
+   meta::relational::tests::dbSpecificTests::bigQuery::domain::Person : Relational
    {
-      scope([meta::relational::sqlQueryToString::tests::bigquery::db::bqDb])
+      scope([meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb])
       (
          firstName : "person table".firstName,
          lastName: "person table".lastName,
@@ -52,15 +52,15 @@ Mapping meta::relational::sqlQueryToString::tests::bigquery::mapping::simpleRela
       )
    }
 
-   meta::relational::sqlQueryToString::tests::bigquery::domain::Thing : Relational
+   meta::relational::tests::dbSpecificTests::bigQuery::domain::Thing : Relational
    {
     ~primaryKey
     (
-      [meta::relational::sqlQueryToString::tests::bigquery::db::bqDb]dataset1."thing table".ID
+      [meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb]dataset1."thing table".ID
     )
-    ~mainTable [meta::relational::sqlQueryToString::tests::bigquery::db::bqDb]dataset1."thing table"
-    id: [meta::relational::sqlQueryToString::tests::bigquery::db::bqDb]dataset1."thing table".ID,
-    name: [meta::relational::sqlQueryToString::tests::bigquery::db::bqDb]dataset1."thing table".NAME
+    ~mainTable [meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb]dataset1."thing table"
+    id: [meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb]dataset1."thing table".ID,
+    name: [meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb]dataset1."thing table".NAME
   }
       
 )
@@ -79,38 +79,38 @@ import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::profiles::*;
 
-function <<test.BeforePackage>> meta::relational::sqlQueryToString::tests::bigquery::setUp():Boolean[1]
+function <<test.BeforePackage>> meta::relational::tests::dbSpecificTests::bigQuery::setUp():Boolean[1]
 {
     true;
 }
 
-function meta::relational::sqlQueryToString::tests::bigquery::testRuntimeForBQ():Runtime[1]
+function meta::relational::tests::dbSpecificTests::bigQuery::testRuntimeForBQ():Runtime[1]
 {
-   meta::relational::tests::testRuntime(meta::relational::sqlQueryToString::tests::bigquery::db::bqDb);
+   meta::relational::tests::testRuntime(meta::relational::tests::dbSpecificTests::bigQuery::db::bqDb);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::tableAndColumnNamesAreQuoted():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::tableAndColumnNamesAreQuoted():Boolean[1]
 {
    let result = toSQLString(
-    |meta::relational::sqlQueryToString::tests::bigquery::domain::Person.all()->project([s | $s.age], ['KEY']), 
-    meta::relational::sqlQueryToString::tests::bigquery::mapping::simpleRelationalMappingPersonForBQ,
+    |meta::relational::tests::dbSpecificTests::bigQuery::domain::Person.all()->project([s | $s.age], ['KEY']), 
+    meta::relational::tests::dbSpecificTests::bigQuery::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.BigQuery, 
     meta::relational::extension::relationalExtensions());
    assertEquals('select `person_table_d#2_d_m1`.key as `KEY` from `person table` as `root` left outer join `person table` as `person_table_d#2_d_m1` on (`root`.key = `person_table_d#2_d_m1`.key)', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::tableWithSchema():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::tableWithSchema():Boolean[1]
 {
    let result = toSQLString(
-    |meta::relational::sqlQueryToString::tests::bigquery::domain::Thing.all()->project([s | $s.id], ['ID']), 
-    meta::relational::sqlQueryToString::tests::bigquery::mapping::simpleRelationalMappingPersonForBQ,
+    |meta::relational::tests::dbSpecificTests::bigQuery::domain::Thing.all()->project([s | $s.id], ['ID']), 
+    meta::relational::tests::dbSpecificTests::bigQuery::mapping::simpleRelationalMappingPersonForBQ,
     meta::relational::runtime::DatabaseType.BigQuery, 
     meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.ID as `ID` from dataset1.`thing table` as `root`', $result);
 }
 
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::windowFunction():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::windowFunction():Boolean[1]
 {
    let func = {|meta::relational::tests::model::simple::Person.all()
       ->project([
@@ -125,7 +125,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::wind
    assertEquals('select `root`.LASTNAME as `lastName`, avg(1.0 * `root`.AGE) OVER (Partition By `root`.FIRSTNAME Order By `root`.LASTNAME ASC) as `ageAverageWindow` from personTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testParseDateTime():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testParseDateTime():Boolean[1]
 {
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
@@ -136,7 +136,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
    assertEquals('select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testParseDate():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testParseDate():Boolean[1]
 {
    let dt = %2015-01-01T00:00:00.000;
    let result = toSQLString(
@@ -147,7 +147,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
    assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2015-01-01 00:00:00.000\')', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testParseDateOnQueryVariable():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testParseDateOnQueryVariable():Boolean[1]
 {
    let result = meta::pure::executionPlan::executionPlan(
     date:StrictDate[1]|Trade.all()->project(t | $t.date, 'date')->filter(r | $r.getDate('date') < $date),
@@ -175,7 +175,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
    assertEquals($expected, $result->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testParseDateTimeOnQueryVariable():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testParseDateTimeOnQueryVariable():Boolean[1]
 {
    let result = meta::pure::executionPlan::executionPlan(
     dateTime:DateTime[1]|Trade.all()->project(t | $t.settlementDateTime, 'settlementDateTime')->filter(r | $r.getDate('settlementDateTime') < $dateTime),
@@ -203,7 +203,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
    assertEquals($expected, $result->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testGroupByAlias():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testGroupByAlias():Boolean[1]
 {
     let result = toSQLString(
       |Person.all()->groupBy([p|$p.firstName], [agg(p|$p.age, x|$x->sum())], ['name', 'age']),
@@ -213,7 +213,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
     assertEquals('select `root`.FIRSTNAME as `name`, sum(`root`.AGE) as `age` from personTable as `root` group by `name`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testSimpleJoinStrings():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testSimpleJoinStrings():Boolean[1]
 {
    let result = toSQLString(
      |Person.all()->groupBy([p|$p.firstName], agg( x|$x.lastName, y|$y->joinStrings('*')),['firstName', 'lastNames']),
@@ -223,7 +223,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
    assertSameSQL('select `root`.FIRSTNAME as `firstName`, string_agg(`root`.LASTNAME, \'*\') as `lastNames` from personTable as `root` group by `firstName`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testConcat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testConcat():Boolean[1]
 {
    let result = toSQLString(
     |Person.all()->project([p|$p.name, p|$p.addresses.name], ['name','address']),
@@ -234,7 +234,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
 
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::atan2():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::atan2():Boolean[1]
 {
    let result = toSQLString(
     |SqlFunctionDemo.all()->project([s | $s.floatATan2Result], ['atan2']),
@@ -244,7 +244,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::atan
    assertSameSQL('select atan2(`root`.float1,`root`.int1) as `atan2` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::concat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::concat():Boolean[1]
 {
    let result = toSQLString(
      |Person.all()->project([p|$p.name] ,['name']),
@@ -254,7 +254,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::conc
    assertSameSQL('select concat(`root`.FIRSTNAME, \' \', `root`.LASTNAME) as `name` from personTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::hour():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::hour():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.hour], ['hour']),
@@ -264,7 +264,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::hour
     assertEquals('select extract(hour from `root`.dateTime) as `hour` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::weekofyear():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::weekofyear():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.week], ['weekofyear']),
@@ -274,7 +274,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::week
     assertEquals('select extract(week from `root`.dateTime) as `weekofyear` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::cast():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::cast():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string3Integer], ['string3Integer']),
@@ -284,7 +284,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::cast
     assertEquals('select cast(`root`.string3 as int64) as `string3Integer` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::toString():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::toString():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.int1String], ['int1String']),
@@ -294,7 +294,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::toSt
     assertEquals('select cast(`root`.int1 as string) as `int1String` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::today():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::today():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->filter(d | $d.date == today())->project(x | $x.date, 'date'),
@@ -304,7 +304,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::toda
     assertEquals('select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate = CURRENT_DATE()', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::stddev_samp():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::stddev_samp():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevSample], 'stdDevSample'),
@@ -314,7 +314,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::stdd
     assertEquals('select stddev_samp(`root`.int1) as `stdDevSample` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::stddev_pop():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::stddev_pop():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.float1StdDevPopulation], 'float1StdDevPopulation'),
@@ -324,7 +324,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::stdd
     assertEquals('select stddev_pop(`root`.int1) as `float1StdDevPopulation` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::substring():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::substring():Boolean[1]
 {
     let result = toSQLString(
         |Person.all()->filter(p|$p.firstName->substring(1, 5) == 'John'),
@@ -334,7 +334,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::subs
     assertEquals('select `root`.ID as `pk_0`, `root`.FIRSTNAME as `firstName`, `root`.AGE as `age`, `root`.LASTNAME as `lastName` from personTable as `root` where substring(`root`.FIRSTNAME, 1, 5) = \'John\'', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::second():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::second():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([ t | $t.settlementDateTime->cast(@Date)->toOne()->second()], ['second']),
@@ -344,7 +344,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::seco
     assertEquals('select extract( second from `root`.settlementDateTime) as `second` from tradeTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::rtrim():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::rtrim():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.rtrimResult], ['rtrim']),
@@ -354,7 +354,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::rtri
     assertEquals('select rtrim(`root`.string2) as `rtrim` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::round():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::round():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.float1Round], ['round']),
@@ -364,7 +364,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::roun
     assertEquals('select round(`root`.float1, 0) as `round` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::right():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::right():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string1Right], ['right']),
@@ -374,7 +374,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::righ
     assertEquals('select right(`root`.string1,2) as `right` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::rem():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::rem():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([t| rem($t.quantity, $t.id)], ['rem']),
@@ -384,7 +384,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::rem(
     assertEquals('select mod(`root`.quantity,`root`.ID) as `rem` from tradeTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::position():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::position():Boolean[1]
 {
     let result = toSQLString(
         |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
@@ -394,7 +394,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::posi
     assertEquals('select substring(`root`.FULLNAME, 0, strpos(\',\', `root`.FULLNAME)-1) as `firstName` from personTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::parseInteger():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::parseInteger():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
@@ -404,7 +404,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::pars
     assertEquals('select cast(`root`.string2Integer as int64) as `parseInteger` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::parseFloat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::parseFloat():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string2Float], ['string2Float']),
@@ -414,7 +414,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::pars
     assertEquals('select cast(`root`.string2float as float64) as `string2Float` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::parseDecimal():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::parseDecimal():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.string2Decimal], ['string2Decimal']),
@@ -424,7 +424,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::pars
     assertEquals('select cast(`root`.string2Decimal as decimal) as `string2Decimal` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::now():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::now():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->filter(d | $d.date == now())->project(x | $x.date, 'date'),
@@ -435,7 +435,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::now(
 }
 
 // month same as month number
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::monthNumber():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::monthNumber():Boolean[1]
 {
     let result = toSQLString(
         |Trade.all()->project([t| monthNumber($t.settlementDateTime)], ['settlementMonthNumber']),
@@ -445,7 +445,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::mont
     assertEquals('select extract(month from `root`.settlementDateTime) as `settlementMonthNumber` from tradeTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::mod():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::mod():Boolean[1]
 {
     let result = toSQLString(
         |SqlFunctionDemo.all()->project([s | $s.floatModResult ], ['mod']),
@@ -455,7 +455,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::mod(
     assertEquals('select mod(`root`.int1,2) as `mod` from dataTable as `root`', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::minute():Boolean[1]   
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::minute():Boolean[1]   
 {
     let result = toSQLString(
         |Trade.all()->project([t | $t.settlementDateTime->cast(@Date)->toOne()->minute()],['settlementDateTimeMinute']),
@@ -466,7 +466,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::minu
 }
 
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testProcessLiteral():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testProcessLiteral():Boolean[1]
 {
    let result = toSQLString(|Person.all()->project([
                                                       a | 'String',
@@ -481,7 +481,7 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
   assertEquals('select \'String\' as `a`, PARSE_DATE(\'%Y-%m-%d\', \'2016-03-01\') as `b`, PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'2016-03-01 10:18:18.976\') as `c`, 1 as `d`, 1.1 as `e`, \'false\' as `f` from personTable as `root` limit 0', $result);
 }
 
-function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::testDynaConcat():Boolean[1]
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testDynaConcat():Boolean[1]
 {
    let result = toSQLString(
        |Order.all()->project([o|$o.id] ,['id']),
@@ -489,4 +489,26 @@ function <<test.Test>> meta::relational::sqlQueryToString::tests::bigquery::test
         DatabaseType.BigQuery,
         meta::relational::extension::relationalExtensions());
    assertSameSQL('select concat(\'id\', `root`.ID) as `id` from orderTable as `root`', $result);
+}
+
+function <<test.Test>> meta::relational::tests::dbSpecificTests::bigQuery::testFilterEqualsWithOptionalParameter_BigQuery():Boolean[1]      
+{
+   let expectedPlan ='Sequence\n'+
+                     '(\n'+
+                     '  type = TDS[(Time, Integer, INT, "")]\n'+
+                     '  (\n'+
+                     '    FunctionParametersValidationNode\n'+
+                     '    (\n'+
+                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
+                     '    )\n'+
+                     '    Relational\n'+
+                     '    (\n'+
+                     '      type = TDS[(Time, Integer, INT, "")]\n'+
+                     '      resultColumns = [("Time", INT)]\n'+
+                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      connection = DatabaseConnection(type = "BigQuery")\n'+
+                     '    )\n'+
+                     '  )\n'+
+                     ')\n';
+   meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParameter(DatabaseType.BigQuery, $expectedPlan);
 }

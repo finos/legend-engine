@@ -18,18 +18,18 @@ import meta::relational::tests::dbSpecificTests::H2::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::test::*;
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::runSQLQueryTestsParam(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::H2::runTests(): PureTestCollection[1]
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.H2, meta::relational::extension::relationalExtensions());
   
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+  meta::relational::tests::dbSpecificTests
           ->collectParameterizedTests('H2',
                 ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection), 
-                paramCustomizationsForDynaFunctionTests_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
-                []);
+                paramCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+                testsFilter_FunctionDefinition_1__Boolean_1_);
 }
 
-function meta::relational::tests::dbSpecificTests::H2::paramCustomizationsForDynaFunctionTests(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+function meta::relational::tests::dbSpecificTests::H2::paramCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
 {
   //optionally assert db specific sql for a bunch of tests
    let expectedSqls= [
@@ -37,4 +37,22 @@ function meta::relational::tests::dbSpecificTests::H2::paramCustomizationsForDyn
    ]->newMap();
 
   ^$dbTestConfig(expectedSql= $expectedSqls->get($f));
+}
+
+
+function meta::relational::tests::dbSpecificTests::H2::testsFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
+  let unsupportedDynaFunctions = [ ];
+  
+  //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
+  let failingSupportedDynaFunctions = [];
+
+  let ignoredAggregateFunctionsTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $dynaFuncName->cast(@String);
+              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+ 
+  let ignoredNamingTests = [];
+
+  !$ignoredAggregateFunctionsTests->concatenate($ignoredNamingTests)->contains($f);
 }

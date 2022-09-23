@@ -68,14 +68,6 @@ Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceS
     quotedIdentifiersIgnoreCase:Boolean[0..1];
 }
 
-Class meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
-{
-    projectId:String[1];
-    defaultDataset:String[1];
-    proxyHost: String[0..1];
-    proxyPort: String[0..1];
-}
-
 Class meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
     projectId:String[1];

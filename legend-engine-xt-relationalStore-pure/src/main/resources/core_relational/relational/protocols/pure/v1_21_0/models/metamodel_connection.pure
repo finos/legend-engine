@@ -86,12 +86,6 @@ Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::
 
 }
 
-Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
-{
-    projectId:String[1];
-    defaultDataset:String[1];
-}
-
 Class meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::TestDatabaseConnection extends meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::DatabaseConnection
 {
    testDataSetupCsv : String[0..1];

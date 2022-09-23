@@ -114,16 +114,8 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     proxyHost: String[0..1];
     proxyPort: String[0..1];
     nonProxyHosts: String[0..1];
-   
-    role: String [0..1];
-}
 
-Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
-{
-    projectId:String[1];
-    defaultDataset:String[1];
-    proxyHost: String[0..1];
-    proxyPort: String[0..1];
+    role: String [0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SpannerDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
@@ -174,7 +166,7 @@ Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::store
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
-   
+
    clusterID:String[1];
    region:String[1];
    host:String[1];
