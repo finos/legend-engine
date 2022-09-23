@@ -82,7 +82,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "              }#\n" +
                 "           }\n" +
                 "         }\n" +
-                "         assert:\n" +
+                "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
@@ -2691,7 +2691,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "              }#\n" +
                 "           }\n" +
                 "         }\n" +
-                "         assert:\n" +
+                "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +

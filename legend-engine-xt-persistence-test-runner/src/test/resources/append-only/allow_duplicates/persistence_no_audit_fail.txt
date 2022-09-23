@@ -91,7 +91,7 @@ Persistence test::TestPersistence
                }#
              }
            }
-           assert:
+           asserts:
            [
              assert1:
               EqualToJson
@@ -118,7 +118,7 @@ Persistence test::TestPersistence
                }#
              }
            }
-           assert:
+           asserts:
            [
              assert1:
                EqualToJson

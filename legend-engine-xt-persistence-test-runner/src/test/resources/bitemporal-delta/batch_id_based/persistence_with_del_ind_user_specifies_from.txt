@@ -118,8 +118,8 @@ Persistence test::TestPersistence
              }#
            }
          }
-         assert:
-         {
+         asserts:
+         [
            assert1:
              EqualToJson
              #{
@@ -130,7 +130,7 @@ Persistence test::TestPersistence
                    data: '[{"ID":1,"AMOUNT":100,"BATCH_IN":1,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":999999999,"FROM_Z":"2022-01-01 00:00:00.0"},{"ID":2,"AMOUNT":200,"BATCH_IN":1,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":999999999,"FROM_Z":"2022-01-01 00:00:00.0"},{"ID":3,"AMOUNT":400,"BATCH_IN":1,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":999999999,"FROM_Z":"2022-01-01 00:00:00.0"}]';
                  }#;
              }#
-         }
+         ]
        },
        testBatch2:
        {
@@ -145,8 +145,8 @@ Persistence test::TestPersistence
              }#
            }
          }
-         assert:
-         {
+         asserts:
+         [
            assert1:
              EqualToJson
              #{
@@ -157,7 +157,7 @@ Persistence test::TestPersistence
                    data: '[{"ID":1,"AMOUNT":100,"BATCH_IN":1,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":1,"FROM_Z":"2022-01-01 00:00:00.0"},{"ID":2,"AMOUNT":200,"BATCH_IN":1,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":1,"FROM_Z":"2022-01-01 00:00:00.0"},{"ID":3,"AMOUNT":400,"BATCH_IN":1,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":1,"FROM_Z":"2022-01-01 00:00:00.0"},{"ID":1,"AMOUNT":200,"BATCH_IN":2,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-02-01 00:00:00.0","BATCH_OUT":999999999,"FROM_Z":"2022-02-01 00:00:00.0"},{"ID":3,"AMOUNT":800,"BATCH_IN":2,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":999999999,"FROM_Z":"2022-01-01 00:00:00.0"},{"ID":1,"AMOUNT":100,"BATCH_IN":2,"THRU_Z":"2022-02-01 00:00:00.0","SOURCE_FROM":"2022-01-01 00:00:00.0","BATCH_OUT":999999999,"FROM_Z":"2022-01-01 00:00:00.0"}]';
                  }#;
              }#
-         }
+         ]
        }
      ]
      isTestDataFromServiceOutput: true;

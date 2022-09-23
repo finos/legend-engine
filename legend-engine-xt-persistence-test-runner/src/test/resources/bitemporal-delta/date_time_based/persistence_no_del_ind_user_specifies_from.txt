@@ -112,8 +112,8 @@ Persistence test::TestPersistence
              }#
            }
          }
-         assert:
-         {
+         asserts:
+         [
            assert1:
              EqualToJson
              #{
@@ -124,7 +124,7 @@ Persistence test::TestPersistence
                    data: '[{"ID":1, "AMOUNT":100, "SOURCE_FROM": "2022-01-01 00:00:00.0", "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "9999-12-31 23:59:59.0"},{"ID":2, "AMOUNT":200, "SOURCE_FROM": "2022-01-01 00:00:00.0", "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "9999-12-31 23:59:59.0"},{"ID":3, "AMOUNT":400, "SOURCE_FROM": "2022-01-01 00:00:00.0", "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "9999-12-31 23:59:59.0"}]';
                  }#;
              }#
-         }
+         ]
        },
        testBatch2:
        {
@@ -139,8 +139,8 @@ Persistence test::TestPersistence
              }#
            }
          }
-         assert:
-         {
+         asserts:
+         [
            assert1:
              EqualToJson
              #{
@@ -151,7 +151,7 @@ Persistence test::TestPersistence
                    data: '[{"ID":1,"AMOUNT":100,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","FROM_Z":"2022-01-01 00:00:00.0"},{"ID":2,"AMOUNT":200,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","FROM_Z":"2022-01-01 00:00:00.0"},{"ID":3,"AMOUNT":400,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","FROM_Z":"2022-01-01 00:00:00.0"},{"ID":1,"AMOUNT":200,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-02-01 00:00:00.0","FROM_Z":"2022-02-01 00:00:00.0"},{"ID":2,"AMOUNT":400,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-02-01 00:00:00.0","FROM_Z":"2022-02-01 00:00:00.0"},{"ID":3,"AMOUNT":800,"THRU_Z":"9999-12-31 23:59:59.0","SOURCE_FROM":"2022-01-01 00:00:00.0","FROM_Z":"2022-01-01 00:00:00.0"},{"ID":1,"AMOUNT":100,"THRU_Z":"2022-02-01 00:00:00.0","SOURCE_FROM":"2022-01-01 00:00:00.0","FROM_Z":"2022-01-01 00:00:00.0"},{"ID":2,"AMOUNT":200,"THRU_Z":"2022-02-01 00:00:00.0","SOURCE_FROM":"2022-01-01 00:00:00.0","FROM_Z":"2022-01-01 00:00:00.0"}]';
                  }#;
              }#
-         }
+         ]
        }
      ]
      isTestDataFromServiceOutput: true;

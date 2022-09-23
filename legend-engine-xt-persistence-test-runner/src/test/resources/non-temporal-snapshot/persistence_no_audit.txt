@@ -90,8 +90,8 @@ Persistence test::TestPersistence
                 }#
             }
           }
-          assert:
-          {
+          asserts:
+          [
             assert1:
               EqualToJson
               #{
@@ -102,7 +102,7 @@ Persistence test::TestPersistence
                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]';
                 }#;
               }#
-          }
+          ]
         },
         testBatch2:
         {
@@ -117,8 +117,8 @@ Persistence test::TestPersistence
                 }#
             }
           }
-          assert:
-          {
+          asserts:
+          [
             assert1:
               EqualToJson
               #{
@@ -129,7 +129,7 @@ Persistence test::TestPersistence
                   data: '[{"ID":2, "NAME":"BRADLEY"},{"ID":3, "NAME":"CATHY"}]';
                 }#;
               }#
-          }
+          ]
         }
       ]
       isTestDataFromServiceOutput: true;

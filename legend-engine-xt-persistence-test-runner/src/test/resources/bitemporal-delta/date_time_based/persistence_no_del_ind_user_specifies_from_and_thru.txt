@@ -116,8 +116,8 @@ Persistence test::TestPersistence
              }#
            }
          }
-         assert:
-         {
+         asserts:
+         [
            assert1:
              EqualToJson
              #{
@@ -128,7 +128,7 @@ Persistence test::TestPersistence
                    data: '[{"ID":1, "AMOUNT":100, "SOURCE_FROM": "2022-01-01 00:00:00.0", "SOURCE_THROUGH": "2022-01-02 00:00:00.0", "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "2022-01-02 00:00:00.0"},{"ID":2, "AMOUNT":200, "SOURCE_FROM": "2022-01-01 00:00:00.0", "SOURCE_THROUGH": "2022-01-02 00:00:00.0", "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "2022-01-02 00:00:00.0"},{"ID":3, "AMOUNT":400, "SOURCE_FROM": "2022-01-01 00:00:00.0", "SOURCE_THROUGH": "2022-01-02 00:00:00.0", "FROM_Z": "2022-01-01 00:00:00.0", "THRU_Z": "2022-01-02 00:00:00.0"}]';
                  }#;
              }#
-         }
+         ]
        }
      ]
      isTestDataFromServiceOutput: true;

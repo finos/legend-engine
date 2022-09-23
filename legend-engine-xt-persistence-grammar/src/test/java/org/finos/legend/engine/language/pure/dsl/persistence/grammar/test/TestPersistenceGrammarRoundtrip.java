@@ -494,7 +494,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "                }#\n" +
                 "            }\n" +
                 "          }\n" +
-                "          assert:\n" +
+                "          asserts:\n" +
                 "          [\n" +
                 "            assert1:\n" +
                 "              EqualToJson\n" +

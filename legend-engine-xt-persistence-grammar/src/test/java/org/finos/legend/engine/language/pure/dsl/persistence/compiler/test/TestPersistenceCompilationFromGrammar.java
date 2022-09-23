@@ -1085,7 +1085,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "      [\n" +
                 "        testBatch1:\n" +
                 "        {\n" +
-                "         assert:\n" +
+                "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
@@ -1198,7 +1198,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "         data:\n" +
                 "         {\n" +
                 "         }\n" +
-                "         assert:\n" +
+                "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
@@ -1427,7 +1427,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "              }#\n" +
                 "           }\n" +
                 "         }\n" +
-                "         assert:\n" +
+                "         asserts:\n" +
                 "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
