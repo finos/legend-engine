@@ -111,7 +111,7 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     private static SourceCodeParserInfo getPersistenceParserInfo(SectionSourceCode sectionSourceCode)
     {
         CharStream input = CharStreams.fromString(sectionSourceCode.code);
-        ParserErrorListener errorListener = new PersistenceParserErrorListener(sectionSourceCode.walkerSourceInformation);
+        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation, PersistenceLexerGrammar.VOCABULARY);
         PersistenceLexerGrammar lexer = new PersistenceLexerGrammar(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);

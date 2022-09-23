@@ -15,7 +15,8 @@
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
-
+import meta::pure::mapping::*;
+import meta::pure::runtime::*;
 
 Class meta::relational::dbTestRunner::DbTestConfig
 {
@@ -54,19 +55,61 @@ function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Functio
    ]));
 }
 
+function meta::relational::dbTestRunner::doSetupOnConnection(records:String[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+{
+  if($config.connection->isEmpty(),
+    |  
+        println('**** Warning **** : No connection available for given dbtype, Skipping execution of setup sqls');
+        false;,
+    |   
+        let setupSqls = meta::alloy::service::execution::setUpDataSQLs($records, $db);
+
+        let con = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
+        let connWithDb= ^$con(element= $db);
+
+        $setupSqls->executeInRelationalDb($connWithDb,meta::relational::extension::relationalExtensions());
+        println('setup done');
+        true;
+   )   
+}
+
 function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], conn:RelationalDatabaseConnection[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
   meta::legend::test::mayExecuteLegendTest
      (
        {clientVersion, serverVersion, serializationKind, host, port |
-         let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::executeInRelationalDb::executeInRelationalDb_String_MANY__RelationalDatabaseConnection_1__String_1__Integer_1__Extension_MANY__Boolean_1_';
-         let xf = $fStr->pathToElement()->cast(@Function<{String[*], RelationalDatabaseConnection[1], String[1], Integer[1], meta::pure::extension::Extension[*]->Boolean[1]}>);
-         let res= $xf->evaluate(list($sqls)->concatenate([$conn, $host, $port]->map(v|list($v)))->concatenate(list($extensions)));
-         $res->cast(@Boolean)->toOne();
+            let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::executeInRelationalDb::executeInRelationalDb_String_MANY__RelationalDatabaseConnection_1__String_1__Integer_1__Extension_MANY__Boolean_1_';
+            let xf = $fStr->pathToElement()->cast(@Function<{String[*], RelationalDatabaseConnection[1], String[1], Integer[1], meta::pure::extension::Extension[*]->Boolean[1]}>);
+            let res= $xf->evaluate(list($sqls)->concatenate([$conn->toOne(), $host, $port]->map(v|list($v)))->concatenate(list($extensions)));
+            $res->cast(@Boolean)->toOne();
          },
        { |
          println('**** Warning **** : Legend Engine Server not available');
          false;
        }
      );
+}
+
+function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[0..1]
+{
+  if($config.connection->isEmpty(),
+     | 
+       println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
+       let pureRuntime = ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));
+
+       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
+       []; ,               
+     | 
+       let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
+       let connWithDb= ^$conn(element=$db);
+       let pureRuntime = ^Runtime(connections=$connWithDb);
+
+       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
+                             
+       let res=meta::pure::router::executePlan($boundPlan,$extensions);
+       let values = $res.values->cast(@T);
+       ^Result<T|m>(values = $values, activities= $res.activities);
+  );  
 }

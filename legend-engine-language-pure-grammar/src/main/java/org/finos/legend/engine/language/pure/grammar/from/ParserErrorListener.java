@@ -19,20 +19,31 @@ import org.antlr.v4.runtime.InputMismatchException;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.Vocabulary;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class ParserErrorListener extends BaseErrorListener
 {
     public ParseTreeWalkerSourceInformation walkerSourceInformation;
+    public Optional<Vocabulary> vocabulary;
 
     public ParserErrorListener(ParseTreeWalkerSourceInformation walkerSourceInformation)
     {
+        this(walkerSourceInformation, null);
+    }
+
+    public ParserErrorListener(ParseTreeWalkerSourceInformation walkerSourceInformation, Vocabulary vocabulary)
+    {
         this.walkerSourceInformation = walkerSourceInformation;
+        this.vocabulary = Optional.ofNullable(vocabulary);
     }
 
     @Override
@@ -97,6 +108,8 @@ public class ParserErrorListener extends BaseErrorListener
 
     protected List<String> dereferenceTokens(List<Integer> expectedTokens)
     {
-        return Collections.emptyList();
+        return vocabulary
+                .<List<String>>map(v -> ListIterate.collect(expectedTokens, v::getLiteralName).select(Objects::nonNull))
+                .orElse(Collections.emptyList());
     }
 }
