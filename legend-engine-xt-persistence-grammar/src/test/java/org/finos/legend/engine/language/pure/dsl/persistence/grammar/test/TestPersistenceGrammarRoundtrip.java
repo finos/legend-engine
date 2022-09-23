@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.junit.Test;
 
@@ -496,7 +495,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "            }\n" +
                 "          }\n" +
                 "          assert:\n" +
-                "          {\n" +
+                "          [\n" +
                 "            assert1:\n" +
                 "              EqualToJson\n" +
                 "              #{\n" +
@@ -507,7 +506,7 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "                    data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
                 "                  }#;\n" +
                 "              }#\n" +
-                "          }\n" +
+                "          ]\n" +
                 "        }\n" +
                 "      ]\n" +
                 "      isTestDataFromServiceOutput: true;\n" +

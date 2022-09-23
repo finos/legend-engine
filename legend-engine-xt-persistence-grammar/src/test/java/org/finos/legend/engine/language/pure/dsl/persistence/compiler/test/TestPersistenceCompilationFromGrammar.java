@@ -1086,7 +1086,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "        testBatch1:\n" +
                 "        {\n" +
                 "         assert:\n" +
-                "         {\n" +
+                "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
                 "             #{\n" +
@@ -1097,7 +1097,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
                 "                 }#;\n" +
                 "             }#\n" +
-                "          }\n" +
+                "          ]\n" +
                 "        }\n" +
                 "      ]\n" +
                 "      isTestDataFromServiceOutput: false;\n" +
@@ -1199,7 +1199,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "         {\n" +
                 "         }\n" +
                 "         assert:\n" +
-                "         {\n" +
+                "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
                 "             #{\n" +
@@ -1210,7 +1210,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
                 "                 }#;\n" +
                 "             }#\n" +
-                "          }\n" +
+                "          ]\n" +
                 "        }\n" +
                 "      ]\n" +
                 "      isTestDataFromServiceOutput: false;\n" +
@@ -1328,117 +1328,6 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
-    public void persistenceTestBatchEmptyAssert()
-    {
-        test("Class test::Person\n" +
-                "{\n" +
-                "  name: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "Class test::ServiceResult\n" +
-                "{\n" +
-                "   deleted: String[1];\n" +
-                "   dateTimeIn: String[1];\n" +
-                "}\n" +
-                "\n" +
-                "###Mapping\n" +
-                "Mapping test::Mapping ()\n" +
-                "\n" +
-                "###Service\n" +
-                "Service test::Service \n" +
-                "{\n" +
-                "  pattern : 'test';\n" +
-                "  documentation : 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: src: test::Person[1]|$src.name;\n" +
-                "    mapping: test::Mapping;\n" +
-                "    runtime:\n" +
-                "    #{\n" +
-                "      connections: [];\n" +
-                "    }#;\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'test';\n" +
-                "    asserts: [];\n" +
-                "  }\n" +
-                "}\n" +
-                "\n" +
-                "###Relational\n" +
-                "Database test::Database\n" +
-                "(\n" +
-                "  Table personTable\n" +
-                "  (\n" +
-                "    ID INTEGER PRIMARY KEY,\n" +
-                "    NAME VARCHAR(100)\n" +
-                "  )\n" +
-                ")" +
-                "\n" +
-                "###Persistence\n" +
-                "\n" +
-                "Persistence test::TestPersistence \n" +
-                "{\n" +
-                "  doc: 'This is test documentation.';\n" +
-                "  trigger: Manual;\n" +
-                "  service: test::Service;\n" +
-                "  persister: Batch\n" +
-                "  {\n" +
-                "    sink: Relational\n" +
-                "    {\n" +
-                "      database: test::Database;" +
-                "    }\n" +
-                "    ingestMode: UnitemporalDelta\n" +
-                "    {\n" +
-                "      mergeStrategy: NoDeletes;\n" +
-                "      transactionMilestoning: DateTime\n" +
-                "      {\n" +
-                "        dateTimeInName: 'IN_Z';\n" +
-                "        dateTimeOutName: 'OUT_Z';\n" +
-                "        derivation: SourceSpecifiesInDateTime\n" +
-                "        {\n" +
-                "          sourceDateTimeInField: 'dateTimeIn';\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }\n" +
-                "    targetShape: Flat\n" +
-                "    {\n" +
-                "      targetName: 'TestDataset1';\n" +
-                "      modelClass: test::ServiceResult;\n" +
-                "    }\n" +
-                "  }\n" +
-                "  tests:\n" +
-                "  [\n" +
-                "    test1:\n" +
-                "    {\n" +
-                "      testBatches:\n" +
-                "      [\n" +
-                "        testBatch1:\n" +
-                "        {\n" +
-                "         data:\n" +
-                "         {\n" +
-                "           connection:\n" +
-                "           {\n" +
-                "              ExternalFormat\n" +
-                "              #{\n" +
-                "                contentType: 'application/x.flatdata';\n" +
-                "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
-                "              }#\n" +
-                "           }\n" +
-                "         }\n" +
-                "         assert:\n" +
-                "         {\n" +
-                "         }\n" +
-                "        }\n" +
-                "      ]\n" +
-                "      isTestDataFromServiceOutput: false;\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n", "PARSER error at [83:9-99:9]: Assert cannot be empty within Persistence TestBatch");
-    }
-
-    @Test
     public void flatShape()
     {
         Pair<PureModelContextData, PureModel> result = test("Class test::Person\n" +
@@ -1539,7 +1428,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "           }\n" +
                 "         }\n" +
                 "         assert:\n" +
-                "         {\n" +
+                "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
                 "             #{\n" +
@@ -1550,7 +1439,7 @@ public class TestPersistenceCompilationFromGrammar extends TestCompilationFromGr
                 "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
                 "                 }#;\n" +
                 "             }#\n" +
-                "          }\n" +
+                "          ]\n" +
                 "        }\n" +
                 "      ]\n" +
                 "      isTestDataFromServiceOutput: false;\n" +

@@ -107,22 +107,24 @@ public class PersistenceTestRunner implements TestRunner
             int batchId = 0;
             for (PersistenceTestBatch testBatch : testBatches)
             {
-                TestAssertion testAssertion = testBatch.assertions.get(0);
-                AssertionStatus batchAssertionStatus = new AssertPass();
-                if (testAssertion != null)
+                for (TestAssertion testAssertion : testBatch.assertions)
                 {
-                    // Retrieve testData
-                    String testDataString = getConnectionTestData(testBatch.testData);
-                    invokePersistence(targetDataset, persistence, testDataString, connection);
-                    List<Map<String, Object>> output = persistenceTestH2Connection.readTable(datasetDefinition);
+                    AssertionStatus batchAssertionStatus = new AssertPass();
+                    if (testAssertion != null)
+                    {
+                        // Retrieve testData
+                        String testDataString = getConnectionTestData(testBatch.testData);
+                        invokePersistence(targetDataset, persistence, testDataString, connection);
+                        List<Map<String, Object>> output = persistenceTestH2Connection.readTable(datasetDefinition);
 
-                    batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore));
-                }
-                assertStatuses.add(batchAssertionStatus);
-                if (isTransactionMilestoningTimeBased && ++batchId < testBatches.size())
-                {
-                    // Sleep to avoid test batches having same IN_Z
-                    Thread.sleep(1000);
+                        batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore));
+                    }
+                    assertStatuses.add(batchAssertionStatus);
+                    if (isTransactionMilestoningTimeBased && ++batchId < testBatches.size())
+                    {
+                        // Sleep to avoid test batches having same IN_Z
+                        Thread.sleep(1000);
+                    }
                 }
             }
             // Construct the Test Result

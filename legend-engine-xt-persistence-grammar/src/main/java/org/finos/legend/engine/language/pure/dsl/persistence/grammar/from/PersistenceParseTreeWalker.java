@@ -361,16 +361,12 @@ public class PersistenceParseTreeWalker
         testBatch.testData = visitPersistenceTestData(testDataContext);
 
         // assert
-        if (ctx.persistenceTestBatchAssert(0) == null)
+        if (ctx.persistenceTestBatchAssert() == null)
         {
             throw new EngineException("Assert cannot be null within Persistence TestBatch", testBatch.sourceInformation, EngineErrorType.PARSER);
         }
-        PersistenceParserGrammar.PersistenceTestAssertContext testAssertsContext = ctx.persistenceTestBatchAssert(0).persistenceTestAssert();
-        if (testAssertsContext == null)
-        {
-            throw new EngineException("Assert cannot be empty within Persistence TestBatch", testBatch.sourceInformation, EngineErrorType.PARSER);
-        }
-        testBatch.assertions = visitPersistenceTestAssert(testAssertsContext);
+        PersistenceParserGrammar.PersistenceTestDataContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistenceTestBatchAssert(), "assert", testBatch.sourceInformation);
+        testBatch.assertions = ListIterate.collect(testAssertsContext.persistenceTestAssert(), this::visitPersistenceTestAssert);
 
         return testBatch;
     }
@@ -400,14 +396,12 @@ public class PersistenceParseTreeWalker
         return connectionData;
     }
 
-    private List<TestAssertion> visitPersistenceTestAssert(PersistenceParserGrammar.PersistenceTestAssertContext ctx)
+    private TestAssertion visitPersistenceTestAssert(PersistenceParserGrammar.PersistenceTestAssertContext ctx)
     {
         TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
         testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
-        List<TestAssertion> testAssertions = new ArrayList<>();
-        testAssertions.add(testAssertion);
-        return testAssertions;
+        return testAssertion;
     }
 
     /**********

@@ -83,7 +83,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "           }\n" +
                 "         }\n" +
                 "         assert:\n" +
-                "         {\n" +
+                "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
                 "             #{\n" +
@@ -94,7 +94,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
                 "                 }#;\n" +
                 "             }#\n" +
-                "          }\n" +
+                "          ]\n" +
                 "        }\n" +
                 "      ]\n" +
                 "      isTestDataFromServiceOutput: false;\n" +
@@ -2692,7 +2692,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "           }\n" +
                 "         }\n" +
                 "         assert:\n" +
-                "         {\n" +
+                "         [\n" +
                 "           assert1:\n" +
                 "             EqualToJson\n" +
                 "             #{\n" +
@@ -2703,7 +2703,7 @@ public class TestPersistenceGrammarParser extends TestGrammarParser.TestGrammarP
                 "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
                 "                 }#;\n" +
                 "             }#\n" +
-                "         }\n" +
+                "         ]\n" +
                 "       }\n" +
                 "     ]\n" +
                 "     isTestDataFromServiceOutput: true;\n" +

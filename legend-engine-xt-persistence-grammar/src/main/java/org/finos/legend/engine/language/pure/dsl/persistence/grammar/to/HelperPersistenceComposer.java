@@ -233,12 +233,9 @@ public class HelperPersistenceComposer
         if (batch.assertions != null)
         {
             str.append(getTabString(baseIndentation + 1)).append("assert").append(":\n");
-            str.append(getTabString(baseIndentation + 1)).append("{\n");
-            if (!batch.assertions.isEmpty())
-            {
-                str.append(HelperTestAssertionGrammarComposer.composeTestAssertion(batch.assertions.get(0), PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 2)).build())).append("\n");
-            }
-            str.append(getTabString(baseIndentation + 1)).append("}\n");;
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(batch.assertions, assertion -> HelperTestAssertionGrammarComposer.composeTestAssertion(assertion, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 2)).build())))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("]\n");;
         }
 
         str.append(getTabString(baseIndentation)).append("}");

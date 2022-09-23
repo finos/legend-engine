@@ -546,7 +546,7 @@ embeddedData:                           identifier ISLAND_OPEN ( embeddedDataCon
 ;
 embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
-persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERT COLON BRACE_OPEN ( persistenceTestAssert )? BRACE_CLOSE
+persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERT COLON BRACKET_OPEN ( persistenceTestAssert ( COMMA persistenceTestAssert)* )? BRACKET_CLOSE
 ;
 persistenceTestAssert:                  identifier COLON testAssertion
 ;
