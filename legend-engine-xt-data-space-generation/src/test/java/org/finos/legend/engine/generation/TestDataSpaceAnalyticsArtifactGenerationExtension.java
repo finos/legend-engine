@@ -14,19 +14,17 @@
 
 package org.finos.legend.engine.generation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.finos.legend.engine.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
@@ -38,6 +36,8 @@ import org.junit.Test;
 public class TestDataSpaceAnalyticsArtifactGenerationExtension
 {
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private static final String minimumPureClientVersion = "v1_20_0";
+    private static final ImmutableList<String> testVersions = PureClientVersions.versionsSince(minimumPureClientVersion);
 
     private String getResourceAsString(String path)
     {
@@ -63,19 +63,20 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
         String pureModelString = getResourceAsString("models/DataspaceModel.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
         PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
-        Map<DataSpace, List<Artifact>> results = Maps.mutable.empty();
         DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("dataSpace::_FirmDataSpace");
         Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace);
-        Root_meta_pure_metamodel_dataSpace_DataSpace metamodelDatasapce = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
-        Assert.assertTrue(extension.canGenerate(metamodelDatasapce));
-        List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextData, "vX_X_X");
-        Assert.assertEquals(1, outputs.size());
-        Artifact dataSpaceAnalyticsResult = outputs.get(0);
-        Assert.assertEquals(dataSpaceAnalyticsResult.format, "json");
-        Assert.assertEquals(dataSpaceAnalyticsResult.path, "AnalyticsResult.json");
-        Assert.assertNotNull(dataSpaceAnalyticsResult.content);
-        // assert the result is JSON of data space analysis result
-        objectMapper.readValue(dataSpaceAnalyticsResult.content, DataSpaceAnalysisResult.class);
+        Root_meta_pure_metamodel_dataSpace_DataSpace metamodelDataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
+        Assert.assertTrue(extension.canGenerate(metamodelDataSpace));
+        for (String pureClient: testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextData, pureClient);
+            Assert.assertEquals(1, outputs.size());
+            Artifact dataSpaceAnalyticsResult = outputs.get(0);
+            Assert.assertEquals(dataSpaceAnalyticsResult.format, "json");
+            Assert.assertEquals(dataSpaceAnalyticsResult.path, "AnalyticsResult.json");
+            Assert.assertNotNull(dataSpaceAnalyticsResult.content);
+            objectMapper.readValue(dataSpaceAnalyticsResult.content, DataSpaceAnalysisResult.class);
+        }
     }
 }
