@@ -26,10 +26,6 @@
     <artifactId>legend-engine-xt-persistence-test-runner</artifactId>
     <name>Legend Engine - XT - Persistence - Test Runner</name>
 
-    <properties>
-        <milestoning.version>1.0-SNAPSHOT</milestoning.version>
-    </properties>
-
     <dependencies>
         <!-- PURE -->
         <dependency>
@@ -107,17 +103,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-h2</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- ENGINE -->
 

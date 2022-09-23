@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestNonTemporalSnapshot extends TestPersistenceBase
 {
-
     @Test
     public void testSnapshotWithNoAuditing() throws Exception
     {

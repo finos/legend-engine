@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestPersistenceBitemporalDelta extends TestPersistenceBase
 {
-
     @Test
     public void testBatchIdBasedNoDeleteIndicatorUserSpecifiesFromAndThru() throws Exception
     {

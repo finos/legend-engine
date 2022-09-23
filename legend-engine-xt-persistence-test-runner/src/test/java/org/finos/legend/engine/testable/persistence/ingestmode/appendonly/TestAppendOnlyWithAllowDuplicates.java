@@ -26,10 +26,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-
 public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
 {
-
     @Test
     public void testAppendOnlyWithNoAuditing() throws Exception
     {

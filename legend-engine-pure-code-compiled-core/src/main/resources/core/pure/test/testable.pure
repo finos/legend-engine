@@ -31,7 +31,7 @@ Class <<typemodifiers.abstract>> meta::pure::test::AtomicTest extends Test
 Class <<typemodifiers.abstract>> meta::pure::test::TestBatch
 {
     id         : String[1];
-    batchId    : Integer[0..1];
+    batchId    : Integer[1];
     assertions : TestAssertion[*];
 }
 
