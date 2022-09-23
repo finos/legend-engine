@@ -16,17 +16,17 @@ function meta::relational::functions::sqlQueryToString::default::defaultReserved
 
 function meta::relational::functions::sqlQueryToString::default::columnNameToIdentifierDefault(columnName: String[1], dbConfig: DbConfig[1]): String[1]
 {
-   if($columnName->toLower()->in(['kerberos', 'date', 'first']), |'"' + $columnName->toUpper() + '"', |$columnName->quoteIdentifierDefault());
+   if($columnName->toLower()->in(['kerberos', 'date', 'first']), |'"' + $columnName->toUpper() + '"', |$columnName);
 }
 
 function meta::relational::functions::sqlQueryToString::default::quoteIdentifierDefault(identifier:String[1]):String[1]
 {
-   if(!$identifier->startsWith('"') && !$identifier->isCStyleIdentifier() && !isFreeMarkerIdentifier($identifier), |'"' + $identifier + '"', |$identifier);
+   if(!$identifier->startsWith('"') && $identifier->hasSpecialChars() && !isFreeMarkerIdentifier($identifier), |'"' + $identifier + '"', |$identifier);
 }
 
-function meta::relational::functions::sqlQueryToString::default::isCStyleIdentifier(identifier:String[1]):Boolean[1]
+function meta::relational::functions::sqlQueryToString::default::hasSpecialChars(identifier:String[1]):Boolean[1]
 {
-  $identifier->matches('[a-zA-Z_][a-zA-Z0-9_]*')
+  $identifier->contains(' ') || $identifier->contains('/')
 }
 
 function meta::relational::functions::sqlQueryToString::default::isFreeMarkerIdentifier(identifier:String[1]):Boolean[1]
