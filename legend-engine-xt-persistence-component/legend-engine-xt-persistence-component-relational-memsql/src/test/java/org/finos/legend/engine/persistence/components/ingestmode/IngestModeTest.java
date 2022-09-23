@@ -58,16 +58,11 @@ public class IngestModeTest
     String validityFromTargetField = "validity_from_target";
     String validityThroughTargetField = "validity_through_target";
 
-    String[] primaryKeys = new String[]{"id", "name"};
-    List<String> primaryKeysList = Arrays.asList(primaryKeys);
     String[] partitionKeys = new String[]{"biz_date"};
     HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
         put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
     }};
-    String[] bitemporalPrimaryKeys = new String[]{"id", "name", validityFromReferenceField, validityThroughReferenceField};
-    String[] bitemporalFromTimeOnlyPrimaryKeys = new String[]{"id", "name", validityFromReferenceField};
-    String[] bitemporalPartitionKeys = new String[]{validityFromReferenceField};
 
     // Base Columns: Primary keys : id, name
     Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -88,6 +83,8 @@ public class IngestModeTest
     // Problematic Columns
     Field batchIdInNonPrimary = Field.builder().name(batchIdInField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     Field batchTimeInNonPrimary = Field.builder().name(batchTimeInField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
+    Field idNonPrimary = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
+    Field nameNonPrimary = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
 
     // Milestoning Columns
     Field digest = Field.builder().name(digestField).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
@@ -211,6 +208,14 @@ public class IngestModeTest
         .addFields(digest)
         .build();
 
+    protected SchemaDefinition baseTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
+        .addFields(idNonPrimary)
+        .addFields(nameNonPrimary)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(digest)
+        .build();
+
     SchemaDefinition baseTableSchemaWithDigestAndUpdateBatchTimeField = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
@@ -304,9 +309,10 @@ public class IngestModeTest
 
     protected String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.`table_name` = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
-    protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`) (SELECT 'main',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.`TABLE_NAME` = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+    protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`) (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.`TABLE_NAME` = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
-    String expectedTruncateTableQuery = "TRUNCATE TABLE `mydb`.`staging`";
+    String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";
+
     String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging`";
 
     String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +

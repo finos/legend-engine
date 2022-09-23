@@ -45,7 +45,6 @@ public class NontemporalDeltaMergeTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -95,7 +94,6 @@ public class NontemporalDeltaMergeTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -109,13 +107,13 @@ public class NontemporalDeltaMergeTest extends IngestModeTest
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String mergeSql = "MERGE INTO \"MYDB\".\"MAIN\" as SINK USING \"MYDB\".\"STAGING\" as STAGE " +
-            "ON (SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\") WHEN MATCHED " +
-            "AND SINK.\"DIGEST\" <> STAGE.\"DIGEST\" THEN UPDATE SET SINK.\"ID\" = STAGE.\"ID\"," +
-            "SINK.\"NAME\" = STAGE.\"NAME\",SINK.\"AMOUNT\" = STAGE.\"AMOUNT\"," +
-            "SINK.\"BIZ_DATE\" = STAGE.\"BIZ_DATE\",SINK.\"DIGEST\" = STAGE.\"DIGEST\" " +
+        String mergeSql = "MERGE INTO \"MYDB\".\"MAIN\" as sink USING \"MYDB\".\"STAGING\" as stage " +
+            "ON (sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\") WHEN MATCHED " +
+            "AND sink.\"DIGEST\" <> stage.\"DIGEST\" THEN UPDATE SET sink.\"ID\" = stage.\"ID\"," +
+            "sink.\"NAME\" = stage.\"NAME\",sink.\"AMOUNT\" = stage.\"AMOUNT\"," +
+            "sink.\"BIZ_DATE\" = stage.\"BIZ_DATE\",sink.\"DIGEST\" = stage.\"DIGEST\" " +
             "WHEN NOT MATCHED THEN INSERT (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\") " +
-            "VALUES (STAGE.\"ID\",STAGE.\"NAME\",STAGE.\"AMOUNT\",STAGE.\"BIZ_DATE\",STAGE.\"DIGEST\")";
+            "VALUES (stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\")";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));

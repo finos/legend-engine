@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
+import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -53,10 +54,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
+import static org.finos.legend.engine.persistence.components.relational.api.GeneratorResultAbstract.SINGLE_QUOTE;
 
 @Immutable
 @Style(
@@ -137,6 +138,18 @@ public abstract class RelationalIngestorAbstract
 
     public IngestorResult ingest(Connection connection, Datasets datasets)
     {
+        return ingest(connection, datasets, null).stream().findFirst().orElseThrow(IllegalStateException::new);
+    }
+
+    public List<IngestorResult> ingestWithDataSplits(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    {
+        return ingest(connection, datasets, dataSplitRanges);
+    }
+
+    // ---------- UTILITY METHODS ----------
+
+    private List<IngestorResult> ingest(Connection connection, Datasets datasets, List<DataSplitRange> dataSplitRanges)
+    {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
         Executor<SqlGen, TabularData, SqlPlan> executor = new RelationalExecutor(relationalSink(), JdbcHelper.of(connection));
 
@@ -151,28 +164,15 @@ public abstract class RelationalIngestorAbstract
             resourcesBuilder.externalDatasetImported(true);
         }
 
-        // check status of staging table
+        // Check if staging dataset is empty
         if (executor.datasetExists(updatedDatasets.stagingDataset()))
         {
-            resourcesBuilder
-                .stagingDatasetExists(true)
-                .stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
+            resourcesBuilder.stagingDataSetEmpty(datasetEmpty(updatedDatasets.stagingDataset(), transformer, executor));
         }
-        else
-        {
-            resourcesBuilder.stagingDatasetExists(false);
-        }
-
-        // check status of main table
+        // Validate if main dataset schema matches the actual table
         if (executor.datasetExists(updatedDatasets.mainDataset()))
         {
-            // validate whether user-provided schema for main dataset matches schema in db
             validateMainDatasetSchema(updatedDatasets.mainDataset(), executor);
-            resourcesBuilder.mainDataSetExists(true);
-        }
-        else
-        {
-            resourcesBuilder.mainDataSetExists(false);
         }
 
         // generate sql plans
@@ -193,36 +193,45 @@ public abstract class RelationalIngestorAbstract
             updatedDatasets = updatedDatasets.withMainDataset(generatorResult.schemaEvolutionDataset().get());
         }
 
+        // 1. Create tables
+        executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
+        // 2. Perform schema evolution
+        generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
+        // 3. Perform Ingestion
+        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, executor, generatorResult, dataSplitRanges);
+        return result;
+    }
+
+    private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen,
+        TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges)
+    {
         try
         {
+            List<IngestorResult> results = new ArrayList<>();
             executor.begin();
-            // 1. preActionsSqlPlan
-            executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
-            // 2. schemaEvolutionSqlPlan
-            generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
-            //  Find the Placeholder
-            Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, transformer, ingestMode());
-            // 3. preIngestStatisticsSqlPlan
-            Map<StatisticName, Object> statisticsResultMap = new HashMap<>(
-                executeStatisticsPhysicalPlan(executor, generatorResult.preIngestStatisticsSqlPlan(), placeHolderKeyValues));
-            // 4.ingestSqlPlan
-            executor.executePhysicalPlan(generatorResult.ingestSqlPlan(), placeHolderKeyValues);
-            // 5. postIngestStatisticsSqlPlan
-            statisticsResultMap.putAll(
-                executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
-            // 6. metadataIngestSqlPlan
-            if (generatorResult.metadataIngestSqlPlan().isPresent())
+            int dataSplitIndex = 0;
+            int dataSplitsCount = (dataSplitRanges == null || dataSplitRanges.isEmpty()) ? 0 : dataSplitRanges.size();
+            do
             {
-                executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
+                Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
+                // Extract the Placeholders values
+                Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, transformer, ingestMode(), dataSplitRange);
+                // Load main table, extract stats and update metadata table
+                Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
+                IngestorResult result = IngestorResult.builder()
+                    .putAllStatisticByName(statisticsResultMap)
+                    .updatedDatasets(datasets)
+                    .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
+                    .dataSplitRange(dataSplitRange)
+                    .build();
+                results.add(result);
+                dataSplitIndex++;
             }
-            // 7. postActionsSqlPlan
+            while (dataSplitIndex < dataSplitsCount);
+            // Clean up
             executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
             executor.commit();
-
-            return IngestorResult.builder()
-                .putAllStatisticByName(statisticsResultMap)
-                .updatedDatasets(updatedDatasets)
-                .build();
+            return results;
         }
         catch (Exception e)
         {
@@ -235,7 +244,23 @@ public abstract class RelationalIngestorAbstract
         }
     }
 
-    // ---------- UTILITY METHODS ----------
+    private Map<StatisticName, Object> loadData(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Map<String, String> placeHolderKeyValues)
+    {
+        // Extract preIngest Statistics
+        Map<StatisticName, Object> statisticsResultMap = new HashMap<>(
+            executeStatisticsPhysicalPlan(executor, generatorResult.preIngestStatisticsSqlPlan(), placeHolderKeyValues));
+        // Execute ingest SqlPlan
+        executor.executePhysicalPlan(generatorResult.ingestSqlPlan(), placeHolderKeyValues);
+        // Extract postIngest Statistics
+        statisticsResultMap.putAll(
+            executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
+        // Execute metadata ingest SqlPlan
+        if (generatorResult.metadataIngestSqlPlan().isPresent())
+        {
+            executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
+        }
+        return statisticsResultMap;
+    }
 
     private Datasets importExternalDataset(IngestMode ingestMode, Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor)
     {
@@ -243,7 +268,7 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : generateStagingTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new)))
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : LogicalPlanUtils.generateTableNameWithSuffix(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
             .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
             .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
             .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
@@ -306,12 +331,6 @@ public abstract class RelationalIngestorAbstract
         executor.validateMainDatasetSchema(dataset);
     }
 
-    private String generateStagingTableName(String mainTableName)
-    {
-        UUID uuid = UUID.randomUUID();
-        return mainTableName + UNDERSCORE + STAGING + UNDERSCORE + uuid;
-    }
-
     private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                      Map<StatisticName, SqlPlan> statisticsSqlPlan,
                                                                      Map<String, String> placeHolderKeyValues)
@@ -331,13 +350,19 @@ public abstract class RelationalIngestorAbstract
     }
 
     private Map<String, String> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                            Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+                                                            Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
+                                                            Optional<DataSplitRange> dataSplitRange)
     {
         Map<String, String> placeHolderKeyValues = new HashMap<>();
         Optional<Integer> nextBatchId = getNextBatchId(datasets, executor, transformer, ingestMode);
         if (nextBatchId.isPresent())
         {
             placeHolderKeyValues.put(BATCH_ID_PATTERN, nextBatchId.get().toString());
+        }
+        if (dataSplitRange.isPresent())
+        {
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.get().lowerBound()));
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.get().upperBound()));
         }
         return placeHolderKeyValues;
     }

@@ -40,7 +40,7 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
 {
 
     @Override
-    public LogicalPlanVisitor.VisitorResult visit(PhysicalPlanNode prev, SchemaDefinition current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, SchemaDefinition current, VisitorContext context)
     {
 
         List<Field> pkFields = current.fields().stream().filter(Field::primaryKey).collect(Collectors.toList());

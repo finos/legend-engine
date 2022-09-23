@@ -138,8 +138,8 @@ public class NontemporalSnapshotTest extends IngestModeTest
         List<String> preActionsSqlList = oper.preActionsSql();
         List<String> milestoningSqlList = oper.ingestSql();
 
-        String deleteFromTableSql = "DELETE FROM \"MYDB\".\"MAIN\" as SINK";
-        String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"BATCH_UPDATE_TIME\") (SELECT STAGE.\"ID\",STAGE.\"NAME\",STAGE.\"AMOUNT\",STAGE.\"BIZ_DATE\",'2000-01-01 00:00:00' FROM \"MYDB\".\"STAGING\" as STAGE)";
+        String deleteFromTableSql = "DELETE FROM \"MYDB\".\"MAIN\" as sink";
+        String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"BATCH_UPDATE_TIME\") (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",'2000-01-01 00:00:00' FROM \"MYDB\".\"STAGING\" as stage)";
 
         Assertions.assertEquals(expectedBaseTableCreateQueryWithUpperCase, preActionsSqlList.get(0));
 

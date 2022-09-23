@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.finos.legend.engine.persistence.components.IngestModeTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -28,9 +30,6 @@ import org.finos.legend.engine.persistence.components.relational.api.GeneratorRe
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class NontemporalDeltaTest extends IngestModeTest
 {
@@ -50,7 +49,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -103,7 +101,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -117,22 +114,22 @@ public class NontemporalDeltaTest extends IngestModeTest
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String updateSql = "UPDATE \"MYDB\".\"MAIN\" as SINK " +
-            "SET SINK.\"ID\" = (SELECT STAGE.\"ID\" FROM \"MYDB\".\"STAGING\" as STAGE WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\"))," +
-            "SINK.\"NAME\" = (SELECT STAGE.\"NAME\" FROM \"MYDB\".\"STAGING\" as STAGE WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\"))," +
-            "SINK.\"AMOUNT\" = (SELECT STAGE.\"AMOUNT\" FROM \"MYDB\".\"STAGING\" as STAGE WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\"))," +
-            "SINK.\"BIZ_DATE\" = (SELECT STAGE.\"BIZ_DATE\" FROM \"MYDB\".\"STAGING\" as STAGE WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\"))," +
-            "SINK.\"DIGEST\" = (SELECT STAGE.\"DIGEST\" FROM \"MYDB\".\"STAGING\" as STAGE WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\")) " +
-            "WHERE EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as STAGE" +
-            " WHERE ((SINK.\"ID\" = STAGE.\"ID\") " +
-            "AND (SINK.\"NAME\" = STAGE.\"NAME\")) " +
-            "AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\"))";
+        String updateSql = "UPDATE \"MYDB\".\"MAIN\" as sink " +
+            "SET sink.\"ID\" = (SELECT stage.\"ID\" FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\"))," +
+            "sink.\"NAME\" = (SELECT stage.\"NAME\" FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\"))," +
+            "sink.\"AMOUNT\" = (SELECT stage.\"AMOUNT\" FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\"))," +
+            "sink.\"BIZ_DATE\" = (SELECT stage.\"BIZ_DATE\" FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\"))," +
+            "sink.\"DIGEST\" = (SELECT stage.\"DIGEST\" FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\")) " +
+            "WHERE EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as stage" +
+            " WHERE ((sink.\"ID\" = stage.\"ID\") " +
+            "AND (sink.\"NAME\" = stage.\"NAME\")) " +
+            "AND (sink.\"DIGEST\" <> stage.\"DIGEST\"))";
 
         String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\") " +
-            "(SELECT * FROM \"MYDB\".\"STAGING\" as STAGE WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as SINK " +
-            "WHERE ((SINK.\"ID\" = STAGE.\"ID\") " +
-            "AND (SINK.\"NAME\" = STAGE.\"NAME\")) " +
-            "AND (SINK.\"DIGEST\" = STAGE.\"DIGEST\"))))";
+            "(SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink " +
+            "WHERE ((sink.\"ID\" = stage.\"ID\") " +
+            "AND (sink.\"NAME\" = stage.\"NAME\")) " +
+            "AND (sink.\"DIGEST\" = stage.\"DIGEST\"))))";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
@@ -154,7 +151,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -204,7 +200,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .build();
 
@@ -247,26 +242,36 @@ public class NontemporalDeltaTest extends IngestModeTest
     {
         Dataset mainTable = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(baseTableSchemaWithNoPrimaryKeys)
             .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(baseTableSchemaWithNoPrimaryKeys)
             .build();
+
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestField)
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         try
         {
-            NontemporalDelta ingestMode = NontemporalDelta.builder()
-                .digestField(digestField)
-                .auditing(NoAuditing.builder().build())
+            RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(AnsiSqlSink.get())
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
+
+            GeneratorResult operations = generator.generateOperations(datasets);
 
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build NontemporalDelta, [keyFields] must contain at least one element", e.getMessage());
+            Assertions.assertEquals("Primary key list must not be empty", e.getMessage());
         }
     }
 
@@ -287,7 +292,6 @@ public class NontemporalDeltaTest extends IngestModeTest
         {
             NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .auditing(DateTimeAuditing.builder().build())
                 .build();
 
@@ -314,7 +318,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -346,7 +349,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .build();
 
@@ -385,7 +387,6 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .build();
 
@@ -409,7 +410,7 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         List<String> postActionsSql = operations.postActionsSql();
         List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedTruncateTableQuery);
+        expectedSQL.add(expectedStagingCleanupQuery);
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
     }
 }

@@ -16,13 +16,9 @@ package org.finos.legend.engine.persistence.components.ingestmode.validitymilest
 
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 
-import java.util.List;
-
 public interface ValidityMilestoned extends IngestMode
 {
     String digestField();
-
-    List<String> keyFields();
 
     ValidityMilestoning validityMilestoning();
 }

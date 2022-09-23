@@ -23,7 +23,7 @@ public class AllQuantifierVisitor implements LogicalPlanVisitor<org.finos.legend
 {
 
     @Override
-    public LogicalPlanVisitor.VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.quantifiers.AllQuantifier current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.quantifiers.AllQuantifier current, VisitorContext context)
     {
 
         AllQuantifier allQuantifier = new AllQuantifier();
