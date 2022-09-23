@@ -34,6 +34,7 @@ import meta::pure::persistence::metamodel::reader::*;
 import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::persistence::metamodel::persistenceTest::*;
 
 import meta::pure::runtime::*;
 
@@ -45,7 +46,7 @@ import meta::relational::metamodel::*;
 
 Class
 {doc.doc = 'A persistence specification. This consists of a trigger that initiates persistence, a service that provides data to persist, a persister that writes that data to a store, and a notifier that updates on significant events.'}
-meta::pure::persistence::metamodel::Persistence extends PackageableElement
+meta::pure::persistence::metamodel::Persistence extends PackageableElement, meta::pure::test::Testable
 {
    {doc.doc = 'A functional description of this persistence specification.'}
    documentation: String[1];
@@ -573,4 +574,29 @@ meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::
 
    {doc.doc = 'The property in the model class or column in the TDS that provides the "thru" datetime for the validity (business) temporal dimension.'}
    sourceDateTimeThruField: String[1];
+}
+
+/**********
+ * test
+ **********/
+
+Class meta::pure::persistence::metamodel::PersistenceTest extends meta::pure::test::AtomicTest
+{
+  testBatches                 : PersistenceTestBatch[*];
+  isTestDataFromServiceOutput : Boolean[0..1];
+}
+
+Class meta::pure::persistence::metamodel::PersistenceTestBatch extends meta::pure::test::TestBatch
+{
+  testData   : meta::pure::persistence::metamodel::TestData[1];
+}
+
+Class meta::pure::persistence::metamodel::TestData
+{
+  connection : meta::pure::persistence::metamodel::ConnectionTestData[1];
+}
+
+Class meta::pure::persistence::metamodel::ConnectionTestData
+{
+  data      : meta::pure::data::EmbeddedData[1];
 }

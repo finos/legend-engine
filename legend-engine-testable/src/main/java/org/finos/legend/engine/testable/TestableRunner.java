@@ -64,7 +64,6 @@ public class TestableRunner
             Testable testable = (Testable) packageableElement;
             List<AtomicTestId> testIds = testableInput.unitTestIds;
             List<String> atomicTestIds = ListIterate.collect(testIds, id -> id.atomicTestId);
-            Map<String, List<AtomicTestId>> testIdsBySuiteId = testIds.stream().collect(groupingBy(testId -> testId.testSuiteId));
 
             TestRunner testRunner = TestableRunnerExtensionLoader.forTestable(testable);
             for (Test test : testable._tests())
@@ -74,29 +73,32 @@ public class TestableRunner
                 {
                     runTestsResult.results.add(testRunner.executeAtomicTest((Root_meta_pure_test_AtomicTest) test, pureModel, data));
                 }
-                if ((test instanceof Root_meta_pure_test_TestSuite) && (testIds.isEmpty() || testIdsBySuiteId.get(test._id()) != null))
+                if (test instanceof Root_meta_pure_test_TestSuite)
                 {
-                    Root_meta_pure_test_TestSuite testSuite = (Root_meta_pure_test_TestSuite) test;
-                    List<AtomicTestId> updatedTestIds;
-                    if (testIds.isEmpty())
+                    Map<String, List<AtomicTestId>> testIdsBySuiteId = testIds.stream().collect(groupingBy(testId -> testId.testSuiteId));
+                    if (testIds.isEmpty() || testIdsBySuiteId.get(test._id()) != null)
                     {
-                        updatedTestIds = testSuite._tests().collect(pureTest ->
+                        Root_meta_pure_test_TestSuite testSuite = (Root_meta_pure_test_TestSuite) test;
+                        List<AtomicTestId> updatedTestIds;
+                        if (testIds.isEmpty())
                         {
-                            AtomicTestId id = new AtomicTestId();
-                            id.testSuiteId = testSuite._id();
-                            id.atomicTestId = pureTest._id();
-                            return id;
-                        }).toList();
+                            updatedTestIds = testSuite._tests().collect(pureTest ->
+                            {
+                                AtomicTestId id = new AtomicTestId();
+                                id.testSuiteId = testSuite._id();
+                                id.atomicTestId = pureTest._id();
+                                return id;
+                            }).toList();
+                        }
+                        else
+                        {
+                            updatedTestIds = testIdsBySuiteId.get(test._id());
+                        }
+                        runTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
                     }
-                    else
-                    {
-                        updatedTestIds = testIdsBySuiteId.get(test._id());
-                    }
-                    runTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
                 }
             }
         }
-
         return runTestsResult;
     }
 }
