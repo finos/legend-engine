@@ -1512,7 +1512,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBRenameColumns():Bo
    $result->planToString(meta::relational::extension::relationalExtensions())->println();
    true;
 }
-function meta::pure::executionPlan::tests::twoDBRunTimeSybaseIQ():	meta::pure::runtime::Runtime[1]
+
+function meta::pure::executionPlan::tests::twoDBRunTimeSybaseIQ():meta::pure::runtime::Runtime[1]
 {
    ^meta::pure::runtime::Runtime
    (
