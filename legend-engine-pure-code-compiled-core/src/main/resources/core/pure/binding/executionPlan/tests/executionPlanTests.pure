@@ -619,7 +619,7 @@ function meta::external::shared::format::executionPlan::tests::buildPlan(query:F
 
    let plan     = executionPlan($newQuery, ^ExecutionContext(), $extensions, noDebug());
    if($generatePlatformCode,
-      | $plan->generatePlatformCode(^PlatformCodeGenerationConfig(platform=Platform.JAVA), $extensions),
+      | $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions),
       | $plan);
 }
 

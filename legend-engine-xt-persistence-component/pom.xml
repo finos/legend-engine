@@ -14,13 +14,11 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.15.4-SNAPSHOT</version>
+        <version>3.16.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +28,12 @@
 
     <modules>
         <module>legend-engine-xt-persistence-component-logical-plan</module>
+        <module>legend-engine-xt-persistence-component-physical-plan</module>
+        <module>legend-engine-xt-persistence-component-relational-core</module>
+        <module>legend-engine-xt-persistence-component-relational-ansi</module>
+        <module>legend-engine-xt-persistence-component-relational-h2</module>
+        <module>legend-engine-xt-persistence-component-relational-memsql</module>
+        <module>legend-engine-xt-persistence-component-relational-snowflake</module>
     </modules>
 
     <properties>
@@ -48,7 +52,9 @@
                         <skip>${javadoc.skip}</skip>
                         <source>8</source>
                         <doclint>none</doclint>
-                        <sourcepath>${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations</sourcepath>
+                        <sourcepath>
+                            ${project.build.sourceDirectory}:${project.build.directory}/generated-sources/annotations
+                        </sourcepath>
 
                         <additionalDependencies>
                             <additionalDependency>

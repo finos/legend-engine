@@ -404,3 +404,31 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByIsDi
    meta::relational::functions::asserts::assertSameSQL('select "root".LEGALNAME as "LegalName", count(distinct("persontable_0".FIRSTNAME)) = count("persontable_0".FIRSTNAME) as "FirstNameIsDistinct", count(distinct("persontable_0".LASTNAME)) = count("persontable_0".LASTNAME) as "LastNameIsDistinct" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "LegalName" order by "LegalName" desc', $result);
 }
 
+function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmptyColsTerminalOperation():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()
+         ->project([col(x | $x.legalName, 'Legal Name')])
+         ->groupBy([], [agg('Firm Count', x|$x, y|$y->count())]),
+      simpleRelationalMapping,
+      meta::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions());
+   
+   assertEquals(['4'], $result.values.rows->map(r|$r.values->makeString('|')));
+   meta::relational::functions::asserts::assertSameSQL('select count(*) as "Firm Count" from firmTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByEmptyColsNonTerminalOperation():Boolean[1]
+{
+   let result = execute(
+      |Firm.all()
+         ->project([col(x | $x.legalName, 'Legal Name')])
+         ->groupBy([], [agg('Firm Count', x|$x, y|$y->count())])
+         ->filter(r | $r.getInteger('Firm Count') > 10),
+      simpleRelationalMapping,
+      meta::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions());
+   
+   assertEquals([], $result.values.rows->map(r|$r.values->makeString('|')));
+   meta::relational::functions::asserts::assertSameSQL('select "Firm Count" as "Firm Count" from (select count(*) as "Firm Count" from firmTable as "root") as "subselect" where "Firm Count" > 10', $result);
+}

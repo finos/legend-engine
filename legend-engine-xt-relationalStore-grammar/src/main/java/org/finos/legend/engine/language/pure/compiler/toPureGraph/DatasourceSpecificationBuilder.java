@@ -104,7 +104,7 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
                 _snowflake._accountType(this.context.pureModel.getEnumValue("meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType", snowflakeDatasourceSpecification.accountType));
             }
             _snowflake._organization(snowflakeDatasourceSpecification.organization);
-
+            _snowflake._role(snowflakeDatasourceSpecification.role);
 
             return _snowflake;
         }

@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.15.4-SNAPSHOT</version>
+    <version>3.16.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -102,6 +102,7 @@
         <module>legend-engine-xt-relationalStore-bigquery-execution</module>
         <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
         <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
+        <module>legend-engine-xt-relationalStore-bigquery-pure</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -730,6 +731,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-bigquery-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
