@@ -1,0 +1,238 @@
+###Diagram
+Diagram meta::external::store::service::metamodel::data::ServiceStoreTestDataMetamodelDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::pure::data::EmbeddedData,
+        position=(502.00000, 162.00000),
+        width=107.35156,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::store::service::metamodel::data::ServiceStoreEmbeddedData,
+        position=(425.00000, 284.00000),
+        width=262.66064,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::service::metamodel::data::ServiceStubMapping,
+        position=(842.00000, 276.00000),
+        width=284.05908,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::store::service::metamodel::data::ServiceRequestPattern,
+        position=(698.00000, 399.00000),
+        width=208.87451,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::store::service::metamodel::data::ServiceResponseDefinition,
+        position=(1017.00000, 402.00000),
+        width=175.37891,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::store::service::metamodel::data::StringValuePattern,
+        position=(445.00000, 560.00000),
+        width=150.21143,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::store::service::metamodel::data::ContentPattern,
+        position=(468.00000, 454.00000),
+        width=106.66602,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::store::service::metamodel::data::EqualToJsonPattern,
+        position=(540.00000, 690.00000),
+        width=135.79297,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::store::service::metamodel::data::EqualToPattern,
+        position=(378.00000, 688.00000),
+        width=107.78516,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::shared::format::metamodel::data::ExternalFormatData,
+        position=(1210.00000, 155.00000),
+        width=138.35742,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_1,
+        target=cview_2,
+        points=[(556.33032,306.00000),(555.67578,184.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_6,
+        target=cview_7,
+        points=[(520.10571,589.00000),(521.33301,476.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_8,
+        target=cview_6,
+        points=[(431.89258,703.00000),(520.10571,589.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_9,
+        target=cview_6,
+        points=[(607.89648,705.00000),(520.10571,589.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_10,
+        target=cview_2,
+        points=[(1279.17871,184.00000),(555.67578,184.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::store::service::metamodel::data::ServiceStoreEmbeddedData.serviceStubMappings,
+        source=cview_1,
+        target=cview_3
+,        points=[(556.33032,306.00000),(984.02954,305.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::store::service::metamodel::data::ServiceStubMapping.requestPattern,
+        source=cview_3,
+        target=cview_4
+,        points=[(984.02954,305.00000),(802.43726,456.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::store::service::metamodel::data::ServiceStubMapping.responseDefinition,
+        source=cview_3,
+        target=cview_5
+,        points=[(984.02954,305.00000),(1104.68945,424.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::store::service::metamodel::data::ServiceRequestPattern.bodyPatterns,
+        source=cview_4,
+        target=cview_6
+,        points=[(802.43726,456.00000),(520.10571,589.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::store::service::metamodel::data::ServiceResponseDefinition.body,
+        source=cview_5,
+        target=cview_10
+,        points=[(1104.68945,424.00000),(1281.00000,423.00000),(1279.17871,184.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

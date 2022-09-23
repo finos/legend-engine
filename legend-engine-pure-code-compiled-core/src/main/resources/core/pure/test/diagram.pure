@@ -1,311 +1,369 @@
 ###Diagram
-Diagram meta::pure::test::MetaModelDiagram(width=1013.44922, height=587.00000)
+Diagram meta::pure::test::MetaModelDiagram(width=0.0, height=0.0)
 {
-    TypeView Testable_$_0(
-        type=meta::pure::test::Testable,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(493.00000, 144.00000),
-        width=67.79492,
-        height=36.00000)
-
-    TypeView TestSuite_$_1(
-        type=meta::pure::test::TestSuite,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(649.00000, 300.00000),
-        width=73.12109,
-        height=36.00000)
-
-    TypeView AtomicTest_$_2(
-        type=meta::pure::test::AtomicTest,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(842.00000, 297.00000),
-        width=67.10938,
-        height=36.00000)
-
-    TypeView EqualTo_$_3(
-        type=meta::pure::test::assertion::EqualTo,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(750.00000, 514.00000),
-        width=66.44141,
-        height=36.00000)
-
-    TypeView EqualToJson_$_4(
-        type=meta::pure::test::assertion::EqualToJson,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(923.00000, 515.00000),
-        width=94.44922,
-        height=36.00000)
-
-    TypeView TestAssertion_$_5(
+    TypeView cview_5(
         type=meta::pure::test::assertion::TestAssertion,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(826.00000, 400.00000),
+        position=(1506.48096, 346.00000),
         width=99.13086,
-        height=48.00000)
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
 
-    TypeView Test_$_6(
+    TypeView cview_7(
+        type=meta::pure::test::assertion::EqualToJson,
+        position=(1577.48096, 486.00000),
+        width=169.76758,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::test::assertion::EqualTo,
+        position=(1405.48096, 487.00000),
+        width=110.47607,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::test::AtomicTest,
+        position=(1205.00000, 345.00000),
+        width=179.96191,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::test::TestSuite,
+        position=(972.00000, 345.00000),
+        width=137.15967,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
         type=meta::pure::test::Test,
+        position=(1124.00000, 209.00000),
+        width=83.55615,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
         attributeTypesVisible=true,
         color=#FFFFCC,
-        lineWidth=1.0,
-        position=(747.00000, 138.00000),
-        width=81.75146,
-        height=48.00000)
+        lineWidth=1.0)
 
-    TypeView AssertPass_$_7(
-        type=meta::pure::test::assertion::AssertPass,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(53.00000, 447.00000),
-        width=85.37891,
-        height=36.00000)
-
-
-    TypeView AssertFail_$_9(
-        type=meta::pure::test::assertion::AssertFail,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(233.00000, 443.00000),
-        width=117.82373,
-        height=48.00000)
-
-    TypeView AssertionStatus_$_10(
-        type=meta::pure::test::assertion::AssertionStatus,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(149.00000, 342.00000),
-        width=112.02148,
-        height=48.00000)
-
-    TypeView TestResult_$_11(
+    TypeView cview_8(
         type=meta::pure::test::result::TestResult,
+        position=(489.48096, 204.00000),
+        width=120.63818,
+        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
         attributeTypesVisible=true,
         color=#FFFFCC,
-        lineWidth=1.0,
-        position=(178.00000, 63.00000),
-        width=80.45703,
-        height=36.00000)
+        lineWidth=1.0)
 
-    TypeView TestError_$_12(
+    TypeView cview_9(
         type=meta::pure::test::result::TestError,
+        position=(323.48096, 320.00000),
+        width=120.86914,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
         attributeTypesVisible=true,
         color=#FFFFCC,
-        lineWidth=1.0,
-        position=(21.00000, 203.00000),
-        width=117.82373,
-        height=48.00000)
+        lineWidth=1.0)
 
-    TypeView TestFailed_$_13(
+    TypeView cview_10(
         type=meta::pure::test::result::TestFailed,
+        position=(450.48096, 321.00000),
+        width=202.78906,
+        height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
         attributeTypesVisible=true,
         color=#FFFFCC,
-        lineWidth=1.0,
-        position=(168.00000, 206.00000),
-        width=78.45898,
-        height=36.00000)
+        lineWidth=1.0)
 
-    TypeView TestPassed_$_14(
+    TypeView cview_11(
         type=meta::pure::test::result::TestPassed,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0,
-        position=(292.00000, 208.00000),
+        position=(675.48096, 324.00000),
         width=85.81250,
-        height=36.00000)
-
-    TypeView AtomicTestId_$_15(
-        type=meta::pure::test::result::AtomicTestId,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
         attributeTypesVisible=true,
         color=#FFFFCC,
-        lineWidth=1.0,
-        position=(4.00000, 55.00000),
-        width=137.39600,
-        height=60.00000)
+        lineWidth=1.0)
 
-
-    PropertyView pview_17(property=meta::pure::test::TestSuite.tests,
+    TypeView cview_12(
+        type=meta::pure::test::assertion::AssertionStatus,
+        position=(497.48096, 421.00000),
+        width=112.02148,
+        height=58.00000,
         stereotypesVisible=true,
-        nameVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::pure::test::assertion::AssertFail,
+        position=(410.48096, 529.00000),
+        width=120.86914,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::test::assertion::AssertPass,
+        position=(573.48096, 533.00000),
+        width=85.37891,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::pure::test::assertion::EqualToJsonAssertFail,
+        position=(393.48096, 636.00000),
+        width=152.47461,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::pure::test::result::AtomicTestId,
+        position=(288.48096, 205.00000),
+        width=142.24072,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::test::Testable,
+        position=(803.00000, 210.00000),
+        width=87.64893,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_3,
+        target=cview_2,
+        points=[(1040.57983,374.00000),(1165.77808,231.00000)],
+        label='',
         color=#000000,
         lineWidth=-1.0,
-        lineStyle=SIMPLE,
-        points=[(685.56055,318.00000),(875.55469,315.00000)],
-        label='',
-        source=TestSuite_$_1,
-        target=AtomicTest_$_2,
-        propertyPosition=(806.65820, 299.52983),
-        multiplicityPosition=(813.98828, 320.52983))
+        lineStyle=SIMPLE)
 
-    PropertyView pview_18(property=meta::pure::test::AtomicTest.assertions,
-        stereotypesVisible=true,
-        nameVisible=true,
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_2,
+        points=[(1294.98096,374.00000),(1165.77808,231.00000)],
+        label='',
         color=#000000,
         lineWidth=-1.0,
-        lineStyle=SIMPLE,
-        points=[(875.55469,315.00000),(875.56543,424.00000)],
-        label='',
-        source=AtomicTest_$_2,
-        target=TestAssertion_$_5,
-        propertyPosition=(885.56306, 384.00000),
-        multiplicityPosition=(847.55135, 384.00000))
+        lineStyle=SIMPLE)
 
-    PropertyView pview_19(property=meta::pure::test::result::TestFailed.assertStatuses,
-        stereotypesVisible=true,
-        nameVisible=true,
+    GeneralizationView gview_2(
+        source=cview_6,
+        target=cview_5,
+        points=[(1460.71899,509.00000),(1556.04639,375.00000)],
+        label='',
         color=#000000,
         lineWidth=-1.0,
-        lineStyle=SIMPLE,
-        points=[(207.22949,224.00000),(205.01074,366.00000)],
-        label='',
-        source=TestFailed_$_13,
-        target=AssertionStatus_$_10,
-        propertyPosition=(116.01465, 326.00000),
-        multiplicityPosition=(215.38574, 326.00000))
+        lineStyle=SIMPLE)
 
-    PropertyView pview_20(property=meta::pure::test::result::TestResult.id,
-        stereotypesVisible=true,
-        nameVisible=true,
+    GeneralizationView gview_3(
+        source=cview_7,
+        target=cview_5,
+        points=[(1662.36475,508.00000),(1556.04639,375.00000)],
+        label='',
         color=#000000,
         lineWidth=-1.0,
-        lineStyle=SIMPLE,
-        points=[(218.22852,81.00000),(72.69800,85.00000)],
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_9,
+        target=cview_8,
+        points=[(383.91553,342.00000),(549.80005,233.00000)],
         label='',
-        source=TestResult_$_11,
-        target=AtomicTestId_$_15,
-        propertyPosition=(151.39600, 83.11179),
-        multiplicityPosition=(151.39600, 62.11179))
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_21(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(787.87573,162.00000),(685.56055,318.00000)],
-       label='',
-       source=TestSuite_$_1,
-       target=Test_$_6)
+    GeneralizationView gview_5(
+        source=cview_10,
+        target=cview_8,
+        points=[(551.87549,343.00000),(549.80005,233.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_22(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(787.87573,162.00000),(875.55469,315.00000)],
-       label='',
-       source=AtomicTest_$_2,
-       target=Test_$_6)
+    GeneralizationView gview_6(
+        source=cview_11,
+        target=cview_8,
+        points=[(718.38721,339.00000),(549.80005,233.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_23(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(875.56543,424.00000),(783.22070,532.00000)],
-       label='',
-       source=EqualTo_$_3,
-       target=TestAssertion_$_5)
+    GeneralizationView gview_7(
+        source=cview_13,
+        target=cview_12,
+        points=[(470.91553,551.00000),(553.49170,450.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_24(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(875.56543,424.00000),(970.22461,533.00000)],
-       label='',
-       source=EqualToJson_$_4,
-       target=TestAssertion_$_5)
+    GeneralizationView gview_8(
+        source=cview_14,
+        target=cview_12,
+        points=[(616.17041,548.00000),(553.49170,450.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_25(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(205.01074,366.00000),(291.91187,467.00000)],
-       label='',
-       source=AssertFail_$_9,
-       target=AssertionStatus_$_10)
+    GeneralizationView gview_9(
+        source=cview_15,
+        target=cview_13,
+        points=[(469.71826,665.00000),(470.91553,551.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_26(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(205.01074,366.00000),(95.68945,465.00000)],
-       label='',
-       source=AssertPass_$_7,
-       target=AssertionStatus_$_10)
+    PropertyView pview_0(
+        property=meta::pure::test::Testable.tests,
+        source=cview_1,
+        target=cview_2
+,        points=[(846.82446,232.00000),(1165.77808,231.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 
+    PropertyView pview_1(
+        property=meta::pure::test::TestSuite.tests,
+        source=cview_3,
+        target=cview_4
+,        points=[(1040.57983,374.00000),(1294.98096,374.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_28(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(218.22852,81.00000),(79.91187,227.00000)],
-       label='',
-       source=TestError_$_12,
-       target=TestResult_$_11)
+    PropertyView pview_2(
+        property=meta::pure::test::AtomicTest.assertions,
+        source=cview_4,
+        target=cview_5
+,        points=[(1294.98096,374.00000),(1556.04639,375.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_29(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(218.22852,81.00000),(207.22949,224.00000)],
-       label='',
-       source=TestFailed_$_13,
-       target=TestResult_$_11)
+    PropertyView pview_3(
+        property=meta::pure::test::result::TestResult.testable,
+        source=cview_8,
+        target=cview_1
+,        points=[(549.80005,233.00000),(846.82446,232.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 
-   GeneralizationView gview_30(color=#000000,
-       lineWidth=-1.0,
-       lineStyle=SIMPLE,
-       points=[(218.22852,81.00000),(334.90625,226.00000)],
-       label='',
-       source=TestPassed_$_14,
-       target=TestResult_$_11)
+    PropertyView pview_4(
+        property=meta::pure::test::result::TestFailed.assertStatuses,
+        source=cview_10,
+        target=cview_12
+,        points=[(551.87549,343.00000),(553.49170,450.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 
+    PropertyView pview_5(
+        property=meta::pure::test::result::TestResult.id,
+        source=cview_8,
+        target=cview_16
+,        points=[(549.80005,233.00000),(359.60132,234.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
 }
