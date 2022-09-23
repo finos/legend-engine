@@ -53,6 +53,7 @@
         <module>legend-engine-xt-persistence-grammar</module>
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
+        <module>legend-engine-xt-persistence-test-runner</module>
 
         <module>legend-engine-xt-persistence-cloud-grammar</module>
         <module>legend-engine-xt-persistence-cloud-protocol</module>

@@ -14,11 +14,19 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
@@ -26,6 +34,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
@@ -83,6 +93,14 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ConnectionTestData;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ConnectionTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_TestData;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_TestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_EmailNotifyee_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl;
@@ -137,6 +155,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
 
 import java.util.ArrayDeque;
@@ -188,6 +207,48 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_persister_sink_Sink buildSink(Sink sink, CompileContext context)
     {
         return sink.accept(new SinkBuilder(context));
+    }
+
+    public static RichIterable<? extends Test> buildTest(Persistence persistence, CompileContext context)
+    {
+        if (persistence.tests != null)
+        {
+            List<String> testIds = ListIterate.collect(persistence.tests, test -> test.id);
+            List<String> duplicateTestIds = testIds.stream().filter(e -> Collections.frequency(testIds, e) > 1).distinct().collect(Collectors.toList());
+
+            if (!duplicateTestIds.isEmpty())
+            {
+                throw new EngineException("Multiple persistenceTest found with ids : '" + String.join(",", duplicateTestIds) + "'", persistence.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            return ListIterate.collect(persistence.tests, test ->
+            {
+                Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
+                purePersistenceTest._id(test.id);
+                purePersistenceTest._isTestDataFromServiceOutput(test.isTestDataFromServiceOutput);
+
+                if (test.testBatches != null)
+                {
+                    List<String> testBatchIds = ListIterate.collect(test.testBatches, testBatch -> testBatch.id);
+                    List<String> duplicateTestBatchIds = testBatchIds.stream().filter(e -> Collections.frequency(testBatchIds, e) > 1).distinct().collect(Collectors.toList());
+                    if (!duplicateTestBatchIds.isEmpty())
+                    {
+                        throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateTestBatchIds) + "'", persistence.sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                    purePersistenceTest._testBatches(ListIterate.collect(test.testBatches, testBatch ->
+                    {
+                        Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
+                        pureTestBatch._id(testBatch.id);
+                        pureTestBatch._batchId((long) test.testBatches.indexOf(testBatch));
+                        pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(testBatch.testData, context, new ProcessingContext("Persistence '" + context.pureModel.buildPackageString(persistence._package, persistence.name) + "' First Pass")));
+                        pureTestBatch._assertions(ListIterate.collect(testBatch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, new ProcessingContext("Persistence '" + context.pureModel.buildPackageString(persistence._package, persistence.name) + "' First Pass")))));
+                        return pureTestBatch;
+                    }));
+                }
+                return purePersistenceTest;
+            });
+        }
+        return new FastList();
     }
 
     public static Database buildDatabase(String database, SourceInformation sourceInformation, CompileContext context)
@@ -338,6 +399,27 @@ public class HelperPersistenceBuilder
             return new Root_meta_pure_persistence_metamodel_notifier_PagerDutyNotifyee_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::notifier::PagerDutyNotifyee"))
                     ._url(val.url);
         }
+    }
+
+    public static Root_meta_pure_persistence_metamodel_TestData processPersistenceTestBatchData(TestData testData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_pure_persistence_metamodel_TestData pureTestBatchData = new Root_meta_pure_persistence_metamodel_TestData_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::TestData"));
+
+        if (testData.connection != null)
+        {
+            pureTestBatchData._connection(HelperPersistenceBuilder.processPersistenceConnectionData(testData.connection, context, processingContext));
+        }
+
+        return pureTestBatchData;
+    }
+
+    private static Root_meta_pure_persistence_metamodel_ConnectionTestData processPersistenceConnectionData(ConnectionTestData connectionData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_pure_persistence_metamodel_ConnectionTestData pureConnectionData = new Root_meta_pure_persistence_metamodel_ConnectionTestData_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::ConnectionTestData"));
+
+        pureConnectionData._data(connectionData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+
+        return pureConnectionData;
     }
 
     private static class SinkBuilder implements SinkVisitor<Root_meta_pure_persistence_metamodel_persister_sink_Sink>

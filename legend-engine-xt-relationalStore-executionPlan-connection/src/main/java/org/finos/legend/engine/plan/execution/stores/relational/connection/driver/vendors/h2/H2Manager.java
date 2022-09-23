@@ -25,6 +25,8 @@ import java.util.Properties;
 
 public class H2Manager extends DatabaseManager
 {
+    public static final String DATABASE_TO_UPPER = "DATABASE_TO_UPPER";
+
     @Override
     public MutableList<String> getIds()
     {
@@ -39,6 +41,10 @@ public class H2Manager extends DatabaseManager
             String dataDirectoryPath = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH).replace("\\", "/");
             String autoServerMode = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
             return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
+        }
+        if (extraUserDataSourceProperties.contains(DATABASE_TO_UPPER))
+        {
+            databaseName += String.format(";%s=%s", DATABASE_TO_UPPER, extraUserDataSourceProperties.getProperty(DATABASE_TO_UPPER));
         }
         return "jdbc:h2:tcp://" + host + ":" + port + "/mem:" + databaseName;
     }

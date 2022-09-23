@@ -18,12 +18,17 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
@@ -99,6 +104,7 @@ public class HelperPersistenceComposer
                 renderService(persistence.service, indentLevel) +
                 renderPersister(persistence.persister, indentLevel, context) +
                 renderNotifier(persistence.notifier, indentLevel) +
+                renderPersistenceTests(persistence.tests, indentLevel, context) +
                 "}";
     }
 
@@ -144,6 +150,104 @@ public class HelperPersistenceComposer
                 getTabString(indentLevel) + "[\n" +
                 ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)).makeString(",\n") + "\n" +
                 getTabString(indentLevel) + "];\n";
+    }
+
+    private static String renderPersistenceTests(List<PersistenceTest> persistenceTests, int indentLevel, PureGrammarComposerContext context)
+    {
+        if (persistenceTests == null)
+        {
+            return "";
+        }
+        return getTabString(indentLevel) + "tests:\n" +
+                getTabString(indentLevel) + "[\n" +
+                String.join(",\n", ListIterate.collect(persistenceTests, test -> HelperPersistenceComposer.renderPersistenceTest(test, indentLevel + 1, context).replaceAll("\\s+$", ""))) + "\n" +
+                getTabString(indentLevel) + "]\n";
+    }
+
+    private static String renderPersistenceTest(PersistenceTest persistenceTest, int indentLevel, PureGrammarComposerContext context)
+    {
+        return  getTabString(indentLevel) + persistenceTest.id + ":\n" +
+                getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + String.join(",\n", HelperPersistenceComposer.renderPersistenceTestBatches(persistenceTest, indentLevel, context)) +
+                getTabString(indentLevel + 1) + String.join(",\n", HelperPersistenceComposer.renderIsTestDataFromServiceOutput(persistenceTest)) +
+                getTabString(indentLevel) + "}\n";
+    }
+
+    public static String renderIsTestDataFromServiceOutput(PersistenceTest persistenceTest)
+    {
+        StringBuilder str = new StringBuilder();
+
+        // isTestDataFromServiceOutput
+        if (persistenceTest.isTestDataFromServiceOutput != null)
+        {
+            str.append("isTestDataFromServiceOutput")
+                    .append(": ")
+                    .append(persistenceTest.isTestDataFromServiceOutput)
+                    .append(";\n");
+        }
+
+        return str.toString();
+    }
+
+    public static String renderPersistenceTestBatches(PersistenceTest persistenceTest, int indentLevel, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        // testBatches
+        if (persistenceTest.testBatches != null)
+        {
+            str.append("testBatches").append(":\n");
+            str.append(getTabString(indentLevel + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(persistenceTest.testBatches, batch -> renderPersistenceTestBatch(batch, indentLevel + 2, context)))).append("\n");
+            str.append(getTabString(indentLevel + 1)).append("]\n");
+        }
+
+        return str.toString();
+    }
+
+    private static String renderPersistenceTestBatch(PersistenceTestBatch batch, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(batch.id).append(":\n");
+        str.append(getTabString(baseIndentation)).append("{\n");
+
+        // testData
+        if (batch.testData != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
+            str.append(getTabString(baseIndentation + 1)).append("{\n");
+
+            if (batch.testData.connection != null)
+            {
+                str.append(getTabString(baseIndentation + 2)).append("connection").append(":\n");
+                str.append(getTabString(baseIndentation + 2)).append("{\n");
+                str.append(renderConnectionData(batch.testData.connection, baseIndentation + 3, context)).append("\n");
+                str.append(getTabString(baseIndentation + 2)).append("}\n");
+            }
+
+            str.append(getTabString(baseIndentation + 1)).append("}\n");
+        }
+
+        // assert
+        if (batch.assertions != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("asserts").append(":\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(batch.assertions, assertion -> HelperTestAssertionGrammarComposer.composeTestAssertion(assertion, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 2)).build())))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("]\n");;
+        }
+
+        str.append(getTabString(baseIndentation)).append("}");
+
+        return str.toString();
+    }
+
+    private static String renderConnectionData(ConnectionTestData connectionData, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(connectionData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+        return str.toString();
     }
 
     // helper visitors for class hierarchies

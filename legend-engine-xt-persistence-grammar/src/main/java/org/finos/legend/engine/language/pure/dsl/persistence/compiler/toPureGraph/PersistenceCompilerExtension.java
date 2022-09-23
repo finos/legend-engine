@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph;
 
-import org.eclipse.collections.api.block.function.Function2;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
@@ -26,24 +26,36 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTest_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform_Impl;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function3;
 
 public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
@@ -63,6 +75,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             purePersistence._service(HelperPersistenceBuilder.buildService(persistence, context));
                             purePersistence._persister(HelperPersistenceBuilder.buildPersister(persistence.persister, context));
                             purePersistence._notifier(HelperPersistenceBuilder.buildNotifier(persistence.notifier, context));
+                            purePersistence._tests(HelperPersistenceBuilder.buildTest(persistence, context));
                         }
                 ),
                 Processor.newProcessor(
@@ -101,14 +114,65 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
             else if (trigger instanceof CronTrigger)
             {
                 CronTrigger cronTrigger = (CronTrigger) trigger;
-                return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::trigger::CronTrigger"))
-                        ._minutes(cronTrigger.minutes)
-                        ._hours(cronTrigger.hours)
-                        ._dayOfMonth(cronTrigger.dayOfMonth)
-                        ._month(cronTrigger.month)
-                        ._dayOfWeek(cronTrigger.dayOfWeek);
+                return new Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl("", null, compileContext.pureModel.getClass("meta::pure::persistence::metamodel::trigger::CronTrigger"))._minutes(cronTrigger.minutes)._hours(cronTrigger.hours)._dayOfMonth(cronTrigger.dayOfMonth)._month(cronTrigger.month)._dayOfWeek(cronTrigger.dayOfWeek);
             }
             return null;
+        });
+    }
+
+
+    @Override
+    public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
+    {
+        return Collections.singletonList((test, context, processingContext) ->
+        {
+            if (test instanceof PersistenceTest)
+            {
+                PersistenceTest persistenceTest = (PersistenceTest) test;
+                Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
+
+                if (persistenceTest.testBatches == null || persistenceTest.testBatches.isEmpty())
+                {
+                    throw new EngineException("PersistenceTest should have at least 1 testBatch", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+                List<String> batchIds = ListIterate.collect(persistenceTest.testBatches, t -> t.id);
+                List<String> duplicateBatchIds = batchIds.stream().filter(e -> Collections.frequency(batchIds, e) > 1).distinct().collect(Collectors.toList());
+
+                if (!duplicateBatchIds.isEmpty())
+                {
+                    throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateBatchIds) + "'", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+                RichIterable<? extends Root_meta_pure_persistence_metamodel_PersistenceTestBatch> testBatches = ListIterate.collect(persistenceTest.testBatches, batch ->
+                {
+                    if (batch != null)
+                    {
+                        Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
+
+                        if (batch.assertions == null)
+                        {
+                            throw new EngineException("Persistence TestBatch shouldn't have null assert", batch.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+                        pureTestBatch._assertions(ListIterate.collect(batch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
+
+                        if (batch.testData == null)
+                        {
+                            throw new EngineException("Persistence TestBatch shouldn't have null test data", batch.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+                        pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(batch.testData, context, processingContext));
+
+                        return pureTestBatch;
+                    }
+                    return null;
+                });
+                purePersistenceTest._testBatches(testBatches);
+                return purePersistenceTest;
+            }
+            else
+            {
+                return null;
+            }
         });
     }
 }
