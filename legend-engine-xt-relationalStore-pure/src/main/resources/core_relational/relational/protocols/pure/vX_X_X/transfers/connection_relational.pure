@@ -221,14 +221,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             organization = $s.organization,
             role = $s.role
         ),
-      b:meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification[1] |
-         ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification(
-             _type = 'bigQuery',
-             projectId = $b.projectId,
-             defaultDataset = $b.defaultDataset,
-             proxyHost = $b.proxyHost,
-             proxyPort = $b.proxyPort
-         ),
      r:meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification[1] |
                                                   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification(
                                                                    _type = 'redshift',
