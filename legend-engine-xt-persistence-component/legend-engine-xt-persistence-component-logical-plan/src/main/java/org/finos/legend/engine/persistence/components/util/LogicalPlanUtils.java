@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
+import java.util.UUID;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -56,8 +57,16 @@ public class LogicalPlanUtils
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
 
+    private static final String UNDERSCORE = "_";
+
     private LogicalPlanUtils()
     {
+    }
+
+    public static String generateTableNameWithSuffix(String tableName, String suffix)
+    {
+        UUID uuid = UUID.randomUUID();
+        return tableName + UNDERSCORE + suffix + UNDERSCORE + uuid;
     }
 
     public static NumericalValue INFINITE_BATCH_ID()

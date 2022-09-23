@@ -46,7 +46,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -90,7 +89,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -107,10 +105,10 @@ public class AppendOnlyTest extends IngestModeTest
 
         String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" " +
             "(\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\") " +
-            "(SELECT * FROM \"MYDB\".\"STAGING\" as STAGE WHERE NOT (EXISTS " +
-            "(SELECT * FROM \"MYDB\".\"MAIN\" as SINK " +
-            "WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) " +
-            "AND (SINK.\"DIGEST\" = STAGE.\"DIGEST\"))))";
+            "(SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS " +
+            "(SELECT * FROM \"MYDB\".\"MAIN\" as sink " +
+            "WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) " +
+            "AND (sink.\"DIGEST\" = stage.\"DIGEST\"))))";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));

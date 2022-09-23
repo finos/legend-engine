@@ -87,7 +87,7 @@ public abstract class MetadataUtilsTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "SELECT COALESCE(MAX("  + upperCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as "  + upperCaseTableName() + " WHERE "  + upperCaseTableName() + ".\"TABLE_NAME\" = 'main'";
+        String expectedSql = "SELECT COALESCE(MAX("  + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as "  + lowerCaseTableName() + " WHERE "  + lowerCaseTableName() + ".\"TABLE_NAME\" = 'main'";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -130,7 +130,7 @@ public abstract class MetadataUtilsTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "SELECT (SELECT COALESCE(MAX(" + upperCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as "  + upperCaseTableName() + " WHERE "  + upperCaseTableName() + ".\"TABLE_NAME\" = 'main')-1";
+        String expectedSql = "SELECT (SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as "  + lowerCaseTableName() + " WHERE "  + lowerCaseTableName() + ".\"TABLE_NAME\" = 'main')-1";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
@@ -158,7 +158,7 @@ public abstract class MetadataUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
 
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "INSERT INTO " + upperCaseTableName() + " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\") (SELECT 'main',(SELECT COALESCE(MAX(" + upperCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + upperCaseTableName() + " WHERE " + upperCaseTableName() + ".\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+        String expectedSql = "INSERT INTO " + upperCaseTableName() + " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\") (SELECT 'main',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE " + lowerCaseTableName() + ".\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 }

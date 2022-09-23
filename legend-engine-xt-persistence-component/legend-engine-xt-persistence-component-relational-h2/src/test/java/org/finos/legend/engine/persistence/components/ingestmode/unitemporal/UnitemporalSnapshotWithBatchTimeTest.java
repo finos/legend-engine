@@ -26,7 +26,6 @@ import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,6 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
@@ -126,7 +124,6 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(dateName, tickerName))
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
@@ -180,7 +177,6 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
@@ -224,7 +220,6 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(dateName, tickerName))
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)

@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitors;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.immutables.value.Value.Check;
@@ -37,8 +36,6 @@ public interface AppendOnlyAbstract extends IngestMode
 {
     Optional<String> digestField();
 
-    List<String> keyFields();
-
     Optional<String> dataSplitField();
 
     Auditing auditing();
@@ -48,34 +45,12 @@ public interface AppendOnlyAbstract extends IngestMode
     @Check
     default void validate()
     {
-        if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_ALLOW_DUPLICATES))
-        {
-            if (!keyFields().isEmpty())
-            {
-                throw new IllegalStateException("Cannot build AppendOnly, [keyFields] must be empty since [deduplicationStrategy] is set to allow duplicates");
-            }
-        }
-        else if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
+        if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
         {
             if (!digestField().isPresent())
             {
                 throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
             }
-            if (keyFields().isEmpty())
-            {
-                throw new IllegalStateException("Cannot build AppendOnly, [keyFields] must contain at least one element since [deduplicationStrategy] is set to filter duplicates");
-            }
-        }
-        else if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FAIL_ON_DUPLICATES))
-        {
-            if (keyFields().isEmpty())
-            {
-                throw new IllegalStateException("Cannot build AppendOnly, [keyFields] must contain at least one element since [deduplicationStrategy] is set to fail on duplicates");
-            }
-        }
-        else
-        {
-            throw new IllegalStateException("Unrecognized [deduplicationStrategy]: " + deduplicationStrategy().getClass());
         }
     }
 

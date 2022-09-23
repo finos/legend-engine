@@ -62,6 +62,24 @@ class AppendOnlyPlanner extends Planner
     {
         super(datasets, ingestMode, plannerOptions);
 
+        // validate
+        if (ingestMode.deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_ALLOW_DUPLICATES))
+        {
+            validatePrimaryKeysIsEmpty(primaryKeys);
+        }
+        else if (ingestMode.deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
+        {
+            validatePrimaryKeysNotEmpty(primaryKeys);
+        }
+        else if (ingestMode.deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FAIL_ON_DUPLICATES))
+        {
+            validatePrimaryKeysNotEmpty(primaryKeys);
+        }
+        else
+        {
+            throw new IllegalStateException("Unrecognized [deduplicationStrategy]: " + ingestMode.deduplicationStrategy().getClass());
+        }
+
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
     }
 
@@ -103,7 +121,7 @@ class AppendOnlyPlanner extends Planner
                 .source(mainDataset())
                 .condition(And.builder()
                     .addConditions(
-                        getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), ingestMode().keyFields().toArray(new String[0])),
+                        getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0])),
                         getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField().orElseThrow(IllegalStateException::new)))
                     .build())
                 .addAllFields(ALL_COLUMNS())

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
@@ -27,9 +29,6 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalG
 import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSink;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AppendOnlyTest extends IngestModeTest
 {
@@ -49,7 +48,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -93,7 +91,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -109,11 +106,11 @@ public class AppendOnlyTest extends IngestModeTest
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`) " +
-            "(SELECT * FROM `MYDB`.`STAGING` as STAGE " +
-            "WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as SINK " +
-            "WHERE ((SINK.`ID` = STAGE.`ID`) " +
-            "AND (SINK.`NAME` = STAGE.`NAME`)) " +
-            "AND (SINK.`DIGEST` = STAGE.`DIGEST`))))";
+            "(SELECT * FROM `MYDB`.`STAGING` as stage " +
+            "WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink " +
+            "WHERE ((sink.`ID` = stage.`ID`) " +
+            "AND (sink.`NAME` = stage.`NAME`)) " +
+            "AND (sink.`DIGEST` = stage.`DIGEST`))))";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
@@ -134,7 +131,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -176,7 +172,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .build();
@@ -236,7 +231,7 @@ public class AppendOnlyTest extends IngestModeTest
     {
         Dataset mainTable = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(baseTableSchemaWithNoPrimaryKeys)
             .build();
 
         Dataset stagingTable = DatasetDefinition.builder()
@@ -244,19 +239,29 @@ public class AppendOnlyTest extends IngestModeTest
             .schema(baseTableSchemaWithDigest)
             .build();
 
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestField)
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
         try
         {
-            AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
-                .deduplicationStrategy(FilterDuplicates.builder().build())
-                .auditing(NoAuditing.builder().build())
+            RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(MemSqlSink.get())
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
+
+            GeneratorResult operations = generator.generateOperations(datasets);
 
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build AppendOnly, [keyFields] must contain at least one element since [deduplicationStrategy] is set to filter duplicates", e.getMessage());
+            Assertions.assertEquals("Primary key list must not be empty", e.getMessage());
         }
     }
 
@@ -277,7 +282,6 @@ public class AppendOnlyTest extends IngestModeTest
         {
             AppendOnly ingestMode = AppendOnly.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().build())
                 .build();
@@ -305,7 +309,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -339,7 +342,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .build();
@@ -386,7 +388,6 @@ public class AppendOnlyTest extends IngestModeTest
 
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .build();
@@ -415,7 +416,7 @@ public class AppendOnlyTest extends IngestModeTest
 
         List<String> postActionsSql = operations.postActionsSql();
         expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedTruncateTableQuery);
+        expectedSQL.add(expectedStagingCleanupQuery);
 
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
     }

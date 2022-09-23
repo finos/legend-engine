@@ -20,6 +20,7 @@ import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Immutable
 @Style(
@@ -31,6 +32,10 @@ import java.util.Map;
 )
 public abstract class IngestorResultAbstract
 {
+    public abstract Optional<Integer> batchId();
+
+    public abstract Optional<DataSplitRange> dataSplitRange();
+
     public abstract Map<StatisticName, Object> statisticByName();
 
     public abstract Datasets updatedDatasets();
