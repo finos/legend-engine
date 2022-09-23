@@ -365,7 +365,7 @@ public class PersistenceParseTreeWalker
         {
             throw new EngineException("Assert cannot be null within Persistence TestBatch", testBatch.sourceInformation, EngineErrorType.PARSER);
         }
-        PersistenceParserGrammar.PersistenceTestDataContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistenceTestBatchAssert(), "assert", testBatch.sourceInformation);
+        PersistenceParserGrammar.PersistenceTestDataContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persistenceTestBatchAssert(), "asserts", testBatch.sourceInformation);
         testBatch.assertions = ListIterate.collect(testAssertsContext.persistenceTestAssert(), this::visitPersistenceTestAssert);
 
         return testBatch;
