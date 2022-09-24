@@ -30,22 +30,18 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-physical-plan</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-ansi</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- MARIADB -->

@@ -239,7 +239,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::columnNameToIdentifierForSybaseIQ(columnName: String[1], dbConfig: DbConfig[1]): String[1]
 {
-   if($dbConfig.isDbReservedIdentifier($columnName->toLower()), |'"' + $columnName->toLower() + '"', |$columnName);
+   if($dbConfig.isDbReservedIdentifier($columnName->toLower()), |'"' + $columnName->toLower() + '"', |$columnName->quoteIdentifierDefault());
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::sybaseReservedWords():String[*]

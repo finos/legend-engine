@@ -145,6 +145,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-test-runner</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-cloud-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -332,13 +337,11 @@
             <artifactId>legend-engine-xt-relationalStore-bigquery-execution</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-sqlserver-execution</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- ENGINE -->
 
         <!-- Shared Drop Wizard Bundles -->

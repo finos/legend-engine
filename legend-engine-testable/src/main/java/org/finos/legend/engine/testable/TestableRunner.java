@@ -34,9 +34,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
-import java.util.Map;
-
-import static java.util.stream.Collectors.groupingBy;
 
 public class TestableRunner
 {
@@ -63,40 +60,39 @@ public class TestableRunner
             }
             Testable testable = (Testable) packageableElement;
             List<AtomicTestId> testIds = testableInput.unitTestIds;
-            List<String> atomicTestIds = ListIterate.collect(testIds, id -> id.atomicTestId);
-            Map<String, List<AtomicTestId>> testIdsBySuiteId = testIds.stream().collect(groupingBy(testId -> testId.testSuiteId));
+            List<String> testIdStrings = ListIterate.collect(testIds, id -> id.atomicTestId);
 
             TestRunner testRunner = TestableRunnerExtensionLoader.forTestable(testable);
             for (Test test : testable._tests())
             {
                 // We run all testIds if no `unitTestIds` are provided
-                if ((test instanceof Root_meta_pure_test_AtomicTest) && (testIds.isEmpty() || atomicTestIds.contains(test._id())))
+                if ((test instanceof Root_meta_pure_test_AtomicTest) && (testIds.isEmpty() || testIdStrings.contains(test._id())))
                 {
                     runTestsResult.results.add(testRunner.executeAtomicTest((Root_meta_pure_test_AtomicTest) test, pureModel, data));
                 }
-                if ((test instanceof Root_meta_pure_test_TestSuite) && (testIds.isEmpty() || testIdsBySuiteId.get(test._id()) != null))
+
+                if (test instanceof Root_meta_pure_test_TestSuite)
                 {
-                    Root_meta_pure_test_TestSuite testSuite = (Root_meta_pure_test_TestSuite) test;
-                    List<AtomicTestId> updatedTestIds;
-                    if (testIds.isEmpty())
+                    List<AtomicTestId> testIdsForSuite = ListIterate.select(testIds, testId -> test._id().equals(testId.testSuiteId));
+                    if (testIds.isEmpty() || !testIdsForSuite.isEmpty())
                     {
-                        updatedTestIds = testSuite._tests().collect(pureTest ->
-                        {
-                            AtomicTestId id = new AtomicTestId();
-                            id.testSuiteId = testSuite._id();
-                            id.atomicTestId = pureTest._id();
-                            return id;
-                        }).toList();
+                        Root_meta_pure_test_TestSuite testSuite = (Root_meta_pure_test_TestSuite) test;
+                        List<AtomicTestId> updatedTestIds = testIds.isEmpty()
+                            ? testSuite._tests().collect(pureTest -> atomicTestId(testSuite, pureTest)).toList()
+                            : testIdsForSuite;
+                        runTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
                     }
-                    else
-                    {
-                        updatedTestIds = testIdsBySuiteId.get(test._id());
-                    }
-                    runTestsResult.results.addAll(testRunner.executeTestSuite(testSuite, updatedTestIds, pureModel, data));
                 }
             }
         }
-
         return runTestsResult;
+    }
+
+    private static AtomicTestId atomicTestId(Root_meta_pure_test_TestSuite testSuite, Root_meta_pure_test_AtomicTest atomicTest)
+    {
+        AtomicTestId id = new AtomicTestId();
+        id.testSuiteId = testSuite._id();
+        id.atomicTestId = atomicTest._id();
+        return id;
     }
 }

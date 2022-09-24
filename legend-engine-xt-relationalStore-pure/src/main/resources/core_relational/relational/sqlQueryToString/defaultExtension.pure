@@ -19,6 +19,21 @@ function meta::relational::functions::sqlQueryToString::default::columnNameToIde
    if($columnName->toLower()->in(['kerberos', 'date', 'first']), |'"' + $columnName->toUpper() + '"', |$columnName);
 }
 
+function meta::relational::functions::sqlQueryToString::default::quoteIdentifierDefault(identifier:String[1]):String[1]
+{
+   if(!$identifier->startsWith('"') && $identifier->hasSpecialChars() && !isFreeMarkerIdentifier($identifier), |'"' + $identifier + '"', |$identifier);
+}
+
+function meta::relational::functions::sqlQueryToString::default::hasSpecialChars(identifier:String[1]):Boolean[1]
+{
+  $identifier->contains(' ') || $identifier->contains('/')
+}
+
+function meta::relational::functions::sqlQueryToString::default::isFreeMarkerIdentifier(identifier:String[1]):Boolean[1]
+{
+  $identifier->startsWith('${')
+}
+
 function meta::relational::functions::sqlQueryToString::default::rewriteSliceAsWindowFunction(selectQuery:SelectSQLQuery[1]):SelectSQLQuery[1]
 {
    assert($selectQuery.fromRow->isNotEmpty() || $selectQuery.toRow->isNotEmpty(), 'Expected at least one of fromRow/toRow');

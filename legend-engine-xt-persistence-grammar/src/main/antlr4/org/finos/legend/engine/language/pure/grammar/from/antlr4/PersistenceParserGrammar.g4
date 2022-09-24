@@ -14,6 +14,7 @@ identifier:                                 VALID_STRING | STRING
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
                                             | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_PLATFORM | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
+                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_DATABASE | SINK_BINDING
@@ -107,6 +108,7 @@ persistence:                                PERSISTENCE qualifiedName
                                                         | service
                                                         | persister
                                                         | notifier
+                                                        | tests
                                                     )*
                                                 BRACE_CLOSE
 ;
@@ -524,3 +526,31 @@ mergeStrategyDeleteValues:                  MERGE_STRATEGY_DELETE_INDICATOR_VALU
                                             SEMI_COLON
 ;
 
+// ---------------------------------- PERSISTENCE TESTS ----------------------------------
+
+tests:                                  PERSISTENCE_TESTS COLON BRACKET_OPEN ( test ( COMMA test )* )? BRACKET_CLOSE
+;
+test:                                   identifier COLON BRACE_OPEN ( persistenceTestBatches ( isTestDataFromServiceOutput )? )* BRACE_CLOSE
+;
+isTestDataFromServiceOutput:            PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT COLON identifier SEMI_COLON
+;
+persistenceTestBatches:                 PERSISTENCE_TEST_BATCHES COLON BRACKET_OPEN ( persistenceTestBatch ( COMMA persistenceTestBatch )* )? BRACKET_CLOSE
+;
+persistenceTestBatch:                   identifier COLON BRACE_OPEN ( persistenceTestData | persistenceTestBatchAssert )* BRACE_CLOSE
+;
+persistenceTestData:                    PERSISTENCE_TEST_DATA COLON BRACE_OPEN persistenceTestConnectionData BRACE_CLOSE
+;
+persistenceTestConnectionData:          PERSISTENCE_TEST_CONNECTION_DATA COLON BRACE_OPEN embeddedData BRACE_CLOSE
+;
+embeddedData:                           identifier ISLAND_OPEN ( embeddedDataContent )*
+;
+embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERTS COLON BRACKET_OPEN ( persistenceTestAssert ( COMMA persistenceTestAssert)* )? BRACKET_CLOSE
+;
+persistenceTestAssert:                  identifier COLON testAssertion
+;
+testAssertion:                          identifier ISLAND_OPEN ( testAssertionContent )*
+;
+testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
