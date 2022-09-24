@@ -22,8 +22,10 @@ import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -33,6 +35,9 @@ import java.util.Map;
 
 public class PersistenceProtocolExtension implements PureProtocolExtension
 {
+    public static final String PERSISTENCE_CLASSIFIER_PATH = "meta::pure::persistence::metamodel::Persistence";
+    public static final String PERSISTENCE_CONTEXT_CLASSIFIER_PATH = "meta::pure::persistence::metamodel::PersistenceContext";
+
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
@@ -52,6 +57,11 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(Trigger.class)
                         .withSubtype(ManualTrigger.class, "manualTrigger")
                         .withSubtype(CronTrigger.class, "cronTrigger")
+                        .build(),
+
+                // Persistence test
+                ProtocolSubTypeInfo.newBuilder(AtomicTest.class)
+                        .withSubtype(PersistenceTest.class, "test")
                         .build()
         ));
     }
@@ -60,8 +70,8 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
         return Maps.mutable.with(
-                Persistence.class, "meta::pure::persistence::metamodel::Persistence",
-                PersistenceContext.class, "meta::pure::persistence::metamodel::PersistenceContext"
+                Persistence.class, PERSISTENCE_CLASSIFIER_PATH,
+                PersistenceContext.class, PERSISTENCE_CONTEXT_CLASSIFIER_PATH
         );
     }
 }

@@ -30,8 +30,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistencePars
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -102,7 +102,7 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
         List<Function<TriggerSourceCode, Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraTriggerParsers);
 
         PersistenceContextParseTreeWalker persistenceContextWalker = new PersistenceContextParseTreeWalker(parserInfo.walkerSourceInformation, connectionParser, platformProcessors);
-        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, triggerProcessors, persistenceContextWalker);
+        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, triggerProcessors, persistenceContextWalker, context);
         persistenceWalker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;
@@ -111,7 +111,7 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     private static SourceCodeParserInfo getPersistenceParserInfo(SectionSourceCode sectionSourceCode)
     {
         CharStream input = CharStreams.fromString(sectionSourceCode.code);
-        ParserErrorListener errorListener = new PersistenceParserErrorListener(sectionSourceCode.walkerSourceInformation);
+        ParserErrorListener errorListener = new ParserErrorListener(sectionSourceCode.walkerSourceInformation, PersistenceLexerGrammar.VOCABULARY);
         PersistenceLexerGrammar lexer = new PersistenceLexerGrammar(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);

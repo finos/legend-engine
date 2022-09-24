@@ -77,6 +77,20 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- DRIVERS -->
+        <dependency>
+            <groupId>net.snowflake</groupId>
+            <artifactId>snowflake-jdbc</artifactId>
+        </dependency>
+        <!-- DRIVERS -->
+
+        <!-- Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <!-- Guava -->
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

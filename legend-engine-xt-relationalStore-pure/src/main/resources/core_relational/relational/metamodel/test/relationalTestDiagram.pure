@@ -73,8 +73,6 @@ Diagram meta::relational::metamodel::assertion::RelationalTestAssertionDiagram(w
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
-
-
 }
 
 
@@ -82,9 +80,33 @@ Diagram meta::relational::metamodel::assertion::RelationalTestAssertionDiagram(w
 ###Diagram
 Diagram meta::relational::metamodel::data::RelationalDataDiagram(width=0.0, height=0.0)
 {
-    TypeView cview_10(
+    TypeView cview_1(
+        type=meta::relational::metamodel::data::RelationalCSVData,
+        position=(499.00000, 440.00000),
+        width=175.05811,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::relational::metamodel::data::RelationalCSVTable,
+        position=(798.00000, 426.00000),
+        width=132.47070,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
         type=meta::pure::data::EmbeddedData,
-        position=(1046.17578, 245.50000),
+        position=(532.73535, 307.00000),
         width=107.35156,
         height=44.00000,
         stereotypesVisible=true,
@@ -94,46 +116,27 @@ Diagram meta::relational::metamodel::data::RelationalDataDiagram(width=0.0, heig
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_12(
-        type=meta::pure::data::DataElementReference,
-        position=(1282.17578, 428.50000),
-        width=174.04834,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_11(
-        type=meta::pure::data::ModelStoreData,
-        position=(1061.17578, 413.50000),
-        width=114.75146,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     GeneralizationView gview_0(
-        source=cview_11,
-        target=cview_10,
-        points=[(1118.55151,435.50000),(1099.85156,267.50000)],
+        source=cview_1,
+        target=cview_3,
+        points=[(586.52905,462.00000),(586.41113,329.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_1(
-        source=cview_12,
-        target=cview_10,
-        points=[(1369.19995,450.50000),(1099.85156,267.50000)],
+    PropertyView pview_0(
+        property=meta::relational::metamodel::data::RelationalCSVData.tables,
+        source=cview_1,
+        target=cview_2
+,        points=[(586.52905,462.00000),(864.23535,462.00000)],
         label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
         color=#000000,
         lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
         lineStyle=SIMPLE)
 }
 

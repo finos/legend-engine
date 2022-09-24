@@ -42,8 +42,13 @@ public class RelationalTestServer extends TestServer<RelationalTestServerConfigu
 
     public static void main(String[] args) throws Exception
     {
+        execute(args);
+    }
+
+    public static void execute(String[] args, NamedType... extraConfigTypes) throws Exception
+    {
         EngineUrlStreamHandlerFactory.initialize();
-        new RelationalTestServer().run(args);
+        new RelationalTestServer(extraConfigTypes).run(args);
     }
 
     public RelationalTestServer(NamedType... extraConfigTypes)

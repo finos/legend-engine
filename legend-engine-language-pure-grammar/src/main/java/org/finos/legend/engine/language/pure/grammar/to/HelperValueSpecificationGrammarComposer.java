@@ -137,50 +137,15 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String possiblyAddParenthesis(String function, ValueSpecification param, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        if ("and".equals(function) || "or".equals(function))
+        if ("and".equals(function) || "or".equals(function) || "plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function))
         {
             if (param instanceof AppliedFunction && SPECIAL_INFIX.get(((AppliedFunction) param).function) != null)
             {
                 return "(" + param.accept(transformer) + ")";
             }
         }
-        else if ("plus".equals(function) || "minus".equals(function) || "times".equals(function) || "divide".equals(function))
-        {
-            if (isLowerPrecedenceFunction(param, function))
-            {
-                return "(" + param.accept(transformer) + ")";
-            }
-        }
-
         return param.accept(transformer);
     }
-
-    private static boolean isLowerPrecedenceFunction(ValueSpecification v, String function)
-    {
-        if (v instanceof AppliedFunction)
-        {
-            String compareTo = ((AppliedFunction) v).function;
-            return (isMultDiv(function) && !isMultDiv(compareTo)) || (isPlusMinus(function) && isRelational(compareTo));
-        }
-
-        return false;
-    }
-
-    private static boolean isMultDiv(String function)
-    {
-        return "times".equals(function) || "divide".equals(function);
-    }
-
-    private static boolean isPlusMinus(String function)
-    {
-        return "plus".equals(function) || "minus".equals(function);
-    }
-
-    private static boolean isRelational(String function)
-    {
-        return "lessThan".equals(function) || "lessThanEqual".equals(function) || "greaterThan".equals(function) || "greaterThanEqual".equals(function);
-    }
-
 
     public static String renderCollection(List<?> values, org.eclipse.collections.api.block.function.Function<Object, String> func, DEPRECATED_PureGrammarComposerCore transformer)
     {
