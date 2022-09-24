@@ -57,7 +57,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                         // First pass - add serviceStores to compile context
                         (ServiceStore serviceStore, CompileContext context) ->
                         {
-                            Root_meta_external_store_service_metamodel_ServiceStore pureServiceStore = new Root_meta_external_store_service_metamodel_ServiceStore_Impl(serviceStore.name);
+                            Root_meta_external_store_service_metamodel_ServiceStore pureServiceStore = new Root_meta_external_store_service_metamodel_ServiceStore_Impl(serviceStore.name)._name(serviceStore.name);
 
                             pureServiceStore._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                     ._rawType(context.pureModel.getType("meta::external::store::service::metamodel::ServiceStore")));
