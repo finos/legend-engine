@@ -92,7 +92,7 @@ public class ModelStoreDataParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Please provide reference of the data element (the package of the data element)");
+                    throw new EngineException("Please provide reference/package of the data element , grammar for this should look like : Reference \n#{ \n(package of data)\n}#\n");
                 }
             }
             if (result.instances.containsKey(fullPath))

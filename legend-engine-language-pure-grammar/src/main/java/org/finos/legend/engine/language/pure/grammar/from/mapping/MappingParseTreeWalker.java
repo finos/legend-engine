@@ -59,9 +59,9 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class MappingParseTreeWalker
 {
@@ -183,35 +183,46 @@ public class MappingParseTreeWalker
         mappingTestSuite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
         List<MappingParserGrammar.MappingTestDataContext> validatedDataCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTestData(), "data", mappingTestSuite.sourceInformation);
-        mappingTestSuite.storeTestDatas = ListIterate.collect(validatedDataCtx, this::visitMappingStoreTestData);
+        mappingTestSuite.storeTestDatas = validatedDataCtx.stream().map(validateCtx -> this.visitMappingStoreTestData(validateCtx, mappingTestSuite.id, mapping.getPath())).collect(Collectors.toList());
         List<MappingParserGrammar.MappingTestContext> validatedTestCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTest(), "tests", mappingTestSuite.sourceInformation);
         mappingTestSuite.tests = ListIterate.collect(validatedTestCtx, atomicTest -> this.visitAtomicTest(atomicTest, mapping));
 
         return mappingTestSuite;
     }
 
-    private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx)
+    private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx, String id, String path)
     {
         StoreTestData testData = new StoreTestData();
         testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        this.createDummyBindingIfRequired(testData.data);
+        this.createDummyBindingIfRequired(testData.data, id, path);
         testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
                 "ModelStore" :
                 PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(),ctx.qualifiedName().identifier());     //build store
         return testData;
     }
 
-    private void createDummyBindingIfRequired(EmbeddedData data)
+    private void createDummyBindingIfRequired(EmbeddedData data, String id, String path)
     {
         if (data instanceof ModelStoreData)
         {
             Binding binding = new Binding();
             ModelUnit modelUnit = new ModelUnit();
             modelUnit.packageableElementIncludes = ((ModelStoreData) data).instances.keySet().stream().collect(Collectors.toList());
-            binding.name = "default__generatedBindingForTestData";
+            binding.name = "default__generatedBindingForTestData__" + path.replaceAll("::", "_") + "__" + id;
             binding._package = "generated";
             binding.modelUnit = modelUnit;
             binding.contentType = "application/json";    //default content type
+            //change the pointer for pair
+            Map<String, ValueSpecification> instances = ((ModelStoreData) data).instances;
+            instances.keySet().stream().forEach(key ->
+            {
+                Pair pairOfPointers = (Pair) instances.get(key);
+                PackageableElementPtr ptr = new PackageableElementPtr();
+                ptr.fullPath = binding.getPath();
+                pairOfPointers.first = ptr;
+                instances.put(key, pairOfPointers);
+            });
+            ((ModelStoreData) data).instances = instances;
             this.section.elements.add(binding.getPath());
             this.elementConsumer.accept(binding);
         }
