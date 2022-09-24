@@ -14,12 +14,29 @@
 
 package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.service.config.ServiceStoreExecutionConfiguration;
+
+import java.util.List;
 
 public class ServiceStoreExecutor implements StoreExecutor
 {
-    static final ServiceStoreExecutor INSTANCE = new ServiceStoreExecutor(new ServiceStoreState());
+    public static synchronized ServiceStoreExecutor buildInstance()
+    {
+        return buildInstanceImpl(false, FastList.newList());
+    }
+
+    public static synchronized ServiceStoreExecutor buildInstance(ServiceStoreExecutionConfiguration configuration)
+    {
+        return buildInstanceImpl(configuration.propagateJVMSSLContext, configuration.getMtlsServiceUriPrefixes());
+    }
+
+    public static ServiceStoreExecutor buildInstanceImpl(boolean propagateJVMSSLContext, List<String> mtlsServiceUriPrefixes)
+    {
+        return new ServiceStoreExecutor(new ServiceStoreState(propagateJVMSSLContext, mtlsServiceUriPrefixes));
+    }
 
     private final ServiceStoreState state;
 

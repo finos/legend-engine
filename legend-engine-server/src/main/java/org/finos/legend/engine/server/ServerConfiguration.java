@@ -19,6 +19,7 @@ import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.service.config.ServiceStoreExecutionConfiguration;
 import org.finos.legend.engine.server.core.configuration.DeploymentConfiguration;
 import org.finos.legend.engine.server.core.configuration.ErrorHandlingConfiguration;
 import org.finos.legend.engine.server.core.configuration.OpenTracingConfiguration;
@@ -38,6 +39,7 @@ public class ServerConfiguration extends Configuration
     public MetaDataServerConfiguration metadataserver;
     public List<VaultConfiguration> vaults;
     public RelationalExecutionConfiguration relationalexecution;
+    public ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = new ServiceStoreExecutionConfiguration();
     public ErrorHandlingConfiguration errorhandlingconfiguration = new ErrorHandlingConfiguration();
 
     /*

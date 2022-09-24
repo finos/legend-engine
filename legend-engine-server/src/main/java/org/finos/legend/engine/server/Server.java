@@ -60,12 +60,15 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.api.RelationalExecutorInformation;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.SchemaExplorationApi;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.service.config.ServiceStoreExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
@@ -162,7 +165,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
+        StoreExecutor serviceStoreExecutor = ServiceStore.build(serverConfiguration.serviceStoreExecutionConfiguration);
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, serviceStoreExecutor, InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();

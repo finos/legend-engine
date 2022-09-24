@@ -18,6 +18,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.service.config.ServiceStoreExecutionConfiguration;
 
 public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
@@ -30,12 +31,12 @@ public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
     @Override
     public ServiceStoreExecutor build()
     {
-        return ServiceStoreExecutor.INSTANCE;
+        return ServiceStoreExecutor.buildInstance();
     }
 
     @Override
     public StoreExecutor build(StoreExecutorConfiguration storeExecutorConfiguration)
     {
-        return ServiceStoreExecutor.INSTANCE;
+        return ServiceStoreExecutor.buildInstance((ServiceStoreExecutionConfiguration) storeExecutorConfiguration);
     }
 }

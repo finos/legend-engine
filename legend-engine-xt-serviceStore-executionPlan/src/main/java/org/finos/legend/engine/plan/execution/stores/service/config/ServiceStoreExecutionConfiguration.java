@@ -12,28 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.service.plugin;
+package org.finos.legend.engine.plan.execution.stores.service.config;
 
-import org.finos.legend.engine.plan.execution.stores.StoreState;
+import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 
 import java.util.List;
 
-public class ServiceStoreState implements StoreState
+public class ServiceStoreExecutionConfiguration implements StoreExecutorConfiguration
 {
+    // Feature flag that indicates if the JVM's ssl key and trust store should be used when making ServiceStore connections
     public boolean propagateJVMSSLContext = false;
-    private List<String> mtlsServiceUriPrefixes;
 
-    public ServiceStoreState()
-    {
-
-    }
-
-    public ServiceStoreState(boolean propagateJVMSSLContext, List<String> mtlsServiceUriPrefixes)
-    {
-        this.propagateJVMSSLContext = propagateJVMSSLContext;
-        this.mtlsServiceUriPrefixes = mtlsServiceUriPrefixes;
-    }
+    /*
+        List of services URIs that use mTLS.
+        Note : The elements in this list are prefixes and a URI must fully match a prefix (including the leading https://)
+     */
+    public List<String> mtlsServiceUriPrefixes = FastList.newList();
 
     @Override
     public StoreType getStoreType()
@@ -41,10 +37,9 @@ public class ServiceStoreState implements StoreState
         return StoreType.Service;
     }
 
-    @Override
-    public Object getStoreExecutionInfo()
+
+    public ServiceStoreExecutionConfiguration()
     {
-        return null;
     }
 
     public boolean isPropagateJVMSSLContext()

@@ -115,6 +115,13 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- LOG -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <!-- LOG -->
+
         <!-- OPEN TRACING -->
         <dependency>
             <groupId>io.opentracing</groupId>
@@ -173,6 +180,12 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.67</version>
             <scope>test</scope>
         </dependency>
         <dependency>

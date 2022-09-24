@@ -103,12 +103,22 @@ public class ServiceStoreTestUtils
         );
     }
 
+    public static String executePlan(SingleExecutionPlan plan, PlanExecutor planExecutor)
+    {
+        return executePlan(plan, Maps.mutable.empty(), planExecutor);
+    }
+
     public static String executePlan(SingleExecutionPlan plan)
     {
         return executePlan(plan, Maps.mutable.empty());
     }
 
     public static String executePlan(SingleExecutionPlan plan, Map<String, ?> params)
+    {
+        return executePlan(plan, planExecutor);
+    }
+
+    public static String executePlan(SingleExecutionPlan plan, Map<String, ?> params, PlanExecutor planExecutor)
     {
         SingleExecutionPlan singleExecutionPlan = plan.getSingleExecutionPlan(params);
 
@@ -118,4 +128,5 @@ public class ServiceStoreTestUtils
         JsonStreamingResult result = (JsonStreamingResult) planExecutor.execute(singleExecutionPlan, vars, (String) null, Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)), null);
         return result.flush(new JsonStreamToJsonDefaultSerializer(result));
     }
+
 }

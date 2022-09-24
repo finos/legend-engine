@@ -29,11 +29,13 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -42,14 +44,20 @@ import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.service.activity.ServiceStoreExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RequestBodyDescription;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Location;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
 import org.pac4j.core.profile.CommonProfile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -60,9 +68,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ServiceExecutor
 {
+    public static Logger LOGGER = LoggerFactory.getLogger(ServiceExecutor.class);
     public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
@@ -109,12 +119,22 @@ public class ServiceExecutor
             requestBodyEntity = new StringEntity(requestBody, contentType);
         }
 
+        StoreExecutionState storeExecutionState = state.getStoreExecutionState(StoreType.Service);
+        ServiceStoreState storeState = (ServiceStoreState) storeExecutionState.getStoreState();
 
-        InputStream response = executeRequest(httpMethod, uri, headers, requestBodyEntity, mimeType, securitySchemes, profiles);
+        boolean jvmSSLContextPropagationEnabled = storeState.propagateJVMSSLContext;
+
+        FastList<String> mtlsServicePrefixes = FastList.newList(storeState.getMtlsServiceUriPrefixes());
+        Optional<String> matchingPrefix = mtlsServicePrefixes.detectOptional(prefix -> uri.toString().startsWith(prefix));
+        boolean isMTLService = matchingPrefix.isPresent();
+
+        boolean propagateJVMSSLContext = jvmSSLContextPropagationEnabled && isMTLService;
+
+        InputStream response = executeRequest(httpMethod, uri, headers, requestBodyEntity, mimeType, securitySchemes, profiles, propagateJVMSSLContext);
         return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(urlProcessedWithQueryParams)));
     }
 
-    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
+    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles, boolean propagateJVMSSLContext)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -136,11 +156,18 @@ public class ServiceExecutor
 
         try
         {
-            HttpClientBuilder clientBuilder = HttpClients.custom();
+            HttpClientBuilder initialClientBuilder = HttpClients.custom();
 
             if (securitySchemes != null)
             {
-                securitySchemes.forEach(securityScheme -> processSecurityScheme(clientBuilder, profiles, securityScheme));
+                securitySchemes.forEach(securityScheme -> processSecurityScheme(initialClientBuilder, profiles, securityScheme));
+            }
+
+            HttpClientBuilder clientBuilder = initialClientBuilder;
+
+            if (propagateJVMSSLContext)
+            {
+                clientBuilder = propagateJVMmTLSContext(initialClientBuilder);
             }
 
             CloseableHttpClient httpClient = clientBuilder.build();
@@ -174,6 +201,28 @@ public class ServiceExecutor
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static HttpClientBuilder propagateJVMmTLSContext(HttpClientBuilder clientBuilder) throws Exception
+    {
+        String jvmKeyStore = System.getProperty("javax.net.ssl.keyStore");
+        String jvmKeyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+
+        SSLContextBuilder sslContextBuilder = SSLContextBuilder.create();
+        if (jvmKeyStorePassword != null && jvmKeyStorePassword != null)
+        {
+            LOGGER.debug("HttpClient configured with keystore={} and not null keystore password", jvmKeyStore);
+            sslContextBuilder = sslContextBuilder.loadKeyMaterial(new File(jvmKeyStore), jvmKeyStorePassword.toCharArray(), jvmKeyStorePassword.toCharArray());
+        }
+
+        String jvmTrustStore = System.getProperty("javax.net.ssl.trustStore");
+        String jvmTrustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+        if (jvmTrustStore != null && jvmTrustStorePassword != null)
+        {
+            LOGGER.debug("HttpClient configured with truststore={} and not null truststore password", jvmTrustStore);
+            sslContextBuilder = sslContextBuilder.loadTrustMaterial(new File(jvmTrustStore), jvmTrustStorePassword.toCharArray());
+        }
+        return clientBuilder.setSSLContext(sslContextBuilder.build());
     }
 
     private static String processUrlWithPathParams(String url, List<ServiceParameter> pathParams, ExecutionState state)

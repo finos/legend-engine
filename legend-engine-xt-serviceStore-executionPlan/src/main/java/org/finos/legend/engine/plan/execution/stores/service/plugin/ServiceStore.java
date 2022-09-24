@@ -15,11 +15,17 @@
 package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.service.config.ServiceStoreExecutionConfiguration;
 
 public class ServiceStore
 {
     public static StoreExecutor build()
     {
-        return ServiceStoreExecutor.INSTANCE;
+        return ServiceStoreExecutor.buildInstance();
+    }
+
+    public static StoreExecutor build(ServiceStoreExecutionConfiguration configuration)
+    {
+        return ServiceStoreExecutor.buildInstance(configuration);
     }
 }
