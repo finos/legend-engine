@@ -115,7 +115,7 @@ public class ServiceStoreTestUtils
 
     public static String executePlan(SingleExecutionPlan plan, Map<String, ?> params)
     {
-        return executePlan(plan, planExecutor);
+        return executePlan(plan, params, planExecutor);
     }
 
     public static String executePlan(SingleExecutionPlan plan, Map<String, ?> params, PlanExecutor planExecutor)
