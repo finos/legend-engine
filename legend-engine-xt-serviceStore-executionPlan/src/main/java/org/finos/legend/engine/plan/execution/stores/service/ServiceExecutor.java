@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.service;
 
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -29,6 +30,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
@@ -49,7 +51,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
 import org.pac4j.core.profile.CommonProfile;
+import org.slf4j.Logger;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -61,10 +65,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class ServiceExecutor
-{
-    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
-    {
+public class ServiceExecutor {
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ServiceExecutor.class);
+
+    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles) {
         Span span = GlobalTracer.get().activeSpan();
 
         List<ServiceParameter> pathParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.PATH);
@@ -75,34 +79,26 @@ public class ServiceExecutor
         String urlProcessedWithQueryParams = processUrlWithQueryParams(urlProcessedWithPathParams, queryParams, state);
         List<Header> headers = processHeaderParams(headerParams, state);
 
-        if (span != null)
-        {
+        if (span != null) {
             span.setTag("processed url", urlProcessedWithQueryParams);
         }
 
         URI uri;
-        try
-        {
+        try {
             URIBuilder uriBuilder = new URIBuilder(urlProcessedWithQueryParams);
             uri = uriBuilder.build();
-        }
-        catch (URISyntaxException e)
-        {
+        } catch (URISyntaxException e) {
             String errMsg = String.format("Cannot build URI from url (%s)", urlProcessedWithQueryParams);
             throw new RuntimeException(errMsg, e);
         }
 
         StringEntity requestBodyEntity = null;
-        if (requestBodyDescription != null)
-        {
+        if (requestBodyDescription != null) {
             String requestBody;
-            try
-            {
+            try {
                 StreamingResult streamingResult = (StreamingResult) state.getResult(requestBodyDescription.resultKey);
                 requestBody = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW));
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 throw new RuntimeException("Error serializing requestBody value.\n" + e);
             }
             ContentType contentType = ContentType.create(requestBodyDescription.mimeType, StandardCharsets.UTF_8);
@@ -114,13 +110,11 @@ public class ServiceExecutor
         return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(urlProcessedWithQueryParams)));
     }
 
-    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
-    {
+    public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles) {
         Span span = GlobalTracer.get().activeSpan();
 
         HttpUriRequest request;
-        switch (httpMethod)
-        {
+        switch (httpMethod) {
             case GET:
                 request = new HttpGet(uri);
                 break;
@@ -134,13 +128,14 @@ public class ServiceExecutor
         }
         ListIterate.forEach(headers, header -> request.addHeader(header));
 
-        try
-        {
+        try {
             HttpClientBuilder clientBuilder = HttpClients.custom();
 
-            if (securitySchemes != null)
-            {
+            if (securitySchemes != null) {
                 securitySchemes.forEach(securityScheme -> processSecurityScheme(clientBuilder, profiles, securityScheme));
+            }
+            if (String.valueOf(uri.getScheme()).contains("https")) {
+                clientBuilder = processClientCertificates(clientBuilder);
             }
 
             CloseableHttpClient httpClient = clientBuilder.build();
@@ -148,48 +143,72 @@ public class ServiceExecutor
 
             int statusCode = httpResponse.getStatusLine().getStatusCode();
 
-            if (span != null)
-            {
+            if (span != null) {
                 span.setTag("Status code", statusCode);
             }
 
-            if (statusCode != HttpStatus.SC_OK)
-            {
+            if (statusCode != HttpStatus.SC_OK) {
                 String explanation = httpResponse.getEntity() == null ? "" : EntityUtils.toString(httpResponse.getEntity());
 
-                if (span != null)
-                {
+                if (span != null) {
                     span.setTag("Failure message", explanation);
                 }
                 throw new RuntimeException("HTTP request [" + request.toString() + "] failed with error - " + explanation);
             }
 
             return httpResponse.getEntity().getContent();
-        }
-        catch (RuntimeException e)
-        {
+        } catch (RuntimeException e) {
             throw e;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    private static String processUrlWithPathParams(String url, List<ServiceParameter> pathParams, ExecutionState state)
-    {
+    private static HttpClientBuilder processClientCertificates(HttpClientBuilder clientBuilder) {
+        final String keystore = System.getProperty("javax.net.ssl.keyStore");
+        final String keyStorePassword = System.getProperty("javax.net.ssl.keyStorePassword");
+        final String trustStore = System.getProperty("javax.net.ssl.trustStore");
+        final String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword");
+        final SSLContextBuilder sslContextBuilder = SSLContextBuilder.create();
+        if (!StringUtils.isAnyEmpty(keystore, keyStorePassword)) {
+            try {
+                sslContextBuilder
+                        .loadKeyMaterial(
+                                new File(keystore),
+                                keyStorePassword.toCharArray(),
+                                keyStorePassword.toCharArray());
+            } catch (Exception e) {
+                LOGGER.error(String.format("Failed to load keystore %s for service store", keystore), e);
+            }
+        }
+        if (!StringUtils.isNoneEmpty(trustStore, trustStorePassword)) {
+            try {
+                sslContextBuilder.loadTrustMaterial(
+                        new File(trustStore),
+                        trustStorePassword.toCharArray()
+                );
+            } catch (Exception e) {
+                LOGGER.error(String.format("Failed to load truststore %s for service store", trustStore), e);
+            }
+        }
+        try {
+            return clientBuilder.setSSLContext(sslContextBuilder.build());
+        } catch (Exception e) {
+            LOGGER.error(String.format("Failed to load certificates for service store TLS", trustStore), e);
+            return clientBuilder;
+        }
+    }
+
+    private static String processUrlWithPathParams(String url, List<ServiceParameter> pathParams, ExecutionState state) {
         Map<String, String> pathVarValueMap = Maps.mutable.empty();
-        for (ServiceParameter param : pathParams)
-        {
+        for (ServiceParameter param : pathParams) {
             url = url.replace("{" + param.name + "}", "${.data_model[\"" + param.name + "\"]}");
 
             Result paramResult = state.getResult(param.name);
-            if (paramResult == null)
-            {
+            if (paramResult == null) {
                 throw new RuntimeException("No value found for parameter '" + param.name + "'");
             }
-            if (!(paramResult instanceof ConstantResult))
-            {
+            if (!(paramResult instanceof ConstantResult)) {
                 throw new RuntimeException("Expected Constant Result for parameter '" + param.name + "'. Found : " + paramResult.getClass().getSimpleName());
             }
 
@@ -199,26 +218,21 @@ public class ServiceExecutor
         return FreeMarkerExecutor.processRecursively(url, pathVarValueMap, "");
     }
 
-    private static String processUrlWithQueryParams(String url, List<ServiceParameter> queryParams, ExecutionState state)
-    {
-        if (queryParams == null || queryParams.isEmpty())
-        {
+    private static String processUrlWithQueryParams(String url, List<ServiceParameter> queryParams, ExecutionState state) {
+        if (queryParams == null || queryParams.isEmpty()) {
             return url;
         }
         return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
-    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, ExecutionState state)
-    {
-        if (headerParams == null || headerParams.isEmpty())
-        {
+    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, ExecutionState state) {
+        if (headerParams == null || headerParams.isEmpty()) {
             return Collections.emptyList();
         }
         return ListIterate.collectIf(headerParams, param -> (state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
-    private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)
-    {
+    private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme) {
         List<Function3<SecurityScheme, HttpClientBuilder, MutableList<CommonProfile>, Boolean>> processors = ListIterate.flatCollect(IServiceStoreExecutionExtension.getExtensions(), ext -> ext.getExtraSecuritySchemeProcessors());
 
         ListIterate.collect(processors, processor -> processor.value(securityScheme, httpClientBuilder, profiles))
@@ -227,19 +241,14 @@ public class ServiceExecutor
                 .orElseThrow(() -> new RuntimeException("No processor found for given security scheme. Unsupported SecurityScheme - " + securityScheme.getClass().getSimpleName()));
     }
 
-    private static String serializePathParameter(Object value, ServiceParameter parameter)
-    {
+    private static String serializePathParameter(Object value, ServiceParameter parameter) {
         String result;
-        if (!(value instanceof List))
-        {
+        if (!(value instanceof List)) {
             result = value.toString();
-        }
-        else
-        {
+        } else {
             String serializationFormat = parameter.serializationFormat.style + "_" + parameter.serializationFormat.explode;
 
-            switch (serializationFormat)
-            {
+            switch (serializationFormat) {
                 case "simple_false":
                 case "simple_true":
                     result = String.join(",", ListIterate.collect((List) value, Object::toString));
@@ -263,19 +272,14 @@ public class ServiceExecutor
         return encodeParameterValue(parameter.name, result, parameter.allowReserved);
     }
 
-    private static String serializeQueryParameter(Object value, ServiceParameter parameter)
-    {
+    private static String serializeQueryParameter(Object value, ServiceParameter parameter) {
         String result;
-        if (!(value instanceof List))
-        {
+        if (!(value instanceof List)) {
             result = parameter.name + "=" + encodeParameterValue(parameter.name, value.toString(), parameter.allowReserved);
-        }
-        else
-        {
+        } else {
             String serializationFormat = parameter.serializationFormat.style + "_" + parameter.serializationFormat.explode;
 
-            switch (serializationFormat)
-            {
+            switch (serializationFormat) {
                 case "form_false":
                     result = parameter.name + "=" + String.join(",", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
                     break;
@@ -298,19 +302,14 @@ public class ServiceExecutor
         return result;
     }
 
-    private static String serializeHeaderParameter(Object value, ServiceParameter parameter)
-    {
+    private static String serializeHeaderParameter(Object value, ServiceParameter parameter) {
         String result;
-        if (!(value instanceof List))
-        {
+        if (!(value instanceof List)) {
             result = encodeParameterValue(parameter.name, value.toString(), parameter.allowReserved);
-        }
-        else
-        {
+        } else {
             String serializationFormat = parameter.serializationFormat.style + "_" + parameter.serializationFormat.explode;
 
-            switch (serializationFormat)
-            {
+            switch (serializationFormat) {
                 case "simple_false":
                 case "simple_true":
                     result = String.join(",", ListIterate.collect((List) value, val -> encodeParameterValue(parameter.name, val.toString(), parameter.allowReserved)));
@@ -322,20 +321,13 @@ public class ServiceExecutor
         return result;
     }
 
-    private static String encodeParameterValue(String name, String value, Boolean allowReserved)
-    {
-        if (allowReserved != null && allowReserved)
-        {
+    private static String encodeParameterValue(String name, String value, Boolean allowReserved) {
+        if (allowReserved != null && allowReserved) {
             return value;
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-            }
-            catch (UnsupportedEncodingException e)
-            {
+            } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException("Error encoding parameter : " + name + ". Found value - " + value);
             }
         }
