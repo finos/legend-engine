@@ -432,13 +432,13 @@ function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:Var
 
    if($v->isCollectionPlaceHolder(),
       |if($resolvedPlaceHolder == $possiblyApplyDateTzFunction,
-         |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}',
+         |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +' true)}',
          |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'),
       |if($v->isOptionalPlaceHolder(),
-          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
+          |'${varPlaceHolderToString(escapeSql(' + $possiblyApplyDateTzFunction + ')' + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
           |if($type->instanceOf(Enumeration),
               |$prefix + '\'${'+$possiblyApplyDateTzFunction+'}\'' + $suffix,
-              |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix))
+              |$prefix + '${escapeSql('+$possiblyApplyDateTzFunction+')}' + $suffix))
       );
 }
 
@@ -485,7 +485,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getFr
 {
    let freeMarkerOpMap = [
       pair('variableCollectionSize', ^ToSql(format='collectionSize(%s)')),
-      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(%s, %s, %s)')),
+      pair('optionalVarPlaceHolderOpSelector', ^ToSql(format='optionalVarPlaceHolderOperationSelector(escapeSql(%s), %s, %s)')),
       pair('equalEnumOpSelector', ^ToSql(format='equalEnumOperationSelector(%s, %s, %s)'))
    ]->newMap();
 }
@@ -521,7 +521,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::place
 
 function meta::relational::functions::sqlQueryToString::convertStringToSQLString(s:String[1]):String[1]
 {
-   $s->replace('\'', '\'\'')->replace('\@@','\'')
+   $s->replace('\'', '\'\'')
 }
 
 function meta::relational::functions::sqlQueryToString::convertSQLNullToSQLString(s:SQLNull[1]):String[1]
