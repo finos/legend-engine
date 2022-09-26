@@ -111,7 +111,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::createGrap
    )
 }
 
-function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithProperties(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithProperties(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
 {
    let conventions   = $context.conventions;
    let allProperties = $context.typeInfos->allProperties($nodeType);
@@ -164,12 +164,12 @@ function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::
    newProject()->addClasses($withProperties);
 }
 
-function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
 {
    $setImpl->meta::pure::mapping::modelToModel::inMemory::isNoMappingPassThru($property)
 }
 
-function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithSerializableMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithSerializableMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
 {
    let codeString  = $implClass->meta::external::language::java::serialization::classToString();
    let codeHash    = $codeString->hash(HashType.SHA256);
