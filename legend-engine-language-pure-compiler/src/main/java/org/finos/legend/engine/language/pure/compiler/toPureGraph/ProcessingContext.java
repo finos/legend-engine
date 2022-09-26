@@ -32,8 +32,7 @@ public class ProcessingContext
 
     public void pushMilestoningDatePropagationContext(MilestoningDatePropagationContext milestoningContext)
     {
-        MilestoningDatePropagationContext context = new MilestoningDatePropagationContext(milestoningContext.getProcessingDate(), milestoningContext.getBusinessDate());
-        this.milestoningDatePropagationContext.push(context);
+        this.milestoningDatePropagationContext.push(milestoningContext);
     }
 
     public MilestoningDatePropagationContext peekMilestoningDatePropagationContext()
