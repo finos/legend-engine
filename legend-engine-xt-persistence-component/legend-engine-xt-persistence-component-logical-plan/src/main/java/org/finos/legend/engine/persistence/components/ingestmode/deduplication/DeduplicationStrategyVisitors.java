@@ -29,13 +29,13 @@ public class DeduplicationStrategyVisitors
         }
 
         @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract allowDuplicates)
+        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
         {
             return false;
         }
 
         @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract allowDuplicates)
+        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
         {
             return false;
         }
@@ -50,13 +50,13 @@ public class DeduplicationStrategyVisitors
         }
 
         @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract allowDuplicates)
+        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
         {
             return true;
         }
 
         @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract allowDuplicates)
+        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
         {
             return false;
         }
@@ -71,17 +71,15 @@ public class DeduplicationStrategyVisitors
         }
 
         @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract allowDuplicates)
+        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
         {
             return false;
         }
 
         @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract allowDuplicates)
+        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
         {
             return true;
         }
     };
-
-
 }

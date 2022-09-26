@@ -19,7 +19,11 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
@@ -63,22 +67,29 @@ class AppendOnlyPlanner extends Planner
         super(datasets, ingestMode, plannerOptions);
 
         // validate
-        if (ingestMode.deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_ALLOW_DUPLICATES))
+        ingestMode.deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
         {
-            validatePrimaryKeysIsEmpty(primaryKeys);
-        }
-        else if (ingestMode.deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
-        {
-            validatePrimaryKeysNotEmpty(primaryKeys);
-        }
-        else if (ingestMode.deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FAIL_ON_DUPLICATES))
-        {
-            validatePrimaryKeysNotEmpty(primaryKeys);
-        }
-        else
-        {
-            throw new IllegalStateException("Unrecognized [deduplicationStrategy]: " + ingestMode.deduplicationStrategy().getClass());
-        }
+            @Override
+            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+            {
+                validatePrimaryKeysIsEmpty(primaryKeys);
+                return null;
+            }
+
+            @Override
+            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+            {
+                validatePrimaryKeysNotEmpty(primaryKeys);
+                return null;
+            }
+
+            @Override
+            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+            {
+                validatePrimaryKeysNotEmpty(primaryKeys);
+                return null;
+            }
+        });
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
     }

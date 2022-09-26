@@ -18,8 +18,7 @@ public interface DeduplicationStrategyVisitor<T>
 {
     T visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates);
 
-    T visitFilterDuplicates(FilterDuplicatesAbstract allowDuplicates);
+    T visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates);
 
-    T visitFailOnDuplicates(FailOnDuplicatesAbstract allowDuplicates);
-
+    T visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates);
 }
