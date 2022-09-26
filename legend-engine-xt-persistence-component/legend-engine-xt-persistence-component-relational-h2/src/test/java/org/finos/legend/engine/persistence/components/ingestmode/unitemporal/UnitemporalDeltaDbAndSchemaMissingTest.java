@@ -24,7 +24,6 @@ import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 
@@ -83,7 +82,6 @@ class UnitemporalDeltaDbAndSchemaMissingTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)

@@ -22,11 +22,10 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class BitemporalSnapshotMapper
 {
-    public static org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshot from(BitemporalSnapshot bitemporalSnapshot, String[] pkFields)
+    public static org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshot from(BitemporalSnapshot bitemporalSnapshot)
     {
         return org.finos.legend.engine.persistence.components.ingestmode.BitemporalSnapshot.builder()
                 .digestField(DIGEST_FIELD_DEFAULT)
-                .addAllKeyFields(Arrays.asList(pkFields))
                 .transactionMilestoning(bitemporalSnapshot.transactionMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_TRANSACTION_MILESTONING))
                 .validityMilestoning(bitemporalSnapshot.validityMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_VALIDITY_MILESTONING))
                 .build();

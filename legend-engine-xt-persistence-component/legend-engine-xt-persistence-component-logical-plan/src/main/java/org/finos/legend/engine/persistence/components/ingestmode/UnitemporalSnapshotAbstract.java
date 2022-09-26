@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.immutables.value.Value.Check;
 import static org.immutables.value.Value.Derived;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -38,8 +37,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
 {
     String digestField();
 
-    List<String> keyFields();
-
     @Override
     TransactionMilestoning transactionMilestoning();
 
@@ -51,15 +48,6 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
     default boolean partitioned()
     {
         return !partitionFields().isEmpty();
-    }
-
-    @Check
-    default void validate()
-    {
-        if (keyFields().isEmpty())
-        {
-            throw new IllegalStateException("Cannot build UnitemporalSnapshot, [keyFields] must contain at least one element");
-        }
     }
 
     @Override

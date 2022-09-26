@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import java.util.stream.Collectors;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -23,9 +24,10 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -73,12 +75,20 @@ public abstract class Planner
     private final Datasets datasets;
     private final IngestMode ingestMode;
     private final PlannerOptions plannerOptions;
+    protected final List<String> primaryKeys;
 
     Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions)
     {
         this.datasets = datasets;
         this.ingestMode = ingestMode;
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
+        this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
+    }
+
+    private List<String> findCommonPrimaryKeysBetweenMainAndStaging()
+    {
+        Set<String> primaryKeysFromMain = mainDataset().schema().fields().stream().filter(Field::primaryKey).map(Field::name).collect(Collectors.toSet());
+        return stagingDataset().schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).map(Field::name).collect(Collectors.toList());
     }
 
     protected Dataset mainDataset()
@@ -125,7 +135,7 @@ public abstract class Planner
         }
         else if (plannerOptions.cleanupStagingData())
         {
-            operations.add(Truncate.of(stagingDataset()));
+            operations.add(Delete.builder().dataset(stagingDataset()).build());
         }
         return LogicalPlan.of(operations);
     }
@@ -133,6 +143,22 @@ public abstract class Planner
     public abstract Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources);
 
     public abstract Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources);
+
+    protected void validatePrimaryKeysNotEmpty(List<String> primaryKeys)
+    {
+        if (primaryKeys.isEmpty())
+        {
+            throw new IllegalStateException("Primary key list must not be empty");
+        }
+    }
+
+    protected void validatePrimaryKeysIsEmpty(List<String> primaryKeys)
+    {
+        if (!primaryKeys.isEmpty())
+        {
+            throw new IllegalStateException("Primary key list must be empty");
+        }
+    }
 
     // auditing visitor
 

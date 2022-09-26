@@ -38,7 +38,6 @@ public class UpperCaseOptimizer implements CaseConversionOptimizer
         {
             Field field = (Field) component;
             field.setName(field.getName() != null ? field.getName().toUpperCase() : field.getName());
-            field.setAlias(field.getAlias() != null ? field.getAlias().toUpperCase() : field.getAlias());
             return field;
         }
         else if (component instanceof Column)
@@ -53,7 +52,6 @@ public class UpperCaseOptimizer implements CaseConversionOptimizer
             table.setDb(table.getDb() != null ? table.getDb().toUpperCase() : table.getDb());
             table.setSchema(table.getSchema() != null ? table.getSchema().toUpperCase() : table.getSchema());
             table.setTable(table.getTable() != null ? table.getTable().toUpperCase() : table.getTable());
-            table.setAlias(table.getAlias() != null ? table.getAlias().toUpperCase() : table.getAlias());
             return table;
         }
         else if (component instanceof TruncateTable)
@@ -65,7 +63,6 @@ public class UpperCaseOptimizer implements CaseConversionOptimizer
                 table.setDb(table.getDb() != null ? table.getDb().toUpperCase() : table.getDb());
                 table.setSchema(table.getSchema() != null ? table.getSchema().toUpperCase() : table.getSchema());
                 table.setTable(table.getTable() != null ? table.getTable().toUpperCase() : table.getTable());
-                table.setAlias(table.getAlias() != null ? table.getAlias().toUpperCase() : table.getAlias());
             }
             return truncateTable;
         }

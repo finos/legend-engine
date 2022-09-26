@@ -79,18 +79,18 @@ class InsertTest
         Table tableToInsert = new Table("CONVOLVE_TEST_SCHEMA", null, "CONVOLVE_TEST_TABLE", null, BaseTest.QUOTE_IDENTIFIER);
         Table tableToSelect = new Table("CONVOLVE_TEST_SCHEMA", null, "CONVOLVE_TEST_TABLE__stage", "stage_left", BaseTest.QUOTE_IDENTIFIER);
 
-        Value item1 = new Field(tableToSelect, "convolve_digest", BaseTest.QUOTE_IDENTIFIER, "convolve_digest");
-        Value item2 = new Field(tableToSelect, "column_smallint", BaseTest.QUOTE_IDENTIFIER, "column_smallint");
-        Value item3 = new Field(tableToSelect, "column_tinyint", BaseTest.QUOTE_IDENTIFIER, "column_tinyint");
-        Value item4 = new Field(tableToSelect, "column_bigint", BaseTest.QUOTE_IDENTIFIER, "column_bigint");
-        Value item5 = new Field(tableToSelect, "column_varchar", BaseTest.QUOTE_IDENTIFIER, "column_varchar");
-        Value item6 = new Field(tableToSelect, "column_char", BaseTest.QUOTE_IDENTIFIER, "column_char");
-        Value item7 = new Field(tableToSelect, "column_timestamp", BaseTest.QUOTE_IDENTIFIER, "column_timestamp");
-        Value item8 = new Field(tableToSelect, "column_date", BaseTest.QUOTE_IDENTIFIER, "column_date");
-        Value item9 = new Field(tableToSelect, "column_float", BaseTest.QUOTE_IDENTIFIER, "column_float");
-        Value item10 = new Field(tableToSelect, "column_real", BaseTest.QUOTE_IDENTIFIER, "column_real");
-        Value item11 = new Field(tableToSelect, "column_decimal", BaseTest.QUOTE_IDENTIFIER, "column_decimal");
-        Value item12 = new Field(tableToSelect, "column_double", BaseTest.QUOTE_IDENTIFIER, "column_double");
+        Value item1 = new Field(tableToSelect.getAlias(), "convolve_digest", BaseTest.QUOTE_IDENTIFIER, "convolve_digest");
+        Value item2 = new Field(tableToSelect.getAlias(), "column_smallint", BaseTest.QUOTE_IDENTIFIER, "column_smallint");
+        Value item3 = new Field(tableToSelect.getAlias(), "column_tinyint", BaseTest.QUOTE_IDENTIFIER, "column_tinyint");
+        Value item4 = new Field(tableToSelect.getAlias(), "column_bigint", BaseTest.QUOTE_IDENTIFIER, "column_bigint");
+        Value item5 = new Field(tableToSelect.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, "column_varchar");
+        Value item6 = new Field(tableToSelect.getAlias(), "column_char", BaseTest.QUOTE_IDENTIFIER, "column_char");
+        Value item7 = new Field(tableToSelect.getAlias(), "column_timestamp", BaseTest.QUOTE_IDENTIFIER, "column_timestamp");
+        Value item8 = new Field(tableToSelect.getAlias(), "column_date", BaseTest.QUOTE_IDENTIFIER, "column_date");
+        Value item9 = new Field(tableToSelect.getAlias(), "column_float", BaseTest.QUOTE_IDENTIFIER, "column_float");
+        Value item10 = new Field(tableToSelect.getAlias(), "column_real", BaseTest.QUOTE_IDENTIFIER, "column_real");
+        Value item11 = new Field(tableToSelect.getAlias(), "column_decimal", BaseTest.QUOTE_IDENTIFIER, "column_decimal");
+        Value item12 = new Field(tableToSelect.getAlias(), "column_double", BaseTest.QUOTE_IDENTIFIER, "column_double");
 
         SelectExpression selectExpression = new SelectStatement(
             null,

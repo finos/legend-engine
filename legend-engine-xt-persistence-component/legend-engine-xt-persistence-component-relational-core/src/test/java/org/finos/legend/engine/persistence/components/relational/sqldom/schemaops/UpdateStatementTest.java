@@ -71,7 +71,7 @@ public class UpdateStatementTest
             new Pair<>(new Field("col4", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L))
         );
         Condition condition = new EqualityCondition(
-            new Field(table, "id", BaseTest.QUOTE_IDENTIFIER, null),
+            new Field(table.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null),
             new NumericalValue(1L));
 
         UpdateStatement query = new UpdateStatement(table, setPairs, condition);
@@ -93,21 +93,21 @@ public class UpdateStatementTest
         Table joinTable = new Table("my_db", null, "tableB", "B", BaseTest.QUOTE_IDENTIFIER);
 
         Condition pkMatchCondition = new EqualityCondition(
-            new Field(table, "id", BaseTest.QUOTE_IDENTIFIER, null),
-            new Field(joinTable, "a_id", BaseTest.QUOTE_IDENTIFIER, null));
+            new Field(table.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null),
+            new Field(joinTable.getAlias(), "a_id", BaseTest.QUOTE_IDENTIFIER, null));
 
         List<Pair<Field, Value>> setPairs = Arrays.asList(
             new Pair<>(new Field("col1", BaseTest.QUOTE_IDENTIFIER), new SelectValue(
                 new SelectStatement(
                     null,
-                    Collections.singletonList(new Field(joinTable, "col1", BaseTest.QUOTE_IDENTIFIER, null)),
+                    Collections.singletonList(new Field(joinTable.getAlias(), "col1", BaseTest.QUOTE_IDENTIFIER, null)),
                     Collections.singletonList(joinTable),
                     pkMatchCondition,
                     Collections.emptyList()))),
             new Pair<>(new Field("col2", BaseTest.QUOTE_IDENTIFIER), new SelectValue(
                 new SelectStatement(
                     null,
-                    Collections.singletonList(new Field(joinTable, "col2", BaseTest.QUOTE_IDENTIFIER, null)),
+                    Collections.singletonList(new Field(joinTable.getAlias(), "col2", BaseTest.QUOTE_IDENTIFIER, null)),
                     Collections.singletonList(joinTable),
                     pkMatchCondition,
                     Collections.emptyList()))));

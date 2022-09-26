@@ -49,13 +49,6 @@ public class IngestModeMapperTest extends MapperBaseTest
     public static Field income = Field.builder().name("income").type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias("income").build();
 
     @Test
-    public void testCommonPrimaryKeys()
-    {
-        String[] commonPrimaryKeys = IngestModeMapper.getCommonPrimaryKeys(getMainDataset(), getStagingDataset(), null);
-        Assert.assertEquals("id", commonPrimaryKeys[0]);
-    }
-
-    @Test
     public void testMapperForNonTemporalSnapshot() throws Exception
     {
         IngestMode ingestMode = getNonTemporalSnapshotDateTimeAuditing();
@@ -91,7 +84,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", appendOnly.digestField().get());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
         Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof AllowDuplicates);
-        Assert.assertEquals(0, appendOnly.keyFields().size());
 
         ingestMode = getAppendOnlyNoAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -103,8 +95,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", appendOnly.digestField().get());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
         Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof FilterDuplicates);
-        Assert.assertEquals("id", appendOnly.keyFields().get(0));
-
 
         ingestMode = getAppendOnlyDatetimeAuditingNoFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -118,7 +108,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         DateTimeAuditing dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
         Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof AllowDuplicates);
-        Assert.assertEquals(0, appendOnly.keyFields().size());
 
         ingestMode = getAppendOnlyDatetimeAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -132,7 +121,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
         Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof FilterDuplicates);
-        Assert.assertEquals("id", appendOnly.keyFields().get(0));
     }
 
     @Test
@@ -148,7 +136,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof NoAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
-        Assert.assertEquals("id", nontemporalDelta.keyFields().get(0));
 
         ingestMode = getNontemporalDeltaNoAuditingDeleteIndMergeStrategy();
         persistence = getPersistence(ingestMode);
@@ -159,7 +146,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof NoAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
-        Assert.assertEquals("id", nontemporalDelta.keyFields().get(0));
 
         ingestMode = getNontemporalDeltaWithAuditingNoMergeStrategy();
         persistence = getPersistence(ingestMode);
@@ -170,7 +156,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof DateTimeAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
-        Assert.assertEquals("id", nontemporalDelta.keyFields().get(0));
 
         ingestMode = getNontemporalDeltaWithAuditingDeleteIndMergeStrategy();
         persistence = getPersistence(ingestMode);
@@ -181,7 +166,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", nontemporalDelta.digestField());
         Assert.assertTrue(nontemporalDelta.auditing() instanceof DateTimeAuditing);
         Assert.assertTrue(nontemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
-        Assert.assertEquals("id", nontemporalDelta.keyFields().get(0));
     }
 
     @Test
@@ -198,7 +182,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchId);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
-        Assert.assertEquals("id", unitemporalDelta.keyFields().get(0));
 
         ingestMode = getUnitempDeltaNoMergeBatchIdAndTimeBased();
         persistence = getPersistence(ingestMode);
@@ -210,7 +193,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchIdAndDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
-        Assert.assertEquals("id", unitemporalDelta.keyFields().get(0));
 
         ingestMode = getUnitempDeltaNoMergeTimeBased();
         persistence = getPersistence(ingestMode);
@@ -222,7 +204,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof NoDeletesMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof TransactionDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
-        Assert.assertEquals("id", unitemporalDelta.keyFields().get(0));
 
         ingestMode = getUnitempDeltaDelIndMergeBatchIdBased();
         persistence = getPersistence(ingestMode);
@@ -234,7 +215,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchId);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
-        Assert.assertEquals("id", unitemporalDelta.keyFields().get(0));
 
         ingestMode = getUnitempDeltaDelIndMergeBatchIdAndTimeBased();
         persistence = getPersistence(ingestMode);
@@ -246,7 +226,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof BatchIdAndDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
-        Assert.assertEquals("id", unitemporalDelta.keyFields().get(0));
 
         ingestMode = getUnitempDeltaDelIndMergeTimeBased();
         persistence = getPersistence(ingestMode);
@@ -258,7 +237,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(unitemporalDelta.mergeStrategy() instanceof DeleteIndicatorMergeStrategy);
         Assert.assertTrue(unitemporalDelta.transactionMilestoning() instanceof TransactionDateTime);
         Assert.assertFalse(unitemporalDelta.dataSplitField().isPresent());
-        Assert.assertEquals("id", unitemporalDelta.keyFields().get(0));
     }
 
     @Test
@@ -274,7 +252,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
         Assert.assertFalse(unitemporalSnapshot.partitioned());
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof BatchId);
-        Assert.assertEquals("id", unitemporalSnapshot.keyFields().get(0));
 
         ingestMode = getUnitemporalSnapshotBatchIdAndTimeBased();
         persistence = getPersistence(ingestMode);
@@ -285,7 +262,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
         Assert.assertFalse(unitemporalSnapshot.partitioned());
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof BatchIdAndDateTime);
-        Assert.assertEquals("id", unitemporalSnapshot.keyFields().get(0));
 
         ingestMode = getUnitemporalSnapshotTimeBased();
         persistence = getPersistence(ingestMode);
@@ -296,7 +272,6 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertEquals("DIGEST", unitemporalSnapshot.digestField());
         Assert.assertFalse(unitemporalSnapshot.partitioned());
         Assert.assertTrue(unitemporalSnapshot.transactionMilestoning() instanceof TransactionDateTime);
-        Assert.assertEquals("id", unitemporalSnapshot.keyFields().get(0));
     }
 
     private Persistence getPersistence(IngestMode ingestMode)

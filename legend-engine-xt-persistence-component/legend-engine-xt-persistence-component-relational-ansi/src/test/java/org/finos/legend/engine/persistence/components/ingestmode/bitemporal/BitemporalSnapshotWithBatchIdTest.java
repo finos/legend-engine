@@ -59,7 +59,6 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
     {
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(bitemporalFromAndThroughPrimaryKeysList)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -102,7 +101,6 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
     {
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(bitemporalFromAndThroughPrimaryKeysList)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -156,7 +154,6 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
     {
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(bitemporalFromAndThroughPrimaryKeysList)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -226,7 +223,6 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(bitemporalFromOnlyPrimaryKeysList)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -295,7 +291,6 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(bitemporalFromOnlyPrimaryKeysList)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -365,7 +360,6 @@ public class BitemporalSnapshotWithBatchIdTest extends IngestModeTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(bitemporalFromOnlyPrimaryKeysList)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)

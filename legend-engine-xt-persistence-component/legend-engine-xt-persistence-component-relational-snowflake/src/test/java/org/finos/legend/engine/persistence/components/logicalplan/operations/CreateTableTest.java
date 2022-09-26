@@ -30,6 +30,7 @@ import static org.finos.legend.engine.persistence.components.BaseTestUtils.schem
 
 public class CreateTableTest
 {
+
     @Test
     public void testCreateTable()
     {
