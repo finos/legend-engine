@@ -26,8 +26,24 @@ import java.util.Stack;
 public class ProcessingContext
 {
     public MutableList<MutableMap<String, ValueSpecification>> inferredVariableList = FastList.newList();
-    public MilestoningDatePropagationContext milestoningDatePropagationContext = new MilestoningDatePropagationContext();
+    public Stack<MilestoningDatePropagationContext> milestoningDatePropagationContext = new Stack<>();
     private final Stack<String> tags = new Stack<>();
+    public boolean isDatePropagationSupported = true;
+
+    public void pushMilestoningDatePropagationContext(MilestoningDatePropagationContext milestoningContext)
+    {
+        this.milestoningDatePropagationContext.push(milestoningContext);
+    }
+
+    public MilestoningDatePropagationContext peekMilestoningDatePropagationContext()
+    {
+        return this.milestoningDatePropagationContext.peek();
+    }
+
+    public void popMilestoningDatePropagationContext()
+    {
+        this.milestoningDatePropagationContext.pop();
+    }
 
     public ProcessingContext(String firstTag)
     {

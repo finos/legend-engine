@@ -42,6 +42,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.navigation.profile.Profile;
 
 import java.util.Objects;
+import java.util.Stack;
 
 public class MilestoningDatePropagationHelper
 {
@@ -68,22 +69,36 @@ public class MilestoningDatePropagationHelper
     {
         if (isBusinessTemporal(milestoningStereotype))
         {
-            processingContext.milestoningDatePropagationContext.setBusinessDate(temporalParameterValues.get(1));
+            ValueSpecification businessdate = null;
+            if (temporalParameterValues.size() > 1)
+            {
+               businessdate = temporalParameterValues.get(1);
+            }
+            MilestoningDatePropagationContext context = new MilestoningDatePropagationContext(null, businessdate);
+            processingContext.pushMilestoningDatePropagationContext(context);
         }
         else if (isProcessingTemporal(milestoningStereotype))
         {
-            processingContext.milestoningDatePropagationContext.setProcessingDate(temporalParameterValues.get(1));
+            ValueSpecification processingDate = null;
+            if (temporalParameterValues.size() > 1)
+            {
+                processingDate = temporalParameterValues.get(1);
+            }
+            MilestoningDatePropagationContext context = new MilestoningDatePropagationContext(processingDate, null);
+            processingContext.pushMilestoningDatePropagationContext(context);
         }
         else if (isBiTemporal(milestoningStereotype))
         {
-            processingContext.milestoningDatePropagationContext.setProcessingDate(temporalParameterValues.get(1));
-            processingContext.milestoningDatePropagationContext.setBusinessDate(temporalParameterValues.get(2));
+            ValueSpecification processingDate = null;
+            ValueSpecification businessDate = null;
+            if (temporalParameterValues.size() > 2)
+            {
+                processingDate = temporalParameterValues.get(1);
+                businessDate = temporalParameterValues.get(2);
+            }
+            MilestoningDatePropagationContext context = new MilestoningDatePropagationContext(processingDate, businessDate);
+            processingContext.pushMilestoningDatePropagationContext(context);
         }
-    }
-
-    public static boolean isFilter(SimpleFunctionExpression func)
-    {
-        return "filter".equals(func._functionName());
     }
 
     public static void updateMilestoningPropagationContext(SimpleFunctionExpression property, ProcessingContext processingContext)
@@ -96,25 +111,23 @@ public class MilestoningDatePropagationHelper
         }
         else
         {
-            processingContext.milestoningDatePropagationContext.setBusinessDate(null);
-            processingContext.milestoningDatePropagationContext.setProcessingDate(null);
+            processingContext.pushMilestoningDatePropagationContext(new MilestoningDatePropagationContext(null, null));
         }
     }
 
-    public static void updateMilestoningPropagationContextForFilter(SimpleFunctionExpression func, ProcessingContext processingContext)
+    public static void updateMilestoningPropagationContextWhileReprocessingFunctionExpression(ProcessingContext processingContext)
     {
-        ValueSpecification parameterValue = func._parametersValues().getFirst();
-        if (parameterValue instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) parameterValue))
+        if (processingContext.milestoningDatePropagationContext.size() != 0)
         {
-            setMilestoningPropagationContext((SimpleFunctionExpression) parameterValue, processingContext);
-        }
-    }
-
-    public static void updateMilestoningPropagationContextForAutoMap(AbstractProperty<?> property, CompileContext context, int parametersCount, ValueSpecification processedParameter, ProcessingContext processingContext)
-    {
-        if (isGeneratedMilestonedQualifiedPropertyWithMissingDates(property, context, parametersCount) && processedParameter instanceof SimpleFunctionExpression && ((SimpleFunctionExpression) processedParameter)._func() instanceof AbstractProperty && isGeneratedMilestoningProperty((AbstractProperty<?>) ((SimpleFunctionExpression) processedParameter)._func(), context))
-        {
-            updateMilestoningPropagationContext((SimpleFunctionExpression) processedParameter, processingContext);
+            processingContext.popMilestoningDatePropagationContext();
+            if (processingContext.milestoningDatePropagationContext.size() != 0)
+            {
+                processingContext.pushMilestoningDatePropagationContext(processingContext.peekMilestoningDatePropagationContext());
+            }
+            else
+            {
+                processingContext.pushMilestoningDatePropagationContext(new MilestoningDatePropagationContext(null, null));
+            }
         }
     }
 
@@ -122,12 +135,19 @@ public class MilestoningDatePropagationHelper
     {
         if (isGeneratedQualifiedPropertyWithDatePropagationSupported(property, context))
         {
+            if (processingContext.milestoningDatePropagationContext.size() != 0)
+            {
+                processingContext.popMilestoningDatePropagationContext();
+            }
             updateMilestoningPropagationContext(func, processingContext);
         }
         else if (property instanceof QualifiedProperty || property.getName().endsWith(ALL_VERSIONS_PROPERTY_NAME_SUFFIX) || property.getName().endsWith(ALL_VERSIONS_IN_RANGE_PROPERTY_NAME_SUFFIX))
         {
-            processingContext.milestoningDatePropagationContext.setProcessingDate(null);
-            processingContext.milestoningDatePropagationContext.setBusinessDate(null);
+            if (processingContext.milestoningDatePropagationContext.size() != 0)
+            {
+                processingContext.popMilestoningDatePropagationContext();
+            }
+            processingContext.pushMilestoningDatePropagationContext(new MilestoningDatePropagationContext(null, null));
         }
     }
 
@@ -135,24 +155,16 @@ public class MilestoningDatePropagationHelper
     {
         if (!MILESTONING_DATE_SOURCE_TYPES.contains(appliedFunction.function) && !appliedFunction.parameters.isEmpty() && appliedFunction.parameters.get(0) instanceof AppliedFunction && ((AppliedFunction) appliedFunction.parameters.get(0)).function.equals("getAll"))
         {
-            processingContext.milestoningDatePropagationContext.isDatePropagationSupported = false;
+            processingContext.isDatePropagationSupported = false;
         }
     }
 
     public static void updateMilestoningContextFromValidSources(ValueSpecification result, ProcessingContext processingContext)
     {
-        if (result instanceof SimpleFunctionExpression && "map".equals(((SimpleFunctionExpression) result)._functionName()))
+        if (result instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result) && processingContext.isDatePropagationSupported)
         {
-            processingContext.milestoningDatePropagationContext.setProcessingDate(null);
-            processingContext.milestoningDatePropagationContext.setBusinessDate(null);
-        }
-        if (result instanceof SimpleFunctionExpression && isGetAllFunctionWithMilestoningContext((SimpleFunctionExpression) result) && processingContext.milestoningDatePropagationContext.isDatePropagationSupported)
-        {
+            processingContext.milestoningDatePropagationContext = new Stack<>();
             setMilestoningPropagationContext((SimpleFunctionExpression) result, processingContext);
-        }
-        if (result instanceof SimpleFunctionExpression && isFilter((SimpleFunctionExpression) result))
-        {
-            updateMilestoningPropagationContextForFilter((SimpleFunctionExpression) result, processingContext);
         }
     }
 
@@ -262,12 +274,13 @@ public class MilestoningDatePropagationHelper
         MutableList<? extends ValueSpecification> parametersValues = fe._parametersValues().toList();
         ValueSpecification[] milestoningDateParameters = new ValueSpecification[targetTypeMilestoning.getTemporalDatePropertyNames().size()];
         fe._originalMilestonedPropertyParametersValues(fe._parametersValues());
+        MilestoningDatePropagationContext propagationContext = processingContext.milestoningDatePropagationContext.size() == 0 ? new MilestoningDatePropagationContext(null, null) : processingContext.peekMilestoningDatePropagationContext();
 
         if (isBiTemporal(targetTypeMilestoning))
         {
             if (isBiTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
             {
-                milestoningDateParameters[0] = processingContext.milestoningDatePropagationContext.getProcessingDate();
+                milestoningDateParameters[0] = propagationContext.getProcessingDate();
                 milestoningDateParameters[1] = parametersValues.get(1);
             }
             else if (isSingleDateTemporal(sourceTypeMilestoning) && oneDateParamSupplied(parametersValues))
@@ -277,12 +290,12 @@ public class MilestoningDatePropagationHelper
                 int otherPropagatedDateIndex;
                 if (isProcessingTemporal(sourceTypeMilestoning))
                 {
-                    propagatedDate = processingContext.milestoningDatePropagationContext.getProcessingDate();
+                    propagatedDate = propagationContext.getProcessingDate();
                     otherPropagatedDateIndex = 1;
                 }
                 else
                 {
-                    propagatedDate = processingContext.milestoningDatePropagationContext.getBusinessDate();
+                    propagatedDate = propagationContext.getBusinessDate();
                     otherPropagatedDateIndex = 0;
                 }
                 setMilestoningDateParameters(milestoningDateParameters, propagatedDateIndex, propagatedDate);
@@ -290,8 +303,8 @@ public class MilestoningDatePropagationHelper
             }
             if (isBiTemporal(sourceTypeMilestoning) && noDateParamSupplied(parametersValues))
             {
-                milestoningDateParameters[0] = processingContext.milestoningDatePropagationContext.getProcessingDate();
-                milestoningDateParameters[1] = processingContext.milestoningDatePropagationContext.getBusinessDate();
+                milestoningDateParameters[0] = propagationContext.getProcessingDate();
+                milestoningDateParameters[1] = propagationContext.getBusinessDate();
             }
         }
         else if (isSingleDateTemporal(targetTypeMilestoning) && noDateParamSupplied(parametersValues))
@@ -299,11 +312,11 @@ public class MilestoningDatePropagationHelper
             ValueSpecification propagatedDate;
             if (isProcessingTemporal(targetTypeMilestoning))
             {
-                propagatedDate = processingContext.milestoningDatePropagationContext.getProcessingDate();
+                propagatedDate = propagationContext.getProcessingDate();
             }
             else
             {
-                propagatedDate = processingContext.milestoningDatePropagationContext.getBusinessDate();
+                propagatedDate = propagationContext.getBusinessDate();
             }
             if (isBiTemporal(sourceTypeMilestoning))
             {
@@ -314,7 +327,7 @@ public class MilestoningDatePropagationHelper
                 setMilestoningDateParameters(milestoningDateParameters, 0, propagatedDate);
             }
         }
-        if (!ArrayIterate.isEmpty(milestoningDateParameters))
+        if (!ArrayIterate.isEmpty(milestoningDateParameters) && !ArrayIterate.contains(milestoningDateParameters, null))
         {
             parametersValues = LazyIterate.concatenate(FastList.<ValueSpecification>newListWith(parametersValues.get(0)), FastList.newListWith(milestoningDateParameters)).toList();
             fe._parametersValues(parametersValues);
