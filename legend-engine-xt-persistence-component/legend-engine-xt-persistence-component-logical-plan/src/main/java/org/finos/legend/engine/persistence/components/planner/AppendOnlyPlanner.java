@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
@@ -65,29 +66,7 @@ class AppendOnlyPlanner extends Planner
         super(datasets, ingestMode, plannerOptions);
 
         // validate
-        ingestMode.deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
-        {
-            @Override
-            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-            {
-                validatePrimaryKeysIsEmpty(primaryKeys);
-                return null;
-            }
-
-            @Override
-            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-            {
-                validatePrimaryKeysNotEmpty(primaryKeys);
-                return null;
-            }
-
-            @Override
-            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-            {
-                validatePrimaryKeysNotEmpty(primaryKeys);
-                return null;
-            }
-        });
+        ingestMode.deduplicationStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysIsEmpty, this::validatePrimaryKeysNotEmpty));
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
     }
@@ -157,6 +136,41 @@ class AppendOnlyPlanner extends Planner
         }
 
         return postRunStatisticsResult;
+    }
+
+    static class ValidatePrimaryKeys implements DeduplicationStrategyVisitor<Void>
+    {
+        final List<String> primaryKeys;
+        final Consumer<List<String>> validatePrimaryKeysIsEmpty;
+        final Consumer<List<String>> validatePrimaryKeysNotEmpty;
+
+        ValidatePrimaryKeys(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysIsEmpty, Consumer<List<String>> validatePrimaryKeysNotEmpty)
+        {
+            this.primaryKeys = primaryKeys;
+            this.validatePrimaryKeysIsEmpty = validatePrimaryKeysIsEmpty;
+            this.validatePrimaryKeysNotEmpty = validatePrimaryKeysNotEmpty;
+        }
+
+        @Override
+        public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+        {
+            validatePrimaryKeysIsEmpty.accept(primaryKeys);
+            return null;
+        }
+
+        @Override
+        public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+        {
+            validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            return null;
+        }
+
+        @Override
+        public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+        {
+            validatePrimaryKeysNotEmpty.accept(primaryKeys);
+            return null;
+        }
     }
 
     static class SelectStageDatasetBuilder implements DeduplicationStrategyVisitor<Dataset>
