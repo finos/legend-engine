@@ -187,7 +187,7 @@ function meta::relational::mapping::fetchEnumFullPath(enum:EnumerationMapping<An
 
 function meta::relational::mapping::relationalPlanSupportFunctions(c:DatabaseConnection[1]):String[*]
 {
-   if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction())->concatenate(equalEnumOperationSelectorFunction());
+   if($c.timeZone->isNotEmpty() && !meta::pure::functions::date::systemDefaultTimeZones()->contains($c.timeZone->toOne()),|utcToTimeZoneSupportFunction(),|[])->concatenate(collectionRenderFunction())->concatenate(collectionSizeFunction())->concatenate(escapeSqlFunction())->concatenate(optionalVarPlaceHolderOperationSelectorFunction())->concatenate(varPlaceHolderToStringFunction())->concatenate(equalEnumOperationSelectorFunction());
 }
 
 function meta::relational::mapping::varPlaceHolderToStringFunction():String[*]
@@ -226,13 +226,25 @@ function meta::relational::mapping::collectionSizeFunction():String[1]
    '<#function collectionSize collection> <#return collection?size?c> </#function>';
 }
 
+function meta::relational::mapping::escapeSqlFunction():String[1]
+{
+    '<#function escapeSql variable>' +
+    '<#if variable?is_string>' +
+            '<#if variable?replace("\'\'", "\'")?replace("\'", "\'\'") == variable>' +
+            '<#return variable></#if>' +
+            '<#return variable?replace("\'", "\'\'")>' +
+        '<#else>' +
+            '<#return variable></#if>' +
+    '</#function>';
+}
+
 function meta::relational::mapping::collectionRenderFunction():String[1]
 {
-   '<#function renderCollection collection separator prefix suffix defaultValue>'+
+   '<#function renderCollection collection separator prefix suffix defaultValue escapeValues=false>'+
         '<#if collection?size == 0>' +
            '<#return defaultValue>' +
         '</#if>' +
-        '<#return prefix + collection?join(suffix + separator + prefix) + suffix>'+
+        '<#return prefix + collection?map(value -> escapeValues?then(escapeSql(value), value))?join(suffix + separator + prefix) + suffix>'+
    '</#function>';
 }
 
