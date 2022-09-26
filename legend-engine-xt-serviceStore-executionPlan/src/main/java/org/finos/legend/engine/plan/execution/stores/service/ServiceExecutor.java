@@ -172,11 +172,11 @@ public class ServiceExecutor {
         final SSLContextBuilder sslContextBuilder = SSLContextBuilder.create();
         if (!StringUtils.isAnyEmpty(keystore, keyStorePassword)) {
             try {
-                sslContextBuilder
-                        .loadKeyMaterial(
-                                new File(keystore),
-                                keyStorePassword.toCharArray(),
-                                keyStorePassword.toCharArray());
+                sslContextBuilder.loadKeyMaterial(
+                        new File(keystore),
+                        keyStorePassword.toCharArray(),
+                        keyStorePassword.toCharArray()
+                );
             } catch (Exception e) {
                 LOGGER.error(String.format("Failed to load keystore %s for service store", keystore), e);
             }
