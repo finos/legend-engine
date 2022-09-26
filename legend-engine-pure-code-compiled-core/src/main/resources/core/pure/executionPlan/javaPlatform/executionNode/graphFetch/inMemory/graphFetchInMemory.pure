@@ -483,12 +483,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Helper functions */
 
-function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::inMemorySource():String[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::inMemorySource():String[1]
 {
    'src$'
 }
 
-function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addPropertyWithGetterAndSetter(class: meta::external::language::java::metamodel::Class[1], propertyName: String[1], propertyType: meta::external::language::java::metamodel::Type[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addPropertyWithGetterAndSetter(class: meta::external::language::java::metamodel::Class[1], propertyName: String[1], propertyType: meta::external::language::java::metamodel::Type[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    let propertyFieldName = $conventions->fieldName($propertyName);
    let propertyField     = $class->j_this()->j_field($propertyFieldName, $propertyType);
@@ -559,7 +559,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Property mapping helpers */
 
-function <<access.public>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[0..1]
+function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[0..1]
 {  
    print(if($debug.debug,|$debug.space+'generatePropertyMappingTransform: \''+$property.name->toOne()+'\'\n', |''));
    
