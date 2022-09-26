@@ -31,6 +31,7 @@ import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCacheKe
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCrossAssociationKeys;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
@@ -70,6 +71,27 @@ public class TestServiceRunner
 
     public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
     public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
+
+    private void test(String fetchFunction, String expectedResult)
+    {
+        SimpleServiceRunner simpleRelationalServiceRunner = new SimpleServiceRunner(fetchFunction);
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = simpleRelationalServiceRunner.run(serviceRunnerInput);
+        Assert.assertEquals(expectedResult, result);
+    }
+
+    private void testParameter(String fetchFunction, String argName, Object parameter, String expectedResult)
+    {
+        SimpleOptionalParameterServiceRunner simpleRelationalServiceRunner = new SimpleOptionalParameterServiceRunner(fetchFunction, argName);
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(parameter))
+                .withSerializationFormat(SerializationFormat.PURE);
+        String result = simpleRelationalServiceRunner.run(serviceRunnerInput);
+        Assert.assertEquals(expectedResult, result);
+    }
 
     private void testOptionalParameter(String fetchFunction, String argName, Object optionalParameter, String expectedResultWithParameter, String expectedResultWithoutParameter)
     {
@@ -123,7 +145,7 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalDateTimeWithNoTimeZone()
     {
-        this.testOptionalParameter("test::fetchOptionalEmploymentDateTime", "optionalDateTime", "2005-03-15T18:47:52", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTime", "optionalDateTime", "2005-03-15T18:47:52", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}", "[{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\",\"employmentDateTime\":null}]");
     }
 
     @Test
@@ -135,7 +157,7 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalBoolean()
     {
-        this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", true, "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}", "[]");
+        this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", true, "[{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]", "[]");
         this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", false, "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", "[]");
     }
 
@@ -148,7 +170,7 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalInteger_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalAgeMany", "optionalAge", Arrays.asList(25,35), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalAgeMany", "optionalAge", Arrays.asList(25,35), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]", "[]");
     }
 
     @Test
@@ -276,7 +298,7 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
 
         String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
-        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]", result);
     }
 
     @Test
@@ -289,7 +311,124 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
 
         String result = serviceRunnerWithLetVariablePureExpression.run(serviceRunnerInput);
-        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", result);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]", result);
+    }
+
+    @Test
+    public void testParameterSqlEscapingString()
+    {
+        this.testParameter("test::fetchByLastName", "ip", "O'Connor", "{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}");
+    }
+
+    @Test
+    public void testParameterSqlEscapingArray()
+    {
+        this.testParameter("test::fetchByLastNames", "ip", Collections.singletonList("O'Connor"), "{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}");
+    }
+
+    @Test
+    public void testParameterSqlEscapingArrayThreeElements()
+    {
+        this.testParameter("test::fetchByLastNames", "ip", Arrays.asList("Smith", "O'Connor", "O'Malley"),
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testParameterSqlEscapingArrayFiftyThreeElements()
+    {
+        this.testParameter("test::fetchByLastNames", "ip", Arrays.asList("Smith", "O'Connor", "O'Malley",
+                        "Smith", "02", "03", "O'Connor", "05", "06", "O'Malley", "08", "09", "10",
+                        "Smith", "12", "13", "O'Connor", "15", "16", "O'Malley", "18", "19", "20",
+                        "Smith", "22", "23", "O'Connor", "25", "26", "O'Malley", "28", "29", "30",
+                        "Smith", "32", "33", "O'Connor", "35", "36", "O'Malley", "38", "39", "40",
+                        "Smith", "42", "43", "O'Connor", "45", "46", "O'Malley", "48", "49", "50"),
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testParameterSqlEscapingStringNotBad()
+    {
+        this.testParameter("test::fetchByLastNameNot", "ip", "${bad}",
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testParameterSqlEscapingStringNotDOS()
+    {
+        this.testParameter("test::fetchByLastNameNot", "ip", "ip ${ip}",
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testPureSqlEscapingStringAtAt()
+    {
+        this.test("test::fetchByLastNameNotAtAt",
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testParameterSqlEscapingStringNot()
+    {
+        char[] chars = new char[256];
+        for (int i = 0; i < 255; i++)
+        {
+            chars[i] = (char) i;
+        }
+        String bytes = new String(chars);
+        this.testParameter("test::fetchByLastNameNot", "ip", bytes,
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testParameterSqlEscapingArrayNot()
+    {
+        char[] chars = new char[256];
+        for (int i = 0; i < 255; i++)
+        {
+            chars[i] = (char) i;
+        }
+        String bytes = new String(chars);
+        this.testParameter("test::fetchByLastNamesNot", "ip", Collections.singletonList(bytes),
+                "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"},{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}]");
+    }
+
+    @Test
+    public void testPureSqlEscapingString()
+    {
+        this.test("test::fetchOConnor", "{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}");
+    }
+
+    @Test
+    public void testPureSqlEscapingArray()
+    {
+        this.test("test::fetchOConnors", "{\"firstName\":\"Dave\",\"lastName\":\"O'Connor\"}");
+    }
+
+    @Test
+    public void testSqlInjection()
+    {
+        SimpleRelationalServiceRunner simpleRelationalServiceRunner = new SimpleRelationalServiceRunner((StoreExecutorConfiguration[]) null);
+
+        ServiceRunnerInput serviceRunnerInput1 = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(Collections.singletonList("John'); SHUTDOWN IMMEDIATELY;//")))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        Exception exception = null;
+        String result = null;
+        try
+        {
+            result = simpleRelationalServiceRunner.run(serviceRunnerInput1);
+            Thread.sleep(1000);
+            result = null;
+            result = simpleRelationalServiceRunner.run(serviceRunnerInput1);
+        }
+        catch (Exception e)
+        {
+            exception = e;
+        }
+        Assert.assertNull(exception);
+        Assert.assertEquals("[]", result);
     }
 
     @Test
@@ -686,13 +825,13 @@ public class TestServiceRunner
         Assert.assertEquals("{\"firstName\":\"Peter\",\"lastName\":\"Smith\"}", result);
     }
 
-    private static class SimpleOptionalParameterServiceRunner extends AbstractServicePlanExecutor
+    private static class SimpleOptionalParameterServiceRunner extends SimpleServiceRunner
     {
         private String argName;
 
         SimpleOptionalParameterServiceRunner(String fetchFunction, String argName)
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", fetchFunction), true);
+            super(fetchFunction);
             this.argName = argName;
         }
 
@@ -701,6 +840,22 @@ public class TestServiceRunner
         {
             newExecutionBuilder()
                     .withParameter(this.argName, serviceRunnerInput.getArgs().get(0))
+                    .withServiceRunnerInput(serviceRunnerInput)
+                    .executeToStream(outputStream);
+        }
+    }
+
+    private static class SimpleServiceRunner extends AbstractServicePlanExecutor
+    {
+        SimpleServiceRunner(String fetchFunction)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", fetchFunction), true);
+        }
+
+        @Override
+        public void run(ServiceRunnerInput serviceRunnerInput, OutputStream outputStream)
+        {
+            newExecutionBuilder()
                     .withServiceRunnerInput(serviceRunnerInput)
                     .executeToStream(outputStream);
         }
