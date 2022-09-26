@@ -57,7 +57,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Collections.singletonList(Processor.newProcessor(
                 Service.class,
                 Lists.fixedSize.with(PackageableConnection.class, PackageableRuntime.class, DataElement.class),
-                (service, context) -> new Root_meta_legend_service_metamodel_Service_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::Service"))
+                (service, context) -> new Root_meta_legend_service_metamodel_Service_Impl(service.name, null, context.pureModel.getClass("meta::legend::service::metamodel::Service"))
                         ._name(service.name)
                         ._stereotypes(ListIterate.collect(service.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                         ._taggedValues(ListIterate.collect(service.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
