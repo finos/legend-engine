@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 )
 public abstract class GeneratorResultAbstract
 {
-    private static final String SINGLE_QUOTE = "'";
+    public static final String SINGLE_QUOTE = "'";
 
     public abstract SqlPlan preActionsSqlPlan();
 

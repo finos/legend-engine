@@ -29,18 +29,6 @@ import org.immutables.value.Value.Style;
 public interface ResourcesAbstract
 {
     @Default
-    default boolean mainDataSetExists()
-    {
-        return true;
-    }
-
-    @Default
-    default boolean stagingDatasetExists()
-    {
-        return true;
-    }
-
-    @Default
     default boolean stagingDataSetEmpty()
     {
         return false;

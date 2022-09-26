@@ -22,12 +22,11 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class UnitemporalDeltaMapper
 {
-    public static org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta from(UnitemporalDelta unitemporalDelta, String[] pkFields)
+    public static org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta from(UnitemporalDelta unitemporalDelta)
     {
         return org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta.builder()
                 .digestField(DIGEST_FIELD_DEFAULT)
                 .mergeStrategy(unitemporalDelta.mergeStrategy.accept(MappingVisitors.MAP_TO_COMPONENT_MERGE_STRATEGY))
-                .addAllKeyFields(Arrays.asList(pkFields))
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_TRANSACTION_MILESTONING))
                 .build();
     }

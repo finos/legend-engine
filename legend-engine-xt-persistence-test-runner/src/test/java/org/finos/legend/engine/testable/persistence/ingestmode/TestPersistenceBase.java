@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.testable.persistence.ingestmode;
 
 import org.apache.commons.io.FileUtils;
@@ -20,7 +19,6 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.engine.testable.persistence.extension.PersistenceTestableRunnerExtension;
@@ -30,14 +28,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import java.io.File;
 import java.io.IOException;
 
-public class TestPersistenceBase
+public abstract class TestPersistenceBase
 {
 
     protected String readPureCode(String path) throws IOException
     {
         File file = new File(path);
-        String content = FileUtils.readFileToString(file, "UTF-8");
-        return content;
+        return FileUtils.readFileToString(file, "UTF-8");
     }
 
     protected RunTestsResult testPersistence(String persistenceSpec)
@@ -48,7 +45,6 @@ public class TestPersistenceBase
         Root_meta_pure_persistence_metamodel_Persistence purePersistence = (Root_meta_pure_persistence_metamodel_Persistence) packageableElement;
         // Invoke
         PersistenceTestableRunnerExtension extension = new PersistenceTestableRunnerExtension();
-        RunTestsResult result = extension.executePersistenceTest(purePersistence, model, contextData);
-        return result;
+        return extension.executePersistenceTest(purePersistence, model, contextData);
     }
 }

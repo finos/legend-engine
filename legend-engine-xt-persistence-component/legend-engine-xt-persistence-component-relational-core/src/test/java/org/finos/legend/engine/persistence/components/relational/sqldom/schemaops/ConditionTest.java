@@ -53,11 +53,11 @@ public class ConditionTest
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Table tableB = new Table("mydb", null, "mytable2", "stage", BaseTest.QUOTE_IDENTIFIER);
 
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field2 = new Field(tableB, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field2 = new Field(tableB.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
 
-        Value field3 = new Field(tableA, "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field4 = new Field(tableB, "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field3 = new Field(tableA.getAlias(), "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field4 = new Field(tableB.getAlias(), "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
         String expected = "(sink.\"column_varchar\" = stage.\"column_varchar\") AND (sink.\"column_timestamp\" <> stage.\"column_timestamp\")";
 
         Condition condition = new AndCondition(Arrays.asList(new EqualityCondition(field1, field2), new NotEqualCondition(field3, field4)));
@@ -71,10 +71,10 @@ public class ConditionTest
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Table tableB = new Table("mydb", null, "mytable2", "stage", BaseTest.QUOTE_IDENTIFIER);
 
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field2 = new Field(tableB, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field3 = new Field(tableA, "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field4 = new Field(tableB, "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field2 = new Field(tableB.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field3 = new Field(tableA.getAlias(), "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field4 = new Field(tableB.getAlias(), "column_timestamp", BaseTest.QUOTE_IDENTIFIER, null);
 
         String expected = "(sink.\"column_varchar\" < stage.\"column_varchar\") OR (sink.\"column_timestamp\" <= stage.\"column_timestamp\")";
 
@@ -89,8 +89,8 @@ public class ConditionTest
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Table tableB = new Table("mydb", null, "mytable2", "stage", BaseTest.QUOTE_IDENTIFIER);
 
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field2 = new Field(tableB, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field2 = new Field(tableB.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
 
         String expected = "NOT (sink.\"column_varchar\" > stage.\"column_varchar\")";
 
@@ -103,7 +103,7 @@ public class ConditionTest
     void testBetweenCondition()
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
         ObjectValue value1 = new ObjectValue(1);
         ObjectValue value2 = new ObjectValue(10);
 
@@ -139,7 +139,7 @@ public class ConditionTest
     void testInArrayCondition()
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
         ArrayExpression expression = new ArrayExpression(Arrays.asList(new Value[]{new StringValue("IN"), new StringValue("SG"), new StringValue("ID")}));
 
         String expected = "sink.\"column_varchar\" IN ('IN','SG','ID')";
@@ -154,8 +154,8 @@ public class ConditionTest
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Table tableB = new Table("mydb", null, "mytable2", "stage", BaseTest.QUOTE_IDENTIFIER);
 
-        Value field1 = new Field(tableA, "col1", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field2 = new Field(tableB, "col2", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "col1", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field2 = new Field(tableB.getAlias(), "col2", BaseTest.QUOTE_IDENTIFIER, null);
 
         SelectExpression selectExpression = new SelectStatement(
             null,
@@ -174,7 +174,7 @@ public class ConditionTest
     void testIsNullCondition()
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
 
         String expected = "sink.\"column_varchar\" IS NULL";
         Condition condition = new IsNullCondition(field1);
@@ -186,7 +186,7 @@ public class ConditionTest
     void testIsNotNullCondition()
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
-        Value field1 = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
 
         String expected = "sink.\"column_varchar\" IS NOT NULL";
         Condition condition = new IsNotNullCondition(field1);
@@ -198,7 +198,7 @@ public class ConditionTest
     void testLikeCondition()
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
-        Value field = new Field(tableA, "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
         StringValue value = new StringValue("%value");
 
         String expected = "sink.\"column_varchar\" LIKE '%value'";

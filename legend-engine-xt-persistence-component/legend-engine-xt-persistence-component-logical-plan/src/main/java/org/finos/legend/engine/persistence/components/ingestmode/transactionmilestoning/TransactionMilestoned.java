@@ -16,13 +16,9 @@ package org.finos.legend.engine.persistence.components.ingestmode.transactionmil
 
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 
-import java.util.List;
-
 public interface TransactionMilestoned extends IngestMode
 {
     String digestField();
-
-    List<String> keyFields();
 
     TransactionMilestoning transactionMilestoning();
 }

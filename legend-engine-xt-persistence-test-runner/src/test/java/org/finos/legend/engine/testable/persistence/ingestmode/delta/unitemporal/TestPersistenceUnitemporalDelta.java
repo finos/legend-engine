@@ -23,7 +23,6 @@ import org.junit.Test;
 
 public class TestPersistenceUnitemporalDelta extends TestPersistenceBase
 {
-
     @Test
     public void testBatchIdBasedNoDeleteIndicator() throws Exception
     {

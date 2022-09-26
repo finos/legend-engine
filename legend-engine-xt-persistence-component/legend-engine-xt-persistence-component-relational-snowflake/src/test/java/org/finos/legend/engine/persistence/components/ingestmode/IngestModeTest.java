@@ -51,8 +51,6 @@ public class IngestModeTest
     String deleteIndicatorField = "delete_indicator";
     String[] deleteIndicatorValues = new String[]{"yes", "1", "true"};
 
-    String[] primaryKeys = new String[]{"id", "name"};
-    List<String> primaryKeysList = Arrays.asList(primaryKeys);
     String[] partitionKeys = new String[]{"biz_date"};
     HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
@@ -134,7 +132,7 @@ public class IngestModeTest
         " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";
 
     protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";
 
     String expectedCustomMetadataTableIngestQuery = "INSERT INTO \"mydb\".\"custom_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
         " (SELECT 'main',(SELECT COALESCE(MAX(custom_metadata.\"table_batch_id\"),0)+1 FROM \"mydb\".\"custom_metadata\" as custom_metadata WHERE custom_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";

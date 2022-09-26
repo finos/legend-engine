@@ -36,7 +36,8 @@ public class MasteryCompilerExtension implements CompilerExtension
                 MasterRecordDefinition.class,
                 Lists.fixedSize.with(Service.class, Mapping.class, Binding.class, PackageableConnection.class),
                 //First Pass instantiate - does not include Pure class properties on classes
-                (masterRecordDefinition, context) -> new Root_meta_pure_mastery_metamodel_MasterRecordDefinition_Impl("")
+                (masterRecordDefinition, context) -> new Root_meta_pure_mastery_metamodel_MasterRecordDefinition_Impl(masterRecordDefinition.name)
+                        ._name(masterRecordDefinition.name)
                         ._modelClass(HelperMasterRecordDefinitionBuilder.buildModelClass(masterRecordDefinition, context)),
                 //Second Pass stitched together - can access Pure class properties now.
                 (masterRecordDefinition, context) ->

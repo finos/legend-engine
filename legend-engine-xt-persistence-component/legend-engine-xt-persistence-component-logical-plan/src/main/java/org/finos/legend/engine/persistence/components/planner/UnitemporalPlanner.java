@@ -56,8 +56,9 @@ abstract class UnitemporalPlanner extends Planner
     protected final BatchEndTimestamp batchEndTimestamp;
     protected final Condition openRecordCondition;
     protected final Condition digestMatchCondition;
-    protected final Condition primaryKeysMatchCondition;
     protected final Condition digestDoesNotMatchCondition;
+
+    protected Condition primaryKeysMatchCondition;
 
     UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions)
     {
@@ -68,6 +69,7 @@ abstract class UnitemporalPlanner extends Planner
             plannerOptions);
 
         // validate
+        validatePrimaryKeysNotEmpty(primaryKeys);
         validatePrimaryKey(datasets.mainDataset().schema().fields(), transactionMilestoned.transactionMilestoning().accept(FIELD_INCLUDED_IN_PRIMARY_KEY));
 
         // initialize parameters
@@ -77,7 +79,7 @@ abstract class UnitemporalPlanner extends Planner
         this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
         this.openRecordCondition = transactionMilestoned.transactionMilestoning().accept(new DetermineOpenRecordCondition(mainDataset()));
         this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
-        this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.keyFields().toArray(new String[0]));
+        this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
         this.digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
     }
 
@@ -145,7 +147,7 @@ abstract class UnitemporalPlanner extends Planner
             .schema(mainDataset().schema())
             .build();
 
-        Condition primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), ingestMode().keyFields().toArray(new String[0]));
+        Condition primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), primaryKeys.toArray(new String[0]));
         Condition inCondition = ingestMode().transactionMilestoning().accept(new DetermineRowsAddedInSinkCondition(sink2, mainTableName, metadataUtils, batchStartTimestamp));
         Condition existsCondition = Exists.of(Selection.builder()
             .source(sink2)

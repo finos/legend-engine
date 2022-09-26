@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class TestBatch
 {
     public String id;
-    public Integer batchId;
+    public int batchId;
     public List<TestAssertion> assertions;
 
     public SourceInformation sourceInformation;

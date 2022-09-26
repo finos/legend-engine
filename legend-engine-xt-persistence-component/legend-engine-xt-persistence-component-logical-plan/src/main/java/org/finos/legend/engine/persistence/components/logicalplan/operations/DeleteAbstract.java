@@ -17,6 +17,8 @@ package org.finos.legend.engine.persistence.components.logicalplan.operations;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 
+import java.util.Optional;
+
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Parameter;
 import static org.immutables.value.Value.Style;
@@ -35,5 +37,5 @@ public interface DeleteAbstract extends Operation
     Dataset dataset();
 
     @Parameter(order = 1)
-    Condition condition();
+    Optional<Condition> condition();
 }

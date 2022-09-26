@@ -43,8 +43,8 @@ import java.util.Map;
 
 public class NontemporalSnapshotTest extends IngestModeTest
 {
-    String truncateTableSql = "TRUNCATE TABLE \"mydb\".\"main\"";
-    String truncateTableSqlWithUpperCase = "TRUNCATE TABLE \"MYDB\".\"MAIN\"";
+    String cleanUpMainTableSql = "DELETE FROM \"mydb\".\"main\" as sink";
+    String cleanupMainTableSqlUpperCase = "DELETE FROM \"MYDB\".\"MAIN\" as sink";
 
     @Test
     void testSnapshotMilestoning()
@@ -78,7 +78,7 @@ public class NontemporalSnapshotTest extends IngestModeTest
             "(SELECT * FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(expectedBaseTableCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(truncateTableSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
@@ -111,10 +111,10 @@ public class NontemporalSnapshotTest extends IngestModeTest
 
         String insertSql = "INSERT INTO \"MYDB\".\"MAIN\" " +
             "(\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\") " +
-            "(SELECT * FROM \"MYDB\".\"STAGING\" as STAGE)";
+            "(SELECT * FROM \"MYDB\".\"STAGING\" as stage)";
 
         Assertions.assertEquals(expectedBaseTableCreateQueryWithUpperCase, preActionsSqlList.get(0));
-        Assertions.assertEquals(truncateTableSqlWithUpperCase, milestoningSqlList.get(0));
+        Assertions.assertEquals(cleanupMainTableSqlUpperCase, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
@@ -150,7 +150,7 @@ public class NontemporalSnapshotTest extends IngestModeTest
             "(SELECT * FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(expectedBaseTableCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(truncateTableSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
@@ -190,7 +190,7 @@ public class NontemporalSnapshotTest extends IngestModeTest
             "FROM \"mydb\".\"staging\" as stage)";
 
         Assertions.assertEquals(expectedBaseTableCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(truncateTableSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
@@ -312,7 +312,7 @@ public class NontemporalSnapshotTest extends IngestModeTest
 
         List<String> postActionsSql = operations.postActionsSql();
         List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedTruncateTableQuery);
+        expectedSQL.add(expectedStagingCleanupQuery);
 
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
     }
@@ -370,48 +370,6 @@ public class NontemporalSnapshotTest extends IngestModeTest
         List<String> expectedSQL = new ArrayList<>();
         expectedSQL.add(expectedDropTableQuery);
         assertIfListsAreSameIgnoringOrder(expectedSQL, sqlsForPostActions);
-    }
-
-    @Test
-    public void testPreRunStatisticMainTableNotExist()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableShortenedSchema)
-            .build();
-
-        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
-
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();
-        Resources resources = Resources.builder().mainDataSetExists(false).build();
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        Planner planner = Planners.get(datasets, ingestMode, options);
-        Map<StatisticName, LogicalPlan> preRunStatisticsLogicalPlan = planner.buildLogicalPlanForPreRunStatistics(resources);
-
-        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
-
-        Map<StatisticName, SqlPlan> preRunStatisticsPhysicalPlan = new HashMap<>();
-        for (StatisticName statistic : preRunStatisticsLogicalPlan.keySet())
-        {
-            preRunStatisticsPhysicalPlan.put(statistic, transformer.generatePhysicalPlan(preRunStatisticsLogicalPlan.get(statistic)));
-        }
-
-        Map<StatisticName, String> preMilestoneStatistics = new HashMap<>();
-        for (StatisticName statistic : preRunStatisticsPhysicalPlan.keySet())
-        {
-            preMilestoneStatistics.put(statistic, preRunStatisticsPhysicalPlan.get(statistic).getSql());
-        }
-
-        List<String> preRunStatisticsSql = new ArrayList<>(preMilestoneStatistics.values());
-        List<String> expectedSQL = new ArrayList<>(); // Expected to be empty because main table does not exist yet
-
-        assertIfListsAreSameIgnoringOrder(expectedSQL, preRunStatisticsSql);
     }
 
     @Test

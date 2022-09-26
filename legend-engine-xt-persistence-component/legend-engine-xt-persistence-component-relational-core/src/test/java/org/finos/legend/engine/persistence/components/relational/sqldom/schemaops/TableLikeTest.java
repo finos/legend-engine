@@ -52,8 +52,8 @@ class TableLikeTest
         Table leftTable = new Table("mydb", null, "left", "A", BaseTest.QUOTE_IDENTIFIER);
         Table rightTable = new Table("mydb", null, "right", "B", BaseTest.QUOTE_IDENTIFIER);
 
-        Value field1 = new Field(leftTable, "id", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field2 = new Field(rightTable, "id", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(leftTable.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field2 = new Field(rightTable.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null);
 
         Condition joinCondition = new EqualityCondition(field1, field2);
         TableLike exp = new JoinOperation(leftTable, rightTable, Join.INNER_JOIN, joinCondition);

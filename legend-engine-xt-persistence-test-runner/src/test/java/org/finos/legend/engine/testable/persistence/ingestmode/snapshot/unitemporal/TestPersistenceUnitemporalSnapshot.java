@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 
 public class TestPersistenceUnitemporalSnapshot extends TestPersistenceBase
 {
-
     @Test
     public void testBatchIdBased() throws Exception
     {

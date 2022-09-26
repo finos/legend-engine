@@ -19,10 +19,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletes
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 
-import java.util.List;
 import java.util.Optional;
 
-import static org.immutables.value.Value.Check;
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -39,8 +37,6 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
 {
     String digestField();
 
-    List<String> keyFields();
-
     Optional<String> dataSplitField();
 
     @Override
@@ -50,15 +46,6 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
     default MergeStrategy mergeStrategy()
     {
         return NoDeletesMergeStrategy.builder().build();
-    }
-
-    @Check
-    default void validate()
-    {
-        if (keyFields().isEmpty())
-        {
-            throw new IllegalStateException("Cannot build UnitemporalDelta, [keyFields] must contain at least one element");
-        }
     }
 
     @Override
