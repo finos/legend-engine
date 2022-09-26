@@ -73,6 +73,7 @@ import java.util.Optional;
 public class ServiceExecutor
 {
     public static Logger LOGGER = LoggerFactory.getLogger(ServiceExecutor.class);
+
     public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
