@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -34,7 +33,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -125,47 +123,10 @@ class AppendOnlyPlanner extends Planner
             fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
         }
 
-        Dataset selectStage;
-        if (ingestMode().deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
-        {
-            Condition notExistInSinkCondition = Not.of(Exists.of(Selection.builder()
-                .source(mainDataset())
-                .condition(And.builder()
-                    .addConditions(
-                        getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0])),
-                        getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField().orElseThrow(IllegalStateException::new)))
-                    .build())
-                .addAllFields(ALL_COLUMNS())
-                .build()));
+        Dataset selectStage = ingestMode().deduplicationStrategy().accept(new SelectStageDatasetBuilder(
+                mainDataset(), stagingDataset(), ingestMode(), primaryKeys, dataSplitInRangeCondition, fieldsToSelect));
 
-            Condition selectCondition;
-            if (ingestMode().dataSplitField().isPresent())
-            {
-                selectCondition = And.builder().addConditions(dataSplitInRangeCondition.orElseThrow(IllegalStateException::new), notExistInSinkCondition).build();
-            }
-            else
-            {
-                selectCondition = notExistInSinkCondition;
-            }
-
-            selectStage = Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(fieldsToSelect).build();
-        }
-        else
-        {
-            if (ingestMode().dataSplitField().isPresent())
-            {
-                selectStage = Selection.builder().source(stagingDataset()).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).build();
-            }
-            else
-            {
-                selectStage = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
-            }
-        }
-
-        List<Operation> operations = new ArrayList<>();
-        // Op1: insert from staging to main
-        operations.add(Insert.of(mainDataset(), selectStage, fieldsToInsert));
-        return LogicalPlan.of(operations);
+        return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), selectStage, fieldsToInsert)));
     }
 
     @Override
@@ -192,13 +153,122 @@ class AppendOnlyPlanner extends Planner
                 INCOMING_RECORD_COUNT,
                 LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get())).build());
 
-            if (ingestMode().deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_ALLOW_DUPLICATES))
+            ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult));
+        }
+
+        return postRunStatisticsResult;
+    }
+
+    static class SelectStageDatasetBuilder implements DeduplicationStrategyVisitor<Dataset>
+    {
+        final Dataset mainDataset;
+        final Dataset stagingDataset;
+        final AppendOnly ingestMode;
+        final List<String> primaryKeys;
+        final Optional<Condition> dataSplitInRangeCondition;
+
+        final List<Value> fieldsToSelect;
+
+        SelectStageDatasetBuilder(Dataset mainDataset, Dataset stagingDataset, AppendOnly ingestMode, List<String> primaryKeys, Optional<Condition> dataSplitInRangeCondition, List<Value> fieldsToSelect)
+        {
+            this.mainDataset = mainDataset;
+            this.stagingDataset = stagingDataset;
+            this.ingestMode = ingestMode;
+            this.primaryKeys = primaryKeys;
+            this.dataSplitInRangeCondition = dataSplitInRangeCondition;
+            this.fieldsToSelect = fieldsToSelect;
+        }
+
+        @Override
+        public Dataset visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+        {
+            return selectStageDatasetWithoutDuplicateFiltering();
+        }
+
+        @Override
+        public Dataset visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+        {
+            Condition notExistInSinkCondition = Not.of(Exists.of(Selection.builder()
+                .source(mainDataset)
+                .condition(And.builder()
+                    .addConditions(
+                        getPrimaryKeyMatchCondition(mainDataset, stagingDataset, primaryKeys.toArray(new String[0])),
+                        getDigestMatchCondition(mainDataset, stagingDataset, ingestMode.digestField().orElseThrow(IllegalStateException::new)))
+                    .build())
+                .addAllFields(ALL_COLUMNS())
+                .build()));
+
+            Condition selectCondition;
+            if (ingestMode.dataSplitField().isPresent())
             {
-                postRunStatisticsResult.put(
-                    ROWS_INSERTED,
-                    LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), ROWS_INSERTED.get())).build());
+                selectCondition = And.builder().addConditions(dataSplitInRangeCondition.orElseThrow(IllegalStateException::new), notExistInSinkCondition).build();
             }
-            else if (ingestMode().auditing().accept(AUDIT_ENABLED))
+            else
+            {
+                selectCondition = notExistInSinkCondition;
+            }
+
+            return Selection.builder().source(stagingDataset).condition(selectCondition).addAllFields(fieldsToSelect).build();
+        }
+
+        @Override
+        public Dataset visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+        {
+            return selectStageDatasetWithoutDuplicateFiltering();
+        }
+
+        private Dataset selectStageDatasetWithoutDuplicateFiltering()
+        {
+            if (ingestMode.dataSplitField().isPresent())
+            {
+                return Selection.builder().source(stagingDataset).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).build();
+            }
+            else
+            {
+                return Selection.builder().source(stagingDataset).addAllFields(fieldsToSelect).build();
+            }
+        }
+    }
+
+    static class PopulatePostRunStatisticsBreakdown implements DeduplicationStrategyVisitor<Void>
+    {
+        final AppendOnly ingestMode;
+        final Dataset mainDataset;
+        final Dataset stagingDataset;
+        final Map<StatisticName, LogicalPlan> postRunStatisticsResult;
+
+        PopulatePostRunStatisticsBreakdown(AppendOnly ingestMode, Dataset mainDataset, Dataset stagingDataset, Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+        {
+            this.ingestMode = ingestMode;
+            this.mainDataset = mainDataset;
+            this.stagingDataset = stagingDataset;
+            this.postRunStatisticsResult = postRunStatisticsResult;
+        }
+
+        @Override
+        public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+        {
+            postRunStatisticsResult.put(
+                ROWS_INSERTED,
+                LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset, ROWS_INSERTED.get())).build());
+            return null;
+        }
+
+        @Override
+        public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+        {
+            return populatePostRunStatisticsBreakdownWithNoDuplicatesAllowed();
+        }
+
+        @Override
+        public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+        {
+            return populatePostRunStatisticsBreakdownWithNoDuplicatesAllowed();
+        }
+
+        private Void populatePostRunStatisticsBreakdownWithNoDuplicatesAllowed()
+        {
+            if (ingestMode.auditing().accept(AUDIT_ENABLED))
             {
                 //Rows terminated = Rows invalidated in Sink - Rows updated
                 postRunStatisticsResult.put(
@@ -206,11 +276,11 @@ class AppendOnlyPlanner extends Planner
                     LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L));
 
                 //Rows inserted (no previous active row with same primary key) = Rows added in sink - rows updated
-                String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
+                String auditField = ingestMode.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
                 postRunStatisticsResult.put(
                     ROWS_INSERTED,
                     LogicalPlan.builder()
-                        .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset(), auditField, ROWS_INSERTED.get()))
+                        .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset, auditField, ROWS_INSERTED.get()))
                         .build());
 
                 //Rows updated (when it is invalidated and a new row for same primary keys is added)
@@ -223,8 +293,8 @@ class AppendOnlyPlanner extends Planner
                     ROWS_DELETED,
                     LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L));
             }
-        }
 
-        return postRunStatisticsResult;
+            return null;
+        }
     }
 }

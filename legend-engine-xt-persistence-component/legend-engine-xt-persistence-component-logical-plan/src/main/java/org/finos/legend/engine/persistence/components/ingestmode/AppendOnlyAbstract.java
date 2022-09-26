@@ -15,8 +15,11 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 
 import java.util.Optional;
 
@@ -45,13 +48,30 @@ public interface AppendOnlyAbstract extends IngestMode
     @Check
     default void validate()
     {
-        if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
+        deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
         {
-            if (!digestField().isPresent())
+            @Override
+            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
             {
-                throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
+                return null;
             }
-        }
+
+            @Override
+            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+            {
+                if (!digestField().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+            {
+                return null;
+            }
+        });
     }
 
     @Override
