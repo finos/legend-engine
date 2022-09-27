@@ -269,7 +269,7 @@
         <openjdk.jol.version>0.9</openjdk.jol.version>
         <json-smart.version>2.4.7</json-smart.version>
         <byte-buddy.version>1.11.20</byte-buddy.version>
-        <wiremock.version>2.27.2</wiremock.version>
+        <wiremock.version>2.32.0</wiremock.version>
         <io.netty.version>4.1.52.Final</io.netty.version>
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
 
@@ -2106,6 +2106,10 @@
                     <exclusion>
                         <groupId>javax.xml.bind</groupId>
                         <artifactId>jaxb-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>jakarta.xml.bind</groupId>
+                        <artifactId>jakarta.xml.bind-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
