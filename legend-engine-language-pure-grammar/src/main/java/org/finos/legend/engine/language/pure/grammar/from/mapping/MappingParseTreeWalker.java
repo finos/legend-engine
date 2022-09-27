@@ -222,7 +222,6 @@ public class MappingParseTreeWalker
                 pairOfPointers.first = ptr;
                 instances.put(key, pairOfPointers);
             });
-            ((ModelStoreData) data).instances = instances;
             this.section.elements.add(binding.getPath());
             this.elementConsumer.accept(binding);
         }
