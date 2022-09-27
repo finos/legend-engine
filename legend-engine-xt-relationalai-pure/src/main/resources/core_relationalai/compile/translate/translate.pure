@@ -359,13 +359,12 @@ function meta::rel::compile::compile(
         let baseRule =
           def(
             rel($targetTable)->appl(label('base')),
-            meta::rel::lib::enumerate($vx->from($vx->in($parent)))
+            $vx->from($vx->in($parent))
           );
 
         $expr.projections
           ->map({pair: Pair<String, Scoped>[1] |
             let name = $pair.first;
-            let vi = var('i');
             let vx = var('x');
 
             $pair.second
@@ -379,16 +378,12 @@ function meta::rel::compile::compile(
               ->then({scope: Expr[1] |  
                 def(
                   rel($targetTable)
-                    ->appl(label($name)),
-                  [$vi->cast(@Expr), $scope]
-                    ->product()
-                    ->from(
-                      vars([$vi, $vx])
-                        ->where(
-                          rel($targetTable)
-                            ->appl([label('base'), $vi, $vx])
-                        )
-                    )
+                    ->appl([label($name), $vx]),
+                  [
+                    $scope, 
+                    rel($targetTable)
+                      ->atom([label('base'), $vx])
+                  ]->product()
                 );
               });              
           })
@@ -439,8 +434,6 @@ function meta::rel::compile::compile(
       let parentVariable = var($parentState.variableFactory->next());
       let indexVariable = var($parentState.variableFactory->next());
       let baseTable = $parentState.relFactory->next('tbl');
-
-      let tableExpr = $parent->meta::rel::lib::enumerate();
       
       $expr.group->map({g: Scoped[1] |
         $g->compile({a: Any[1] |
@@ -458,13 +451,10 @@ function meta::rel::compile::compile(
             ->toIndexed()
             ->fold({pair: Pair<Integer, Expr>[1], accum |
               let body = 
-                $indexVariable
-                  ->concatenate($pair.second)
-                  ->toOneMany()
-                  ->product()
-                  ->from(
-                    vars([$indexVariable, $parentVariable])
-                      ->where($baseTable->atom([label('base'), $indexVariable, $parentVariable]))
+                $pair.second
+                  ->for(
+                    $parentVariable
+                      ->where($baseTable->atom([label('base'), $parentVariable]))
                   );
               
               let head = 
@@ -478,7 +468,7 @@ function meta::rel::compile::compile(
             ->concatenate(
               rel($baseTable)
                 ->appl(label('base'))
-                ->def(meta::rel::lib::enumerate(var('x')->from(var('x')->in($parent))))
+                ->def(var('x')->from(var('x')->in($parent)))
             )
             // def tbl1[:groups] = sort[(tbl1:group[:"0"][j], tbl1:group[:"1"][j] from j)]
             ->concatenate(
@@ -561,7 +551,6 @@ function meta::rel::compile::compile(
                     })
                 }, $state)
                 ->step({mapExpr: Expr[1] |
-                  let vj = var('j');
                   let body = $groupByVariables
                     ->toIndexed()
                     ->fold({pair: Pair<Integer, Variable>[1], accum |
@@ -570,16 +559,16 @@ function meta::rel::compile::compile(
                         rel($baseTable)
                           ->appl([label('group'), label($pair.first->toString())]);
 
-                      $accum->and($head->atom([$vj, $groupBy]));
+                      $accum->and($head->atom([$aggVar, $groupBy]));
                     }, 
                       rel($baseTable)
                         ->appl(label('base'))
-                        ->atom([$vj, $aggVar])
+                        ->atom($aggVar)
                     );
                   
                   $mapExpr
                     ->from(
-                      vars([$vj, $aggVar])
+                      $aggVar
                         ->where($body)
                     )
                     ->ok();
@@ -600,7 +589,7 @@ function meta::rel::compile::compile(
           ->map({pair: Pair<Integer, Variable>[1] |
             rel($baseTable)
               ->appl($expr.names->at($pair.first)->label())
-              ->appl([$vi, $pair.second])
+              ->atom([$vi, $pair.second])
           });
 
         let rules = 
