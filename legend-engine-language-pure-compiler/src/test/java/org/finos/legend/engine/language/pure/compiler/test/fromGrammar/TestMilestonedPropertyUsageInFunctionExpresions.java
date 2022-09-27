@@ -153,6 +153,191 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
     }
 
     @Test
+    public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporalWithMultipleProjectColumns()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("###Pure\n" +
+                        "Class <<temporal.bitemporal>> main::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: main::Firm[1];\n" +
+                        "  firm1: main::Firm[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.bitemporal>> main::Firm1\n" +
+                        "{\n" +
+
+                        "}\n" +
+                        "Class <<temporal.bitemporal>> main::Firm extends main::Firm1\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  test: main::City[1];\n" +
+                        "  city(d: StrictDate[1]) {$this.testAllVersions-> toOne()}: main::City[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> main::City\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "function main::walkTree(): Any[*]\n" +
+                        "{\n" +
+                        "   main::Person.all(%2021-11-12, %2021-11-13)->project([x| $x.name, x| $x.firm.name], ['City name', 'name'])\n" +
+                        "}\n");
+        PureModel pureModel = modelWithInput.getTwo();
+        String WALK_TREE = "main::walkTree___Any_MANY_";
+        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
+        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
+        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(1);
+        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) ((SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0))._parametersValues().toList().get(0);
+        InstanceValue parameterValue1 = (InstanceValue)  firm_functionExpression._parametersValues().toList().get(1);
+        InstanceValue parameterValue2 = (InstanceValue) firm_functionExpression._parametersValues().toList().get(2);
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue1._values().toList().get(0));
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 13), parameterValue2._values().toList().get(0));
+    }
+
+    @Test
+    public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporalWithProject()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("###Pure\n" +
+                        "Class <<temporal.bitemporal>> main::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: main::Firm[1];\n" +
+                        "  firm1: main::Firm[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.bitemporal>> main::Firm1\n" +
+                        "{\n" +
+
+                        "}\n" +
+                        "Class <<temporal.bitemporal>> main::Firm extends main::Firm1\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  test: main::City[1];\n" +
+                        "  city(d: StrictDate[1]) {$this.testAllVersions-> toOne()}: main::City[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> main::City\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "function main::walkTree(): Any[*]\n" +
+                        "{\n" +
+                        "   main::Person.all(%2021-11-12, %2021-11-13)->project([x| $x.firm.name + $x.firm.name], ['name'])\n" +
+                        "}\n");
+        PureModel pureModel = modelWithInput.getTwo();
+        String WALK_TREE = "main::walkTree___Any_MANY_";
+        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
+        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
+        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
+        InstanceValue plus_functionExpression = ((InstanceValue) ((SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0))._parametersValues().toList().get(0));
+        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) ((SimpleFunctionExpression)  plus_functionExpression._values().toList().get(0))._parametersValues().toList().get(0);
+        InstanceValue parameterValue1 = (InstanceValue)  firm_functionExpression._parametersValues().toList().get(1);
+        InstanceValue parameterValue2 = (InstanceValue) firm_functionExpression._parametersValues().toList().get(2);
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue1._values().toList().get(0));
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 13), parameterValue2._values().toList().get(0));
+        SimpleFunctionExpression firm1_functionExpression = (SimpleFunctionExpression) ((SimpleFunctionExpression)  plus_functionExpression._values().toList().get(1))._parametersValues().toList().get(0);
+        InstanceValue firm1_parameterValue1 = (InstanceValue)  firm1_functionExpression._parametersValues().toList().get(1);
+        InstanceValue firm1_parameterValue2 = (InstanceValue) firm1_functionExpression._parametersValues().toList().get(2);
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), firm1_parameterValue1._values().toList().get(0));
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 13), firm1_parameterValue2._values().toList().get(0));
+    }
+
+    @Test
+    public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporalWithIfStatement()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("###Pure\n" +
+                        "Class <<temporal.bitemporal>> main::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: main::Firm[1];\n" +
+                        "  firm1: main::Firm[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.bitemporal>> main::Firm1\n" +
+                        "{\n" +
+
+                        "}\n" +
+                        "Class <<temporal.bitemporal>> main::Firm extends main::Firm1\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  test: main::City[1];\n" +
+                        "  city(d: StrictDate[1]) {$this.testAllVersions-> toOne()}: main::City[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> main::City\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "function main::walkTree(): Any[*]\n" +
+                        "{\n" +
+                        "   main::Person.all(%2021-11-12, %2021-11-13)->project([x| if($x.firm.name->startsWith('a'), | 'Firm' , |'Name')], ['City name', 'name'])\n" +
+                        "}\n");
+        PureModel pureModel = modelWithInput.getTwo();
+        String WALK_TREE = "main::walkTree___Any_MANY_";
+        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
+        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
+        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
+        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) ((SimpleFunctionExpression) ((SimpleFunctionExpression) ((SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0))._parametersValues().toList().get(0))._parametersValues().toList().get(0))._parametersValues().toList().get(0);
+        InstanceValue parameterValue1 = (InstanceValue)  firm_functionExpression._parametersValues().toList().get(1);
+        InstanceValue parameterValue2 = (InstanceValue) firm_functionExpression._parametersValues().toList().get(2);
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), parameterValue1._values().toList().get(0));
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 13), parameterValue2._values().toList().get(0));
+    }
+
+    @Test
+    public void testDatePropagationSupportedWhenProjectionColumnHasDerivedproperty()
+    {
+        Pair<PureModelContextData, PureModel> modelWithInput =
+                test("###Pure\n" +
+                        "Class <<temporal.businesstemporal>> main::Person\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  firm: main::Firm[1];\n" +
+                        "  firm1: main::Firm[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> main::Firm1\n" +
+                        "{\n" +
+
+                        "}\n" +
+                        "Class <<temporal.businesstemporal>> main::Firm extends main::Firm1\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "  city: main::City[1];\n" +
+                        "  test: main::City[1];\n" +
+                        "  city(d: StrictDate[1]) {$this.testAllVersions-> toOne()}: main::City[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "Class <<temporal.businesstemporal>> main::City\n" +
+                        "{\n" +
+                        "  name: String[1];\n" +
+                        "}\n" +
+                        "\n" +
+                        "function main::walkTree(): Any[*]\n" +
+                        "{\n" +
+                        "   main::Person.all(%2021-11-12)->project([x| $x.firm.city(%2021-11-12)->filter(y | $y.name == '').name, x| $x.firm1.city(%2021-11-12)->filter(y | $y.name == '').name], ['City name1', 'City Name'])\n" +
+                        "}\n");
+        PureModel pureModel = modelWithInput.getTwo();
+        String WALK_TREE = "main::walkTree___Any_MANY_";
+        ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
+        SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
+        LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
+        LambdaFunction lambdaFunction_1 = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(1);
+        SimpleFunctionExpression firm_functionExpression = (SimpleFunctionExpression) ((SimpleFunctionExpression) (((SimpleFunctionExpression) ((SimpleFunctionExpression) lambdaFunction._expressionSequence().toList().get(0))._parametersValues().toList().get(0))._parametersValues().toList().get(0)))._parametersValues().toList().get(0);
+        SimpleFunctionExpression firm1_functionExpression = (SimpleFunctionExpression) ((SimpleFunctionExpression) (((SimpleFunctionExpression) ((SimpleFunctionExpression) lambdaFunction_1._expressionSequence().toList().get(0))._parametersValues().toList().get(0))._parametersValues().toList().get(0)))._parametersValues().toList().get(0);
+        InstanceValue firm_parameterValue = (InstanceValue) firm_functionExpression._parametersValues().toList().get(1);
+        InstanceValue firm1_parameterValue = (InstanceValue) firm1_functionExpression._parametersValues().toList().get(1);
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), firm_parameterValue._values().toList().get(0));
+        Assert.assertEquals(DateFunctions.newPureDate(2021, 11, 12), firm1_parameterValue._values().toList().get(0));
+    }
+
+    @Test
     public void testDatePropagationSupportedInProjectFromBitemporalToBusinessTemporal()
     {
         Pair<PureModelContextData, PureModel> modelWithInput =

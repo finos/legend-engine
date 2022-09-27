@@ -22,12 +22,11 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class BitemporalDeltaMapper
 {
-    public static org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta from(BitemporalDelta bitemporalDelta, String[] pkFields)
+    public static org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta from(BitemporalDelta bitemporalDelta)
     {
         return org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta.builder()
                 .digestField(DIGEST_FIELD_DEFAULT)
                 .mergeStrategy(bitemporalDelta.mergeStrategy.accept(MappingVisitors.MAP_TO_COMPONENT_MERGE_STRATEGY))
-                .addAllKeyFields(Arrays.asList(pkFields))
                 .transactionMilestoning(bitemporalDelta.transactionMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_TRANSACTION_MILESTONING))
                 .validityMilestoning(bitemporalDelta.validityMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_VALIDITY_MILESTONING))
                 .build();

@@ -38,7 +38,6 @@ public class LowerCaseOptimizer implements CaseConversionOptimizer
         {
             Field field = (Field) component;
             field.setName(field.getName() != null ? field.getName().toLowerCase() : field.getName());
-            field.setAlias(field.getAlias() != null ? field.getAlias().toLowerCase() : field.getAlias());
             return field;
         }
         else if (component instanceof Column)
@@ -53,7 +52,6 @@ public class LowerCaseOptimizer implements CaseConversionOptimizer
             table.setDb(table.getDb() != null ? table.getDb().toLowerCase() : table.getDb());
             table.setSchema(table.getSchema() != null ? table.getSchema().toLowerCase() : table.getSchema());
             table.setTable(table.getTable() != null ? table.getTable().toLowerCase() : table.getTable());
-            table.setAlias(table.getAlias() != null ? table.getAlias().toLowerCase() : table.getAlias());
             return table;
         }
         else if (component instanceof TruncateTable)
@@ -65,7 +63,6 @@ public class LowerCaseOptimizer implements CaseConversionOptimizer
                 table.setDb(table.getDb() != null ? table.getDb().toLowerCase() : table.getDb());
                 table.setSchema(table.getSchema() != null ? table.getSchema().toLowerCase() : table.getSchema());
                 table.setTable(table.getTable() != null ? table.getTable().toLowerCase() : table.getTable());
-                table.setAlias(table.getAlias() != null ? table.getAlias().toLowerCase() : table.getAlias());
             }
             return truncateTable;
         }

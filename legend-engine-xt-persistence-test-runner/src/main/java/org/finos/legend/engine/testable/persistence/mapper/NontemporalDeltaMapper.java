@@ -22,11 +22,10 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class NontemporalDeltaMapper
 {
-    public static org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta from(NontemporalDelta nontemporalDelta, String[] pkFields)
+    public static org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta from(NontemporalDelta nontemporalDelta)
     {
         return org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta.builder()
                 .digestField(DIGEST_FIELD_DEFAULT)
-                .addAllKeyFields(Arrays.asList(pkFields))
                 .auditing(nontemporalDelta.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
                 .mergeStrategy(nontemporalDelta.mergeStrategy.accept(MappingVisitors.MAP_TO_COMPONENT_MERGE_STRATEGY))
                 .build();

@@ -46,23 +46,22 @@ public class IngestModeMapper
     {
         IngestMode ingestMode = getIngestMode(persistence);
         IngestModeType mode = getIngestModeName(ingestMode);
-        String [] pkFields = getCommonPrimaryKeys(mainDataSet, stagingDataset, ingestMode);
         switch (mode)
         {
             case NontemporalSnapshot:
                 return NontemporalSnapshotMapper.from((NontemporalSnapshot) ingestMode);
             case AppendOnly:
-                return AppendOnlyMapper.from((AppendOnly) ingestMode, pkFields);
+                return AppendOnlyMapper.from((AppendOnly) ingestMode);
             case NontemporalDelta:
-                return NontemporalDeltaMapper.from((NontemporalDelta) ingestMode, pkFields);
+                return NontemporalDeltaMapper.from((NontemporalDelta) ingestMode);
             case UnitemporalSnapshot:
-                return UnitemporalSnapshotMapper.from((UnitemporalSnapshot) ingestMode, pkFields);
+                return UnitemporalSnapshotMapper.from((UnitemporalSnapshot) ingestMode);
             case UnitemporalDelta:
-                return UnitemporalDeltaMapper.from((UnitemporalDelta) ingestMode, pkFields);
+                return UnitemporalDeltaMapper.from((UnitemporalDelta) ingestMode);
             case BitemporalSnapshot:
-                return BitemporalSnapshotMapper.from((BitemporalSnapshot) ingestMode, pkFields);
+                return BitemporalSnapshotMapper.from((BitemporalSnapshot) ingestMode);
             case BitemporalDelta:
-                return BitemporalDeltaMapper.from((BitemporalDelta) ingestMode, pkFields);
+                return BitemporalDeltaMapper.from((BitemporalDelta) ingestMode);
             default:
                 throw new Exception("Unsupported Ingest mode");
         }
@@ -89,28 +88,6 @@ public class IngestModeMapper
             return batchPersister.ingestMode;
         }
         throw new Exception("Only BatchPersister has Ingest Mode");
-    }
-
-    public static String [] getCommonPrimaryKeys(Dataset mainDataset, Dataset stagingDataset, IngestMode mode)
-    {
-        Set<String> pksInMainDataset = mainDataset.schema().fields().stream()
-            .filter(field -> field.primaryKey()).map(field -> field.name()).collect(Collectors.toSet());
-        Set<String> pksInStagingDataset = stagingDataset.schema().fields().stream()
-            .filter(field -> field.primaryKey()).map(field -> field.name()).collect(Collectors.toSet());
-        List<String> commonPks = pksInMainDataset.stream()
-            .filter(field -> pksInStagingDataset.contains(field)).collect(Collectors.toList());
-        if (mode != null && mode instanceof BitemporalDelta)
-        {
-            BitemporalDelta bitemporalDelta = (BitemporalDelta) mode;
-            ValidityDerivation derivation = ((DateTimeValidityMilestoning) bitemporalDelta.validityMilestoning).derivation;
-            if (derivation instanceof SourceSpecifiesFromDateTime)
-            {
-                SourceSpecifiesFromDateTime sourceSpecifiesFromDateTime = (SourceSpecifiesFromDateTime) derivation;
-                String srcDateTimeFromField = sourceSpecifiesFromDateTime.sourceDateTimeFromField;
-                commonPks = commonPks.stream().filter(field -> !(field.equals(srcDateTimeFromField))).collect(Collectors.toList());
-            }
-        }
-        return commonPks.toArray(new String[commonPks.size()]);
     }
 
     private static IngestModeType getIngestModeName(IngestMode ingestMode)

@@ -66,6 +66,9 @@ class NontemporalDeltaPlanner extends Planner
     {
         super(datasets, ingestMode, plannerOptions);
 
+        // validate
+        validatePrimaryKeysNotEmpty(primaryKeys);
+
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
 
@@ -81,7 +84,7 @@ class NontemporalDeltaPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
     {
-        Condition pkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), ingestMode().keyFields().toArray(new String[0]));
+        Condition pkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
         Condition digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
         Condition digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
 

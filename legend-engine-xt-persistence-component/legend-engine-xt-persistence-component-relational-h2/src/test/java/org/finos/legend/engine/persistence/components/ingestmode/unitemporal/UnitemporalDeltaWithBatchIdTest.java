@@ -62,7 +62,6 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -118,7 +117,6 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -164,7 +162,6 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -221,7 +218,6 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -273,7 +269,6 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)

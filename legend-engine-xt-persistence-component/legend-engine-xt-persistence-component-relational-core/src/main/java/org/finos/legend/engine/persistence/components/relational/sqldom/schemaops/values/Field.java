@@ -15,14 +15,13 @@
 package org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
 
 public class Field extends Value
 {
-    private Table table;
     private String name;
+    private String datasetReferenceAlias;
     private String quoteIdentifier;
 
     public Field(String name, String quoteIdentifier)
@@ -31,10 +30,10 @@ public class Field extends Value
         this.quoteIdentifier = quoteIdentifier;
     }
 
-    public Field(Table table, String name, String quoteIdentifier, String alias)
+    public Field(String datasetReferenceAlias, String name, String quoteIdentifier, String alias)
     {
         super(alias);
-        this.table = table;
+        this.datasetReferenceAlias = datasetReferenceAlias;
         this.name = name;
         this.quoteIdentifier = quoteIdentifier;
     }
@@ -60,9 +59,9 @@ public class Field extends Value
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
         validate();
-        if (table != null && StringUtils.notEmpty(table.getAlias()))
+        if (datasetReferenceAlias != null)
         {
-            builder.append(table.getAlias()).append(".");
+            builder.append(datasetReferenceAlias).append(".");
         }
         builder.append(SqlGenUtils.getQuotedField(name, quoteIdentifier));
     }
@@ -76,14 +75,6 @@ public class Field extends Value
     @Override
     public void push(Object node)
     {
-        if (node instanceof Table)
-        {
-            table = (Table) node;
-        }
-        else if (node instanceof String)
-        {
-            name = (String) node;
-        }
     }
 
     void validate() throws SqlDomException

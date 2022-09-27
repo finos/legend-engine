@@ -165,7 +165,7 @@ public class MemSqlSink extends AnsiSqlSink
         }
     }
 
-    static final RelationalSink.ValidateMainDatasetSchema VALIDATE_MAIN_DATASET_SCHEMA = new RelationalSink.ValidateMainDatasetSchema()
+    static final ValidateMainDatasetSchema VALIDATE_MAIN_DATASET_SCHEMA = new ValidateMainDatasetSchema()
     {
         @Override
         public void execute(Executor<SqlGen, TabularData, SqlPlan> executor, JdbcHelper sink, Dataset dataset)

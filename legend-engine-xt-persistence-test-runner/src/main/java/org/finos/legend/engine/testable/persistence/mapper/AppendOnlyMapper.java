@@ -25,14 +25,13 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class AppendOnlyMapper
 {
-    public static org.finos.legend.engine.persistence.components.ingestmode.AppendOnly from(AppendOnly appendOnly, String[] pkFields)
+    public static org.finos.legend.engine.persistence.components.ingestmode.AppendOnly from(AppendOnly appendOnly)
     {
         DeduplicationStrategy deduplicationStrategy = appendOnly.filterDuplicates ?
                 FilterDuplicates.builder().build() : AllowDuplicates.builder().build();
 
         return org.finos.legend.engine.persistence.components.ingestmode.AppendOnly.builder()
                 .digestField(DIGEST_FIELD_DEFAULT)
-                .addAllKeyFields(Arrays.asList(pkFields))
                 .deduplicationStrategy(deduplicationStrategy)
                 .auditing(appendOnly.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
                 .build();

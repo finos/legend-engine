@@ -26,7 +26,6 @@ import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +66,6 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -127,7 +125,6 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(dateName, tickerName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -183,7 +180,6 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(dateName, tickerName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -238,7 +234,6 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(idName, startTimeName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -283,7 +278,6 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestName)
-            .addAllKeyFields(Arrays.asList(dateName, tickerName))
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)

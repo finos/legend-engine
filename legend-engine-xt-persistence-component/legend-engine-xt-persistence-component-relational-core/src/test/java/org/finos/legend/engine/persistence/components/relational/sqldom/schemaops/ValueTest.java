@@ -39,8 +39,8 @@ class ValueTest
         Table tableB = new Table(null, null, "mytable", "B", BaseTest.QUOTE_IDENTIFIER);
 
         Value item1 = new Field(null, "id", BaseTest.QUOTE_IDENTIFIER, null);
-        Value item2 = new Field(tableA, "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
-        Value item3 = new Field(tableB, "item3", BaseTest.QUOTE_IDENTIFIER, "my_item");
+        Value item2 = new Field(tableA.getAlias(), "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
+        Value item3 = new Field(tableB.getAlias(), "item3", BaseTest.QUOTE_IDENTIFIER, "my_item");
 
         String sql1 = BaseTest.genSqlIgnoringErrors(item1);
         String sql2 = BaseTest.genSqlIgnoringErrors(item2);

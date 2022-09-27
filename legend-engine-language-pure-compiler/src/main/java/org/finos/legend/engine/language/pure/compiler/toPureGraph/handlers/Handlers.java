@@ -23,8 +23,10 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.MilestoningDatePropagationContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
@@ -67,6 +69,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Handlers
 {
@@ -195,29 +198,34 @@ public class Handlers
 
     public static final ParametersInference LambdaCollectionInference = (parameters, ov, cc, pc) ->
     {
-        updateLambdaCollection(parameters, parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference TDSContainsInference = (parameters, ov, cc, pc) ->
     {
-        updateLambdaCollection(parameters, parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
         updateTDSRowLambda(((Lambda) parameters.get(4)).parameters);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference EvalInference = (parameters, ov, cc, pc) ->
     {
-        updateLambdaCollection(parameters, parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 0);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        ValueSpecification secondProcessedParameter = parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        updateLambdaCollection(parameters, secondProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 0);
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter), parameters.stream().skip(2).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference LambdaColCollectionInference = (parameters, ov, cc, pc) ->
     {
-        GenericType gt = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        GenericType gt = firstProcessedParameter._genericType();
         final GenericType gt2 = gt._rawType()._name().equals("TabularDataSet") || gt._rawType()._name().equals("TableTDS") ? cc.pureModel.getGenericType("meta::pure::tds::TDSRow") : gt;
         toCollection(parameters.get(1)).values.forEach(l -> updateLambdaWithCol(gt2, l));
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference LambdaInference = (parameters, ov, cc, pc) ->
@@ -252,15 +260,18 @@ public class Handlers
 
     public static final ParametersInference TDSFilterInference = (parameters, ov, cc, pc) ->
     {
-        GenericType gt = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        GenericType gt = firstProcessedParameter._genericType();
         if ("TabularDataSet".equals(gt._rawType()._name()))
         {
             updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
-            return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
         }
         else
         {
-            return LambdaInference.update(parameters, ov, cc, pc);
+            List<ValueSpecification> firstPassProcessed = parameters.stream().skip(1).map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            updateSimpleLambda(parameters.get(1), parameters.size() != 0 && parameters.get(0) instanceof Lambda ? firstPassProcessed.get(0)._genericType() : firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+            return ListIterate.zip(LazyIterate.concatenate(FastList.newListWith(firstProcessedParameter), firstPassProcessed).toList(), parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
         }
     };
 
@@ -296,10 +307,11 @@ public class Handlers
     public static final ParametersInference LambdaAndAggInference = (parameters, ov, cc, pc) ->
     {
         // Main Lambda
-        GenericType gt = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        GenericType gt = firstProcessedParameter._genericType();
         updateLambdaCollection(parameters, gt, new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
         aggInferenceAll(parameters, gt, 0, 1, ov, cc, pc);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     private final Map<String, FunctionExpressionBuilder> map = UnifiedMap.newMap();

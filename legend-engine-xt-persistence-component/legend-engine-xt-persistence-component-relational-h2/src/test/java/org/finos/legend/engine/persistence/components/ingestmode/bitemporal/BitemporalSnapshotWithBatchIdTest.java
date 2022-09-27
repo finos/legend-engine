@@ -67,7 +67,6 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         createStagingTable(stagingTable);
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestName)
-            .addKeyFields(key1Name, key2Name, dateInName)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -139,7 +138,6 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestName)
-            .addKeyFields(key1Name, key2Name, dateInName)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -208,7 +206,6 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestName)
-            .addKeyFields(key1Name, key2Name, dateInName)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -276,7 +273,6 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestName)
-            .addKeyFields(key1Name, key2Name, dateInName)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
@@ -331,7 +327,6 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestName)
-            .addKeyFields(key1Name, key2Name, dateInName)
             .transactionMilestoning(BatchId.builder()
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)

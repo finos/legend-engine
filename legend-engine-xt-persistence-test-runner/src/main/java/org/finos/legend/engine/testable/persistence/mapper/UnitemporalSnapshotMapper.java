@@ -22,11 +22,10 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class UnitemporalSnapshotMapper
 {
-    public static org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot from(UnitemporalSnapshot unitemporalSnapshot, String[] pkFields)
+    public static org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot from(UnitemporalSnapshot unitemporalSnapshot)
     {
         return org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot.builder()
                 .digestField(DIGEST_FIELD_DEFAULT)
-                .addAllKeyFields(Arrays.asList(pkFields))
                 .transactionMilestoning(unitemporalSnapshot.transactionMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_TRANSACTION_MILESTONING))
                 .build();
     }

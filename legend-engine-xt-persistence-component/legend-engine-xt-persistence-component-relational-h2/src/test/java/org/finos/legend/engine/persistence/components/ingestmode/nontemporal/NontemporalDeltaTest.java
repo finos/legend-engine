@@ -58,7 +58,6 @@ class NontemporalDeltaTest extends BaseTest
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -101,7 +100,6 @@ class NontemporalDeltaTest extends BaseTest
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -141,7 +139,6 @@ class NontemporalDeltaTest extends BaseTest
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .auditing(NoAuditing.builder().build())
             .build();
 
@@ -180,7 +177,6 @@ class NontemporalDeltaTest extends BaseTest
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
