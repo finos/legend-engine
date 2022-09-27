@@ -1,4 +1,4 @@
-import meta::rel::metamodel::*;
+/*import meta::rel::metamodel::*;
 import meta::rel::metamodel::syntactic::*;
 import meta::rel::metamodel::render::*;
 import meta::rel::utils::*;
@@ -115,5 +115,5 @@ function meta::rel::metamodel::syntactic::variables(exprs: Expr[*], offset: Inte
 
 function meta::rel::metamodel::syntactic::variables(exprs: Expr[*]): Occurrence<Variable>[*] {
   $exprs->variables(0);
-}
+}*/
 
