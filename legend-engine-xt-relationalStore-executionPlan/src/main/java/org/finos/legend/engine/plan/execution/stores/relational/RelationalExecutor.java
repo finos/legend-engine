@@ -271,7 +271,7 @@ public class RelationalExecutor
                 if (((RelationalResult) var.getValue()).columnCount == 1)
                 {
                     RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) var.getValue().realizeInMemory();
-                    List<Map<String, Object>> rowValueMaps = realizedRelationalResult.getRowValueMaps(true);
+                    List<Map<String, Object>> rowValueMaps = realizedRelationalResult.getRowValueMaps(false);
                     executionState.addResult(var.getKey(), new ConstantResult(rowValueMaps.stream().flatMap(map -> map.values().stream()).collect(Collectors.toList())));
                 }
             }
