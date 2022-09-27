@@ -35,9 +35,9 @@ public class DeleteVisitor implements LogicalPlanVisitor<Delete>
 
         List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
         logicalPlanNodeList.add(current.dataset());
-        if (current.condition() != null)
+        if (current.condition().isPresent())
         {
-            logicalPlanNodeList.add(current.condition());
+            logicalPlanNodeList.add(current.condition().get());
         }
 
         return new VisitorResult(deleteStatement, logicalPlanNodeList);

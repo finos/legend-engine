@@ -58,20 +58,32 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
         createStagingTable(stagingTable);
 
         // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestName)
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        String expectedDataPass1 = basePath + "expected/allow_duplicates/expected_pass1.csv";
+        // Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+
         try
         {
-            AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestName)
-                .addKeyFields(idName, startTimeName)
-                .deduplicationStrategy(AllowDuplicates.builder().build())
-                .auditing(NoAuditing.builder().build())
-                .build();
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build AppendOnly, [keyFields] must be empty since [deduplicationStrategy] is set to allow duplicates", e.getMessage());
+            Assertions.assertEquals("Primary key list must be empty", e.getMessage());
         }
     }
 
@@ -125,19 +137,31 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
         Dataset stagingTable = CsvExternalDatasetReference.builder().schema(getSchemaWithNoPKs()).csvDataPath(dataPass1).build();
 
         // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestField(digestName)
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{nameName, incomeName, expiryDateName};
+
+        String expectedDataPass1 = basePath + "expected/allow_duplicates/expected_pass1.csv";
+        // Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
         try
         {
-            AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestName)
-                .deduplicationStrategy(FailOnDuplicates.builder().build())
-                .auditing(NoAuditing.builder().build())
-                .build();
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
             Assertions.fail("Exception was not thrown");
         }
         catch (Exception e)
         {
-            Assertions.assertEquals("Cannot build AppendOnly, [keyFields] must contain at least one element since [deduplicationStrategy] is set to fail on duplicates", e.getMessage());
+            Assertions.assertEquals("Primary key list must not be empty", e.getMessage());
         }
     }
 
@@ -157,7 +181,6 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FailOnDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();

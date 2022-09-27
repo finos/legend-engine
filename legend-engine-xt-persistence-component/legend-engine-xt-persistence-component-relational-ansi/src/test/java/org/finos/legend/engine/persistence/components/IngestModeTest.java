@@ -71,17 +71,11 @@ public class IngestModeTest
     protected String validityFromTargetField = "validity_from_target";
     protected String validityThroughTargetField = "validity_through_target";
 
-    protected String[] primaryKeys = new String[]{"id", "name"};
-    protected List<String> primaryKeysList = Arrays.asList(primaryKeys);
     protected String[] partitionKeys = new String[]{"biz_date"};
     protected Map<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
         put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
     }};
-    protected String[] bitemporalFromAndThroughPrimaryKeys = new String[]{"id", "name", validityFromReferenceField};
-    protected List<String> bitemporalFromAndThroughPrimaryKeysList = Arrays.asList(bitemporalFromAndThroughPrimaryKeys);
-    protected String[] bitemporalFromOnlyPrimaryKeys = new String[]{"id", "name"};
-    protected List<String> bitemporalFromOnlyPrimaryKeysList = Arrays.asList(bitemporalFromOnlyPrimaryKeys);
     protected String[] bitemporalPartitionKeys = new String[]{validityFromReferenceField};
 
     // Base Columns: Primary keys : id, name
@@ -101,6 +95,8 @@ public class IngestModeTest
     protected Field validityThroughTarget = Field.builder().name(validityThroughTargetField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
 
     // Problematic Columns
+    protected Field idNonPrimary = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
+    protected Field nameNonPrimary = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
     protected Field batchIdInNonPrimary = Field.builder().name(batchIdInField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     protected Field batchTimeInNonPrimary = Field.builder().name(batchTimeInField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
 
@@ -231,6 +227,14 @@ public class IngestModeTest
     protected SchemaDefinition baseTableSchemaWithDigest = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(digest)
+        .build();
+
+    protected SchemaDefinition baseTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
+        .addFields(idNonPrimary)
+        .addFields(nameNonPrimary)
         .addFields(amount)
         .addFields(bizDate)
         .addFields(digest)
@@ -412,11 +416,11 @@ public class IngestModeTest
         " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
     protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
     protected String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 
-    protected String expectedTruncateTableQuery = "TRUNCATE TABLE \"mydb\".\"staging\"";
+    protected String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 
     protected String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\"";
 
@@ -587,6 +591,11 @@ public class IngestModeTest
         "\"validity_through_target\" DATETIME," +
         "\"delete_indicator\" VARCHAR," +
         "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+
+    protected String getExpectedCleanupSql(String fullName, String alias)
+    {
+        return String.format("DELETE FROM %s as %s", fullName, alias);
+    }
 
     public void assertIfListsAreSameIgnoringOrder(List<String> first, List<String> second)
     {

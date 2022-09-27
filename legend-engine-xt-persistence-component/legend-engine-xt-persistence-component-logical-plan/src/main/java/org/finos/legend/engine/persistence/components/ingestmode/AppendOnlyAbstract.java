@@ -15,10 +15,12 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.immutables.value.Value.Check;
@@ -37,8 +39,6 @@ public interface AppendOnlyAbstract extends IngestMode
 {
     Optional<String> digestField();
 
-    List<String> keyFields();
-
     Optional<String> dataSplitField();
 
     Auditing auditing();
@@ -48,35 +48,30 @@ public interface AppendOnlyAbstract extends IngestMode
     @Check
     default void validate()
     {
-        if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_ALLOW_DUPLICATES))
+        deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
         {
-            if (!keyFields().isEmpty())
+            @Override
+            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
             {
-                throw new IllegalStateException("Cannot build AppendOnly, [keyFields] must be empty since [deduplicationStrategy] is set to allow duplicates");
+                return null;
             }
-        }
-        else if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FILTER_DUPLICATES))
-        {
-            if (!digestField().isPresent())
+
+            @Override
+            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
             {
-                throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
+                if (!digestField().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
+                }
+                return null;
             }
-            if (keyFields().isEmpty())
+
+            @Override
+            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
             {
-                throw new IllegalStateException("Cannot build AppendOnly, [keyFields] must contain at least one element since [deduplicationStrategy] is set to filter duplicates");
+                return null;
             }
-        }
-        else if (deduplicationStrategy().accept(DeduplicationStrategyVisitors.IS_FAIL_ON_DUPLICATES))
-        {
-            if (keyFields().isEmpty())
-            {
-                throw new IllegalStateException("Cannot build AppendOnly, [keyFields] must contain at least one element since [deduplicationStrategy] is set to fail on duplicates");
-            }
-        }
-        else
-        {
-            throw new IllegalStateException("Unrecognized [deduplicationStrategy]: " + deduplicationStrategy().getClass());
-        }
+        });
     }
 
     @Override

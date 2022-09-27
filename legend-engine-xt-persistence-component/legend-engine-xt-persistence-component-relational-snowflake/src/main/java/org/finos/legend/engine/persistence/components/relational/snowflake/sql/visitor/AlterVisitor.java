@@ -28,7 +28,7 @@ public class AlterVisitor implements LogicalPlanVisitor<Alter>
 {
 
     @Override
-    public LogicalPlanVisitor.VisitorResult visit(PhysicalPlanNode prev, Alter current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, Alter current, VisitorContext context)
     {
         AlterTable alterTable = new AlterTable(AlterOperation.valueOf(current.operation().name()));
         for (Optimizer optimizer : context.optimizers())

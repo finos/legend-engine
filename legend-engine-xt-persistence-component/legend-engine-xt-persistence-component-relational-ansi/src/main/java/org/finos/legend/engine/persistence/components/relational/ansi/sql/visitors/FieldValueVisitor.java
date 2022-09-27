@@ -14,11 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -29,10 +27,8 @@ public class FieldValueVisitor implements LogicalPlanVisitor<FieldValue>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, FieldValue current, VisitorContext context)
     {
-        Table table = determineTable(current, context);
-
         Field field = new Field(
-            table,
+            getDatasetReferenceAlias(current),
             current.fieldName(),
             context.quoteIdentifier(),
             current.alias().orElse(null));
@@ -47,27 +43,12 @@ public class FieldValueVisitor implements LogicalPlanVisitor<FieldValue>
         return new VisitorResult(null);
     }
 
-    private Table determineTable(FieldValue current, VisitorContext context)
+    private String getDatasetReferenceAlias(FieldValue current)
     {
         if (!current.datasetRef().isPresent())
         {
-            return new Table();
+            return null;
         }
-
-        DatasetReference datasetReference = current.datasetRef().get();
-
-        Table table = new Table(
-            datasetReference.database().orElse(null),
-            datasetReference.group().orElse(null),
-            datasetReference.name().orElse(null),
-            datasetReference.alias().orElse(null),
-            context.quoteIdentifier());
-
-        for (Optimizer optimizer : context.optimizers())
-        {
-            table = (Table) optimizer.optimize(table);
-        }
-
-        return table;
+        return current.datasetRef().get().alias().orElse(null);
     }
 }

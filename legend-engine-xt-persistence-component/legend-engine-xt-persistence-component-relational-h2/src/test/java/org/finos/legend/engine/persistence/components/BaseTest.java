@@ -16,7 +16,6 @@ package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
@@ -24,15 +23,11 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
-import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
-import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
-import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -43,11 +38,9 @@ import org.junit.jupiter.api.BeforeEach;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class BaseTest
 {
@@ -151,93 +144,37 @@ public class BaseTest
         return result;
     }
 
-    // TODO: A temporary way to test SQLs with data splits. This shall be removed in the future when the Ingestor is able to generate data split ranges within itself
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, List<String> expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
     {
         return executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC());
     }
 
-    // TODO: A temporary way to test SQLs with data splits. This shall be removed in the future when the Ingestor is able to generate data split ranges within itself
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, List<String> expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
     {
-        RelationalGenerator generator = RelationalGenerator.builder()
+        RelationalIngestor ingestor = RelationalIngestor.builder()
             .ingestMode(ingestMode)
             .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
             .cleanupStagingData(options.cleanupStagingData())
             .collectStatistics(options.collectStatistics())
-            .enableSchemaEvolution(false)
-            .executionTimestampClock(executionTimestampClock)
+            .enableSchemaEvolution(options.enableSchemaEvolution())
             .build();
 
-        List<GeneratorResult> generatorResults = generator.generateOperationsWithDataSplits(datasets, dataSplitRanges);
-        List<IngestorResult> ingestorResults = new ArrayList<>();
+        List<IngestorResult> results = ingestor.ingestWithDataSplits(h2Sink.connection(), datasets, dataSplitRanges);
 
-        for (int i = 0; i < dataSplitRanges.size(); i++)
+        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        for (int i = 0; i < results.size(); i++)
         {
-            GeneratorResult generatorResult = generatorResults.get(i);
-
-            try
+            Map<StatisticName, Object> actualStats = results.get(i).statisticByName();
+            Assertions.assertEquals(expectedStats.get(i).size(), actualStats.size());
+            for (String statistic : expectedStats.get(i).keySet())
             {
-                Map<StatisticName, Object> statisticsResultMap = new HashMap<>(
-                    executeStatisticsPhysicalPlan(executor, generatorResult.preIngestStatisticsSqlPlan()));
-                executor.begin();
-                executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
-                h2Sink.executeStatements(generatorResult.ingestSql());
-                statisticsResultMap.putAll(
-                    executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan()));
-                if (generatorResult.metadataIngestSqlPlan().isPresent())
-                {
-                    executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get());
-                }
-                executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
-                executor.commit();
-
-                IngestorResult result = IngestorResult.builder().putAllStatisticByName(statisticsResultMap).updatedDatasets(datasets).build();
-                ingestorResults.add(result);
-
-                Map<StatisticName, Object> actualStats = result.statisticByName();
-
-                // Verify the database data
-                List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
-                TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath.get(i), tableData);
-
-                // Verify statistics
-                Assertions.assertEquals(expectedStats.get(i).size(), actualStats.size());
-                for (String statistic : expectedStats.get(i).keySet())
-                {
-                    Assertions.assertEquals(expectedStats.get(i).get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
-                }
-
-            }
-            catch (Exception e)
-            {
-                executor.revert();
-                throw e;
-            }
-            finally
-            {
-                executor.close();
+                Assertions.assertEquals(expectedStats.get(i).get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
             }
         }
-
-        return ingestorResults;
-    }
-
-    // TODO: A temporary way to test SQLs with data splits. This shall be removed in the future when the Ingestor is able to generate data split ranges within itself
-    private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor, Map<StatisticName, SqlPlan> statisticsSqlPlan)
-    {
-        return statisticsSqlPlan.keySet()
-            .stream()
-            .collect(Collectors.toMap(
-                k -> k,
-                k -> executor.executePhysicalPlanAndGetResults(statisticsSqlPlan.get(k))
-                    .stream()
-                    .findFirst()
-                    .map(TabularData::getData)
-                    .flatMap(t -> t.stream().findFirst())
-                    .map(Map::values)
-                    .flatMap(t -> t.stream().findFirst())
-                    .orElseThrow(IllegalStateException::new)));
+        return results;
     }
 
     protected Map<String, Object> createExpectedStatsMap(int incomingRecordCount, int rowsDeleted, int rowsInserted, int rowsUpdated, int rowsTerminated)
