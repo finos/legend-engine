@@ -1,0 +1,85 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::projection::view::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
+import meta::pure::runtime::*;
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::union::testSimpleConcatenate(config:DbTestConfig[1]):Boolean[1]
+{
+   let result = executeViaPlan(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping, 
+      meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+   
+  if($result->isEmpty(), | true,
+  | let tds = $result.values->toOne()->sort([asc('lastName')]);
+    assertSize($tds.columns, 1);   
+    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::union::testConcatenateWithPreOperation(config:DbTestConfig[1]):Boolean[1]
+{
+   let result = executeViaPlan(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+      ,
+      simpleRelationalMapping, 
+      meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+   
+  if($result->isEmpty(), | true,
+  | let tds = $result.values->toOne()->sort([asc('lastName')]);
+    assertSize($tds.columns, 1);   
+    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));  
+  );   
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::union::testConcatenateWithPostOperation(config:DbTestConfig[1]):Boolean[1]
+{
+   let result = executeViaPlan(
+      |Person.all()
+         ->project([col(p|$p.lastName, 'lastName')])
+         ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
+         ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
+      ,
+      simpleRelationalMapping, 
+      meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+   
+  if($result->isEmpty(), | true,
+  | let tds = $result.values->toOne()->sort([asc('lastName')]); 
+    assertSize($tds.columns, 1);   
+    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+  );
+}
+
+
+
+
+
+
+
+

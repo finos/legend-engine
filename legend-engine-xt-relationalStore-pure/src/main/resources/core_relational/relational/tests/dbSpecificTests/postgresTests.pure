@@ -43,6 +43,12 @@ function meta::relational::tests::dbSpecificTests::postgres::testsFilter(f:Funct
   let ignoredTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
               let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
-
-  !$ignoredTests->contains($f);
+  
+  //window column not supported for postgres
+  let ignoredWindowColumnTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowAvg_DbTestConfig_1__Boolean_1_,
+                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithSortSingle_DbTestConfig_1__Boolean_1_,
+                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowWithSortMultiple_DbTestConfig_1__Boolean_1_,
+                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithoutSortMultiple_DbTestConfig_1__Boolean_1_];
+    
+  !$ignoredTests->concatenate($ignoredWindowColumnTests)->contains($f);
 }
