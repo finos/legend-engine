@@ -53,9 +53,9 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                          ],
      routeFunctionExpressions = pair(
             fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
-            {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-              let mapping = $routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
-              let runtime = $routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
+            {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+              let mapping = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
+              let runtime = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
               let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
               assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
               let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();

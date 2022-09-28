@@ -67,17 +67,17 @@ Class meta::pure::router::routing::PermutationSet
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
 {
    // Process Class
-   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], RoutingStrategy[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
+   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
    processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
    {
-     $this.processClass->eval($c, $i, $state, $this, $executionContext, $debug)  
+     $this.processClass->eval($c, $i, $state, $executionContext, $debug)  
    }: RoutingState[1];
 
    // Process Property
-   processProperty : Function<{Property<Nil,Any|*>[1], FunctionExpression[1], RoutingState[1], RoutingStrategy[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
+   processProperty : Function<{Property<Nil,Any|*>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
    processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1])
    {
-     $this.processProperty->evaluate([list($p), list($fe), list($state), list($this), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);  
+     $this.processProperty->evaluate([list($p), list($fe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);  
    }: RoutingState[1];
 }
 
@@ -90,9 +90,8 @@ Class meta::pure::router::metamodel::StoreMappingRoutingStrategy extends StoreRo
 {
    mapping     : Mapping[1];
    sets        : PermutationSet[*];
-   propertyMap : PropertyMap[1];
    setsByDepth : Map<String,PermutationSet>[1];
-   isParentMap : Boolean[1];
+   isParentMap : Boolean[1];      //TODO: check this maybe this is not needed
    toChooseSet : SetImplementation[0..1];
    
    classMappingsByClass:Map<Class<Any>,List<SetImplementation>>[1];         //TODO: check this move to mapping

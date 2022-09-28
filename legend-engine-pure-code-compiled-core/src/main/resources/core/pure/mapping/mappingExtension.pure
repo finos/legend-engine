@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::metamodel::*;
 import meta::pure::router::operations::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::clustering::*;
@@ -247,7 +248,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
 
        // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
        if ($classMapping->isEmpty(),
-          |let mappings = $state.classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
+          |let mappings = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
            if ($mappings->isEmpty(),
                |^M2MEmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
                |$mappings
@@ -261,7 +262,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
 
 function meta::pure::router::operations::getMappedLeafClasses(class:Class<Any>[1], mapping:Mapping[1], state: RoutingState[1]):Type[*]
 {
-    let thisMapping = $state.classMappingsForClass($class);
+    let thisMapping = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($class);
     let subTypes = $class.specializations.specific->cast(@Class<Any>)->map(c | $c->getMappedLeafClasses_recursive([], $mapping, $state));
     if($subTypes->isEmpty(), | if($thisMapping->isEmpty(), | [], |$class), | $subTypes);
 }
@@ -269,7 +270,7 @@ function meta::pure::router::operations::getMappedLeafClasses(class:Class<Any>[1
 function <<access.private>> meta::pure::router::operations::getMappedLeafClasses_recursive(class:Class<Any>[1], leafMostMappedClass:Class<Any>[0..1], mapping:Mapping[1], state: RoutingState[1]):Class<Any>[*]
 {
     let specs = $class.specializations.specific->cast(@Class<Any>);
-    let foundClassMapping = $state.classMappingsForClass($class);
+    let foundClassMapping = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($class);
     let mappedClass = if($foundClassMapping->isEmpty(), | $leafMostMappedClass, | $class);
     if($specs->isEmpty(), | $mappedClass, | $specs->map(s | $s->getMappedLeafClasses_recursive($mappedClass, $mapping, $state)));
 }

@@ -1421,8 +1421,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testRoutingContextBuild
 {
   let relationalStoreContract = meta::relational::contract::relationalStoreContract();
   let updatedRelationalStoreContract = ^$relationalStoreContract(routeFunctionExpressions += pair(fe:FunctionExpression[1] | $fe.func == meta::pure::executionPlan::tests::withContext_TabularDataSet_1__TabularDataSet_1_,
-                                                                                                  {f:Function<Any>[1], fe:FunctionExpression[1], state:meta::pure::router::routing::RoutingState[1], routingStrategy:meta::pure::router::metamodel::RoutingStrategy[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-                                                                                                    meta::pure::router::routing::routeFunctionExpressionFunctionDefinition($f, $fe, $state, $routingStrategy, ^ExecutionContext(), $vars, $inScopeVars, $extensions, $debug);
+                                                                                                  {f:Function<Any>[1], fe:FunctionExpression[1], state:meta::pure::router::routing::RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                                                                                                    meta::pure::router::routing::routeFunctionExpressionFunctionDefinition($f, $fe, $state, ^ExecutionContext(), $vars, $inScopeVars, $extensions, $debug);
                                                                                                   }));
   let extensions = meta::relational::extension::relationalExtensions()->toOne();
   let updatedExtensions = ^$extensions(availableStores = $extensions.availableStores->filter(s | $s.id != $relationalStoreContract.id)->concatenate($updatedRelationalStoreContract));

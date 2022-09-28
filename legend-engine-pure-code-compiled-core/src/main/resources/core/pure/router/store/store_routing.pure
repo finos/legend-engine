@@ -23,17 +23,16 @@ function meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime(ma
 {
   ^StoreMappingRoutingStrategy(mapping = $mapping, 
                                runtime = $runtime, 
-                               isParentMap=false, 
-                               propertyMap = ^PropertyMap(), 
-                               setsByDepth=^Map<String, PermutationSet>(), 
-                               classMappingsByClass=$mapping->buildClassMappingsByClassMap(),
-                               processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__RoutingStrategy_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
-                               processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__RoutingStrategy_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_);
+                               isParentMap = false, 
+                               setsByDepth = ^Map<String, PermutationSet>(), 
+                               classMappingsByClass = $mapping->buildClassMappingsByClassMap(),
+                               processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
+                               processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_);
 }
 
-function <<access.private>> meta::pure::router::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], s:RoutingState[1], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
+function <<access.private>> meta::pure::router::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], s:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
 {
-   let strategy     = $routingStrategy->cast(@StoreMappingRoutingStrategy);
+   let strategy     = $s.routingStrategy->cast(@StoreMappingRoutingStrategy);
    let mapping      = $strategy.mapping;
    let runtime      = $strategy.runtime;
    
@@ -41,7 +40,7 @@ function <<access.private>> meta::pure::router::routing::processClass(c:Class<An
    let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping.rootClassMappingByClass($c)->potentiallyResolveOperation($mapping), |$strategy.toChooseSet);
    // Possible when the mapping is 'embedded'
    if ($classMapping->isEmpty(),
-      | print(if($debug.debug,|$debug.space+'~>C) ('+$state.sets->size()->toString()+') '+$state.value->toOne()->toString()+'\n',|''));
+      | print(if($debug.debug,|$debug.space+'~>C) ('+$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$state.value->toOne()->toString()+'\n',|''));
         $state;,
       | let existingSet = $state->findExistingPemutationSet($debug);
         let existingSetCanBeUsed = $existingSet->permutationSetOnlyHasImplementation($classMapping);
@@ -60,28 +59,28 @@ function <<access.private>> meta::pure::router::routing::processClass(c:Class<An
                                                            value = $i);
 
         let newSet = if (!$existingSetCanBeUsed,|^PermutationSet(id = $state.counter+1, sets = $classMapping),|[]);
-
+        let currentRoutingStrategy = $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne();
         let res = ^$state(
                        counter = if (!$existingSetCanBeUsed,|$state.counter+1,|$state.counter),
-                       sets = if (!$existingSetCanBeUsed,|$state.sets->add($newSet->toOne()),|$state.sets),
-                       setsByDepth = if (!$existingSetCanBeUsed,
-                                            |let setByD = $state.setsByDepth;
-                                             $setByD->put(getSetPath($state), $newSet->toOne());,
-                                            |$state.setsByDepth
-                                     ),
+                       routingStrategy = ^$currentRoutingStrategy(setsByDepth = if (!$existingSetCanBeUsed,
+                                                                                    |let setByD = $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth;  // TODO: check this remove ->toOne()
+                                                                                     $setByD->put(getSetPath($state), $newSet->toOne());,
+                                                                                    |$state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth       // TODO: check this remove ->toOne()
+                                                                                ),
+                                                                  sets = if (!$existingSetCanBeUsed,|$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->add($newSet->toOne()),|$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets)),
                        value = $routed
                   );
-        print(if($debug.debug,|$debug.space+'~>C) ('+$res.sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
+        print(if($debug.debug,|$debug.space+'~>C) ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
         $res;
     );
 }
 
-function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
-   let mapping = $routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
-   let runtime = $routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
+   let mapping = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
+   let runtime = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
 
-   let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $routingStrategy, $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
+   let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
    let newPV   = $results.value->cast(@ValueSpecification)->toOneMany();
    let preLast = $results->last()->toOne();
 
@@ -102,12 +101,12 @@ function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property
                             let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
                             let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
 
-                            let classMappings = $classes->map( c | $v.classMappingsForClass($c->cast(@Class<Any>)));
+                            let classMappings = $classes->map( c | $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($c->cast(@Class<Any>)));
 
                             let classMapping = if ($classMappings->isEmpty() && !$subTypes->isEmpty(),
                                                       | //look for direct mapping of base class, as none of the sub types have mappings
                                                         //Ideally (per Pierre) these mappings should not be allowed
-                                                          $v.classMappingsForClass($sourceClass->cast(@Class<Any>)),
+                                                          $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($sourceClass->cast(@Class<Any>)),
                                                       | $classMappings);
 
                             let resolvedClassMappings = if($classMapping->isNotEmpty(),
@@ -159,21 +158,22 @@ function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property
                                                         executionContext = $executionContext,
                                                         value = ^$fe(parametersValues = $newPV)
                                                     );
-                                      let oldPropertyMap = $last.propertyMap;
+                                      let oldPropertyMap = $last.propertyMap->toOne();   // TODO: check thsi remove ->toOne()
                                       let newSet = if (!$existingSetCanBeUsed,|^PermutationSet(id = $last.counter+1, sets = $foundSets),|[]);
 
+                                      let currentRoutingStrategy = $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne();
                                       ^$last(
                                           counter = if (!$existingSetCanBeUsed,|$last.counter+1,|$last.counter),
-                                          sets = if (!$existingSetCanBeUsed,|$last.sets->add($newSet->toOne()),|$last.sets),
-                                          setsByDepth = if (!$existingSetCanBeUsed,|let setByD = $last.setsByDepth;$setByD->put(getSetPath($last), $newSet->toOne());,|$last.setsByDepth),
-                                          propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),
+                                          routingStrategy = ^$currentRoutingStrategy(setsByDepth = if (!$existingSetCanBeUsed,|let setByD = $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth;$setByD->put(getSetPath($last), $newSet->toOne());,|$last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth),  // TODO: check this remove ->toOne() 
+                                                                                     sets        = if (!$existingSetCanBeUsed,|$last.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->add($newSet->toOne()),|$last.routingStrategy->cast(@StoreMappingRoutingStrategy).sets)), 
+                                          propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),  
                                           value= $added
                                       );
                                   );
                             );
                         );
                    ));
-   print(if($debug.debug,|$debug.space+'~>FEP) ('+$res.sets->size()->toString()+') '+$res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
+   print(if($debug.debug,|$debug.space+'~>FEP) ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
    $res;
 }
 
@@ -181,11 +181,11 @@ function meta::pure::router::routing::routeFunctionExpressionProperty(p:Property
 // Special Functions
 // ===================================================================================
 
-function meta::pure::router::routing::specializedFunctionExpressionRouterProcessorForStore(extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], RoutingStrategy[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+function meta::pure::router::routing::specializedFunctionExpressionRouterProcessorForStore(extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
 {
   [
     pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_]),
-        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                 let resolvedParameters = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
                                                                                                                  f:FunctionExpression[1] |let r = $f->reprocessRuntimeWithVariablePlaceHolder($inScopeVars).value->cast(@ValueSpecification);
                                                                                                                                           $r->reactivate($inScopeVars);,
@@ -194,10 +194,11 @@ function meta::pure::router::routing::specializedFunctionExpressionRouterProcess
                 let fromRuntime = $resolvedParameters->at(1)->cast(@Runtime);
                 let fromExecutionContext = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@ExecutionContext), | $executionContext);
 
-                let newState = ^$state(classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
-                let newRoutingStrategy = getRoutingStrategyFromMappingAndRuntime($fromMapping, $fromRuntime);
+                let currentRoutingStrategy = $state.routingStrategy->cast(@StoreMappingRoutingStrategy);
+                let newRoutingStrategy = ^$currentRoutingStrategy(mapping = $fromMapping, runtime = $fromRuntime, classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
+                let newState = ^$state(routingStrategy = $newRoutingStrategy);
 
-                routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $newRoutingStrategy, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
         }
     )
   ]
@@ -271,7 +272,7 @@ function meta::pure::router::routing::findExistingSet(state:RoutingState[1], deb
 {
    let setPath = getSetPath($state);
    print(if($debug.debug,|$debug.space+'Looking for:"'+$setPath+'"',|''));
-   let permutationSet = $state.setsByDepth->get($setPath);
+   let permutationSet = $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth->get($setPath);
    let res = if($permutationSet->isEmpty(),|[],|$permutationSet->toOne().id->cast(@Integer));
    print(if($debug.debug,|if($res->isEmpty(),|' -> Not Found\n', |' -> Found : '+$permutationSet->toOne().id->toString()+'\n'),|''));
    $res;
@@ -281,7 +282,7 @@ function meta::pure::router::routing::findExistingPemutationSet(state:RoutingSta
 {
    let setPath = getSetPath($state);
    print(if($debug.debug,|$debug.space+'Looking for:"'+$setPath+'"',|''));
-   let permutationSet = $state.setsByDepth->get($setPath);
+   let permutationSet = $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth->get($setPath);
    print(if($debug.debug,|if($permutationSet->isEmpty(),|' -> Not Found\n', |' -> Found : '+$permutationSet->toOne().id->toString()+'\n'),|''));
    $permutationSet;
 }

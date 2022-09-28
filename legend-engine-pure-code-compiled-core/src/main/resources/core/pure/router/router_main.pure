@@ -166,9 +166,8 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
    
    // Mapping allocation
    print(if($debug.debug,|$debug.space+'Processing Mappings:\n',|''));
-   let processedCollection = processCollection( ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', isParentMap=false, propertyMap = ^PropertyMap(), setsByDepth=^Map<String, PermutationSet>(), classMappingsByClass=$mapping->buildClassMappingsByClassMap()),
+   let processedCollection = processCollection( ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy),
                                                 $f.expressionSequence->evaluateAndDeactivate(),
-                                                $routingStrategy,
                                                 $exeCtx,
                                                 newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),
                                                 $openVariables,
@@ -177,15 +176,15 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
                                                 $debug
                                               )->evaluateAndDeactivate();
 
-   if (!$processedCollection->last().sets->isEmpty(),
+   if (!$processedCollection->last().routingStrategy->cast(@StoreMappingRoutingStrategy).sets->isEmpty(),
       |
       // Sets
       print(if($debug.debug,|'\n'+$debug.space+'Sets found:\n', |''));
-      print(if($debug.debug,|$processedCollection->last().sets->map(s|$debug.space+'   ['+$s.id->toString()+'|'+$s.sets->map(si|$si.id)->joinStrings(',')+']')->joinStrings('\n')+'\n',|''));
+      print(if($debug.debug,|$processedCollection->last().routingStrategy->cast(@StoreMappingRoutingStrategy).sets->map(s|$debug.space+'   ['+$s.id->toString()+'|'+$s.sets->map(si|$si.id)->joinStrings(',')+']')->joinStrings('\n')+'\n',|''));
        
       // Permutation
-      print(if($debug.debug,|'\n'+$debug.space+'Process Permutations ('+$processedCollection->last().sets.id->size()->toString()+')\n', |''));
-      let permutations = $processedCollection->last().sets->permute();
+      print(if($debug.debug,|'\n'+$debug.space+'Process Permutations ('+$processedCollection->last().routingStrategy->cast(@StoreMappingRoutingStrategy).sets.id->size()->toString()+')\n', |''));
+      let permutations = $processedCollection->last().routingStrategy->cast(@StoreMappingRoutingStrategy).sets->permute();
       print(if($debug.debug,|$permutations->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));
       
       // Build
