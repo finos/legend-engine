@@ -18,10 +18,10 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::pure::runtime::*;
 import meta::relational::mapping::*;
-import meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::test::*;
+import meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::*;
 
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames(config:DbTestConfig[1]):Boolean[1]
@@ -57,9 +57,56 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
     );
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testASCiiColumnName(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(| MyClassC.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+   if($result->isEmpty(), | true,
+   | 
+      assertSize($result->toOne(), 1);
+      assertEquals(0, $result.values->first()->cast(@MyClassC).capitalAlphabets);
+      assertEquals(1, $result.values->first()->cast(@MyClassC).numbers);
+      assertEquals('testData', $result.values->first()->cast(@MyClassC).specialCharacters);
+      assertEquals(2, $result.values->first()->cast(@MyClassC).smallAlphabets);
+
+   );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testASCiiAliasName(config:DbTestConfig[1]):Boolean[1]
+{
+  let specialCharacters = '!#$%&()*+-,./:;<=>?@[\\]^_`{|}';  //TODO- double quotes doesn't works
+  let numbers = '0123456789';
+  let smallAlphabets = 'abcdefghijklmnopqrstuvwxzy';
+  let capitalAlphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+  let runtime = ^Runtime(connections=$config.connection);
+  let result = executeViaPlan(| MyClassD.all()->project([x | $x.a, x | $x.b, x | $x.c, x | $x.d] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | 
+  assertEquals($result.values.columns->map(x | $x.name), [$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]);
+  );
+ 
+   true;
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testAsciiColumnNameAndAsciiAliasName(config:DbTestConfig[1]):Boolean[1]
+{
+  let specialCharacters = '!#$%&()*+-,./:;<=>?@[\'\\]^_`{|}';  //TODO- double quotes doesn't works
+  let numbers = '0123456789';
+  let smallAlphabets = 'abcdefghijklmnopqrstuvwxzy';
+  let capitalAlphabets = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+   let result = executeViaPlan(| MyClassC.all()->project([x | $x.specialCharacters, x | $x.numbers, x | $x.smallAlphabets, x | $x.capitalAlphabets] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]),testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
+
+  if($result->isEmpty(), | true,
+  | 
+   assertEquals($result.values.rows->map(x | $x.values), ['testData', 1, 2, 0]);
+   assertEquals($result.values.columns->map(x | $x.name), [$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]);
+  );
+}
+
 function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::setUp(config:DbTestConfig[1]):Boolean[1]
 {
-
   // let setupSqls = ['Drop table if exists testTable;',
   //  'Create Table testTable(ID INT, "Column Name with Space" INT, "Column&A" INT, "Column.ID" INT);',
   //  'insert into testTable(ID, "Column Name with Space", "Column&A", "Column.ID") values (1,2,0,3);',
@@ -78,13 +125,22 @@ function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::s
                 'default\n'+
                 '"test Table2"\n'+
                 '"Column&ID", "My#Data"\n'+
-                '3,\'Description A\'\n'
+                '3,\'Description A\'\n'+
+                 '---\n'+
+                'default\n'+
+                'testTable3\n'+
+                'ABCDEFGHIJKLMNOPQRSTUVWXYZ,"0123456789","!\"#$%&()*+-./:;<=>?@[\]^_`{|}",abcdefghijklmnopqrstuvwxzy\n'+
+                '0,1,testData,2\n'+
+                 '---\n'+
+                'default\n'+
+                'testTable4\n'+
+                'a,b,c,d\n'+
+                '0,1,data,2\n'
                 ;
 
   meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB,
                                                      $config, meta::relational::extension::relationalExtensions());
 }
-
 
 Class meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyClass
 {
@@ -99,6 +155,22 @@ Class meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyCl
 
    c:String[1];
 }
+
+Class meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyClassC
+{
+   capitalAlphabets: Integer[1];
+   numbers: Integer[1];
+   specialCharacters: String[1];
+   smallAlphabets: Integer[1];
+}
+
+Class meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyClassD
+{
+  a : Integer[1];
+  b : Integer[1];
+  c : String[1];
+  d : Integer[1];
+} 
 
 Enum meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::MyEnum
 {
@@ -126,6 +198,22 @@ Database meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::m
        "My#Data" VARCHAR(20)
     )
     
+    Table testTable3
+    (
+      ABCDEFGHIJKLMNOPQRSTUVWXYZ INT PRIMARY KEY,
+      "0123456789" INT,
+      "!\"#$%&()*+-./:;<=>?@[\]^_`{|}" VARCHAR(20),   //single and double quotes not working
+      abcdefghijklmnopqrstuvwxzy INT
+    )
+
+    Table testTable4
+    (
+      a INT PRIMARY KEY,
+      b INT,
+      c VARCHAR(20),
+      d INT
+    )
+
     Join testJoin
     (
         testTable."Column.ID" = "test Table2"."Column&ID"
@@ -156,5 +244,20 @@ Mapping meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::te
        c: [myDB] "test Table2"."My#Data"
     }
     
+    MyClassC: Relational
+    {
+       capitalAlphabets: [myDB] testTable3.ABCDEFGHIJKLMNOPQRSTUVWXYZ,
+       smallAlphabets: [myDB] testTable3.abcdefghijklmnopqrstuvwxzy,
+       numbers: [myDB] testTable3."0123456789",
+       specialCharacters: [myDB] testTable3."!\"#$%&()*+-./:;<=>?@[\]^_`{|}"
+    }
+
+    MyClassD: Relational
+    {
+       a: [myDB] testTable4.a,
+       b: [myDB] testTable4.b,
+       c: [myDB] testTable4.c,
+       d: [myDB] testTable4.d
+    }
 
 )

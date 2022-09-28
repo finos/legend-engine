@@ -59,7 +59,12 @@ function meta::relational::tests::dbSpecificTests::sqlServer::testsFilter(f:Func
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););      
 
   let ignoredNamingTests= [meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames_DbTestConfig_1__Boolean_1_,
-                           meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testTableNameInJoinAlias_DbTestConfig_1__Boolean_1_];      
+                           meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testTableNameInJoinAlias_DbTestConfig_1__Boolean_1_,
+                           meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowAvg_DbTestConfig_1__Boolean_1_,
+                           meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithSortSingle_DbTestConfig_1__Boolean_1_,
+                           meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowWithSortMultiple_DbTestConfig_1__Boolean_1_,
+                           meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithoutSortMultiple_DbTestConfig_1__Boolean_1_,
+                           meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testFilterOnAssociatedClassAggValueAfterGroupBy_DbTestConfig_1__Boolean_1_];      
 
   !$ignoredDynaFunctionTests->concatenate($ignoredAggregateFunctionTests)->concatenate($ignoredNamingTests)->contains($f);
 }
