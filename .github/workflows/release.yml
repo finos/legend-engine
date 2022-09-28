@@ -32,7 +32,6 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: RELEASE
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
