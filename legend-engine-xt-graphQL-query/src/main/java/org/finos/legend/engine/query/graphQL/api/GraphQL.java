@@ -18,8 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.cookie.ClientCookie;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -67,8 +69,15 @@ public abstract class GraphQL
     private PureModel getPureModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String project, String branch)
     {
         CookieStore cookieStore = new BasicCookieStore();
-        ArrayIterate.forEach(request.getCookies(), c -> cookieStore.addCookie(new MyCookie(c)));
-
+        //ArrayIterate.forEach(request.getCookies(), c -> cookieStore.addCookie(new MyCookie(c)));
+        ArrayIterate.forEach(request.getCookies(), c ->
+        {
+            BasicClientCookie cookie = new BasicClientCookie(c.getName(), c.getValue());
+            cookie.setPath("/");
+            cookie.setDomain(this.metadataserver.getSdlc().host);
+            cookie.setAttribute(ClientCookie.DOMAIN_ATTR, "true");
+            cookieStore.addCookie(cookie);
+        });
 
         try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
         {
@@ -76,7 +85,9 @@ public abstract class GraphQL
             {
                 throw new EngineException("Please specify the metadataserver.sdlc information in the server configuration");
             }
-            HttpGet req = new HttpGet("http://" + metadataserver.getSdlc().host + ":" + metadataserver.getSdlc().port + "/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
+            //HttpGet req = new HttpGet("http://" + metadataserver.getSdlc().host + ":" + metadataserver.getSdlc().port + "/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
+            HttpGet req = new HttpGet(this.metadataserver.getSdlc().getBaseUrl() + "/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
+
             try (CloseableHttpResponse res = client.execute(req))
             {
                 ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();

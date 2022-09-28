@@ -1,0 +1,121 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::document::metamodel::*;
+import meta::external::shared::format::binding::*;
+
+Class meta::external::store::document::metamodel::DocumentStore extends meta::pure::store::set::SetBasedStore
+{
+    collections : DocumentStoreElement[*];
+    collection(name:String[1])
+    {
+        $this.collections->filter(t|$t.name == $name)->first();
+    }:DocumentStoreElement[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::document::metamodel::DocumentStoreElement
+{
+   owner    : DocumentStore[1];
+   name     : String[1];
+   id       : String[1];
+
+}
+
+Class meta::external::store::document::metamodel::Collection extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+   fields  : Field[*];
+   field(fieldName:String[1])
+   {
+        $this.fields->filter(c | $c.name == $fieldName )->first();
+   }:Field[0..1];
+}
+
+Class meta::external::store::document::metamodel::CollectionFragment extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+    // TODO: Move to abstract class
+   fields: Field[*];
+   field(fieldName:String[1])
+   {
+        $this.fields->filter(c | $c.name == $fieldName )->first();
+   }:Field[0..1];
+}
+
+Class meta::external::store::document::metamodel::Field extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+    <<equality.Key>> name : String[1];
+    <<equality.Key>> type : meta::external::store::document::metamodel::TypeReference[1];
+    nullable : Boolean[0..1];
+}
+
+
+// Technically - this could be moved to common?? (as it is similar to servicestore typeref)
+Class <<typemodifiers.abstract>> meta::external::store::document::metamodel::TypeReference
+{
+  list     : Boolean[1];
+}
+
+Class meta::external::store::document::metamodel::StringTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::BooleanTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::IntegerTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::LongTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::DateTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::DoubleTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::DecimalTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::ObjectIdTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::ObjectTypeReference extends meta::external::store::document::metamodel::TypeReference
+{
+   type    : Class<Any>[1];
+   binding : Binding[1];
+}
+
+
+
+Class meta::external::store::document::metamodel::CollectionAlias extends Alias
+{
+   setMappingOwner : meta::pure::mapping::PropertyMappingsImplementation[0..1];
+   owner    : DocumentStore[0..1];
+   documentElement(){$this.documentElement->cast(@DocumentStoreElement)}:DocumentStoreElement[1];
+}
+
+Class meta::external::store::document::metamodel::Alias
+{
+   <<equality.Key>> name : String[1];
+   <<equality.Key>> documentElement : DocumentStoreElement[1];
+}
+
+

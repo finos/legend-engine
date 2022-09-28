@@ -1,0 +1,151 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::store::document::metamodel::DocumentStoreMetamodelDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_6(
+        type=meta::external::store::document::metamodel::TypeReference,
+        position=(195.79058, 389.77522),
+        width=105.14844,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::document::metamodel::Collection,
+        position=(378.62143, 296.77536),
+        width=100.68457,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::store::document::metamodel::DocumentStoreElement,
+        position=(686.71996, 161.77299),
+        width=156.29688,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+
+    TypeView cview_4(
+        type=meta::external::store::document::metamodel::CollectionFragment,
+        position=(998.67200, 415.28787),
+        width=132.67578,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::store::document::metamodel::DocumentStore,
+        position=(648.15555, 11.82982),
+        width=236.37988,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::store::document::metamodel::IntegerTypeReference,
+        position=(39.37298, 586.42378),
+        width=145.15625,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+
+    GeneralizationView gview_0(
+        source=cview_3,
+        target=cview_2,
+        points=[(428.96371,318.77536),(764.86840,204.77299)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_2,
+        points=[(1065.00989,437.28787),(764.86840,204.77299)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_7,
+        target=cview_6,
+        points=[(111.95110,601.42378),(248.36480,418.77522)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+
+
+
+
+
+    PropertyView pview_4(
+        property=meta::external::store::document::metamodel::DocumentStore.collections,
+        source=cview_9,
+        target=cview_2
+,        points=[(814.53076,42.56608),(818.26544,162.15949)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::store::document::metamodel::DocumentStoreElement.owner,
+        source=cview_2,
+        target=cview_9
+,        points=[(764.86840,204.77299),(766.34549,33.82982)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

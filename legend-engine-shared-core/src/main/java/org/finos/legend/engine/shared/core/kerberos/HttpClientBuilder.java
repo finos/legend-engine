@@ -15,19 +15,24 @@
 package org.finos.legend.engine.shared.core.kerberos;
 
 import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthSchemeFactory;
+import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.KerberosCredentials;
 import org.apache.http.client.CookieStore;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.config.Lookup;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.impl.auth.SPNegoScheme;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.protocol.HttpContext;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
@@ -42,8 +47,14 @@ public class HttpClientBuilder
 {
     public static HttpClient getHttpClient(CookieStore cookieStore)
     {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
-        httpclient.getAuthSchemes().register(AuthSchemes.SPNEGO, new SPNegoWithDelegationSchemeFactory());
+        RequestConfig globalConfig =
+                RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build();
+
+        Lookup<AuthSchemeProvider> authSchemeRegistry =
+                RegistryBuilder.<AuthSchemeProvider>create()
+                        .register(AuthSchemes.SPNEGO, new SPNegoWithDelegationSchemeFactory())
+                        .build();
+
         Credentials credentials = new Credentials()
         {
             @Override
@@ -58,9 +69,15 @@ public class HttpClientBuilder
                 return null;
             }
         };
-        httpclient.getCredentialsProvider().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM), credentials);
-        httpclient.setCookieStore(cookieStore);
-        return httpclient;
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, AuthScope.ANY_REALM), credentials);
+
+        return org.apache.http.impl.client.HttpClientBuilder.create()
+                .setDefaultRequestConfig(globalConfig)
+                .setDefaultCookieStore(cookieStore)
+                .setDefaultAuthSchemeRegistry(authSchemeRegistry)
+                .setDefaultCredentialsProvider(credentialsProvider)
+                .build();
     }
 
     public static CookieStore buildCookieStore(String url) throws IOException
@@ -72,10 +89,10 @@ public class HttpClientBuilder
         return cookieStore;
     }
 
-    private static class SPNegoWithDelegationSchemeFactory implements AuthSchemeFactory
+    private static class SPNegoWithDelegationSchemeFactory implements AuthSchemeProvider
     {
         @Override
-        public AuthScheme newInstance(HttpParams params)
+        public AuthScheme create(HttpContext httpContext)
         {
             return new SPNegoWithDelegationScheme();
         }

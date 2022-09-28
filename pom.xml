@@ -83,6 +83,10 @@
         <module>legend-engine-xt-json-protocol</module>
         <module>legend-engine-xt-json-pure</module>
 
+        <module>legend-engine-xt-documentStore-grammar</module>
+        <module>legend-engine-xt-documentStore-pure</module>
+        <module>legend-engine-xt-documentStore-protocol</module>
+
         <module>legend-engine-xt-relationalStore-executionPlan</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
@@ -737,6 +741,16 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-documentStore-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-documentStore-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-serviceStore-grammar</artifactId>

@@ -26,5 +26,9 @@
       "appenders": [
       ]
     }
+  },
+  "sourceLocationConfiguration" : {
+    "coreFilesLocation" : "/Users/renu/finos/legend-pure",
+    "welcomeFileDirectory" : "/Users/renu/finos/legend-pure"
   }
 }

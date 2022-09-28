@@ -35,7 +35,8 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
-        new PureIDELight().run(args.length == 0 ? new String[] {"server", "legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
+        PureIDELight.enableEngineIntegration();
+        new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
     }
 
     public MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
@@ -53,6 +54,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
                     .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
+                    .with(this.buildCore("legend-engine-xt-documentStore-pure", "documentstore"))
                     .with(this.buildCore("legend-engine-xt-text-pure", "text"))
                     .with(this.buildCore("legend-engine-xt-data-space-pure", "data-space"))
                     .with(this.buildCore("legend-engine-xt-diagram-pure", "diagram"))
@@ -79,7 +81,7 @@ public class PureIDELight extends PureIDEServer
     @Override
     protected void postInit()
     {
-        FunctionExecutionInterpreted fe = (FunctionExecutionInterpreted)this.getPureSession().getFunctionExecution();
+        FunctionExecutionInterpreted fe = (FunctionExecutionInterpreted) this.getPureSession().getFunctionExecution();
         fe.setProcessorSupport(new LegendCompileMixedProcessorSupport(fe.getRuntime().getContext(), fe.getRuntime().getModelRepository(), fe.getProcessorSupport()));
     }
 
@@ -91,5 +93,24 @@ public class PureIDELight extends PureIDEServer
                 GenericCodeRepository.build(Paths.get(resources + "/" + moduleName.replace("-", "_") + ".definition.json")),
                 Paths.get(resources + "/" + moduleName.replace("-", "_"))
         );
+    }
+
+    private static void enableEngineIntegration()
+    {
+
+        System.setProperty("alloy.test.server.host", "127.0.0.1");
+        System.setProperty("alloy.test.server.port", "9090");
+        System.setProperty("alloy.test.h2.port", "9092");
+        System.setProperty("alloy.test.clientVersion", "vX_X_X");
+        System.setProperty("alloy.test.serverVersion", "v1");
+        System.setProperty("alloy.test.serializationKind", "json");
+
+        System.setProperty("legend.test.server.host", "127.0.0.1");
+        System.setProperty("legend.test.server.port", "9090");
+        System.setProperty("legend.test.h2.port", "9092");
+        System.setProperty("legend.test.clientVersion", "vX_X_X");
+        System.setProperty("legend.test.serverVersion", "v1");
+        System.setProperty("legend.test.serializationKind", "json");
+
     }
 }

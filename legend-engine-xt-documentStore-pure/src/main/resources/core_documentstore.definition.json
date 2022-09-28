@@ -1,0 +1,5 @@
+{
+  "name" : "core_documentstore",
+  "pattern" : "(meta::external::store::document|meta::external::store::document::tests|meta::protocols::pure)(::.*)?",
+  "dependencies" : ["platform", "core", "core_external_format_json"]
+}

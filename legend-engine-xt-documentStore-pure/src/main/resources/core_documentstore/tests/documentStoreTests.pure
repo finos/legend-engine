@@ -1,0 +1,108 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::document::tests::simple::*;
+
+Class meta::external::store::document::tests::simple::EntityWithAddress
+{
+    address : Address[0..1];
+}
+
+// Clone of meta::relational::tests::model::simple::
+Class meta::external::store::document::tests::simple::Person extends EntityWithAddress
+{
+    firstName : String[1];
+    lastName : String[1];
+    otherNames : String[*];
+
+    extraInformation : String[0..1];
+    manager : Person[0..1];
+    age : Integer[0..1];
+    constant() { 'constant' } : String[1];
+
+    nickName : String[0..1];
+
+    activeEmployment: Boolean[0..1];
+}
+
+Class meta::external::store::document::tests::simple::Firm extends EntityWithAddress
+{
+    <<equality.Key>> legalName : String[1];
+    nickName : String[0..1];
+}
+
+
+Class meta::external::store::document::tests::simple::GeographicEntity
+{
+    type : GeographicEntityType[1];
+}
+
+Class meta::external::store::document::tests::simple::Location extends GeographicEntity
+{
+    place : String[1];
+    censusdate: Date[0..1];
+}
+
+Class meta::external::store::document::tests::simple::Address extends GeographicEntity
+{
+    name : String[1];
+    street : String[0..1];
+    comments : String[0..1];
+    description(){
+      'D:' + $this.name;
+    }:String[1];
+}
+
+Enum meta::external::store::document::tests::simple::GeographicEntityType
+{
+    {doc.doc = 'A city, town, village, or other urban area.'} CITY,
+    <<doc.deprecated>> COUNTRY,
+    {doc.doc = 'Any geographic entity other than a city or country.'} REGION
+}
+
+###Relational
+Database meta::external::store::document::tests::simple::TestDbStore
+  (
+  Table personTable (
+    ID INT PRIMARY KEY,
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE INT,
+    ADDRESSID INT,
+    FIRMID INT,
+    MANAGERID INT
+  )
+
+  Table firmTable(
+    ID INT PRIMARY KEY,
+    LEGALNAME VARCHAR(200),
+    ADDRESSID INT,
+    CEOID INT
+  )
+
+  Table addressTable(
+    ID INT PRIMARY KEY,
+    TYPE INT,
+    NAME VARCHAR(200),
+    STREET VARCHAR(100),
+    COMMENTS VARCHAR(100)
+  )
+  Join Firm_Ceo(firmTable.CEOID = personTable.ID)
+  Join Firm_Person(firmTable.ID = personTable.FIRMID)
+  Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)
+  Join Address_Person(addressTable.ID = personTable.ADDRESSID)
+  Join Person_Manager(personTable.MANAGERID = {target}.ID)
+
+)
+
