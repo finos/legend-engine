@@ -72,7 +72,8 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateIQ()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeIQ()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(VARCHAR(128), %s)')),
-    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='datepart(WEEKDAY,%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='datename(WEEKDAY,%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'datepart(Weekday,'+ $p->at(0)+')',|$p->dayOfWeekNumberSybaseIQ());})),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='datepart(DAY,%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(day(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(%s) - 1, dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
@@ -241,6 +242,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 {
    if($dbConfig.isDbReservedIdentifier($columnName->toLower()), |'"' + $columnName->toLower() + '"', |$columnName->quoteIdentifierDefault());
 }
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::dayOfWeekNumberSybaseIQ(dayOfWeek: String[*]):String[1]
+{
+   let day = if(startsWith($dayOfWeek->at(1),'\''),|$dayOfWeek->at(1)->removeQuotes(),|$dayOfWeek->at(1));
+   assert(or($day == 'Sunday',$day == 'Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   if($day =='Sunday',|'datepart(Weekday,'+$dayOfWeek->at(0)+')',|'mod (datepart(weekday,'+$dayOfWeek->at(0)+')+5,7)+1');
+}    
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::sybaseReservedWords():String[*]
 {
