@@ -3454,19 +3454,15 @@ function <<access.private>> meta::external::language::java::factory::project::me
          
          let newlyDefinedMethods = $class.methods->filter({newMethod|
             let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
-            let newlyDefinedMethods = $class.methods->filter({newMethod|
-                let existingMethod = $existing.methods->filter({m| $m.name == $newMethod.name && $m.parameters.type == $newMethod.parameters.type});
-                assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
-                                                                                                                                                        c:Code[1] | println($c->codeToString()),
-                                                                                                                                                        x:Code[0] | println($existingMethod.body->toOne())
-                                                                                                                                                      ]);
-                                                                                                                                                      $newMethod.bodyCode->match([
-                                                                                                                                                        c:Code[1] | println($c->codeToString()),
-                                                                                                                                                        x:Code[0] | println($newMethod.body->toOne())
-                                                                                                                                                      ]);
-                                                                                                                                                      'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
-                $existingMethod->isEmpty();
-             });
+            assert($existingMethod->isEmpty() || ($existingMethod.body == $newMethod.body && $existingMethod.bodyCode == $newMethod.bodyCode), {| $existingMethod.bodyCode->match([
+                                                                                                                                                 c:Code[1] | println($c->codeToString()),
+                                                                                                                                                 x:Code[0] | println($existingMethod.body->toOne())
+                                                                                                                                               ]);
+                                                                                                                                               $newMethod.bodyCode->match([
+                                                                                                                                                 c:Code[1] | println($c->codeToString()),
+                                                                                                                                                 x:Code[0] | println($newMethod.body->toOne())
+                                                                                                                                               ]);
+                                                                                                                                              'Cannot merge implementations of ' + $newMethod->methodSignature() + ' in ' + $classFullName;});
             $existingMethod->isEmpty();
          });
          let methods = $existing.methods->concatenate($newlyDefinedMethods);

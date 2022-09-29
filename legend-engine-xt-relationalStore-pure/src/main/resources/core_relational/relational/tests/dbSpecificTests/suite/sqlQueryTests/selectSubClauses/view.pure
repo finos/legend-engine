@@ -1,0 +1,45 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::projection::view::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::runtime::*;
+import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::view::testViewAllOneSimpleProperty(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|OrderPnl.all()->project(#/OrderPnl/pnl#), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 3);
+    assertSameElements(['100.0,200.0,150.0'], $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::view::testUnionOnViewsMapping(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|OrderPnl.all()->project([o|$o.order.id, o|$o.pnl],['orderId','pnl']), unionOnViewsMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+
+  if($result->isEmpty(), | true,| assertSameElements(['1,100.0, 2,200.0, 4,150.0, 3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', ')););
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::view::testViewOnView(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|OrderPnl.all()->project([o|$o.order.id, o|$o.pnl],['orderId','pnl']), unionOnViewOnViewMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+
+  if($result->isEmpty(), | true,| assertSameElements(['1,100.0, 2,200.0, 4,150.0, 3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', ')););
+}
