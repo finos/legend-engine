@@ -180,10 +180,9 @@ public class SDLCLoader implements ModelLoader
                     }
                     else
                     {
-                        throw new RuntimeException("The following PackageableElementPointers:" + missingPaths.toString() + " do not exist in the project data loaded from the metadata server. " +
-                                "Please make sure the GitLab pipeline for a new release has completed and also metaData server has latest revision entities " +
-                                "by confirming returned data from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(pm, sdlc, clientVersion) + "\"/> this Api </a>." +
-                                "GitLab pipeline running and metaData server job execution takes some minutes.. ");
+                        throw new RuntimeException("The following PackageableElementPointers:" + missingPaths + " do not exist in the project data loaded from the metadata server. " +
+                                "Please make sure the corresponding Gitlab pipeline for version " + (this.alloyLoader.isLatestRevision(sdlc) ? "latest" : sdlc.version) + " has completed and also metaData server has updated with corresponding entities " +
+                                "by confirming the data returned from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(pm, sdlc, clientVersion) + "\"/> this Api </a>.");
                     }
                 }
             };
