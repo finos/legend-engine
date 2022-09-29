@@ -1,0 +1,84 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+//import meta::external::store::document::tests::object::*;
+import meta::external::store::document::metamodel::mapping::*;
+import meta::external::store::document::metamodel::*;
+import meta::pure::functions::collection::*;
+
+function meta::external::store::document::tests::object::getDocumentStoreAndMapping() : meta::pure::functions::collection::Pair<DocumentStore, RootDocumentInstanceSetImplementation>[1]
+{
+    let mongoStore = ^meta::external::store::document::metamodel::DocumentStore(
+        package  = meta::external::store::document::metamodel,
+        name     = 'MyMongoStore'
+    );
+    let field1 = ^meta::external::store::document::metamodel::Field(
+          id = 'fName000',
+          name = 'fName',
+          owner = $mongoStore,
+          type = ^meta::external::store::document::metamodel::StringTypeReference(list=false),
+          nullable = false
+    );
+    let field2 = ^meta::external::store::document::metamodel::Field(
+          id = 'lName001',
+          name = 'lName',
+          owner = $mongoStore,
+          type = ^meta::external::store::document::metamodel::StringTypeReference(list=false),
+          nullable = false
+    );
+    let docCollection = [
+        ^meta::external::store::document::metamodel::Collection(
+          id='101',
+          name='personDocument',
+          owner=$mongoStore,
+          fields = [$field1, $field2]
+        )
+        ];
+
+    $mongoStore->mutateAdd('collections', $docCollection);
+
+
+
+  let domainClass = meta::external::store::document::tests::simple::Person;
+
+  let  firmPropMappings = [
+      ^meta::external::store::document::metamodel::mapping::DocumentPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'firstName')->toOne(),
+        sourceSetImplementationId = 'firm_set', targetSetImplementationId = '',
+        documentStoreElement = $field1),
+      ^meta::external::store::document::metamodel::mapping::DocumentPropertyMapping(
+        property = $domainClass.properties->filter(p | $p.name == 'lastName')->toOne(),
+        sourceSetImplementationId = 'firm_set', targetSetImplementationId = '',
+        documentStoreElement = $field2)
+   ];
+
+
+   let collectionAlias = ^meta::external::store::document::metamodel::CollectionAlias(
+                name = 'personDocument',
+                documentElement = $docCollection,
+                owner = $mongoStore
+                );
+
+   let firmDocumentSetImpl = ^meta::external::store::document::metamodel::mapping::RootDocumentInstanceSetImplementation(
+                id = 'firm_set',
+                root = true,
+                class = $domainClass,
+                parent =  meta::external::store::document::tests::simple::MyDocStoreMapping,
+                userDefinedPrimaryKey = false,
+                mainCollectionAlias = $collectionAlias,
+                propertyMappings = $firmPropMappings);
+
+  $collectionAlias->mutateAdd('setMappingOwner', $firmDocumentSetImpl);
+  meta::pure::functions::collection::pair($mongoStore, $firmDocumentSetImpl);
+}

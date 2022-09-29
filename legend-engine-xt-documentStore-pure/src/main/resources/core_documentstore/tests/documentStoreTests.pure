@@ -71,6 +71,60 @@ Enum meta::external::store::document::tests::simple::GeographicEntityType
     {doc.doc = 'Any geographic entity other than a city or country.'} REGION
 }
 
+Association meta::external::store::document::tests::simple::Firm_Person
+{
+    firm : Firm[0..1];
+    employees : Person[*];
+}
+
+
+
+###Mapping
+import meta::external::store::document::tests::simple::*;
+
+Mapping meta::external::store::document::tests::simple::simpleRelationalMapping
+(
+  //GeographicEntityType: EnumerationMapping GE
+  //{
+  //      CITY:  1
+  //}
+
+    Person : Relational
+    {
+      ~primaryKey([
+        TestDbStore]default.personTable.ID
+        )
+        ~mainTable[TestDbStore]personTable
+        firstName : [TestDbStore]personTable.FIRSTNAME,
+        age : [TestDbStore]personTable.AGE,
+        lastName : [TestDbStore]personTable.LASTNAME,
+        firm : [TestDbStore]@Firm_Person,
+        address : [TestDbStore]@Address_Person,
+        manager : [TestDbStore]@Person_Manager
+    }
+
+    Firm : Relational
+    {
+        legalName : [TestDbStore]firmTable.LEGALNAME,
+        employees : [TestDbStore]@Firm_Person,
+        address : [TestDbStore]@Address_Firm
+    }
+
+    Address : Relational
+    {
+        name : [TestDbStore]addressTable.NAME,
+        street : [TestDbStore]addressTable.STREET,
+        //type : EnumerationMapping GE : [TestDbStore]addressTable.TYPE,
+        comments : [TestDbStore]addressTable.COMMENTS
+    }
+
+)
+
+Mapping meta::external::store::document::tests::simple::MyDocStoreMapping
+(
+)
+
+
 ###Relational
 Database meta::external::store::document::tests::simple::TestDbStore
   (
@@ -105,4 +159,24 @@ Database meta::external::store::document::tests::simple::TestDbStore
   Join Person_Manager(personTable.MANAGERID = {target}.ID)
 
 )
+
+
+###Pure
+import meta::external::store::document::tests::simple::*;
+
+function meta::external::store::document::tests::simple::testRuntime(db:meta::relational::metamodel::Database[1]):meta::pure::runtime::Runtime[1]
+{
+  ^meta::pure::runtime::Runtime(connections = testDatabaseConnection($db))
+}
+
+
+function meta::external::store::document::tests::simple::testDatabaseConnection(db:meta::relational::metamodel::Database[1]):meta::relational::runtime::TestDatabaseConnection[1]
+{
+    ^meta::relational::runtime::TestDatabaseConnection(
+        element = $db,
+        type = meta::relational::runtime::DatabaseType.H2,
+        timeZone = 'GMT'
+    );
+}
+
 
