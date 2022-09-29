@@ -110,7 +110,7 @@
       },
       {
         "ExceptionName": "RuntimeException",
-        "MessageRegex": "HTTP request.*failed with error|Input stream was not provided|The following PackageableElementPointers.*do not exist in the project data loaded from the metadata server",
+        "MessageRegex": "HTTP request.*failed with error|Input stream was not provided|The following PackageableElementPointers.*do not exist in the project data loaded from the metadata server.*",
         "Priority": "primary"
       },
       {
