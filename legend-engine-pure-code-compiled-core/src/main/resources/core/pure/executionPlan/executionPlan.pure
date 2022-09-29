@@ -65,6 +65,7 @@ Class meta::pure::executionPlan::ExecutionPlan
    runtime : Runtime[1];
    rootExecutionNode : ExecutionNode[1];
    processingTemplateFunctions :String[*];
+   <<doc.deprecated>>
    authDependent: Boolean[1];
    kerberos: String [0..1];
    globalImplementationSupport: PlatformImplementation[0..1];
@@ -160,6 +161,7 @@ Class meta::pure::executionPlan::CompiledClass
 Class meta::pure::executionPlan::AllocationExecutionNode extends meta::pure::executionPlan::ExecutionNode
 {
    varName : String[1];
+   realizeInMemory : Boolean[0..1];
 }
 
 Class meta::pure::executionPlan::ConstantExecutionNode extends meta::pure::executionPlan::ExecutionNode

@@ -302,7 +302,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
                 if (this.executionState.inAllocation)
                 {
-                    if (!this.executionState.transformAllocation)
+                    if (!this.executionState.realizeInMemory)
                     {
                         return relationalTdsResult;
                     }
@@ -396,7 +396,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
                 if (this.executionState.inAllocation)
                 {
-                    if ((ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node)) && !this.executionState.transformAllocation)
+                    if ((ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node)) && !this.executionState.realizeInMemory)
                     {
                         return relationalPrimitiveResult;
                     }

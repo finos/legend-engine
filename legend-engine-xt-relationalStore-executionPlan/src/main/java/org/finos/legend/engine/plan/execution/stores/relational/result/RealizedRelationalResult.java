@@ -40,6 +40,7 @@ public class RealizedRelationalResult extends StreamingResult
     public List<List<Object>> transformedRows;
 
     private static final int DEFAULT_ROW_LIMIT = 1000;
+    private static final String ROW_LIMIT_PROPERTY_NAME = "DEFAULT_ROW_LIMIT";
 
     public RealizedRelationalResult(RelationalResult relationalResult) throws SQLException
     {
@@ -56,9 +57,9 @@ public class RealizedRelationalResult extends StreamingResult
         {
             while (resultSet.next())
             {
-                if (rowCount > 1000)
+                if (rowCount > getRowLimit())
                 {
-                    throw new RuntimeException("Too many rows returned. Realization of relational results currently supports results with up to " + DEFAULT_ROW_LIMIT + " rows.");
+                    throw new RuntimeException("Too many rows returned. Realization of relational results currently supports results with up to " + getRowLimit() + " rows.");
                 }
 
                 List<Object> transformedRow = Lists.mutable.empty();
@@ -80,6 +81,15 @@ public class RealizedRelationalResult extends StreamingResult
         {
             relationalResult.close();
         }
+    }
+
+    public int getRowLimit()
+    {
+        if (System.getProperty(ROW_LIMIT_PROPERTY_NAME) == null)
+        {
+            return DEFAULT_ROW_LIMIT;
+        }
+        return Integer.valueOf(System.getProperty(ROW_LIMIT_PROPERTY_NAME));
     }
 
     private RealizedRelationalResult()
