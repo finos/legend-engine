@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::store::*;
+import meta::pure::router::clustering::*;
 import meta::pure::router::systemMapping::tests::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
@@ -43,7 +44,7 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
      resolveStoreFromSetImplementation = s:InstanceSetImplementation[1]|$s->match(
                                                                             [
                                                                               r : RootServiceInstanceSetImplementation[1] | $r.serviceStore(),
-                                                                              e : EmbeddedServiceStoreSetImplementation[1] | ^meta::pure::router::store::embedded::EmbeddedStore(package=::)
+                                                                              e : EmbeddedServiceStoreSetImplementation[1] | $e->resolveRootFromEmbedded()->cast(@RootServiceInstanceSetImplementation).serviceStore();
                                                                             ]
                                                                         ),
      supportsNativeJoinAmongElements = false,

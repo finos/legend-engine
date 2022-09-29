@@ -65,7 +65,7 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
 function meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree(r: RoutedGraphFetchTree[1], parentStore: Store[0..1], mapping:Mapping[1], runtime: Runtime[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):GraphFetchTree[1]
 {
    let currentTreeStores = $r.sets->map(x | $x->meta::pure::router::routing::getStoreFromSet($mapping, $extensions));
-   let currentTreeStoresWithouDuplicates = $currentTreeStores->filter(x | !$x->instanceOf(meta::pure::router::store::embedded::EmbeddedStore))->removeDuplicatesBy(x | $x->elementToPath());
+   let currentTreeStoresWithouDuplicates = $currentTreeStores->removeDuplicatesBy(x | $x->elementToPath());
    assert($currentTreeStoresWithouDuplicates->size() <= 1,  'Found multiple stores at a single node of the tree. Not supported yet!');
    let singleStore = if($currentTreeStoresWithouDuplicates->isEmpty(), | $parentStore->toOne(), | $currentTreeStoresWithouDuplicates->toOne());
 

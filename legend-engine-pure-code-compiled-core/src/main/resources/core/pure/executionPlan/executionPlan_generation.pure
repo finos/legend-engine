@@ -232,7 +232,8 @@ function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1],
                                                                  (
                                                                     expression = $s,
                                                                     requiredVariableInputs = $varInput,
-                                                                    resultType = ^ResultType(type=$s.genericType.rawType->toOne())
+                                                                    resultType = ^ResultType(type=$s.genericType.rawType->toOne()),
+                                                                    resultSizeRange = $s.multiplicity
                                                                  );
                               ]
                            );
