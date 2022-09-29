@@ -92,7 +92,7 @@ function <<access.private>> meta::pure::graphFetch::addXStorePropertiesInternal(
    let extraPropertiesFromChildCrossExpressions    = $node.subTrees->xstoreProperties($currentSubTreeProperties, $srcClass);
 
    let setImpls = $node.sets->map(s|$s->match([
-      o:OperationSetImplementation[1] | $o->meta::pure::router::clustering::resolveInstanceSetImplementations($extensions),
+      o:OperationSetImplementation[1] | $o->meta::pure::router::clustering::resolveInstanceSetImplementations(),
       i:InstanceSetImplementation[1]  | $i
    ]));
    
@@ -415,7 +415,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                   $childSI->match([
                      {o:OperationSetImplementation[1] |
                         assert($o.parameters.setImplementation->forAll(s|$s->instanceOf(PureInstanceSetImplementation)), |'Unsupported types: ' + $o.parameters.setImplementation->filter(i|!$i->instanceOf(PureInstanceSetImplementation))->type()->elementToPath());
-                        $o->meta::pure::router::clustering::resolveInstanceSetImplementations($extensions);
+                        $o->meta::pure::router::clustering::resolveInstanceSetImplementations();
                      },
                      {e:EmbeddedSetImplementation[1] |
                         [];

@@ -410,7 +410,7 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          let store = $storeContract.resolveStoreFromSetImplementation->toOne()->eval($i);
          pair($storeContract, $mapping.resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
-         let roots = $o->resolveInstanceSetImplementations($extensions);
+         let roots = $o->resolveInstanceSetImplementations();
          let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id,{a,b|$a==$b})->toOne();
          let store = $roots->map(r|$mapping.resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
          pair($storeContract, $mapping.resolveStore($store));
@@ -447,10 +447,7 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
    
    let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)-> removeDuplicates({x, y | $x.store->elementToPath() == $y.store->elementToPath() &&  meta::pure::runtime::runtimeEquality($x.runtime, $y.runtime, $extensions) && ($x.exeCtx == $y.exeCtx)});
    let n_unique = if ($p_unique->size() > 1,|$p_unique->filter(p|!$p.val->isOneFunction()),|$p_unique);
-   let unique = if ($n_unique->size() > 1 && ($n_unique->filter(p|$p.store->instanceOf(EmbeddedStore))->size() > 0),
-                        |$n_unique->filter(p|!$p.store->instanceOf(EmbeddedStore)),
-                        |$n_unique
-                   );
+   $n_unique;
 }
 
 function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1], depth:Integer[1], parentCluster:ClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]

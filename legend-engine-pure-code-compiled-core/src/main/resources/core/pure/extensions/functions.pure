@@ -46,7 +46,7 @@ function meta::pure::extension::_storeContractForSetImplementation(extensions: E
         i: InstanceSetImplementation[1]|
             $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne()),
         o: meta::pure::mapping::OperationSetImplementation[1]|
-            let roots = $o->resolveInstanceSetImplementations($extensions);
+            let roots = $o->resolveInstanceSetImplementations();
             $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id, {a,b|$a==$b})->toOne();
     ]
   );
