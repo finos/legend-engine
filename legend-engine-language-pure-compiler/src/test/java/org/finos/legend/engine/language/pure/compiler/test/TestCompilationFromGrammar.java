@@ -191,7 +191,8 @@ public class TestCompilationFromGrammar
     }
 
     @Test
-    public void testCompilationPureDuplicateSetIdError(){
+    public void testCompilationPureDuplicateSetIdError()
+    {
         TestCompilationFromGrammarTestSuite.test("###Pure\n" +
                 "Class simple::Account\n" +
                 "{\n" +
