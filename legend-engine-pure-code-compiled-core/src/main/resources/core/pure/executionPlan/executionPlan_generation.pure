@@ -110,9 +110,9 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
    let functionParameters = $f->stubFuncParameters();
    
    let node = if ($clusters->size() == 1,
-       | $clusters->at(0)->plan($runtime, $inScopeVars, $routed.advancedRouting, $context, $extensions, $debugContext),
+       | $clusters->at(0)->plan($runtime, $inScopeVars, $context, $extensions, $debugContext),
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
-                                             let node = $c->plan($runtime, $x, $routed.advancedRouting, $context, $extensions, $debugContext);
+                                             let node = $c->plan($runtime, $x, $context, $extensions, $debugContext);
                                              let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type ==TabularDataSet,
                                                                                                                        |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
                                                                                                                        |^PlanVarPlaceHolder(name=$a.varName,type = $a.resultType.type, multiplicity=$a.resultSizeRange));
@@ -207,7 +207,7 @@ function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>
    $f->functionType().parameters->evaluateAndDeactivate()->map(p|^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity));
 }
 
-function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], runtime:Runtime[0..1], inScopeVars:Map<String, List<Any>>[1], advancedRouting:Boolean[0..1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], runtime:Runtime[0..1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
     let fe = $cluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
                                   t:TDSRoutedValueSpecification[1] | $t.value,
@@ -218,7 +218,7 @@ function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1],
             let subPlan = $variables->at(1)->match(
                               [
                                  c:ClusteredValueSpecification[1]|
-                                    $c->plan($runtime, $inScopeVars, $advancedRouting, if ($c.exeCtx->isEmpty(), | $context, | $c.exeCtx->toOne()), $extensions, $debugContext);,
+                                    $c->plan($runtime, $inScopeVars, if ($c.exeCtx->isEmpty(), | $context, | $c.exeCtx->toOne()), $extensions, $debugContext);,
                                  i:InstanceValue[1]|^meta::pure::executionPlan::ConstantExecutionNode
                                                     (
                                                        resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
@@ -253,7 +253,7 @@ function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1],
                r:Runtime[0..1] | $r
             ]);
 
-            let query = ^meta::pure::mapping::StoreQuery(store=$cluster.store, fe=$fe, inScopeVars=$inScopeVars, advancedRouting=$advancedRouting);
+            let query = ^meta::pure::mapping::StoreQuery(store=$cluster.store, fe=$fe, inScopeVars=$inScopeVars);
             let res = $cluster.s.planExecution->toOne()->eval($query, $cluster.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $cluster.mapping, $rt, if ($cluster.exeCtx->isEmpty(), | $context, | $cluster.exeCtx->toOne()), $extensions, $debugContext);
             ^$res(fromCluster=$cluster);
     );
