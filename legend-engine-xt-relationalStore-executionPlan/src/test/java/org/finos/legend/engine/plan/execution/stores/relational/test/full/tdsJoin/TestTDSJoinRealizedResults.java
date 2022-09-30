@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.full.tdsJo
 
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RealizedRelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.test.full.functions.in.TestPlanExecutionForIn;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.junit.Assert;
@@ -85,7 +86,7 @@ public class TestTDSJoinRealizedResults extends AlloyTestServer
         {
             InputStream executionPlanJson = TestPlanExecutionForIn.class.getClassLoader().getResourceAsStream("org/finos/legend/engine/plan/execution/stores/relational/test/full/tdsJoin/TestTDSJoinExpectedFail.json");
             String executionPlanJsonString = IOUtils.toString(executionPlanJson);
-            System.setProperty("DEFAULT_ROW_LIMIT", "2");
+            System.setProperty(RealizedRelationalResult.ROW_LIMIT_PROPERTY_NAME, "3");
             SingleExecutionPlan plan = objectMapper.readValue(executionPlanJsonString, SingleExecutionPlan.class);
 
             String expectedResult = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"firstName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(200)\"},{\"name\":\"eID\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"},{\"name\":\"managerID\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"},{\"name\":\"fID\",\"type\":\"Integer\",\"relationalType\":\"INTEGER\"},{\"name\":\"legalName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"firmtable_0\\\".ID as \\\"eID\\\", case when \\\"root\\\".MANAGERID = 0 then 0 else \\\"root\\\".MANAGERID end as \\\"managerID\\\" from personTable as \\\"root\\\" left outer join firmTable as \\\"firmtable_0\\\" on (\\\"firmtable_0\\\".ID = \\\"root\\\".FIRMID)\"},{\"_type\":\"relational\",\"sql\":\"select \\\"tdsvar0_0_0\\\".firstName as \\\"firstName\\\", \\\"tdsvar0_0_0\\\".eID as \\\"eID\\\", \\\"tdsvar0_0_0\\\".managerID as \\\"managerID\\\", \\\"tdsvar0_0_0\\\".\\\"fID\\\" as \\\"fID\\\", \\\"tdsvar0_0_0\\\".\\\"legalName\\\" as \\\"legalName\\\" from (select * from tdsVar0_0 as \\\"tdsvar0_0_1\\\" inner join (select \\\"root\\\".ID as \\\"fID\\\", \\\"root\\\".LEGALNAME as \\\"legalName\\\" from firmTable as \\\"root\\\") as \\\"firmtable_0\\\" on (\\\"tdsvar0_0_1\\\".eID = \\\"firmtable_0\\\".\\\"fID\\\")) as \\\"tdsvar0_0_0\\\"\"}], \"result\" : {\"columns\" : [\"firstName\",\"eID\",\"managerID\",\"fID\",\"legalName\"], \"rows\" : [{\"values\": [\"Peter\",1,2,1,\"Firm X\"]},{\"values\": [\"John\",1,4,1,\"Firm X\"]},{\"values\": [\"John\",1,2,1,\"Firm X\"]},{\"values\": [\"Anthony\",1,null,1,\"Firm X\"]},{\"values\": [\"Fabrice\",2,null,2,\"Firm A\"]},{\"values\": [\"Oliver\",3,null,3,\"Firm B\"]},{\"values\": [\"David\",4,null,4,\"Firm C\"]}]}}";
