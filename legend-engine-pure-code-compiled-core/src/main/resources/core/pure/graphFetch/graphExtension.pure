@@ -590,15 +590,15 @@ function <<access.private>> meta::pure::graphFetch::addPropertyGraphFetchTrees(o
       | $onto->addSubTree($pgft),
       {|
          let rtnClass        = $node.property.genericType.rawType->cast(@Class<Any>)->toOne();
-         let childrenByClass = $pTree.children->groupBy(c|$c.value->cast(@PropertyPathNode).class);         
+         let childrenByClass = $pTree.children->groupBy(c|$c.value->cast(@PropertyPathNode).class);
          $childrenByClass->keyValues()->fold(
             {kv, gft| 
                let childrenOwner = $kv.first;
                let children      = $kv.second.values;
-               
-               if($childrenOwner == $rtnClass || $childrenOwner->_subTypeOf($rtnClass),
+
+               if($childrenOwner == $rtnClass || $childrenOwner->_subTypeOf($rtnClass) || $rtnClass->_subTypeOf($childrenOwner),
                   {|
-                     let withSubtype  = if($childrenOwner == $rtnClass,
+                     let withSubtype  = if($childrenOwner == $rtnClass || $rtnClass->_subTypeOf($childrenOwner),  
                                            | $pgft,
                                            | ^$pgft(subType = $childrenOwner)
                                         );
