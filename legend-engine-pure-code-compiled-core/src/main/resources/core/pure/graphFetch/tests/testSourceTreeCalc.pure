@@ -1125,7 +1125,7 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMu
             zipCode
          }
       }
-   }#; 
+   }#;
    assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->meta::pure::graphFetch::treeToString());
    
    let tree1 = #{
@@ -1152,7 +1152,78 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testWithMu
    }#; 
    assertEquals($expectedSourceTree1->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree1->meta::pure::graphFetch::treeToString());      
 }
- 
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSuperTypePropertyAccess():Boolean[1]
+{
+   let tree = #{
+      meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster{
+         zipCodes
+      }
+   }#;
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSuperTypeProperties, meta::pure::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree = #{
+      meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster{ 
+                streetCluster{ 
+                    zipCode
+                }
+      }
+   }#;
+   assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());   
+}
+  
+  
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSuperTypePropertyAccessViaFunction():Boolean[1]
+{
+   let tree = #{
+      meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster{
+         zipCodes
+      }
+   }#;
+
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSuperType::testMappingWithSuperTypePropertiesAccessViaFunction, meta::pure::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree = #{
+      meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster{ 
+                streetCluster{
+                    zipCode
+                }
+      }
+   }#;
+
+   assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());    
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::testSuperAndSubTypePropertyAccessViaFunction():Boolean[1]
+{
+   let tree = #{
+      meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster{
+         streetNames,
+         zipCodes
+      }
+   }#;
+
+   let sourceTree = calculateSourceTree($tree, meta::pure::graphFetch::tests::sourceTreeCalc::withSuperType::testMappingWithSuperAndSubTypePropertiesAccessViaFunction, meta::pure::extension::defaultExtensions())->sortTree();
+   let expectedSourceTree = #{
+      meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster{ 
+                streetCluster{
+                    street,
+                    zipCode
+                }
+      }
+   }#;
+
+   assertEquals($expectedSourceTree->sortTree()->meta::pure::graphFetch::treeToString(), $sourceTree->sortTree()->meta::pure::graphFetch::treeToString());     
+}
+   
+function meta::pure::lineage::scanProperties::test::getZipCodes(s:Location[*]):String[*]
+{
+   $s->map(x|$x.zipCode); 
+}
+
+function meta::pure::lineage::scanProperties::test::getStreetNames(s:Street[*]):String[*]
+{
+   $s->map(x|$x.street);
+}
+
 ###Mapping
 Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingWithSingleSubType
 (
@@ -1174,6 +1245,24 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::testMappingW
   }
 )
 
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSuperType::testMappingWithSuperTypePropertiesAccessViaFunction
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster
+    zipCodes: $src.streetCluster->meta::pure::lineage::scanProperties::test::getZipCodes()
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSuperType::testMappingWithSuperAndSubTypePropertiesAccessViaFunction
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::TargetStreetCluster: Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::SourceStreetCluster
+    zipCodes: $src.streetCluster->meta::pure::lineage::scanProperties::test::getZipCodes(),
+    streetNames: $src.streetCluster->meta::pure::lineage::scanProperties::test::getStreetNames()
+  }
+)
  
 ###Mapping
 import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
