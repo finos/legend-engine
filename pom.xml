@@ -219,7 +219,7 @@
         <h2.version>1.4.200</h2.version>
         <snowflake.version>3.13.5</snowflake.version>
         <databricks.version>2.6.25</databricks.version>
-        <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
+        <redshiftJDBC.version>2.1.0.8</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
 
         <!-- Dependency versions -->
