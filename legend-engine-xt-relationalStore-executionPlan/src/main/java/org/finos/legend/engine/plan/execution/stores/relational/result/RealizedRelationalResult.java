@@ -52,14 +52,15 @@ public class RealizedRelationalResult extends StreamingResult
         this.transformedRows = Lists.mutable.empty();
         this.resultSetRows = Lists.mutable.empty();
         ResultSet resultSet = relationalResult.resultSet;
+        int SUPPORTED_RESULT_ROWS = getRowLimit();
         int rowCount = 0;
         try
         {
             while (resultSet.next())
             {
-                if (rowCount > getRowLimit())
+                if (rowCount > SUPPORTED_RESULT_ROWS )
                 {
-                    throw new RuntimeException("Too many rows returned. Realization of relational results currently supports results with up to " + getRowLimit() + " rows.");
+                    throw new RuntimeException("Too many rows returned. Realization of relational results currently supports results with up to " + SUPPORTED_RESULT_ROWS + " rows.");
                 }
 
                 List<Object> transformedRow = Lists.mutable.empty();
