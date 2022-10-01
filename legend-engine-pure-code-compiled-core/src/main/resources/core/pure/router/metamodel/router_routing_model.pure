@@ -91,7 +91,7 @@ Class meta::pure::router::metamodel::StoreMappingRoutingStrategy extends StoreRo
    mapping     : Mapping[1];
    sets        : PermutationSet[*];
    setsByDepth : Map<String,PermutationSet>[1];
-   isParentMap : Boolean[1];      //TODO: check this maybe this is not needed
+   isParentMap : Boolean[1];                                                //TODO: check this maybe this is not needed
    toChooseSet : SetImplementation[0..1];
    
    classMappingsByClass:Map<Class<Any>,List<SetImplementation>>[1];         //TODO: check this move to mapping

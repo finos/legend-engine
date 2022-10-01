@@ -258,7 +258,21 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
    );
 }
 
+function meta::pure::router::routing::inlineEmbeddedMapping(i:InlineEmbeddedSetImplementation[1], m:Mapping[1]):EmbeddedSetImplementation[1]
+{   
+    let cm = $m.classMappingById($i.inlineSetImplementationId);
+    assertEquals(1, $cm->size(), | 'Found too many or not enough matches ['+$cm.id->makeString(',')+'] for inline implementation Set Id [' + $i.inlineSetImplementationId+']');
+    let pmaps = $cm->cast(@InstanceSetImplementation)->toOne().allPropertyMappings()->map(pm | ^$pm(owner = $i.owner, sourceSetImplementationId = $i.sourceSetImplementationId));
+    ^$i(propertyMappings=$pmaps);
+}
 
+function meta::pure::router::routing::reprocessAggregationAwarePropertyMapping(pm: PropertyMapping[1]):PropertyMapping[1]
+{
+   $pm->match([
+      agg:AggregationAwarePropertyMapping[1]| $agg.owner->cast(@AggregationAwareSetImplementation).mainSetImplementation->toOne().propertyMappingsByPropertyName($agg.property.name->toOne())->filter(p | $p.sourceSetImplementationId == $p.sourceSetImplementationId && $p.targetSetImplementationId == $p.targetSetImplementationId)->toOne(),
+      m:PropertyMapping[1] | $m
+   ])
+}
 
 function meta::pure::router::operations::getMappedLeafClasses(class:Class<Any>[1], mapping:Mapping[1], state: RoutingState[1]):Type[*]
 {

@@ -18,6 +18,19 @@ import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 
+Class meta::pure::router::clustering::ClusteredValueSpecification extends ValueSpecification
+{
+   executable : Boolean[1];
+   exeCtx     : ExecutionContext[0..1];
+   openVars   : Map<String, List<Any>>[1];
+   val        : ValueSpecification[1];
+
+   s          : StoreContract[1];
+   store      : meta::pure::store::Store[1];
+   runtime    : Runtime[0..1];
+   mapping    : Mapping[0..1];
+}
+
 Class meta::pure::graphFetch::routing::ClusteredGraphFetchTree extends GraphFetchTree
 {
    s : StoreContract[1];
