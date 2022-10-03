@@ -35,7 +35,7 @@ function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1
          let res= $xf->evaluate([$dbType, $host, $port]->map(v|list($v))->concatenate(list($extensions)));
          if($res->isNotEmpty(), 
            |$res->toOne()->cast(@RelationalDatabaseConnection),
-           | println('**** Warning **** : Test Connection for dbType: '+ $dbType->toString() + ' not available on Legend Engine Server, tests will only generate execution plans without asserting actual data');
+           | fail('**** Error **** : Test Connection for dbType: '+ $dbType->toString() + ' not available on Legend Engine Server');
              []->cast(@RelationalDatabaseConnection);
            );
          },
