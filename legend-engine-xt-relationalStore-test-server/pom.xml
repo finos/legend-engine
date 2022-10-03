@@ -41,7 +41,6 @@
                         <exclude>**/Test_Relational_DbSpecific_Redshift_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Postgres_UsingPureClientTestSuite.java</exclude>
-                        <exclude>**/Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite.java</exclude>
                     </excludes>
                 </configuration>
             </plugin>
