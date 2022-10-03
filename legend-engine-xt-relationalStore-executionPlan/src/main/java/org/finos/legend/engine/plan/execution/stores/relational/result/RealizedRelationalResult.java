@@ -58,7 +58,7 @@ public class RealizedRelationalResult extends StreamingResult
         {
             while (resultSet.next())
             {
-                if (rowCount > SUPPORTED_RESULT_ROWS )
+                if (rowCount > SUPPORTED_RESULT_ROWS)
                 {
                     throw new RuntimeException("Too many rows returned. Realization of relational results currently supports results with up to " + SUPPORTED_RESULT_ROWS + " rows.");
                 }
