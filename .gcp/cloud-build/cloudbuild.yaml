@@ -1,0 +1,8 @@
+steps:
+  - name: 'maven:3.8-openjdk-11'
+    args: ['bash', './.gcp/cloud-build/build.sh']
+timeout: 7200s
+logsBucket: 'gs://finos-legend-engine-logs'
+options:
+  logging: GCS_ONLY
+  machineType: E2_HIGHCPU_32

@@ -91,7 +91,7 @@ function meta::pure::router::printer::asString(f:ValueSpecification[1], pref:Pre
                    cs:ClassSetImplementationHolder[1]|'['+$cs.set.id+' '+$cs.value->asString($pref)+']',
                    c:ClusteredValueSpecification[1]|if ($pref.useClusterIndex,
                                                         |'[Node Index:'+$pref.clusterIndex->indexOf($c)->toString()+']',
-                                                        |let start = '{'+if($c.store->instanceOf(PlatformStore),|'Platform', |if($c.store->instanceOf(EmbeddedStore),|'Embedded',|$c.store->toOne()->elementToPath()))+'> ';
+                                                        |let start = '{'+if($c.store->instanceOf(PlatformStore),|'Platform', |$c.store->toOne()->elementToPath())+'> ';
                                                          $start+$c.val->asString($pref)->replace('\n','\n'+space($start->length()))+'}';
                                                     );,
                   t:TDSRoutedValueSpecification[1]|'[Table TDS'+$t.id+']'
@@ -152,7 +152,7 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
    let newLine = if($multiLine, | '\n', | '');
    $r->match([
       c: ClusteredGraphFetchTree[1] |
-         let start = '{'+if($c.store->instanceOf(meta::pure::store::platform::metamodel::PlatformStore),|'Platform', |if($c.store->instanceOf(meta::pure::router::store::embedded::EmbeddedStore),|'Embedded',|$c.store->toOne()->elementToPath()))+'> ';
+         let start = '{'+if($c.store->instanceOf(meta::pure::store::platform::metamodel::PlatformStore),|'Platform', |$c.store->toOne()->elementToPath())+'> ';
          $space+$start+$c.tree->asString($space, $multiLine)+'}';,
 
       rr: RoutedRootGraphFetchTree<Any>[1] |

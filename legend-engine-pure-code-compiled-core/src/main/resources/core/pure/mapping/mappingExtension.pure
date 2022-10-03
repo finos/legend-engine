@@ -183,20 +183,20 @@ function <<access.private>> meta::pure::mapping::updatePropertyMappingIDWithSuff
 
 
 
-function meta::pure::router::clustering::resolveInstanceSetImplementations(o:OperationSetImplementation[1], extensions:meta::pure::extension::Extension[*]):InstanceSetImplementation[*]
+function meta::pure::router::clustering::resolveInstanceSetImplementations(o:OperationSetImplementation[1]):InstanceSetImplementation[*]
 {
    let sets = $o.operation->eval($o);
    $sets->map(s | $s->match([
-                              o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations($extensions),
-                              e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded($extensions),
+                              o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations(),
+                              e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded(),
                               i:InstanceSetImplementation[1] | $i
                             ]));
 }
 
-function <<access.private>> meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1], extensions:meta::pure::extension::Extension[*]):InstanceSetImplementation[*]
+function meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1]):InstanceSetImplementation[1]
 {
    $o.owner->match([
-                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions),
+                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded(),
                      i:InstanceSetImplementation[1]|$i
                   ]);
 }

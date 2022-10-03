@@ -88,10 +88,6 @@ Class meta::pure::router::routing::PropertyMap
    v:Pair<String,Any>[*];
 }
 
-Class meta::pure::router::store::embedded::EmbeddedStore extends meta::pure::store::Store
-{
-}
-
 function meta::pure::router::permute(var:PermutationSet[*]):List<PermutationSet>[*]
 {
    let l = $var->map(p|^List<PermutationSet>(values=$p.sets->removeDuplicates({a,b|$a.id == $b.id})->map(v|^$p(sets=$v))));

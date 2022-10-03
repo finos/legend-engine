@@ -1,6 +1,0 @@
-steps:
-  - name: 'maven:3.8-openjdk-11'
-    args: ['bash', './.gcp/cloud-build-release/release.sh']
-timeout: 14400s
-options:
-  machineType: E2_HIGHCPU_32

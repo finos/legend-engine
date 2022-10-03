@@ -57,7 +57,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
-import static org.finos.legend.engine.persistence.components.relational.api.GeneratorResultAbstract.SINGLE_QUOTE;
 
 @Immutable
 @Style(
@@ -71,6 +70,7 @@ public abstract class RelationalIngestorAbstract
 {
     private static final String STAGING = "staging";
     private static final String UNDERSCORE = "_";
+    private static final String SINGLE_QUOTE = "'";
     private static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
 
     //---------- FLAGS ----------

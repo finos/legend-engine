@@ -1,0 +1,102 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
+import meta::pure::runtime::*;
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testSimpleSortAsc(config:DbTestConfig[1]):Boolean[1]
+{ 
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#])->sort('name'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->makeString(',')); 
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testSimpleSortDesc(config:DbTestConfig[1]):Boolean[1]
+{ 
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#])->sort('name', SortDirection.DESC), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Peter,Oliver,John,John,Fabrice,David,Anthony', $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testDoubleSortAsc(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(['address', 'name']), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Peter,Hoboken,Oliver,Hong Kong,Anthony,New York,David,New York,John,New York,John,New York,Fabrice,San Fransisco', $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testDoubleSortAscChain(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort('address')->sort(asc('name')), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Anthony,New York,David,New York,Fabrice,San Fransisco,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testDoubleSortDesc(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('name'), desc('address')]), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Peter,Hoboken,Oliver,Hong Kong,John,New York,John,New York,Fabrice,San Fransisco,David,New York,Anthony,New York', $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testDoubleSortDescChain(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('name'))->sort('address', SortDirection.DESC), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Fabrice,San Fransisco,John,New York,John,New York,David,New York,Anthony,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testDoubleSortMixed(config:DbTestConfig[1]):Boolean[1]
+{
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort([desc('address'), asc('name')]), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Fabrice,San Fransisco,Anthony,New York,David,New York,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));  
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testDoubleSortMixedChain(config:DbTestConfig[1]):Boolean[1]
+{ 
+  let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+  if($result->isEmpty(), | true,
+  | assertSize($result.values.rows, 7 );
+    assertEquals('Anthony,New York,David,New York,Fabrice,San Fransisco,John,New York,John,New York,Oliver,Hong Kong,Peter,Hoboken', $result.values.rows->map(r|$r.values)->makeString(','));
+  );
+}
+

@@ -20,7 +20,12 @@ public class MilestoningDatePropagationContext
 {
     private ValueSpecification businessDate;
     private ValueSpecification processingDate;
-    public boolean isDatePropagationSupported = true;
+
+    public MilestoningDatePropagationContext(ValueSpecification processingDate, ValueSpecification businessDate)
+    {
+        this.businessDate = businessDate;
+        this.processingDate = processingDate;
+    }
 
     public ValueSpecification getBusinessDate()
     {
@@ -30,15 +35,5 @@ public class MilestoningDatePropagationContext
     public ValueSpecification getProcessingDate()
     {
         return this.processingDate;
-    }
-
-    public void setBusinessDate(ValueSpecification businessDate)
-    {
-        this.businessDate = businessDate;
-    }
-
-    public void setProcessingDate(ValueSpecification processingDate)
-    {
-        this.processingDate = processingDate;
     }
 }
