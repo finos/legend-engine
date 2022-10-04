@@ -9,4 +9,4 @@ gpg --version
 export MAVEN_OPTS="-Xms6g -Xmx6g"
 
 # running the build
-mvn -B -e -T 4 install -DargLine="-Xms12g -Xmx12g"
+mvn -B -e -T 4 install -DargLine="-Xms10g -Xmx10g"
