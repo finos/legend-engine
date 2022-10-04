@@ -75,8 +75,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
 
     @Before
     public void setup() throws IOException {
-        RelationalConnectionTest rtb = new RelationalConnectionTest();
-        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = (BigQueryTestDatabaseAuthenticationFlowProviderConfiguration) rtb.readDatabaseFlowProviderConfigurations(rtb.getResourceAsString("/org/finos/legend/engine/server/test/flowProviderConfig.json"), new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest"));
+        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = (BigQueryTestDatabaseAuthenticationFlowProviderConfiguration) readDatabaseFlowProviderConfigurations(getResourceAsString("/org/finos/legend/engine/server/test/flowProviderConfig.json"), new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest"));
         BigQueryTestDatabaseAuthenticationFlowProvider flowProvider = new BigQueryTestDatabaseAuthenticationFlowProvider();
         flowProvider.configure(flowProviderConfiguration);
         assertBigQueryWithGCPADCFlowIsAvailable(flowProvider);
