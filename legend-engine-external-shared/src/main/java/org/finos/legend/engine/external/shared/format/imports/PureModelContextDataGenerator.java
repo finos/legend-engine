@@ -277,10 +277,13 @@ public class PureModelContextDataGenerator
         {
             try
             {
-                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_("vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, association, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, association, compiledExecutionSupport), compiledExecutionSupport), Association.class));
+                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(
+                    transformMethod.invoke(null, association, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport),
+                        compiledExecutionSupport), compiledExecutionSupport), Association.class));
             }
-            catch (Exception ignored)
+            catch (Exception e)
             {
+                throw new RuntimeException(e);
             }
         });
         return builder.build();
