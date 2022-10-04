@@ -166,6 +166,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.join.Join
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.join.JoinTreeNode;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.operation.Operation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.BusinessMilestoning;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.BusinessSnapshotMilestoning;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelationAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.ProcessingMilestoning;
@@ -1278,13 +1279,14 @@ public class HelperRelationalBuilder
     {
         Table table = (Table) tableAlias._relationalElement();
         BusinessMilestoning businessMilestoning = table._milestoning().selectInstancesOf(BusinessMilestoning.class).getFirst();
+        BusinessSnapshotMilestoning businessSnapshotMilestoning = table._milestoning().selectInstancesOf(BusinessSnapshotMilestoning.class).getFirst();
         ProcessingMilestoning processingMilestoning = table._milestoning().selectInstancesOf(ProcessingMilestoning.class).getFirst();
         switch (propertyName)
         {
             case "from":
-                return businessMilestoning._from();
+                return businessMilestoning != null ? businessMilestoning._from() : businessSnapshotMilestoning._snapshotDate();
             case "thru":
-                return businessMilestoning._thru();
+                return businessMilestoning != null ? businessMilestoning._thru() : businessSnapshotMilestoning._snapshotDate();
             case "in":
                 return processingMilestoning._in();
             case "out":
