@@ -101,7 +101,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private FieldValue digest;
 
     private List<FieldValue> primaryKeyFields;
-    private List<FieldValue> primaryKeyFieldsAndFromField;
+    private List<FieldValue> primaryKeyFieldsAndFromFieldFromStage;
+    private List<FieldValue> primaryKeyFieldsAndFromFieldFromMain;
+    private List<FieldValue> primaryKeyFieldsAndFromFieldForSelection;
     private List<FieldValue> dataFields;
 
     BitemporalDeltaPlanner(Datasets datasets, BitemporalDelta ingestMode, PlannerOptions plannerOptions)
@@ -119,12 +121,13 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         {
             this.tempDataset = getTempDataset(datasets);
 
-            this.sourceValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).build();
-            this.targetValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).build();
-            this.targetValidDatetimeThru = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_THRU)).build();
+            this.sourceValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
+            this.targetValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
+            this.targetValidDatetimeThru = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_THRU)).alias(VALID_DATE_TIME_THRU_NAME).build();
 
             this.dataFields = stagingDataset().schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
             this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField()));
+            this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)));
 
             this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
             this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
@@ -136,9 +139,17 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
                 this.dataFields.removeIf(field -> field.fieldName().equals(pkName));
             }
 
-            this.primaryKeyFieldsAndFromField = new ArrayList<>();
-            this.primaryKeyFieldsAndFromField.addAll(primaryKeyFields);
-            this.primaryKeyFieldsAndFromField.add(sourceValidDatetimeFrom);
+            this.primaryKeyFieldsAndFromFieldFromStage = new ArrayList<>();
+            this.primaryKeyFieldsAndFromFieldFromStage.addAll(primaryKeyFields);
+            this.primaryKeyFieldsAndFromFieldFromStage.add(sourceValidDatetimeFrom);
+
+            this.primaryKeyFieldsAndFromFieldFromMain = new ArrayList<>();
+            this.primaryKeyFieldsAndFromFieldFromMain.addAll(primaryKeyFields);
+            this.primaryKeyFieldsAndFromFieldFromMain.add(targetValidDatetimeFrom);
+
+            this.primaryKeyFieldsAndFromFieldForSelection = new ArrayList<>();
+            this.primaryKeyFieldsAndFromFieldForSelection.addAll(primaryKeyFields);
+            this.primaryKeyFieldsAndFromFieldForSelection.add(FieldValue.builder().fieldName(VALID_DATE_TIME_FROM_NAME).build());
 
             this.digest = FieldValue.builder().fieldName(ingestMode.digestField()).build();
 
@@ -436,37 +447,35 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectX1;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(deleteIndicatorIsNotSetCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(dataSplitInRangeCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
-        Selection selectY1 = Selection.builder().source(mainDataset()).condition(openRecordCondition).addAllFields(primaryKeyFieldsAndFromField).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+        Selection selectY1 = Selection.builder().source(mainDataset()).condition(openRecordCondition).addAllFields(primaryKeyFieldsAndFromFieldFromMain).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
 
         Condition x1AndY1PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX1, selectY1, primaryKeys.toArray(new String[0]));
-        Condition x1FromLessThanY1From = LessThan.of(sourceValidDatetimeFrom.withDatasetRef(selectX1.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectY1.datasetReference()));
+        Condition x1FromLessThanY1From = LessThan.of(FieldValue.builder().datasetRef(selectX1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build(), FieldValue.builder().datasetRef(selectY1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
         Condition joinXY1Condition = And.builder().addConditions(x1AndY1PkMatchCondition, x1FromLessThanY1From).build();
         Join joinXY1 = Join.of(selectX1, selectY1, joinXY1Condition, JoinOperation.LEFT_OUTER_JOIN);
 
-        List<Value> selectXY1Fields = new ArrayList<>();
-        selectXY1Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList()));
-        selectXY1Fields.add(sourceValidDatetimeFrom.withDatasetRef(selectX1.datasetReference()));
+        List<Value> selectXY1Fields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList());
         selectXY1Fields.add(FunctionImpl.builder()
             .functionName(FunctionName.COALESCE)
-            .addValue(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(sourceValidDatetimeFrom.withDatasetRef(selectY1.datasetReference())).build(), LogicalPlanUtils.INFINITE_BATCH_TIME())
+            .addValue(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(FieldValue.builder().datasetRef(selectY1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build()).build(), LogicalPlanUtils.INFINITE_BATCH_TIME())
             .alias(VALID_DATE_TIME_THRU_NAME)
             .build());
 
-        List<Value> selectXY1GroupByFields = primaryKeyFieldsAndFromField.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList());
+        List<Value> selectXY1GroupByFields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList());
         Selection selectXY1 = Selection.builder().source(joinXY1).addAllFields(selectXY1Fields).groupByFields(selectXY1GroupByFields).build();
 
         // SECOND JOIN between X and Y
@@ -474,39 +483,37 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectY2;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
 
         Condition x2AndY2PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX2, selectY2, primaryKeys.toArray(new String[0]));
-        Condition y2FromGreaterThanX2From = GreaterThan.of(sourceValidDatetimeFrom.withDatasetRef(selectY2.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()));
-        Condition y2FromLessThanX2Through = LessThan.of(sourceValidDatetimeFrom.withDatasetRef(selectY2.datasetReference()), FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).build());
+        Condition y2FromGreaterThanX2From = GreaterThan.of(FieldValue.builder().datasetRef(selectY2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build(), FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
+        Condition y2FromLessThanX2Through = LessThan.of(FieldValue.builder().datasetRef(selectY2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build(), FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).build());
         Condition joinXY2Condition = And.builder().addConditions(x2AndY2PkMatchCondition, y2FromGreaterThanX2From, y2FromLessThanX2Through).build();
         Join joinXY2 = Join.of(selectX2, selectY2, joinXY2Condition, JoinOperation.LEFT_OUTER_JOIN);
 
-        List<Value> selectXY2Fields = new ArrayList<>();
-        selectXY2Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
-        selectXY2Fields.add(sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()));
+        List<Value> selectXY2Fields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList());
         selectXY2Fields.add(FunctionImpl.builder()
             .functionName(FunctionName.COALESCE)
             .addValue(
-                FunctionImpl.builder().functionName(FunctionName.MIN).addValue(sourceValidDatetimeFrom.withDatasetRef(selectY2.datasetReference())).build(),
+                FunctionImpl.builder().functionName(FunctionName.MIN).addValue(FieldValue.builder().datasetRef(selectY2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build()).build(),
                 FunctionImpl.builder().functionName(FunctionName.MIN).addValue(FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).build()).build())
             .alias(VALID_DATE_TIME_THRU_NAME)
             .build());
 
-        List<Value> selectXY2GroupByFields = primaryKeyFieldsAndFromField.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList());
+        List<Value> selectXY2GroupByFields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList());
         Selection selectXY2 = Selection.builder().source(joinXY2).addAllFields(selectXY2Fields).groupByFields(selectXY2GroupByFields).build();
 
         // THIRD JOIN between X and Y
@@ -531,7 +538,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectY3 = selectXY2.withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
 
         Condition x3AndY3PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX3, selectY3, primaryKeys.toArray(new String[0]));
-        Condition x3FromEqualsY3From = Equals.of(sourceValidDatetimeFrom.withDatasetRef(selectX3.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectY3.datasetReference()));
+        Condition x3FromEqualsY3From = Equals.of(sourceValidDatetimeFrom.withDatasetRef(selectX3.datasetReference()), FieldValue.builder().datasetRef(selectY3.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
         Condition joinXY3Condition = And.builder().addConditions(x3AndY3PkMatchCondition, x3FromEqualsY3From).build();
         Join joinXY3 = Join.of(selectX3, selectY3, joinXY3Condition, JoinOperation.LEFT_OUTER_JOIN);
 
@@ -591,40 +598,38 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     {
         // FIRST JOIN between X and Y
         List<Value> selectX1Fields = new ArrayList<>();
-        selectX1Fields.addAll(primaryKeyFieldsAndFromField);
+        selectX1Fields.addAll(primaryKeyFieldsAndFromFieldFromMain);
         selectX1Fields.add(targetValidDatetimeThru.withAlias(VALID_DATE_TIME_THRU_NAME));
 
         Selection selectX1 = Selection.builder().source(mainDataset()).addAllFields(selectX1Fields).condition(openRecordCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         Selection selectY1;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
 
         Condition x1AndY1PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX1, selectY1, primaryKeys.toArray(new String[0]));
-        Condition y1FromGreaterThanX1From = GreaterThan.of(sourceValidDatetimeFrom.withDatasetRef(selectY1.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectX1.datasetReference()));
-        Condition y1FromLessThanX1Through = LessThan.of(sourceValidDatetimeFrom.withDatasetRef(selectY1.datasetReference()), FieldValue.builder().datasetRef(selectX1.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).build());
+        Condition y1FromGreaterThanX1From = GreaterThan.of(FieldValue.builder().datasetRef(selectY1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build(), FieldValue.builder().datasetRef(selectX1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
+        Condition y1FromLessThanX1Through = LessThan.of(FieldValue.builder().datasetRef(selectY1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build(), FieldValue.builder().datasetRef(selectX1.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).build());
         Condition joinXY1Condition = And.builder().addConditions(x1AndY1PkMatchCondition, y1FromGreaterThanX1From, y1FromLessThanX1Through).build();
         Join joinXY1 = Join.of(selectX1, selectY1, joinXY1Condition, JoinOperation.INNER_JOIN);
 
-        List<Value> selectXY1Fields = new ArrayList<>();
-        selectXY1Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList()));
-        selectXY1Fields.add(sourceValidDatetimeFrom.withDatasetRef(selectX1.datasetReference()));
-        selectXY1Fields.add(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(sourceValidDatetimeFrom.withDatasetRef(selectY1.datasetReference())).alias(VALID_DATE_TIME_THRU_NAME).build());
+        List<Value> selectXY1Fields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList());
+        selectXY1Fields.add(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(FieldValue.builder().datasetRef(selectY1.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build()).alias(VALID_DATE_TIME_THRU_NAME).build());
 
-        List<Value> selectXY1GroupByFields = primaryKeyFieldsAndFromField.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList());
+        List<Value> selectXY1GroupByFields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX1.datasetReference())).collect(Collectors.toList());
 
         Selection selectXY1 = Selection.builder().source(joinXY1).addAllFields(selectXY1Fields).groupByFields(selectXY1GroupByFields).build();
 
@@ -632,7 +637,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectX2 = selectXY1.withAlias(LEFT_DATASET_IN_JOIN_ALIAS);
 
         Condition x2AndStagePkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX2, stagingDataset(), primaryKeys.toArray(new String[0]));
-        Condition x2FromEqualsStageFrom = Equals.of(sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
+        Condition x2FromEqualsStageFrom = Equals.of(FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build(), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
         Condition selectFromStageCondition = And.builder().addConditions(x2AndStagePkMatchCondition, x2FromEqualsStageFrom).build();
         if (deleteIndicatorField.isPresent())
         {
@@ -642,11 +647,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         {
             selectFromStageCondition = And.builder().addConditions(selectFromStageCondition, dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build();
         }
-        Condition whereNotExists = Not.builder().condition(Exists.of(Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromField).condition(selectFromStageCondition).build())).build();
+        Condition whereNotExists = Not.builder().condition(Exists.of(Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(selectFromStageCondition).build())).build();
 
-        List<Value> selectXY2Fields = new ArrayList<>();
-        selectXY2Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
-        selectXY2Fields.add(sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()));
+        List<Value> selectXY2Fields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList());
         selectXY2Fields.add(FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).alias(VALID_DATE_TIME_THRU_NAME).build());
 
         Selection selectXY2 = Selection.builder().source(selectX2).addAllFields(selectXY2Fields).condition(whereNotExists).build();
@@ -656,7 +659,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectY3 = selectXY2.withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
 
         Condition x3AndY3PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX3, selectY3, primaryKeys.toArray(new String[0]));
-        Condition x3FromEqualsY3From = Equals.of(sourceValidDatetimeFrom.withDatasetRef(selectX3.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectY3.datasetReference()));
+        Condition x3FromEqualsY3From = Equals.of(targetValidDatetimeFrom.withDatasetRef(selectX3.datasetReference()), FieldValue.builder().datasetRef(selectY3.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
         Condition joinXY3Condition = And.builder().addConditions(x3AndY3PkMatchCondition, x3FromEqualsY3From).build();
         Join joinXY3 = Join.of(selectX3, selectY3, joinXY3Condition, JoinOperation.INNER_JOIN);
 
@@ -664,7 +667,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         selectXY3Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX3.datasetReference())).collect(Collectors.toList()));
         selectXY3Fields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX3.datasetReference())).collect(Collectors.toList()));
         selectXY3Fields.add(digest.withDatasetRef(selectX3.datasetReference()));
-        selectXY3Fields.add(sourceValidDatetimeFrom.withDatasetRef(selectX3.datasetReference()));
+        selectXY3Fields.add(targetValidDatetimeFrom.withDatasetRef(selectX3.datasetReference()));
         selectXY3Fields.add(FieldValue.builder().datasetRef(selectY3.datasetReference()).fieldName(VALID_DATE_TIME_THRU_NAME).build());
         selectXY3Fields.addAll(transactionMilestoningFieldValues());
 
@@ -695,7 +698,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private Update getUpdateMain(Dataset tempDataset)
     {
         Condition pKMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), tempDataset, primaryKeys.toArray(new String[0]));
-        Condition fromMatchCondition = Equals.of(sourceValidDatetimeFrom.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(tempDataset.datasetReference()));
+        Condition fromMatchCondition = Equals.of(targetValidDatetimeFrom.withDatasetRef(mainDataset().datasetReference()), targetValidDatetimeFrom.withDatasetRef(tempDataset.datasetReference()));
         Condition selectionCondition = And.builder().addConditions(pKMatchCondition, fromMatchCondition).build();
 
         Selection select = Selection.builder().source(tempDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(selectionCondition).build();
@@ -736,7 +739,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     */
     private Insert getMainToTempForDeletion()
     {
-        Condition mainFromEqualsStageFrom = Equals.of(sourceValidDatetimeFrom.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
+        Condition mainFromEqualsStageFrom = Equals.of(targetValidDatetimeFrom.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
         Condition mainThroughEqualsStageFrom = Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
         Condition innerSelectCondition = And.builder().addConditions(primaryKeysMatchCondition, Or.builder().addConditions(mainFromEqualsStageFrom, mainThroughEqualsStageFrom).build(), deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).build();
 
@@ -764,7 +767,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         }
 
         Condition xAndYPkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX, selectY, primaryKeys.toArray(new String[0]));
-        Condition xFromEqualsYFrom = Equals.of(sourceValidDatetimeFrom.withDatasetRef(selectX.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()));
+        Condition xFromEqualsYFrom = Equals.of(targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectY.datasetReference()));
         Condition joinXYCondition = And.builder().addConditions(xAndYPkMatchCondition, xFromEqualsYFrom).build();
 
         Join joinXY = Join.of(selectX, selectY, joinXYCondition, JoinOperation.LEFT_OUTER_JOIN);
@@ -776,7 +779,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         selectXYFields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
         selectXYFields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX.datasetReference())).collect(Collectors.toList()));
         selectXYFields.add(digest.withDatasetRef(selectX.datasetReference()));
-        selectXYFields.add(sourceValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
+        selectXYFields.add(targetValidDatetimeFrom.withDatasetRef(selectX.datasetReference()));
         selectXYFields.add(targetValidDatetimeThru.withDatasetRef(selectX.datasetReference()));
         selectXYFields.addAll(transactionMilestoningFieldValues());
         selectXYFields.add(Case.builder()
@@ -829,7 +832,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Dataset tempY1 = tempDatasetWithDeleteIndicator.datasetReference().withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
 
         Condition x1AndY1PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(tempX1, tempY1, primaryKeys.toArray(new String[0]));
-        Condition y1FromGreaterThanX1From = GreaterThan.of(sourceValidDatetimeFrom.withDatasetRef(tempY1.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(tempX1.datasetReference()));
+        Condition y1FromGreaterThanX1From = GreaterThan.of(targetValidDatetimeFrom.withDatasetRef(tempY1.datasetReference()), targetValidDatetimeFrom.withDatasetRef(tempX1.datasetReference()));
         Condition y1DeleteIndicatorIsZero = Equals.of(FieldValue.builder().fieldName(deleteIndicatorField.orElseThrow(IllegalStateException::new)).datasetRef(tempY1.datasetReference()).build(), NumericalValue.of(0L));
         Condition joinXY1Condition = And.builder().addConditions(x1AndY1PkMatchCondition, y1FromGreaterThanX1From, y1DeleteIndicatorIsZero).build();
         Join joinXY1 = Join.of(tempX1, tempY1, joinXY1Condition, JoinOperation.LEFT_OUTER_JOIN);
@@ -838,15 +841,15 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         selectXY1Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(tempX1.datasetReference())).collect(Collectors.toList()));
         selectXY1Fields.addAll(dataFields.stream().map(field -> field.withDatasetRef(tempX1.datasetReference())).collect(Collectors.toList()));
         selectXY1Fields.add(digest.withDatasetRef(tempX1.datasetReference()));
-        selectXY1Fields.add(sourceValidDatetimeFrom.withDatasetRef(tempX1.datasetReference()).withAlias(VALID_DATE_TIME_FROM_NAME));
-        selectXY1Fields.add(FunctionImpl.builder().functionName(FunctionName.COALESCE).addValue(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(sourceValidDatetimeFrom.withDatasetRef(tempY1.datasetReference())).build(), LogicalPlanUtils.INFINITE_BATCH_TIME()).alias(VALID_DATE_TIME_THRU_NAME).build());
+        selectXY1Fields.add(targetValidDatetimeFrom.withDatasetRef(tempX1.datasetReference()).withAlias(VALID_DATE_TIME_FROM_NAME));
+        selectXY1Fields.add(FunctionImpl.builder().functionName(FunctionName.COALESCE).addValue(FunctionImpl.builder().functionName(FunctionName.MIN).addValue(targetValidDatetimeFrom.withDatasetRef(tempY1.datasetReference())).build(), LogicalPlanUtils.INFINITE_BATCH_TIME()).alias(VALID_DATE_TIME_THRU_NAME).build());
         selectXY1Fields.addAll(transactionMilestoningFields().stream().map(field -> field.withDatasetRef(tempX1.datasetReference())).collect(Collectors.toList()));
 
         List<Value> selectXY1GroupByFields = new ArrayList<>();
         selectXY1GroupByFields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(tempX1.datasetReference())).collect(Collectors.toList()));
         selectXY1GroupByFields.addAll(dataFields.stream().map(field -> field.withDatasetRef(tempX1.datasetReference())).collect(Collectors.toList()));
         selectXY1GroupByFields.add(digest.withDatasetRef(tempX1.datasetReference()));
-        selectXY1GroupByFields.add(sourceValidDatetimeFrom.withDatasetRef(tempX1.datasetReference()));
+        selectXY1GroupByFields.add(targetValidDatetimeFrom.withDatasetRef(tempX1.datasetReference()));
         selectXY1GroupByFields.addAll(transactionMilestoningFields().stream().map(field -> field.withDatasetRef(tempX1.datasetReference())).collect(Collectors.toList()));
 
         Condition selectXY1Condition = Equals.of(FieldValue.builder().fieldName(deleteIndicatorField.orElseThrow(IllegalStateException::new)).datasetRef(tempX1.datasetReference()).build(), NumericalValue.of(0L));
@@ -858,7 +861,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Dataset tempY2 = tempDatasetWithDeleteIndicator.datasetReference().withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
 
         Condition x2AndY2PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX2, tempY2, primaryKeys.toArray(new String[0]));
-        Condition y2ThroughGreaterThanX2From = GreaterThan.of(targetValidDatetimeThru.withDatasetRef(tempY2.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()));
+        Condition y2ThroughGreaterThanX2From = GreaterThan.of(targetValidDatetimeThru.withDatasetRef(tempY2.datasetReference()), FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
         Condition y2ThroughLessThanEqualsToX2Through = LessThanEqualTo.of(targetValidDatetimeThru.withDatasetRef(tempY2.datasetReference()), FieldValue.builder().fieldName(VALID_DATE_TIME_THRU_NAME).datasetRef(selectX2.datasetReference()).build());
         Condition y2DeleteIndicatorIsNotZero = NotEquals.of(FieldValue.builder().fieldName(deleteIndicatorField.get()).datasetRef(tempY2.datasetReference()).build(), NumericalValue.of(0L));
         Condition joinXY2Condition = And.builder().addConditions(x2AndY2PkMatchCondition, y2ThroughGreaterThanX2From, y2ThroughLessThanEqualsToX2Through, y2DeleteIndicatorIsNotZero).build();
@@ -868,7 +871,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         selectXY2Fields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
         selectXY2Fields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
         selectXY2Fields.add(digest.withDatasetRef(selectX2.datasetReference()));
-        selectXY2Fields.add(sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()).withAlias(VALID_DATE_TIME_FROM_NAME));
+        selectXY2Fields.add(FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).alias(VALID_DATE_TIME_FROM_NAME).build());
         selectXY2Fields.add(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(targetValidDatetimeThru.withDatasetRef(tempY2.datasetReference())).alias(VALID_DATE_TIME_THRU_NAME).build());
         selectXY2Fields.addAll(transactionMilestoningFields().stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
 
@@ -876,7 +879,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         selectXY2GroupByFields.addAll(primaryKeyFields.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
         selectXY2GroupByFields.addAll(dataFields.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
         selectXY2GroupByFields.add(digest.withDatasetRef(selectX2.datasetReference()));
-        selectXY2GroupByFields.add(sourceValidDatetimeFrom.withDatasetRef(selectX2.datasetReference()));
+        selectXY2GroupByFields.add(FieldValue.builder().datasetRef(selectX2.datasetReference()).fieldName(VALID_DATE_TIME_FROM_NAME).build());
         selectXY2GroupByFields.addAll(transactionMilestoningFields().stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList()));
 
         Selection selectXY2 = Selection.builder().source(joinXY2).addAllFields(selectXY2Fields).groupByFields(selectXY2GroupByFields).build();
