@@ -22,6 +22,12 @@ import meta::pure::router::printer::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::execution::*;
 
+function <<doc.deprecated>> meta::pure::router::execution::executeExpression(clusters:ClusteredValueSpecification[*], inScopeVars:Map<String, List<Any>>[1], activities:Activity[*], exeCtx: ExecutionContext[0..1], dummy:Boolean[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+{
+   // TODO: This is added for backward compatibility and would be removed in next release
+   executeExpression($clusters, $inScopeVars, $activities, $exeCtx, $extensions, $debug);
+}
+
 function meta::pure::router::execution::executeExpression(clusters:ClusteredValueSpecification[*], inScopeVars:Map<String, List<Any>>[1], activities:Activity[*], exeCtx: ExecutionContext[0..1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let current = $clusters->head()->toOne()->evaluateAndDeactivate();
