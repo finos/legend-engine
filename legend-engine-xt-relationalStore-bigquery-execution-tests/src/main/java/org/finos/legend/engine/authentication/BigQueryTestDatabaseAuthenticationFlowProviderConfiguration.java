@@ -23,15 +23,18 @@ public class BigQueryTestDatabaseAuthenticationFlowProviderConfiguration extends
     public AWSConfig awsConfig;
     public GCPWorkloadConfig gcpWorkloadConfig;
 
-    public AWSConfig getAwsConfig() {
+    public AWSConfig getAwsConfig()
+    {
         return awsConfig;
     }
 
-    public GCPWorkloadConfig getGcpWorkloadConfig() {
+    public GCPWorkloadConfig getGcpWorkloadConfig()
+    {
         return gcpWorkloadConfig;
     }
 
-    public BigQueryTestDatabaseAuthenticationFlowProviderConfiguration(){
+    public BigQueryTestDatabaseAuthenticationFlowProviderConfiguration()
+    {
         // jackson
     }
 

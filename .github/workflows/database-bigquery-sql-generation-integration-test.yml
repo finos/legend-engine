@@ -69,4 +69,4 @@ jobs:
           MAVEN_OPTS: -Xmx4g
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
-        run: mvn -pl legend-engine-xt-relationalStore-bigquery-execution-tests -Dtest="Test_Relational_DbSpecific_BigQuery_UsingPureClientTestSuite" test
+        run: mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-bigquery-execution-tests -Dtest="Test_Relational_DbSpecific_BigQuery_UsingPureClientTestSuite" test

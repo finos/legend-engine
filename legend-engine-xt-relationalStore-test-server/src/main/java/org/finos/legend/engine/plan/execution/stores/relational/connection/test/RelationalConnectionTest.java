@@ -55,9 +55,13 @@ public class RelationalConnectionTest
         return objectMapper.readValue(connectionJson, new TypeReference<List<RelationalDatabaseConnection>>(){});
     }
 
-    protected DatabaseAuthenticationFlowProviderConfiguration readDatabaseFlowProviderConfigurations(String json, NamedType namedType) throws JsonProcessingException {
+    protected DatabaseAuthenticationFlowProviderConfiguration readDatabaseFlowProviderConfigurations(String json, NamedType namedType) throws JsonProcessingException
+    {
         ObjectMapper objectMapper = new ObjectMapper();
-        if(namedType != null) objectMapper.registerSubtypes(namedType);
+        if (namedType != null)
+        {
+            objectMapper.registerSubtypes(namedType);
+        }
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(objectMapper);
         ObjectMapperFactory.withStandardConfigurations(objectMapper);
         return objectMapper.readValue(json, DatabaseAuthenticationFlowProviderConfiguration.class);
