@@ -291,7 +291,9 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                               let pre_y = $result->match(
                                                     [
                                                        c: ClusteredValueSpecification[1]|^$c(val = ^$r(value = $c.val)),
-                                                       a : Any[1]| $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping, $extensions)
+                                                       a : Any[1]| if($r.sets->isEmpty(),                                           // This check is needed for expressions (like : let x = 1->from($mapping, $runtime)) where there are no sets found 
+                                                                     | $clusterResponse.cluster,
+                                                                     | $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping, $extensions));
                                                     ]
                                               );
                                               let y = if($crossPropertyAccesses->isNotEmpty(),
@@ -655,17 +657,19 @@ function meta::pure::router::clustering::clusteredGetAll(set: SetImplementation[
    (
       genericType= $sourceType, id = '1', multiplicity = ZeroMany, runtime = $runtime, mapping = $mapping, executionContext = $exeCtx, sets = $set,
       value = ^SimpleFunctionExpression
-      (
-         func = getAll_Class_1__T_MANY_, functionName = 'getAll', importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup), genericType = $sourceType, multiplicity = ZeroMany,
-         parametersValues = ^StoreMappingRoutedValueSpecification
-         (
-            genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), id = '1', multiplicity = PureOne, runtime = $runtime, sets = $set, mapping = $mapping, executionContext = $exeCtx,
-            value = ^InstanceValue
-            (
-               genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), multiplicity = PureOne, values = $sourceType.rawType
-            )
-         )
-      )
+              (
+                func = getAll_Class_1__T_MANY_, functionName = 'getAll', importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup), genericType = $sourceType, multiplicity = ZeroMany,
+                parametersValues = ^StoreMappingRoutedValueSpecification
+                (
+                    genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), id = '1', multiplicity = PureOne, runtime = $runtime, sets = $set, mapping = $mapping, executionContext = $exeCtx,
+                    value = ^InstanceValue
+                    (
+                      genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), multiplicity = PureOne, values = $sourceType.rawType
+                    ),
+                    routingStrategy = meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime)
+                )
+              ),
+      routingStrategy = meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime) 
    )->evaluateAndDeactivate();
    
    let clustered = list($newExpr)->doCluster(^LambdaFunction<{->Any[1]}>(expressionSequence=^InstanceValue(values='', genericType=^GenericType(rawType=String), multiplicity=PureOne)),
@@ -713,7 +717,7 @@ function meta::pure::router::doCluster(built:List<ValueSpecification>[*], f:Func
          );
 }
 
-function meta::pure::router::doCluster(enrichedExpression:ValueSpecification[1], mapping:Mapping[1], runtime: Runtime[1], openVariables:Map<String, List<Any>>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusteredValueSpecification[*]
+function meta::pure::router::doCluster(enrichedExpression:StoreMappingRoutedValueSpecification[1], mapping:Mapping[1], runtime: Runtime[1], openVariables:Map<String, List<Any>>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusteredValueSpecification[*]
 {
    let clusterResult = $enrichedExpression->cluster($mapping, $runtime, $openVariables, $exeCtx, $extensions, $debug);                                                       
    if($clusterResult.cluster->instanceOf(ClusteredValueSpecification),

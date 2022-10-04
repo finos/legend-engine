@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
+import meta::pure::router::metamodel::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 
@@ -21,6 +22,7 @@ Class <<typemodifiers.abstract>> meta::pure::router::ExtendedRoutedValueSpecific
    id                 : String[1];
    executionContext   : ExecutionContext[1];
    processedChainSets : SetImplementation[*];
+   routingStrategy    : RoutingStrategy[1];
 }
 
 Class meta::pure::router::StoreRoutedValueSpecification extends ExtendedRoutedValueSpecification
@@ -79,6 +81,13 @@ Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
    {
      $this.processProperty->evaluate([list($p), list($fe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);  
    }: RoutingState[1];
+
+   // Wrap VS into ExtendedRoutedValueSpecification
+   wrapValueSpec : Function<{ValueSpecification[1], RoutingStrategy[1], String[1], ExecutionContext[1], Extension[*], DebugContext[1] -> ExtendedRoutedValueSpecification[1]}>[1];
+   wrapValueSpec(value:ValueSpecification[1], id:String[1], executionContext:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1])
+   {
+     $this.wrapValueSpec->eval($value, $this, $id, $executionContext, $extensions, $debug);  
+   }:ExtendedRoutedValueSpecification[1];
 }
 
 Class meta::pure::router::metamodel::StoreRoutingStrategy extends RoutingStrategy

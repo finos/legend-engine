@@ -278,7 +278,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::addDr
    let routed = $x->routeFunction($mapping, $runtime, $context, $extensions, $debugContext);
    let routedFunction = $routed.functions->evaluateAndDeactivate();
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-   let fe = $clusters.val->toOne()->cast(@FunctionExpression);
+   let fe = $clusters.val->toOne()->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
 
    let tdsSelectSqlQuery = $fe->toSQLQuery($mapping, ^Map<String,List<Any>>(), $context, $debugContext, $extensions)->cast(@TdsSelectSqlQuery);
 
@@ -316,7 +316,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::testI
    let routed = $x->routeFunction($mapping, $runtime, $context, $extensions, $debugContext);
    let routedFunction = $routed.functions->evaluateAndDeactivate();
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-   let fe = $clusters.val->toOne()->cast(@FunctionExpression);
+   let fe = $clusters.val->toOne()->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
 
    let sql = $fe->toSQLQuery($mapping, ^Map<String,List<Any>>(), $context, $debugContext, $extensions)->cast(@TdsSelectSqlQuery);
    let sqlStr = $sql->meta::relational::functions::sqlQueryToString::sqlQueryToString(meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());

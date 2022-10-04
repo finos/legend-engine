@@ -181,7 +181,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
    let f = {|Firm.all()->project([f | $f.nameAndAddress()],'nameAndAddress')};
    let routed = $f->routeFunction(simpleRelationalMapping, testRuntime(), ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
   
-   let wrappedFunc = $routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::clustering::ClusteredValueSpecification).val->cast(@SimpleFunctionExpression)->toOne();
+   let wrappedFunc = $routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::clustering::ClusteredValueSpecification).val->toOne()->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression);
    let lambda = $wrappedFunc.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
    let nameAndAddressQp = $lambda.expressionSequence->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>);
    let plusFunc = $nameAndAddressQp.expressionSequence->cast(@FunctionExpression);

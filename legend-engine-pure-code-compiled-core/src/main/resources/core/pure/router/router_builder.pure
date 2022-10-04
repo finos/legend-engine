@@ -69,7 +69,7 @@ function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<Perm
                                                                    z:Any[1] | ^$f(parametersValues=$params)->propagateVoid($params);
                                                                   ]);
                                           ),
-               r:StoreMappingRoutedValueSpecification[1]| let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->toOne();
+               r:StoreMappingRoutedValueSpecification[1]| let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->first();
                                                       let value = $r.value;
                                                       let final = if ($value->instanceOf(FunctionExpression) && ( ($value->cast(@FunctionExpression).func->instanceOf(Property) && !($value->cast(@FunctionExpression)->meta::pure::milestoning::isMilestonedGeneratedDateProperty())) || $value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty)),
                                                          | let f = $value->cast(@FunctionExpression);

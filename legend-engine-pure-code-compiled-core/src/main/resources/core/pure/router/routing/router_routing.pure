@@ -48,7 +48,7 @@ Class meta::pure::router::routing::PropertyMap
    v : Pair<String,Any>[*];
 }
 
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], providedRoutingStrategy:RoutingStrategy[0..1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Pair<ValueSpecification, RoutingStrategy>[*]
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], providedRoutingStrategy:RoutingStrategy[0..1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
    let routingStrategy    = $providedRoutingStrategy->toOne();  // TODO: check this to pick up platform one if not provided
    let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy),
@@ -60,7 +60,11 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
                                               $extensions,
                                               $debug
                                             )->evaluateAndDeactivate();
-   $processedFunctions->map(state | pair($state.value->cast(@ValueSpecification)->toOne(), $state.routingStrategy));
+                                            
+   $processedFunctions->map(fxn | $fxn.value->match([
+      evs: ExtendedRoutedValueSpecification[1] | $evs,
+      vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, $fxn->id(), $executionContext, $extensions, $debug)
+   ]));
 }
 
 function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[*]
@@ -355,7 +359,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                   | let possiblyWrapperd = if($mappingReturnClass->isEmpty(),
                                               | $fullRes,
                                               | let first = $mappingReturnClass->last()->toOne();
-                                                ^$first(value = $fullRes);
+                                                ^$first(value = $fullRes, routingStrategy = $lastSecondPass.routingStrategy);
                                             );
                     print(if($debug.debug,|$debug.space+'~>NQS) ('+$lastSecondPass.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$possiblyWrapperd->evaluateAndDeactivate()->asString()+'\n',|''));
                     let shouldBeRouted = if($f == letFunction_String_1__T_m__T_m_,

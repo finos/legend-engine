@@ -379,9 +379,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery
    let clusters       = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->filter(cvs | $cvs.store->instanceOf(Database));
    assert($clusters->size() == 1, | 'Scan Relations currently supports 1 cluster, Found - ' + $clusters->size()->toString());
 
-   let fe             = $clusters->toOne().val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value,
-                                                       t:TDSRoutedValueSpecification[1] | $t.value,
-                                                       a:Any[1]|$a])->cast(@FunctionExpression);
+   let fe             = $clusters->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
 
    let sqlQuery       = $fe->toSQLQuery($m, $inScopeVars, ^RelationalExecutionContext(), noDebug(), $extensions);
 }

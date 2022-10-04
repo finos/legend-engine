@@ -120,9 +120,11 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                                                        genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),
                                                                                        multiplicity = PureOne,
                                                                                        values = $returnType.rawType
-                                                                                   )
+                                                                                   ),
+                                                                           routingStrategy = meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
                                                                         )
-                                                  )
+                                                  ),
+                                          routingStrategy = meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
                                        ),
                                        ^FunctionRoutedValueSpecification
                                        (
@@ -137,8 +139,8 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                 )
                                        )
                                     ]
-              )
-      
+              ),
+      routingStrategy = meta::pure::router::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
    )->evaluateAndDeactivate();
    
    print(if(!$debug.debug, |'',
