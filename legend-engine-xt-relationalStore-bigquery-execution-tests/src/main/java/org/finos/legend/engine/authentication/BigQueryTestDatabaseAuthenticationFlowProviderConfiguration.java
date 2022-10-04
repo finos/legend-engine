@@ -20,8 +20,8 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 
 public class BigQueryTestDatabaseAuthenticationFlowProviderConfiguration extends DatabaseAuthenticationFlowProviderConfiguration
 {
-    private AWSConfig awsConfig;
-    private GCPWorkloadConfig gcpWorkloadConfig;
+    public AWSConfig awsConfig;
+    public GCPWorkloadConfig gcpWorkloadConfig;
 
     public AWSConfig getAwsConfig() {
         return awsConfig;
@@ -31,36 +31,8 @@ public class BigQueryTestDatabaseAuthenticationFlowProviderConfiguration extends
         return gcpWorkloadConfig;
     }
 
-    private void setAwsConfig(AWSConfig awsConfig) {
-        this.awsConfig = awsConfig;
-    }
-
-    private void setGcpWorkloadConfig(GCPWorkloadConfig gcpWorkloadConfig) {
-        this.gcpWorkloadConfig = gcpWorkloadConfig;
-    }
-
-    public static class Builder {
-        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration configuration;
-        public Builder(){
-            configuration = new BigQueryTestDatabaseAuthenticationFlowProviderConfiguration();
-        }
-        public static Builder newInstance(){
-            return new Builder();
-        }
-
-        public Builder withAwsConfig(AWSConfig awsConfig){
-            configuration.setAwsConfig(awsConfig);
-            return this;
-        }
-
-        public Builder withGcpWorkloadConfig(GCPWorkloadConfig gcpWorkloadConfig){
-            configuration.setGcpWorkloadConfig(gcpWorkloadConfig);
-            return this;
-        }
-
-        public BigQueryTestDatabaseAuthenticationFlowProviderConfiguration build(){
-            return configuration;
-        }
+    public BigQueryTestDatabaseAuthenticationFlowProviderConfiguration(){
+        // jackson
     }
 
 }

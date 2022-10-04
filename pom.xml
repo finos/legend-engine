@@ -104,6 +104,7 @@
         <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
         <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
         <module>legend-engine-xt-relationalStore-bigquery-pure</module>
+        <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -184,7 +185,6 @@
         <module>legend-engine-testable</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
-        <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
     </modules>
 
     <properties>

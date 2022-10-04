@@ -14,12 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.cloud.AWSConfig;
-import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
@@ -48,21 +49,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
     public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
     public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
-
-    private static final AWSConfig awsConfig = new AWSConfig(
-            "us-east-1",
-            "564704738649",
-            "integration-wif-role1",
-            "AWS_ACCESS_KEY_ID",
-            "AWS_SECRET_ACCESS_KEY"
-    );
-
-    private static final GCPWorkloadConfig gcpWorkloadConfig = new GCPWorkloadConfig(
-            "412074507462",
-            "integration-wif-pool1",
-            "integration-wif-pool1-provider"
-    );
-
     private ConnectionManagerSelector connectionManagerSelector;
 
     @BeforeClass
@@ -92,13 +78,12 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     }
 
     @Before
-    public void setup()
-    {
+    public void setup() throws IOException {
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
+        objectMapper.registerSubtypes(new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest"));
+        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = objectMapper.readValue(
+                getClass().getClassLoader().getResourceAsStream("org/finos/legend/engine/server/test/flowProviderConfig.json"), BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class);
         BigQueryTestDatabaseAuthenticationFlowProvider flowProvider = new BigQueryTestDatabaseAuthenticationFlowProvider();
-        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
-                .withAwsConfig(awsConfig)
-                .withGcpWorkloadConfig(gcpWorkloadConfig)
-                .build();
         flowProvider.configure(flowProviderConfiguration);
         assertBigQueryWithGCPADCFlowIsAvailable(flowProvider);
         assertBigQueryWithGCPWIFFlowIsAvailable(flowProvider);
