@@ -78,14 +78,14 @@ function <<test.Test>> meta::relational::tests::milestoning::snapshot::testMiles
 {
    let result = execute(|Product.allVersions()->project([p|$p.id, p|$p.milestoning.from, p|$p.milestoning.thru],['id', 'from', 'thru']), businessSnapshotMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".id as "id", "root".snapshotDate as "from", "root".snapshotDate as "thru" from ProductTableWithBusinessSnapshotMilestoning as "root"', $result->sqlRemoveFormatting());
-   assertEquals('1|2015-08-14|2015-08-14,2|2015-08-25|2015-08-25,2|2015-10-15|2015-10-15,3|2015-08-25|2015-08-25', $result.values.rows->map(r | $r.values->makeString('|'))->makeString(','));
+   assertEquals('1|2015-08-15|2015-08-15,2|2015-08-26|2015-08-26,2|2015-10-16|2015-10-16,3|2015-08-26|2015-08-26', $result.values.rows->map(r | $r.values->makeString('|'))->makeString(','));
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::snapshot::testMilestoningPropertyAccessOnNonTemporalRootWithTemporalProperty():Boolean[1]
 {
    let result = execute(|Order.all()->project([o|$o.id, o|$o.productAllVersions.milestoning.from, o|$o.productAllVersions.milestoning.thru],['id', 'from', 'thru']), businessSnapshotMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".id as "id", "producttablewithbusinesssnapshotmilestoning_0".snapshotDate as "from", "producttablewithbusinesssnapshotmilestoning_0".snapshotDate as "thru" from OrderTable as "root" left outer join ProductTableWithBusinessSnapshotMilestoning as "producttablewithbusinesssnapshotmilestoning_0" on ("root".prodFk = "producttablewithbusinesssnapshotmilestoning_0".id)', $result->sqlRemoveFormatting());
-   assertEquals('1|2015-08-14|2015-08-14,2|2015-08-25|2015-08-25,2|2015-10-15|2015-10-15', $result.values.rows->map(r | $r.values->makeString('|'))->makeString(','));
+   assertEquals('1|2015-08-15|2015-08-15,2|2015-08-26|2015-08-26,2|2015-10-16|2015-10-16', $result.values.rows->map(r | $r.values->makeString('|'))->makeString(','));
 }
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::snapshot::setUp():Runtime[1]
