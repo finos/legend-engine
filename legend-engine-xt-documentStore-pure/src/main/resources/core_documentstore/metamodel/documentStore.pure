@@ -29,7 +29,6 @@ Class <<typemodifiers.abstract>> meta::external::store::document::metamodel::Doc
    owner    : DocumentStore[1];
    name     : String[1];
    id       : String[1];
-
 }
 
 Class meta::external::store::document::metamodel::Collection extends meta::external::store::document::metamodel::DocumentStoreElement
@@ -103,8 +102,6 @@ Class meta::external::store::document::metamodel::ObjectTypeReference extends me
    binding : Binding[1];
 }
 
-
-
 Class meta::external::store::document::metamodel::CollectionAlias extends Alias
 {
    setMappingOwner : meta::pure::mapping::PropertyMappingsImplementation[0..1];
@@ -118,4 +115,14 @@ Class meta::external::store::document::metamodel::Alias
    <<equality.Key>> documentElement : DocumentStoreElement[1];
 }
 
+Class meta::external::store::document::metamodel::State
+{
+  graphFetchFlow: Boolean[1];
+  graphFetchProperties: Property<Nil,Any|*>[*];
+}
 
+Class meta::external::store::document::metamodel::DocumentQuery
+{
+  fields: Field[*];
+  collection: Collection[1];
+}

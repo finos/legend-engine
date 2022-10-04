@@ -1,0 +1,43 @@
+import meta::external::store::document::metamodel::*;
+import meta::external::shared::format::binding::*;
+import meta::nonRelational::functions::pureToNoSqlQuery::*;
+import meta::external::store::document::metamodel::mapping::*;
+import meta::nonRelational::functions::noSqlQueryToString::default::*;
+
+function meta::nonRelational::functions::pureToNoSqlQuery::processFieldsInNoRelationalOperationElements(fields: DocumentStoreElement[*], state: State[1], collection: Collection[1]): DocumentQuery[*]
+{
+    let fieldNames = $fields->map(f| $f.name); // it can be done more efficiently with a set instead of an array.
+    let activeFields = $collection.fields->filter(c| $c.name->in($fieldNames));
+    ^DocumentQuery(
+      fields=$activeFields,
+      collection=$collection
+    );
+}
+
+function meta::nonRelational::functions::pureToNoSqlQuery::fieldNamesWithNoRelationalElement(r: RootDocumentInstanceSetImplementation[1], state: State[1]): Pair<String, DocumentStoreElement>[*]
+{
+  $r.propertyMappings
+    ->filter(x | if($state.graphFetchFlow == true, | $x.property->in($state.graphFetchProperties), | true))
+    ->map(pm|pair($pm.property.name->toOne(),$pm->cast(@DocumentPropertyMapping).documentStoreElement))
+}
+
+function meta::nonRelational::functions::noSqlQueryToString::default::processDocumentQuery(dq:DocumentQuery[1]):String[1]
+{
+  '{"aggregate":"' + $dq.collection.name + '", "pipeline":' + processPipelines($dq)
+}
+
+function <<access.private>> meta::nonRelational::functions::noSqlQueryToString::default::processPipelines(dq:DocumentQuery[1]): String[1]
+{
+  '[' + processMatch($dq) + ', ' + processProject($dq) + ']'
+}
+
+function <<access.private>> meta::nonRelational::functions::noSqlQueryToString::default::processMatch(dq:DocumentQuery[1]): String[1]
+{
+  let opStr = if(true,| '{ "$match":{}', | '"$match":{"a map here to get the items"}');
+  $opStr;
+}
+
+function <<access.private>> meta::nonRelational::functions::noSqlQueryToString::default::processProject(dq:DocumentQuery[1]): String[1]
+{
+  '{ "$project": { ' + $dq.fields->map(f | '"' + $f.name + '": 1 ')->joinStrings(',') + '} }';
+}

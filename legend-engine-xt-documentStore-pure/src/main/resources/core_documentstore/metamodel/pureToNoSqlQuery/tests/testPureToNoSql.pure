@@ -1,0 +1,65 @@
+import meta::external::store::document::tests::object::*;
+import meta::nonRelational::functions::pureToNoSqlQuery::*;
+import meta::external::store::document::metamodel::*;
+import meta::nonRelational::functions::noSqlQueryToString::default::*;
+
+function <<test.Test>> meta::nonRelational::functions::test::getAllPropertiesWhenMappingHasAllTheCollectionFields():Boolean[1]
+{
+  let documentAndStoreMapping = meta::external::store::document::tests::object::getDocumentStoreAndMapping();
+  let collection = meta::external::store::document::tests::object::getCollection();
+  let state = meta::external::store::document::tests::object::getState();
+
+  let fieldNamesWithNoRelationalElement = meta::nonRelational::functions::pureToNoSqlQuery::fieldNamesWithNoRelationalElement($documentAndStoreMapping.second, $state);
+
+  let properties = meta::nonRelational::functions::pureToNoSqlQuery::processFieldsInNoRelationalOperationElements($fieldNamesWithNoRelationalElement.second, $state, $collection);
+
+  let allFields = meta::external::store::document::tests::object::getAllFields();
+
+  let documentQuery = ^DocumentQuery(
+    fields=[$allFields->at(0), $allFields->at(1), $allFields->at(2)],
+    collection=$collection
+  );
+
+  assertEquals($documentQuery.fields->size(), 3);
+  assertEquals($documentQuery.fields->at(0).name, 'fName');
+  assertEquals($documentQuery.fields->at(1).name, 'lName');
+  assertEquals($documentQuery.fields->at(2).name, 'oNames');
+}
+
+function <<test.Test>> meta::nonRelational::functions::test::getOnlyPropertiesThatAreStillInTheCollection():Boolean[1]
+{
+  let documentAndStoreMapping = meta::external::store::document::tests::object::getDocumentStoreAndMapping();
+  let collection = meta::external::store::document::tests::object::getCollectionWithLessFieldsThanMapping();
+  let state = meta::external::store::document::tests::object::getState();
+
+  let fieldNamesWithNoRelationalElement = meta::nonRelational::functions::pureToNoSqlQuery::fieldNamesWithNoRelationalElement($documentAndStoreMapping.second, $state);
+
+  let properties = meta::nonRelational::functions::pureToNoSqlQuery::processFieldsInNoRelationalOperationElements($fieldNamesWithNoRelationalElement.second, $state, $collection);
+
+  let allFields = meta::external::store::document::tests::object::getAllFields();
+
+  let documentQuery = ^DocumentQuery(
+    fields=[$allFields->at(0), $allFields->at(1)],
+    collection=$collection
+  );
+
+  assertEquals($documentQuery.fields->size(), 2);
+  assertEquals($documentQuery.fields->at(0).name, 'fName');
+  assertEquals($documentQuery.fields->at(1).name, 'lName');
+}
+
+function <<test.Test>> meta::nonRelational::functions::test::buildMongoQuery():Boolean[1]
+{
+  let collection = meta::external::store::document::tests::object::getCollection();
+  let fields = meta::external::store::document::tests::object::getAllFields();
+  
+  let documetQuery = ^DocumentQuery(
+    collection=$collection,
+    fields=$fields
+  );
+
+  let actualMongoQuery = meta::nonRelational::functions::noSqlQueryToString::default::processDocumentQuery($documetQuery);
+  let expectedMongoQuery = '{"aggregate":"personDocument", "pipeline":[{ "$match":{}, { "$project": { "fName": 1 ,"lName": 1 ,"oNames": 1 } }]';
+  
+  assertEquals($actualMongoQuery, $expectedMongoQuery);
+}

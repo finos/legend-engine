@@ -1,5 +1,5 @@
 {
   "name" : "core_documentstore",
-  "pattern" : "(meta::external::store::document|meta::external::store::document::tests|meta::protocols::pure)(::.*)?",
+  "pattern" : "(meta::external::store::document|meta::external::store::document::tests|meta::protocols::pure|meta::nonRelational::functions::noSqlQueryToString::default|meta::nonRelational::functions::pureToNoSqlQuery|meta::nonRelational::functions::test)(::.*)?",
   "dependencies" : ["platform", "core", "core_external_format_json"]
 }
