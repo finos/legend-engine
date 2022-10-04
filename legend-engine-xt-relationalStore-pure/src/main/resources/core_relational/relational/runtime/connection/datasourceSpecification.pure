@@ -68,15 +68,6 @@ Class meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceS
     quotedIdentifiersIgnoreCase:Boolean[0..1];
 }
 
-Class meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
-{
-    projectId:String[1];
-    instanceId:String[1];
-    databaseId:String[1];
-    proxyHost: String[0..1];
-    proxyPort: Integer[0..1];
-}
-
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
   {doc.doc ='clusterID'} clusterID:String[1];

@@ -1,5 +1,5 @@
 {
   "name" : "core_relational_spanner",
-  "pattern" : "(meta::relational::functions::sqlQueryToString::spanner|meta::relational::tests::dbSpecificTests::spanner)(::.*)?",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::spanner|meta::relational::tests::dbSpecificTests::spanner|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
   "dependencies" : ["platform", "core", "core_relational"]
 }

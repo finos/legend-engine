@@ -841,28 +841,6 @@
             </build>
         </profile>
         <profile>
-            <id>run-spanner-integration</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>org.apache.maven.surefire</groupId>
-                                <artifactId>surefire-junit47</artifactId>
-                                <version>2.22.0</version>
-                            </dependency>
-                        </dependencies>
-                        <!-- Without override, surefire configuration would have skipped our integration tests -->
-                        <configuration combine.self="override">
-                            <useSystemClassLoader>false</useSystemClassLoader>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>run_tests_in_teamcity</id>
             <build>
                 <plugins>
@@ -892,11 +870,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-spanner-protocol</artifactId>
         </dependency>
 
         <dependency>

@@ -221,15 +221,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             organization = $s.organization,
             role = $s.role
         ),
-      s:meta::pure::alloy::connections::alloy::specification::SpannerDatasourceSpecification[1] |
-          ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SpannerDatasourceSpecification(
-             _type = 'spanner',
-             projectId = $s.projectId,
-             instanceId = $s.instanceId,
-             databaseId = $s.databaseId,
-             proxyHost = $s.proxyHost,
-             proxyPort = $s.proxyPort
-          ),
      r:meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification[1] |
                                                   ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::legend::specification::RedshiftDatasourceSpecification(
                                                                    _type = 'redshift',
