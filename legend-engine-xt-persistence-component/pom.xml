@@ -39,6 +39,7 @@
     <properties>
         <immutable.version>2.8.2</immutable.version>
         <junit-jupiter.version>5.4.0</junit-jupiter.version>
+        <javadoc.skip>false</javadoc.skip>
     </properties>
 
     <build>

@@ -198,7 +198,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
         <!-- Overridden by sub-modules without Java code -->
-        <javadoc.skip>false</javadoc.skip>
+        <javadoc.skip>true</javadoc.skip>
 
         <!-- work around bug where maven.build.timestamp doesn't get propagated to filtering -->
         <timestamp>${maven.build.timestamp}</timestamp>
@@ -543,7 +543,7 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-                                <dependencyConvergence />
+                                <dependencyConvergence/>
                                 <bannedDependencies>
                                     <excludes>
                                         <exclude>log4j</exclude>
