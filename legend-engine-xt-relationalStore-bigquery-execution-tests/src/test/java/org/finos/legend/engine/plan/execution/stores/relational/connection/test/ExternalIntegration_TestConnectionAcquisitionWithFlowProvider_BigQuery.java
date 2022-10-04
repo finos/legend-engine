@@ -15,9 +15,9 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.cloud.AWSConfig;
 import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
@@ -43,7 +43,7 @@ import java.util.Optional;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQuery extends DbSpecificTests
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQuery extends RelationalConnectionTest
 {
     public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
     public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
@@ -86,22 +86,16 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     }
 
     @BeforeClass
-    public static void setupTest() throws IOException
+    public static void setupTest()
     {
         Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
-    }
-
-    @Override
-    protected Subject getSubject()
-    {
-        return null;
     }
 
     @Before
     public void setup()
     {
-        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
+        BigQueryTestDatabaseAuthenticationFlowProvider flowProvider = new BigQueryTestDatabaseAuthenticationFlowProvider();
+        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
                 .withAwsConfig(awsConfig)
                 .withGcpWorkloadConfig(gcpWorkloadConfig)
                 .build();
@@ -111,7 +105,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    public void assertBigQueryWithGCPADCFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    public void assertBigQueryWithGCPADCFlowIsAvailable(BigQueryTestDatabaseAuthenticationFlowProvider flowProvider)
     {
         BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
@@ -121,7 +115,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
         assertTrue("bigquery gcp adc flow does not exist ", flow.isPresent());
     }
 
-    public void assertBigQueryWithGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    public void assertBigQueryWithGCPWIFFlowIsAvailable(BigQueryTestDatabaseAuthenticationFlowProvider flowProvider)
     {
         BigQueryDatasourceSpecification datasourceSpecification = new BigQueryDatasourceSpecification();
         GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
@@ -136,8 +130,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
-
+        testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
@@ -146,7 +139,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
 
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
+        testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
@@ -154,7 +147,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
+        testConnection(connection, 1,"select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
@@ -162,7 +155,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
-        testConnection(connection, "select * from `legend-integration-testing.integration_dataset1.table1`");
+        testConnection(connection, 1,"select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     private RelationalDatabaseConnection bigQueryWithGCPADCSpec() throws Exception
