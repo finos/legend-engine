@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.list.MutableList;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -79,10 +81,12 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
 
     @Before
     public void setup() throws IOException {
-        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
-        objectMapper.registerSubtypes(new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest"));
-        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = objectMapper.readValue(
-                getClass().getClassLoader().getResourceAsStream("org/finos/legend/engine/server/test/flowProviderConfig.json"), BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class);
+        RelationalConnectionTest rtb = new RelationalConnectionTest();
+        BigQueryTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration =
+                (BigQueryTestDatabaseAuthenticationFlowProviderConfiguration) rtb.readDatabaseFlowProviderConfigurations(
+                        rtb.getResourceAsString("/org/finos/legend/engine/server/test/flowProviderConfig.json"),
+                        new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest")
+                );
         BigQueryTestDatabaseAuthenticationFlowProvider flowProvider = new BigQueryTestDatabaseAuthenticationFlowProvider();
         flowProvider.configure(flowProviderConfiguration);
         assertBigQueryWithGCPADCFlowIsAvailable(flowProvider);
@@ -145,20 +149,24 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
 
     private RelationalDatabaseConnection bigQueryWithGCPADCSpec() throws Exception
     {
-        BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
-        bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
-        GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
-        return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
+        RelationalConnectionTest rt = new RelationalConnectionTest();
+        RelationalDatabaseConnection rdb = rt.readRelationalConnections(
+                rt.getResourceAsString("/org/finos/legend/engine/server/test/bigqueryRelationalDatabaseConnections.json"))
+                .stream()
+                .filter(relationalDatabaseConnection -> relationalDatabaseConnection.authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
+                .collect(Collectors.toList())
+                .get(0);
+        return rdb;
     }
 
-    private RelationalDatabaseConnection bigQueryWithGCPWIFSpec()
-    {
-        BigQueryDatasourceSpecification bigQueryDatasourceSpecification = new BigQueryDatasourceSpecification();
-        bigQueryDatasourceSpecification.projectId = "legend-integration-testing";
-        bigQueryDatasourceSpecification.defaultDataset = "integration_dataset1";
-        GCPWorkloadIdentityFederationAuthenticationStrategy authSpec = new GCPWorkloadIdentityFederationAuthenticationStrategy();
-        authSpec.serviceAccountEmail = "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com";
-        return new RelationalDatabaseConnection(bigQueryDatasourceSpecification, authSpec, DatabaseType.BigQuery);
+    private RelationalDatabaseConnection bigQueryWithGCPWIFSpec() throws JsonProcessingException {
+        RelationalConnectionTest rt = new RelationalConnectionTest();
+        RelationalDatabaseConnection rdb = rt.readRelationalConnections(
+                rt.getResourceAsString("/org/finos/legend/engine/server/test/bigqueryRelationalDatabaseConnections.json"))
+                .stream()
+                .filter(relationalDatabaseConnection -> relationalDatabaseConnection.authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
+                .collect(Collectors.toList())
+                .get(0);
+        return rdb;
     }
 }

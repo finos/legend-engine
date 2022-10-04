@@ -17,9 +17,11 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -51,6 +53,14 @@ public class RelationalConnectionTest
         PureProtocolObjectMapperFactory.withPureProtocolExtensions(objectMapper);
         ObjectMapperFactory.withStandardConfigurations(objectMapper);
         return objectMapper.readValue(connectionJson, new TypeReference<List<RelationalDatabaseConnection>>(){});
+    }
+
+    protected DatabaseAuthenticationFlowProviderConfiguration readDatabaseFlowProviderConfigurations(String json, NamedType namedType) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        if(namedType != null) objectMapper.registerSubtypes(namedType);
+        PureProtocolObjectMapperFactory.withPureProtocolExtensions(objectMapper);
+        ObjectMapperFactory.withStandardConfigurations(objectMapper);
+        return objectMapper.readValue(json, DatabaseAuthenticationFlowProviderConfiguration.class);
     }
 
     protected RelationalDatabaseConnection getRelationalConnectionByElement(List<RelationalDatabaseConnection> connections, String element)
