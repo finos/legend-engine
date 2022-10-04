@@ -164,7 +164,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
            );
         );,
        |$pms->cast(@PurePropertyMapping)
-            ->filter(pm | $modelPayload.src->instanceOf($pm.owner->cast(@PureInstanceSetImplementation).srcClass->toOne()))
+            ->filter(pm | $modelPayload.src->toOne()->instanceOf($pm.owner->cast(@PureInstanceSetImplementation).srcClass->toOne()))
             ->map(pm|
                     let targetImpl = $modelPayload.static.mapping.classMappingById($pm->toOne().targetSetImplementationId)->toOne();
                     let src= $pm->toOne().transform->evaluate(list($modelPayload.src));
