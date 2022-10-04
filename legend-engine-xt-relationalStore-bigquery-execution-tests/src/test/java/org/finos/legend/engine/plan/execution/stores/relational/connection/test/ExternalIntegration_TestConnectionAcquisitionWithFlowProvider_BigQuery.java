@@ -150,23 +150,15 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     private RelationalDatabaseConnection bigQueryWithGCPADCSpec() throws Exception
     {
         RelationalConnectionTest rt = new RelationalConnectionTest();
-        RelationalDatabaseConnection rdb = rt.readRelationalConnections(
-                rt.getResourceAsString("/org/finos/legend/engine/server/test/bigqueryRelationalDatabaseConnections.json"))
-                .stream()
-                .filter(relationalDatabaseConnection -> relationalDatabaseConnection.authenticationStrategy instanceof GCPApplicationDefaultCredentialsAuthenticationStrategy)
-                .collect(Collectors.toList())
-                .get(0);
+        RelationalDatabaseConnection rdb = rt.getRelationalConnectionByElement(rt.readRelationalConnections(
+                rt.getResourceAsString("/org/finos/legend/engine/server/test/bigqueryRelationalDatabaseConnections.json")), "applicationDefaultCredentials");
         return rdb;
     }
 
     private RelationalDatabaseConnection bigQueryWithGCPWIFSpec() throws JsonProcessingException {
         RelationalConnectionTest rt = new RelationalConnectionTest();
-        RelationalDatabaseConnection rdb = rt.readRelationalConnections(
-                rt.getResourceAsString("/org/finos/legend/engine/server/test/bigqueryRelationalDatabaseConnections.json"))
-                .stream()
-                .filter(relationalDatabaseConnection -> relationalDatabaseConnection.authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
-                .collect(Collectors.toList())
-                .get(0);
+        RelationalDatabaseConnection rdb = rt.getRelationalConnectionByElement(rt.readRelationalConnections(
+                rt.getResourceAsString("/org/finos/legend/engine/server/test/bigqueryRelationalDatabaseConnections.json")), "workloadIdentityFederation");
         return rdb;
     }
 }

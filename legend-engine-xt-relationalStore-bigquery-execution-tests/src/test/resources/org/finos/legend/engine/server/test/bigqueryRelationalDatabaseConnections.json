@@ -12,7 +12,7 @@
     },
     "databaseType": "BigQuery",
     "type": "BigQuery",
-    "element": ""
+    "element": "workloadIdentityFederation"
   },
   {
     "_type": "RelationalDatabaseConnection",
@@ -26,6 +26,6 @@
     },
     "databaseType": "BigQuery",
     "type": "BigQuery",
-    "element": ""
+    "element": "applicationDefaultCredentials"
   }
 ]
