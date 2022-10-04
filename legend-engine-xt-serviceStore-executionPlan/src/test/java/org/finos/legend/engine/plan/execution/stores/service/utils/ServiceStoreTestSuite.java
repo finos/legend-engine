@@ -33,18 +33,6 @@ public abstract class ServiceStoreTestSuite
         testServer.start();
     }
 
-    public static void setupServerWithMTLS(String serverStubBaseDir, String serverKeyStorePath, String caKeyStorePath)
-    {
-        port = DynamicPortGenerator.generatePort();
-        testServer = new WireMockServerWrapper(serverStubBaseDir)
-                .withClientAuth(true)
-                .withServerKeystore(serverKeyStorePath, "changeit", "changeit")
-                .withCAKeyStore(caKeyStorePath, "changeit")
-                .build();
-        testServer.start();
-    }
-
-
     @AfterClass
     public static void teardownServer()
     {
