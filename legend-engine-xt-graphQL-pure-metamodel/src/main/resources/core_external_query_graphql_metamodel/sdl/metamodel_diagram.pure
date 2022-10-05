@@ -16,7 +16,7 @@
 Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
 {
     TypeView cview_1(
-        type=meta::external::query::graphQL::metamodel::Document,
+        type=meta::external::query::graphQL::metamodel::sdl::Document,
         position=(437.00000, 136.00000),
         width=146.43333,
         height=44.00000,
@@ -28,7 +28,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_2(
-        type=meta::external::query::graphQL::metamodel::ExecutableDocument,
+        type=meta::external::query::graphQL::metamodel::sdl::ExecutableDocument,
         position=(404.00000, 228.00000),
         width=210.68994,
         height=44.00000,
@@ -40,7 +40,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_3(
-        type=meta::external::query::graphQL::metamodel::Definition,
+        type=meta::external::query::graphQL::metamodel::sdl::Definition,
         position=(890.00000, 143.00000),
         width=75.33333,
         height=30.00000,
@@ -52,7 +52,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_16(
-        type=meta::external::query::graphQL::metamodel::typeSystem::SchemaDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::SchemaDefinition,
         position=(-146.00000, 834.00000),
         width=347.66667,
         height=58.00000,
@@ -64,7 +64,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_17(
-        type=meta::external::query::graphQL::metamodel::typeSystem::RootOperationTypeDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::RootOperationTypeDefinition,
         position=(461.00000, 833.00000),
         width=193.78174,
         height=58.00000,
@@ -76,7 +76,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_21(
-        type=meta::external::query::graphQL::metamodel::executable::FragmentDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::FragmentDefinition,
         position=(1521.00000, 418.00000),
         width=153.81667,
         height=86.00000,
@@ -88,7 +88,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_14(
-        type=meta::external::query::graphQL::metamodel::typeSystem::DirectiveDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::DirectiveDefinition,
         position=(-56.00000, 720.00000),
         width=304.04492,
         height=86.00000,
@@ -100,7 +100,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_12(
-        type=meta::external::query::graphQL::metamodel::typeSystem::InterfaceTypeDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::InterfaceTypeDefinition,
         position=(2.00000, 625.00000),
         width=152.46289,
         height=72.00000,
@@ -112,7 +112,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_13(
-        type=meta::external::query::graphQL::metamodel::typeSystem::FieldDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::FieldDefinition,
         position=(307.00000, 596.00000),
         width=253.38333,
         height=128.00000,
@@ -124,7 +124,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_11(
-        type=meta::external::query::graphQL::metamodel::typeSystem::ScalarTypeDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::ScalarTypeDefinition,
         position=(41.00000, 518.00000),
         width=138.47070,
         height=58.00000,
@@ -136,7 +136,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_9(
-        type=meta::external::query::graphQL::metamodel::typeSystem::EnumTypeDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::EnumTypeDefinition,
         position=(200.00000, 518.00000),
         width=184.36666,
         height=72.00000,
@@ -148,7 +148,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_10(
-        type=meta::external::query::graphQL::metamodel::typeSystem::EnumValueDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::EnumValueDefinition,
         position=(447.00000, 524.00000),
         width=140.01667,
         height=58.00000,
@@ -160,7 +160,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_7(
-        type=meta::external::query::graphQL::metamodel::typeSystem::UnionTypeDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::UnionTypeDefinition,
         position=(715.00000, 510.00000),
         width=138.00293,
         height=72.00000,
@@ -172,7 +172,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_8(
-        type=meta::external::query::graphQL::metamodel::typeSystem::ObjectTypeDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefinition,
         position=(631.00000, 595.00000),
         width=145.21667,
         height=86.00000,
@@ -184,7 +184,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_15(
-        type=meta::external::query::graphQL::metamodel::typeSystem::InputValueDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition,
         position=(685.00000, 698.00000),
         width=147.71667,
         height=100.00000,
@@ -196,7 +196,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_19(
-        type=meta::external::query::graphQL::metamodel::executable::VariableDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::VariableDefinition,
         position=(1085.00000, 420.00000),
         width=142.67578,
         height=72.00000,
@@ -208,7 +208,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_5(
-        type=meta::external::query::graphQL::metamodel::executable::ExecutableDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::ExecutableDefinition,
         position=(1334.00000, 338.00000),
         width=341.00000,
         height=34.00000,
@@ -220,7 +220,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_22(
-        type=meta::external::query::graphQL::metamodel::executable::Selection,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::Selection,
         position=(1384.00000, 521.00000),
         width=234.00000,
         height=67.00000,
@@ -232,7 +232,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_24(
-        type=meta::external::query::graphQL::metamodel::executable::InLineFragment,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::InLineFragment,
         position=(1517.00000, 634.00000),
         width=159.94385,
         height=58.00000,
@@ -244,7 +244,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_20(
-        type=meta::external::query::graphQL::metamodel::executable::OperationDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition,
         position=(1331.00000, 414.00000),
         width=153.81667,
         height=86.00000,
@@ -256,7 +256,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_28(
-        type=meta::external::query::graphQL::metamodel::value::IntValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::IntValue,
         position=(926.00000, 908.00000),
         width=106.80762,
         height=44.00000,
@@ -268,7 +268,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_27(
-        type=meta::external::query::graphQL::metamodel::value::ListValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::ListValue,
         position=(879.00000, 964.00000),
         width=72.68750,
         height=30.00000,
@@ -280,7 +280,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_29(
-        type=meta::external::query::graphQL::metamodel::value::BooleanValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::BooleanValue,
         position=(983.00000, 957.00000),
         width=113.52686,
         height=44.00000,
@@ -292,7 +292,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_30(
-        type=meta::external::query::graphQL::metamodel::value::Variable,
+        type=meta::external::query::graphQL::metamodel::sdl::value::Variable,
         position=(1048.00000, 908.00000),
         width=102.51611,
         height=44.00000,
@@ -304,7 +304,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_33(
-        type=meta::external::query::graphQL::metamodel::value::StringValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::StringValue,
         position=(1222.00000, 956.00000),
         width=101.90918,
         height=44.00000,
@@ -316,7 +316,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_31(
-        type=meta::external::query::graphQL::metamodel::value::EnumValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::EnumValue,
         position=(1111.00000, 957.00000),
         width=101.90918,
         height=44.00000,
@@ -328,7 +328,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_32(
-        type=meta::external::query::graphQL::metamodel::value::FloatValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::FloatValue,
         position=(1165.00000, 907.00000),
         width=96.40918,
         height=44.00000,
@@ -340,7 +340,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_18(
-        type=meta::external::query::graphQL::metamodel::value::Value,
+        type=meta::external::query::graphQL::metamodel::sdl::value::Value,
         position=(896.00000, 808.00000),
         width=407.00000,
         height=69.00000,
@@ -352,7 +352,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_34(
-        type=meta::external::query::graphQL::metamodel::value::NullValue,
+        type=meta::external::query::graphQL::metamodel::sdl::value::NullValue,
         position=(1274.00000, 913.00000),
         width=74.01758,
         height=30.00000,
@@ -364,7 +364,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_4(
-        type=meta::external::query::graphQL::metamodel::typeSystem::TypeSystemDefinition,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeSystemDefinition,
         position=(-145.00000, 383.00000),
         width=986.00000,
         height=34.00000,
@@ -376,7 +376,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_6(
-        type=meta::external::query::graphQL::metamodel::typeSystem::Type,
+        type=meta::external::query::graphQL::metamodel::sdl::typeSystem::Type,
         position=(6.00000, 451.00000),
         width=838.00000,
         height=33.00000,
@@ -388,7 +388,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_23(
-        type=meta::external::query::graphQL::metamodel::executable::Field,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::Field,
         position=(1350.00000, 625.00000),
         width=148.33333,
         height=86.00000,
@@ -400,7 +400,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_25(
-        type=meta::external::query::graphQL::metamodel::executable::FragmentSpread,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::FragmentSpread,
         position=(1440.00000, 732.00000),
         width=138.00293,
         height=58.00000,
@@ -412,7 +412,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineWidth=1.0)
 
     TypeView cview_26(
-        type=meta::external::query::graphQL::metamodel::executable::Argument,
+        type=meta::external::query::graphQL::metamodel::sdl::executable::Argument,
         position=(1142.00000, 678.00000),
         width=102.51611,
         height=44.00000,
@@ -640,7 +640,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_0(
-        property=meta::external::query::graphQL::metamodel::Document.definitions,
+        property=meta::external::query::graphQL::metamodel::sdl::Document.definitions,
         source=cview_1,
         target=cview_3
 ,        points=[(510.21667,158.00000),(927.66667,158.00000)],
@@ -654,7 +654,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_1(
-        property=meta::external::query::graphQL::metamodel::typeSystem::EnumTypeDefinition.values,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::EnumTypeDefinition.values,
         source=cview_9,
         target=cview_10
 ,        points=[(292.18333,554.00000),(517.00834,553.00000)],
@@ -668,7 +668,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_2(
-        property=meta::external::query::graphQL::metamodel::typeSystem::ObjectTypeDefinition.fields,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefinition.fields,
         source=cview_8,
         target=cview_13
 ,        points=[(655.00000,623.00000),(560.00000,624.00000)],
@@ -682,7 +682,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::external::query::graphQL::metamodel::typeSystem::InterfaceTypeDefinition.fields,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::InterfaceTypeDefinition.fields,
         source=cview_12,
         target=cview_13
 ,        points=[(78.23145,661.00000),(433.69167,660.00000)],
@@ -696,7 +696,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_4(
-        property=meta::external::query::graphQL::metamodel::typeSystem::FieldDefinition.argumentDefinitions,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::FieldDefinition.argumentDefinitions,
         source=cview_13,
         target=cview_15
 ,        points=[(545.00000,709.00000),(711.00000,709.00000)],
@@ -710,7 +710,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_5(
-        property=meta::external::query::graphQL::metamodel::typeSystem::DirectiveDefinition.argumentDefinitions,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::DirectiveDefinition.argumentDefinitions,
         source=cview_14,
         target=cview_15
 ,        points=[(237.03080,765.00000),(713.00000,765.00000)],
@@ -724,7 +724,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_6(
-        property=meta::external::query::graphQL::metamodel::typeSystem::SchemaDefinition.rootOperationTypeDefinitions,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::SchemaDefinition.rootOperationTypeDefinitions,
         source=cview_16,
         target=cview_17
 ,        points=[(27.83334,863.00000),(557.89086,862.00000)],
@@ -738,7 +738,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_7(
-        property=meta::external::query::graphQL::metamodel::typeSystem::InputValueDefinition.defaultValue,
+        property=meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition.defaultValue,
         source=cview_15,
         target=cview_18
 ,        points=[(758.85833,748.00000),(859.00000,748.00000),(858.00000,813.00000),(907.00000,814.00000)],
@@ -752,7 +752,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_8(
-        property=meta::external::query::graphQL::metamodel::executable::VariableDefinition.defaultValue,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::VariableDefinition.defaultValue,
         source=cview_19,
         target=cview_18
 ,        points=[(1156.33789,456.00000),(1059.00000,458.00000),(1057.00000,769.00000),(1339.00000,771.00000),(1340.00000,813.00000),(1301.00000,813.00000)],
@@ -766,7 +766,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_9(
-        property=meta::external::query::graphQL::metamodel::executable::OperationDefinition.variables,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition.variables,
         source=cview_20,
         target=cview_19
 ,        points=[(1407.90834,457.00000),(1156.33789,456.00000)],
@@ -780,7 +780,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_10(
-        property=meta::external::query::graphQL::metamodel::executable::OperationDefinition.selectionSet,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition.selectionSet,
         source=cview_20,
         target=cview_22
 ,        points=[(1344.00000,483.00000),(1302.00000,483.00000),(1302.00000,534.00000),(1386.00000,533.50000)],
@@ -794,7 +794,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_11(
-        property=meta::external::query::graphQL::metamodel::executable::FragmentDefinition.selectionSet,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::FragmentDefinition.selectionSet,
         source=cview_21,
         target=cview_22
 ,        points=[(1597.90834,461.00000),(1705.00000,461.00000),(1705.00000,537.00000),(1614.00000,537.00000)],
@@ -808,7 +808,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_12(
-        property=meta::external::query::graphQL::metamodel::executable::Field.selectionSet,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::Field.selectionSet,
         source=cview_23,
         target=cview_22
 ,        points=[(1386.00000,631.00000),(1301.50000,631.00000),(1301.00000,580.00000),(1389.00000,580.00000)],
@@ -822,7 +822,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_13(
-        property=meta::external::query::graphQL::metamodel::executable::InLineFragment.selectionSet,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::InLineFragment.selectionSet,
         source=cview_24,
         target=cview_22
 ,        points=[(1596.97193,663.00000),(1695.50000,665.00000),(1695.00000,581.00000),(1618.00000,581.00000),(1501.00000,554.50000)],
@@ -836,7 +836,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_14(
-        property=meta::external::query::graphQL::metamodel::executable::Argument.value,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::Argument.value,
         source=cview_26,
         target=cview_18
 ,        points=[(1241.01639,718.00000),(1388.50000,718.00000),(1389.00000,868.00000),(1299.00000,868.00000)],
@@ -850,7 +850,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_15(
-        property=meta::external::query::graphQL::metamodel::executable::Field.arguments,
+        property=meta::external::query::graphQL::metamodel::sdl::executable::Field.arguments,
         source=cview_23,
         target=cview_26
 ,        points=[(1392.00000,686.00000),(1239.01639,687.00000)],
@@ -864,7 +864,7 @@ Diagram meta::external::query::graphQL::GraphQL_Diagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_16(
-        property=meta::external::query::graphQL::metamodel::value::ListValue.values,
+        property=meta::external::query::graphQL::metamodel::sdl::value::ListValue.values,
         source=cview_27,
         target=cview_18
 ,        points=[(915.34375,979.00000),(858.00000,979.00000),(858.00000,865.00000),(907.00000,865.00000)],

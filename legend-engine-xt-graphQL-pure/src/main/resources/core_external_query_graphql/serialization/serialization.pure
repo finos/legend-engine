@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::query::graphQL::metamodel::*;
-import meta::external::query::graphQL::metamodel::value::*;
-import meta::external::query::graphQL::metamodel::typeSystem::*;
-import meta::external::query::graphQL::metamodel::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
 import meta::external::query::graphQL::serialization::*;
 
 function meta::external::query::graphQL::serialization::graphQLtoString(document: Document[1]):String[1]

@@ -13,14 +13,14 @@
 // limitations under the License.
 
 import meta::external::query::graphQL::transformation::queryToPure::*;
-import meta::external::query::graphQL::introspection::*;
+import meta::external::query::graphQL::transformation::introspection::*;
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertIntrospectionQueryToGraphFetch():Boolean[1]
 {
-  let classes = meta::external::query::graphQL::introspection::model.children->filter(c|$c->instanceOf(Class))->cast(@Class<Any>);
+  let classes = meta::external::query::graphQL::metamodel::introspection.children->filter(c|$c->instanceOf(Class))->cast(@Class<Any>);
   let res = graphQLExecutableToPure(meta::external::query::graphQL::transformation::queryToPure::tests::buildIntrospectionQuery(), BaseGraphQLType);
   let graphFetch = $res->meta::pure::graphFetch::routing::asString(true);
-  assertEquals( '#{meta::external::query::graphQL::introspection::BaseGraphQLType {\n' +
+  assertEquals( '#{meta::external::query::graphQL::transformation::introspection::BaseGraphQLType {\n' +
                 '    __schema {\n' +
                 '        queryType {\n' +
                 '            name\n' +

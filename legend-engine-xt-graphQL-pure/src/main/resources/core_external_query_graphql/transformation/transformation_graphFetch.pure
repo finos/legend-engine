@@ -13,72 +13,13 @@
 // limitations under the License.
 
 
-###Pure
-import meta::external::query::graphQL::metamodel::*;
-import meta::external::query::graphQL::metamodel::typeSystem::*;
-import meta::external::query::graphQL::binding::toPure::*;
-
-function meta::external::query::graphQL::binding::toPure::primitiveTypeMapping() : Pair<String, meta::pure::metamodel::type::Type>[*]
-{
-    [
-      pair('String', String),
-      pair('Boolean', Boolean),
-      pair('Int', Integer),
-      pair('Float', Float),
-      pair('ID', String)
-    ]
-}
-
-function meta::external::query::graphQL::binding::toPure::typeSystem::graphQLTypeSystemtoPure(doc:Document[1], package:String[1]) : meta::pure::metamodel::type::Type[*]
-{
-  let pack = buildTransientPackageFromString($package);
-
-  // Pass 1
-  let typesByName = $doc.definitions->map(def|
-    $def->match(
-      [
-        o : ObjectTypeDefinition[1] | let no = newClass($o.name);
-                                      let cp = ^$no(package = $pack);
-                                      pair($o.name, $cp);,
-        e : EnumTypeDefinition[1] | let ne = newEnumeration($e.name, $e.values.value);
-                                    let ep = ^$ne(package = $pack);
-                                    pair($e.name, $ep);
-      ]
-    )
-  )->concatenate(meta::external::query::graphQL::binding::toPure::primitiveTypeMapping())->newMap();
-
-  // Pass 2
-  $doc.definitions->map(def|
-    $def->match(
-      [
-        o : ObjectTypeDefinition[1] | let ownerType = $typesByName->get($o.name)->toOne();
-                                      let ownerGType = ^GenericType(rawType=$ownerType);
-                                      let properties = $o.fields->map(f |
-                                          let targetName = $f.type->match([
-                                            o:NamedTypeReference[1] | pair(if($o.nullable,|ZeroOne,|PureOne), $o.name),
-                                            l:ListTypeReference[1] | pair(ZeroMany, $l.itemType->cast(@NamedTypeReference).name)
-                                          ]);
-                                          let targeType = $typesByName->get($targetName.second)->toOne();
-                                          meta::pure::functions::meta::newProperty($f.name, $ownerGType, ^GenericType(rawType=$targeType), $targetName.first);
-                                      );
-                                      $ownerType->mutateAdd('properties', $properties);,
-        e : EnumTypeDefinition[1] | $typesByName->get($e.name)->toOne();
-      ]
-    )
-  );
-}
-
-function meta::external::query::graphQL::binding::toPure::buildTransientPackageFromString(package:String[1]) : Package[1]
-{
-  $package->split('::')->fold({a,b|^Package(name = $a, package=$b)}, ^Package());
-}
 
 
 
 ###Pure
-import meta::external::query::graphQL::metamodel::*;
-import meta::external::query::graphQL::metamodel::value::*;
-import meta::external::query::graphQL::metamodel::executable::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
 import meta::external::query::graphQL::transformation::queryToPure::*;
 import meta::pure::graphFetch::*;
 
@@ -166,7 +107,7 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlansFr
                                                                           cl:Class<Any>[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
                                                                           runtime:meta::pure::runtime::Runtime[1],
-                                                                          query:meta::external::query::graphQL::metamodel::Document[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1],
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
@@ -191,7 +132,7 @@ Class meta::external::query::graphQL::transformation::queryToPure::GraphFetchRes
   explodedDomain : Pair<String, FunctionDefinition<{->Any[*]}>>[*];
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::getGraphFetchFromGraphQL(cl:Class<Any>[1], query:meta::external::query::graphQL::metamodel::Document[1]):GraphFetchResult[1]
+function meta::external::query::graphQL::transformation::queryToPure::getGraphFetchFromGraphQL(cl:Class<Any>[1], query:meta::external::query::graphQL::metamodel::sdl::Document[1]):GraphFetchResult[1]
 {
   let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
   let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree();

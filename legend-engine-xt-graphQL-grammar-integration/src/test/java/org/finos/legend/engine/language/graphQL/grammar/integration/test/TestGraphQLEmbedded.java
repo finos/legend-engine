@@ -27,7 +27,7 @@ public abstract class TestGraphQLEmbedded
     @Test
     public void testCompileGraphQL()
     {
-        test("assertEquals('ok', meta::legend::compileVS('#GQL{type ok{id : String}}#')->cast(@meta::external::query::graphQL::metamodel::ExecutableDocument).definitions->cast(@meta::external::query::graphQL::metamodel::typeSystem::ObjectTypeDefinition).name);");
+        test("assertEquals('ok', meta::legend::compileVS('#GQL{type ok{id : String}}#')->cast(@meta::external::query::graphQL::metamodel::sdl::ExecutableDocument).definitions->cast(@meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefinition).name);");
     }
 
     private void test(String code)

@@ -40,7 +40,7 @@ public class GraphQLCompilerExtension implements CompilerExtension
     {
         return Maps.mutable.with("GQL", (obj, context, processingContext) ->
                 new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
-                        ._genericType(context.pureModel.getGenericType("meta::external::query::graphQL::metamodel::Document"))
+                        ._genericType(context.pureModel.getGenericType("meta::external::query::graphQL::metamodel::sdl::Document"))
                         ._multiplicity(context.pureModel.getMultiplicity("one"))
                         ._values(Lists.mutable.with(new org.finos.legend.engine.protocol.graphQL.metamodel.Translator().translate((Document) obj, context.pureModel)))
         );
