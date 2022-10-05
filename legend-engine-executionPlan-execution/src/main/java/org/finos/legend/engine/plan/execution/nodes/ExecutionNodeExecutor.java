@@ -196,12 +196,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     public Result visit(AllocationExecutionNode allocationExecutionNode)
     {
         String varName = allocationExecutionNode.varName;
-        Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName)));
-//        if (!(r instanceof ConstantResult) && !(r instanceof RelationalResult) && !(r instanceof StreamingObjectResult))
-//        {
-//            r.close();
-//            throw new RuntimeException("Not supported yet! " + r.getClass().getName());
-//        }
+        Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName).setRealizeInMemory(allocationExecutionNode.realizeInMemory)));
         if (result instanceof ConstantResult && ((ConstantResult) result).getValue() instanceof Map && ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values") != null)
         {
             result = new ConstantResult(((List<?>) ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values")).get(0));

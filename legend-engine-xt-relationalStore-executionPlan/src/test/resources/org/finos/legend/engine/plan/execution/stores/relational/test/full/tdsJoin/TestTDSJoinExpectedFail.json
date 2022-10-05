@@ -1,0 +1,210 @@
+{
+  "rootExecutionNode": {
+    "executionNodes": [
+      {
+        "_type": "allocation",
+        "authDependent":  false,
+        "realizeInMemory": true,
+        "executionNodes": [
+          {
+            "executionNodes": [
+              {
+                "sqlQuery": "select \"root\".FIRSTNAME as \"firstName\", \"firmtable_0\".ID as \"eID\", case when \"root\".MANAGERID = 0 then 0 else \"root\".MANAGERID end as \"managerID\" from personTable as \"root\" left outer join firmTable as \"firmtable_0\" on (\"firmtable_0\".ID = \"root\".FIRMID)",
+                "resultColumns": [
+                  {
+                    "dataType": "VARCHAR(200)",
+                    "label": "\"firstName\""
+                  },
+                  {
+                    "dataType": "INTEGER",
+                    "label": "\"eID\""
+                  },
+                  {
+                    "dataType": "",
+                    "label": "\"managerID\""
+                  }
+                ],
+                "_type": "sql",
+                "connection": {
+                  "_type": "RelationalDatabaseConnection",
+                  "authenticationStrategy": {
+                    "_type": "test"
+                  },
+                  "type": "H2",
+                  "datasourceSpecification": {
+                    "_type": "h2Local"
+                  },
+                  "element": "meta::relational::tests::dbInc"
+                },
+                "resultType": {
+                  "dataType": "meta::pure::metamodel::type::Any",
+                  "_type": "dataType"
+                }
+              }
+            ],
+            "_type": "relationalTdsInstantiation",
+            "resultType": {
+              "tdsColumns": [
+                {
+                  "relationalType": "VARCHAR(200)",
+                  "name": "firstName",
+                  "type": "String"
+                },
+                {
+                  "relationalType": "INTEGER",
+                  "name": "eID",
+                  "type": "Integer"
+                },
+                {
+                  "relationalType": "INTEGER",
+                  "name": "managerID",
+                  "type": "Integer"
+                }
+              ],
+              "_type": "tds"
+            }
+          }
+        ],
+        "varName": "tdsVar0_0",
+        "resultType": {
+          "tdsColumns": [
+            {
+              "relationalType": "VARCHAR(200)",
+              "name": "firstName",
+              "type": "String"
+            },
+            {
+              "relationalType": "INTEGER",
+              "name": "eID",
+              "type": "Integer"
+            },
+            {
+              "relationalType": "INTEGER",
+              "name": "managerID",
+              "type": "Integer"
+            }
+          ],
+          "_type": "tds"
+        }
+      },
+      {
+        "executionNodes": [
+          {
+            "sqlQuery": "select \"tdsvar0_0_0\".firstName as \"firstName\", \"tdsvar0_0_0\".eID as \"eID\", \"tdsvar0_0_0\".managerID as \"managerID\", \"tdsvar0_0_0\".\"fID\" as \"fID\", \"tdsvar0_0_0\".\"legalName\" as \"legalName\" from (select * from (${tdsVar0_0}) as \"tdsvar0_0_1\" inner join (select \"root\".ID as \"fID\", \"root\".LEGALNAME as \"legalName\" from firmTable as \"root\") as \"firmtable_0\" on (\"tdsvar0_0_1\".eID = \"firmtable_0\".\"fID\")) as \"tdsvar0_0_0\"",
+            "resultColumns": [
+              {
+                "dataType": "INTEGER",
+                "label": "\"firstName\""
+              },
+              {
+                "dataType": "INTEGER",
+                "label": "\"eID\""
+              },
+              {
+                "dataType": "INTEGER",
+                "label": "\"managerID\""
+              },
+              {
+                "dataType": "INTEGER",
+                "label": "\"fID\""
+              },
+              {
+                "dataType": "VARCHAR(200)",
+                "label": "\"legalName\""
+              }
+            ],
+            "_type": "sql",
+            "connection": {
+              "_type": "RelationalDatabaseConnection",
+              "authenticationStrategy": {
+                "_type": "test"
+              },
+              "type": "H2",
+              "datasourceSpecification": {
+                "_type": "h2Local"
+              },
+              "element": "meta::relational::tests::tds::tdsJoin::database2"
+            },
+            "resultType": {
+              "dataType": "meta::pure::metamodel::type::Any",
+              "_type": "dataType"
+            }
+          }
+        ],
+        "_type": "relationalTdsInstantiation",
+        "resultType": {
+          "tdsColumns": [
+            {
+              "relationalType": "VARCHAR(200)",
+              "name": "firstName",
+              "type": "String"
+            },
+            {
+              "relationalType": "INTEGER",
+              "name": "eID",
+              "type": "Integer"
+            },
+            {
+              "relationalType": "INTEGER",
+              "name": "managerID",
+              "type": "Integer"
+            },
+            {
+              "relationalType": "INTEGER",
+              "name": "fID",
+              "type": "Integer"
+            },
+            {
+              "relationalType": "VARCHAR(200)",
+              "name": "legalName",
+              "type": "String"
+            }
+          ],
+          "_type": "tds"
+        }
+      }
+    ],
+    "_type": "sequence",
+    "resultType": {
+      "tdsColumns": [
+        {
+          "relationalType": "VARCHAR(200)",
+          "name": "firstName",
+          "type": "String"
+        },
+        {
+          "relationalType": "INTEGER",
+          "name": "eID",
+          "type": "Integer"
+        },
+        {
+          "relationalType": "INTEGER",
+          "name": "managerID",
+          "type": "Integer"
+        },
+        {
+          "relationalType": "INTEGER",
+          "name": "fID",
+          "type": "Integer"
+        },
+        {
+          "relationalType": "VARCHAR(200)",
+          "name": "legalName",
+          "type": "String"
+        }
+      ],
+      "_type": "tds"
+    }
+  },
+  "authDependent": false,
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": [
+    "<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue><\/#if><#return prefix + collection?join(suffix + separator + prefix) + suffix><\/#function>",
+    "<#function collectionSize collection> <#return collection?size?c> <\/#function>",
+    "<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause><\/#if><\/#function>",
+    "<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix><\/#if><\/#function>"
+  ]
+}

@@ -64,6 +64,7 @@ public abstract class ExecutionNode
     public Multiplicity resultSizeRange;
     public List<VariableInput> requiredVariableInputs;
     public PlatformImplementation implementation;
+    public boolean authDependent;
 
     public abstract <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor);
 
