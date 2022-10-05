@@ -459,6 +459,7 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  type: Redshift;\n" +
                 "  specification: Redshift\n" +
                 "  {\n" +
+
                 "    host: 'myDBHost';\n" +
                 "    port: 1234;\n" +
                 "    name: 'database1';\n" +
