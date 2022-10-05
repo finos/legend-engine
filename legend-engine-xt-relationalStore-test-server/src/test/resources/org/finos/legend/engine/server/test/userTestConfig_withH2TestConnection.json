@@ -23,7 +23,7 @@
     "connector": {
       "maxRequestHeaderSize": "32KiB",
       "type": "http",
-      "port": 6060
+      "port": 6000
     },
     "requestLog": {
       "appenders": [
