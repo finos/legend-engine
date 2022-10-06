@@ -881,6 +881,12 @@ public class RelationalParseTreeWalker
         String database = ctx.databasePointer() != null ? this.visitDatabasePointer(ctx.databasePointer()) : (scopeInfo != null ? scopeInfo.database : null);
         ElementWithJoins operation = new ElementWithJoins();
         operation.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        operation.joins = this.visitJoinSequence(ctx.joinSequence(), database, scopeInfo);
+        if (!operation.joins.isEmpty())
+        {
+            String lastDB = operation.joins.get(operation.joins.size() - 1).db;
+            database = lastDB != null ? lastDB : database;
+        }
         if (ctx.booleanOperation() != null)
         {
             operation.relationalElement = this.visitBooleanOperation(ctx.booleanOperation(), ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build());
@@ -889,7 +895,6 @@ public class RelationalParseTreeWalker
         {
             operation.relationalElement = this.visitTableAliasColumnOperation(ctx.tableAliasColumnOperation(), database, scopeInfo);
         }
-        operation.joins = this.visitJoinSequence(ctx.joinSequence(), database, scopeInfo);
         return operation;
     }
 
