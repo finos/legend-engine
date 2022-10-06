@@ -84,26 +84,26 @@ function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinitio
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifier:Boolean[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], format:Format[1], extensions:Extension[*], debug:DebugContext[1]):String[1]
 {
    let routed = $f->routeFunction($mapping, ^Runtime(connections=[^Connection(element='Mock')]), $extensions, $debug);
-   let sqlResult = toSQL($routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification), $f->openVariableValues(), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, ^SQLResult(shouldWarn=false, extensions=$extensions));
+   let sqlResult = toSQL($routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification), $f->openVariableValues(), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, ^SQLResult(shouldWarn=false, extensions=$extensions));
    $sqlResult.toSQLString($databaseType, $dbTimeZone, $quoteIdentifier, $format);
 }
 
 function <<access.private>> meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], extensions:Extension[*], debug:DebugContext[1]):SQLResult[1]
 {
    let routed = $f->routeFunction($mapping, ^Runtime(connections=[^Connection(element='Mock')]), $extensions, $debug);
-   toSQL($routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification), $f->openVariableValues(), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, ^SQLResult(shouldWarn=false, extensions=$extensions));
+   toSQL($routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification), $f->openVariableValues(), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, ^SQLResult(shouldWarn=false, extensions=$extensions));
 }
 
 
-function <<access.private>> meta::relational::functions::sqlstring::toSQL(clusters:ClusteredValueSpecification[*], vars:Map<String, List<Any>>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], extensions:Extension[*], debug:DebugContext[1], sqlResult:SQLResult[1]):SQLResult[1]
+function <<access.private>> meta::relational::functions::sqlstring::toSQL(clusters:StoreMappingClusteredValueSpecification[*], vars:Map<String, List<Any>>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], extensions:Extension[*], debug:DebugContext[1], sqlResult:SQLResult[1]):SQLResult[1]
 {
    let clusterBeforeAggregateRewrite = $clusters->head();
    if($clusterBeforeAggregateRewrite.store->toOne()->instanceOf(meta::pure::mapping::aggregationAware::AggregationAwareStore),
       | let reprocessedFunction = meta::pure::mapping::aggregationAware::reprocessFunction($clusterBeforeAggregateRewrite.val->cast(@FunctionExpression)->toOne(), $vars, []->cast(@RoutedValueSpecification), $mapping, $debug);
         let routed = $reprocessedFunction->routeFunction($mapping, ^Runtime(connections=[^Connection(element='Mock')]), $extensions, $debug);
-        toSQL($routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification), $vars, $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, $sqlResult);,
+        toSQL($routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification), $vars, $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, $sqlResult);,
       | let cluster = $clusterBeforeAggregateRewrite;
-        let firstDbCluster = findDBCluster($cluster->at(0), []->cast(@ClusteredValueSpecification));
+        let firstDbCluster = findDBCluster($cluster->at(0), []->cast(@StoreMappingClusteredValueSpecification));
         if($cluster.s.executeStoreQuery == meta::pure::store::platform::contract::platformStoreContract().executeStoreQuery && $firstDbCluster->isEmpty(),
            |  let fe = $cluster.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v])->cast(@FunctionExpression);
               let params = $fe.parametersValues->evaluateAndDeactivate();
@@ -112,7 +112,7 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
               let res = $cluster->executeExpression($vars, [], $exeCtx, $extensions, $debug);
 
               toSQL($clusters->tail(), $vars->put($paramName, ^List<Any>(values=$res.values)), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, $sqlResult); ,
-           |  let dbCluster = if ($cluster.store->toOne()->instanceOf(meta::relational::metamodel::Database),| $cluster, | $firstDbCluster->at(0)->cast(@ClusteredValueSpecification));
+           |  let dbCluster = if ($cluster.store->toOne()->instanceOf(meta::relational::metamodel::Database),| $cluster, | $firstDbCluster->at(0)->cast(@StoreMappingClusteredValueSpecification));
               let query = $dbCluster.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v])->cast(@FunctionExpression)->toSQLQuery($mapping, $vars, [], $debug, $extensions);
               let newQuery = if($sqlQueryPostProcessors->isEmpty(), | $query, | $sqlQueryPostProcessors->fold({p,sql | $p->eval($sql->cast(@SelectSQLQuery)).values->toOne()}, $query));
               ^$sqlResult(shouldWarn=($sqlResult.shouldWarn || !$clusters->tail()->isEmpty()),
@@ -122,12 +122,12 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
 }
 
 
-function <<access.private>> meta::relational::functions::sqlstring::findDBCluster(v:ValueSpecification[1], current:ClusteredValueSpecification[*]):ClusteredValueSpecification[*]
+function <<access.private>> meta::relational::functions::sqlstring::findDBCluster(v:ValueSpecification[1], current:StoreMappingClusteredValueSpecification[*]):StoreMappingClusteredValueSpecification[*]
 {
    $v->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, a:Any[1]|$a])
      ->match([
-                  c:ClusteredValueSpecification[1]|if ($c.store->instanceOf(meta::relational::metamodel::Database),|$current->add($c),|$c.val->findDBCluster($current)),
-                  fe:FunctionExpression[1]|$current->concatenate($fe.parametersValues->map(p|$p->findDBCluster([]->cast(@ClusteredValueSpecification)))),
+                  c:StoreMappingClusteredValueSpecification[1]|if ($c.store->instanceOf(meta::relational::metamodel::Database),|$current->add($c),|$c.val->findDBCluster($current)),
+                  fe:FunctionExpression[1]|$current->concatenate($fe.parametersValues->map(p|$p->findDBCluster([]->cast(@StoreMappingClusteredValueSpecification)))),
                   i:InstanceValue[1]|[],
                   v:VariableExpression[1] | []
              ]);

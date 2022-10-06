@@ -12,24 +12,50 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::extension::*;
+import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
+import meta::pure::router::clustering::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 
 Class meta::pure::router::clustering::ClusteredValueSpecification extends ValueSpecification
 {
-   executable : Boolean[1];
-   exeCtx     : ExecutionContext[0..1];
-   openVars   : Map<String, List<Any>>[1];
-   val        : ValueSpecification[1];
+   executable   : Boolean[1];
+   exeCtx       : ExecutionContext[0..1];    //TODO: check this make this multiplpcity 1
+   openVars     : Map<String, List<Any>>[1];
+   val          : ValueSpecification[1];
 
+   generateExecutionNode : Function<{ClusteredValueSpecification[1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
+   generateExecutionNode(executionContext:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1])
+   {
+      $this.generateExecutionNode->toOne()->eval($this, $executionContext, $extensions, $debug);
+   }: ExecutionNode[1];
+}
+
+Class meta::pure::router::clustering::StoreClusteredValueSpecification extends ClusteredValueSpecification
+{
    s          : StoreContract[1];
-   store      : meta::pure::store::Store[1];
+   store      : Store[1];
    runtime    : Runtime[0..1];
+}
+
+Class meta::pure::router::clustering::StoreMappingClusteredValueSpecification extends StoreClusteredValueSpecification
+{
    mapping    : Mapping[0..1];
 }
+
+Class meta::pure::router::clustering::ExternalFormatClusteredValueSpecification extends ClusteredValueSpecification
+{
+   binding    : meta::external::shared::format::binding::Binding[1];
+}
+
+Class meta::pure::router::clustering::PlatformClusteredValueSpecification extends ClusteredValueSpecification
+{
+}
+
 
 Class meta::pure::graphFetch::routing::ClusteredGraphFetchTree extends GraphFetchTree
 {

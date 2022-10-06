@@ -48,9 +48,8 @@ Class meta::pure::router::routing::PropertyMap
    v : Pair<String,Any>[*];
 }
 
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], providedRoutingStrategy:RoutingStrategy[0..1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
-   let routingStrategy    = $providedRoutingStrategy->toOne();  // TODO: check this to pick up platform one if not provided
    let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy),
                                               $expressions,
                                               $executionContext,
@@ -60,10 +59,10 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
                                               $extensions,
                                               $debug
                                             )->evaluateAndDeactivate();
-                                            
+
    $processedFunctions->map(fxn | $fxn.value->match([
       evs: ExtendedRoutedValueSpecification[1] | $evs,
-      vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, $fxn->id(), $executionContext, $extensions, $debug)
+      vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, $fxn.value->toOne()->id(), $executionContext, $extensions, $debug)
    ]));
 }
 
@@ -176,6 +175,7 @@ function meta::pure::router::routing::routeFunctionExpression(fe:FunctionExpress
 function meta::pure::router::routing::specializedFunctionExpressionRouterProcessor(extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
 {
   meta::pure::router::routing::specializedFunctionExpressionRouterProcessorForStore($extensions)
+    ->concatenate(meta::pure::router::externalFormat::routing::specializedFunctionExpressionRouterProcessorForExternalFormat())
     ->concatenate($extensions.routerExtensions().routeFunctionExpressions)
 }
 
@@ -361,7 +361,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                               | let first = $mappingReturnClass->last()->toOne();
                                                 ^$first(value = $fullRes, routingStrategy = $lastSecondPass.routingStrategy);
                                             );
-                    print(if($debug.debug,|$debug.space+'~>NQS) ('+$lastSecondPass.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$possiblyWrapperd->evaluateAndDeactivate()->asString()+'\n',|''));
+                    // print(if($debug.debug,|$debug.space+'~>NQS) ('+$lastSecondPass.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$possiblyWrapperd->evaluateAndDeactivate()->asString()+'\n',|''));
                     let shouldBeRouted = if($f == letFunction_String_1__T_m__T_m_,
                                             |false,
                                             |$lastSecondPass.shouldBeRouted || $f == getAll_Class_1__T_MANY_ || $f == getAllVersions_Class_1__T_MANY_ || $f==getAll_Class_1__Date_1__T_MANY_ || $f==getAll_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_ || $f == getAllForEachDate_Class_1__Date_MANY__T_MANY_);

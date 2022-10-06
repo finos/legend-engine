@@ -457,7 +457,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
                     );
    let routed     = $newFunction->routeFunction($mcc.mappings->at(0), $newRuntime, $exeCtx, $extensions, $debug);
    let routedFn   = $routed.functions->evaluateAndDeactivate()->toOne();
-   let clusters   = $routedFn.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(c | $c->updateClusterWithChainProcessingInfo($ext, $setsProcessed));
+   let clusters   = $routedFn.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification)->map(c | $c->updateClusterWithChainProcessingInfo($ext, $setsProcessed));
 
    let fnParams   = $newFunction->stubFuncParameters();
    let varsFromXStoreProperties = $populatedXStorePropertiesInScope->map(prop | let varName = $prop->propertyToVarName();
@@ -467,7 +467,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
    meta::pure::executionPlan::executionPlan($clusters, $routed, $routedFn, $newFunction, $mcc.mappings->at(0), $newRuntime, $exeCtx, $updatedInScopeVars, $extensions, $debug).rootExecutionNode;
 }
 
-function meta::pure::mapping::modelToModel::graphFetch::executionPlan::updateClusterWithChainProcessingInfo(cluster:ClusteredValueSpecification[1], ext:RoutedValueSpecification[0..1], setsProcessed:SetImplementation[*]): ClusteredValueSpecification[1]
+function meta::pure::mapping::modelToModel::graphFetch::executionPlan::updateClusterWithChainProcessingInfo(cluster:StoreMappingClusteredValueSpecification[1], ext:RoutedValueSpecification[0..1], setsProcessed:SetImplementation[*]): StoreMappingClusteredValueSpecification[1]
 {
    let updatedValue = $cluster.val->match([
       e:StoreMappingRoutedValueSpecification[1] | ^$e(processedChainSets = $e.processedChainSets->concatenate($setsProcessed)),
@@ -547,7 +547,7 @@ function <<access.protected>> meta::pure::mapping::modelToModel::validateMergeMa
 function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryRouterMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1],rootSQ:StoreQuery[1],rootTree:ClusteredGraphFetchTree[1]): ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate();
-  let subClusters  = $fe.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->cast(@ValueSpecification)->map({p | $p->cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@ClusteredValueSpecification);
+  let subClusters  = $fe.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->cast(@ValueSpecification)->map({p | $p->cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@StoreMappingClusteredValueSpecification);
 
    let firstCluster = $subClusters->at(0);
    let childNodes   = $subClusters->map(cls | $cls->plan($runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug)->cast(@GlobalGraphFetchExecutionNode))->mergeGraphFetchPlans($rootTree);

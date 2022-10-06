@@ -19,6 +19,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
 import meta::pure::metamodel::path::*;
+import meta::pure::router::platform::routing::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::builder::*;
 import meta::pure::router::clustering::*;
@@ -34,7 +35,7 @@ Class meta::pure::router::RoutingQuery<T|m>  // TODO: check this to be removed
 
 Class meta::pure::router::RoutingResult
 {
-   functions:FunctionDefinition<Any>[*];
+   functions:FunctionDefinition<Any>[*];      // TODO: check this multiplicity should be 1
 }
 
 Class meta::pure::router::RoutedVariablePlaceHolder
@@ -94,7 +95,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
       if($vs->usesFrom(),
         {|
           let f      = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
-          let routed = routeFunction($f, getRoutingStrategyFromMappingAndRuntime(^Mapping(name = ''), ^meta::pure::runtime::Runtime()), $exeCtx, $a.second, $extensions, $debug);       //TODO: check this remove empty mapping and runtime
+          let routed = routeFunction($f, getPlatformRoutingStrategy(), $exeCtx, $a.second, $extensions, $debug);
           let vars   = if($varName->isNotEmpty(),
                          | $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne()))),
                          | $a.second
@@ -145,7 +146,7 @@ first = ^RoutingResult(
                      openVariables         = $vars->keys(),
                      classifierGenericType = ^GenericType(rawType=LambdaFunction, typeArguments=^GenericType(rawType=$f->functionType())));
 
-   let routed  = routeFunction($newF, getRoutingStrategyFromMappingAndRuntime(^Mapping(name = ''), ^meta::pure::runtime::Runtime()), $exeCtx, $vars, $extensions, $debug);              //TODO: check this remove empty mapping and runtime
+   let routed  = routeFunction($newF, getPlatformRoutingStrategy(), $exeCtx, $vars, $extensions, $debug);
    let temp    = $routed.functions->toOne();
    ^RoutingResult(
      functions       = ^$temp(expressionSequence = $initStatements.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)
@@ -163,15 +164,15 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
    let functionExpressions = $f.expressionSequence->evaluateAndDeactivate()->cast(@FunctionExpression);
 
    // Enriching Function Expressions with relevant info (mapping / binding / platform)
-   print(if($debug.debug,|$debug.space+'Enriching Function Expressions with relevant info (mapping / binding / platform) and assigning routing strategy:\n',|''));
+   print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with relevant info (mapping / binding / platform) and assigning routing strategy:\n',|''));
    let enrichedExpressions = enrichFunctionExpressions($functionExpressions, $routingStrategy, $exeCtx, $openVariables, $extensions, $debug);
 
    // Enriching Function Expressions with more information based on type of expression (subTypes of ExtendedRoutedValueSpecification)
-   print(if($debug.debug,|$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));
+   print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));
    let enrichedExpressionsAfterStrategyBasedEnrichment = $enrichedExpressions->map(exp | $exp->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug));
 
    // Clustering Function Expressions into clusters
-   print(if($debug.debug,|$debug.space+'Clustering Function Expressions:\n',|''));
+   print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:\n',|''));
    let clusters = $enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  ')));
 
    // Wrapping Clustered Function Expressions into original function structure
@@ -199,7 +200,7 @@ function meta::pure::router::clusterFunctionExpressions(vs:ExtendedRoutedValueSp
 
    $vs->match([
      sm: StoreMappingRoutedValueSpecification[1]   | $sm->doCluster($sm.mapping, $sm.runtime, $openVariables, $exeCtx, $extensions, $debug),
-     ef: ExternalFormatRoutedValueSpecification[1] | $vs->cast(@ClusteredValueSpecification),
-     pl: PlatformRoutedValueSpecification[1]       | $vs->cast(@ClusteredValueSpecification)
+     ef: ExternalFormatRoutedValueSpecification[1] | $vs->meta::pure::router::externalFormat::clustering::cluster($openVariables, $exeCtx, $extensions, $debug)->cast(@ClusteredValueSpecification),
+     pl: PlatformRoutedValueSpecification[1]       | $pl->meta::pure::router::platform::clustering::cluster($openVariables, $exeCtx, $extensions, $debug)->cast(@ClusteredValueSpecification)
    ]);
 }

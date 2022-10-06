@@ -30,7 +30,7 @@ function meta::pure::router::execution::execute<X|n>(rq:RoutingQuery<X|n>[1], m:
    let routingActivity = ^meta::pure::mapping::RoutingActivity(routingTimeInNanoSecond = $routingElapsedTimeInNanoSecond);
    print(if($debug.debug,|'\nExecuting:\n',|''));
    let results = $routed.functions->evaluateAndDeactivate()->fold({f:FunctionDefinition<Any>[1],a:Result<X|*>[1]|
-                      let clusterVS = $f.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+                      let clusterVS = $f.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification);
                       let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $clusterVS->at(0).exeCtx, $extensions, $debug);
                       let values = if ($a.values->isEmpty(),
                                         |$res.values,
@@ -59,7 +59,8 @@ function <<doc.deprecated>> meta::pure::router::execution::executeExpression(clu
    executeExpression($clusters, $inScopeVars, $activities, $exeCtx, $extensions, $debug);
 }
 
-function meta::pure::router::execution::executeExpression(clusters:ClusteredValueSpecification[*], inScopeVars:Map<String, List<Any>>[1], activities:Activity[*], exeCtx: ExecutionContext[0..1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+
+function meta::pure::router::execution::executeExpression(clusters:StoreMappingClusteredValueSpecification[*], inScopeVars:Map<String, List<Any>>[1], activities:Activity[*], exeCtx: ExecutionContext[0..1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let current = $clusters->head()->toOne()->evaluateAndDeactivate();
    print(if($debug.debug,|'\n'+$debug.space+'Start Execution: '+$current.val->asString()+'\n',|''));
@@ -113,7 +114,7 @@ function meta::pure::router::execution::resolve(v:Container[1], openVariables:Ma
 
                                     );,
                va:VariableExpression[1]| $v;,
-               c:ClusteredValueSpecification[1]|let recurseExec = ^$v(value=$c.val)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' '));
+               c:StoreMappingClusteredValueSpecification[1]|let recurseExec = ^$v(value=$c.val)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' '));
                                                 let res = $recurseExec.value->evaluateAndDeactivate()->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v, r:FunctionRoutedValueSpecification[1]|^$v(value=$r.value)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' '))])
                                                                             ->match(
                                                                [

@@ -195,7 +195,7 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
    
    let dummyLambda = {|'ok'};
    let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug()).functions->evaluateAndDeactivate()->toOne();
-   let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ClusteredValueSpecification).val->cast(@StoreMappingRoutedValueSpecification);
+   let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->cast(@StoreMappingRoutedValueSpecification);
 
    let extended = if($exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne(),
                      | $root->ensureConstraintsRequirementsForMappedProperties($mapping),
@@ -310,7 +310,7 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
 
    if($routedFunctions->isNotEmpty(),
       |  let routedFunction = $routedFunctions->toOne();
-         let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ClusteredValueSpecification).val->evaluateAndDeactivate();
+         let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->evaluateAndDeactivate();
          let propertyMappingInfo = $prop->meta::pure::graphFetch::routing::propertyMappingInfo($ext, $mapping);
          ^RoutedPropertyGraphFetchTree
           (

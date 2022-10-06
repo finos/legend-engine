@@ -44,7 +44,7 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
 {
    $vs->match([
       f:SimpleFunctionExpression[1]         | $f->meta::pure::store::platform::executionPlan::generation::getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
-      c:ClusteredValueSpecification[1]      | $c->plan($c.runtime, $state.inScopeVars, $state.exeCtx, $extensions, $debug),
+      c:ClusteredValueSpecification[1]      | $c->plan([], $state.inScopeVars, $state.exeCtx, $extensions, $debug),
       e:StoreMappingRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
       i:InstanceValue[1]                    | [],
       v:ValueSpecification[1]               | []
@@ -128,12 +128,10 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):ClusteredValueSpecification[1]
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):PlatformClusteredValueSpecification[1]
 {
-   ^ClusteredValueSpecification(
-      val = $fe, 
-      store = ^PlatformStore(package=::), 
-      s = meta::pure::store::platform::contract::platformStoreContract(),
+   ^PlatformClusteredValueSpecification(
+      val = $fe,
       executable=true, 
       multiplicity = $fe.multiplicity, 
       genericType  = $fe.genericType, 
@@ -141,11 +139,11 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification(vs:ValueSpecification[1]):ClusteredValueSpecification[*]
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification(vs:ValueSpecification[1]):StoreMappingClusteredValueSpecification[*]
 {
    $vs->match([
       f:SimpleFunctionExpression[1]|$f.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()),
-      c:ClusteredValueSpecification[*]|$c,
+      c:StoreMappingClusteredValueSpecification[*]|$c,
       i:InstanceValue[1]|[],
       v:VariableExpression[1]|[],
       fvs:FunctionRoutedValueSpecification[1]|$fvs.value->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()

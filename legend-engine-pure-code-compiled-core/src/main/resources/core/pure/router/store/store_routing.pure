@@ -264,7 +264,13 @@ function meta::pure::router::routing::specializedFunctionExpressionRouterProcess
                 let newRoutingStrategy = ^$currentRoutingStrategy(mapping = $fromMapping, runtime = $fromRuntime, classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
                 let newState = ^$state(routingStrategy = $newRoutingStrategy);
 
-                routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                let processedFunction = routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                let valueSpec         = $processedFunction.value;
+                let wrappedValueSpec  = $valueSpec->match([
+                                           evs: ExtendedRoutedValueSpecification[1] | $evs,
+                                           vs: ValueSpecification[1]                | $processedFunction.routingStrategy.wrapValueSpec($vs, $valueSpec->cast(@ValueSpecification)->toOne()->id(), $executionContext, $extensions, $debug)
+                                        ]);
+                ^$processedFunction(value = $wrappedValueSpec);
         }
     )
   ]

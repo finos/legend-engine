@@ -70,7 +70,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    let sourceNodeDecorator = {sourceNode:ExecutionNode[1] | if($serviceStoreQueryProcessedState.recordsToBeRead->isEmpty(),
                                                                |$sourceNode,
                                                                |assert($setsProcessed->cast(@PureInstanceSetImplementation).filter->isEmpty(), | 'Service Store does not support ->take when filters added in chained M2m mapping');
-                                                                let fromCluster = ^meta::pure::router::clustering::ClusteredValueSpecification(
+                                                                let fromCluster = ^meta::pure::router::clustering::StoreMappingClusteredValueSpecification(
                                                                                       val = $fe, 
                                                                                       store = $store, 
                                                                                       s = meta::external::store::service::contract::serviceStoreStoreContract(),

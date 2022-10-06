@@ -12,20 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::*;
-import meta::pure::extension::*;
-import meta::pure::store::*;
-import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
-import meta::pure::router::*;
-import meta::pure::metamodel::path::*;
-import meta::pure::router::printer::*;
-import meta::pure::router::builder::*;
-import meta::pure::router::clustering::*;
 import meta::pure::router::routing::*;
-import meta::pure::router::execution::*;
-import meta::pure::router::store::platform::*;
+import meta::pure::runtime::*;
 
 function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingResult[1]
 {

@@ -113,7 +113,7 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
        | $clusters->at(0)->plan($runtime, $inScopeVars, $context, $extensions, $debugContext),
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
                                              let node = $c->plan($runtime, $x, $context, $extensions, $debugContext);
-                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type ==TabularDataSet,
+                                             let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type == TabularDataSet,
                                                                                                                        |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
                                                                                                                        |^PlanVarPlaceHolder(name=$a.varName,type = $a.resultType.type, multiplicity=$a.resultSizeRange));
                                                                                                     $x->put($a.varName, ^List<Any>(values=$varValues));,
@@ -164,7 +164,7 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
 {
    let enumValidationContext = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration))->map(e | ^meta::pure::executionPlan::EnumValidationContext(varName = $e.name, validEnumValues = $e.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id())));
-   let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
+   let paramsSupportedForStreamInput = [];//$routedFunction->findParamsSupportedForStreamInput();  //TODO: check this fix this
    if($f->instanceOf(LambdaFunction) && $planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
                                                                              let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $enumValidationContext);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),
@@ -174,7 +174,7 @@ function <<access.private>> meta::pure::executionPlan::addFunctionParametersVali
 
 function <<access.private>> meta::pure::executionPlan::findParamsSupportedForStreamInput(routedFunction:FunctionDefinition<Any>[1]):String[*]
 {
-   let vars = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->map(cvs| let clusterVal                     = $cvs.val->deepByPassRouterInfo()->cast(@ValueSpecification);
+   let vars = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification)->map(cvs| let clusterVal                     = $cvs.val->deepByPassRouterInfo()->cast(@ValueSpecification);
                                                                                                                         let varsSupportedForStreamInput    = $clusterVal->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, true, false);
                                                                                                                         let varsNotSupportedForStreamInput = $clusterVal->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, false, false);
                                                                                                                         pair(^List<Pair<String, String>>(values=$varsSupportedForStreamInput), ^List<Pair<String, String>>(values=$varsNotSupportedForStreamInput)););
@@ -196,7 +196,7 @@ function <<access.private>> meta::pure::executionPlan::findParamsForStreamInput(
                                                          t : Type[1] | [];,
                                                          a:Any[1] | [];]););,
                ve:VariableExpression[1] | if(($isSupportedForStream && $getSupportedParams) || (!$isSupportedForStream && !$getSupportedParams), | pair($ve.name, $storePath), |[]);,
-               cvs:ClusteredValueSpecification[1] | $cvs.val->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, $getSupportedParams, false),
+               cvs:StoreMappingClusteredValueSpecification[1] | $cvs.val->findParamsForStreamInput($cvs.store->elementToPath(), $cvs.s.supportsStream, $getSupportedParams, false),
                vs:ValueSpecification[1] | [];
              ]
           );
@@ -209,53 +209,59 @@ function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>
 
 function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], runtime:Runtime[0..1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
-    let fe = $cluster.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value,
+    let fe = $cluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
                                   t:TDSRoutedValueSpecification[1] | $t.value,
                                   a:Any[1]|$a])->cast(@FunctionExpression);
     if ($fe.func == letFunction_String_1__T_m__T_m_,
-          | let extractedFe = $cluster.val->match([e:StoreMappingRoutedValueSpecification[1]|$e.value->cast(@SimpleFunctionExpression),s:SimpleFunctionExpression[1]|$s])->cast(@SimpleFunctionExpression);
-            let variables = $extractedFe.parametersValues;
-            let subPlan = $variables->at(1)->match(
-                              [
-                                 c:ClusteredValueSpecification[1]|
-                                    $c->plan($runtime, $inScopeVars, if ($c.exeCtx->isEmpty(), | $context, | $c.exeCtx->toOne()), $extensions, $debugContext);,
-                                 i:InstanceValue[1]|^meta::pure::executionPlan::ConstantExecutionNode
-                                                    (
-                                                       resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
-                                                       resultSizeRange = $i.multiplicity,
-                                                       values = $i.values->toOne()
-                                                    );
-                                 ,
-                                 s:SimpleFunctionExpression[1] | let funcParams = $s->findVariableExpressionsInValueSpecification()->map(ve | $ve.name);
-                                                                 let varInput = $inScopeVars->keyValues().second.values->cast(@PlanVarPlaceHolder)->filter(x | $x.name->in($funcParams))->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.type->toOne(), multiplicity = $v.multiplicity->toOne()));  
-                                                                 ^meta::pure::executionPlan::PureExpressionPlatformExecutionNode
-                                                                 (
-                                                                    expression = $s,
-                                                                    requiredVariableInputs = $varInput,
-                                                                    resultType = ^ResultType(type=$s.genericType.rawType->toOne()),
-                                                                    resultSizeRange = $s.multiplicity
-                                                                 );
-                              ]
-                           );
-            ^meta::pure::executionPlan::AllocationExecutionNode
-            (
-               varName = $variables->at(0)->cast(@InstanceValue).values->toOne()->cast(@String),
-               resultType = $subPlan.resultType,
-               resultSizeRange = $subPlan.resultSizeRange,
-               executionNodes = $subPlan
-            );
-          ,|
+        | let variables = $fe.parametersValues;
+          let subPlan = $variables->at(1)->match(
+                            [
+                                c:ClusteredValueSpecification[1]|
+                                  $c->plan($runtime, $inScopeVars, if ($c.exeCtx->isEmpty(), | $context, | $c.exeCtx->toOne()), $extensions, $debugContext);,
+                                i:InstanceValue[1]|^meta::pure::executionPlan::ConstantExecutionNode
+                                                  (
+                                                      resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
+                                                      resultSizeRange = $i.multiplicity,
+                                                      values = $i.values->toOne()
+                                                  );,
+                                s:SimpleFunctionExpression[1] | let funcParams = $s->findVariableExpressionsInValueSpecification()->map(ve | $ve.name);
+                                                                let varInput = $inScopeVars->keyValues().second.values->cast(@PlanVarPlaceHolder)->filter(x | $x.name->in($funcParams))->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.type->toOne(), multiplicity = $v.multiplicity->toOne()));
+                                                                ^meta::pure::executionPlan::PureExpressionPlatformExecutionNode
+                                                                (
+                                                                  expression = $s,
+                                                                  requiredVariableInputs = $varInput,
+                                                                  resultType = ^ResultType(type=$s.genericType.rawType->toOne()),
+                                                                  resultSizeRange = $s.multiplicity
+                                                                );
+                            ]
+                          );
+          ^meta::pure::executionPlan::AllocationExecutionNode
+          (
+              varName = $variables->at(0)->cast(@InstanceValue).values->toOne()->cast(@String),
+              resultType = $subPlan.resultType,
+              resultSizeRange = $subPlan.resultSizeRange,
+              executionNodes = $subPlan
+          );,
+        |
+          $cluster->match([
+            sc:StoreMappingClusteredValueSpecification[1] |
+                //This is required tp populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
+                //the only place where sql is generated for this case.
+                let rt = $sc.runtime->match([
+                  r:Runtime[1] | ^$r(connections = $r.connections->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|$sc.s.reprocessConnection->toOne()->eval($c)))),
+                  r:Runtime[0..1] | $r
+                ]);
 
-            //This is required tp populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
-            //the only place where sql is generated for this case.
-            let rt = $cluster.runtime->match([
-               r:Runtime[1] | ^$r(connections = $r.connections->map(c | if ($cluster.s.reprocessConnection->isEmpty(),|$c,|$cluster.s.reprocessConnection->toOne()->eval($c)))),
-               r:Runtime[0..1] | $r
-            ]);
-
-            let query = ^meta::pure::mapping::StoreQuery(store=$cluster.store, fe=$fe, inScopeVars=$inScopeVars);
-            let res = $cluster.s.planExecution->toOne()->eval($query, $cluster.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $cluster.mapping, $rt, if ($cluster.exeCtx->isEmpty(), | $context, | $cluster.exeCtx->toOne()), $extensions, $debugContext);
-            ^$res(fromCluster=$cluster);
+                let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);
+                let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $sc.mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
+                ^$res(fromCluster=$cluster);,
+            pl:PlatformClusteredValueSpecification[1] |
+               let state = ^meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
+               $fe->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();,
+            pl:ExternalFormatClusteredValueSpecification[1] |
+               let state = ^meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
+               $fe->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
+          ]);
     );
 }
 

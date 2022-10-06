@@ -111,7 +111,7 @@ function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQu
    
    let routed = $f->routeFunction($m, $runtime->toOne(), $exeCtx, $extensions, $debug);
    let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
-   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification);
 
    let inScopeVars = $sq.inScopeVars;
 
@@ -148,7 +148,7 @@ function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpres
                         print(if(!$debug.debug, |'', | $debug.space+'  Mapping: '+$a.name->toOne()+'\n'));
                         let rez = ^LambdaFunction<{->Any[*]}>(expressionSequence = $b.res->cast(@FunctionExpression))->routeFunction($a, ^Runtime(), $extensions, $debug);
                         print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez.functions->at(0)->asString()+'\n'));
-                        let res = $rez.functions.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val->match(
+                        let res = $rez.functions.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification).val->match(
                            [
                               e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, []).newExpression);,
                               f:FunctionExpression[1]|pair(list($r), $f->reprocess($r, $a, $mappings, []).newExpression);

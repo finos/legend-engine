@@ -86,15 +86,25 @@ function meta::pure::router::printer::asString(f:ValueSpecification[1], pref:Pre
                    v:VariableExpression[1] | '$'+$v.name,
                    s:SimpleFunctionExpression[1] | $s->asString($pref),
                    v:StoreMappingRoutedValueSpecification[1]|'['+$v.id+' '+if($v.propertyMapping->isEmpty(),|'',|'@'+$v.propertyMapping->map(p|$p.property.name->toOne()+'('+$p.sourceSetImplementationId+'->'+$p.targetSetImplementationId+')')->joinStrings(',')+'@ ')+$v.sets.id->joinStrings(', ')+'/'+$v.value->asString($pref)+']',
+                   v:PlatformRoutedValueSpecification[1]|'['+$v.id+' /'+$v.value->asString($pref)+']',
+                   v:ExternalFormatRoutedValueSpecification[1]|'['+$v.id+' /'+$v.value->asString($pref)+']',
                    r:NoSetRoutedValueSpecification[1]|'[Routed No Sets:'+$r.value->evaluateAndDeactivate()->asString($pref)+']',
                    f:FunctionRoutedValueSpecification[1]|'[Routed Func:'+$f.value->asString($pref)+']',
                    cs:ClassSetImplementationHolder[1]|'['+$cs.set.id+' '+$cs.value->asString($pref)+']',
-                   c:ClusteredValueSpecification[1]|if ($pref.useClusterIndex,
+                   c:StoreMappingClusteredValueSpecification[1]|if ($pref.useClusterIndex,
                                                         |'[Node Index:'+$pref.clusterIndex->indexOf($c)->toString()+']',
                                                         |let start = '{'+if($c.store->instanceOf(PlatformStore),|'Platform', |$c.store->toOne()->elementToPath())+'> ';
                                                          $start+$c.val->asString($pref)->replace('\n','\n'+space($start->length()))+'}';
                                                     );,
-                  t:TDSRoutedValueSpecification[1]|'[Table TDS'+$t.id+']'
+                   p:PlatformClusteredValueSpecification[1]|if($pref.useClusterIndex,
+                                                               |'[Node Index:'+$pref.clusterIndex->indexOf($p)->toString()+']',
+                                                               |'{Platform> '+$p.val->asString($pref)->replace('\n','\n'+space('{Platform>'->length()))+'}';
+                                                            );,
+                   p:ExternalFormatClusteredValueSpecification[1]|if($pref.useClusterIndex,
+                                                               |'[Node Index:'+$pref.clusterIndex->indexOf($p)->toString()+']',
+                                                               |'{ExternalFormat> '+$p.val->asString($pref)->replace('\n','\n'+space('{ExternalFormat>'->length()))+'}';
+                                                            );,
+                   t:TDSRoutedValueSpecification[1]|'[Table TDS'+$t.id+']'
                ]
             );
 }

@@ -132,7 +132,7 @@ function meta::external::shared::format::internalizeFunctionProcessor(fe:Functio
       checked           = $checked,
       tree              = $graphFetchTree,
       executionNodes    = generateSourceNodeFromFunctionExpression($fe),
-      fromCluster       = ^ClusteredValueSpecification(val = $fe, store = ^meta::pure::store::platform::metamodel::PlatformStore(package=::), s = meta::pure::store::platform::contract::platformStoreContract(), executable=true, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([])) //TODO: this should be updated once routing is uplifted to handle binding correctly
+      fromCluster       = ^PlatformClusteredValueSpecification(val = $fe, executable=true, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([])) //TODO: this should be updated once routing is uplifted to handle binding correctly
    );
 }
 
