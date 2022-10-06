@@ -14,12 +14,14 @@
 
 package org.finos.legend.engine.server.test.shared;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.dropwizard.Configuration;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jConfiguration;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TestServerConfiguration extends Configuration
 {
     public LegendPac4jConfiguration pac4j;
