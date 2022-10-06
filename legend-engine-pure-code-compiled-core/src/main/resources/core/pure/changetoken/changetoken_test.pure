@@ -1,0 +1,19 @@
+import meta::pure::changetoken::*;
+import meta::pure::constraints::functions::*;
+
+function <<test.Test>> meta::pure::changetoken::tests::testToString():Boolean[1]
+{
+  assertEquals(
+    'meta::pure::changetoken::AddField(fieldName="myNewField",fieldType="Number",'
+      + 'defaultValue=meta::pure::changetoken::ConstValue(value=100),safeCast=true,class="meta::domain::MyClass")',
+    ^AddField(
+      fieldName='myNewField', fieldType='Number', class='meta::domain::MyClass',
+      defaultValue=^ConstValue(value=100), safeCast=true)->toString()
+  );
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::testConstraint():Boolean[1]
+{
+  assertValidConstraint(Versions, [^KeyValue(key='versions', value=[^Version(version='1'), ^Version(version='2', prevVersion='1')])], 'linearVersions');
+  assertInvalidConstraint(Versions, [^KeyValue(key='versions', value=[^Version(version='1'), ^Version(version='2')])], 'linearVersions');
+}
