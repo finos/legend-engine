@@ -30,6 +30,9 @@ import java.util.Map;
 
 public class ServerConfiguration extends Configuration
 {
+    // This can be set to avoid Jetty session cookie name collision between multiple servers running on `localhost` during development
+    // See https://stackoverflow.com/questions/16789495/two-applications-on-the-same-server-use-the-same-jsessionid
+    public String sessionCookie;
     public LegendPac4jConfiguration pac4j;
     public DeploymentConfiguration deployment = new DeploymentConfiguration();
     public SwaggerBundleConfiguration swagger;

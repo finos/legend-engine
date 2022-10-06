@@ -13,6 +13,7 @@
     "resourcePackage": "org.finos.legend",
     "uriPrefix": "/"
   },
+  "sessionCookie": "LEGEND_ENGINE_JSESSIONID",
   "server": {
     "type": "simple",
     "applicationContextPath": "/",

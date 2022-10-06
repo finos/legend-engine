@@ -16,6 +16,7 @@
       }
     ]
   },
+  "sessionCookie": "LEGEND_ENGINE_JSESSIONID",
   "server": {
     "type": "simple",
     "applicationContextPath": "/",
