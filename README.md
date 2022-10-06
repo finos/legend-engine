@@ -15,7 +15,7 @@ Execution engine for Legend. It provides:
 
 - This applications uses Maven 3.6+ and JDK 11. Simply run `mvn install` to compile.
 - In order to start the server, please use the `Main` class `org.finos.legend.engine.server.Server` with the parameters: `server legend-engine-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json`.
-- You can test by trying http://127.0.0.1:6000 in a web browser. The swagger page can be accessed at http://127.0.0.1:6000/api/swagger
+- You can test by trying http://127.0.0.1:6300 in a web browser. The swagger page can be accessed at http://127.0.0.1:6000/api/swagger
 
 ### Starting Pure IDE
 
