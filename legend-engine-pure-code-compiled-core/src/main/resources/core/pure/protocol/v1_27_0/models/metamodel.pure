@@ -1,0 +1,835 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+//-----------
+// Metamodel
+//-----------
+import meta::protocols::pure::v1_27_0::metamodel::domain::*;
+
+Class meta::protocols::pure::v1_27_0::metamodel::SourceInformation
+{
+    sourceId : String[1];
+    mainLine: Integer[1];
+    mainColumn: Integer[1];
+    startLine: Integer[1];
+    startColumn: Integer[1];
+    endLine: Integer[1];
+    endColumn: Integer[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Domain
+{
+   classes : meta::protocols::pure::v1_27_0::metamodel::domain::Class[*];
+   associations : meta::protocols::pure::v1_27_0::metamodel::domain::Association[*];
+   enums : meta::protocols::pure::v1_27_0::metamodel::domain::Enumeration[*];
+   profiles : meta::protocols::pure::v1_27_0::metamodel::domain::Profile[*];
+   measures : meta::protocols::pure::v1_27_0::metamodel::domain::Measure[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+  _type : String[1];
+  <<equality.Key>> name : String[1];
+  <<equality.Key>> package : String[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::PackageableElementPointer
+{
+    type : meta::protocols::pure::v1_27_0::metamodel::PackageableElementType[0..1];
+    path : String[1];
+}
+
+Enum meta::protocols::pure::v1_27_0::metamodel::PackageableElementType
+{
+   CLASS,
+   PACKAGE,
+   STORE,
+   MAPPING,
+   SERVICE,
+   CACHE,
+   PIPELINE,
+   FLATTEN,
+   DIAGRAM,
+   DATASTORESPEC,
+   UNIT,
+   MEASURE
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::ExecutionContext
+{
+   queryTimeOutInSeconds: Integer[0..1];
+   enableConstraints: Boolean[0..1];
+     _type: String[1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::AuthenticationContext extends meta::protocols::pure::v1_27_0::metamodel::ExecutionContext
+{
+   runAs: String[0..1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::AnalyticsExecutionContext extends meta::protocols::pure::v1_27_0::metamodel::ExecutionContext
+{
+   useAnalytics: Boolean[1];
+   toFlowSetFunction: meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_27_0::metamodel::Runtime
+{
+   _type: String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::LegacyRuntime extends meta::protocols::pure::v1_27_0::metamodel::Runtime
+{
+   connections: meta::protocols::pure::v1_27_0::metamodel::runtime::Connection[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::EngineRuntime extends meta::protocols::pure::v1_27_0::metamodel::Runtime
+{
+    mappings:meta::protocols::pure::v1_27_0::metamodel::PackageableElementPointer[*];
+    connections: meta::protocols::pure::v1_27_0::metamodel::StoreConnections[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::StoreConnections
+{
+   store: meta::protocols::pure::v1_27_0::metamodel::PackageableElementPointer[1];
+   storeConnections: meta::protocols::pure::v1_27_0::metamodel::IdentifiedConnection[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::IdentifiedConnection
+{
+   id: String[1];
+   connection: meta::protocols::pure::v1_27_0::metamodel::runtime::Connection[1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   stereotypes : StereotypePtr[*];
+   taggedValues : meta::protocols::pure::v1_27_0::metamodel::domain::TaggedValue[*];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Profile extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+   stereotypes : String[*];
+   tags : String[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::StereotypePtr
+{
+   profile : String[1];
+   value : String[1];
+   profileSourceInformation: SourceInformation[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::TagPtr
+{
+   profile : String[1];
+   value : String[1];
+   profileSourceInformation: SourceInformation[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::PropertyPtr
+{
+   class : String[1];
+   property : String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::TaggedValue
+{
+   tag : meta::protocols::pure::v1_27_0::metamodel::domain::TagPtr[1];
+   value : String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Constraint
+{
+   name               : String[1];
+   functionDefinition : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+   externalId         : String[0..1];
+   enforcementLevel   : String[0..1];
+   sourceInformation  : SourceInformation[0..1];
+   messageFunction    : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Class extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement, meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   superTypes : String[*];
+   constraints : Constraint[*];
+   properties : meta::protocols::pure::v1_27_0::metamodel::domain::Property[*];
+   qualifiedProperties : meta::protocols::pure::v1_27_0::metamodel::domain::QualifiedProperty[*];
+   originalMilestonedProperties : meta::protocols::pure::v1_27_0::metamodel::domain::Property[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::MappingClass extends meta::protocols::pure::v1_27_0::metamodel::domain::Class
+{
+  setImplementation : 	meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping[0..1];
+  rootClass : meta::protocols::pure::v1_27_0::metamodel::domain::Class[0..1];
+  localProperties : meta::protocols::pure::v1_27_0::metamodel::domain::Property[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Association extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement, meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   properties : meta::protocols::pure::v1_27_0::metamodel::domain::Property[*];
+   qualifiedProperties : meta::protocols::pure::v1_27_0::metamodel::domain::QualifiedProperty[*];
+   originalMilestonedProperties : meta::protocols::pure::v1_27_0::metamodel::domain::Property[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Property extends meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   defaultValue : meta::protocols::pure::v1_27_0::metamodel::domain::DefaultValue[0..1];
+   name : String[1];
+   multiplicity : meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+   type : String[1];
+   propertyTypeSourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::QualifiedProperty extends meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   name : String[1];
+   parameters : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Variable[*];
+   returnType : String[1];
+   returnMultiplicity : meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+   body : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity
+{
+   <<equality.Key>> lowerBound : Integer[0..1];
+   <<equality.Key>> upperBound : Integer[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Enumeration extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement, meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   values : meta::protocols::pure::v1_27_0::metamodel::domain::EnumValue[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::EnumValue extends meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   value : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::DefaultValue extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement, meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   value :  meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[1];
+   sourceInformation : SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Measure extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+   canonicalUnit : meta::protocols::pure::v1_27_0::metamodel::domain::Unit[0..1];
+   nonCanonicalUnits : meta::protocols::pure::v1_27_0::metamodel::domain::Unit[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Unit extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+   measure : String[1];
+   conversionFunction : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   _type : String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Variable extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   name : String[1];
+   supportsStream : Boolean[0..1];
+   // To Remove
+   multiplicity : meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[0..1];
+   class : String[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::FunctionApplication extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   parameters : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::AppliedProperty extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::FunctionApplication
+{
+   property : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::AppliedFunction extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::FunctionApplication
+{
+   function : String[1];
+   fControl : String[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::UnknownAppliedFunction extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::application::FunctionApplication
+{
+   function : String[1];
+   returnType : String[1];
+   returnMultiplicity: meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   multiplicity : meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::KeyExpression extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   add : Boolean[0..1];
+   key: meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[1];
+   expression: meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[1];
+}
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::HackedClassValue extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PackageableElementPtr
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::EnumValue extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   fullPath : String[1];
+   value : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::TDSAggregateValue extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   name : String[1];
+   mapFn : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+   aggregateFn : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::TDSSortInformation extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   column : String[1];
+   direction : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::TDSColumnInformation extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   name: String[1];
+   columnFn: meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::AggregateValue extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   mapFn : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+   aggregateFn : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::OlapOperation extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::TdsOlapAggregation extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::OlapOperation
+{
+   function : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+   columnName : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::TdsOlapRank extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::OlapOperation
+{
+   function : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Whatever extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+   class : String[1];
+   values : Any[0..1];//Map<String, meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification>[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::List extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   values : Any[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PackageableElementPtr extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   fullPath : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RuntimeInstance extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   runtime : meta::protocols::pure::v1_27_0::metamodel::Runtime[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::ExecutionContextInstance extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   executionContext : meta::protocols::pure::v1_27_0::metamodel::ExecutionContext[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Path extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   name : String[1];
+   startType : String[1];
+   path : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PathElement[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Pair extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   first : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[1];
+   second : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PathElement extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PropertyPathElement extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PathElement
+{
+   property : String[1];
+   parameters : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+   parameters : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Variable[*];
+   body : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Collection extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   multiplicity : meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+   values : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::HackedUnit extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   unitType : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::UnitType extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   unitType : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::UnitInstance extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   unitType : String[1];
+   unitValue : Number[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PrimitiveTypeRef extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification
+{
+   name : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CInteger extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+   values : Integer[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CDecimal extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+   values : Decimal[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CString extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+   values : String[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CBoolean extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+   values : Boolean[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CFloat extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+   values : Float[*];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CDate extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::MulRawValue
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CDateTime extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CDate
+{
+   values : String[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CStrictDate extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CDate
+{
+   values : String[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CLatestDate extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::CDate
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::GraphFetchTree extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+    _type : String[1];
+    subTrees : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::GraphFetchTree[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RootGraphFetchTree extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::GraphFetchTree
+{
+   class : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::PropertyGraphFetchTree extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::GraphFetchTree
+{
+   property   : String[1];
+   parameters : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+   alias      : String[0..1];
+   subType    : String[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::AlloySerializationConfig extends meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RawValue
+{
+    _type    : String[1];
+
+    typeKeyName : String[1];
+    includeType: Boolean[0..1];
+    includeEnumType: Boolean[0..1];
+    removePropertiesWithNullValues: Boolean[0..1];
+    removePropertiesWithEmptySets: Boolean[0..1];
+    fullyQualifiedTypePath: Boolean[0..1];
+    includeObjectReference: Boolean[0..1];
+}
+
+Enum meta::protocols::pure::v1_27_0::metamodel::objectReference::AlloyObjectReferenceType
+{
+   Relational   
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::objectReference::AlloyObjectReference
+{
+   type                    : meta::protocols::pure::v1_27_0::metamodel::objectReference::AlloyObjectReferenceType[1];
+   pathToMapping           : String[1];
+   setId                   : String[1];
+   operationResolvedSetsId : String[*];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::store::Store extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+   includedStores:String[*];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::Mapping extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+   includedMappings:  meta::protocols::pure::v1_27_0::metamodel::mapping::MappingInclude[*];
+   classMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping[*];
+   associationMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::AssociationMapping[*];
+   enumerationMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::EnumerationMapping[*];
+   tests: meta::protocols::pure::v1_27_0::metamodel::mapping::MappingTest[0..*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::MappingTest
+{
+   name: String[1];
+   query: meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+   inputData: meta::protocols::pure::v1_27_0::metamodel::mapping::InputData[*];
+   assert: meta::protocols::pure::v1_27_0::metamodel::mapping::MappingTestAssert[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::InputData
+{
+   _type: String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::ObjectInputData extends meta::protocols::pure::v1_27_0::metamodel::mapping::InputData
+{
+   sourceClass: String[1];
+   data: String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::MappingTestAssert
+{
+   _type: String[1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::ExpectedOutputMappingTestAssert extends meta::protocols::pure::v1_27_0::metamodel::mapping::MappingTestAssert
+{
+   expectedOutput: String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::MappingInclude
+{
+   includedMapping: String[1];
+   sourceDatabasePath: String[0..1];
+   targetDatabasePath: String[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping
+{
+   id : String[1];
+   _type : String[1];
+   class : String[1];
+   root : Boolean[1];
+   extendsClassMappingId : String[0..1];
+   mappingClass: meta::protocols::pure::v1_27_0::metamodel::domain::MappingClass[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::AssociationMapping
+{
+   id : String[1];
+   _type : String[1];
+   association : String[1];
+   stores : String[*];
+}
+
+Enum meta::protocols::pure::v1_27_0::metamodel::mapping::MappingOperation
+{
+   STORE_UNION, ROUTER_UNION, INHERITANCE, MERGE
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::OperationClassMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping
+{
+   parameters : String[*];
+   operation : meta::protocols::pure::v1_27_0::metamodel::mapping::MappingOperation[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::MergeOperationClassMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::OperationClassMapping
+{
+   
+   validationFunction : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::AggregationAwareClassMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping
+{
+   mainSetImplementation:meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping[1];
+   propertyMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping[*];
+   aggregateSetImplementations: meta::protocols::pure::v1_27_0::metamodel::mapping::AggregateSetImplementationContainer[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::AggregateSetImplementationContainer
+{
+   index : Integer[1];
+   setImplementation: meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping[1];
+   aggregateSpecification: meta::protocols::pure::v1_27_0::metamodel::mapping::AggregateSpecification[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::AggregateSpecification
+{
+   canAggregate: Boolean[1];
+   groupByFunctions: meta::protocols::pure::v1_27_0::metamodel::mapping::GroupByFunctions[*];
+   aggregateValues: meta::protocols::pure::v1_27_0::metamodel::mapping::AggregateFunctions[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::GroupByFunctions
+{
+   groupByFn: 	meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::AggregateFunctions
+{
+    mapFn: 	meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+    aggregateFn: 	meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping
+{
+   _type : String[1];
+   property : PropertyPtr[1];
+   source : String[0..1];
+   target : String[1];
+   localMappingProperty : meta::protocols::pure::v1_27_0::metamodel::mapping::LocalMappingPropertyInfo[0..1];
+   sourceInformation: SourceInformation[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::LocalMappingPropertyInfo
+{
+    type : String[1];
+    multiplicity : meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::InlineEmbeddedPropertyMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping
+{
+   id : String[1];
+   setImplementationId : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::EnumerationMapping
+{
+   id : String[1];
+   sourceType: String[0..1];
+   enumeration : String[1];
+   enumValueMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMapping[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMapping
+{
+   enumValue : String[1];
+   sourceValues: meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingSourceValue[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingSourceValue
+{
+   _type: String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingStringSourceValue extends meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingSourceValue
+{
+   value: String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingIntegerSourceValue extends meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingSourceValue
+{
+   value: Integer[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingEnumSourceValue extends meta::protocols::pure::v1_27_0::metamodel::mapping::EnumValueMappingSourceValue
+{
+   enumeration: String[1];
+   value: String[1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::PureInstanceClassMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::ClassMapping
+{
+   srcClass : String[0..1];
+   propertyMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::PurePropertyMapping[*];
+   filter : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::PurePropertyMapping extends  meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping
+{
+   explodeProperty : Boolean[0..1];
+   enumMappingId : String[0..1];
+   transform : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::xStore::XStoreAssociationMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::AssociationMapping
+{
+   propertyMappings : meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::xStore::XStorePropertyMapping extends meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping
+{
+   crossExpression : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::AggregationAwarePropertyMapping extends  meta::protocols::pure::v1_27_0::metamodel::mapping::PropertyMapping
+{
+}
+
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::runtime::Connection
+{
+   _type: String[1];
+   element: String[1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::ModelConnection extends meta::protocols::pure::v1_27_0::metamodel::runtime::Connection
+{
+   input : meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::ModelInput[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::JsonModelConnection extends meta::protocols::pure::v1_27_0::metamodel::runtime::Connection
+{
+   class : String[1];
+   url   : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::XmlModelConnection extends meta::protocols::pure::v1_27_0::metamodel::runtime::Connection
+{
+   class : String[1];
+   url   : String[1];
+}
+
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::ModelChainConnection extends meta::protocols::pure::v1_27_0::metamodel::runtime::Connection
+{
+     mappings : String[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::ModelInput
+{
+    _type: String[1];
+   class : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::ModelStringInput extends meta::protocols::pure::v1_27_0::metamodel::mapping::modelToModel::ModelInput
+{
+   instances : String[*];
+}
+
+###Pure
+import meta::protocols::pure::v1_27_0::metamodel::executableMapping::*;
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::ExecutableMapping extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement
+{
+   tests : Test[1..*];
+   mapping : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::Test
+{
+    data : TestData[*];
+    asserts : TestAssert[1..*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::TestAssert
+{
+   expected : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+   inputs : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+   comparisonKey : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::Lambda[0..1];
+   comparisonType : ComparisonType[0..1];
+}
+
+Enum meta::protocols::pure::v1_27_0::metamodel::executableMapping::ComparisonType
+{
+   EQUALS,
+   SET_EQUALS
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::TestData
+{
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::SetBasedStoreTestData extends TestData
+{
+   store : String[1];
+   data : String[1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::ModelTestData extends TestData
+{
+   classTestData : ModelClassTestData[*];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::executableMapping::ModelClassTestData extends TestData
+{
+   class : String[1];
+   instances : String[*];
+}
+
+###Pure
+Class meta::protocols::pure::v1_27_0::metamodel::domain::Function extends meta::protocols::pure::v1_27_0::metamodel::PackageableElement, meta::protocols::pure::v1_27_0::metamodel::domain::AnnotatedElement
+{
+   preConstraints:meta::protocols::pure::v1_27_0::metamodel::domain::Constraint[*];
+   postConstraints:meta::protocols::pure::v1_27_0::metamodel::domain::Constraint[*];
+   returnType:String[1];
+   returnMultiplicity:meta::protocols::pure::v1_27_0::metamodel::domain::Multiplicity[1];
+   parameters : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Variable[*];
+   body : meta::protocols::pure::v1_27_0::metamodel::valueSpecification::ValueSpecification[*];
+
+}
