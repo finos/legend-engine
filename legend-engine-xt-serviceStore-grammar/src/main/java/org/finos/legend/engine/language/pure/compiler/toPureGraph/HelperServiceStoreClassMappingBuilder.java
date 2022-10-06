@@ -287,7 +287,7 @@ public class HelperServiceStoreClassMappingBuilder
         RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
         List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, processedClasses, context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), context)).toList();
 
         List<PropertyMapping> allPropertyMapping = Lists.mutable.empty();
         allPropertyMapping.addAll(primitivePropertyMappings);
@@ -322,7 +322,7 @@ public class HelperServiceStoreClassMappingBuilder
         propertyMapping._sourceSetImplementationId(sourceSetId);
         propertyMapping._targetSetImplementationId(id);
 
-        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, processedClasses, context)).toImmutable());
+        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, new HashSet<>(processedClasses), context)).toImmutable());
 
         embeddedSetImplementations.add(propertyMapping);
         return propertyMapping;

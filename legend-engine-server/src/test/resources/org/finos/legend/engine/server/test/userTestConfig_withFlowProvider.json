@@ -39,6 +39,7 @@
     "resourcePackage": "org.finos.legend",
     "uriPrefix": "/api"
   },
+  "sessionCookie": "LEGEND_ENGINE_JSESSIONID",
   "server": {
     "type": "simple",
     "applicationContextPath": "/",
@@ -46,7 +47,7 @@
     "connector": {
       "maxRequestHeaderSize": "32KiB",
       "type": "http",
-      "port": 6060
+      "port": 6300
     },
     "requestLog": {
       "appenders": [

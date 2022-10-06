@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.17.1-SNAPSHOT</version>
+    <version>3.17.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -188,8 +188,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.6.2</legend.pure.version>
-        <legend.shared.version>0.22.0</legend.shared.version>
+        <legend.pure.version>3.7.0</legend.pure.version>
+        <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -458,6 +458,7 @@
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
                 </configuration>
             </plugin>
             <plugin>

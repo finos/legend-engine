@@ -17,6 +17,7 @@ name: Trigger GCP build
 env:
   GCP_API_KEY: ${{ secrets.GCP_API_KEY }}
   GCP_BUILD_TRIGGER_SECRET: ${{ secrets.GCP_BUILD_TRIGGER_SECRET }}
+  GCP_REGION: us-east1
 
 on:
   workflow_dispatch: {}
@@ -47,9 +48,19 @@ jobs:
         uses: google-github-actions/setup-gcloud@v0
 
       - name: Get last build ID
-        run: echo "GCP_BUILD_ID=$(gcloud builds list --sort-by CREATE_TIME --limit 1 --format='value(id)')" >> $GITHUB_ENV
+        run: echo "GCP_BUILD_ID=$(gcloud builds list --region="${GCP_REGION}" --filter substitutions.TRIGGER_NAME='legend-engine-build-webhook' --sort-by create_time --format='value(id)' | tail -n 1)" >> $GITHUB_ENV
 
-      - name: Build logs
+      - name: Stream build logs
+        run: gcloud builds log --region="${GCP_REGION}" --stream '${{ env.GCP_BUILD_ID }}'
+
+      - name: Report GCP build status
         run: |
-          echo "Build logs for the triggered job are available here: https://storage.googleapis.com/finos-legend-engine-logs/log-${{ env.GCP_BUILD_ID }}.txt"
-          echo "All GCP build log are available here: https://console.cloud.google.com/storage/browser/finos-legend-engine-logs"
+          buildStatus=$(gcloud builds list --region="${GCP_REGION}" --filter id='${{ env.GCP_BUILD_ID }}' --format='value(status)')
+          
+          echo "Logs streaming ended with the build having a status of '${buildStatus}'"
+          echo "Check the full build logs at: https://storage.googleapis.com/finos-legend-engine-logs/log-${{ env.GCP_BUILD_ID }}.txt"
+          echo "All GCP build logs are available here: https://console.cloud.google.com/storage/browser/finos-legend-engine-logs"
+          
+          if [ $buildStatus != "SUCCESS" ]; then
+            exit 1
+          fi

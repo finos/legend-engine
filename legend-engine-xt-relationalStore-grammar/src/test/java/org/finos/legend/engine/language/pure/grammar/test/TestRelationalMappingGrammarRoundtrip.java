@@ -189,4 +189,58 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "  }\n" +
                 ")\n");
     }
+
+
+    @Test
+    public void testNestedJoinFromIncludedDatabase()
+
+    {
+        test("###Relational\n" +
+                "Database example::database\n" +
+                "(\n" +
+                "  include example::databaseInc\n" +
+                "\n" +
+                "  Schema exampleRoot\n" +
+                "  (\n" +
+                "    Table TableC\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "\n" +
+                "    View dbView\n" +
+                "    (\n" +
+                "      nameL: exampleSub.TableASub.name,\n" +
+                "      rootTable: [example::databaseInc]@AtoB > [example::database]@BtoC | exampleRoot.TableC.name\n" +
+                "    )\n" +
+                "    View dbViewIncTable\n" +
+                "    (\n" +
+                "      nameL: exampleRoot.TableC.name,\n" +
+                "      incTable: [example::database]@BtoC > [example::database]@AtoB | [example::databaseInc]exampleSub.TableASub.name\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join BtoC([example::databaseInc]exampleSub.TableBSub.id = exampleRoot.TableC.id)\n" +
+                ")\n" +
+                "\n" +
+                "Database example::databaseInc\n" +
+                "(\n" +
+                "  Schema exampleSub\n" +
+                "  (\n" +
+                "    Table TableASub\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "    Table TableBSub\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join AtoB(exampleSub.TableASub.id = exampleSub.TableBSub.id)\n" +
+                ")\n");
+
+    }
 }

@@ -21,7 +21,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionPlan
    serializer : Protocol[1];
    templateFunctions : String[*];
    rootExecutionNode : ExecutionNode[1];
-   authDependent: Boolean[1];
    kerberos: String [0..1];
    globalImplementationSupport : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
 }
@@ -35,6 +34,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ExecutionNode
    isChildrenExecutionParallelizable: Boolean[0..1];
    executionNodes : ExecutionNode[*];
    implementation : meta::protocols::pure::vX_X_X::metamodel::executionPlan::PlatformImplementation[0..1];
+   authDependent: Boolean[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput
@@ -47,6 +47,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableInput
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::AllocationExecutionNode extends ExecutionNode
 {
    varName : String[1];
+   realizeInMemory : Boolean[0..1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::PureExpressionPlatformExecutionNode extends ExecutionNode
