@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 public class AllocationExecutionNode extends ExecutionNode
 {
     public String varName;
+    public boolean realizeInMemory;
 
     @Override
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)

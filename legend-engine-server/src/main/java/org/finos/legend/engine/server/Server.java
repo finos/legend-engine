@@ -166,7 +166,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
-        environment.servlets().setSessionHandler(new SessionHandler());
+        SessionHandler sessionHandler = new SessionHandler();
+        if (serverConfiguration.sessionCookie != null)
+        {
+            sessionHandler.setSessionCookie(serverConfiguration.sessionCookie);
+        }
+        environment.servlets().setSessionHandler(sessionHandler);
         environment.servlets().addServletListeners(sessionTracker);
         environment.jersey().register(new SessionInfo(sessionTracker));
 
