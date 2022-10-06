@@ -1,3 +1,48 @@
-Class meta::pure::changetoken::ChangeToken {
-  
+Class <<typemodifiers.abstract>> meta::pure::changetoken::ChangeToken {
+}
+
+Class <<typemodifiers.abstract>> meta::pure::changetoken::ClassChangeToken extends meta::pure::changetoken::ChangeToken {
+  class: String[1]; // e.g. "meta::domain::ftdm::MyClass"
+}
+
+Class <<typemodifiers.abstract>> meta::pure::changetoken::FieldGetter {
+}
+
+Class meta::pure::changetoken::ConstValue extends meta::pure::changetoken::FieldGetter {
+  value: Any[1]; // e.g. 100 or "SomeValue"
+}
+
+Class <<typemodifiers.abstract>> meta::pure::changeToken::FieldReference {
+}
+
+Class meta::pure::changeToken::RelativeFieldReference extends meta::pure::changeToken::FieldReference {
+  path: String[1]; // e.g. "../../some/other/field"
+}
+
+Class meta::pure::changetoken::CopyValue extends meta::pure::changetoken::FieldGetter {
+  source: meta::pure::changeToken::FieldReference[1];
+}
+
+Class meta::pure::changetoken::AddField extends meta::pure::changetoken::ClassChangeToken {
+  fieldName: String[1];
+  fieldType: String[1]; // e.g. "Number" or "meta::domain::ftdm::MyClass"
+  defaultValue: meta::pure::changetoken::FieldGetter[1];
+}
+
+Class meta::pure::changetoken::RemoveField extends meta::pure::changetoken::ClassChangeToken {
+  fieldName: String[1];
+}
+
+Class meta::pure::changetoken::RenameField extends meta::pure::changetoken::ClassChangeToken {
+  oldFieldName: String[1];
+  newFieldName: String[1];
+}
+
+Class meta::pure::changetoken::ChangeFieldType extends meta::pure::changetoken::ClassChangeToken {
+  fieldName: String[1];
+  newFieldType: String[1];
+}
+
+function meta::pure::changetoken::toString(c:meta::pure::changetoken::ChangeToken[1]) : String[1] {
+  $c->type()->elementToPath() + '()';
 }
