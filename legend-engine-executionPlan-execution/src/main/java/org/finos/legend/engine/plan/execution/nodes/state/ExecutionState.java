@@ -45,7 +45,7 @@ public class ExecutionState
     public boolean inLake;
     public String allocationNodeName;
     public String authId;
-    public boolean transformAllocation;
+    public boolean realizeInMemory;
     public Span topSpan;
     public boolean realizeAllocationResults;
 
@@ -71,7 +71,7 @@ public class ExecutionState
         this.allocationNodeName = state.allocationNodeName;
         this.templateFunctions = state.templateFunctions;
         this.authId = state.authId;
-        this.transformAllocation = state.transformAllocation;
+        this.realizeInMemory = state.realizeInMemory;
         this.topSpan = state.topSpan;
         this.activities = state.activities;
         this.realizeAllocationResults = state.realizeAllocationResults;
@@ -114,7 +114,7 @@ public class ExecutionState
     public ExecutionState inLake(boolean inLake)
     {
         this.inLake = inLake;
-        this.transformAllocation = true;
+        this.realizeInMemory = true;
         return this;
     }
 
@@ -130,10 +130,10 @@ public class ExecutionState
         return setAuthUser(user, true);
     }
 
-    public ExecutionState setAuthUser(String user, boolean setTransformAllocation)
+    public ExecutionState setAuthUser(String user, boolean setRealizeInMemory)
     {
         this.authId = user;
-        this.transformAllocation = setTransformAllocation;
+        this.realizeInMemory = setRealizeInMemory;
         return this;
     }
 
@@ -187,6 +187,15 @@ public class ExecutionState
     public ExecutionState setGraphFetchCaches(List<GraphFetchCache> graphFetchCaches)
     {
         this.graphFetchCaches = graphFetchCaches;
+        return this;
+    }
+
+    public ExecutionState setRealizeInMemory(boolean realizeInMemory)
+    {
+        if (!this.realizeInMemory)
+        {
+            this.realizeInMemory = realizeInMemory;
+        }
         return this;
     }
 
