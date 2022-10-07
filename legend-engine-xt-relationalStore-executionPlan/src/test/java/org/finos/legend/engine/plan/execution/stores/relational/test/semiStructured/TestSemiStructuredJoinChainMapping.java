@@ -25,7 +25,7 @@ public class TestSemiStructuredJoinChainMapping extends AbstractTestSemiStructur
     @Test
     public void testSingleJoinInChain()
     {
-        String snowflakePlan = this.buildExecutionPlanString("joinChain::singleJoinInChain", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("joinChain::singleJoinInChain__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\")]\n" +
@@ -39,7 +39,7 @@ public class TestSemiStructuredJoinChainMapping extends AbstractTestSemiStructur
     @Test
     public void testMultipleJoinsInChain()
     {
-        String snowflakePlan = this.buildExecutionPlanString("joinChain::multipleJoinsInChain", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("joinChain::multipleJoinsInChain__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup1, String, \"\", \"\"), (Manager Manager Firm Legal Name Dup2, String, \"\", \"\")]\n" +

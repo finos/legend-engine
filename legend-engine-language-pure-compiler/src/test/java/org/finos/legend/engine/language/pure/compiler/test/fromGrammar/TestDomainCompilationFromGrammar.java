@@ -1517,7 +1517,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}"
         ).getTwo();
 
-        Function<?> f = model.getConcreteFunctionDefinition("test::f_test::A_1__String_1_", null);
+        Function<?> f = model.getConcreteFunctionDefinition("test::f_A_1__String_1_", null);
         Assert.assertTrue(f instanceof ConcreteFunctionDefinition);
         ConcreteFunctionDefinition<?> cfd = (ConcreteFunctionDefinition<?>) f;
         Assert.assertEquals("f_A_1__String_1_", cfd._name());
@@ -1655,7 +1655,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function test::f(a:test::A[1]):String[1]" +
                 "{" +
                 "   $a;" +
-                "}", "COMPILATION error at [1:75-76]: Error in function 'test::f_test::A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
+                "}", "COMPILATION error at [1:75-76]: Error in function 'test::f_A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
         );
     }
 
@@ -2320,7 +2320,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "} \n");
         PureModel pureModel = modelWithInput.getTwo();
 
-        String WALK_TREE = "main::walkTree_String_$2_MANY$__main::Person_MANY__String_MANY_";
+        String WALK_TREE = "main::walkTree_String_$2_MANY$__Person_MANY__String_MANY_";
 
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression fold = (SimpleFunctionExpression) walkTree._expressionSequence().getFirst();

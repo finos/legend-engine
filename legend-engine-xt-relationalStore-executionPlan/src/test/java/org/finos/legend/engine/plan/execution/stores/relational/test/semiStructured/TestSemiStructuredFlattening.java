@@ -26,7 +26,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredPrimitivePropertyFlattening()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFlattening", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFlattening__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
@@ -40,7 +40,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredComplexPropertyFlattening()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFlattening", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFlattening__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
@@ -54,7 +54,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredPrimitivePropertyArrayIndexing()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyArrayIndexing", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyArrayIndexing__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name 0, String, \"\", \"\"), (Firm Other Name 2, String, \"\", \"\")]\n" +
@@ -68,7 +68,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredComplexPropertyArrayIndexing()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyArrayIndexing", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyArrayIndexing__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address 0 Name, String, \"\", \"\"), (Firm Address 2 Name, String, \"\", \"\")]\n" +
@@ -82,7 +82,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredComplexPropertyFlatteningFollowedBySubType()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFlatteningFollowedBySubType", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFlatteningFollowedBySubType__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Line 0 Line No, Integer, \"\", \"\")]\n" +
@@ -96,7 +96,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyArrayIndexingFollowedBySubType", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyArrayIndexingFollowedBySubType__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address 0 Line 0 Line No, Integer, \"\", \"\")]\n" +
@@ -110,7 +110,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredPrimitivePropertyFiltering()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFiltering", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFiltering__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\")]\n" +
@@ -124,7 +124,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredPrimitivePropertyFilteringInProject()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFilteringInProject", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredPrimitivePropertyFilteringInProject__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +
@@ -139,7 +139,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Ignore
     public void testSemiStructuredComplexPropertyFiltering()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFiltering", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFiltering__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
     }
@@ -147,7 +147,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredComplexPropertyFilteringInProject()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFilteringInProject", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredComplexPropertyFilteringInProject__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name 1, String, \"\", \"\"), (Firm Address Name 2, String, \"\", \"\")]\n" +
@@ -161,7 +161,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredSubAggregation()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredSubAggregation", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredSubAggregation__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Names, String, \"\", \"\")]\n" +
@@ -175,7 +175,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredSubAggregationDeep()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredSubAggregationDeep", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredSubAggregationDeep__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Line No Sum, Integer, \"\", \"\")]\n" +
@@ -189,7 +189,7 @@ public class TestSemiStructuredFlattening extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredMultiFlatten()
     {
-        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredMultiFlatten", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredMultiFlatten__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\"), (Firm Address Line 0 No, Integer, \"\", \"\"), (Firm Address Name A, String, \"\", \"\"), (Firm Other Name, String, \"\", \"\")]\n" +

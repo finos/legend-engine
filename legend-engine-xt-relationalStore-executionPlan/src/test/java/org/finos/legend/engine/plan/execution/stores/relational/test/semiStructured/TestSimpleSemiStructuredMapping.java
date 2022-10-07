@@ -28,7 +28,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSingleSemiStructuredPropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::singleSemiStructuredPropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::singleSemiStructuredPropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Firm Legal Name, String, \"\", \"\")]\n" +
@@ -38,7 +38,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::singleSemiStructuredPropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::singleSemiStructuredPropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Firm X\n" +
                 "Firm X\n" +
                 "Firm X\n" +
@@ -51,7 +51,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testCombinedPrimitiveAndSemiStructuredPropertyAccessParallel()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::combinedPrimitiveAndSemiStructuredPropertyAccessParallel", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::combinedPrimitiveAndSemiStructuredPropertyAccessParallel__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\")]\n" +
@@ -61,7 +61,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::combinedPrimitiveAndSemiStructuredPropertyAccessParallel", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::combinedPrimitiveAndSemiStructuredPropertyAccessParallel__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,Firm X\n" +
                 "John,Firm X\n" +
                 "John,Firm X\n" +
@@ -74,7 +74,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testCombinedPrimitiveAndSemiStructuredPropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::combinedPrimitiveAndSemiStructuredPropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::combinedPrimitiveAndSemiStructuredPropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Out Col, String, \"\", \"\")]\n" +
@@ -84,7 +84,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::combinedPrimitiveAndSemiStructuredPropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::combinedPrimitiveAndSemiStructuredPropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter : Firm X\n" +
                 "John : Firm X\n" +
                 "John : Firm X\n" +
@@ -97,7 +97,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testCombinedComplexAndSemiStructuredPropertyAccessParallel()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::combinedComplexAndSemiStructuredPropertyAccessParallel", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::combinedComplexAndSemiStructuredPropertyAccessParallel__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Manager First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\")]\n" +
@@ -107,7 +107,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::combinedComplexAndSemiStructuredPropertyAccessParallel", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::combinedComplexAndSemiStructuredPropertyAccessParallel__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("John,Firm X\n" +
                 "Anthony,Firm X\n" +
                 "John,Firm X\n" +
@@ -120,7 +120,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testCombinedComplexAndSemiStructuredPropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::combinedComplexAndSemiStructuredPropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::combinedComplexAndSemiStructuredPropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Out Col, String, \"\", \"\")]\n" +
@@ -130,7 +130,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::combinedComplexAndSemiStructuredPropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::combinedComplexAndSemiStructuredPropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("John : Firm X\n" +
                 "Anthony : Firm X\n" +
                 "John : Firm X\n" +
@@ -143,7 +143,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testNestedSemiStructuredPropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::nestedSemiStructuredPropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::nestedSemiStructuredPropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Firm Address Name, String, \"\", \"\")]\n" +
@@ -153,7 +153,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::nestedSemiStructuredPropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::nestedSemiStructuredPropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("A1\n" +
                 "A1\n" +
                 "A1\n" +
@@ -166,7 +166,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testMultipleSemiStructuredPropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::multipleSemiStructuredPropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::multipleSemiStructuredPropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Firm Legal Name, String, \"\", \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
@@ -176,7 +176,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::multipleSemiStructuredPropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::multipleSemiStructuredPropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Firm X,A1\n" +
                 "Firm X,A1\n" +
                 "Firm X,A1\n" +
@@ -189,7 +189,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testMultipleSemiStructuredPropertyAccessCombined()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::multipleSemiStructuredPropertyAccessCombined", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::multipleSemiStructuredPropertyAccessCombined__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Firm Legal Name And Address Name, String, \"\", \"\")]\n" +
@@ -199,7 +199,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::multipleSemiStructuredPropertyAccessCombined", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::multipleSemiStructuredPropertyAccessCombined__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Firm XA1\n" +
                 "Firm XA1\n" +
                 "Firm XA1\n" +
@@ -212,7 +212,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testFilterWithSemiStructuredProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::filterWithSemiStructuredProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::filterWithSemiStructuredProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
@@ -222,7 +222,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::filterWithSemiStructuredProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::filterWithSemiStructuredProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter\n" +
                 "John\n" +
                 "John\n" +
@@ -232,7 +232,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testGroupByWithSemiStructuredProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::groupByWithSemiStructuredProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::groupByWithSemiStructuredProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Address, String, \"\", \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
@@ -242,7 +242,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::groupByWithSemiStructuredProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::groupByWithSemiStructuredProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("A1,Peter;John;John;Anthony\n" +
                 "A2,Fabrice\n" +
                 "A3,Oliver;David\n", h2Result.replace("\r\n", "\n"));
@@ -251,7 +251,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSortByWithSemiStructuredProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::sortByWithSemiStructuredProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::sortByWithSemiStructuredProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
@@ -261,7 +261,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::sortByWithSemiStructuredProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::sortByWithSemiStructuredProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Fabrice\n" +
                 "Oliver\n" +
                 "David\n" +
@@ -274,7 +274,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testIsEmptyCheckOnSemiStructuredPrimitivePropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::isEmptyCheckOnSemiStructuredPrimitivePropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::isEmptyCheckOnSemiStructuredPrimitivePropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Street, String, \"\", \"\")]\n" +
@@ -284,7 +284,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::isEmptyCheckOnSemiStructuredPrimitivePropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::isEmptyCheckOnSemiStructuredPrimitivePropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,S1\n" +
                 "John,S1\n" +
                 "John,S1\n" +
@@ -297,7 +297,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::isEmptyCheckOnSemiStructuredPropertyAccessAfterAt", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::isEmptyCheckOnSemiStructuredPropertyAccessAfterAt__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (First Address Line, String, \"\", \"\")]\n" +
@@ -307,7 +307,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::isEmptyCheckOnSemiStructuredPropertyAccessAfterAt", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::isEmptyCheckOnSemiStructuredPropertyAccessAfterAt__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,D3\n" +
                 "John,D3\n" +
                 "John,D3\n" +
@@ -320,7 +320,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredDifferentDataTypePropertyAccess()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredDifferentDataTypePropertyAccess", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredDifferentDataTypePropertyAccess__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Firm Employee Count, Integer, \"\", \"\"), (Firm MNC, Boolean, \"\", \"\"), (Firm Est Date, StrictDate, \"\", \"\"), (Firm Last Update, DateTime, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n" +
@@ -330,7 +330,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::semiStructuredDifferentDataTypePropertyAccess", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::semiStructuredDifferentDataTypePropertyAccess__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
                 "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
                 "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
@@ -343,7 +343,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredArrayElementAccessPrimitive()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredArrayElementAccessPrimitive", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredArrayElementAccessPrimitive__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Other Name 0, String, \"\", \"\"), (Firm Other Name 1, String, \"\", \"\")]\n" +
@@ -353,7 +353,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::semiStructuredArrayElementAccessPrimitive", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::semiStructuredArrayElementAccessPrimitive__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,O1,O2\n" +
                 "John,O1,O2\n" +
                 "John,O1,O2\n" +
@@ -366,7 +366,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredArrayElementAccessComplex()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredArrayElementAccessComplex", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredArrayElementAccessComplex__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Line 0, String, \"\", \"\"), (Firm Address Line 1, String, \"\", \"\"), (Firm Address Line 2, String, \"\", \"\"), (Firm Address Line 3, String, \"\", \"\")]\n" +
@@ -376,7 +376,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::semiStructuredArrayElementAccessComplex", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::semiStructuredArrayElementAccessComplex__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,D1,D2,D3,\n" +
                 "John,D1,D2,D3,\n" +
                 "John,D1,D2,D3,\n" +
@@ -389,7 +389,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSemiStructuredPropertyAccessAtNestedProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredPropertyAccessAtNestedProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::semiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Manager Firm Name, String, \"\", \"\"), (Manager Manager Firm Name, String, \"\", \"\"), (Manager Manager Manager Firm Name, String, \"\", \"\")]\n" +
@@ -399,7 +399,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::semiStructuredPropertyAccessAtNestedProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::semiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,Firm X,Firm X,Firm X,\n" +
                 "John,Firm X,Firm X,,\n" +
                 "John,Firm X,Firm X,Firm X,\n" +
@@ -412,7 +412,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testFilterWithSemiStructuredPropertyAccessAtNestedProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::filterWithSemiStructuredPropertyAccessAtNestedProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::filterWithSemiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
@@ -422,7 +422,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::filterWithSemiStructuredPropertyAccessAtNestedProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::filterWithSemiStructuredPropertyAccessAtNestedProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter\n" +
                 "John\n", h2Result.replace("\r\n", "\n"));
     }
@@ -430,7 +430,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testIfElseLogicOnEnumProperties()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::ifElseLogicOnEnumProperties", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::ifElseLogicOnEnumProperties__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Enum Return, simple::model::EntityType, \"\", \"\")]\n" +
@@ -440,7 +440,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::ifElseLogicOnEnumProperties", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::ifElseLogicOnEnumProperties__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Organization\n" +
                 "Organization\n" +
                 "Organization\n" +
@@ -453,7 +453,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testFilterOnEnumPropertyWithEnumConst()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::filterOnEnumPropertyWithEnumConst", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::filterOnEnumPropertyWithEnumConst__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
@@ -463,7 +463,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::filterOnEnumPropertyWithEnumConst", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::filterOnEnumPropertyWithEnumConst__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter\n" +
                 "John\n" +
                 "John\n" +
@@ -473,7 +473,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testFilterOnEnumPropertyWithStringConst()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::filterOnEnumPropertyWithStringConst", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::filterOnEnumPropertyWithStringConst__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
@@ -483,7 +483,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::filterOnEnumPropertyWithStringConst", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::filterOnEnumPropertyWithStringConst__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter\n" +
                 "John\n" +
                 "John\n" +
@@ -493,7 +493,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testGroupByOnEnumProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::groupByOnEnumProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::groupByOnEnumProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(Address, simple::model::EntityType, \"\", \"\"), (Names, String, VARCHAR(200), \"\")]\n" +
@@ -503,7 +503,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::groupByOnEnumProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::groupByOnEnumProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals(",Fabrice\n" +
                 "Company,Oliver;David\n" +
                 "Organization,Peter;John;John;Anthony\n", h2Result.replace("\r\n", "\n"));
@@ -512,7 +512,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
     @Test
     public void testSortByOnEnumProperty()
     {
-        String snowflakePlan = this.buildExecutionPlanString("simple::sortByOnEnumProperty", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("simple::sortByOnEnumProperty__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\")]\n" +
@@ -522,7 +522,7 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("simple::sortByOnEnumProperty", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("simple::sortByOnEnumProperty__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Fabrice\n" +
                 "Oliver\n" +
                 "David\n" +
