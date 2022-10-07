@@ -1,0 +1,326 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::executionPlan::*;
+import meta::protocols::pure::v1_27_0::transformation::fromPureGraph::runtime::*;
+import meta::protocols::*;
+import meta::protocols::pure::v1_27_0::transformation::fromPureGraph::connection::*;
+import meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::*;
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformPlan(sourcePlan:meta::pure::executionPlan::ExecutionPlan[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::ExecutionPlan[1]
+{
+   ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::ExecutionPlan
+   (
+      serializer = ^Protocol(name='pure', version='v1_27_0'),
+      templateFunctions = $sourcePlan.processingTemplateFunctions,
+      kerberos = $sourcePlan.kerberos,
+      rootExecutionNode = $sourcePlan.rootExecutionNode->transformNode($sourcePlan.mapping, $extensions),
+      globalImplementationSupport = $sourcePlan.globalImplementationSupport->map(impl | $impl->transformPlatformGlobalImplementation())
+   )
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformNode(node:meta::pure::executionPlan::ExecutionNode[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::ExecutionNode[1]
+{
+   let n = $node->match($extensions.serializerExtension('v1_27_0')->cast(@meta::protocols::pure::v1_27_0::extension::SerializerExtension_v1_27_0).transfers_executionPlan_transformNode->map(f|$f->eval($mapping, $extensions))->concatenate(
+      [
+         
+         rel:meta::pure::mapping::modelToModel::ModelToModelExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::ModelToModelExecutionNode(
+               _type = 'm2m',
+               resultType = $rel.resultType->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+               resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               func = $rel.fd->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::transformLambda($extensions),
+               jsonPropertyPaths = $rel.jsonPropertyPaths->map(j|$j->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::transformLambda($extensions)),
+               pathToMapping = $rel.mapping->elementToPath()->toOne(),
+               pathToClasses = $rel.classes->map(c|$c->elementToPath()),
+               connection = $rel.connection->cast(@meta::pure::mapping::modelToModel::ModelConnection)->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::connection::transformModelConnection(),
+               pureModelContextData = $rel.mapping->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::buildBasePureModelFromMapping( {m:meta::pure::mapping::Mapping[1], p:	meta::protocols::Protocol[1] |[]}, $extensions).second
+         ),
+         platform:meta::pure::executionPlan::PureExpressionPlatformExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::PureExpressionPlatformExecutionNode(
+               _type='pureExp',
+               resultType=$platform.resultType->transformResultType($mapping, $extensions),
+               pure = $platform.expression->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], newMap([])->cast(@Map<String, List<Any>>), $extensions)
+            ),
+         platform:meta::pure::executionPlan::PlatformUnionExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::PlatformUnionExecutionNode(
+              _type='platformUnion',
+              resultType=$platform.resultType->transformResultType($mapping, $extensions)
+            ),
+         platform:meta::pure::executionPlan::PlatformMergeExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::PlatformMergeExecutionNode(
+              _type='platformMerge',
+              resultType=$platform.resultType->transformResultType($mapping, $extensions)
+            ),
+         cons:meta::pure::executionPlan::ConstantExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::ConstantExecutionNode(
+               _type='constant',
+               resultType=$cons.resultType->transformResultType($mapping, $extensions),
+               values=$cons.values->map(v | $v->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformAny([], newMap([]->cast(@Pair<String,List<Any>>)), PureOne, $extensions))
+            ),
+         seq:meta::pure::executionPlan::SequenceExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::SequenceExecutionNode(
+               _type = 'sequence',
+               resultType = $seq.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $seq.resultSizeRange->isEmpty()->if(|[],|$seq.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity())
+            ),
+         seq:meta::pure::executionPlan::MultiResultSequenceExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::MultiResultSequenceExecutionNode(
+               _type = 'multiResultSequence',
+               resultType = $seq.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $seq.resultSizeRange->isEmpty()->if(|[],|$seq.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity())
+            ),
+         agg:meta::pure::mapping::aggregationAware::AggregationAwareExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::AggregationAwareExecutionNode(
+               _type = 'aggregationAware',
+               resultType = $agg.resultType->transformResultType($mapping, $extensions),
+               aggregationAwareActivity = $agg.aggregationAwareActivity
+            ),
+         alloc:meta::pure::executionPlan::AllocationExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::AllocationExecutionNode(
+               _type = 'allocation',
+               resultType = $alloc.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $alloc.resultSizeRange->isEmpty()->if(|[],|$alloc.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               varName = $alloc.varName,
+               realizeInMemory = $alloc.realizeInMemory
+            ),
+         exp:meta::pure::executionPlan::FunctionParametersValidationNode[1]|
+           ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::FunctionParametersValidationNode(
+              _type = 'function-parameters-validation',
+              resultType = $exp.resultType->transformResultType($mapping, $extensions),
+              functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::v1_27_0::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()))),
+              parameterValidationContext = $exp.parameterValidationContext->map(p | $p->match([
+                                                                              e:meta::pure::executionPlan::EnumValidationContext[1] | ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::EnumValidationContext(varName = $e.varName, validEnumValues = $e.validEnumValues, _type = 'enumValidationContext')
+                                                                            ]))
+
+            ),
+         g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
+            (
+               _type = 'globalGraphFetchExecutionNode',
+               resultType = $g.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               graphFetchTree = $g.graphFetchTree->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
+               store = $g.store->elementToPath(),
+               children = $g.children->map(s | $s->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode),
+               localGraphFetchExecutionNode = $g.localGraphFetchExecutionNode->transformNode($mapping, $extensions)->cast(@meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::LocalGraphFetchExecutionNode),
+               parentIndex = $g.parentIndex,
+               xStorePropertyMapping = $g.xStorePropertyMapping->map(x | $x->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions)),
+               enableConstraints = $g.enableConstraints,
+               checked = $g.checked,
+               xStorePropertyFetchDetails = $g.xStorePropertyFetchDetails->map(x |
+                  ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::XStorePropertyFetchDetails
+                  (
+                     supportsCaching = $x.supportsCaching,
+                     propertyPath = $x.propertyPath,
+                     sourceMappingId = $x.sourceMappingId,
+                     sourceSetId = $x.sourceSetId,
+                     targetMappingId = $x.targetMappingId,
+                     targetSetId = $x.targetSetId,
+                     targetPropertiesOrdered = $x.targetPropertiesOrdered,
+                     subTree = $x.subTree
+                  )
+               )
+            ),
+         e:meta::pure::executionPlan::ErrorExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::ErrorExecutionNode
+            (
+               _type = 'error',
+               message = $e.message,
+               resultType = $e.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $e.resultSizeRange->isEmpty()->if(|[],|$e.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity())
+            ),
+         f:meta::pure::executionPlan::FreeMarkerConditionalExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::FreeMarkerConditionalExecutionNode(
+               freeMarkerBooleanExpression = $f.freeMarkerBooleanExpression,
+               trueBlock = $f.trueBlock->transformNode($mapping, $extensions),
+               falseBlock = if($f.falseBlock->isEmpty(),|[],|$f.falseBlock->toOne()->transformNode($mapping, $extensions)),
+               _type = 'freeMarkerConditionalExecutionNode',
+               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity())
+            ),
+         v:meta::pure::executionPlan::VariableResolutionExecutionNode[1]|  
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::VariableResolutionExecutionNode(
+                _type      = 'varResolution',
+                resultType = $v.resultType->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                varName    = $v.varName
+            ),
+         f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::StoreStreamReadingExecutionNode(
+               _type = 'storeStreamReading',
+               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               graphFetchTree = $f.graphFetchTree->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)->cast(@meta::protocols::pure::v1_27_0::metamodel::valueSpecification::raw::RootGraphFetchTree),
+               store = $f.store->match($extensions.serializerExtension('v1_27_0')->cast(@meta::protocols::pure::v1_27_0::extension::SerializerExtension_v1_27_0).transfers_executionPlan_transformNode_StoreStreamReadingExecutionNode->concatenate([
+                  any: Any[*] | []
+               ])->toOneMany()),
+               connection = $f.connection->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::runtime::transformConnection($extensions),
+               enableConstraints = $f.enableConstraints,
+               checked = $f.checked
+            ),
+         f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryCrossStoreGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryCrossStoreGraphFetchExecutionNode(
+               _type = 'inMemoryCrossStoreGraphFetch',
+               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               nodeIndex = $f.nodeIndex,
+               parentIndex = $f.parentIndex,
+               graphFetchTree = $f.graphFetchTree->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
+               batchSize = $f.batchSize,
+               checked = $f.checked,
+               xStorePropertyMapping = $f.xStorePropertyMapping->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::mapping::xStore::transformXStorePropertyMapping($mapping, $extensions),
+               supportsBatching = $f.supportsBatching,
+               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
+            ),
+         f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryRootGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryRootGraphFetchExecutionNode(
+               _type = 'inMemoryRootGraphFetch',
+               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               nodeIndex = $f.nodeIndex,
+               parentIndex = $f.parentIndex,
+               graphFetchTree = $f.graphFetchTree->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
+               batchSize = $f.batchSize,
+               checked = $f.checked,
+               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
+            ),
+         f:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryPropertyGraphFetchExecutionNode[1]|
+            ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryPropertyGraphFetchExecutionNode(
+               _type = 'inMemoryPropertyGraphFetch',
+               resultType = $f.resultType->transformResultType($mapping, $extensions),
+               resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+               nodeIndex = $f.nodeIndex,
+               parentIndex = $f.parentIndex,
+               graphFetchTree = $f.graphFetchTree->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
+               children = $f.children->map(x | $x->transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_27_0::metamodel::executionPlan::graphFetch::store::inMemory::InMemoryGraphFetchExecutionNode)
+            )
+      ])->toOneMany()
+   );
+
+   ^$n(
+      requiredVariableInputs = $node.requiredVariableInputs->map(s | $s->transformSource()),
+      executionNodes  = $node.executionNodes->map(s|$s->transformNode($mapping, $extensions)),
+      implementation  = $node.implementation->map(impl | $impl->transformPlatformNodeImplementation()),
+      authDependent = $node.authDependent
+   );
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformPlatformGlobalImplementation(impl: meta::pure::executionPlan::PlatformImplementation[1]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::PlatformImplementation[1]
+{
+   $impl->match([
+      javaImpl:JavaPlatformImplementation[1] | ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::JavaPlatformImplementation
+                                                (
+                                                   _type = 'java',
+                                                   classes = $javaImpl.classes->map({c |
+                                                      ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::JavaClass
+                                                       (
+                                                          package = $c.package,
+                                                          name = $c.name,
+                                                          source = $c.source,
+                                                          byteCode = $c.byteCode
+                                                       )
+                                                   })
+                                                )
+                                   ]
+                                )
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformPlatformNodeImplementation(impl: meta::pure::executionPlan::PlatformImplementation[1]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::PlatformImplementation[1]
+{
+   $impl->match([
+      javaImpl:JavaPlatformImplementation[1] | ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::JavaPlatformImplementation
+                                                (
+                                                   _type = 'java',
+                                                   executionClassFullName = $javaImpl.executionClassFullName,
+                                                   executionMethodName    = $javaImpl.executionMethodName
+                                                )
+                                   ]
+                                )
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformEnumMapping(e:meta::pure::mapping::EnumerationMapping<Any>[1]):Map<String,List<String>>[1]
+{
+   $e.enumValueMappings->map(e|pair($e.enum->id(), list($e.sourceValues->map(s|$s->toString()))))->newMap();
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformSetImplementation(setImplementation:meta::pure::mapping::SetImplementation[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::SetImplementationInfo[1]
+{
+   let propertyMappings = $setImplementation->cast(@meta::pure::mapping::InstanceSetImplementation).allPropertyMappings()
+                                    ->filter(pm|($pm.localMappingProperty->isEmpty() || $pm.localMappingProperty==false) &&
+                                                $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType)
+                                    );
+
+   ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::SetImplementationInfo
+   (
+      class = $setImplementation.class->elementToPath(),
+      mapping=$setImplementation.parent->elementToPath(),
+      id=$setImplementation.id,
+      propertyMappings = $propertyMappings->map(p|^meta::protocols::pure::v1_27_0::metamodel::executionPlan::PropertyMapping
+                                                 (
+                                                    property = $p.property.name->toOne(),
+                                                    type = $p.property->genericType().typeArguments->at(1).rawType->toOne()->elementToPath(),
+                                                    enumMapping = $extensions.serializerExtension('v1_27_0')->cast(@meta::protocols::pure::v1_27_0::extension::SerializerExtension_v1_27_0).transfers_executionPlan_transformSetImplementation
+                                                                        ->filter(v|$v.first->eval($p))->map(x|$x.second->eval($p))->first()
+                                                 )
+                                                 
+                                            )
+   );
+
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformResultType(rType:meta::pure::executionPlan::ResultType[1], mapping:meta::pure::mapping::Mapping[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::ResultType[1]
+{
+   $rType->match(
+      $extensions.serializerExtension('v1_27_0')->cast(@meta::protocols::pure::v1_27_0::extension::SerializerExtension_v1_27_0).transfers_executionPlan_transformResultType->map(f|$f->eval($mapping, $extensions))->concatenate([
+         partialClass:meta::pure::executionPlan::PartialClassResultType[1]|^meta::protocols::pure::v1_27_0::metamodel::executionPlan::PartialClassResultType
+                                                                            (
+                                                                              _type = 'partialClass',
+                                                                               class = $partialClass.type->elementToPath(),
+                                                                               setImplementations=$partialClass.setImplementations->map(s|$s->transformSetImplementation($extensions)),
+                                                                               propertiesWithParameters = $partialClass.propertiesWithParameters->map(x | ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::PropertyWithParameters(property = $x.property.name->toOne(), parameters = $x.parameters->map(x | $x->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String,List<Any>>(), $extensions))))
+                                                                            ),
+         class:meta::pure::executionPlan::ClassResultType[1]|^meta::protocols::pure::v1_27_0::metamodel::executionPlan::ClassResultType
+                                                             (
+                                                                _type='class',
+                                                                class = $class.type->elementToPath(),
+                                                                setImplementations=$class.setImplementations->map(s|$s->transformSetImplementation($extensions))
+                                                             ),
+         void:meta::pure::executionPlan::VoidResultType[1]|^meta::protocols::pure::v1_27_0::metamodel::executionPlan::VoidResultType
+                                                             (
+                                                                _type='void'
+                                                             ),
+         rt:meta::pure::executionPlan::DataTypeResultType[1]|^meta::protocols::pure::v1_27_0::metamodel::executionPlan::DataTypeResultType
+                                                              (
+                                                                 _type='dataType',
+                                                                 dataType=$rt.type->elementToPath()
+                                                              ),
+         rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::v1_27_0::metamodel::executionPlan::DataTypeResultType
+                                                      (
+                                                         _type='dataType',
+                                                         dataType=$rt.type->elementToPath()
+                                                      )
+      ])->toOneMany()
+   );
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::executionPlan::transformSource(source:meta::pure::executionPlan::VariableInput[1]):meta::protocols::pure::v1_27_0::metamodel::executionPlan::VariableInput[1]
+{
+   ^meta::protocols::pure::v1_27_0::metamodel::executionPlan::VariableInput(
+     name = $source.name,
+     type = $source.type->elementToPath(),
+     multiplicity = $source.multiplicity->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::domain::transformMultiplicity()
+   )
+}
+
