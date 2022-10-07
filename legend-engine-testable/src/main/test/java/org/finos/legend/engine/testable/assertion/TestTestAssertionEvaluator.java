@@ -12,7 +12,7 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.testable.service.assertion;
+package org.finos.legend.engine.testable.assertion;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -25,12 +25,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
+import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Collections;
 
-public class TestServiceTestAssertionEvaluator
+public class TestTestAssertionEvaluator
 {
     @Test
     public void testEqualToAssertionWithConstantResult()
@@ -43,7 +44,7 @@ public class TestServiceTestAssertionEvaluator
         EqualTo equalTo = new EqualTo();
         equalTo.expected = pureInteger;
 
-        AssertionStatus assertionStatus = equalTo.accept(new ServiceTestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalTo.accept(new TestAssertionEvaluator(constantResult));
 
         Assert.assertTrue(assertionStatus instanceof AssertPass);
     }
@@ -64,7 +65,7 @@ public class TestServiceTestAssertionEvaluator
         EqualTo equalTo = new EqualTo();
         equalTo.expected = collection;
 
-        AssertionStatus assertionStatus = equalTo.accept(new ServiceTestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalTo.accept(new TestAssertionEvaluator(constantResult));
 
         Assert.assertTrue(assertionStatus instanceof AssertPass);
     }
@@ -85,7 +86,7 @@ public class TestServiceTestAssertionEvaluator
         EqualTo equalTo = new EqualTo();
         equalTo.expected = collection;
 
-        AssertionStatus assertionStatus = equalTo.accept(new ServiceTestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalTo.accept(new TestAssertionEvaluator(constantResult));
 
         Assert.assertTrue(assertionStatus instanceof AssertFail);
         Assert.assertEquals("Expected : [1, 2], Found : [1, 5]", ((AssertFail) assertionStatus).message);
@@ -103,7 +104,7 @@ public class TestServiceTestAssertionEvaluator
         EqualToJson equalToJson = new EqualToJson();
         equalToJson.expected = data;
 
-        AssertionStatus assertionStatus = equalToJson.accept(new ServiceTestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
 
         Assert.assertTrue(assertionStatus instanceof AssertPass);
     }
@@ -121,7 +122,7 @@ public class TestServiceTestAssertionEvaluator
         equalToJson.id = "assert1";
         equalToJson.expected = data;
 
-        AssertionStatus assertionStatus = equalToJson.accept(new ServiceTestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
 
         Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", assertionStatus.id);

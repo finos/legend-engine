@@ -21,7 +21,10 @@ import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExten
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 
 import java.io.Closeable;
@@ -56,6 +59,18 @@ public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExten
             };
 
             return Optional.of(Tuples.pair(testConnection, Collections.singletonList(closeable)));
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store testStore, EmbeddedData data, List<DataElement> dataElementList)
+    {
+        if (testStore instanceof ServiceStore)
+        {
+            ServiceStoreConnection testConnection = new ServiceStoreConnection();
+            testConnection.element = testStore.getPath();
+            return this.tryBuildTestConnection(testConnection, data);
         }
         return Optional.empty();
     }

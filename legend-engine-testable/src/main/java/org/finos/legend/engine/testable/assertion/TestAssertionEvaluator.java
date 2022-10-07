@@ -12,35 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.testable.service.assertion;
+package org.finos.legend.engine.testable.assertion;
 
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.protocol.pure.v1.extension.TestAssertionEvaluator;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
-import org.finos.legend.engine.testable.service.helper.PrimitiveValueSpecificationToObjectVisitor;
+import org.finos.legend.engine.testable.helper.PrimitiveValueSpecificationToObjectVisitor;
 
-public class ServiceTestAssertionEvaluator implements TestAssertionEvaluator
+public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.pure.v1.extension.TestAssertionEvaluator
 {
     private final SerializationFormat serializationFormat;
     private final Result result;
 
-    public ServiceTestAssertionEvaluator(Result result)
+    public TestAssertionEvaluator(Result result)
     {
         this(result, SerializationFormat.defaultFormat);
     }
 
-    public ServiceTestAssertionEvaluator(Result result, SerializationFormat serializationFormat)
+    public TestAssertionEvaluator(Result result, SerializationFormat serializationFormat)
     {
         this.result = result;
         this.serializationFormat = serializationFormat;
+
     }
 
     @Override
@@ -89,7 +89,7 @@ public class ServiceTestAssertionEvaluator implements TestAssertionEvaluator
             }
             try
             {
-                return ServiceTestAssertionHelper.compareAssertionJSON(testAssertion, ((EqualToJson) testAssertion).expected.data, actualJson);
+                return TestAssertionHelper.compareAssertionJSON(testAssertion, ((EqualToJson) testAssertion).expected.data, actualJson);
             }
             catch (Exception e)
             {

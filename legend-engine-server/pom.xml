@@ -558,6 +558,11 @@
             <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-runner-mapping</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- RUNTIME -->
 
         <!-- TEST -->

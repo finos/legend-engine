@@ -17,35 +17,51 @@ package org.finos.legend.engine.language.pure.grammar.from.mapping;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.ExpectedOutputMappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class MappingParseTreeWalker
 {
@@ -84,6 +100,10 @@ public class MappingParseTreeWalker
         mapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         ListIterate.collect(ctx.mappingElement(), mappingElementContext -> visitMappingElement(mappingElementContext, mapping));
         mapping.tests = ctx.tests() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.tests().test(), testContext -> this.visitMappingTest(testContext, mapping));
+        if (ctx.mappingTestSuites() != null)
+        {
+            mapping.testSuites = ListIterate.collect(ctx.mappingTestSuites().mappingTestSuite(), testSuiteContext -> this.visitMappingTestSuite(testSuiteContext, mapping));
+        }
         return mapping;
     }
 
@@ -156,35 +176,104 @@ public class MappingParseTreeWalker
         return mapping;
     }
 
-    private MappingTest visitMappingTest(MappingParserGrammar.TestContext ctx, Mapping mapping)
+    private MappingTestSuite visitMappingTestSuite(MappingParserGrammar.MappingTestSuiteContext ctx, Mapping mapping)
+    {
+        MappingTestSuite mappingTestSuite = new MappingTestSuite();
+        mappingTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        mappingTestSuite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        List<MappingParserGrammar.MappingTestDataContext> validatedDataCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTestData(), "data", mappingTestSuite.sourceInformation);
+        mappingTestSuite.storeTestDatas = validatedDataCtx.stream().map(validateCtx -> this.visitMappingStoreTestData(validateCtx, mappingTestSuite.id, mapping.getPath())).collect(Collectors.toList());
+        List<MappingParserGrammar.MappingTestContext> validatedTestCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTest(), "tests", mappingTestSuite.sourceInformation);
+        mappingTestSuite.tests = ListIterate.collect(validatedTestCtx, atomicTest -> this.visitAtomicTest(atomicTest, mapping));
+
+        return mappingTestSuite;
+    }
+
+    private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx, String id, String path)
+    {
+        StoreTestData testData = new StoreTestData();
+        testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        this.createDummyBindingIfRequired(testData.data, id, path);
+        testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
+                "ModelStore" :
+                PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath().identifier(),ctx.qualifiedName().identifier());     //build store
+        return testData;
+    }
+
+    private void createDummyBindingIfRequired(EmbeddedData data, String id, String path)
+    {
+        if (data instanceof ModelStoreData)
+        {
+            Binding binding = new Binding();
+            ModelUnit modelUnit = new ModelUnit();
+            modelUnit.packageableElementIncludes = ((ModelStoreData) data).instances.keySet().stream().collect(Collectors.toList());
+            binding.name = "default__generatedBindingForTestData__" + path.replaceAll("::", "_") + "__" + id;
+            binding._package = "generated";
+            binding.modelUnit = modelUnit;
+            binding.contentType = "application/json";    //default content type
+            //change the pointer for pair
+            Map<String, ValueSpecification> instances = ((ModelStoreData) data).instances;
+            instances.keySet().stream().forEach(key ->
+            {
+                Pair pairOfPointers = (Pair) instances.get(key);
+                PackageableElementPtr ptr = new PackageableElementPtr();
+                ptr.fullPath = binding.getPath();
+                pairOfPointers.first = ptr;
+                instances.put(key, pairOfPointers);
+            });
+            this.section.elements.add(binding.getPath());
+            this.elementConsumer.accept(binding);
+        }
+    }
+
+    private MappingTest visitAtomicTest(MappingParserGrammar.MappingTestContext ctx, Mapping mapping)
     {
         MappingTest mappingTest = new MappingTest();
+        mappingTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         mappingTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        mappingTest.name = ctx.testName().getText();
+        mappingTest.query = this.visitMappingTestQuery(ctx.combinedExpression(), mapping);
+        List<MappingParserGrammar.MappingTestAssertContext> assertCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTestAssert(), "asserts", mappingTest.sourceInformation);
+        mappingTest.assertions = ListIterate.collect(assertCtx, asserts -> this.visitMappingTestAsserts(asserts));
+        return mappingTest;
+    }
+
+    private TestAssertion visitMappingTestAsserts(MappingParserGrammar.MappingTestAssertContext ctx)
+    {
+        TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        return testAssertion;
+    }
+
+    private MappingTest_Legacy visitMappingTest(MappingParserGrammar.TestContext ctx, Mapping mapping)
+    {
+        MappingTest_Legacy mappingTestLegacy = new MappingTest_Legacy();
+        mappingTestLegacy.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        mappingTestLegacy.name = ctx.testName().getText();
         // query
-        MappingParserGrammar.TestQueryContext testQueryContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.testQuery(), "query", mappingTest.sourceInformation);
+        MappingParserGrammar.TestQueryContext testQueryContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.testQuery(), "query", mappingTestLegacy.sourceInformation);
         if (testQueryContext.combinedExpression() != null)
         {
-            mappingTest.query = this.visitMappingTestQuery(testQueryContext.combinedExpression(), mapping);
+            mappingTestLegacy.query = this.visitMappingTestQuery(testQueryContext.combinedExpression(), mapping);
         }
         // input data
-        MappingParserGrammar.TestInputDataContext inputDataContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.testInputData(), "data", mappingTest.sourceInformation);
-        mappingTest.inputData = inputDataContext.testInput() != null && inputDataContext.testInput().testInputElement() != null ? ListIterate.collect(inputDataContext.testInput().testInputElement(), this::visitMappingTestInputData) : Lists.mutable.empty();
+        MappingParserGrammar.TestInputDataContext inputDataContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.testInputData(), "data", mappingTestLegacy.sourceInformation);
+        mappingTestLegacy.inputData = inputDataContext.testInput() != null && inputDataContext.testInput().testInputElement() != null ? ListIterate.collect(inputDataContext.testInput().testInputElement(), this::visitMappingTestInputData) : Lists.mutable.empty();
         // assert
-        MappingParserGrammar.TestAssertContext testAssertContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.testAssert(), "assert", mappingTest.sourceInformation);
+        MappingParserGrammar.TestAssertContext testAssertContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.testAssert(), "assert", mappingTestLegacy.sourceInformation);
         // NOTE: it's important to have `STRING` before `combinedExpression` since the latter matches the former
         if (testAssertContext.STRING() != null)
         {
             ExpectedOutputMappingTestAssert expectedOutputMappingTestAssert = new ExpectedOutputMappingTestAssert();
             expectedOutputMappingTestAssert.expectedOutput = PureGrammarParserUtility.fromGrammarString(testAssertContext.STRING().getText(), false);
             expectedOutputMappingTestAssert.sourceInformation = this.walkerSourceInformation.getSourceInformation(testAssertContext);
-            mappingTest._assert = expectedOutputMappingTestAssert;
+            mappingTestLegacy._assert = expectedOutputMappingTestAssert;
         }
         else if (testAssertContext.combinedExpression() != null)
         {
             throw new EngineException("Mapping test currently only support string assertion", this.walkerSourceInformation.getSourceInformation(testAssertContext), EngineErrorType.PARSER);
         }
-        return mappingTest;
+        return mappingTestLegacy;
     }
 
     private InputData visitMappingTestInputData(MappingParserGrammar.TestInputElementContext ctx)
