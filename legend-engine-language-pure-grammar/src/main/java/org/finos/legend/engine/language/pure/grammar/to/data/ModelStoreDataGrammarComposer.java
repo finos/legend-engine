@@ -50,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pri
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 
 import java.util.List;
 import java.util.Stack;
@@ -83,13 +84,14 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                     str.append(context.getIndentationString());
                     str.append(type).append(":\n");
 
-                    if ((data.instances.get(type) instanceof Pair))
+                    ValueSpecification vs = data.instances.get(type);
+                    if ((vs instanceof ClassInstance && ((ClassInstance) vs).value instanceof Pair))
                     {
                         DataElementReference reference = new DataElementReference();
-                        reference.dataElement = ((PackageableElementPtr) ((Pair) data.instances.get(type)).second).fullPath;
+                        reference.dataElement = ((PackageableElementPtr) ((Pair) ((ClassInstance) data.instances.get(type)).value).second).fullPath;
                         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
                     }
-                    else if (((Collection) data.instances.get(type)).values.size() == 1)
+                    else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)
                     {
                         str.append(indentString).append("[\n");
 
