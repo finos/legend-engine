@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.finos.legend.engine.persistence.components.IngestModeTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
@@ -22,6 +23,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -412,5 +414,66 @@ public class NontemporalDeltaTest extends IngestModeTest
         List<String> expectedSQL = new ArrayList<>();
         expectedSQL.add(expectedStagingCleanupQuery);
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
+    }
+
+    @Test
+    void testGeneratePhysicalPlanWithDeleteIndicator()
+    {
+        Dataset mainTable = DatasetDefinition.builder()
+                .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+                .schema(baseTableSchemaWithDigest)
+                .build();
+
+        Dataset stagingTable = DatasetDefinition.builder()
+                .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+                .schema(stagingTableSchemaWithDeleteIndicator)
+                .build();
+
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestField)
+                .auditing(NoAuditing.builder().build())
+                .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                        .deleteField(deleteIndicatorField)
+                        .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                        .build())
+                .build();
+
+
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(ingestMode)
+                .relationalSink(AnsiSqlSink.get())
+                .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
+                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) " +
+                "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE " +
+                "((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))";
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+                "(SELECT * FROM \"mydb\".\"staging\" as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
+                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
+                "(sink.\"digest\" = stage.\"digest\"))))";
+
+        String deleteSql = "DELETE FROM \"mydb\".\"main\" as sink " +
+                "WHERE ((sink.\"id\" = stage.\"id\") " +
+                "AND (sink.\"name\" = stage.\"name\")) " +
+                "AND (stage.\"delete_indicator\" IN ('yes','1','true'))";
+
+        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(deleteSql, milestoningSqlList.get(2));
     }
 }

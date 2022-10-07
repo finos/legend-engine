@@ -165,9 +165,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
     {
         List<Value> columnsToInsert = new ArrayList<>();
         List<Value> stagingColumns = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        List<FieldValue> mileStoneColumns = transactionMilestoningFields();
+        List<FieldValue> milestoneColumns = transactionMilestoningFields();
         columnsToInsert.addAll(stagingColumns);
-        columnsToInsert.addAll(mileStoneColumns);
+        columnsToInsert.addAll(milestoneColumns);
 
         List<Value> columnsToSelect = new ArrayList<>(stagingColumns);
         deleteIndicatorField.ifPresent(deleteIndicatorField ->
