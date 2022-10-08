@@ -218,6 +218,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::createRelat
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRING_TYPES', 'Arrays.asList(Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.NCHAR, Types.NVARCHAR, Types.LONGNVARCHAR, Types.OTHER, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'INT_TYPES', 'Arrays.asList(Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'FLOAT_TYPES', 'Arrays.asList(Types.REAL, Types.FLOAT, Types.DOUBLE, Types.DECIMAL, Types.NUMERIC, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DECIMAL_TYPES', 'Arrays.asList(Types.DECIMAL, Types.NUMERIC, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'BOOL_TYPES', 'Arrays.asList(Types.BIT, Types.BOOLEAN, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRICT_DATE_TYPES', 'Arrays.asList(Types.DATE, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP, Types.NULL)'),
@@ -592,6 +593,19 @@ function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForD
 {
    javaMethod(
       ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForDecimalProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (DECIMAL_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            return resultSet.getBigDecimal(columnIndex);\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
       'if (FLOAT_TYPES.contains(columnType))\n' +
       '{\n'+
       '    return () -> {\n'+
