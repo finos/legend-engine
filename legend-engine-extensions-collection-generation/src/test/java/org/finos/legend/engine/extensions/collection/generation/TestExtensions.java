@@ -211,6 +211,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
@@ -263,6 +264,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class);
@@ -285,6 +287,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph.PersistenceCloudCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.BigQueryCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class);
     }
 
@@ -332,6 +335,7 @@ public class TestExtensions
                 .with("core_persistence_cloud")
                 .with("core_relational")
                 .with("core_relational_bigquery")
+                .with("core_relational_spanner")
                 .with("core_servicestore")
                 .with("core_text");
     }
