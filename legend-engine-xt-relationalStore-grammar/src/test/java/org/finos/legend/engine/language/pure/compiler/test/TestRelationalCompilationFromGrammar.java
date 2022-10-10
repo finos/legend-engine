@@ -1417,7 +1417,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
 
     @Test
     public void testNestedJoinFromIncludedDatabase()
-
     {
         test("###Relational\n" +
                 "Database example::database\n" +
@@ -1469,10 +1468,57 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
 
     }
 
-
-
-
-
-
-
+    public void testRelationalClassMappingWithDuplicateSetIdsError()
+    {
+        test("###Pure\n" +
+                "Class simple::Account\n" +
+                "{\n" +
+                "   id: String[1];   \n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Another extends simple::Account\n" +
+                "{  \n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database simple::gen1::store\n" +
+                "(\n" +
+                "   Table Account\n" +
+                "   (\n" +
+                "      ACCOUNT_ID VARCHAR(200) PRIMARY KEY\n" +
+                "   )\n" +
+                ")\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping simple::gen1::map\n" +
+                "(\n" +
+                "   simple::Account[id]: Relational\n" +
+                "   {\n" +
+                "      scope([simple::gen1::store]Account)\n" +
+                "      (\n" +
+                "         id: ACCOUNT_ID   \n" +
+                "      )\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping simple::gen2::map\n" +
+                "(\n" +
+                "   simple::Account[id]: Relational\n" +
+                "   {\n" +
+                "      scope([simple::gen1::store]Account)\n" +
+                "      (\n" +
+                "         id: ACCOUNT_ID   \n" +
+                "      )\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping simple::merged(\n" +
+                "   include simple::gen1::map\n" +
+                "   include simple::gen2::map\n" +
+                "      \n" +
+                "   simple::Another extends [id]: Relational\n" +
+                "   {      \n" +
+                "   }   \n" +
+                ")", "COMPILATION error at [47:4-49:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
+    }
 }

@@ -190,5 +190,52 @@ public class TestCompilationFromGrammar
                 ")");
     }
 
+    @Test
+    public void testCompilationPureDuplicateSetIdError()
+    {
+        TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "Class simple::Account\n" +
+                "{\n" +
+                "   id: String[1];   \n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Raw_Account\n" +
+                "{\n" +
+                "   id: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Another extends simple::Account\n" +
+                "{  \n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping simple::gen1::map\n" +
+                "(\n" +
+                "   simple::Account[id]: Pure\n" +
+                "   {\n" +
+                "      ~src simple::Raw_Account\n" +
+                "      id: $src.id\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping simple::gen2::map\n" +
+                "(\n" +
+                "   simple::Account[id]: Pure\n" +
+                "   {\n" +
+                "      ~src simple::Raw_Account\n" +
+                "      id: $src.id\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping simple::merged(\n" +
+                "   include simple::gen1::map\n" +
+                "   include simple::gen2::map\n" +
+                "      \n" +
+                "   simple::Another extends [id]: Pure\n" +
+                "   {      \n" +
+                "   }   \n" +
+                ")", "COMPILATION error at [39:4-41:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
+    }
+
 
 }
