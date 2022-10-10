@@ -25,7 +25,7 @@ public class LegendDefaultRelationalTestServerInvoker
     RelationalTestServer.execute(
         args.length == 0 ? new String[] {"server",
             "org/finos/legend/engine/server/test/userTestConfig_withSpannerTestConnection.json"} : args,
-        new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
+        new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "spannerTest")
     );
   }
 }

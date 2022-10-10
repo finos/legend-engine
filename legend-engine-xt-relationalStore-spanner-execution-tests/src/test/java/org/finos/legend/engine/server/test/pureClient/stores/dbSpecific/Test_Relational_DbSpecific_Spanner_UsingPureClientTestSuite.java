@@ -27,7 +27,7 @@ public class Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite
     return createSuite(// adding postgres suite cause spanner uses postgres compatibility
         "meta::relational::tests::dbSpecificTests::postgres",
         "org/finos/legend/engine/server/test/userTestConfig_withSpannerTestConnection.json",
-        new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
+        new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "spannerTest"));
   }
 }
 
