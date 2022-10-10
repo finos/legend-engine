@@ -18,11 +18,9 @@ import java.sql.Connection;
 import java.util.Optional;
 import javax.security.auth.Subject;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
@@ -35,30 +33,12 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     public static final String SPANNER_INSTANCE_ID = "SPANNER_INSTANCE_ID";
     public static final String SPANNER_DATABASE_ID = "SPANNER_DATABASE_ID";
 
-    @Override
-    public DatabaseType getDatabaseType()
-    {
-        return DatabaseType.Spanner;
-    }
-
-    @Override
-    public DatasourceSpecification getDatasourceSpecification()
-    {
-        return new SpannerDatasourceSpecification();
-    }
-
-    @Override
-    public void assertFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
-    {
-        assertGCPADCFlowIsAvailable(flowProvider);
-    }
-
     @Test
     public void testSpannerGCPADCConnection_subject() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((Subject) null, systemUnderTest);
-        testConnection(connection, TEST_QUERY);
+        testConnection(connection, 5, TEST_QUERY);
     }
 
     @Test
@@ -66,14 +46,14 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     {
         RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
         Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
-        testConnection(connection, TEST_QUERY);
+        testConnection(connection, 5, TEST_QUERY);
     }
 
     private RelationalDatabaseConnection SpannerWithGCPADCSpec()
     {
         SpannerDatasourceSpecification datasourceSpecification = getSpannerDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
-        return new RelationalDatabaseConnection(datasourceSpecification, authSpec, getDatabaseType());
+        return new RelationalDatabaseConnection(datasourceSpecification, authSpec, DatabaseType.Spanner);
     }
 
     private SpannerDatasourceSpecification getSpannerDatasourceSpecification()

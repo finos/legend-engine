@@ -14,22 +14,18 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
-import javax.security.auth.Subject;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
-import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
-import org.finos.legend.engine.authentication.cloud.AWSConfig;
-import org.finos.legend.engine.authentication.cloud.GCPWorkloadConfig;
+import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import static org.junit.Assert.assertTrue;
@@ -37,26 +33,10 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_GoogleCloud extends DbSpecificTests
+public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_GoogleCloud extends RelationalConnectionTest
 {
     public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
-    public static final String AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
-    public static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
-
-    private static final AWSConfig awsConfig = new AWSConfig(
-            "us-east-1",
-            "564704738649",
-            "integration-wif-role1",
-            "AWS_ACCESS_KEY_ID",
-            "AWS_SECRET_ACCESS_KEY"
-    );
-
-    private static final GCPWorkloadConfig gcpWorkloadConfig = new GCPWorkloadConfig(
-            "412074507462",
-            "integration-wif-pool1",
-            "integration-wif-pool1-provider"
-    );
-
+    
     protected ConnectionManagerSelector connectionManagerSelector;
 
     public void verifyGcpTestSetup()
@@ -68,71 +48,31 @@ public abstract class ExternalIntegration_TestConnectionAcquisitionWithFlowProvi
         }
     }
 
-    public void verifyAwsTestSetup()
-    {
-        String awsAccessKeyId = System.getenv(AWS_ACCESS_KEY_ID);
-        if (awsAccessKeyId == null || awsAccessKeyId.trim().isEmpty())
-        {
-            fail(String.format("Tests cannot be run. AWS env variable %s has not been set", AWS_ACCESS_KEY_ID));
-        }
-        String awsSecretAccessKey = System.getenv(AWS_SECRET_ACCESS_KEY);
-        if (awsSecretAccessKey == null || awsSecretAccessKey.trim().isEmpty())
-        {
-            fail(String.format("Tests cannot be run. AWS env variable %s has not been set", AWS_SECRET_ACCESS_KEY));
-        }
-    }
-
     @BeforeClass
-    public static void setupTest() throws IOException
+    public static void setupTest()
     {
         Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
     }
-
-    @Override
-    protected Subject getSubject()
-    {
-        return null;
-    }
-
+    
     @Before
     public void setup()
     {
-        LegendDefaultDatabaseAuthenticationFlowProvider flowProvider = new LegendDefaultDatabaseAuthenticationFlowProvider();
-        LegendDefaultDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.Builder.newInstance()
-                .withAwsConfig(awsConfig)
-                .withGcpWorkloadConfig(gcpWorkloadConfig)
-                .build();
+        SpannerTestDatabaseAuthenticationFlowProvider flowProvider = new SpannerTestDatabaseAuthenticationFlowProvider();
+        SpannerTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration = 
+            new SpannerTestDatabaseAuthenticationFlowProviderConfiguration();
         flowProvider.configure(flowProviderConfiguration);
-        assertFlowIsAvailable(flowProvider);
+        assertGCPADCFlowIsAvailable(flowProvider);
         this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections.emptyList(), Optional.of(flowProvider));
     }
 
-    public abstract DatabaseType getDatabaseType();
-
-    public abstract DatasourceSpecification getDatasourceSpecification();
-
-    public abstract void assertFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider);
-
-    protected void assertGCPADCFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
+    protected void assertGCPADCFlowIsAvailable(SpannerTestDatabaseAuthenticationFlowProvider flowProvider)
     {
         verifyGcpTestSetup();
-        DatasourceSpecification datasourceSpecification = getDatasourceSpecification();
+        DatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
-        RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, getDatabaseType());
-        relationalDatabaseConnection.type = getDatabaseType();
+        RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, DatabaseType.Spanner);
         Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
-        assertTrue(getDatabaseType() + " GCP adc flow does not exist ", flow.isPresent());
-    }
-
-    protected void assertGCPWIFFlowIsAvailable(LegendDefaultDatabaseAuthenticationFlowProvider flowProvider)
-    {
-        verifyAwsTestSetup();
-        DatasourceSpecification datasourceSpecification = getDatasourceSpecification();
-        GCPWorkloadIdentityFederationAuthenticationStrategy authenticationStrategy = new GCPWorkloadIdentityFederationAuthenticationStrategy();
-        RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, getDatabaseType());
-        relationalDatabaseConnection.type = getDatabaseType();
-        Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
-        assertTrue(getDatabaseType() + " Workload Identity Federation Flow does not exist ", flow.isPresent());
+        assertTrue(relationalDatabaseConnection.type + " GCP adc flow does not exist ", flow.isPresent());
     }
 
 }
