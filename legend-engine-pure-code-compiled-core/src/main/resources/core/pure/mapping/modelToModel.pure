@@ -550,7 +550,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::execu
   let subClusters  = $fe.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values->cast(@ValueSpecification)->map({p | $p->cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@ClusteredValueSpecification);
 
    let firstCluster = $subClusters->at(0);
-   let childNodes   = $subClusters->map(cls | $cls->plan($runtime, $sq.inScopeVars, $sq.advancedRouting, $exeCtx, $extensions, $debug)->cast(@GlobalGraphFetchExecutionNode))->mergeGraphFetchPlans($rootTree);
+   let childNodes   = $subClusters->map(cls | $cls->plan($runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug)->cast(@GlobalGraphFetchExecutionNode))->mergeGraphFetchPlans($rootTree);
    ^PlatformMergeExecutionNode
    (
       fromCluster    = ^$firstCluster(val = $fe),

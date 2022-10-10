@@ -42,7 +42,6 @@ Class meta::pure::mapping::StoreQuery
 {
     fe : FunctionExpression[1];
     inScopeVars : Map<String, List<Any>>[1];
-    advancedRouting : Boolean[0..1];
     store : Store[1];
     //sets : Pair<String, List<Any>>[*]; //inputs to either cross store ( query )
 }

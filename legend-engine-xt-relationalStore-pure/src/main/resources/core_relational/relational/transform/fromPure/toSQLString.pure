@@ -109,7 +109,7 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
               let params = $fe.parametersValues->evaluateAndDeactivate();
               let paramName = $params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
               let exeCtx = $cluster.exeCtx->toOne();
-              let res = $cluster->executeExpression($vars, [], $exeCtx, false, $extensions, $debug);
+              let res = $cluster->executeExpression($vars, [], $exeCtx, $extensions, $debug);
 
               toSQL($clusters->tail(), $vars->put($paramName, ^List<Any>(values=$res.values)), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, $sqlResult); ,
            |  let dbCluster = if ($cluster.store->toOne()->instanceOf(meta::relational::metamodel::Database),| $cluster, | $firstDbCluster->at(0)->cast(@ClusteredValueSpecification));

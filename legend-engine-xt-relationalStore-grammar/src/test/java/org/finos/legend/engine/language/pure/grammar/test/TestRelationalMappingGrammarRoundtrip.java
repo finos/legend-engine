@@ -85,6 +85,70 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
     }
 
     @Test
+    public void testRelationalMappingTestSuites()
+    {
+        test("###Mapping\n" +
+                "Mapping execution::RelationalMapping\n" +
+                "(\n" +
+                "  *model::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [store::TestDB]PersonTable.id\n" +
+                "    )\n" +
+                "    ~mainTable [store::TestDB]PersonTable\n" +
+                "    firstName: [store::TestDB]PersonTable.firstName,\n" +
+                "    lastName: [store::TestDB]PersonTable.lastName\n" +
+                "  }\n" +
+                "  *model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [store::TestDB]FirmTable.id\n" +
+                "    )\n" +
+                "    ~mainTable [store::TestDB]FirmTable\n" +
+                "    legalName: [store::TestDB]FirmTable.legal_name,\n" +
+                "    employees[model_Person]: [store::TestDB]@FirmPerson\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        store::TestDB:\n" +
+                "          Reference\n" +
+                "          #{\n" +
+                "            data::RelationalData\n" +
+                "          }#\n" +
+                "      ];\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            shouldPass:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"columns\":[{\"name\":\"Employees/First Name\",\"type\":\"String\"},{\"name\":\"Employees/Last Name\",\"type\":\"String\"},{\"name\":\"Legal Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[\"John\",\"Doe\",\"Finos\"]},{\"values\":[\"Nicole\",\"Smith\",\"Finos\"]},{\"values\":[\"Time\",\"Smith\",\"Apple\"]}]}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
+
+    @Test
     public void testClassMappingFilterWithInnerJoin()
     {
         test("###Mapping\n" +
@@ -124,5 +188,59 @@ public class TestRelationalMappingGrammarRoundtrip extends TestGrammarRoundtrip.
                 "    firm: Binding test::binding : [db]personTable.jsonColumn\n" +
                 "  }\n" +
                 ")\n");
+    }
+
+
+    @Test
+    public void testNestedJoinFromIncludedDatabase()
+
+    {
+        test("###Relational\n" +
+                "Database example::database\n" +
+                "(\n" +
+                "  include example::databaseInc\n" +
+                "\n" +
+                "  Schema exampleRoot\n" +
+                "  (\n" +
+                "    Table TableC\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "\n" +
+                "    View dbView\n" +
+                "    (\n" +
+                "      nameL: exampleSub.TableASub.name,\n" +
+                "      rootTable: [example::databaseInc]@AtoB > [example::database]@BtoC | exampleRoot.TableC.name\n" +
+                "    )\n" +
+                "    View dbViewIncTable\n" +
+                "    (\n" +
+                "      nameL: exampleRoot.TableC.name,\n" +
+                "      incTable: [example::database]@BtoC > [example::database]@AtoB | [example::databaseInc]exampleSub.TableASub.name\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join BtoC([example::databaseInc]exampleSub.TableBSub.id = exampleRoot.TableC.id)\n" +
+                ")\n" +
+                "\n" +
+                "Database example::databaseInc\n" +
+                "(\n" +
+                "  Schema exampleSub\n" +
+                "  (\n" +
+                "    Table TableASub\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "    Table TableBSub\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join AtoB(exampleSub.TableASub.id = exampleSub.TableBSub.id)\n" +
+                ")\n");
+
     }
 }

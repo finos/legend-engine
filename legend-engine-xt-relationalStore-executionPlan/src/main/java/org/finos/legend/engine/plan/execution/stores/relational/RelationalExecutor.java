@@ -139,7 +139,7 @@ public class RelationalExecutor
 
         if (executionState.inAllocation)
         {
-            if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.transformAllocation)
+            if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.realizeInMemory)
             {
                 return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
             }

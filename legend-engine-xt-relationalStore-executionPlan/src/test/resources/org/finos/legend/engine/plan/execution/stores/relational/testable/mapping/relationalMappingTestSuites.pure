@@ -1,0 +1,111 @@
+###Data
+Data data::RelationalData
+{
+  Relational
+  #{
+    default.PersonTable:
+              'id,firm_id,firstName,lastName\n' +
+              '1,1,John,Doe\n' +
+              '2,1,Nicole,Smith\n' +
+              '3,2,Time,Smith\n';
+
+    default.FirmTable:
+          'id,legal_name\n' +
+          '1,Finos\n' +
+          '2,Apple';
+
+  }#
+}
+
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName
+  }
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson
+  }
+  testSuites:
+    [
+      testSuite1:
+      {
+        data:
+        [
+          store::TestDB:
+              Reference
+              #{
+                data::RelationalData
+              }#
+        ];
+        tests:
+        [
+          test1:
+          {
+            query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
+            asserts:
+            [
+              shouldPass:
+                EqualToJson
+                #{
+                  expected :
+                    ExternalFormat
+                    #{
+                      contentType: 'application/json';
+                      data: '{"columns":[{"name":"Employees/First Name","type":"String"},{"name":"Employees/Last Name","type":"String"},{"name":"Legal Name","type":"String"}],"rows":[{"values":["John","Doe","Finos"]},{"values":["Nicole","Smith","Finos"]},{"values":["Time","Smith","Apple"]}]}';
+                    }#;
+                }#
+            ];
+          }
+        ];
+      }
+    ]
+)

@@ -17,7 +17,9 @@ package org.finos.legend.engine.protocol.pure.v1.extension;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import java.io.Closeable;
 import java.util.List;
@@ -36,6 +38,11 @@ public interface ConnectionFactoryExtension
     }
 
     default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
+    {
+        return Optional.empty();
+    }
+
+    default Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnectionsForStore(Store store, EmbeddedData data, List<DataElement> dataElementList)
     {
         return Optional.empty();
     }

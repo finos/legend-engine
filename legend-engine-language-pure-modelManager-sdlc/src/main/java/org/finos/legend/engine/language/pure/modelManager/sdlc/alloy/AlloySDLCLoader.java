@@ -38,6 +38,11 @@ public class AlloySDLCLoader
 
     public PureModelContextData loadAlloyProject(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
     {
+        return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(pm, alloySDLC, clientVersion));
+    }
+
+    public String getMetaDataApiUrl(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
+    {
         String url;
         if (alloySDLC.project != null)
         {
@@ -52,7 +57,7 @@ public class AlloySDLCLoader
                     metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
                     metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
         }
-        return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url);
+      return url;
     }
 
     public List<String> checkAllPathsExist(PureModelContextData data, AlloySDLC alloySDLC)

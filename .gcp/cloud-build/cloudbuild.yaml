@@ -5,4 +5,5 @@ timeout: 7200s
 logsBucket: 'gs://finos-legend-engine-logs'
 options:
   logging: GCS_ONLY
-  machineType: E2_HIGHCPU_32
+  pool:
+    name: 'projects/legend-integration-testing/locations/us-east1/workerPools/cb-worker-pool'
