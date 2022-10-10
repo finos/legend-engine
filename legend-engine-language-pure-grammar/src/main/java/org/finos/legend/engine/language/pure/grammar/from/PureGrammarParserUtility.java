@@ -59,6 +59,15 @@ public class PureGrammarParserUtility
         return val.substring(1, val.length() - 1);
     }
 
+    public static <T extends RuleContext> List<T> validateRequiredListField(List<T> contexts, String fieldName, SourceInformation sourceInformation)
+    {
+        if (contexts == null || contexts.isEmpty())
+        {
+            throw new EngineException("Field '" + fieldName + "' is required", sourceInformation, EngineErrorType.PARSER);
+        }
+        return contexts;
+    }
+
     public static <T extends RuleContext> T validateAndExtractRequiredField(List<T> contexts, String fieldName, SourceInformation sourceInformation)
     {
         if (contexts == null || contexts.isEmpty())

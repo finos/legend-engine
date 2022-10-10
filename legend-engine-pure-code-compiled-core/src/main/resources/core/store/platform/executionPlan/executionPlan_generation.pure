@@ -24,7 +24,6 @@ import meta::pure::store::platform::metamodel::*;
 Class meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState
 {
    inScopeVars     : Map<String, List<Any>>[1];
-   advancedRouting : Boolean[0..1];
    exeCtx          : ExecutionContext[1];
 
    checked         : Boolean[0..1];
@@ -45,7 +44,7 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
 {
    $vs->match([
       f:SimpleFunctionExpression[1]         | $f->meta::pure::store::platform::executionPlan::generation::getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
-      c:ClusteredValueSpecification[1]      | $c->plan($c.runtime, $state.inScopeVars, $state.advancedRouting, $state.exeCtx, $extensions, $debug),
+      c:ClusteredValueSpecification[1]      | $c->plan($c.runtime, $state.inScopeVars, $state.exeCtx, $extensions, $debug),
       e:ExtendedRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
       i:InstanceValue[1]                    | [],
       v:ValueSpecification[1]               | []
