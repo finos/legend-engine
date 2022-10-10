@@ -44,7 +44,7 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
 {
    $vs->match([
       f:SimpleFunctionExpression[1]         | $f->meta::pure::store::platform::executionPlan::generation::getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
-      c:ClusteredValueSpecification[1]      | $c->plan($c.runtime, $state.inScopeVars, $state.exeCtx, $extensions, $debug),
+      c:ClusteredValueSpecification[1]      | $c->plan($state.inScopeVars, $state.exeCtx, $extensions, $debug),
       e:ExtendedRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
       i:InstanceValue[1]                    | [],
       v:ValueSpecification[1]               | []
@@ -54,7 +54,7 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
 function <<access.private>> meta::pure::store::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification())->map(v|$v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug));
-   let funcParams = $fe->findVariableExpressionsInValueSpecification();
+   let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
    let varInputs = $funcParams->filter(x| $state.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
 
    ^PureExpressionPlatformExecutionNode
@@ -62,6 +62,7 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
       expression = $fe,
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
       requiredVariableInputs = $varInputs,
+      resultSizeRange = $fe.multiplicity,
       executionNodes = $children,
       fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $state.inScopeVars)
    );
@@ -128,6 +129,29 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::letFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let subPlan   = $fe.parametersValues->at(1)->match(
+                      [
+                        i:InstanceValue[1]      | ^meta::pure::executionPlan::ConstantExecutionNode
+                                                  (
+                                                      resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
+                                                      resultSizeRange = $i.multiplicity,
+                                                      values = $i.values->toOne()
+                                                  );,
+                        v:ValueSpecification[1] | $v->processValueSpecification($state, $extensions, $debug)->toOne()
+                      ]
+                    );
+
+   ^meta::pure::executionPlan::AllocationExecutionNode
+   (
+     varName         = $fe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@String),
+     resultType      = $subPlan.resultType,
+     resultSizeRange = $subPlan.resultSizeRange,
+     executionNodes  = $subPlan
+   );
+}
+
 function <<access.private>> meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):ClusteredValueSpecification[1]
 {
    ^ClusteredValueSpecification(
@@ -171,6 +195,7 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::lang::letFunction_String_1__T_m__T_m_, second = letFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
