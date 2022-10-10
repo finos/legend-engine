@@ -4,8 +4,8 @@ import meta::pure::constraints::functions::*;
 function <<test.Test>> meta::pure::changetoken::tests::testToString():Boolean[1]
 {
   assertEquals(
-    'meta::pure::changetoken::AddField(fieldName="myNewField",fieldType="Number",'
-      + 'defaultValue=meta::pure::changetoken::ConstValue(value=100),safeCast=true,class="meta::domain::MyClass")',
+    'AddField(class=meta::domain::MyClass,fieldName=myNewField,fieldType=Number,'
+      + 'defaultValue=ConstValue(value=100),safeCast=true)',
     ^AddField(
       fieldName='myNewField', fieldType='Number', class='meta::domain::MyClass',
       defaultValue=^ConstValue(value=100), safeCast=true)->toString()
