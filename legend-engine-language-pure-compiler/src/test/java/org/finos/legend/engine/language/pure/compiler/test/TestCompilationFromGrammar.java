@@ -234,7 +234,7 @@ public class TestCompilationFromGrammar
                 "   simple::Another extends [id]: Pure\n" +
                 "   {      \n" +
                 "   }   \n" +
-                ")", "COMPILATION error at [35:1-42:1]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'");
+                ")", "COMPILATION error at [39:4-41:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
     }
 
 

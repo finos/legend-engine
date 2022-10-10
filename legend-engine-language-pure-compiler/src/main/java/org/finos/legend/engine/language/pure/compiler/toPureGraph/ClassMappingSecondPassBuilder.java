@@ -81,7 +81,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     @Override
     public SetImplementation visit(PureInstanceClassMapping classMapping)
     {
-        return null;
+        return this.visit((ClassMapping)classMapping);
     }
 
     @Override
