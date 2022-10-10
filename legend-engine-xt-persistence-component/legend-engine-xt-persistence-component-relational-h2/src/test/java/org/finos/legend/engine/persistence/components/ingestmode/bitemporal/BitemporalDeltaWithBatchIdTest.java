@@ -300,7 +300,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableIdBased();
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -382,7 +382,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableIdBased();
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -436,7 +436,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDataSplitIdBased();
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -504,7 +504,7 @@ Scenario: Test milestoning Logic with only validity from time specified when sta
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDataSplitIdBased();
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -585,7 +585,7 @@ Scenario: Test milestoning Logic with only validity from time specified when sta
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
         DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getLoansTempTableWithDeleteIndicatorIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -672,7 +672,7 @@ Scenario: Test milestoning Logic with only validity from time specified when sta
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
         DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getLoansTempTableWithDeleteIndicatorIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -730,7 +730,7 @@ Scenario: Test milestoning Logic with only validity from time specified when sta
         DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -795,7 +795,7 @@ Scenario: Test milestoning Logic with only validity from time specified when sta
         DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
 
-        String[] schema = new String[] {loanIdName, loanDateTimeName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
