@@ -105,7 +105,7 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
       | let cluster = $clusterBeforeAggregateRewrite;
         let firstDbCluster = findDBCluster($cluster->at(0), []->cast(@ClusteredValueSpecification));
         if($cluster.s.executeStoreQuery == meta::pure::store::platform::contract::platformStoreContract().executeStoreQuery && $firstDbCluster->isEmpty(),
-           |  let fe = $cluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v])->cast(@FunctionExpression);
+           |  let fe = $cluster.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v])->cast(@FunctionExpression);
               let params = $fe.parametersValues->evaluateAndDeactivate();
               let paramName = $params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
               let exeCtx = $cluster.exeCtx->toOne();
@@ -113,7 +113,7 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
 
               toSQL($clusters->tail(), $vars->put($paramName, ^List<Any>(values=$res.values)), $mapping, $databaseType, $dbTimeZone, $sqlQueryPostProcessors, $extensions, $debug, $sqlResult); ,
            |  let dbCluster = if ($cluster.store->toOne()->instanceOf(meta::relational::metamodel::Database),| $cluster, | $firstDbCluster->at(0)->cast(@ClusteredValueSpecification));
-              let query = $dbCluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v])->cast(@FunctionExpression)->toSQLQuery($mapping, $vars, [], $debug, $extensions);
+              let query = $dbCluster.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v])->cast(@FunctionExpression)->toSQLQuery($mapping, $vars, [], $debug, $extensions);
               let newQuery = if($sqlQueryPostProcessors->isEmpty(), | $query, | $sqlQueryPostProcessors->fold({p,sql | $p->eval($sql->cast(@SelectSQLQuery)).values->toOne()}, $query));
               ^$sqlResult(shouldWarn=($sqlResult.shouldWarn || !$clusters->tail()->isEmpty()),
                           sqlQueries=$sqlResult.sqlQueries->concatenate($newQuery));
@@ -124,7 +124,7 @@ function <<access.private>> meta::relational::functions::sqlstring::toSQL(cluste
 
 function <<access.private>> meta::relational::functions::sqlstring::findDBCluster(v:ValueSpecification[1], current:ClusteredValueSpecification[*]):ClusteredValueSpecification[*]
 {
-   $v->match([r:ExtendedRoutedValueSpecification[1]|$r.value, a:Any[1]|$a])
+   $v->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, a:Any[1]|$a])
      ->match([
                   c:ClusteredValueSpecification[1]|if ($c.store->instanceOf(meta::relational::metamodel::Database),|$current->add($c),|$c.val->findDBCluster($current)),
                   fe:FunctionExpression[1]|$current->concatenate($fe.parametersValues->map(p|$p->findDBCluster([]->cast(@ClusteredValueSpecification)))),

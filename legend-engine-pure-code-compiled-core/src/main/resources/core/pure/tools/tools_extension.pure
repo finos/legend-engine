@@ -43,13 +43,13 @@ function meta::pure::router::debug(s:String[1], start:String[1]):String[1]
 
 function meta::pure::router::byPassRouterInfo(source:ValueSpecification[1]):ValueSpecification[1]
 {
-   $source->match([r:ExtendedRoutedValueSpecification[1]|$r.value->byPassRouterInfo(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|$f.value->byPassRouterInfo();, v:ValueSpecification[1]|$v]);
+   $source->match([r:StoreMappingRoutedValueSpecification[1]|$r.value->byPassRouterInfo(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|$f.value->byPassRouterInfo();, v:ValueSpecification[1]|$v]);
 }
 
 
 function meta::pure::router::byPassRouterInfoKeepFunctionRouted(source:ValueSpecification[1]):ValueSpecification[1]
 {
-   $source->match([r:ExtendedRoutedValueSpecification[1]|$r.value->byPassRouterInfoKeepFunctionRouted(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|^$f(value = $f.value->byPassRouterInfoKeepFunctionRouted());, v:ValueSpecification[1]|$v]);
+   $source->match([r:StoreMappingRoutedValueSpecification[1]|$r.value->byPassRouterInfoKeepFunctionRouted(), n:NoSetRoutedValueSpecification[1]|$n.value, f:FunctionRoutedValueSpecification[1]|^$f(value = $f.value->byPassRouterInfoKeepFunctionRouted());, v:ValueSpecification[1]|$v]);
 }
 
 function meta::pure::router::isOneFunction(k:ValueSpecification[1]):Boolean[1]

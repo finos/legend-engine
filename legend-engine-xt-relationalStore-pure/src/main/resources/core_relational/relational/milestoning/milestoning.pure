@@ -617,7 +617,7 @@ function <<access.private>> meta::relational::milestoning::replaceThisMilestonin
 {
    $v->match([
                f:FunctionExpression[1]| let newF = if($f->isMilestonedGeneratedDateProperty($t),| $new ,| ^$f(parametersValues=$f.parametersValues->map(v|$v->replaceThisMilestoningPropertyVariableExpression($new, $t)))),                                     
-               e:ExtendedRoutedValueSpecification[1]|$e.value->replaceThisMilestoningPropertyVariableExpression($new, $t),
+               e:StoreMappingRoutedValueSpecification[1]|$e.value->replaceThisMilestoningPropertyVariableExpression($new, $t),
                e:FunctionRoutedValueSpecification[1]|$e.value->replaceThisMilestoningPropertyVariableExpression($new, $t),
                i:InstanceValue[1]|^$i(values = $i.values->map(v|$v->match([e:ValueSpecification[1]|$e->replaceThisMilestoningPropertyVariableExpression($new, $t),a:Any[1]|$a]))),
                v:ValueSpecification[1]|$v
@@ -635,7 +635,7 @@ function <<access.private>> meta::relational::milestoning::referencesVariableExp
 {
    $v->byPassRouterInfo()->match([f:FunctionExpression[1] | $f.parametersValues->fold({x, y| $x->referencesVariableExpression() || $y }, false),
                                   v:VariableExpression[1] | true,
-                                  e:ExtendedRoutedValueSpecification[1] | $e->byPassRouterInfo()->referencesVariableExpression(),
+                                  e:StoreMappingRoutedValueSpecification[1] | $e->byPassRouterInfo()->referencesVariableExpression(),
                                   v:ValueSpecification[1] | false])
 }
 
@@ -778,7 +778,7 @@ function meta::relational::milestoning::getMilestoningContextForAll(expression:F
 
 function meta::relational::milestoning::getMilestoningContextForQualifiedProperty(vs : ValueSpecification[1], parentMilestoningContext: TemporalMilestoningContext[0..1], leftSideMilestoningContext: TemporalMilestoningContext[0..1], state:State[1], vars:Map<VariableExpression, ValueSpecification>[1], context:DebugContext[1], extensions:Extension[*]):TemporalMilestoningContext[0..1]
 {
-   let extractedVs = $vs->match([e:ExtendedRoutedValueSpecification[1]|$e.value, a:Any[1]|$a]);
+   let extractedVs = $vs->match([e:StoreMappingRoutedValueSpecification[1]|$e.value, a:Any[1]|$a]);
    if ($extractedVs->instanceOf(FunctionExpression) && $extractedVs->cast(@FunctionExpression).func->instanceOf(QualifiedProperty) && $extractedVs->cast(@FunctionExpression).func->hasGeneratedMilestoningPropertyStereotype(),
       |
          let qpFe = $extractedVs->cast(@FunctionExpression);

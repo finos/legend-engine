@@ -247,7 +247,7 @@ function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]
                            a:Any[1]|[]
                         ]
                  );,
-               e:ExtendedRoutedValueSpecification[1]|$e->byPassRouterInfo()->findPropertySequence(),
+               e:StoreMappingRoutedValueSpecification[1]|$e->byPassRouterInfo()->findPropertySequence(),
                a:Any[1]|[];
             ])
 }
@@ -352,5 +352,5 @@ function meta::relational::mapping::resolvePrimaryKeysNames(rsi: RelationalInsta
 function meta::relational::mapping::findMainClassInGetAllExpression(vs:ValueSpecification[1]):Class<Any>[1]
 {
    let getAllFe = $vs->findExpressionsForFunctionInValueSpecification([getAll_Class_1__T_MANY_, getAll_Class_1__Date_1__T_MANY_, getAll_Class_1__Date_1__Date_1__T_MANY_]);
-   if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
+   if($getAllFe->isEmpty(), | Any, | $getAllFe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@Class<Any>));
 }

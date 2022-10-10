@@ -75,7 +75,7 @@ function meta::pure::mapping::aggregationAware::reprocessVS(vs:ValueSpecificatio
                                      parametersValues=$fe.parametersValues->map(v|$v->reprocessVS())
                                   ),
       cvs:ClusteredValueSpecification[1] | $cvs.val->reprocessVS(),
-      evs:ExtendedRoutedValueSpecification[1] | $evs.value->reprocessVS(),
+      evs:StoreMappingRoutedValueSpecification[1] | $evs.value->reprocessVS(),
       fvs:FunctionRoutedValueSpecification[1] | $fvs.value->reprocessVS(),
       i:InstanceValue[1] | ^$i
                             (

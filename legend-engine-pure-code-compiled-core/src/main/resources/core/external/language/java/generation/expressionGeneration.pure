@@ -80,7 +80,7 @@ function meta::external::language::java::transform::generateJavaInternal(vs:Valu
       {f:FunctionExpression[1]                  | $f->processFunctionExpression($conventions, $debug)},
       {i:InstanceValue[1]                       | $i->processInstanceValue($conventions, $debug)},
       {v:VariableExpression[1]                  | $v->processVariableExpression($conventions, $debug)},
-      {ervs:ExtendedRoutedValueSpecification[1] | $ervs.value->generateJava($conventions, $debug)},
+      {ervs:StoreMappingRoutedValueSpecification[1] | $ervs.value->generateJava($conventions, $debug)},
       {frvs:FunctionRoutedValueSpecification[1] | $frvs.value->generateJava($conventions, $debug)}
    ]);
    $result;

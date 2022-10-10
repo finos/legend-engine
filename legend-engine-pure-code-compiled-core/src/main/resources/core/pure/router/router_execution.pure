@@ -22,6 +22,37 @@ import meta::pure::router::printer::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::execution::*;
 
+function meta::pure::router::execution::execute<X|n>(rq:RoutingQuery<X|n>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<X|n>[1]
+{
+   let routingStarted = now();
+   let routed = $rq.fn->routeFunction($m, $runtime, $exeCtx, $extensions, $debug);
+   let routingElapsedTimeInNanoSecond = ($routingStarted->dateDiff(now(),DurationUnit.MILLISECONDS)) * 1000000;
+   let routingActivity = ^meta::pure::mapping::RoutingActivity(routingTimeInNanoSecond = $routingElapsedTimeInNanoSecond);
+   print(if($debug.debug,|'\nExecuting:\n',|''));
+   let results = $routed.functions->evaluateAndDeactivate()->fold({f:FunctionDefinition<Any>[1],a:Result<X|*>[1]|
+                      let clusterVS = $f.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $clusterVS->at(0).exeCtx, $extensions, $debug);
+                      let values = if ($a.values->isEmpty(),
+                                        |$res.values,
+                                        |if($a.values->at(0)->instanceOf(TabularDataSet),
+                                           |let one = $a.values->at(0)->cast(@TabularDataSet);
+                                            ^$one(rows = $one.rows->concatenate($res.values->at(0)->cast(@TabularDataSet).rows));,
+                                           |
+                                            $a.values->concatenate($res.values)->removeDuplicates({a,b|$a->genericType().rawType == $b->genericType().rawType && $clusterVS.s.instance_equals->toOne()->eval($a,$b)});
+                                           );
+                                      )->cast(@X);
+                      ^$a
+                      (
+                         values = $values,
+                         activities += $res.activities
+                      );
+                 }, ^Result<X|*>());
+
+    let resultsWithRoutingActivity = ^Result<X|n>(values=$results.values, activities=$results.activities->add($routingActivity));
+    $extensions.logActivities->map(e|$e->eval($resultsWithRoutingActivity.activities));
+    $resultsWithRoutingActivity;
+}
+
 function <<doc.deprecated>> meta::pure::router::execution::executeExpression(clusters:ClusteredValueSpecification[*], inScopeVars:Map<String, List<Any>>[1], activities:Activity[*], exeCtx: ExecutionContext[0..1], dummy:Boolean[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    // TODO: This is added for backward compatibility and would be removed in next release
@@ -33,7 +64,7 @@ function meta::pure::router::execution::executeExpression(clusters:ClusteredValu
    let current = $clusters->head()->toOne()->evaluateAndDeactivate();
    print(if($debug.debug,|'\n'+$debug.space+'Start Execution: '+$current.val->asString()+'\n',|''));
    
-   let fe = $current.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,t:TDSRoutedValueSpecification[1]|$t.value, a:Any[1]|$a])->cast(@FunctionExpression);
+   let fe = $current.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value,t:TDSRoutedValueSpecification[1]|$t.value, a:Any[1]|$a])->cast(@FunctionExpression);
    if ($fe.func == letFunction_String_1__T_m__T_m_,
          | let params = $fe.parametersValues->evaluateAndDeactivate();
            let paramName = $params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
@@ -68,7 +99,7 @@ function meta::pure::router::execution::resolve(v:Container[1], openVariables:Ma
    $v.value->evaluateAndDeactivate()->match([
                f:FunctionExpression[1]|let params = $f.parametersValues->evaluateAndDeactivate()->map(pv|^$v(value = $pv)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' ')));
                                        ^$v(value = ^$f(parametersValues = $params.value), activities += $params.activities);,
-               r:ExtendedRoutedValueSpecification[1]| $v,
+               r:StoreMappingRoutedValueSpecification[1]| $v,
                r:FunctionRoutedValueSpecification[1]| ^$v(value=$r.value)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' ')),
                i:InstanceValue[1]| let newValues = $i.values->evaluateAndDeactivate()->map(va|$va->match([
                                                                   vs:ValueSpecification[1]|^$v(value=$vs)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' ')),
@@ -83,12 +114,12 @@ function meta::pure::router::execution::resolve(v:Container[1], openVariables:Ma
                                     );,
                va:VariableExpression[1]| $v;,
                c:ClusteredValueSpecification[1]|let recurseExec = ^$v(value=$c.val)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' '));
-                                                let res = $recurseExec.value->evaluateAndDeactivate()->match([r:ExtendedRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v, r:FunctionRoutedValueSpecification[1]|^$v(value=$r.value)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' '))])
+                                                let res = $recurseExec.value->evaluateAndDeactivate()->match([r:StoreMappingRoutedValueSpecification[1]|$r.value, v:ValueSpecification[1]|$v, r:FunctionRoutedValueSpecification[1]|^$v(value=$r.value)->resolve($openVariables, $extensions, ^$debug(space = $debug.space+' '))])
                                                                             ->match(
                                                                [
                                                                   fe:FunctionExpression[1]| print(if($debug.debug,|$debug.space+'Store Execution  :'+$v.value->evaluateAndDeactivate()->asString()+'\n',|''));
                                                                                             let storeQuery = getStoreQuery($c.store, $fe, $openVariables);//^meta::pure::router::execution::StoreQuery(fe=$fe, inScopeVars=$openVariables);
-                                                                                            $c.s.executeStoreQuery->toOne()->eval($storeQuery, $recurseExec.value->cast(@ExtendedRoutedValueSpecification), $c.mapping, $c.runtime, $c.exeCtx, $extensions, ^$debug(space = $debug.space+' '));,
+                                                                                            $c.s.executeStoreQuery->toOne()->eval($storeQuery, $recurseExec.value->cast(@StoreMappingRoutedValueSpecification), $c.mapping, $c.runtime, $c.exeCtx, $extensions, ^$debug(space = $debug.space+' '));,
                                                                   i:InstanceValue[1] | ^Result<Any|*>(values = if ($i.genericType.rawType->toOne()->_subTypeOf(Function),|$i.values, |$i->reactivate($openVariables)))
                                                                ]
                                                           );

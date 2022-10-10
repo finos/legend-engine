@@ -73,7 +73,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
    let sourceType = ^GenericType(rawType=if($sourceSetImpl.mappingClass->isEmpty(),|$sourceSetImpl.class, |$sourceSetImpl.mappingClass->toOne()));
    let returnType = ^GenericType(rawType=if($targetSetImpl.mappingClass->isEmpty(),|$targetSetImpl.class, |$targetSetImpl.mappingClass->toOne()));
    let returnMultiplicity = $p.property.classifierGenericType.multiplicityArguments->at(0);
-   let newExpr = ^ExtendedRoutedValueSpecification
+   let newExpr = ^StoreMappingRoutedValueSpecification
    (
       genericType = $returnType,
       multiplicity = $returnMultiplicity,
@@ -90,7 +90,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                  genericType = $returnType,
                  multiplicity = ZeroMany, 
                  parametersValues = [
-                                       ^ExtendedRoutedValueSpecification
+                                       ^StoreMappingRoutedValueSpecification
                                        (
                                           genericType= $returnType,
                                           id = '1',
@@ -106,7 +106,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                      importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
                                                      genericType = $returnType,
                                                      multiplicity = ZeroMany,
-                                                     parametersValues = ^ExtendedRoutedValueSpecification
+                                                     parametersValues = ^StoreMappingRoutedValueSpecification
                                                                         (
                                                                            genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),
                                                                            id = '1',

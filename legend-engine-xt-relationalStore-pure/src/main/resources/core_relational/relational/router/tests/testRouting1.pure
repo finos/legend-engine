@@ -189,9 +189,9 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
    let lhsRouted=$routedParams->at(0)->evaluateAndDeactivate();
    let rhsRouted=$routedParams->at(2)->evaluateAndDeactivate();
    
-   assert($lhsRouted->instanceOf(ExtendedRoutedValueSpecification));
-   assert($lhsRouted->cast(@ExtendedRoutedValueSpecification).sets.class.name == 'Firm');
-   assert($lhsRouted->cast(@ExtendedRoutedValueSpecification).value->instanceOf(SimpleFunctionExpression));
+   assert($lhsRouted->instanceOf(StoreMappingRoutedValueSpecification));
+   assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).sets.class.name == 'Firm');
+   assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(SimpleFunctionExpression));
 }
 
 

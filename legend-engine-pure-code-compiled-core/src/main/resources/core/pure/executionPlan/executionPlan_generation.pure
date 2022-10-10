@@ -209,11 +209,11 @@ function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>
 
 function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], runtime:Runtime[0..1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
-    let fe = $cluster.val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
+    let fe = $cluster.val->match([r:StoreMappingRoutedValueSpecification[1]|$r.value,
                                   t:TDSRoutedValueSpecification[1] | $t.value,
                                   a:Any[1]|$a])->cast(@FunctionExpression);
     if ($fe.func == letFunction_String_1__T_m__T_m_,
-          | let extractedFe = $cluster.val->match([e:ExtendedRoutedValueSpecification[1]|$e.value->cast(@SimpleFunctionExpression),s:SimpleFunctionExpression[1]|$s])->cast(@SimpleFunctionExpression);
+          | let extractedFe = $cluster.val->match([e:StoreMappingRoutedValueSpecification[1]|$e.value->cast(@SimpleFunctionExpression),s:SimpleFunctionExpression[1]|$s])->cast(@SimpleFunctionExpression);
             let variables = $extractedFe.parametersValues;
             let subPlan = $variables->at(1)->match(
                               [

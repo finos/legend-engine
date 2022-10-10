@@ -62,7 +62,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    
    let serviceSetImpl  =  $rootTree.sets->toOne()->cast(@RootServiceInstanceSetImplementation);
    
-   let setsProcessed   = if($ext->isNotEmpty() && $ext->toOne()->instanceOf(ExtendedRoutedValueSpecification), | $ext->cast(@ExtendedRoutedValueSpecification).processedChainSets, |[]);
+   let setsProcessed   = if($ext->isNotEmpty() && $ext->toOne()->instanceOf(StoreMappingRoutedValueSpecification), | $ext->cast(@StoreMappingRoutedValueSpecification).processedChainSets, |[]);
    let map             = resolveParamMapForChainProcessing($setsProcessed, $sq.inScopeVars, $debug);
    let serviceStoreQueryProcessedState = $sq->processServiceStoreQuery($map, $debug);
 

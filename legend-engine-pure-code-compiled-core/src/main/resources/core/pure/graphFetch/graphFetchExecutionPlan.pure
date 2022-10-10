@@ -76,7 +76,7 @@ function meta::pure::graphFetch::executionPlan::nodeIsMerged(node:LocalGraphFetc
 function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate();
-   let resultSize = $fe.parametersValues->evaluateAndDeactivate()->at(0)->match([rvs:ExtendedRoutedValueSpecification[1] | $rvs.value.multiplicity->toOne(),
+   let resultSize = $fe.parametersValues->evaluateAndDeactivate()->at(0)->match([rvs:StoreMappingRoutedValueSpecification[1] | $rvs.value.multiplicity->toOne(),
                                                                                           vs: ValueSpecification[1] | $fe.multiplicity->toOne()]);
    assert($fe.func->in(graphFetchFunctions()) || $fe->isUnionOnGraphFetch(true)); 
    let clusteredTree            = $fe.parametersValues->evaluateAndDeactivate()->at(1)->cast(@InstanceValue).values->at(0)->cast(@ClusteredGraphFetchTree);

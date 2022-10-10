@@ -204,8 +204,8 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                             | let crossPropertyAccesses = meta::pure::router::analytics::getAllCrossPropertyAccesses($f, $mapping, $extensions);
                                               if($crossPropertyAccesses->isNotEmpty(), 
                                                  | let newExecutables = $pre_params->map(p | $p->match([
-                                                      c:ClusteredValueSpecification[1] | if($c.executable && $c.val->instanceOf(ExtendedRoutedValueSpecification) && $c.val->cast(@ExtendedRoutedValueSpecification).sets->size() == 1 && $analyticsDecision.replacedSets.first.id->contains($c.val->cast(@ExtendedRoutedValueSpecification).sets.id->toOne()),
-                                                                                            | pair($c.val->cast(@ExtendedRoutedValueSpecification).sets->toOne(), $c);,
+                                                      c:ClusteredValueSpecification[1] | if($c.executable && $c.val->instanceOf(StoreMappingRoutedValueSpecification) && $c.val->cast(@StoreMappingRoutedValueSpecification).sets->size() == 1 && $analyticsDecision.replacedSets.first.id->contains($c.val->cast(@StoreMappingRoutedValueSpecification).sets.id->toOne()),
+                                                                                            | pair($c.val->cast(@StoreMappingRoutedValueSpecification).sets->toOne(), $c);,
                                                                                             | []),
                                                       v:ValueSpecification[1] | []
                                                    ]));
@@ -299,7 +299,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                              $k;
                                        ););,
 
-               r:ExtendedRoutedValueSpecification[1]|
+               r:StoreMappingRoutedValueSpecification[1]|
                                               print(if($debug.debug,|$r->evaluateAndDeactivate()->asString()->debug($debug.space+'Routed: '),|''));
                                               let crossPropertyAccesses = $analyticsDecision->isEmpty()->if(|[], |meta::pure::router::analytics::getAllCrossPropertyAccesses($r, $r.mapping, $extensions));
                                               let clusterResponse = $r.value->cluster($r.mapping, $openVariables, $r.executionContext,$depth+1, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions);
@@ -396,7 +396,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
    )->cast(@ClusterResponse);
 }
 
-function meta::pure::router::clustering::getClusterVSFromSets(r:ExtendedRoutedValueSpecification[1], setImpl:SetImplementation[*], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
+function meta::pure::router::clustering::getClusterVSFromSets(r:StoreMappingRoutedValueSpecification[1], setImpl:SetImplementation[*], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
 {
   let res = $setImpl->toOne()->storeContractForSetImplementation($mapping, $extensions);
   buildCluster($r, $openVariables, $mapping, $res.first, $res.second, $extensions);
@@ -417,7 +417,7 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
   ]);
 }
 
-function <<access.private>> meta::pure::router::clustering::buildCluster(r:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], storeContract : StoreContract[1], store : Store[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
+function <<access.private>> meta::pure::router::clustering::buildCluster(r:StoreMappingRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], storeContract : StoreContract[1], store : Store[1], extensions:meta::pure::extension::Extension[*]):ClusteredValueSpecification[1]
 {
     ^ClusteredValueSpecification(
       genericType  = $r.genericType,
@@ -627,7 +627,7 @@ function meta::pure::router::clustering::doReplacementWithPairsForVS(vs: ValueSp
    $vs->evaluateAndDeactivate()->match([
       fe:FunctionExpression[1]                | ^$fe(func = $fe.func->match([qp:QualifiedProperty<Any>[1] | $qp->doReplacementWithPairsForLambda($pairs), f: Function<Any>[1] | $f]), parametersValues=$fe.parametersValues->map(v|$v->doReplacementWithPairsForVS($pairs))),
       cvs:ClusteredValueSpecification[1]      | ^$cvs(val = $cvs.val->doReplacementWithPairsForVS($pairs)->cast(@ValueSpecification)),
-      evs:ExtendedRoutedValueSpecification[1] | if($evs.sets->at(0)->instanceOf(CrossSetImplementation),
+      evs:StoreMappingRoutedValueSpecification[1] | if($evs.sets->at(0)->instanceOf(CrossSetImplementation),
                                                    | $vs,
                                                    | ^$evs
                                                      (
@@ -666,13 +666,13 @@ function meta::pure::router::clustering::clusteredGetAll(set: SetImplementation[
 {
    let analyticsContext = $exeCtx->cast(@AnalyticsExecutionContext);
    let sourceType = ^GenericType(rawType=if($set->instanceOf(InstanceSetImplementation) && $set->cast(@InstanceSetImplementation).mappingClass->isEmpty(),| $set.class, | $set->cast(@InstanceSetImplementation).mappingClass->toOne()));
-   let newExpr = ^ExtendedRoutedValueSpecification
+   let newExpr = ^StoreMappingRoutedValueSpecification
    (
       genericType= $sourceType, id = '1', multiplicity = ZeroMany, runtime = $runtime, mapping = $mapping, executionContext = $exeCtx, sets = $set,
       value = ^SimpleFunctionExpression
       (
          func = getAll_Class_1__T_MANY_, functionName = 'getAll', importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup), genericType = $sourceType, multiplicity = ZeroMany,
-         parametersValues = ^ExtendedRoutedValueSpecification
+         parametersValues = ^StoreMappingRoutedValueSpecification
          (
             genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), id = '1', multiplicity = PureOne, runtime = $runtime, sets = $set, mapping = $mapping, executionContext = $exeCtx,
             value = ^InstanceValue

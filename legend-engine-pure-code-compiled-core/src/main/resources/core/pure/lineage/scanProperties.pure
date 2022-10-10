@@ -292,7 +292,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                ve:VariableExpression[1] | print(if($debug.debug,|$debug.space+'Processing Variable '+$ve.name+'\n',|''));
                                           let v = $vars->get($ve.name)->orElseEmptyPath();
                                           ^Res(current = $v, result = $v);,
-               ervs:ExtendedRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing ExtendedRoutedValueSpecification\n',|''));
+               ervs:StoreMappingRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing StoreMappingRoutedValueSpecification\n',|''));
                                                           $ervs.value->internal_scanProperties($processed, $vars, ^$debug(space=$debug.space+'    '));,
                frvs:FunctionRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing FunctionRoutedValueSpecification\n',|''));
                                                           $frvs.value->internal_scanProperties($processed, $vars, ^$debug(space=$debug.space+'    '));
@@ -313,7 +313,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::shouldBeProcess
 function <<access.private>> meta::pure::lineage::scanProperties::extractType(vs:ValueSpecification[1]):Type[1]
 {
    $vs->match([
-      ervs :ExtendedRoutedValueSpecification[1] | $ervs.value->extractType(),
+      ervs :StoreMappingRoutedValueSpecification[1] | $ervs.value->extractType(),
       frvs :FunctionRoutedValueSpecification[1] | $frvs.value->extractType(),
       other:ValueSpecification[1]               | $other.genericType.rawType->toOne()
    ]);
@@ -442,7 +442,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::findFunction(vs
 function <<access.private>> meta::pure::lineage::scanProperties::findFunctions(vs:ValueSpecification[1]):Function<Any>[*]
 {
    $vs->match([
-      ervs:ExtendedRoutedValueSpecification[1] | $ervs.value->findFunction(),
+      ervs:StoreMappingRoutedValueSpecification[1] | $ervs.value->findFunction(),
       frvs:FunctionRoutedValueSpecification[1] | $frvs.value->findFunction(),
       iv  :InstanceValue[1] | $iv.values->map(v | $v->match([f:Function<Any>[1]|$f, a:Any[*]|[]])),
       a   :Any[*]           | []

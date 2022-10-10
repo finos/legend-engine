@@ -45,7 +45,7 @@ function meta::pure::mapping::propertyMappingsByPropertyName(i:EmbeddedSetImplem
 
 function meta::pure::router::builder::isVoid(v:ValueSpecification[1]):Boolean[1]
 {
-   $v->instanceOf(Void) || ($v->instanceOf(ExtendedRoutedValueSpecification) && $v->cast(@ExtendedRoutedValueSpecification).value->instanceOf(Void));
+   $v->instanceOf(Void) || ($v->instanceOf(StoreMappingRoutedValueSpecification) && $v->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(Void));
 }
 
 function meta::pure::router::builder::propagateVoid(v:ValueSpecification[1], elements:ValueSpecification[*]):ValueSpecification[1]
@@ -69,31 +69,31 @@ function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<Perm
                                                                    z:Any[1] | ^$f(parametersValues=$params)->propagateVoid($params);
                                                                   ]);
                                           ),
-               r:ExtendedRoutedValueSpecification[1]| let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->toOne();
+               r:StoreMappingRoutedValueSpecification[1]| let s = $l.values->filter(v|$v.id->toString() == $r.id).sets->toOne();
                                                       let value = $r.value;
                                                       let final = if ($value->instanceOf(FunctionExpression) && ( ($value->cast(@FunctionExpression).func->instanceOf(Property) && !($value->cast(@FunctionExpression)->meta::pure::milestoning::isMilestonedGeneratedDateProperty())) || $value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty)),
                                                          | let f = $value->cast(@FunctionExpression);
                                                            let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->build($l, $last, $r.mapping, $exeCtx, $extensions, $debug));
                                                            $params->at(0)->match(
                                                               [
-                                                                 e:ExtendedRoutedValueSpecification[1]|
+                                                                 e:StoreMappingRoutedValueSpecification[1]|
 
                                                                     let propNameReturnTypePair =  $f.func->match([
                                                                           p:Property<Nil,Any|*>[1]|pair($p.name->toOne(), $p.classifierGenericType.typeArguments->at(1).rawType->toOne()),
                                                                           qp:QualifiedProperty<Any>[1]|pair($qp.name->toOne(), $qp.genericType.rawType->toOne())
                                                                           ])->toOne();
                                                                     let propertyName = $propNameReturnTypePair.first;
-                                                                    let setImplementation = $params->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
+                                                                    let setImplementation = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
                                                                     let newParams = $setImplementation->match([
                                                                                               o:OtherwiseEmbeddedSetImplementation[1]| let pMapping = $o.propertyMappingsByPropertyName($propertyName);
-                                                                                                                                       let oldP = $params->at(0)->cast(@ExtendedRoutedValueSpecification);
+                                                                                                                                       let oldP = $params->at(0)->cast(@StoreMappingRoutedValueSpecification);
                                                                                                                                        if( $pMapping->isEmpty()
                                                                                                                                            ,|^$oldP(propertyMapping=$o.otherwisePropertyMapping);
                                                                                                                                            ,|^$oldP(propertyMapping=$o))->concatenate($params->tail());,
                                                                                               a:Any[1]| $params
                                                                              ]);
                                                                     if (!$propNameReturnTypePair.second->instanceOf(DataType),
-                                                                        |  let source = $params->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
+                                                                        |  let source = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
                                                                            let target = $s->toOne();
                                                                            let sources = $source->resolveOperation($e.mapping);
                                                                            let targets = $target->resolveOperation($e.mapping);
@@ -132,8 +132,8 @@ function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<Perm
                                                                                if ($res.value->cast(@FunctionExpression).func->instanceOf(QualifiedProperty), | $res->propagateVoid($res.value->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>).expressionSequence);, | $res);
                                                                            );,
                                                                         |if($value->cast(@FunctionExpression).func->instanceOf(Property),
-                                                                          |   print(if($debug.debug,|$debug.space+'   Looking up propertyMapping for property "'+$f.func->cast(@Property<Nil,Any|*>).name->toOne()+'" in "'+$params->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne().id+'" \n',|''));
-                                                                             let setImplementation = $params->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
+                                                                          |   print(if($debug.debug,|$debug.space+'   Looking up propertyMapping for property "'+$f.func->cast(@Property<Nil,Any|*>).name->toOne()+'" in "'+$params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne().id+'" \n',|''));
+                                                                             let setImplementation = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
                                                                              let property = $f.func->cast(@Property<Nil,Any|*>);
                                                                              let propertyMappings = $setImplementation->match([
                                                                                                i:InstanceSetImplementation[1]|let pMapping = $i->propertyMappingsByPropertyName($propertyName);
@@ -187,7 +187,7 @@ function meta::pure::router::builder::build(v:ValueSpecification[1], l:List<Perm
 
                                                       ,
                z:NoSetRoutedValueSpecification[1]|$z.value,
-               r:FunctionRoutedValueSpecification[1]|let built = $r.propertyMap.v->map(p|let id = $p.second->cast(@ExtendedRoutedValueSpecification).id;
+               r:FunctionRoutedValueSpecification[1]|let built = $r.propertyMap.v->map(p|let id = $p.second->cast(@StoreMappingRoutedValueSpecification).id;
                                                                                          let s = $l.values->filter(v|$v.id->toString() == $id).sets->toOne();
                                                                                          pair($p.first, $s);
                                                                                 )->newMap()->cast(@Map<String, SetImplementation>);

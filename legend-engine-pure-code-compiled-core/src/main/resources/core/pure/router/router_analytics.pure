@@ -109,7 +109,7 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
                        | $parameters->map(x | $x->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions))))   
          ]);,
 
-      e: ExtendedRoutedValueSpecification[1] | if($e.sets->at(0)->instanceOf(CrossSetImplementation), | [], | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=$e.propertyMapping), $extensions)),
+      e: StoreMappingRoutedValueSpecification[1] | if($e.sets->at(0)->instanceOf(CrossSetImplementation), | [], | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=$e.propertyMapping), $extensions)),
       
       e : RoutedValueSpecification[1] | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions),
 

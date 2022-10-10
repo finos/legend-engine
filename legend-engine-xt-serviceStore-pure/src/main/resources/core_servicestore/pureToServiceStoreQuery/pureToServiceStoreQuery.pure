@@ -55,7 +55,7 @@ function meta::external::store::service::functions::pureToServiceStoreQuery::pro
 {
    $vs->evaluateAndDeactivate()->match(
              [
-                 r:ExtendedRoutedValueSpecification[1] | $r.value->processValueSpecification($parentQuery, $inScopeVars, $debug),
+                 r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecification($parentQuery, $inScopeVars, $debug),
                  r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecification($parentQuery, $inScopeVars, $debug),
                  f:FunctionExpression[1]               | $f->processFunctionExpression($parentQuery, $inScopeVars, $debug),
                  i:InstanceValue[1]                    | $i->processInstanceValue($parentQuery, $inScopeVars, $debug),

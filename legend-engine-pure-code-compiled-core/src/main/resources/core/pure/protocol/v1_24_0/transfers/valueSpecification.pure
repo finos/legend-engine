@@ -48,7 +48,7 @@ function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::valueSpe
    $v->evaluateAndDeactivate()->match(
       [
          f:FunctionRoutedValueSpecification[1]|$f.value->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
-         e:ExtendedRoutedValueSpecification[1]|$e.value->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
+         e:StoreMappingRoutedValueSpecification[1]|$e.value->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          e:ClusteredValueSpecification[1]|$e.val->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions),
          funcExp:FunctionExpression[1]|
                   let fe = meta::pure::milestoning::reverseMilestoningTransforms($funcExp);
