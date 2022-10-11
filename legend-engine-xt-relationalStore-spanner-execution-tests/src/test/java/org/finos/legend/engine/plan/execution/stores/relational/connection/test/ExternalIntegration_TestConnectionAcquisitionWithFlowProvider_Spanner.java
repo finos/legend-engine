@@ -47,9 +47,6 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
 {
 
     public static final String TEST_QUERY = "select 1";
-    public static final String SPANNER_PROJECT_ID = "SPANNER_PROJECT_ID";
-    public static final String SPANNER_INSTANCE_ID = "SPANNER_INSTANCE_ID";
-    public static final String SPANNER_DATABASE_ID = "SPANNER_DATABASE_ID";
 
     public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
 
