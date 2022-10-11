@@ -7,12 +7,17 @@ options
     tokenVocab = MasteryLexerGrammar;
 }
 
+
 // -------------------------------------- IDENTIFIER --------------------------------------
 
-identifier:                                 VALID_STRING | STRING
+identifier:                                 VALID_STRING
+                                            | STRING
                                             | TRUE | FALSE
                                             | MASTER_RECORD_DEFINITION | MODEL_CLASS | RECORD_SOURCES | SOURCE_PARTITIONS
 ;
+
+masteryIdentifier:                          (VALID_STRING | '-' | INTEGER) (VALID_STRING | '-' | INTEGER)*;
+//masteryIdentifier:                        (Letter | Digit | '_' | '-') (Letter | Digit | '_' | '-' | '$')*;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
@@ -25,9 +30,8 @@ imports:                                    (importStatement)*
 importStatement:                            IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
 
-/*************
- * Common
- *************/
+// -------------------------------------- COMMON --------------------------------------
+
 boolean_value:                              TRUE | FALSE
 ;
 modelClass:                                 MODEL_CLASS COLON qualifiedName SEMI_COLON
@@ -44,9 +48,9 @@ tags:                                       TAGS COLON
                                             BRACKET_CLOSE
                                             SEMI_COLON
 ;
-/*************
- * MasterRecordDefinition
- *************/
+
+// -------------------------------------- MASTER_RECORD_DEFIMNITION --------------------------------------
+
 mastery:                                    MASTER_RECORD_DEFINITION qualifiedName
                                                 BRACE_OPEN
                                                 (
@@ -57,9 +61,8 @@ mastery:                                    MASTER_RECORD_DEFINITION qualifiedNa
                                                 BRACE_CLOSE
 ;
 
-/****************
- * RecordSources
- ****************/
+// -------------------------------------- RECORD_SOURCES --------------------------------------
+
 recordSources:                              RECORD_SOURCES COLON
                                             BRACKET_OPEN
                                             (
@@ -71,10 +74,10 @@ recordSources:                              RECORD_SOURCES COLON
                                             )
                                             BRACKET_CLOSE
 ;
-recordSource:                               BRACE_OPEN
+recordSource:                               masteryIdentifier COLON BRACE_OPEN
                                             (
-                                                id
-                                                | recordStatus
+//                                                id
+                                                recordStatus
                                                 | description
                                                 | parseService
                                                 | transformService
@@ -120,18 +123,17 @@ sourcePartitions:                           SOURCE_PARTITIONS COLON
                                             )
                                             BRACKET_CLOSE
 ;
-sourcePartiton:                             BRACE_OPEN
+sourcePartiton:                             masteryIdentifier COLON BRACE_OPEN
                                             (
-                                                 id
-                                                 | tags
+//                                                 id
+                                                 tags
                                             )*
                                             BRACE_CLOSE
 ;
 
 
-/*************
- * Resolution
- *************/
+// -------------------------------------- RESOLUTION --------------------------------------
+
 identityResolution:                         IDENTITIY_RESOLUTION COLON
                                             BRACE_OPEN
                                             (
