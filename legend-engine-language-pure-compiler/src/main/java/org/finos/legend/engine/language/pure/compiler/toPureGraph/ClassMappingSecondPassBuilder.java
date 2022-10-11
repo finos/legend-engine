@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
@@ -26,6 +27,8 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_SetImplementationC
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.OperationSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+
+import java.util.stream.Collectors;
 
 public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImplementation>
 {
@@ -45,10 +48,15 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
         if (classMapping.extendsClassMappingId != null)
         {
             String superSetId = classMapping.extendsClassMappingId;
-            SetImplementation superSet = HelperMappingBuilder.getAllClassMappings(parentMapping).detect(c -> c._id().equals(superSetId));
-            if (superSet == null)
+            ImmutableSet<SetImplementation> superSets = HelperMappingBuilder.getAllClassMappings(parentMapping).select(c -> c._id().equals(superSetId));
+            if (superSets.size() == 0)
             {
                 throw new EngineException("Can't find extends class mapping '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'", classMapping.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if (superSets.size() > 1)
+            {
+                String parents = superSets.stream().map(superSet -> "'" + HelperModelBuilder.getElementFullPath(superSet._parent(), this.context.pureModel.getExecutionSupport()) + "'").sorted().collect(Collectors.joining(", "));
+                throw new EngineException("Duplicated class mappings found with ID '" + superSetId + "' in mapping '" + HelperModelBuilder.getElementFullPath(parentMapping, this.context.pureModel.getExecutionSupport()) + "'" + "; parent mapping for duplicated: " + parents, classMapping.sourceInformation, EngineErrorType.COMPILATION);
             }
         }
         this.context.getCompilerExtensions().getExtraClassMappingSecondPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
@@ -73,7 +81,7 @@ public class ClassMappingSecondPassBuilder implements ClassMappingVisitor<SetImp
     @Override
     public SetImplementation visit(PureInstanceClassMapping classMapping)
     {
-        return null;
+        return this.visit((ClassMapping)classMapping);
     }
 
     @Override

@@ -310,7 +310,6 @@ public class IngestModeTest
         .addFields(id)
         .addFields(name)
         .addFields(amount)
-        .addFields(validityFromReference)
         .addFields(digest)
         .addFields(batchIdIn)
         .addFields(batchIdOut)
@@ -377,7 +376,6 @@ public class IngestModeTest
         .addFields(id)
         .addFields(name)
         .addFields(amount)
-        .addFields(validityFromReference)
         .addFields(digest)
         .addFields(batchIdIn)
         .addFields(batchIdOut)
@@ -389,7 +387,6 @@ public class IngestModeTest
         .addFields(id)
         .addFields(name)
         .addFields(amount)
-        .addFields(validityFromReference)
         .addFields(digest)
         .addFields(batchIdIn)
         .addFields(batchIdOut)
@@ -534,13 +531,12 @@ public class IngestModeTest
         "(\"id\" INTEGER," +
         "\"name\" VARCHAR," +
         "\"amount\" DOUBLE," +
-        "\"validity_from_reference\" DATETIME," +
         "\"digest\" VARCHAR," +
         "\"batch_id_in\" INTEGER," +
         "\"batch_id_out\" INTEGER," +
         "\"validity_from_target\" DATETIME," +
         "\"validity_through_target\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     protected String expectedBitemporalMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
         "(\"ID\" INTEGER," +
@@ -571,26 +567,24 @@ public class IngestModeTest
         "(\"id\" INTEGER," +
         "\"name\" VARCHAR," +
         "\"amount\" DOUBLE," +
-        "\"validity_from_reference\" DATETIME," +
         "\"digest\" VARCHAR," +
         "\"batch_id_in\" INTEGER," +
         "\"batch_id_out\" INTEGER," +
         "\"validity_from_target\" DATETIME," +
         "\"validity_through_target\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     protected String expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"tempWithDeleteIndicator\"" +
         "(\"id\" INTEGER," +
         "\"name\" VARCHAR," +
         "\"amount\" DOUBLE," +
-        "\"validity_from_reference\" DATETIME," +
         "\"digest\" VARCHAR," +
         "\"batch_id_in\" INTEGER," +
         "\"batch_id_out\" INTEGER," +
         "\"validity_from_target\" DATETIME," +
         "\"validity_through_target\" DATETIME," +
         "\"delete_indicator\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+        "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
     protected String getExpectedCleanupSql(String fullName, String alias)
     {
