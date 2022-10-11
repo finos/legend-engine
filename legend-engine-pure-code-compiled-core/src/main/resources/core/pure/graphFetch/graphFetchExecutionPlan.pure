@@ -137,7 +137,7 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
 
    let subClusters  = $fe.parametersValues->evaluateAndDeactivate()->map({p | $p->meta::pure::router::clustering::cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@meta::pure::router::clustering::ClusteredValueSpecification);
    let firstCluster = $subClusters->at(0);
-   let childNodes   = $subClusters->map(cls | $cls->plan($runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug));
+   let childNodes   = $subClusters->map(cls | $cls->plan($sq.inScopeVars, $exeCtx, $extensions, $debug));
    
    ^PlatformUnionExecutionNode
    (

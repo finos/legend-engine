@@ -168,19 +168,19 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
             ->map(pm|
                     let targetImpl = $modelPayload.static.mapping.classMappingById($pm->toOne().targetSetImplementationId)->toOne();
                     let src= $pm->toOne().transform->evaluate(list($modelPayload.src));
-                    let resolved   = if($targetImpl->instanceOf(OperationSetImplementation), 
-                                        |$targetImpl->cast(@OperationSetImplementation)->resolveOperation($modelPayload.static.mapping)->cast(@PureInstanceSetImplementation), 
+                    let resolved   = if($targetImpl->instanceOf(OperationSetImplementation),
+                                        |$targetImpl->cast(@OperationSetImplementation)->resolveOperation($modelPayload.static.mapping)->cast(@PureInstanceSetImplementation),
                                         |$targetImpl->cast(@PureInstanceSetImplementation)
                                       )
                                                   ->map(r| if($r.srcClass->isEmpty()  ||  $src->isEmpty() || $src->at(0)->instanceOf($r.srcClass->toOne())  ,
                                                       |$r ,
                                                       |[];
                                                     ););
-                                                    
+
                     $resolved->map({pisi|
                         let filtered = if ($pisi.filter->isEmpty(),
-                                          |$src, 
-                                          |let f = $pisi.filter->toOne(); 
+                                          |$src,
+                                          |let f = $pisi.filter->toOne();
                                             $src->filter(v|$f->evaluate(list($v))->toOne()->cast(@Boolean));
                                           );
                         let static = ^StaticMappingInstanceData
@@ -194,7 +194,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
                                         extensions = $modelPayload.static.extensions
                                       );
                         $filtered->map(v|$v->transformWithMapping($pisi, [], $static));
-                    });                                             
+                    });
             );
    );
 }
