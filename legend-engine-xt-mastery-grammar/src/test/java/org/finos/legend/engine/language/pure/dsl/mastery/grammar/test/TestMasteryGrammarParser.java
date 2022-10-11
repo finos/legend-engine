@@ -32,6 +32,7 @@ public class TestMasteryGrammarParser extends TestGrammarParser.TestGrammarParse
     @Override
     public String getParserGrammarIdentifierInclusionTestCode(List<String> keywords)
     {
+        System.out.println(TestMasteryCompilationFromGrammar.COMPLETE_CORRECT_MASTERY_MODEL);
         return TestMasteryCompilationFromGrammar.COMPLETE_CORRECT_MASTERY_MODEL;
     }
 }
