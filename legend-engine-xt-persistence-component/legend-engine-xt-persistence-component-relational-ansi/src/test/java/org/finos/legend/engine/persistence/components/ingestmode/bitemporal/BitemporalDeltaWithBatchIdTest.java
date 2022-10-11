@@ -300,57 +300,57 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" < y.\"validity_from_reference\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"validity_from_reference\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",x.\"end_date\" as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",MIN(y.\"validity_from_reference\") as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\",\"validity_through_target\" as end_date " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
             "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"validity_from_reference\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM \"mydb\".\"temp\" as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_reference\" = temp.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"validity_from_reference\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
+            "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -427,91 +427,91 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" < y.\"validity_from_reference\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"validity_from_reference\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",x.\"end_date\" as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",MIN(y.\"validity_from_reference\") as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\",\"validity_through_target\" as end_date " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
             "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage " +
-            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"validity_from_reference\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM \"mydb\".\"temp\" as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_reference\" = temp.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"validity_from_reference\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
+            "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         String expectedMainToTempForDeletion = "INSERT INTO \"mydb\".\"tempWithDeleteIndicator\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",x.\"validity_through_target\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,x.\"validity_through_target\" as end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
             "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-            "((sink.\"validity_from_reference\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
+            "((sink.\"validity_from_target\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
             "AND (stage.\"delete_indicator\" IN ('yes','1','true'))))) as x " +
             "LEFT OUTER JOIN " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"validity_from_reference\"))";
 
         String expectedUpdateMainForDeletion = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM \"mydb\".\"tempWithDeleteIndicator\" as tempWithDeleteIndicator " +
-            "WHERE ((sink.\"id\" = tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_reference\" = tempWithDeleteIndicator.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_target\" = tempWithDeleteIndicator.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMainForDeletion = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\" as start_date,COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"start_date\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,COALESCE(MIN(y.\"validity_from_target\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
             "FROM \"mydb\".\"tempWithDeleteIndicator\" as x " +
             "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"delete_indicator\" = 0) " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_target\" > x.\"validity_from_target\") AND (y.\"delete_indicator\" = 0) " +
             "WHERE x.\"delete_indicator\" = 0 " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"validity_from_reference\", x.\"digest\", x.\"validity_from_reference\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"validity_from_target\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
             "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"validity_from_reference\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"validity_from_reference\", x.\"digest\", x.\"validity_from_reference\", x.\"batch_id_in\", x.\"batch_id_out\")";
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"start_date\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"start_date\", x.\"batch_id_in\", x.\"batch_id_out\")";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -581,57 +581,57 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(datasets, dataSplitRanges);
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"data_split\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" < y.\"validity_from_reference\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"validity_from_reference\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",x.\"end_date\" as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",MIN(y.\"validity_from_reference\") as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\",\"validity_through_target\" as end_date " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
             "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage " +
-            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"validity_from_reference\" = stage.\"validity_from_reference\")) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM \"mydb\".\"temp\" as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_reference\" = temp.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"validity_from_reference\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
+            "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
@@ -710,113 +710,111 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
             "\"amount\" DOUBLE," +
-            "\"validity_from_reference\" DATETIME," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER," +
             "\"batch_id_out\" INTEGER," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
         String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
             "\"amount\" DOUBLE," +
-            "\"validity_from_reference\" DATETIME," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER," +
             "\"batch_id_out\" INTEGER," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
             "\"delete_indicator\" BOOLEAN," +
-            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
 
         String expectedStageToTemp = "INSERT INTO " + tempName + " " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\",stage.\"data_split\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" < y.\"validity_from_reference\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO " + tempName + " " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"validity_from_reference\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",x.\"end_date\" as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",MIN(y.\"validity_from_reference\") as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\",\"validity_through_target\" as end_date " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
             "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"validity_from_reference\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM " + tempName + " as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_reference\" = temp.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"validity_from_reference\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM " + tempName + " as temp)";
+            "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM " + tempName + " as temp)";
 
         String expectedMainToTempForDeletion = "INSERT INTO " + tempWithDeleteIndicatorName + " " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",x.\"validity_through_target\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,x.\"validity_through_target\" as end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
             "WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-            "((sink.\"validity_from_reference\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
+            "((sink.\"validity_from_target\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
             "AND (stage.\"delete_indicator\" IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as x " +
             "LEFT OUTER JOIN " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"validity_from_reference\"))";
 
         String expectedUpdateMainForDeletion = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM " + tempWithDeleteIndicatorName + " as tempWithDeleteIndicator " +
-            "WHERE ((sink.\"id\" = tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_reference\" = tempWithDeleteIndicator.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_target\" = tempWithDeleteIndicator.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMainForDeletion = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\" as start_date,COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"start_date\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,COALESCE(MIN(y.\"validity_from_target\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
             "FROM " + tempWithDeleteIndicatorName + " as x " +
             "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"delete_indicator\" = 0) " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_target\" > x.\"validity_from_target\") AND (y.\"delete_indicator\" = 0) " +
             "WHERE x.\"delete_indicator\" = 0 " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"validity_from_reference\", x.\"digest\", x.\"validity_from_reference\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"validity_from_target\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
             "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"validity_from_reference\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"validity_from_reference\", x.\"digest\", x.\"validity_from_reference\", x.\"batch_id_in\", x.\"batch_id_out\")";
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"start_date\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"start_date\", x.\"batch_id_in\", x.\"batch_id_out\")";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
@@ -901,57 +899,57 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" < y.\"validity_from_reference\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"validity_from_reference\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",x.\"end_date\" as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",MIN(y.\"validity_from_reference\") as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\",\"validity_through_target\" as end_date " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
             "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"validity_from_reference\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM \"mydb\".\"temp\" as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_reference\" = temp.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"validity_from_reference\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
+            "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -1019,57 +1017,57 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",{BATCH_ID_PATTERN},999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",{BATCH_ID_PATTERN},999999999 " +
             "FROM " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",COALESCE(MIN(y.\"validity_from_reference\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" < y.\"validity_from_reference\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"validity_from_reference\",x.\"digest\",x.\"validity_from_reference\",y.\"end_date\",{BATCH_ID_PATTERN},999999999 " +
+            "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
+            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",{BATCH_ID_PATTERN},999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"validity_from_reference\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",x.\"end_date\" as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"validity_from_reference\",MIN(y.\"validity_from_reference\") as end_date " +
+            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\",\"validity_through_target\" as end_date " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
             "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_reference\" > x.\"validity_from_reference\") AND (y.\"validity_from_reference\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"validity_from_reference\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
+            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"validity_from_reference\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"validity_from_reference\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
+            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = {BATCH_ID_PATTERN}-1 " +
             "WHERE (EXISTS " +
             "(SELECT * FROM \"mydb\".\"temp\" as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_reference\" = temp.\"validity_from_reference\"))) " +
+            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"validity_from_reference\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
+            "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM \"mydb\".\"temp\" as temp)";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));

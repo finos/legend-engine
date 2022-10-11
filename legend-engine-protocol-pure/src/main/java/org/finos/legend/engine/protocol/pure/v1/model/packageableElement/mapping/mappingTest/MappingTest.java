@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
-import java.util.List;
-
-public class MappingTest
+public class MappingTest extends AtomicTest
 {
-    public String name;
     public Lambda query;
-    public List<InputData> inputData;
-    @JsonProperty(value = "assert")
-    public MappingTestAssert _assert;
-    public SourceInformation sourceInformation;
 }

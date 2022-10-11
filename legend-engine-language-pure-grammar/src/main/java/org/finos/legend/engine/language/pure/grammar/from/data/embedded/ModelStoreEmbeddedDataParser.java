@@ -43,7 +43,7 @@ public class ModelStoreEmbeddedDataParser implements EmbeddedDataParser
         SourceCodeParserInfo parserInfo = getModelStoreDataParserInfo(code, walkerSourceInformation, sourceInformation);
 
         ModelStoreDataParserGrammar.DefinitionContext ctx = (ModelStoreDataParserGrammar.DefinitionContext) parserInfo.rootContext;
-        return new ModelStoreDataParseTreeWalker(walkerSourceInformation, sourceInformation).visit(ctx);
+        return new ModelStoreDataParseTreeWalker(walkerSourceInformation, sourceInformation, extensions).visit(ctx);
     }
 
     private static SourceCodeParserInfo getModelStoreDataParserInfo(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation)
