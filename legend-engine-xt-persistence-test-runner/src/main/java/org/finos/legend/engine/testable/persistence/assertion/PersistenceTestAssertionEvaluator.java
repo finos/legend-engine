@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.testable.assertion.TestAssertionHelper;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
             ExternalFormatData externalFormatData = equaltoJson.expected;
             String expectedDataString = externalFormatData.data;
             AssertionStatus assertionStatus;
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
             String actualResult = "";
 
             try
