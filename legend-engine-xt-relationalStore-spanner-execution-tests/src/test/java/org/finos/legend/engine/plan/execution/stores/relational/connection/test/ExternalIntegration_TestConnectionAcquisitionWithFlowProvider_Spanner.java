@@ -14,18 +14,36 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.Optional;
 import javax.security.auth.Subject;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProvider;
+import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
+import org.finos.legend.engine.server.test.shared.RelationalTestServerConfiguration;
+import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
+import org.finos.legend.engine.shared.core.vault.Vault;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
-public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spanner extends ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_GoogleCloud
+public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spanner extends RelationalConnectionTest
 {
 
     public static final String TEST_QUERY = "select 1";
@@ -33,6 +51,47 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     public static final String SPANNER_INSTANCE_ID = "SPANNER_INSTANCE_ID";
     public static final String SPANNER_DATABASE_ID = "SPANNER_DATABASE_ID";
 
+    public static final String GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS";
+
+    protected ConnectionManagerSelector connectionManagerSelector;
+
+    public void verifyGcpTestSetup()
+    {
+        String googleApplicationCredentials = System.getenv(GOOGLE_APPLICATION_CREDENTIALS);
+        if (googleApplicationCredentials == null || googleApplicationCredentials.trim().isEmpty())
+        {
+            fail(String.format("Tests cannot be run. GCP env variable %s has not been set", GOOGLE_APPLICATION_CREDENTIALS));
+        }
+    }
+
+    @BeforeClass
+    public static void setupTest()
+    {
+        Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
+    }
+
+    @Before
+    public void setup()
+    {
+        SpannerTestDatabaseAuthenticationFlowProvider flowProvider = new SpannerTestDatabaseAuthenticationFlowProvider();
+        SpannerTestDatabaseAuthenticationFlowProviderConfiguration flowProviderConfiguration =
+            new SpannerTestDatabaseAuthenticationFlowProviderConfiguration();
+        flowProvider.configure(flowProviderConfiguration);
+        assertGCPADCFlowIsAvailable(flowProvider);
+        this.connectionManagerSelector = new ConnectionManagerSelector(new TemporaryTestDbConfiguration(-1), Collections
+            .emptyList(), Optional.of(flowProvider));
+    }
+
+    protected void assertGCPADCFlowIsAvailable(SpannerTestDatabaseAuthenticationFlowProvider flowProvider)
+    {
+        verifyGcpTestSetup();
+        DatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
+        GCPApplicationDefaultCredentialsAuthenticationStrategy authenticationStrategy = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+        RelationalDatabaseConnection relationalDatabaseConnection = new RelationalDatabaseConnection(datasourceSpecification, authenticationStrategy, DatabaseType.Spanner);
+        Optional<DatabaseAuthenticationFlow> flow = flowProvider.lookupFlow(relationalDatabaseConnection);
+        assertTrue(relationalDatabaseConnection.type + " GCP adc flow does not exist ", flow.isPresent());
+    }
+    
     @Test
     public void testSpannerGCPADCConnection_subject() throws Exception
     {
@@ -49,19 +108,21 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
         testConnection(connection, 5, TEST_QUERY);
     }
 
-    private RelationalDatabaseConnection SpannerWithGCPADCSpec()
+    private RelationalDatabaseConnection SpannerWithGCPADCSpec() throws IOException
     {
-        SpannerDatasourceSpecification datasourceSpecification = getSpannerDatasourceSpecification();
+        DatasourceSpecification datasourceSpecification = getSpannerDatasourceSpecification();
         GCPApplicationDefaultCredentialsAuthenticationStrategy authSpec = new GCPApplicationDefaultCredentialsAuthenticationStrategy();
         return new RelationalDatabaseConnection(datasourceSpecification, authSpec, DatabaseType.Spanner);
     }
 
-    private SpannerDatasourceSpecification getSpannerDatasourceSpecification()
+    private DatasourceSpecification getSpannerDatasourceSpecification() throws IOException
     {
-        SpannerDatasourceSpecification datasourceSpecification = new SpannerDatasourceSpecification();
-        datasourceSpecification.projectId = Optional.ofNullable(System.getenv(SPANNER_PROJECT_ID)).orElse("legend-integration-testing");
-        datasourceSpecification.instanceId = Optional.ofNullable(System.getenv(SPANNER_INSTANCE_ID)).orElse("test-instance");
-        datasourceSpecification.databaseId = Optional.ofNullable(System.getenv(SPANNER_DATABASE_ID)).orElse("test-db");
-        return datasourceSpecification;
+        File config =
+            FileUtils.getFile("org/finos/legend/engine/server/test/userTestConfig_withSpannerTestConnection.json");
+        RelationalTestServerConfiguration relationalTestServerConfiguration =
+            (new ObjectMapper()).readValue(config, RelationalTestServerConfiguration.class);
+        return relationalTestServerConfiguration.staticTestConnections
+            .get(DatabaseType.Spanner)
+            .datasourceSpecification;
     }
 }

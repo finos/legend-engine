@@ -84,7 +84,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
-            <scope>test</scope>
         </dependency>
         <!-- JUNIT -->
 
@@ -97,11 +96,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-spanner-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-test-server</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->

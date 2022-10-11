@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.RelationalTestServer;
 
-public class LegendDefaultRelationalTestServerInvoker
+public class SpannerRelationalTestServerInvoker
 {
   public static void main(String[] args) throws Exception
   {
