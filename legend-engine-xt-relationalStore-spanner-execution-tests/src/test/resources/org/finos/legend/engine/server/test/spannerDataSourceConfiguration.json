@@ -1,0 +1,6 @@
+{
+  "_type": "SpannerDatasourceSpecification",
+  "projectId": "legend-integration-testing",
+  "instanceId": "test-instance",
+  "databaseId": "test-db"
+}
