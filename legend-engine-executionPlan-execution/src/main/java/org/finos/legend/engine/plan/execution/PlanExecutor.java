@@ -231,7 +231,7 @@ public class PlanExecutor
             {
                 state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName(), false);
             }
-            if (singleExecutionPlan.authDependent && (state.getResult(USER_ID) == null))
+            if ((state.getResult(USER_ID) == null))
             {
                 state.addResult(USER_ID, new ConstantResult(state.authId));
             }
