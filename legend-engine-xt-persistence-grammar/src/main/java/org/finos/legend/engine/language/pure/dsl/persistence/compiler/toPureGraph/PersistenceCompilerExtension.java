@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
@@ -105,6 +106,13 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
                             Validator<Root_meta_pure_persistence_metamodel_PersistenceContext> validator = new Validator<>(ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraValidationRules));
                             ValidationResult result = validator.execute(purePersistenceContext);
+                            if (result.invalid())
+                            {
+                                throw new EngineException(
+                                        String.format("Error validating persistence context [%s]: %s", persistenceContext._package + "::" + persistenceContext.name, result.reasons()),
+                                        persistenceContext.sourceInformation,
+                                        EngineErrorType.COMPILATION);
+                            }
                         }
                 ));
     }
@@ -141,7 +149,6 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
         });
     }
 
-
     @Override
     public List<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> getExtraTestProcessors()
     {
@@ -149,51 +156,58 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
         {
             if (test instanceof PersistenceTest)
             {
-                PersistenceTest persistenceTest = (PersistenceTest) test;
-                Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
-
-                if (persistenceTest.testBatches == null || persistenceTest.testBatches.isEmpty())
-                {
-                    throw new EngineException("PersistenceTest should have at least 1 testBatch", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
-                }
-
-                List<String> batchIds = ListIterate.collect(persistenceTest.testBatches, t -> t.id);
-                List<String> duplicateBatchIds = batchIds.stream().filter(e -> Collections.frequency(batchIds, e) > 1).distinct().collect(Collectors.toList());
-
-                if (!duplicateBatchIds.isEmpty())
-                {
-                    throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateBatchIds) + "'", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
-                }
-
-                RichIterable<? extends Root_meta_pure_persistence_metamodel_PersistenceTestBatch> testBatches = ListIterate.collect(persistenceTest.testBatches, batch ->
-                {
-                    if (batch != null)
-                    {
-                        Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
-
-                        if (batch.assertions == null)
-                        {
-                            throw new EngineException("Persistence TestBatch shouldn't have null assert", batch.sourceInformation, EngineErrorType.COMPILATION);
-                        }
-                        pureTestBatch._assertions(ListIterate.collect(batch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
-
-                        if (batch.testData == null)
-                        {
-                            throw new EngineException("Persistence TestBatch shouldn't have null test data", batch.sourceInformation, EngineErrorType.COMPILATION);
-                        }
-                        pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(batch.testData, context, processingContext));
-
-                        return pureTestBatch;
-                    }
-                    return null;
-                });
-                purePersistenceTest._testBatches(testBatches);
-                return purePersistenceTest;
+                return persistenceTest((PersistenceTest) test, context, processingContext);
             }
-            else
-            {
-                return null;
-            }
+            return null;
         });
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test persistenceTest(PersistenceTest persistenceTest, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_pure_persistence_metamodel_PersistenceTest purePersistenceTest = new Root_meta_pure_persistence_metamodel_PersistenceTest_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTest"));
+
+        if (persistenceTest.testBatches == null || persistenceTest.testBatches.isEmpty())
+        {
+            throw new EngineException("PersistenceTest should have at least 1 testBatch", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        List<String> batchIds = ListIterate.collect(persistenceTest.testBatches, t -> t.id);
+        List<String> duplicateBatchIds = batchIds.stream().filter(e -> Collections.frequency(batchIds, e) > 1).distinct().collect(Collectors.toList());
+
+        if (!duplicateBatchIds.isEmpty())
+        {
+            throw new EngineException("Multiple testBatches found with ids : '" + String.join(",", duplicateBatchIds) + "'", persistenceTest.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        RichIterable<? extends Root_meta_pure_persistence_metamodel_PersistenceTestBatch> testBatches = ListIterate.collect(
+                persistenceTest.testBatches,
+                batch -> persistenceTestBatch(batch, context, processingContext));
+
+        purePersistenceTest._testBatches(testBatches);
+        return purePersistenceTest;
+    }
+
+    private static Root_meta_pure_persistence_metamodel_PersistenceTestBatch persistenceTestBatch(PersistenceTestBatch batch, CompileContext context, ProcessingContext processingContext)
+    {
+        if (batch == null)
+        {
+            return null;
+        }
+
+        Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
+
+        if (batch.assertions == null)
+        {
+            throw new EngineException("Persistence TestBatch shouldn't have null assert", batch.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureTestBatch._assertions(ListIterate.collect(batch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
+
+        if (batch.testData == null)
+        {
+            throw new EngineException("Persistence TestBatch shouldn't have null test data", batch.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(batch.testData, context, processingContext));
+
+        return pureTestBatch;
     }
 }

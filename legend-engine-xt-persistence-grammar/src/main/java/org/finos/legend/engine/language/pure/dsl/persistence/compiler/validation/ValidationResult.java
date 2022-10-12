@@ -25,6 +25,11 @@ public abstract class ValidationResult
 
     public abstract boolean valid();
 
+    public boolean invalid()
+    {
+        return !valid();
+    }
+
     public abstract List<String> reasons();
 
     public abstract ValidationResult combine(ValidationResult other);
@@ -102,13 +107,11 @@ public abstract class ValidationResult
             {
                 return this;
             }
-            else
-            {
-                List<String> allReasons = new ArrayList<>(this.reasons().size() + other.reasons().size());
-                allReasons.addAll(this.reasons());
-                allReasons.addAll(other.reasons());
-                return ValidationResult.failure(allReasons);
-            }
+
+            List<String> allReasons = new ArrayList<>(this.reasons().size() + other.reasons().size());
+            allReasons.addAll(this.reasons());
+            allReasons.addAll(other.reasons());
+            return ValidationResult.failure(allReasons);
         }
     }
 }
