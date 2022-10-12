@@ -188,13 +188,7 @@ function meta::protocols::pure::v1_21_0::transformation::fromPureGraph::connecti
             nonProxyHosts = $s.nonProxyHosts,
             accountType = if($s.accountType->isEmpty(),|[],|$s.accountType->toOne()->toString()),
             organization = $s.organization
-        ),
-      b:meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification[1] |
-         ^meta::protocols::pure::v1_21_0::metamodel::store::relational::connection::alloy::specification::BigQueryDatasourceSpecification(
-             _type = 'bigQuery',
-             projectId = $b.projectId,
-             defaultDataset = $b.defaultDataset
-         )
+        )
    ])->toOneMany())
 }
 

@@ -25,7 +25,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selec
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -79,7 +79,7 @@ class NontemporalSnapshotPlanner extends Planner
 
         List<Operation> operations = new ArrayList<>();
         // Step 1: Delete all rows from existing table
-        operations.add(Truncate.of(mainDataset()));
+        operations.add(Delete.builder().dataset(mainDataset()).build());
         // Step 2: Insert new dataset
         operations.add(Insert.of(mainDataset(), selectStaging, stagingFields));
 
@@ -96,7 +96,7 @@ class NontemporalSnapshotPlanner extends Planner
     public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
     {
         Map<StatisticName, LogicalPlan> preRunStatisticsResult = new HashMap<>();
-        if (options().collectStatistics() && resources.mainDataSetExists())
+        if (options().collectStatistics())
         {
             //Rows Deleted = rows removed(hard-deleted) from sink table)
             preRunStatisticsResult.put(ROWS_DELETED,

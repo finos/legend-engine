@@ -69,9 +69,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.extension.TestRunner;
-import org.finos.legend.engine.testable.service.assertion.ServiceTestAssertionEvaluator;
-import org.finos.legend.engine.testable.service.connection.TestConnectionBuilder;
-import org.finos.legend.engine.testable.service.helper.PrimitiveValueSpecificationToObjectVisitor;
+import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
+import org.finos.legend.engine.testable.connection.TestConnectionBuilder;
+import org.finos.legend.engine.testable.helper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -300,7 +300,7 @@ public class ServiceTestRunner implements TestRunner
             List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
             for (TestAssertion assertion : serviceTest.assertions)
             {
-                AssertionStatus status = assertion.accept(new ServiceTestAssertionEvaluator(result, testSerializationFormat));
+                AssertionStatus status = assertion.accept(new TestAssertionEvaluator(result, testSerializationFormat));
                 if (status == null)
                 {
                     throw new RuntimeException("Can't evaluate the test assertion: '" + assertion.id + "'");

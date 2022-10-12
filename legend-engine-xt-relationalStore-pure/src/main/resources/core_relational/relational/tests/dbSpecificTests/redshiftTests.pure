@@ -56,7 +56,8 @@ function meta::relational::tests::dbSpecificTests::redshift::testsFilter(f:Funct
               let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $dynaFuncName;
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););      
 
-  let ignoredNamingTests= [meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames_DbTestConfig_1__Boolean_1_];      
+  let ignoredNamingTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames_DbTestConfig_1__Boolean_1_]; 
+  let ignoredFilterTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testFilterAfterFilter_DbTestConfig_1__Boolean_1_];     
 
-  !$ignoredDynaFunctionTests->concatenate($ignoredAggregateFunctionTests)->concatenate($ignoredNamingTests)->contains($f);
+  !$ignoredDynaFunctionTests->concatenate($ignoredFilterTests)->concatenate($ignoredAggregateFunctionTests)->concatenate($ignoredNamingTests)->contains($f);
 }

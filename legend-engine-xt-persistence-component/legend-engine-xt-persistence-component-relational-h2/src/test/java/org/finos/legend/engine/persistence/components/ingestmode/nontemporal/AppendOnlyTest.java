@@ -60,7 +60,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -105,7 +104,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -144,7 +142,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -185,7 +182,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -223,7 +219,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -256,7 +251,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();
@@ -304,7 +298,6 @@ class AppendOnlyTest extends BaseTest
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
-            .addKeyFields(idName, startTimeName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(NoAuditing.builder().build())
             .build();

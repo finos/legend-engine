@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -44,6 +45,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_router_analytics_Analytics
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -89,6 +91,17 @@ public class HelperValueSpecificationBuilder
         ctx.push("new lambda");
         ctx.addVariableLevel();
         MutableList<VariableExpression> pureParameters = ListIterate.collect(parameters, p -> (VariableExpression) p.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), ctx)));
+        if (parameters.size() != 0 && !parameters.get(0).name.equals("v_automap"))
+        {
+            if (ctx.milestoningDatePropagationContext.size() == 0)
+            {
+                ctx.pushMilestoningDatePropagationContext(new MilestoningDatePropagationContext(null, null));
+            }
+            else
+            {
+                ctx.pushMilestoningDatePropagationContext(ctx.peekMilestoningDatePropagationContext());
+            }
+        }
         MutableList<String> openVariables = Lists.mutable.empty();
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> valueSpecifications = ListIterate.collect(expressions, p -> p.accept(new ValueSpecificationBuilder(context, openVariables, ctx)));
 
@@ -104,6 +117,10 @@ public class HelperValueSpecificationBuilder
         GenericType functionType = PureModel.buildFunctionType(pureParameters, valueSpecifications.getLast()._genericType(), valueSpecifications.getLast()._multiplicity(), context.pureModel);
         ctx.removeLastVariableLevel();
         ctx.pop();
+        if (parameters.size() != 0 && !parameters.get(0).name.equals("v_automap") && ctx.milestoningDatePropagationContext.size() != 0)
+        {
+            ctx.popMilestoningDatePropagationContext();
+        }
 
         LambdaFunction lambda = new Root_meta_pure_metamodel_function_LambdaFunction_Impl<>(lambdaId)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
@@ -207,8 +224,8 @@ public class HelperValueSpecificationBuilder
                 List<Variable> lambdaParams = new FastList<>();
                 lambdaParams.add(automaLambdaparam);
                 automapLambda.parameters = lambdaParams;
-                MilestoningDatePropagationHelper.updateMilestoningPropagationContextForAutoMap(foundProperty, context, appliedProperty.parameters.size(), processedParameters.get(0), processingContext);
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
+                MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
                 result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
                 processingContext.pop();
             }

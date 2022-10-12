@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.16.1-SNAPSHOT</version>
+    <version>3.18.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -52,6 +52,7 @@
         <module>legend-engine-xt-persistence-grammar</module>
         <module>legend-engine-xt-persistence-protocol</module>
         <module>legend-engine-xt-persistence-pure</module>
+        <module>legend-engine-xt-persistence-test-runner</module>
 
         <module>legend-engine-xt-persistence-cloud-grammar</module>
         <module>legend-engine-xt-persistence-cloud-protocol</module>
@@ -102,6 +103,8 @@
         <module>legend-engine-xt-relationalStore-bigquery-execution</module>
         <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
         <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
+        <module>legend-engine-xt-relationalStore-bigquery-pure</module>
+        <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -133,6 +136,9 @@
         <module>legend-engine-xt-analytics-mapping-api</module>
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
+
+        <module>legend-engine-xt-analytics-lineage-api</module>
+        <module>legend-engine-xt-analytics-lineage-pure</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
 
@@ -186,8 +192,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.6.1</legend.pure.version>
-        <legend.shared.version>0.22.0</legend.shared.version>
+        <legend.pure.version>3.7.0</legend.pure.version>
+        <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -210,7 +216,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
-        <maven.enforcer.requireJavaVersion>[11.0.10,16)</maven.enforcer.requireJavaVersion>
+        <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -456,6 +462,7 @@
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
                 </configuration>
             </plugin>
             <plugin>
@@ -463,6 +470,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>-Xmx2g</argLine>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
@@ -734,6 +742,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-bigquery-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -788,6 +801,48 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-persistence-cloud-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-physical-plan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-ansi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-h2</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-memsql</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-snowflake</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-test-runner</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1026,6 +1081,17 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

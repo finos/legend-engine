@@ -181,7 +181,17 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                  $newCls
                               ]
                            );
-                 ^$cls(val = $fn);
+                 ^ClusteredValueSpecification
+                 (
+                   genericType  = $cls.genericType,
+                   multiplicity = $cls.multiplicity,
+                   store        = ^PlatformStore(package=::),
+                   s            = meta::pure::store::platform::contract::platformStoreContract(),
+                   openVars     = $openVariables,
+                   exeCtx       = $exeCtx,
+                   val          = $fn,
+                   executable   = true
+                 );
               );
               ^$finalCluster(letFunctions = $createdLetFns->concatenate($finalCluster.letFunctions));
          );,
@@ -248,12 +258,22 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                             if($updatedUnique->size()==1,
                                                                |
                                                                  let newLetFns = $params->map(p|if($p->in($clustersToReplace) ,
-                                                                                                   | let varName= $p-> meta::pure::router::clustering::createVarExpName($params,$depth);
-                                                                                                        let rhsCluster = $p->cast(@ClusteredValueSpecification);
-                                                                                                       ^$rhsCluster(val=createLetFunction($rhsCluster.val->cast(@FunctionExpression), $varName, $depth, $rhsCluster, $extensions));,
-                                                                                                    |[];));
+                                                                                                   | let varName    = $p->meta::pure::router::clustering::createVarExpName($params,$depth);
+                                                                                                     let rhsCluster = $p->cast(@ClusteredValueSpecification);
+                                                                                                     let letFxn     = createLetFunction($rhsCluster.val->cast(@FunctionExpression), $varName, $depth, $rhsCluster, $extensions);
+                                                                                                     ^ClusteredValueSpecification(
+                                                                                                        genericType  = $letFxn.genericType,
+                                                                                                        multiplicity = $letFxn.multiplicity,
+                                                                                                        store        = ^PlatformStore(package=::),
+                                                                                                        s            = meta::pure::store::platform::contract::platformStoreContract(),
+                                                                                                        openVars     = $openVariables,
+                                                                                                        exeCtx       = $exeCtx,
+                                                                                                        val          = $letFxn,
+                                                                                                        executable   = true
+                                                                                                      );,
+                                                                                                   | [];));
 
-                                                                  print(if($debug.debug, |$newLetFns->map(l|$l->evaluateAndDeactivate()->asString()->debug($debug.space+'Generated Lets:'))->joinStrings(''), |''));
+                                                                 print(if($debug.debug, |$newLetFns->map(l|$l->evaluateAndDeactivate()->asString()->debug($debug.space+'Generated Lets:'))->joinStrings(''), |''));
                                                                  let updatedOne=$updatedUnique->toOne();
                                                                  let updatedCluster =  ^$updatedOne(
                                                                                genericType  = $f.genericType,
@@ -410,7 +430,7 @@ function meta::pure::router::clustering::storeContractForSetImplementation(setIm
          let store = $storeContract.resolveStoreFromSetImplementation->toOne()->eval($i);
          pair($storeContract, $mapping.resolveStore($store));,
       o: meta::pure::mapping::OperationSetImplementation[1]|
-         let roots = $o->resolveInstanceSetImplementations($extensions);
+         let roots = $o->resolveInstanceSetImplementations();
          let storeContract = $roots->map(r|$extensions->meta::pure::extension::storeContractForSetImplementation($r))->removeDuplicates(x|$x.id,{a,b|$a==$b})->toOne();
          let store = $roots->map(r|$mapping.resolveStore($storeContract.resolveStoreFromSetImplementation->toOne()->eval($r)))->removeDuplicates(x|$x->elementToPath(),{a,b|$a==$b})->toOne();
          pair($storeContract, $mapping.resolveStore($store));
@@ -447,19 +467,16 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
    
    let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)-> removeDuplicates({x, y | $x.store->elementToPath() == $y.store->elementToPath() &&  meta::pure::runtime::runtimeEquality($x.runtime, $y.runtime, $extensions) && ($x.exeCtx == $y.exeCtx)});
    let n_unique = if ($p_unique->size() > 1,|$p_unique->filter(p|!$p.val->isOneFunction()),|$p_unique);
-   let unique = if ($n_unique->size() > 1 && ($n_unique->filter(p|$p.store->instanceOf(EmbeddedStore))->size() > 0),
-                        |$n_unique->filter(p|!$p.store->instanceOf(EmbeddedStore)),
-                        |$n_unique
-                   );
+   $n_unique;
 }
 
 function <<access.private>> meta::pure::router::clustering::createLetFunction(orginalFunction:FunctionExpression[1], varExpressionName:String[1], depth:Integer[1], parentCluster:ClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):SimpleFunctionExpression[1]
 {
-   let varExp = ^InstanceValue(genericType = ^GenericType(rawType= String),
+   let varExp = ^InstanceValue(genericType  = ^GenericType(rawType= String),
                                multiplicity = PureOne,
-                               values =$varExpressionName);
+                               values       = $varExpressionName);
    let newParams = $orginalFunction.parametersValues->map(p|if($p->willBeVarExp($orginalFunction, $extensions),| createVariableExpression($p,$orginalFunction,$depth+1),|$p ));
-   let updatedFunction = ^$orginalFunction(parametersValues=$newParams );
+   let updatedFunction = ^$orginalFunction(parametersValues = $newParams);
    let updatedCluster = ^ClusteredValueSpecification(
       genericType = $parentCluster.genericType,
       multiplicity = $parentCluster.multiplicity,
@@ -472,12 +489,12 @@ function <<access.private>> meta::pure::router::clustering::createLetFunction(or
       exeCtx = $parentCluster.exeCtx,
       executable = $parentCluster.executable
    );
-   ^SimpleFunctionExpression(func = letFunction_String_1__T_m__T_m_,
-                                     functionName = 'letFunction',
-                                     genericType = $orginalFunction.genericType,
-                                     multiplicity = $orginalFunction.multiplicity,
-                                     importGroup = system::imports::coreImport,
-                                     parametersValues = [$varExp,$updatedCluster ]
+   ^SimpleFunctionExpression(func             = letFunction_String_1__T_m__T_m_,
+                             functionName     = 'letFunction',
+                             genericType      = $orginalFunction.genericType,
+                             multiplicity     = $orginalFunction.multiplicity,
+                             importGroup      = system::imports::coreImport,
+                             parametersValues = [$varExp, $updatedCluster]
                           );
 }
 
@@ -504,7 +521,7 @@ function <<access.private>> meta::pure::router::clustering::clusteredVSToBeRepla
 
  function <<access.private>> meta::pure::router::clustering::createVarExpName(param:ValueSpecification[1],allParams:ValueSpecification[*],depth:Integer[1]):String[1]
 {
-  joinStrings(['tdsVar', $depth->toString(),'_', $allParams ->indexOf($param)->toOne()->toString()]);
+  joinStrings(['tdsVar', $depth->toString(),'_', $allParams->indexOf($param)->toOne()->toString()]);
 }
 
 

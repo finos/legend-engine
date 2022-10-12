@@ -69,11 +69,7 @@ class NontemporalSnapshotTest extends BaseTest
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
 
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 5);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -113,11 +109,7 @@ class NontemporalSnapshotTest extends BaseTest
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_update_timestamp_field/expected_pass1.csv";
         // Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
     }
 
@@ -140,11 +132,7 @@ class NontemporalSnapshotTest extends BaseTest
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 5);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform snapshot milestoning Pass2 ------------------------
@@ -176,11 +164,7 @@ class NontemporalSnapshotTest extends BaseTest
 
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/vanilla_case/expected_pass1.csv";
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 5);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform snapshot milestoning Pass2 ------------------------
@@ -213,11 +197,7 @@ class NontemporalSnapshotTest extends BaseTest
         // ------------ Perform snapshot milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/less_columns_in_staging/expected_pass1.csv";
         // Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 5);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform snapshot milestoning Pass2 ------------------------
@@ -256,11 +236,7 @@ class NontemporalSnapshotTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
-        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 5);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");

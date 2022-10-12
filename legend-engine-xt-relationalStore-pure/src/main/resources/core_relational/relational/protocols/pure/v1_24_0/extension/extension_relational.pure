@@ -38,6 +38,7 @@ function meta::protocols::pure::v1_24_0::extension::getRelationalExtension():met
 {
    ^meta::protocols::pure::v1_24_0::extension::SerializerExtension_v1_24_0
    (
+       moduleSerializerExtensions = meta::protocols::pure::v1_24_0::extension::relationalModuleSerializerExtension(),
        transfers_mapping_transformMapping = x:SetImplementation[1] | !$x->instanceOf(EmbeddedRelationalInstanceSetImplementation),
        transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | [
                   r:RootRelationalInstanceSetImplementation[1]| $r->meta::protocols::pure::v1_24_0::transformation::fromPureGraph::store::relational::transformRootRelationalInstanceSetImplementation($mapping, $extensions),
@@ -286,6 +287,25 @@ function meta::protocols::pure::v1_24_0::extension::getRelationalExtension():met
                         $stores->map(s|$s->concatenate($s->match([d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore()),a:Any[1]|[]])))      
       }
    )
+}
+
+function meta::protocols::pure::v1_24_0::extension::relationalModuleSerializerExtension(): meta::protocols::pure::v1_24_0::extension::RelationalModuleSerializerExtension[1]
+{
+  let dbSpecificExtensions = meta::protocols::pure::v1_24_0::extension::RelationalModule->stereotype('SerializerExtension').modelElements->cast(@meta::pure::metamodel::function::Function<{->meta::protocols::pure::v1_24_0::extension::RelationalModuleSerializerExtension[1]}>)
+    ->map(f| $f->eval())->sortBy(e| $e.module);
+  let transformDatabaseConnection = $dbSpecificExtensions.transfers_connection_transformDatabaseConnection;
+  ^meta::protocols::pure::v1_24_0::extension::RelationalModuleSerializerExtension(
+    module = 'relational',
+    transfers_connection_transformDatabaseConnection = if($transformDatabaseConnection->isNotEmpty(), |$transformDatabaseConnection->toOne(), |[]),
+    transfers_connection_transformPostProcessors = $dbSpecificExtensions.transfers_connection_transformPostProcessors,
+    transfers_connection_transformAuthenticationStrategy = $dbSpecificExtensions.transfers_connection_transformAuthenticationStrategy,
+    transfers_connection_transformDatasourceSpecification = $dbSpecificExtensions.transfers_connection_transformDatasourceSpecification,
+    transfers_connection_transformPostProcessorParameters = $dbSpecificExtensions.transfers_connection_transformPostProcessorParameters,
+    transfers_milestoning_transformMilestoning = $dbSpecificExtensions.transfers_milestoning_transformMilestoning,
+    reverse_transfers_typeLookups = $dbSpecificExtensions.reverse_transfers_typeLookups,
+    reverse_transfers_connection_transformAuthenticationStrategy = $dbSpecificExtensions.reverse_transfers_connection_transformAuthenticationStrategy,
+    reverse_transfers_connection_transformDatasourceSpecification = $dbSpecificExtensions.reverse_transfers_connection_transformDatasourceSpecification
+  );
 }
 
 function meta::protocols::pure::v1_24_0::transformation::fromPureGraph::executionPlan::transformResultColumn(c: meta::relational::mapping::SQLResultColumn[1]):meta::protocols::pure::v1_24_0::metamodel::executionPlan::SQLResultColumn[1]

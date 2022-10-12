@@ -174,7 +174,12 @@ public class HelperRuntimeBuilder
         {
             LegacyRuntime legacyRuntime = (LegacyRuntime) runtime;
             org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime");
-            ListIterate.forEach(legacyRuntime.connections, connection -> pureRuntime._connectionsAdd(connection.accept(new ConnectionFirstPassBuilder(context))));
+            ListIterate.forEach(legacyRuntime.connections, connection ->
+            {
+                final org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+                connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+                pureRuntime._connectionsAdd(pureConnection);
+            });
             return pureRuntime;
         }
         if (runtime instanceof EngineRuntime)

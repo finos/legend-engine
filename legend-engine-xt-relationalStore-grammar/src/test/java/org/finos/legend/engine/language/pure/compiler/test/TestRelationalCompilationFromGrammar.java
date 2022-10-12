@@ -1414,4 +1414,111 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         // classMappingId
         Assert.assertEquals(rootRelationalInstanceSetImplementation._id(), "simple_Item");
     }
+
+    @Test
+    public void testNestedJoinFromIncludedDatabase()
+    {
+        test("###Relational\n" +
+                "Database example::database\n" +
+                "(\n" +
+                "  include example::databaseInc\n" +
+                "\n" +
+                "  Schema exampleRoot\n" +
+                "  (\n" +
+                "    Table TableC\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "\n" +
+                "    View dbView\n" +
+                "    (\n" +
+                "      nameL :exampleSub.TableASub.name,\n" +
+                "      rootTable: [example::databaseInc]@AtoB > [example::database] @BtoC |exampleRoot.TableC.name\n" +
+                "    )\n" +
+                "    View dbViewIncTable\n" +
+                "    (\n" +
+                "      nameL :exampleRoot.TableC.name,\n" +
+                "      incTable: [example::database]@BtoC > [example::databaseInc]@AtoB |exampleSub.TableASub.name\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  Join BtoC([example::databaseInc]exampleSub.TableBSub.id = exampleRoot.TableC.id)\n" +
+                ")\n" +
+                "\n" +
+                "Database example::databaseInc\n" +
+                "(\n" +
+                "  Schema exampleSub\n" +
+                "  (\n" +
+                "    Table TableASub\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "    Table TableBSub\n" +
+                "    (\n" +
+                "      name VARCHAR(255),\n" +
+                "      id INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "\n" +
+                "  )\n" +
+                "\n" +
+                "  Join AtoB(exampleSub.TableASub.id = exampleSub.TableBSub.id)\n" +
+                ")\n");
+
+    }
+
+    public void testRelationalClassMappingWithDuplicateSetIdsError()
+    {
+        test("###Pure\n" +
+                "Class simple::Account\n" +
+                "{\n" +
+                "   id: String[1];   \n" +
+                "}\n" +
+                "\n" +
+                "Class simple::Another extends simple::Account\n" +
+                "{  \n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database simple::gen1::store\n" +
+                "(\n" +
+                "   Table Account\n" +
+                "   (\n" +
+                "      ACCOUNT_ID VARCHAR(200) PRIMARY KEY\n" +
+                "   )\n" +
+                ")\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping simple::gen1::map\n" +
+                "(\n" +
+                "   simple::Account[id]: Relational\n" +
+                "   {\n" +
+                "      scope([simple::gen1::store]Account)\n" +
+                "      (\n" +
+                "         id: ACCOUNT_ID   \n" +
+                "      )\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping simple::gen2::map\n" +
+                "(\n" +
+                "   simple::Account[id]: Relational\n" +
+                "   {\n" +
+                "      scope([simple::gen1::store]Account)\n" +
+                "      (\n" +
+                "         id: ACCOUNT_ID   \n" +
+                "      )\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping simple::merged(\n" +
+                "   include simple::gen1::map\n" +
+                "   include simple::gen2::map\n" +
+                "      \n" +
+                "   simple::Another extends [id]: Relational\n" +
+                "   {      \n" +
+                "   }   \n" +
+                ")", "COMPILATION error at [47:4-49:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
+    }
 }

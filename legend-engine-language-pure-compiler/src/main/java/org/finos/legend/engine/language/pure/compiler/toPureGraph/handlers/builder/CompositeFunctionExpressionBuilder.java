@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.MilestoningDatePropagationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -81,6 +82,10 @@ public class CompositeFunctionExpressionBuilder extends FunctionExpressionBuilde
             if (res.getOne() != null)
             {
                 return res;
+            }
+            else
+            {
+                MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
             }
             if (res.getTwo() != null)
             {

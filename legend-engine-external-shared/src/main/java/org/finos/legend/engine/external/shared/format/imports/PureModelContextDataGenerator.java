@@ -55,7 +55,7 @@ public class PureModelContextDataGenerator
         }
         catch (ClassNotFoundException e)
         {
-            return java.lang.Class.forName("org.finos.legend.pure.generated.protocols_versions_" + pureVersion + "_" + pureVersion + "_trans");
+            return java.lang.Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + pureVersion + "_transfers_metamodel");
         }
     }
 
@@ -71,7 +71,7 @@ public class PureModelContextDataGenerator
                 }
                 else
                 {
-                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, ExecutionSupport.class);
+                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Extension_MANY__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, RichIterable.class, ExecutionSupport.class);
                 }
             }
             catch (Exception e)
@@ -84,7 +84,9 @@ public class PureModelContextDataGenerator
         {
             try
             {
-                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_("vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, aClass, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, aClass, compiledExecutionSupport), compiledExecutionSupport), Class.class));
+                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(
+                    transformMethod.invoke(null, aClass, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport),
+                        compiledExecutionSupport), compiledExecutionSupport), Class.class));
             }
             catch (Exception ignored)
             {
@@ -105,7 +107,7 @@ public class PureModelContextDataGenerator
                 }
                 else
                 {
-                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Boolean_1__Class_1_", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, boolean.class, ExecutionSupport.class);
+                    return loadTransClass(pureVersion).getMethod("Root_meta_protocols_pure_" + pureVersion + "_transformation_fromPureGraph_domain_transformClass_Class_1__Boolean_1__Extension_MANY__Class_1", org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class.class, boolean.class, RichIterable.class, ExecutionSupport.class);
                 }
             }
             catch (Exception e)
@@ -118,7 +120,7 @@ public class PureModelContextDataGenerator
         {
             try
             {
-                Object functionDef = "vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, f, true, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, f, true, compiledExecutionSupport);
+                Object functionDef = transformMethod.invoke(null, f, true, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport);
                 builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(functionDef, compiledExecutionSupport), Class.class));
             }
             catch (Exception e)
@@ -275,10 +277,13 @@ public class PureModelContextDataGenerator
         {
             try
             {
-                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_("vX_X_X".equals(pureVersion) ? transformMethod.invoke(null, association, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport), compiledExecutionSupport) : transformMethod.invoke(null, association, compiledExecutionSupport), compiledExecutionSupport), Association.class));
+                builder.addElement(objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(
+                    transformMethod.invoke(null, association, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(compiledExecutionSupport),
+                        compiledExecutionSupport), compiledExecutionSupport), Association.class));
             }
-            catch (Exception ignored)
+            catch (Exception e)
             {
+                throw new RuntimeException(e);
             }
         });
         return builder.build();

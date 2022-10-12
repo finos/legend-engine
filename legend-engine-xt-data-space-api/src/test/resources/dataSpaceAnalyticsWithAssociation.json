@@ -1,0 +1,363 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Demographics",
+      "package": "domain",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "fips",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "state",
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Class2",
+      "package": "domain",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "propClass2",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "processingtemporal"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "COVIDData",
+      "package": "domain",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "fips",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "date",
+          "type": "StrictDate"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "caseType",
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "cases",
+          "type": "Float"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "lastReportedFlag",
+          "type": "Boolean"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "demographics",
+          "type": "domain::Demographics"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "Class1",
+      "package": "domain",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "propClass1",
+          "type": "String"
+        }
+      ],
+      "stereotypes": [
+        {
+          "profile": "meta::pure::profiles::temporal",
+          "value": "businesstemporal"
+        }
+      ]
+    },
+    {
+      "_type": "association",
+      "name": "Class12Assoc",
+      "package": "domain",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fromClass1",
+          "type": "domain::Class1"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "fromClass2",
+          "type": "domain::Class2"
+        }
+      ]
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "CovidDataMapping",
+      "package": "mapping",
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "MyRuntime",
+      "package": "runtime",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [
+          {
+            "store": {
+              "path": "ModelStore",
+              "type": "STORE"
+            },
+            "storeConnections": [
+              {
+                "connection": {
+                  "_type": "connectionPointer",
+                  "connection": "runtime::connection::MyConnection"
+                },
+                "id": "connection_1"
+              }
+            ]
+          }
+        ],
+        "mappings": [
+          {
+            "path": "mapping::CovidDataMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "connection",
+      "connectionValue": {
+        "_type": "JsonModelConnection",
+        "class": "domain::COVIDData",
+        "element": "ModelStore",
+        "url": "data:application/json,%7B%7D"
+      },
+      "name": "MyConnection",
+      "package": "runtime::connection"
+    },
+    {
+      "_type": "diagram",
+      "classViews": [
+        {
+          "class": "domain::COVIDData",
+          "id": "6b69f44b-f729-46aa-b244-ec5ee8164142",
+          "position": {
+            "x": 280,
+            "y": 159
+          },
+          "rectangle": {
+            "height": 128,
+            "width": 205.8291015625
+          }
+        },
+        {
+          "class": "domain::Demographics",
+          "id": "159e797e-ae75-437d-ba9c-253f99a48826",
+          "position": {
+            "x": 698,
+            "y": 238
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 111.68994140625
+          }
+        },
+        {
+          "class": "domain::Class1",
+          "id": "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+          "position": {
+            "x": 360.844970703125,
+            "y": 49
+          },
+          "rectangle": {
+            "height": 58,
+            "width": 137.390625
+          }
+        },
+        {
+          "class": "domain::Class2",
+          "id": "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+          "position": {
+            "x": 696.844970703125,
+            "y": 95
+          },
+          "rectangle": {
+            "height": 44,
+            "width": 133.68994140625
+          }
+        }
+      ],
+      "generalizationViews": [],
+      "name": "COVIDDataDiagram",
+      "package": "domain",
+      "propertyViews": [
+        {
+          "line": {
+            "points": [
+              {
+                "x": 382.91455078125,
+                "y": 223
+              },
+              {
+                "x": 753.844970703125,
+                "y": 267
+              }
+            ]
+          },
+          "property": {
+            "class": "domain::COVIDData",
+            "property": "demographics"
+          },
+          "sourceView": "6b69f44b-f729-46aa-b244-ec5ee8164142",
+          "targetView": "159e797e-ae75-437d-ba9c-253f99a48826"
+        },
+        {
+          "line": {
+            "points": [
+              {
+                "x": 763.68994140625,
+                "y": 117
+              },
+              {
+                "x": 429.540283203125,
+                "y": 78
+              }
+            ]
+          },
+          "property": {
+            "class": "domain::Class2",
+            "property": "fromClass1"
+          },
+          "sourceView": "690e89d4-23e9-46e8-8543-c89c22cc9e15",
+          "targetView": "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07"
+        },
+        {
+          "line": {
+            "points": [
+              {
+                "x": 429.540283203125,
+                "y": 78
+              },
+              {
+                "x": 763.68994140625,
+                "y": 117
+              }
+            ]
+          },
+          "property": {
+            "class": "domain::Class1",
+            "property": "fromClass2"
+          },
+          "sourceView": "f6bd8a50-8d18-4bd9-9a8d-7fad88d02b07",
+          "targetView": "690e89d4-23e9-46e8-8543-c89c22cc9e15"
+        }
+      ]
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "description": "Not over yet?",
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "runtime::MyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "mapping::CovidDataMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext"
+        },
+        {
+          "defaultRuntime": {
+            "path": "runtime::MyRuntime",
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "mapping::CovidDataMapping",
+            "type": "MAPPING"
+          },
+          "name": "dummyContext2"
+        }
+      ],
+      "featuredDiagrams": [
+        {
+          "path": "domain::COVIDDataDiagram",
+          "type": "DIAGRAM"
+        }
+      ],
+      "name": "COVIDDatapace",
+      "package": "domain",
+      "title": "COVID Sample Data"
+    }
+  ]
+}

@@ -68,6 +68,18 @@ function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParame
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterInWithResultSorcedFromAnExpression():Boolean[1]      
+{  
+   let result = meta::pure::executionPlan::executionPlan(
+                      {y:String[1]|
+                        let z = $y->split(',');
+                        meta::relational::tests::model::simple::Firm.all()->filter(e|$e.legalName->in($z))->project([f|$f.legalName], ['firm']);},
+                        meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                        let expected = 'Sequence(type=TDS[(firm,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[y:String[1]])Allocation(type=StringresultSizeRange=*name=zvalue=(PureExp(type=StringresultSizeRange=*requires=[y(String[1])]expression=$y->split(\',\'))))RelationalBlockExecutionNode(type=TDS[(firm,String,VARCHAR(200),"")](Allocation(type=Stringname=inFilterClause_zvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(z,"Stream")||((collectionSize(z![])?number)>50))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[z]tempTableName=tempTableForIn_ztempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Constant(type=Stringvalues=[select"temptableforin_z_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_zas"temptableforin_z_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(z![]",""\'""\'""null")}])))))Relational(type=TDS[(firm,String,VARCHAR(200),"")]resultColumns=[("firm",VARCHAR(200))]sql=select"root".LEGALNAMEas"firm"fromfirmTableas"root"where"root".LEGALNAMEin(${inFilterClause_z})connection=TestDatabaseConnection(type="H2"))))))';
+   assertEquals($expected, $result->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));                 
+}
+
+
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
 {  
    let expectedPlan ='Sequence\n'+
@@ -220,28 +232,6 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '  )\n'+
                      ')\n';
    assertPlanGenerationForOptionalParameter(DatabaseType.Redshift, $expectedPlan);
-}
-
-function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_BigQuery():Boolean[1]      
-{
-   let expectedPlan ='Sequence\n'+
-                     '(\n'+
-                     '  type = TDS[(Time, Integer, INT, "")]\n'+
-                     '  (\n'+
-                     '    FunctionParametersValidationNode\n'+
-                     '    (\n'+
-                     '      functionParameters = [optionalID:String[0..1], optionalActive:Boolean[0..1]]\n'+
-                     '    )\n'+
-                     '    Relational\n'+
-                     '    (\n'+
-                     '      type = TDS[(Time, Integer, INT, "")]\n'+
-                     '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
-                     '      connection = DatabaseConnection(type = "BigQuery")\n'+
-                     '    )\n'+
-                     '  )\n'+
-                     ')\n';
-   assertPlanGenerationForOptionalParameter(DatabaseType.BigQuery, $expectedPlan);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_Composite():Boolean[1]      
@@ -1579,6 +1569,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::withPlatform():Boolean[
    assertEquals('PureExp\n' +
                 '(\n' +
                 '  type = String\n' +
+                '  resultSizeRange = 1\n'+
                 '  expression = [Node Index:0] -> makeString(\', \')\n' +
                 '  (\n' +
                 '    Relational\n' +
@@ -1697,6 +1688,96 @@ function <<test.Test>> meta::pure::executionPlan::tests::twoDBRenameColumns():Bo
     ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, meta::relational::tests::tds::tdsJoin::twoDBRunTime(), meta::relational::extension::relationalExtensions());
    $result->planToString(meta::relational::extension::relationalExtensions())->println();
    true;
+}
+
+function meta::pure::executionPlan::tests::twoDBRunTimeSybaseIQ():meta::pure::runtime::Runtime[1]
+{
+   ^meta::pure::runtime::Runtime
+   (
+      connections = [^TestDatabaseConnection(
+                        element = dbInc,
+                        type=DatabaseType.SybaseIQ
+                    ),^TestDatabaseConnection(
+                        element = database2,
+                        type=DatabaseType.SybaseIQ
+                    )]
+   );
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSpaceIdentifierSybaseIQ():Boolean[1]
+{
+    let result = executionPlan({|
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'first name'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
+        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('first name')=='Adam' &&   $f.getString('legalName')=='Firm X')
+        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
+
+    assertEquals('Sequence\n'+
+    '(\n'+
+     '  type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '  (\n'+
+     '    Allocation\n'+
+     '    (\n'+
+     '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '      name = tdsVar1_0\n'+
+     '      value = \n'+
+     '        (\n'+
+     '          Relational\n'+
+     '          (\n'+
+     '            type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '            resultColumns = [("first name", VARCHAR(200)), ("eID", INT)]\n'+
+     '            sql = select \"root\".FIRSTNAME as \"first name\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
+     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '          )\n'+
+     '        )\n'+
+     '    )\n'+
+     '    Relational\n'+
+     '    (\n'+
+     '      type = TDS[(first name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '      resultColumns = [("first name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      sql = select "tdsvar1_0_0"."first name" as "first name", "tdsvar1_0_0".eID as "eID", "tdsvar1_0_0"."fID" as "fID", "tdsvar1_0_0"."legalName" as "legalName" from (select * from (${tdsVar1_0}) as "tdsvar1_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar1_0_1".eID = "firmtable_0"."fID")) as "tdsvar1_0_0" where ("tdsvar1_0_0"."first name" = \'Adam\' and "tdsvar1_0_0"."legalName" = \'Firm X\')\n'+
+     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '    )\n'+
+     '  )\n'+
+    ')\n'
+    , $result->planToString(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::twoDBTestSlashSybaseIQ():Boolean[1]
+{
+    let result = executionPlan({|
+        testJoinTDS_Person.all()->meta::pure::tds::project([col(p|$p.firstName, 'first/name'), col(p|$p.employerID, 'eID')])->join(testJoinTDS_Firm.all()->project([col(p|$p.firmID, 'fID'),
+        col(p|$p.legalName, 'legalName')]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');})->filter( f| $f.getString('first/name')=='Adam' &&   $f.getString('legalName')=='Firm X')
+        ;}, meta::relational::tests::tds::tdsJoin::testJoinTDSMappingTwoDatabase, twoDBRunTimeSybaseIQ(), meta::relational::extension::relationalExtensions());
+
+    assertEquals('Sequence\n'+
+    '(\n'+
+     '  type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '  (\n'+
+     '    Allocation\n'+
+     '    (\n'+
+     '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '      name = tdsVar1_0\n'+
+     '      value = \n'+
+     '        (\n'+
+     '          Relational\n'+
+     '          (\n'+
+     '            type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\")]\n'+
+     '            resultColumns = [("first/name", VARCHAR(200)), ("eID", INT)]\n'+
+     '            sql = select \"root\".FIRSTNAME as \"first/name\", \"root\".FIRMID as \"eID\" from personTable as \"root\"\n'+
+     '            connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '          )\n'+
+     '        )\n'+
+     '    )\n'+
+     '    Relational\n'+
+     '    (\n'+
+     '      type = TDS[(first/name, String, VARCHAR(200), \"\"), (eID, Integer, INT, \"\"), (fID, Integer, INT, \"\"), (legalName, String, VARCHAR(200), \"\")]\n'+
+     '      resultColumns = [("first/name", INT), ("eID", INT), ("fID", INT), ("legalName", VARCHAR(200))]\n'+
+     '      sql = select "tdsvar1_0_0"."first/name" as "first/name", "tdsvar1_0_0".eID as "eID", "tdsvar1_0_0"."fID" as "fID", "tdsvar1_0_0"."legalName" as "legalName" from (select * from (${tdsVar1_0}) as "tdsvar1_0_1" inner join (select "root".ID as "fID", "root".LEGALNAME as "legalName" from firmTable as "root") as "firmtable_0" on ("tdsvar1_0_1".eID = "firmtable_0"."fID")) as "tdsvar1_0_0" where ("tdsvar1_0_0"."first/name" = \'Adam\' and "tdsvar1_0_0"."legalName" = \'Firm X\')\n'+
+     '      connection = TestDatabaseConnection(type = \"SybaseIQ\")\n'+
+     '    )\n'+
+     '  )\n'+
+    ')\n'
+    , $result->planToString(meta::relational::extension::relationalExtensions()));
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinTwoDBExtend():Boolean[1]
@@ -1825,12 +1906,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionNow(
    '    Allocation\n'+
    '    (\n'+
    '      type = DateTime\n'+
+   '      resultSizeRange = 1\n'+
    '      name = x\n'+
    '      value = \n'+
    '        (\n'+
    '          PureExp\n'+
    '          (\n'+
    '            type = DateTime\n'+
+   '            resultSizeRange = 1\n'+
    '            expression = now()\n'+
    '          )\n'+
    '        )\n'+
@@ -1857,12 +1940,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionNow(
    '    Allocation\n' +
    '    (\n' +
    '      type = DateTime\n' +
+   '      resultSizeRange = 1\n'+
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = DateTime\n' +
+   '            resultSizeRange = 1\n'+
    '            expression = now()\n' +
    '            implementation\n' +
    '            (\n' +
@@ -1899,12 +1984,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n'+
    '    (\n'+
    '      type = Date\n'+
+   '      resultSizeRange = 1\n'+
    '      name = x\n'+
    '      value = \n'+
    '        (\n'+
    '          PureExp\n'+
    '          (\n'+
    '            type = Date\n'+
+   '            resultSizeRange = 1\n'+
    '            expression = now() -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n'+
    '          )\n'+
    '        )\n'+
@@ -1931,12 +2018,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
+   '      resultSizeRange = 1\n'+
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
+   '            resultSizeRange = 1\n'+
    '            expression = now() -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
    '            implementation\n' +
    '            (\n' +
@@ -2002,12 +2091,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n'+
    '    (\n'+
    '      type = Date\n'+
+   '      resultSizeRange = 1\n'+
    '      name = x\n'+
    '      value = \n'+
    '        (\n'+
    '          PureExp\n'+
    '          (\n'+
    '            type = Date\n'+
+   '            resultSizeRange = 1\n'+
    '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n'+
    '          )\n'+
    '        )\n'+
@@ -2034,12 +2125,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
+   '      resultSizeRange = 1\n' +
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
+   '            resultSizeRange = 1\n' +
    '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
    '            implementation\n' +
    '            (\n' +
@@ -2110,12 +2203,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::javaGenerationLetVariab
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
+   '      resultSizeRange = 1\n' +
    '      name = asOf\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
+   '            resultSizeRange = 1\n' +
    '            requires = [businessDate(StrictDate[0..1])]\n' +
    '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
    '            implementation\n' +

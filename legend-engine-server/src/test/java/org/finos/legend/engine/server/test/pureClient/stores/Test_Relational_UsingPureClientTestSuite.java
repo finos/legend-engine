@@ -77,6 +77,7 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::resultSourcing", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::graphFetch::tests::crossDatabase", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::aggregationAware", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::advanced::resultSourcing", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
                 });
     }

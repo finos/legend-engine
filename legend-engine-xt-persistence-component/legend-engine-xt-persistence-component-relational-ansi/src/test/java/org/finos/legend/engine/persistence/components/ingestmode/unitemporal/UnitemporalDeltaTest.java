@@ -61,7 +61,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -119,7 +118,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .dataSplitField(Optional.of(dataSplitField))
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
@@ -185,7 +183,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -206,9 +203,9 @@ public class UnitemporalDeltaTest extends IngestModeTest
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as SINK SET SINK.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'main')-1,SINK.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00' WHERE (SINK.\"BATCH_ID_OUT\" = 999999999) AND (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as STAGE WHERE ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")) AND (SINK.\"DIGEST\" <> STAGE.\"DIGEST\")))";
+        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink SET sink.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main')-1,sink.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00' WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as stage WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" <> stage.\"DIGEST\")))";
 
-        String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\", \"BATCH_TIME_IN\", \"BATCH_TIME_OUT\") (SELECT STAGE.\"ID\",STAGE.\"NAME\",STAGE.\"AMOUNT\",STAGE.\"BIZ_DATE\",STAGE.\"DIGEST\",(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE BATCH_METADATA.\"TABLE_NAME\" = 'main'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING\" as STAGE WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as SINK WHERE (SINK.\"BATCH_ID_OUT\" = 999999999) AND (SINK.\"DIGEST\" = STAGE.\"DIGEST\") AND ((SINK.\"ID\" = STAGE.\"ID\") AND (SINK.\"NAME\" = STAGE.\"NAME\")))))";
+        String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" (\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\", \"BATCH_TIME_IN\", \"BATCH_TIME_OUT\") (SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (sink.\"DIGEST\" = stage.\"DIGEST\") AND ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")))))";
 
         Assertions.assertEquals(expectedMainTableCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
@@ -230,7 +227,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -296,7 +292,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -363,7 +358,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -416,7 +410,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
         try
         {
             UnitemporalDelta ingestMode = UnitemporalDelta.builder()
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                     .batchIdInName(batchIdInField)
                     .batchIdOutName(batchIdOutField)
@@ -440,7 +433,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
         {
             UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                     .batchIdInName(batchIdInField)
                     .batchIdOutName(batchIdOutField)
@@ -467,7 +459,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
         {
             UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                     .batchIdInName(batchIdInField)
                     .batchIdOutName(batchIdOutField)
@@ -494,7 +485,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
         {
             UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                     .batchIdInName(batchIdInField)
                     .batchIdOutName(batchIdOutField)
@@ -528,7 +518,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
         {
             UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                     .batchIdInName(batchIdInField)
                     .batchIdOutName(batchIdOutField)
@@ -562,7 +551,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -643,7 +631,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -722,7 +709,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -787,7 +773,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -809,7 +794,7 @@ public class UnitemporalDeltaTest extends IngestModeTest
 
         List<String> postActionsSql = operations.postActionsSql();
         List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedTruncateTableQuery);
+        expectedSQL.add(expectedStagingCleanupQuery);
 
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
     }
@@ -819,7 +804,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -859,7 +843,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)
@@ -910,7 +893,6 @@ public class UnitemporalDeltaTest extends IngestModeTest
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(BatchIdAndDateTime.builder()
                 .batchIdInName(batchIdInField)
                 .batchIdOutName(batchIdOutField)

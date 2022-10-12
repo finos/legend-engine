@@ -21,8 +21,11 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.data.embedded.modelStore.ModelStoreDataParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DateParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.domain.StrictTimeParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -36,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.math.BigDecimal;
@@ -49,11 +53,13 @@ public class ModelStoreDataParseTreeWalker
 
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final SourceInformation sourceInformation;
+    private final PureGrammarParserExtensions extensions;
 
-    public ModelStoreDataParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation)
+    public ModelStoreDataParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.sourceInformation = sourceInformation;
+        this.extensions = extensions;
     }
 
     public ModelStoreData visit(ModelStoreDataParserGrammar.DefinitionContext ctx)
@@ -65,9 +71,30 @@ public class ModelStoreDataParseTreeWalker
         for (ModelStoreDataParserGrammar.TypeIndexedInstancesContext typeIndexedInstancesContext : ctx.typeIndexedInstances())
         {
             String fullPath = PureGrammarParserUtility.fromQualifiedName(typeIndexedInstancesContext.qualifiedName().packagePath() == null ? Collections.emptyList() : typeIndexedInstancesContext.qualifiedName().packagePath().identifier(), typeIndexedInstancesContext.qualifiedName().identifier());
-
-            ValueSpecification instances = collection(typeIndexedInstancesContext.instance().stream().map(this::visitInstance).collect(Collectors.toList()));
-
+            ValueSpecification instances = null;
+            if (typeIndexedInstancesContext.instance() != null)
+            {
+                instances = collection(typeIndexedInstancesContext.instance().stream().map(this::visitInstance).collect(Collectors.toList()));
+            }
+            if (typeIndexedInstancesContext.embeddedData() != null)
+            {
+                EmbeddedData embeddedData = HelperEmbeddedDataGrammarParser.parseEmbeddedData(typeIndexedInstancesContext.embeddedData(), this.walkerSourceInformation, extensions);
+                if (embeddedData instanceof DataElementReference)
+                {
+                    PackageableElementPtr ptr = new PackageableElementPtr();
+                    ptr.fullPath = ((DataElementReference) embeddedData).dataElement;
+                    PackageableElementPtr bindingPtr = new PackageableElementPtr();
+                    bindingPtr.fullPath = "generated::default__generatedBindingForTestData";
+                    Pair pair = new Pair();
+                    pair.first = bindingPtr;
+                    pair.second = ptr;
+                    instances = pair;
+                }
+                else
+                {
+                    throw new EngineException("Please provide reference/package of the data element , grammar for this should look like : Reference \n#{ \n(package of data)\n}#\n");
+                }
+            }
             if (result.instances.containsKey(fullPath))
             {
                 throw new EngineException("Multiple entries found for type: '" + fullPath + "'", this.walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);

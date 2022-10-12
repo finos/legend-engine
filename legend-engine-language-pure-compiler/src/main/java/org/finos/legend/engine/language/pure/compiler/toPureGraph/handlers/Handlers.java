@@ -23,8 +23,10 @@ import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.MilestoningDatePropagationContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
@@ -51,6 +53,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.platform_pure_corefunctions_meta;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -67,6 +70,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Handlers
 {
@@ -195,29 +199,34 @@ public class Handlers
 
     public static final ParametersInference LambdaCollectionInference = (parameters, ov, cc, pc) ->
     {
-        updateLambdaCollection(parameters, parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference TDSContainsInference = (parameters, ov, cc, pc) ->
     {
-        updateLambdaCollection(parameters, parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        updateLambdaCollection(parameters, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
         updateTDSRowLambda(((Lambda) parameters.get(4)).parameters);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference EvalInference = (parameters, ov, cc, pc) ->
     {
-        updateLambdaCollection(parameters, parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 0);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        ValueSpecification secondProcessedParameter = parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        updateLambdaCollection(parameters, secondProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 0);
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        return Stream.concat(Stream.of(firstProcessedParameter, secondProcessedParameter), parameters.stream().skip(2).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference LambdaColCollectionInference = (parameters, ov, cc, pc) ->
     {
-        GenericType gt = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        GenericType gt = firstProcessedParameter._genericType();
         final GenericType gt2 = gt._rawType()._name().equals("TabularDataSet") || gt._rawType()._name().equals("TableTDS") ? cc.pureModel.getGenericType("meta::pure::tds::TDSRow") : gt;
         toCollection(parameters.get(1)).values.forEach(l -> updateLambdaWithCol(gt2, l));
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     public static final ParametersInference LambdaInference = (parameters, ov, cc, pc) ->
@@ -252,15 +261,18 @@ public class Handlers
 
     public static final ParametersInference TDSFilterInference = (parameters, ov, cc, pc) ->
     {
-        GenericType gt = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        GenericType gt = firstProcessedParameter._genericType();
         if ("TabularDataSet".equals(gt._rawType()._name()))
         {
             updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
-            return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
         }
         else
         {
-            return LambdaInference.update(parameters, ov, cc, pc);
+            List<ValueSpecification> firstPassProcessed = parameters.stream().skip(1).map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            updateSimpleLambda(parameters.get(1), parameters.size() != 0 && parameters.get(0) instanceof Lambda ? firstPassProcessed.get(0)._genericType() : firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+            return ListIterate.zip(LazyIterate.concatenate(FastList.newListWith(firstProcessedParameter), firstPassProcessed).toList(), parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
         }
     };
 
@@ -288,18 +300,35 @@ public class Handlers
             {
                 updateSimpleLambda(((TdsOlapAggregation) parameter).function, cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
             }
+            if (parameter instanceof Lambda)
+            {
+                updateSimpleLambda(parameter, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
+            }
         });
 
+        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+    };
+
+    public static final ParametersInference OLAPFuncTDSInference = (parameters, ov, cc, pc) ->
+    {
+        updateSimpleLambda(parameters.get(0), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
+        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+    };
+
+    public static final ParametersInference OLAPFuncNumInference = (parameters, ov, cc, pc) ->
+    {
+        updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
         return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
     };
 
     public static final ParametersInference LambdaAndAggInference = (parameters, ov, cc, pc) ->
     {
         // Main Lambda
-        GenericType gt = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc))._genericType();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        GenericType gt = firstProcessedParameter._genericType();
         updateLambdaCollection(parameters, gt, new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1), 1);
         aggInferenceAll(parameters, gt, 0, 1, ov, cc, pc);
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
     };
 
     private final Map<String, FunctionExpressionBuilder> map = UnifiedMap.newMap();
@@ -699,12 +728,20 @@ public class Handlers
         register(m(grp(LambdaCollectionInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
                 grp(TDSContainsInference, h("meta::pure::tds::tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_", false, ps -> res("Boolean", "one"), ps -> true))));
 
-        register(m(m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String")))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4))),
-                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)))));
-    }
+        register(m(m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "OlapOperation".equals(ps.get(3)._genericType()._rawType()._name()))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5 && "FunctionDefinition".equals(ps.get(3)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && typeMany(ps.get(1), "String") && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "OlapOperation".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4 && "SortInformation".equals(ps.get(1)._genericType()._rawType()._name()) && "FunctionDefinition".equals(ps.get(2)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 3 && "OlapOperation".equals(ps.get(1)._genericType()._rawType()._name())))),
+                m(grp(TDSOLAPInference, h("meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"),  ps -> ps.size() == 3 && "FunctionDefinition".equals(ps.get(1)._genericType()._rawType()._name()))))
+                )));
 
+        register(
+                m(m(grp(OLAPFuncNumInference, h("meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_",false, ps -> res("meta::pure::tds::TdsOlapAggregation", "one"), ps -> ps.size() == 2))),
+                        m(grp(OLAPFuncTDSInference, h("meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_",false, ps -> res("meta::pure::tds::TdsOlapRank", "one"), ps -> ps.size() == 1)))));
+    }
 
     private void registerDates()
     {
@@ -1919,10 +1956,16 @@ public class Handlers
         map.put("meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__String_$1_MANY$__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "JoinType".equals(ps.get(2)._genericType()._rawType()._name())) && matchOneMany(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
         map.put("meta::pure::tds::limit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())));
-        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil", "OlapOperation", "OlapAggregation", "OlapRank", "TdsOlapAggregation", "TdsOlapRank").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())));
-        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "SortInformation".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil", "OlapOperation", "OlapAggregation", "OlapRank", "TdsOlapAggregation", "TdsOlapRank").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
-        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil", "OlapOperation", "OlapAggregation", "OlapRank", "TdsOlapAggregation", "TdsOlapRank").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
-        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 5 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "TabularDataSet", "TabularDataSetImplementation", "TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && matchZeroOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "SortInformation".equals(ps.get(2)._genericType()._rawType()._name())) && isOne(ps.get(3)._multiplicity()) && Sets.immutable.with("Nil", "OlapOperation", "OlapAggregation", "OlapRank", "TdsOlapAggregation", "TdsOlapRank").contains(ps.get(3)._genericType()._rawType()._name()) && isOne(ps.get(4)._multiplicity()) && ("Nil".equals(ps.get(4)._genericType()._rawType()._name()) || "String".equals(ps.get(4)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","FunctionDefinition","QualifiedProperty","ConcreteFunctionDefinition","LambdaFunction","NewPropertyRouteNodeFunctionDefinition").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","OlapOperation","OlapAggregation","OlapRank","TdsOlapAggregation","TdsOlapRank").contains(ps.get(1)._genericType()._rawType()._name()) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "SortInformation".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil","FunctionDefinition","QualifiedProperty","ConcreteFunctionDefinition","LambdaFunction","NewPropertyRouteNodeFunctionDefinition").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && matchZeroOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "SortInformation".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil","OlapOperation","OlapAggregation","OlapRank","TdsOlapAggregation","TdsOlapRank").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__FunctionDefinition_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil","FunctionDefinition","QualifiedProperty","ConcreteFunctionDefinition","LambdaFunction","NewPropertyRouteNodeFunctionDefinition").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && Sets.immutable.with("Nil","OlapOperation","OlapAggregation","OlapRank","TdsOlapAggregation","TdsOlapRank").contains(ps.get(2)._genericType()._rawType()._name()) && isOne(ps.get(3)._multiplicity()) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 5 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && matchZeroOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "SortInformation".equals(ps.get(2)._genericType()._rawType()._name())) && isOne(ps.get(3)._multiplicity()) && Sets.immutable.with("Nil","FunctionDefinition","QualifiedProperty","ConcreteFunctionDefinition","LambdaFunction","NewPropertyRouteNodeFunctionDefinition").contains(ps.get(3)._genericType()._rawType()._name()) && isOne(ps.get(4)._multiplicity()) && ("Nil".equals(ps.get(4)._genericType()._rawType()._name()) || "String".equals(ps.get(4)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 5 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","TabularDataSet","TabularDataSetImplementation","TableTDS").contains(ps.get(0)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "String".equals(ps.get(1)._genericType()._rawType()._name())) && matchZeroOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "SortInformation".equals(ps.get(2)._genericType()._rawType()._name())) && isOne(ps.get(3)._multiplicity()) && Sets.immutable.with("Nil","OlapOperation","OlapAggregation","OlapRank","TdsOlapAggregation","TdsOlapRank").contains(ps.get(3)._genericType()._rawType()._name()) && isOne(ps.get(4)._multiplicity()) && ("Nil".equals(ps.get(4)._genericType()._rawType()._name()) || "String".equals(ps.get(4)._genericType()._rawType()._name())));
+        map.put("meta::pure::tds::func_FunctionDefinition_1__TdsOlapRank_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil","FunctionDefinition","QualifiedProperty","ConcreteFunctionDefinition","LambdaFunction","NewPropertyRouteNodeFunctionDefinition").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::tds::func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && Sets.immutable.with("Nil","FunctionDefinition","QualifiedProperty","ConcreteFunctionDefinition","LambdaFunction","NewPropertyRouteNodeFunctionDefinition").contains(ps.get(1)._genericType()._rawType()._name()));
         map.put("meta::pure::tds::projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && Sets.immutable.with("Nil", "ColumnSpecification", "BasicColumnSpecification", "WindowColumnSpecification").contains(ps.get(1)._genericType()._rawType()._name()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::tds::projectWithColumnSubset_T_MANY__Function_MANY__String_MANY__String_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 4 && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())) && ("Nil".equals(ps.get(3)._genericType()._rawType()._name()) || "String".equals(ps.get(3)._genericType()._rawType()._name())));
         map.put("meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "String".equals(ps.get(2)._genericType()._rawType()._name())));

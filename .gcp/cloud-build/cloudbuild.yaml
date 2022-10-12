@@ -1,0 +1,9 @@
+steps:
+  - name: 'maven:3.8-openjdk-11'
+    args: ['bash', './.gcp/cloud-build/build.sh']
+timeout: 7200s
+logsBucket: 'gs://finos-legend-engine-logs'
+options:
+  logging: GCS_ONLY
+  pool:
+    name: 'projects/legend-integration-testing/locations/us-east1/workerPools/cb-worker-pool'

@@ -52,6 +52,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-xt-mastery-pure", "mastery"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-pure", "relational"))
                     .with(this.buildCore("legend-engine-xt-relationalStore-sqlserver-pure", "relational_sqlserver"))
+                    .with(this.buildCore("legend-engine-xt-relationalStore-bigquery-pure", "relational_bigquery"))
                     .with(this.buildCore("legend-engine-xt-serviceStore-pure", "servicestore"))
                     .with(this.buildCore("legend-engine-xt-text-pure", "text"))
                     .with(this.buildCore("legend-engine-xt-data-space-pure", "data-space"))
@@ -68,6 +69,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                     .with(this.buildCore("legend-engine-pure-code-compiled-core", ""))
                     .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
+                    .with(this.buildCore("legend-engine-xt-analytics-lineage-pure", "analytics-lineage"))
                     .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
         }
         catch (IOException e)

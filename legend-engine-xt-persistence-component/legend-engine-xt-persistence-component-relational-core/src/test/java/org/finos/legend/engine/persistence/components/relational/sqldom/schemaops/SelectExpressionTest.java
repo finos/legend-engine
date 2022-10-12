@@ -112,14 +112,14 @@ class SelectExpressionTest
         Table leftTable = new Table("mydb", null, "left", "A", BaseTest.QUOTE_IDENTIFIER);
         Table rightTable = new Table("mydb", null, "right", "B", BaseTest.QUOTE_IDENTIFIER);
 
-        Value field1 = new Field(leftTable, "id", BaseTest.QUOTE_IDENTIFIER, null);
-        Value field2 = new Field(rightTable, "id", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field1 = new Field(leftTable.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null);
+        Value field2 = new Field(rightTable.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null);
         Condition joinCondition = new EqualityCondition(field1, field2);
         TableLike table = new JoinOperation(leftTable, rightTable, Join.INNER_JOIN, joinCondition);
 
-        Value item1 = new Field(leftTable, "id", BaseTest.QUOTE_IDENTIFIER, null);
-        Value item2 = new Field(leftTable, "item2", BaseTest.QUOTE_IDENTIFIER, null);
-        Value item3 = new Field(rightTable, "item3", BaseTest.QUOTE_IDENTIFIER, "my_item");
+        Value item1 = new Field(leftTable.getAlias(), "id", BaseTest.QUOTE_IDENTIFIER, null);
+        Value item2 = new Field(leftTable.getAlias(), "item2", BaseTest.QUOTE_IDENTIFIER, null);
+        Value item3 = new Field(rightTable.getAlias(), "item3", BaseTest.QUOTE_IDENTIFIER, "my_item");
 
         SelectExpression selectExpression =
             new SelectStatement(

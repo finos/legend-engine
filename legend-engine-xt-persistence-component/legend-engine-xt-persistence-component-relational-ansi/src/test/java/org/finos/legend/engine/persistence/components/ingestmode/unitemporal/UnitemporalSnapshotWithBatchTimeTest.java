@@ -62,7 +62,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
 
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInField)
                 .dateTimeOutName(batchTimeOutField)
@@ -81,9 +80,9 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as SINK " +
-            "SET SINK.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00' " +
-            "WHERE SINK.\"BATCH_TIME_OUT\" = '9999-12-31 23:59:59'";
+        String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink " +
+            "SET sink.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00' " +
+            "WHERE sink.\"BATCH_TIME_OUT\" = '9999-12-31 23:59:59'";
 
         Assertions.assertEquals(expectedMainTableTimeBasedCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
@@ -97,7 +96,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInField)
                 .dateTimeOutName(batchTimeOutField)
@@ -144,7 +142,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInField)
                 .dateTimeOutName(batchTimeOutField)
@@ -194,7 +191,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
         {
             UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(TransactionDateTime.builder()
                     .dateTimeOutName(batchTimeOutField)
                     .build())
@@ -220,7 +216,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
         {
             UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
-                .addAllKeyFields(primaryKeysList)
                 .transactionMilestoning(TransactionDateTime.builder()
                     .dateTimeInName(batchTimeInField)
                     .dateTimeOutName(batchTimeOutField)
@@ -242,7 +237,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInField)
                 .dateTimeOutName(batchTimeOutField)
@@ -279,7 +273,6 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
             .digestField(digestField)
-            .addAllKeyFields(primaryKeysList)
             .transactionMilestoning(TransactionDateTime.builder()
                 .dateTimeInName(batchTimeInField)
                 .dateTimeOutName(batchTimeOutField)
@@ -313,7 +306,7 @@ public class UnitemporalSnapshotWithBatchTimeTest extends IngestModeTest
 
         List<String> postActionsSql = operations.postActionsSql();
         List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedTruncateTableQuery);
+        expectedSQL.add(expectedStagingCleanupQuery);
 
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
     }

@@ -34,7 +34,6 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -71,7 +70,6 @@ public class SnowflakeSink extends AnsiSqlSink
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
-        logicalPlanVisitorByClass.put(Truncate.class, new TruncateVisitor());
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);

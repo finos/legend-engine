@@ -39,6 +39,11 @@ public class LocalH2DataSourceSpecification extends StaticDataSourceSpecificatio
         super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategy, new Properties(), MAX_POOL_SIZE, MIN_POOL_SIZE);
     }
 
+    public LocalH2DataSourceSpecification(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties properties)
+    {
+        super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategy, properties, MAX_POOL_SIZE, MIN_POOL_SIZE);
+    }
+
     @Override
     protected Connection getConnection(IdentityState identityState, Supplier<DataSource> dataSourceBuilder)
     {

@@ -42,7 +42,6 @@ Class meta::pure::mapping::StoreQuery
 {
     fe : FunctionExpression[1];
     inScopeVars : Map<String, List<Any>>[1];
-    advancedRouting : Boolean[0..1];
     store : Store[1];
     //sets : Pair<String, List<Any>>[*]; //inputs to either cross store ( query )
 }
@@ -183,20 +182,20 @@ function <<access.private>> meta::pure::mapping::updatePropertyMappingIDWithSuff
 
 
 
-function meta::pure::router::clustering::resolveInstanceSetImplementations(o:OperationSetImplementation[1], extensions:meta::pure::extension::Extension[*]):InstanceSetImplementation[*]
+function meta::pure::router::clustering::resolveInstanceSetImplementations(o:OperationSetImplementation[1]):InstanceSetImplementation[*]
 {
    let sets = $o.operation->eval($o);
    $sets->map(s | $s->match([
-                              o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations($extensions),
-                              e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded($extensions),
+                              o:OperationSetImplementation[1] | $o->resolveInstanceSetImplementations(),
+                              e:EmbeddedSetImplementation[1] | $e->resolveRootFromEmbedded(),
                               i:InstanceSetImplementation[1] | $i
                             ]));
 }
 
-function <<access.private>> meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1], extensions:meta::pure::extension::Extension[*]):InstanceSetImplementation[*]
+function meta::pure::router::clustering::resolveRootFromEmbedded(o:EmbeddedSetImplementation[1]):InstanceSetImplementation[1]
 {
    $o.owner->match([
-                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded($extensions),
+                     e:EmbeddedSetImplementation[1]|$e->resolveRootFromEmbedded(),
                      i:InstanceSetImplementation[1]|$i
                   ]);
 }

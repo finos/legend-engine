@@ -25,6 +25,7 @@ import org.eclipse.collections.impl.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.core.TestCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
@@ -42,6 +43,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.GroupByFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.PurePropertyMapping;
@@ -60,10 +64,16 @@ import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_A
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_aggregationAware_GroupByFunctionSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_StoreTestData;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_StoreTestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_Property_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_ModelStore_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -82,6 +92,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.G
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
@@ -89,6 +100,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
@@ -321,10 +333,10 @@ public class HelperMappingBuilder
         return include;
     }
 
-    public static void processMappingTest(MappingTest mappingTest, CompileContext context)
+    public static void processMappingTest(MappingTest_Legacy mappingTestLegacy, CompileContext context)
     {
-        HelperValueSpecificationBuilder.buildLambda(mappingTest.query, context);
-        mappingTest.inputData.forEach(t -> HelperMappingBuilder.processMappingTestInputData(t, context));
+        HelperValueSpecificationBuilder.buildLambda(mappingTestLegacy.query, context);
+        mappingTestLegacy.inputData.forEach(t -> HelperMappingBuilder.processMappingTestInputData(t, context));
     }
 
     public static void processMappingTestInputData(InputData inputData, CompileContext context)
@@ -507,5 +519,89 @@ public class HelperMappingBuilder
                 ((InstanceSetImplementation) setImplementation)._mappingClass(mappingClass);
             }
         }
+    }
+
+
+    public static Test processMappingTestAndTestSuite(org.finos.legend.engine.protocol.pure.v1.model.test.Test test, CompileContext context)
+    {
+        if (test instanceof MappingTestSuite)
+        {
+            MappingTestSuite mappingTestSuite = (MappingTestSuite) test;
+            Root_meta_pure_mapping_metamodel_MappingTestSuite pureMappingTestSuite = new Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl("");
+
+            if (mappingTestSuite.tests == null || mappingTestSuite.tests.isEmpty())
+            {
+                throw new EngineException("Mapping TestSuites should have atleast 1 test", mappingTestSuite.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            List<String> testIds = ListIterate.collect(mappingTestSuite.tests, t -> t.id);
+            List<String> duplicateTestIds = testIds.stream().filter(e -> Collections.frequency(testIds, e) > 1).distinct().collect(Collectors.toList());
+
+            if (!duplicateTestIds.isEmpty())
+            {
+                throw new EngineException("Multiple tests found with ids : '" + String.join(",", duplicateTestIds) + "'", mappingTestSuite.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            RichIterable<? extends Root_meta_pure_test_AtomicTest> tests = ListIterate.collect(mappingTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, context));
+
+            pureMappingTestSuite._id(test.id);
+            if (mappingTestSuite.storeTestDatas != null)
+            {
+                pureMappingTestSuite._storeTestDatas(ListIterate.collect(mappingTestSuite.storeTestDatas, ele -> HelperMappingBuilder.processMappingElementTestData(ele, context, new ProcessingContext("Mapping Element: "))));
+            }
+            else
+            {
+                throw new EngineException("Test data needs to be provided for a valid test");
+            }
+            pureMappingTestSuite._tests(tests);
+
+            return pureMappingTestSuite;
+        }
+        else if (test instanceof MappingTest)
+        {
+            MappingTest mappingTest = (MappingTest) test;
+            Root_meta_pure_test_AtomicTest pureMappingTest = (Root_meta_pure_test_AtomicTest) TestCompilerHelper.compilePureMappingTests(mappingTest, context, new ProcessingContext("Mapping Test '" + mappingTest.id + "' Second Pass"));
+            if (mappingTest.assertions == null || mappingTest.assertions.isEmpty())
+            {
+                throw new EngineException("Mapping Tests should have atleast 1 assert", mappingTest.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            List<String> assertionIds = ListIterate.collect(mappingTest.assertions, a -> a.id);
+            List<String> duplicateAssertionIds = assertionIds.stream().filter(e -> Collections.frequency(assertionIds, e) > 1).distinct().collect(Collectors.toList());
+
+            if (!duplicateAssertionIds.isEmpty())
+            {
+                throw new EngineException("Multiple assertions found with ids : '" + String.join(",", duplicateAssertionIds) + "'", mappingTest.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            pureMappingTest._assertions(ListIterate.collect(mappingTest.assertions, assertion -> context.getCompilerExtensions().getExtraTestAssertionProcessors().stream()
+                    .map(processor -> processor.value(assertion, context, new ProcessingContext("Test Assertion '" + assertion.id + "'")))
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElseThrow(() -> new UnsupportedOperationException("No Processors found for assertion: " + assertion.id))));
+            return pureMappingTest;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private static Root_meta_pure_mapping_metamodel_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_pure_mapping_metamodel_StoreTestData storeTestData = new Root_meta_pure_mapping_metamodel_StoreTestData_Impl("");
+        storeTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
+                        .filter(Objects::nonNull)
+                        .findFirst()
+                        .orElseThrow(() -> new UnsupportedOperationException("Unsupported data")));
+        if (testData.store.equals("ModelStore"))
+        {
+            storeTestData._store(new Root_meta_pure_mapping_modelToModel_ModelStore_Impl(""));
+        }
+        else
+        {
+            storeTestData._store(context.resolveStore(testData.store));
+        }
+        return storeTestData;
     }
 }
