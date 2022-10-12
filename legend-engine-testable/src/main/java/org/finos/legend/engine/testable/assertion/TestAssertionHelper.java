@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.assertion;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -27,9 +28,14 @@ import java.io.IOException;
 
 public class TestAssertionHelper
 {
+    public static ObjectMapper buildObjectMapperForJSONComparison()
+    {
+        return new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+    }
+
     protected static AssertionStatus compareAssertionJSON(TestAssertion parentAssertion, String _expected, String _actual) throws IOException
     {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = buildObjectMapperForJSONComparison();
         JsonNode expectedJsonNode = objectMapper.readTree(_expected.getBytes());
         JsonNode actualJsonNode = objectMapper.readTree(_actual.getBytes());
 

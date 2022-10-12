@@ -25,7 +25,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -129,5 +128,39 @@ public class TestTestAssertionEvaluator
         Assert.assertEquals("{\n  \"some\" : \"data\"\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
         Assert.assertEquals("{\n  \"some\" : \"wrong_data\"\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
         Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+    }
+
+    @Test
+    public void testEqualToJsonAssertionWithDecimalPrecision()
+    {
+        ConstantResult constantResult = new ConstantResult("{\"some\":1234567890.123456789}");
+
+        ExternalFormatData data = new ExternalFormatData();
+        data.contentType = "application/json";
+
+        EqualToJson equalToJson = new EqualToJson();
+        equalToJson.id = "assert1";
+        equalToJson.expected = data;
+
+        data.data = "{\"some\":1234567890.1234567}";
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 1234567890.1234567\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 1234567890.123456789\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":1234567890.123456789012}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 1234567890.123456789012\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 1234567890.123456789\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":1234567890.123456789000}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof AssertPass);
+        Assert.assertEquals("assert1", assertionStatus.id);
     }
 }
