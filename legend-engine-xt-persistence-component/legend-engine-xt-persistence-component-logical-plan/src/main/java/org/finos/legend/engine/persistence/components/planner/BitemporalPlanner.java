@@ -38,8 +38,8 @@ abstract class BitemporalPlanner extends UnitemporalPlanner
         super(datasets, bitemporalMilestoned, plannerOptions);
 
         // validate
-        String sourceValidDateTimeFrom = bitemporalMilestoned.validityMilestoning().validityDerivation().accept(EXTRACT_SOURCE_VALID_DATE_TIME_FROM);
-        validatePrimaryKey(datasets.mainDataset().schema().fields(), sourceValidDateTimeFrom);
+        String targetValidDateTimeFrom = bitemporalMilestoned.validityMilestoning().accept(EXTRACT_TARGET_VALID_DATE_TIME_FROM);
+        validatePrimaryKey(datasets.mainDataset().schema().fields(), targetValidDateTimeFrom);
     }
 
     @Override

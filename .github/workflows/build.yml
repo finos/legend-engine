@@ -62,7 +62,7 @@ jobs:
           MAVEN_OPTS: -Xmx4g
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc -Dmaven.test.failure.ignore=true
+        run: mvn install javadoc:javadoc
         env:
           MAVEN_OPTS: -Xmx4g
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot

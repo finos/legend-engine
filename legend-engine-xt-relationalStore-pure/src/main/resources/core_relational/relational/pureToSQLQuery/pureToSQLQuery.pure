@@ -355,12 +355,10 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
                  i:InstanceValue[1] | let elements = processInstanceValue($i, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                       $elements->map(e | ^OperationWithParentPropertyMapping(element=$e));,
                  v:VariableExpression[1] | processVariableExpression($v,$currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-                 c:ClusteredValueSpecification[1]|if($c.store->instanceOf(EmbeddedStore),
-                                                           |$c.val->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-                                                           |fail('This query is attempting to join across stores which is not currently supported. If you are reusing other mapping definitions this may indicate that you have not re-aliased the store names when defining includes. \n'+
-                                                                  'For example, the mapping may have\n include mapping::example::ExampleMapping\ninstead of\n include mapping::example::ExampleMapping[OtherStore->MyStore]\n' +
-                                                                  'Cluster details:\n' + $c->asString());^OperationWithParentPropertyMapping(element=$operation);
-                                                  );,
+                 c:ClusteredValueSpecification[1]|fail('This query is attempting to join across stores which is not currently supported. If you are reusing other mapping definitions this may indicate that you have not re-aliased the store names when defining includes. \n'+
+                                                       'For example, the mapping may have\n include mapping::example::ExampleMapping\ninstead of\n include mapping::example::ExampleMapping[OtherStore->MyStore]\n' +
+                                                       'Cluster details:\n' + $c->asString());
+                                                  ^OperationWithParentPropertyMapping(element=$operation);,
                  n:NoSetRoutedValueSpecification[1]|$n.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  t:TDSRoutedValueSpecification[1] |  $t.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
              ]);

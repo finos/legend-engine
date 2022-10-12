@@ -69,6 +69,18 @@ function meta::pure::executionPlan::tests::assertPlanGenerationForOptionalParame
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::testFilterInWithResultSorcedFromAnExpression():Boolean[1]      
+{  
+   let result = meta::pure::executionPlan::executionPlan(
+                      {y:String[1]|
+                        let z = $y->split(',');
+                        meta::relational::tests::model::simple::Firm.all()->filter(e|$e.legalName->in($z))->project([f|$f.legalName], ['firm']);},
+                        meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                        let expected = 'Sequence(type=TDS[(firm,String,VARCHAR(200),"")](FunctionParametersValidationNode(functionParameters=[y:String[1]])Allocation(type=StringresultSizeRange=*name=zvalue=(PureExp(type=StringresultSizeRange=*requires=[y(String[1])]expression=$y->split(\',\'))))RelationalBlockExecutionNode(type=TDS[(firm,String,VARCHAR(200),"")](Allocation(type=Stringname=inFilterClause_zvalue=(FreeMarkerConditionalExecutionNode(type=Stringcondition=${(instanceOf(z,"Stream")||((collectionSize(z![])?number)>50))?c}trueBlock=(Sequence(type=String(CreateAndPopulateTempTable(type=meta::pure::router::VoidinputVarNames=[z]tempTableName=tempTableForIn_ztempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Constant(type=Stringvalues=[select"temptableforin_z_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_zas"temptableforin_z_0"]))))falseBlock=(Constant(type=Stringvalues=[${renderCollection(z![]",""\'""\'""null")}])))))Relational(type=TDS[(firm,String,VARCHAR(200),"")]resultColumns=[("firm",VARCHAR(200))]sql=select"root".LEGALNAMEas"firm"fromfirmTableas"root"where"root".LEGALNAMEin(${inFilterClause_z})connection=TestDatabaseConnection(type="H2"))))))';
+   assertEquals($expected, $result->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));                 
+}
+
+
 function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOptionalParameter_SybaseIQ():Boolean[1]      
 {  
    let expectedPlan ='Sequence\n'+
@@ -1560,6 +1572,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::withPlatform():Boolean[
    assertEquals('PureExp\n' +
                 '(\n' +
                 '  type = String\n' +
+                '  resultSizeRange = 1\n'+
                 '  expression = [Node Index:0] -> makeString(\', \')\n' +
                 '  (\n' +
                 '    Relational\n' +
@@ -1896,12 +1909,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionNow(
    '    Allocation\n'+
    '    (\n'+
    '      type = DateTime\n'+
+   '      resultSizeRange = 1\n'+
    '      name = x\n'+
    '      value = \n'+
    '        (\n'+
    '          PureExp\n'+
    '          (\n'+
    '            type = DateTime\n'+
+   '            resultSizeRange = 1\n'+
    '            expression = now()\n'+
    '          )\n'+
    '        )\n'+
@@ -1928,12 +1943,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionNow(
    '    Allocation\n' +
    '    (\n' +
    '      type = DateTime\n' +
+   '      resultSizeRange = 1\n'+
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = DateTime\n' +
+   '            resultSizeRange = 1\n'+
    '            expression = now()\n' +
    '            implementation\n' +
    '            (\n' +
@@ -1970,12 +1987,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n'+
    '    (\n'+
    '      type = Date\n'+
+   '      resultSizeRange = 1\n'+
    '      name = x\n'+
    '      value = \n'+
    '        (\n'+
    '          PureExp\n'+
    '          (\n'+
    '            type = Date\n'+
+   '            resultSizeRange = 1\n'+
    '            expression = now() -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n'+
    '          )\n'+
    '        )\n'+
@@ -2002,12 +2021,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
+   '      resultSizeRange = 1\n'+
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
+   '            resultSizeRange = 1\n'+
    '            expression = now() -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
    '            implementation\n' +
    '            (\n' +
@@ -2073,12 +2094,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n'+
    '    (\n'+
    '      type = Date\n'+
+   '      resultSizeRange = 1\n'+
    '      name = x\n'+
    '      value = \n'+
    '        (\n'+
    '          PureExp\n'+
    '          (\n'+
    '            type = Date\n'+
+   '            resultSizeRange = 1\n'+
    '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n'+
    '          )\n'+
    '        )\n'+
@@ -2105,12 +2128,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::letVariableFunctionAdju
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
+   '      resultSizeRange = 1\n' +
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
+   '            resultSizeRange = 1\n' +
    '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
    '            implementation\n' +
    '            (\n' +
@@ -2181,12 +2206,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::javaGenerationLetVariab
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
+   '      resultSizeRange = 1\n' +
    '      name = asOf\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
+   '            resultSizeRange = 1\n' +
    '            requires = [businessDate(StrictDate[0..1])]\n' +
    '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
    '            implementation\n' +

@@ -135,7 +135,7 @@ public class RelationalExecutor
 
         if (executionState.inAllocation)
         {
-            if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.transformAllocation)
+            if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.realizeInMemory)
             {
                 return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
             }
@@ -261,6 +261,15 @@ public class RelationalExecutor
             else if (var.getValue() instanceof PreparedTempTableResult && sqlQuery.contains("(${" + var.getKey() + "})"))
             {
                 sqlQuery = sqlQuery.replace("(${" + var.getKey() + "})", ((PreparedTempTableResult) var.getValue()).getTempTableName());
+            }
+            else if (var.getValue() instanceof RelationalResult && (sqlQuery.contains("inFilterClause_" + var.getKey() + "})") || sqlQuery.contains("${" + var.getKey() + "}")))
+            {
+                if (((RelationalResult) var.getValue()).columnCount == 1)
+                {
+                    RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) var.getValue().realizeInMemory();
+                    List<Map<String, Object>> rowValueMaps = realizedRelationalResult.getRowValueMaps(false);
+                    executionState.addResult(var.getKey(), new ConstantResult(rowValueMaps.stream().flatMap(map -> map.values().stream()).collect(Collectors.toList())));
+                }
             }
         }
 

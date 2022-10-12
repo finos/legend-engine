@@ -1,0 +1,31 @@
+[
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+      "_type": "bigQuery",
+      "projectId": "legend-integration-testing",
+      "defaultDataset": "integration_dataset1"
+    },
+    "authenticationStrategy": {
+      "_type": "gcpWorkloadIdentityFederation",
+      "serviceAccountEmail": "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com"
+    },
+    "databaseType": "BigQuery",
+    "type": "BigQuery",
+    "element": "workloadIdentityFederation"
+  },
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+      "_type": "bigQuery",
+      "projectId": "legend-integration-testing",
+      "defaultDataset": "integration_dataset1"
+    },
+    "authenticationStrategy": {
+      "_type": "gcpApplicationDefaultCredentials"
+    },
+    "databaseType": "BigQuery",
+    "type": "BigQuery",
+    "element": "applicationDefaultCredentials"
+  }
+]

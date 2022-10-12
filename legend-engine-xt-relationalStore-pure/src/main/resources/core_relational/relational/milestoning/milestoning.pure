@@ -137,7 +137,11 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     ll:LiteralList[1] | $ll,
                     op:UnaryOperation[1] | ^$op(nested=$op.nested->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     op:BinaryOperation[1] | ^$op(left=$op.left->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions),right=$op.right->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
-                    op:VariableArityOperation[1] | ^$op(args=$op.args->map(a|$a->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)))
+                    op:VariableArityOperation[1] | ^$op(args=$op.args->map(a|$a->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
+                    s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), property = $s.property->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->map(i | $i->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
+                    s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
+                    s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
+                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn))     
                   ]);
 }
 

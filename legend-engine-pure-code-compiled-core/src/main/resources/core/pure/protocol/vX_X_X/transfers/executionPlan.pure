@@ -25,7 +25,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
    (
       serializer = ^Protocol(name='pure', version='vX_X_X'),
       templateFunctions = $sourcePlan.processingTemplateFunctions,
-      authDependent = $sourcePlan.authDependent,
       kerberos = $sourcePlan.kerberos,
       rootExecutionNode = $sourcePlan.rootExecutionNode->transformNode($sourcePlan.mapping, $extensions),
       globalImplementationSupport = $sourcePlan.globalImplementationSupport->map(impl | $impl->transformPlatformGlobalImplementation())
@@ -94,7 +93,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                _type = 'allocation',
                resultType = $alloc.resultType->transformResultType($mapping, $extensions),
                resultSizeRange = $alloc.resultSizeRange->isEmpty()->if(|[],|$alloc.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()),
-               varName = $alloc.varName
+               varName = $alloc.varName,
+               realizeInMemory = $alloc.realizeInMemory
             ),
          exp:meta::pure::executionPlan::FunctionParametersValidationNode[1]|
            ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::FunctionParametersValidationNode(
@@ -212,7 +212,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
    ^$n(
       requiredVariableInputs = $node.requiredVariableInputs->map(s | $s->transformSource()),
       executionNodes  = $node.executionNodes->map(s|$s->transformNode($mapping, $extensions)),
-      implementation  = $node.implementation->map(impl | $impl->transformPlatformNodeImplementation())
+      implementation  = $node.implementation->map(impl | $impl->transformPlatformNodeImplementation()),
+      authDependent = $node.authDependent
    );
 }
 

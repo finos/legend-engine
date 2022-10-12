@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -151,6 +152,11 @@ public abstract class AlloyTestServer
         return executePlan(singleExecutionPlan, Collections.emptyMap());
     }
 
+    protected String executePlan(SingleExecutionPlan plan,String user)
+    {
+        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user, null);
+        return result.flush(new RelationalResultToJsonDefaultSerializer(result));
+    }
 
     protected String executePlan(SingleExecutionPlan plan, Map<String, ?> params)
     {

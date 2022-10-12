@@ -33,6 +33,7 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
+import org.finos.legend.engine.api.analytics.LineageAnalytics;
 import org.finos.legend.engine.api.analytics.MappingAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
@@ -166,7 +167,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();
-        environment.servlets().setSessionHandler(new SessionHandler());
+        SessionHandler sessionHandler = new SessionHandler();
+        if (serverConfiguration.sessionCookie != null)
+        {
+            sessionHandler.setSessionCookie(serverConfiguration.sessionCookie);
+        }
+        environment.servlets().setSessionHandler(sessionHandler);
         environment.servlets().addServletListeners(sessionTracker);
         environment.jersey().register(new SessionInfo(sessionTracker));
 
@@ -234,6 +240,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new MappingAnalytics(modelManager));
         environment.jersey().register(new DiagramAnalytics(modelManager));
         environment.jersey().register(new DataSpaceAnalytics(modelManager));
+        environment.jersey().register(new LineageAnalytics(modelManager));
 
         // Testable
         environment.jersey().register(new Testable(modelManager));

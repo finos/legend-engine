@@ -12,12 +12,11 @@ on:
 
 jobs:
   stale:
-
+    if: github.repository == 'finos/legend-engine' # only run this for the main repository
     runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
-
     steps:
     - uses: actions/stale@v5
       with:
