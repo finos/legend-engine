@@ -52,6 +52,11 @@ function meta::pure::persistence::validation::failure(error: String[1]): Validat
   ^Failure(errors = [$error]);
 }
 
+function meta::pure::persistence::validation::failures(errors: String[1..*]): ValidationResult[1]
+{
+  ^Failure(errors = $errors);
+}
+
 function meta::pure::persistence::validation::combine(v1: ValidationResult[1], v2: ValidationResult[1]): ValidationResult[1]
 {
   $v1->match(
