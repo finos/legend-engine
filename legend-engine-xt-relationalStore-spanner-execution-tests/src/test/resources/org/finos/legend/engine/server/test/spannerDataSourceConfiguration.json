@@ -1,6 +1,13 @@
-{
-  "_type": "SpannerDatasourceSpecification",
-  "projectId": "legend-integration-testing",
-  "instanceId": "test-instance",
-  "databaseId": "test-db"
-}
+[
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+      "_type": "spanner",
+      "projectId": "legend-integration-testing",
+      "instanceId": "test-instance",
+      "databaseId": "test-db"
+    },
+    "databaseType": "Spanner",
+    "type": "Spanner"
+  }
+]

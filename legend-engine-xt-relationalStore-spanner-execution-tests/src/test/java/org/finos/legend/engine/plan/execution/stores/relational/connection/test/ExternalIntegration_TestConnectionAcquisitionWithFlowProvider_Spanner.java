@@ -14,14 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
 import javax.security.auth.Subject;
-import org.apache.commons.io.FileUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProvider;
@@ -113,9 +110,12 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
 
     private DatasourceSpecification getSpannerDatasourceSpecification() throws IOException
     {
-        File config =
-            FileUtils.getFile("src/test/resources/org/finos/legend/engine/server/test/spannerDataSourceConfiguration.json");
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(config, SpannerDatasourceSpecification.class);
+        String dataSourceConfig =
+            getResourceAsString("/org/finos/legend/engine/server/test/spannerDataSourceConfiguration.json");
+        return readRelationalConnections(dataSourceConfig).stream()
+            .filter(relationalDatabaseConnection -> relationalDatabaseConnection.databaseType == DatabaseType.Spanner)
+            .map(relationalDatabaseConnection -> relationalDatabaseConnection.datasourceSpecification)
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("No spanner connection in input json"));
     }
 }
