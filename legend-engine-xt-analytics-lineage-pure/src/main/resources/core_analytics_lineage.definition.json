@@ -1,5 +1,0 @@
-{
-  "name" : "core_analytics_lineage",
-  "pattern" : "(meta::analytics::lineage)(::.*)?",
-  "dependencies" : ["platform", "core", "core_relational"]
-}
