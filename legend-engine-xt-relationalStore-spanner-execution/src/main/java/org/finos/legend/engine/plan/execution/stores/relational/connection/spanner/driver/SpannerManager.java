@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver;
 
-import com.google.common.base.Strings;
 import java.util.Optional;
 import java.util.Properties;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.StringIterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -44,10 +44,10 @@ public class SpannerManager extends DatabaseManager
         String proxyPort = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROXY_PORT);
 
         // constructing "proxyHost:proxyPort;" url routine
-        if (!Strings.isNullOrEmpty(proxyHost))
+        if (!StringIterate.isEmptyOrWhitespace(proxyHost))
         {
             stringBuilder.append("//").append(proxyHost);
-            if (!Strings.isNullOrEmpty(proxyPort))
+            if (!StringIterate.isEmptyOrWhitespace(proxyPort))
             {
                 stringBuilder.append(":").append(proxyPort);
             }
