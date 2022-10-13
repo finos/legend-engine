@@ -29,7 +29,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::Spanne
           )
     ],
     reverse_transfers_typeLookups = [
-      pair('Spanner', 'SpannerDatasourceSpecification')
+      pair('spanner', 'SpannerDatasourceSpecification')
     ],
     reverse_transfers_connection_transformDatasourceSpecification = [
       s:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SpannerDatasourceSpecification[1] |
