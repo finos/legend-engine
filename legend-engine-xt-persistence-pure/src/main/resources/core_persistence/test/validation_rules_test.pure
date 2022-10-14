@@ -12,3 +12,161 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::test::*;
+import meta::pure::persistence::validation::*;
+
+Class meta::pure::persistence::test::WrapperInput
+{
+  flatInput1: FlatInput[1];
+  flatInput2: FlatInput[1];
+}
+
+Class meta::pure::persistence::test::FlatInput
+{
+  idIn: String[1];
+  booleanIn: Boolean[1];
+  integerIn: Integer[1];
+  floatIn: Float[1];
+  decimalIn: Decimal[1];
+  strictDateIn: StrictDate[1];
+  dateTimeIn: DateTime[1];
+  stringIn: String[1];
+}
+
+Class meta::pure::persistence::test::WrapperOutput
+{
+  flatOutput1: FlatOutput[1];
+  flatOutput2: FlatOutput[1];
+}
+
+Class meta::pure::persistence::test::FlatOutput
+{
+  idOut: String[1];
+  booleanOut: Boolean[1];
+  integerOut: Integer[1];
+  floatOut: Float[1];
+  decimalOut: Decimal[1];
+  strictDateOut: StrictDate[1];
+  dateTimeOut: DateTime[1];
+  stringOut: String[1];
+}
+
+###Mapping
+Mapping meta::pure::persistence::test::M2mMapping
+(
+  *meta::pure::persistence::test::WrapperOutput: Pure
+  {
+    ~src meta::pure::persistence::test::WrapperInput
+    flatOutput1: $src.flatInput1
+    flatOutput2: $src.flatOutput2
+  }
+
+  *meta::pure::persistence::test::FlatOutput: Pure
+  {
+    ~src meta::pure::persistence::test::FlatInput
+    idOut: $src.idIn
+    booleanOut: $src.booleanIn
+    integerOut: $src.integerIn
+    floatOut: $src.floatIn
+    decimalOut: $src.decimalIn
+    strictDateOut: $src.strictDateIn
+    dateTimeOut: $src.dateTimeIn
+    stringOut: $src.stringIn
+  }
+)
+
+###Pure
+
+import meta::legend::service::metamodel::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+
+function meta::pure::persistence::test::M2mRuntime(): Runtime[1]
+{
+  ^EngineRuntime(
+    mappings = meta::pure::persistence::test::M2mMapping,
+    connections = ^JsonModelConnection(
+      element=^ModelStore(),
+      class = meta::pure::persistence::test::WrapperInput,
+      url = 'executor:default'));
+}
+
+function meta::pure::persistence::test::M2mService(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = | meta::pure::persistence::test::WrapperOutput.all()->graphFetch(
+        #{
+          meta::pure::persistence::test::WrapperOutput
+          {
+            flatOutput1
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            },
+            flatOutput2
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          meta::pure::persistence::test::WrapperOutput
+          {
+            flatOutput1
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            },
+            flatOutput2
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            }
+          }
+        }#
+      ),
+      mapping = meta::pure::persistence::test::M2mMapping,
+      runtime = ^Nil()
+    ),
+    test = ^SingleExecutionTest
+    (
+      data = '',
+      asserts = [^Nil()]
+    )
+  );
+}
