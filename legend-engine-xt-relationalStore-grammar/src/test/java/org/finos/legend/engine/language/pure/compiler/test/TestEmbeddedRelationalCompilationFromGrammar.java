@@ -228,7 +228,7 @@ public class TestEmbeddedRelationalCompilationFromGrammar
     }
 
     @Test
-    public void inlineEmbeddedMappingsCanBeReferenced()
+    public void inlineEmbeddedMappingTest()
     {
         test("import other::*;\n" +
                 "\n" +
@@ -277,7 +277,7 @@ public class TestEmbeddedRelationalCompilationFromGrammar
                 "            ~primaryKey ([db]employeeFirmDenormTable.legalName)\n" +
                 "            legalName : [db]employeeFirmDenormTable.legalName,\n" +
                 "            address () Inline [alias2]\n" +
-                "        )
+                "        )\n" +
                 "    }\n" +
                 ")\n");
     }
