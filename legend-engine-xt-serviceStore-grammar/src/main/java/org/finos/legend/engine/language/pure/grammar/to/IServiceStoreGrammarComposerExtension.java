@@ -31,7 +31,7 @@ public interface IServiceStoreGrammarComposerExtension extends PureGrammarCompos
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreGrammarComposerExtension.class));
     }
 
-    default List<Function2<SecurityScheme, PureGrammarComposerContext, String>> getExtraSecuritySchemesComposers()
+    default List<Function2<SecurityScheme, Integer, String>> getExtraSecuritySchemesComposers()
     {
         return Collections.emptyList();
     }

@@ -52,7 +52,7 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "      path : '/allTradesService';\n" +
                 "      method : GET;\n" +
                 "      response : [meta::external::store::service::showcase::domain::S_Trade <- meta::external::store::service::showcase::store::tradeServiceStoreSchemaBinding];\n" +
-                "      security : [http,oauth];\n" +
+                "      security : [http,oauth1];\n" +
                 "    )\n" +
                 "  )\n" +
                 "  ServiceGroup Trade\n" +

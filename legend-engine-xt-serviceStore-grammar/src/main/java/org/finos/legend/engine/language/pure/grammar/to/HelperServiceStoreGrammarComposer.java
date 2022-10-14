@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -50,6 +51,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.finos.legend.engine.language.pure.grammar.from.ServiceStoreParseTreeWalker.SERVICE_MAPPING_PATH_PREFIX;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
@@ -79,7 +81,7 @@ public class HelperServiceStoreGrammarComposer
 
     public static void renderSecuritySchemes(List<SecurityScheme> securitySchemes, StringBuilder builder, int baseIndentation)
     {
-        builder.append(getTabString(baseIndentation + 1)).append("SecuritySchemes ").append(": ").append("[\n").append(LazyIterate.collect(securitySchemes, s -> visitSecurityScheme(s,baseIndentation + 2)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
+        builder.append(getTabString(baseIndentation + 1)).append("SecuritySchemes ").append(": ").append("[\n").append(LazyIterate.collect(securitySchemes, s -> renderSecurityScheme(s,baseIndentation + 2)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
     }
 
     private static void renderServiceStoreElements(List<ServiceStoreElement> elements, StringBuilder builder, int baseIndentation)
@@ -210,35 +212,14 @@ public class HelperServiceStoreGrammarComposer
         return builder.toString();
     }
 
-    private static String visitSecurityScheme(SecurityScheme _scheme, int baseIndentation)
+    private static String renderSecurityScheme(SecurityScheme securityScheme, int baseIndentation)
     {
-        if (_scheme instanceof SimpleHttpSecurityScheme)
-        {
-            SimpleHttpSecurityScheme scheme = (SimpleHttpSecurityScheme) _scheme;
-            return getTabString(baseIndentation) + scheme.id + " : Http\n" +
-                     getTabString(baseIndentation) + "{\n" +
-                     getTabString(baseIndentation + 1) + "scheme : " + convertString(scheme.scheme, true) + ";\n" +
-                     getTabString(baseIndentation) + "}";
-        }
-        else if (_scheme instanceof ApiKeySecurityScheme)
-        {
-            ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
-            return getTabString(baseIndentation) + scheme.id + " : ApiKey\n" +
-                    getTabString(baseIndentation) + "{\n" +
-                    getTabString(baseIndentation + 1) + "location : " + convertString(scheme.location, true) + ";\n" +
-                    getTabString(baseIndentation + 1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
-                    getTabString(baseIndentation) + "}";
-        }
-        else if (_scheme instanceof OauthSecurityScheme)
-        {
-            OauthSecurityScheme scheme = (OauthSecurityScheme) _scheme;
-            return getTabString(baseIndentation) + scheme.id + " : Oauth\n" +
-                    getTabString(baseIndentation) + "{\n" +
-                    getTabString(baseIndentation + 1) + "scopes : [" + LazyIterate.collect(scheme.scopes, s -> convertString(s, true)).makeString(",") + "];\n" +
-                    getTabString(baseIndentation) + "}";
-        }
+        List<Function2<SecurityScheme, Integer, String>> processors = ListIterate.flatCollect(IServiceStoreGrammarComposerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemesComposers());
 
-        return null;
+        return ListIterate.collect(processors, processor -> processor.apply(securityScheme,baseIndentation))
+                .select(Objects::nonNull)
+                .getFirstOptional()
+                .orElseThrow(() -> new EngineException("Unsupported securityScheme - " + securityScheme.getClass().getSimpleName(), securityScheme.sourceInformation,EngineErrorType.PARSER));
     }
 
     private static String renderSecurity(SecurityScheme securityScheme, int baseIndentation)

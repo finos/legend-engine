@@ -31,29 +31,26 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
-public class ServiceStoreGrammarComposerExtension implements IServiceStoreGrammarComposerExtension
-{
+public class ServiceStoreGrammarComposerExtension implements IServiceStoreGrammarComposerExtension {
     @Override
-    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
-    {
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers() {
         return Lists.mutable.with((elements, context, sectionName) ->
         {
-            if (!ServiceStoreGrammarParserExtension.NAME.equals(sectionName))
-            {
+            if (!ServiceStoreGrammarParserExtension.NAME.equals(sectionName)) {
                 return null;
             }
             return ListIterate.collect(elements, element ->
             {
-                if (element instanceof ServiceStore)
-                {
+                if (element instanceof ServiceStore) {
                     return HelperServiceStoreGrammarComposer.renderServiceStore((ServiceStore) element);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
@@ -62,8 +59,7 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
     }
 
     @Override
-    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
-    {
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers() {
         return Lists.mutable.with((elements, context, composedSections) ->
         {
             List<ServiceStore> composableElements = ListIterate.selectInstancesOf(elements, ServiceStore.class);
@@ -72,12 +68,10 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
     }
 
     @Override
-    public List<Function2<ClassMapping, PureGrammarComposerContext, String>> getExtraClassMappingComposers()
-    {
+    public List<Function2<ClassMapping, PureGrammarComposerContext, String>> getExtraClassMappingComposers() {
         return Lists.mutable.with((classMapping, context) ->
         {
-            if (classMapping instanceof RootServiceStoreClassMapping)
-            {
+            if (classMapping instanceof RootServiceStoreClassMapping) {
                 RootServiceStoreClassMapping rootServiceStoreClassMapping = (RootServiceStoreClassMapping) classMapping;
                 StringBuilder builder = new StringBuilder();
                 builder.append(": ").append(ServiceStoreGrammarParserExtension.SERVICE_STORE_MAPPING_ELEMENT_TYPE).append("\n");
@@ -90,21 +84,19 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
         });
     }
 
-    public List<Function2<Connection, PureGrammarComposerContext, Pair<String, String>>> getExtraConnectionValueComposers()
-    {
+    public List<Function2<Connection, PureGrammarComposerContext, Pair<String, String>>> getExtraConnectionValueComposers() {
         return Lists.mutable.with((connectionValue, context) ->
         {
-            if (connectionValue instanceof ServiceStoreConnection)
-            {
+            if (connectionValue instanceof ServiceStoreConnection) {
                 ServiceStoreConnection serviceStoreConnection = (ServiceStoreConnection) connectionValue;
 
                 return Tuples.pair(ServiceStoreGrammarParserExtension.SERVICE_STORE_CONNECTION_TYPE,
-                        context.getIndentationString()  +  "{\n" +
+                        context.getIndentationString() + "{\n" +
                                 context.getIndentationString() + getTabString() + "store: " + serviceStoreConnection.element + ";\n" +
                                 context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";\n" +
                                 context.getIndentationString() + getTabString() + "authSpecs: [\n" +
                                 serviceStoreConnection.authSpecs.entrySet().stream().map(entry
-                                         -> HelperServiceStoreGrammarComposer.renderTokenGenerationSpecification(entry.getKey(),entry.getValue(), 2))
+                                                -> HelperServiceStoreGrammarComposer.renderTokenGenerationSpecification(entry.getKey(), entry.getValue(), 2))
                                         .collect(Collectors.joining(",\n")) +
                                 "\n" + context.getIndentationString() + getTabString() + "];" +
                                 context.getIndentationString() + "\n}");
@@ -114,9 +106,42 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
     }
 
     @Override
-    public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
-    {
+    public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers() {
         return Collections.singletonList(ServiceStoreEmbeddedDataComposer::composeServiceStoreEmbeddedData);
     }
 
+    @Override
+    public List<Function2<SecurityScheme, Integer, String>> getExtraSecuritySchemesComposers()
+    {
+
+        return Lists.mutable.with( (_scheme,baseIndentation) -> {
+        if (_scheme instanceof SimpleHttpSecurityScheme)
+        {
+            SimpleHttpSecurityScheme scheme = (SimpleHttpSecurityScheme) _scheme;
+            return getTabString(baseIndentation) + scheme.id + " : Http\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "scheme : " + convertString(scheme.scheme, true) + ";\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+        else if (_scheme instanceof ApiKeySecurityScheme)
+        {
+            ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
+            return getTabString(baseIndentation) + scheme.id + " : ApiKey\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "location : " + convertString(scheme.location, true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+        else if (_scheme instanceof OauthSecurityScheme)
+        {
+            OauthSecurityScheme scheme = (OauthSecurityScheme) _scheme;
+            return getTabString(baseIndentation) + scheme.id + " : Oauth\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "scopes : [" + LazyIterate.collect(scheme.scopes, s -> convertString(s, true)).makeString(",") + "];\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+
+        return null;
+        });
     }
+}
