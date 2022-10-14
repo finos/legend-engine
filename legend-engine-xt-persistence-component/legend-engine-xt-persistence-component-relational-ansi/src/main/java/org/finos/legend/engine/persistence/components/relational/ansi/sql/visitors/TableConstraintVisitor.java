@@ -14,40 +14,29 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.constraints.CascadeTableConstraint;
-import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfExistsTableModifier;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
+import org.finos.legend.engine.persistence.components.logicalplan.constraints.TableConstraint;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DropTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class SQLDropVisitor implements LogicalPlanVisitor<Drop>
+public class TableConstraintVisitor implements LogicalPlanVisitor<TableConstraint>
 {
 
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, Drop current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, TableConstraint current, VisitorContext context)
     {
-        DropTable dropTable = new DropTable();
-        prev.push(dropTable);
-
-        List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
-        logicalPlanNodes.add(current.dataset());
-
-        if (current.ifExists())
+        org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.TableConstraint tableConstraint;
+        if (current instanceof CascadeTableConstraint)
         {
-            logicalPlanNodes.add(IfExistsTableModifier.INSTANCE);
+            tableConstraint = new org.finos.legend.engine.persistence.components.relational.sqldom.constraints.table.CascadeTableConstraint();
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unrecognized table constraint '" + current.getClass().getName() + "'");
         }
 
-        if (current.cascade())
-        {
-            logicalPlanNodes.add(CascadeTableConstraint.INSTANCE);
-        }
-
-        return new VisitorResult(dropTable, logicalPlanNodes);
+        prev.push(tableConstraint);
+        return new VisitorResult(tableConstraint);
     }
 }

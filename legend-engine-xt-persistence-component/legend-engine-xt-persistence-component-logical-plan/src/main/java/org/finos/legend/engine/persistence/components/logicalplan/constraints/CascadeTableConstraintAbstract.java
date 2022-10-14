@@ -12,12 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.operations;
-
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+package org.finos.legend.engine.persistence.components.logicalplan.constraints;
 
 import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Parameter;
 import static org.immutables.value.Value.Style;
 
 @Immutable
@@ -28,14 +25,7 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface DropAbstract extends Operation
+public interface CascadeTableConstraintAbstract extends TableConstraint
 {
-    @Parameter(order = 0)
-    boolean ifExists();
-
-    @Parameter(order = 1)
-    Dataset dataset();
-
-    @Parameter(order = 2)
-    boolean cascade();
+    CascadeTableConstraint INSTANCE = CascadeTableConstraint.builder().build();
 }

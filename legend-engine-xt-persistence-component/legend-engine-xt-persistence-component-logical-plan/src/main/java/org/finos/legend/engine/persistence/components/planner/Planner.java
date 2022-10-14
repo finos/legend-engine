@@ -142,7 +142,7 @@ public abstract class Planner
         // Drop table or clean table based on flags
         if (resources.externalDatasetImported())
         {
-            operations.add(Drop.of(true, stagingDataset()));
+            operations.add(Drop.of(true, stagingDataset(), true));
         }
         else if (plannerOptions.cleanupStagingData())
         {

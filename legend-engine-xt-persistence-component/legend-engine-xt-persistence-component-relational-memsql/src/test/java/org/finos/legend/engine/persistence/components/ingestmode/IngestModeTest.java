@@ -313,7 +313,7 @@ public class IngestModeTest
 
     String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";
 
-    String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging`";
+    String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
 
     String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
         "(`id` INTEGER," +

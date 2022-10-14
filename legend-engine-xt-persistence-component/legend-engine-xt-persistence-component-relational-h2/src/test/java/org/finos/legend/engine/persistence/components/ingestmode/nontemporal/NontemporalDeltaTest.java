@@ -24,9 +24,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 
 class NontemporalDeltaTest extends BaseTest
 {
@@ -205,5 +208,45 @@ class NontemporalDeltaTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+    }
+
+    @Test
+    void testIncrementalDeltaNoAuditingWithDataSplits() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
+        Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestName)
+                .dataSplitField(dataSplitName)
+                .auditing(NoAuditing.builder().build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePath + "expected/with_data_splits/expected_pass1.csv";
+        // Execute plans and verify results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1 = new HashMap<>();
+        expectedStats1.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats1.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats1.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
+        Map<String, Object> expectedStats2 = new HashMap<>();
+        expectedStats2.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
+        expectedStats2.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats2.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
     }
 }

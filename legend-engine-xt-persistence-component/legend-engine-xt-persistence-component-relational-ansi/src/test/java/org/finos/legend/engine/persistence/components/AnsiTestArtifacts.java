@@ -193,7 +193,7 @@ public class AnsiTestArtifacts
 
     public static String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 
-    public static String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\"";
+    public static String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\" CASCADE";
 
 
 

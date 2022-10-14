@@ -67,7 +67,7 @@ public class MemsqlTestArtifacts
 
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";
 
-    public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging`";
+    public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
 
     public static String cleanUpMainTableSql = "DELETE FROM `mydb`.`main` as sink";
     public static String cleanupMainTableSqlUpperCase = "DELETE FROM `MYDB`.`MAIN` as sink";

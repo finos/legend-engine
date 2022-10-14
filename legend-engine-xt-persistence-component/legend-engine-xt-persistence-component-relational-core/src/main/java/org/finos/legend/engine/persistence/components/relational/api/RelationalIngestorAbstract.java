@@ -236,9 +236,9 @@ public abstract class RelationalIngestorAbstract
                 dataSplitIndex++;
             }
             while (planner.dataSplitExecutionSupported() && dataSplitIndex < dataSplitsCount);
+            executor.commit();
             // Clean up
             executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
-            executor.commit();
             return results;
         }
         catch (Exception e)

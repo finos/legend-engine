@@ -279,7 +279,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         // Drop table or clean table based on flags
         if (resources.externalDatasetImported())
         {
-            operations.add(Drop.of(true, stagingDataset()));
+            operations.add(Drop.of(true, stagingDataset(), true));
         }
         else if (options().cleanupStagingData())
         {
