@@ -46,6 +46,12 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::s
     true;
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForH2():Boolean[1]
+{  
+  let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2DateStr->parseDate()], ['date']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+  assertEquals([%2016-06-23T00:00:00.000000000+0000, %2016-06-23T00:00:00.000000000+0000], $result.values->at(0).rows.values);
+  assertEquals('select parsedatetime("root".string2date,\'yyyy-MM-dd\') as "date" from dataTable as "root"',$result->sqlRemoveFormatting());
+}
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testProject():Boolean[1]
 {
@@ -1159,6 +1165,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatRemResult : Integer[1];
 
    string2Date: Date[1];
+   string2DateStr: String[1];
    string2DateTime: DateTime[1];
    convertToDate1: Date[1];
    convertToDate: Date[1];
@@ -1259,7 +1266,8 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           string2Float : parseFloat(string2float),
           string2Decimal : parseDecimal(string2Decimal),
           string2decimal: trim(string2Decimal),
-          string2Date  : parseDate(string2date),
+          string2Date  : parseDate(string2date), 
+          string2DateStr : string2date,
           string2Integer  : parseInteger(string2Integer),
           convertToDate1: convertDate(stringDateFormat),
           convertToDate: convertDate(stringDateFormat,'yyyy-MM-dd'),

@@ -103,7 +103,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(Day, case when %s - dow(%s) > 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentSybase('today()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now(%s)', transform={p:String[*] | ''})),
-    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if( $p->size()==1,|'cast('+$p->at(0)+' as timestamp)' ,|'convert( datetime,'+ $p->at(0)+','+$p->at(1)+')' )})),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if( $p->size()==1 || $p->at(1)->replace('\'', '') == 'yyyy-MM-dd',|'cast('+$p->at(0)+' as timestamp)' ,|'convert( datetime,'+ $p->at(0)+','+$p->at(1)+')' )})),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
