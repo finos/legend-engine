@@ -120,7 +120,7 @@ public class TestUtils
     public static Field dateIn = Field.builder().name(dateInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateInName).build();
     public static Field dateOut = Field.builder().name(dateOutName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateOutName).build();
     public static Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).fieldAlias(digestName).build();
-    public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
+    public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
     public static Field batchTimeIn = Field.builder().name(batchTimeInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchTimeInName).build();
@@ -199,6 +199,19 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithDataSplits()
+    {
+        return SchemaDefinition.builder()
+                .addFields(id)
+                .addFields(name)
+                .addFields(income)
+                .addFields(startTime)
+                .addFields(expiryDate)
+                .addFields(digest)
+                .addFields(dataSplit)
+                .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithoutDigest()
     {
         return SchemaDefinition.builder()
@@ -228,6 +241,16 @@ public class TestUtils
             .addFields(income)
             .addFields(expiryDate)
             .build();
+    }
+
+    public static SchemaDefinition getStagingSchemaWithDataSplit()
+    {
+        return SchemaDefinition.builder()
+                .addFields(name)
+                .addFields(income)
+                .addFields(expiryDate)
+                .addFields(dataSplit)
+                .build();
     }
 
     public static DatasetDefinition getBasicStagingTable()
@@ -287,6 +310,14 @@ public class TestUtils
             .schema(getStagingSchema())
             .csvDataPath(dataPath)
             .build();
+    }
+
+    public static CsvExternalDatasetReference getBasicCsvDatasetReferenceTableWithDataSplits(String dataPath)
+    {
+        return CsvExternalDatasetReference.builder()
+                .schema(getStagingSchemaWithDataSplits())
+                .csvDataPath(dataPath)
+                .build();
     }
 
     public static CsvExternalDatasetReference getCsvDatasetReferenceTable(String dataPath, String database, String name, String group, String alias)

@@ -16,10 +16,8 @@ package org.finos.legend.engine.persistence.components.planner;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
@@ -33,7 +31,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ins
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.UpdateAbstract;
-import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -42,18 +39,9 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 
 class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 {
@@ -108,53 +96,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                 Create.of(true, mainDataset()),
                 Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()))
             .build();
-    }
-
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
-    {
-        return Collections.emptyMap();
-    }
-
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
-    {
-        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
-
-        if (options().collectStatistics())
-        {
-            //Incoming dataset record count
-            postRunStatisticsResult.put(INCOMING_RECORD_COUNT,
-                LogicalPlan.builder()
-                    .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get()))
-                    .build());
-
-            //Rows terminated = Rows invalidated in Sink - Rows updated
-            postRunStatisticsResult.put(ROWS_TERMINATED,
-                LogicalPlan.builder()
-                    .addOps(Selection.builder()
-                        .addFields(DiffBinaryValueOperator.of(getRowsInvalidatedInSink(), getRowsUpdated()).withAlias(ROWS_TERMINATED.get()))
-                        .build())
-                    .build());
-
-            //Rows inserted (no previous active row with same primary key) = Rows added in sink - rows updated
-            postRunStatisticsResult.put(ROWS_INSERTED,
-                LogicalPlan.builder()
-                    .addOps(Selection.builder()
-                        .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), getRowsUpdated()).withAlias(ROWS_INSERTED.get()))
-                        .build())
-                    .build());
-
-            //Rows updated (when it is invalidated and a new row for same primary keys is added)
-            postRunStatisticsResult.put(ROWS_UPDATED,
-                LogicalPlan.builder().addOps(getRowsUpdated(ROWS_UPDATED.get())).build());
-
-            //Rows Deleted = rows removed(hard-deleted) from sink table
-            postRunStatisticsResult.put(ROWS_DELETED,
-                LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L));
-        }
-
-        return postRunStatisticsResult;
     }
 
     /*

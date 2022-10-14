@@ -51,9 +51,23 @@ public class SQLUpdateVisitor implements LogicalPlanVisitor<Update>
         {
             Dataset joinDataset = current.joinDataset().get();
             Condition joinCondition = current.joinCondition().orElse(null);
-            // Push the where condition
-            Condition joinConditionInWhereClause = Exists.of(Selection.builder().source(joinDataset).condition(joinCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).build());
+            Selection selection;
+            if (joinDataset instanceof Selection)
+            {
+                selection = (Selection) joinDataset;
+                if (selection.condition().isPresent())
+                {
+                    joinCondition = And.builder().addConditions(joinCondition, selection.condition().get()).build();
+                }
+                selection = Selection.builder().source(selection.source()).condition(joinCondition).addAllFields(selection.fields()).build();
+            }
+            else
+            {
+                selection = Selection.builder().source(joinDataset).condition(joinCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).build();
+            }
 
+            // Push the where condition
+            Condition joinConditionInWhereClause = Exists.of(selection);
             if (current.whereCondition().isPresent())
             {
                 // AND both the WHERE and JOIN conditions
@@ -68,9 +82,17 @@ public class SQLUpdateVisitor implements LogicalPlanVisitor<Update>
             {
                 if (field.value() instanceof FieldValue)
                 {
+                    Dataset selectionSource = joinDataset;
+                    if (joinDataset instanceof Selection)
+                    {
+                        if (selection.source().isPresent())
+                        {
+                            selectionSource = selection.source().get();
+                        }
+                    }
                     logicalPlanNodeList.add(Pair.of(
                         field.key(),
-                        SelectValue.of(Selection.builder().source(joinDataset).condition(joinCondition).addFields(field.value()).build())));
+                        SelectValue.of(Selection.builder().source(selectionSource).condition(joinCondition).addFields(field.value()).build())));
                     // todo: handle binary operators
                 }
                 else

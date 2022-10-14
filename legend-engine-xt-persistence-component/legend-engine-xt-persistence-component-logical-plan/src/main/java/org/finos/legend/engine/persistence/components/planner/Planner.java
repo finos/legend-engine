@@ -23,12 +23,15 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.ArrayList;
@@ -36,6 +39,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Collections;
+import java.util.HashMap;
+
+import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
@@ -140,9 +151,30 @@ public abstract class Planner
         return LogicalPlan.of(operations);
     }
 
-    public abstract Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources);
+    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
+    {
+        return Collections.emptyMap();
+    }
 
-    public abstract Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources);
+    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
+    {
+        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
+        if (options().collectStatistics())
+        {
+            //Incoming dataset record count
+            addPostRunStatsForIncomingRecords(postRunStatisticsResult);
+            //Rows terminated
+            addPostRunStatsForRowsTerminated(postRunStatisticsResult);
+            //Rows inserted
+            addPostRunStatsForRowsInserted(postRunStatisticsResult);
+            //Rows updated
+            addPostRunStatsForRowsUpdated(postRunStatisticsResult);
+            //Rows deleted
+            addPostRunStatsForRowsDeleted(postRunStatisticsResult);
+        }
+
+        return postRunStatisticsResult;
+    }
 
     protected void validatePrimaryKeysNotEmpty(List<String> primaryKeys)
     {
@@ -158,6 +190,49 @@ public abstract class Planner
         {
             throw new IllegalStateException("Primary key list must be empty");
         }
+    }
+
+    public boolean dataSplitExecutionSupported()
+    {
+        return true;
+    }
+
+    public Optional<Condition> getDataSplitInRangeCondition()
+    {
+        return Optional.empty();
+    }
+
+    protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeCondition() : Optional.empty();
+        LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
+                .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get(), dataSplitInRangeCondition))
+                .build();
+        postRunStatisticsResult.put(INCOMING_RECORD_COUNT, incomingRecordCountPlan);
+    }
+
+    protected void addPostRunStatsForRowsTerminated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        LogicalPlan rowsTerminatedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L);
+        postRunStatisticsResult.put(ROWS_TERMINATED, rowsTerminatedCountPlan);
+    }
+
+    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        LogicalPlan rowsUpdatedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_UPDATED.get(), 0L);
+        postRunStatisticsResult.put(ROWS_UPDATED, rowsUpdatedCountPlan);
+    }
+
+    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        LogicalPlan rowsInsertedCountPlan = LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(mainDataset(), ROWS_INSERTED.get())).build();
+        postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
+    }
+
+    protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        LogicalPlan rowsDeletedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L);
+        postRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
     }
 
     // auditing visitor
