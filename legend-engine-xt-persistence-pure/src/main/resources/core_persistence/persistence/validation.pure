@@ -14,6 +14,12 @@
 
 import meta::pure::persistence::validation::*;
 
+Class meta::pure::persistence::validation::ValidationRuleSet<T>
+{
+  name: String[1];
+  rules: LambdaFunction<{T[1]->ValidationResult[1]}>[1..*];
+}
+
 Class
 <<typemodifiers.abstract>>
 meta::pure::persistence::validation::ValidationResult
@@ -25,7 +31,7 @@ meta::pure::persistence::validation::ValidationResult
 
   reasons()
   {
-    $this->match([s: Success[1] | ['Success'], f: Failure[1] | $f.errors])
+    $this->match([s: Success[1] | 'Success', f: Failure[1] | $f.errors])
   }: String[1..*];
 }
 
@@ -61,13 +67,13 @@ function meta::pure::persistence::validation::combine(v1: ValidationResult[1], v
 {
   $v1->match(
     [
-      s: Success[1] | $v2->match([s2: Success[1] | $v1, f: Failure[1] | $f]),
-      f: Failure[1] | $v2->match([s: Success[1] | $v1, f2: Failure[1] | ^$f(errors = $f.errors->concatenate($f2.errors)->toOneMany())])
+      s: Success[1] | $v2->match([s2: Success[1] | $s, f: Failure[1] | $f]),
+      f: Failure[1] | $v2->match([s: Success[1] | $f, f2: Failure[1] | ^$f(errors = $f.errors->concatenate($f2.errors)->toOneMany())])
     ]
   );
 }
 
-function meta::pure::persistence::validation::validate<T>(object: T[1], lambdas: Function<{T[1]->ValidationResult[1]}>[1..*]): ValidationResult[1]
+function meta::pure::persistence::validation::validate<T>(object: T[1], ruleset: ValidationRuleSet<T>[1]): ValidationResult[1]
 {
-  $lambdas->fold({lambda, result | $result->combine($lambda->eval($object))}, success());
+  $ruleset.rules->fold({rule, result | $result->combine($rule->eval($object))}, success());
 }

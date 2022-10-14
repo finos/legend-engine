@@ -21,7 +21,7 @@ function <<test.Test>> meta::pure::persistence::validation::tests::successValid(
 
 function <<test.Test>> meta::pure::persistence::validation::tests::failureValid(): Boolean[1]
 {
-  assert(!success().valid());
+  assert(!failure('Invalid syntax').valid());
 }
 
 function <<test.Test>> meta::pure::persistence::validation::tests::successReasons(): Boolean[1]
@@ -55,5 +55,5 @@ function <<test.Test>> meta::pure::persistence::validation::tests::combine(): Bo
   let combineFailureFailure = failure('Invalid syntax')->combine(failure('Semantic error'));
   assert(!$combineFailureFailure.valid());
   assertEquals(2, $combineFailureFailure.reasons()->size());
-  assertEquals(['Invalid syntax', 'Semantic error'], $combineFailureSuccess.reasons());
+  assertEquals(['Invalid syntax', 'Semantic error'], $combineFailureFailure.reasons());
 }
