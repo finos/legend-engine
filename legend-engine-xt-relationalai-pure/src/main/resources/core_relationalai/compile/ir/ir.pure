@@ -493,7 +493,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
               let error = error(| 
                 format('Encountered unknown qualified property while translating: `%s`', $property.name)
               );
-              error($error, @PExpr);
+              error($error);
             });
           });
         });
@@ -698,7 +698,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
                         )
                         ->andThem({names: String[*] | 
                           if ($names->size() != $group->size() + $aggregates->size(),
-                            | error('Number of specified columns does not match the arity of the `group by` expression.', @PExpr),
+                            | error('Number of specified columns does not match the arity of the `group by` expression.'),
                             {|
                               let namedAggregates = 
                                 $aggregates
@@ -923,6 +923,14 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
         }),
         case($other == meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_, {| 
           meta::rel::compile::ir::tds::intoPExpr($func);
+        }),
+        case($other == meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_, {|
+          meta::rel::compile::ir::tds::intoPExpr($func);
+        }),
+        case($other == meta::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {| 
+          let query = $func.parametersValues->at(1)->intoScoped()->unwrap()->inspect();
+
+          meta::rel::compile::ir::const(1)->ok();
         })
       ], {|
         let error = error(| 
@@ -932,7 +940,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
               ->else(| '<<unknown>>')
               ->quote();
         );
-        error($error, @PExpr);
+        error($error);
       });
     }
   ]);
@@ -943,7 +951,7 @@ function meta::rel::compile::ir::intoPExpr(spec: InstanceValue[1], set: RelSetIm
     ->okOr(| 'Expected value within `InstanceValue`.')
     ->andThem({values: Any[*] | 
       if ($values->size() != 1,
-        | error(error(| 'Expected exactly one value in `InstanceValue`.'), @PExpr),
+        | error(error(| 'Expected exactly one value in `InstanceValue`.')),
         | $values->toOne()->ok()
       );
     })
@@ -977,7 +985,7 @@ function meta::rel::compile::ir::intoPExpr(value: Any[1], set: RelSetImplementat
             ->else(| '<<unknown>>')
             ->quote();
       );
-      error($error, @PExpr);
+      error($error);
     }
   ])
 }
@@ -1013,7 +1021,7 @@ function meta::rel::compile::ir::intoScoped(func: FunctionDefinition<Any>[1], pa
     ->okOr(|'Encountered empty function body while evaluating expression.')
     ->andThem({exprs: ValueSpecification[*] |
       if ($exprs->size() != 1,
-        | error(error(| 'More than one expression in function body not supported yet.'), @Scoped),
+        | error(error(| 'More than one expression in function body not supported yet.')),
         | $exprs->toOne()->ok()
       );
     })
@@ -1088,14 +1096,14 @@ function meta::rel::compile::ir::intoAggregates(spec: ValueSpecification[1], par
         let error = error(| 
           format('Encountered unexpected aggregation function during translation: `%s`', $fexpr.func->elementToPath())
         );
-        error($error, @Aggregate);
+        error($error);
       });
     },
     {value: InstanceValue[1] |
       $value.values
         ->map({v | 
           let casted = $v->tryCast(@ValueSpecification);
-          if ($casted->isOk(), | $casted.values->toOne()->intoAggregates($parent), | error($casted.errors, @Aggregate));
+          if ($casted->isOk(), | $casted.values->toOne()->intoAggregates($parent), | error($casted.errors));
         });
     }
   ]);
@@ -1269,7 +1277,7 @@ function meta::rel::compile::ir::getFunctionExpr(
             ->else(| '<<unknown>>')
             ->quote();
       );
-      error($error, @FunctionDefinition<{Expr[*]->Expr[1]}>);
+      error($error);
     });
   
   let type = $fn.genericType.rawType;

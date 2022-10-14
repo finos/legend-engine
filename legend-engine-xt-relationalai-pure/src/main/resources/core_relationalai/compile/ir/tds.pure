@@ -10,6 +10,11 @@ Class meta::rel::compile::ir::tds::Join extends PExpr {
   right: PExpr[1];
 }
 
+Class meta::rel::compile::ir::tds::TDSFilter extends PExpr {
+  parent: PExpr[1];
+  predicate: Scoped[1];
+}
+
 function meta::rel::compile::ir::tds::join(
   left: PExpr[1], 
   right: PExpr[1], 
@@ -17,6 +22,10 @@ function meta::rel::compile::ir::tds::join(
   condition: Scoped[1]
 ): Join[1] {
   ^Join(type=$type, condition=$condition, left=$left, right=$right);
+}
+
+function meta::rel::compile::ir::tds::filter(parent: PExpr[1], predicate: Scoped[1]): TDSFilter[1] {
+  ^TDSFilter(parent=$parent, predicate=$predicate);
 }
 
 function meta::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1]): Result<PExpr|0..1>[1] {
@@ -43,6 +52,19 @@ function meta::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1]): Re
                 });
             });
         });
+    }),
+    case($func.func == meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_, {|
+      $func.parametersValues
+        ->at(0)
+        ->meta::rel::compile::ir::intoPExpr()
+        ->andThen({parent: PExpr[1] |
+          $func.parametersValues
+            ->at(1)
+            ->meta::rel::compile::ir::intoScoped()
+            ->then({predicate: Scoped[1] |
+              meta::rel::compile::ir::tds::filter($parent, $predicate);
+            });
+        });
     })
   ], {| 
     let error = error(| 
@@ -52,6 +74,6 @@ function meta::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1]): Re
           ->else(| '<<unknown>>')
           ->quote();
     );
-    error($error, @PExpr);
+    error($error);
   })
 }

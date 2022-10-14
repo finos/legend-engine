@@ -94,3 +94,53 @@ function meta::rel::compile::tds::compile(
         });
     });
 }
+
+function meta::rel::compile::tds::compile(
+  filter: TDSFilter[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $filter.parent
+    ->compile($callback, $state)
+    ->andThen({parentState: CompilationState[1] |
+      let parent = $parentState.current->toOne();
+      let vx = var('x');
+      
+      $filter.predicate
+        ->compile({a: Any[1] |
+          $a->tryCast(@ColumnAccess)
+            ->andThen({access: ColumnAccess[1] |
+              let var = $access
+                ->root()
+                ->cast(@VariablePlaceholder)
+                .identifier;
+
+              if ($var == $filter.predicate.variables, {|
+                $parent
+                  ->appl([label($access.column), $vx])
+                  ->ok();
+              }, | $callback->eval($a));
+            });
+        }, $parentState)
+        ->then({next: CompilationState[1] |
+          let table = $next.relFactory->next('tbl');
+          let predicate = $next.current->toOne();
+
+          let vc = var('c');
+
+          let head = rel($table);
+          let rule = 
+            $head
+              ->appl([$vc, $vx])
+              ->def([
+                $parent->appl([$vc, $vx]),
+                $predicate
+              ]);
+
+          ^$next(
+            current=$head,
+            program=$next.program->with($rule)
+          );
+        });
+    });
+}

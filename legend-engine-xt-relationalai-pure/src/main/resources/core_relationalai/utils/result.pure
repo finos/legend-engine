@@ -29,8 +29,8 @@ function meta::rel::utils::okm<T>(values: T[*]): Result<T|*>[1] {
   ^Result<T|*>(values=$values);
 }
 
-function meta::rel::utils::error<T>(errors: Any[*], object: T[1]): Result<T|0..1>[1] {
-  ^Result<T|0..1>(errors=$errors);
+function meta::rel::utils::error(errors: Any[*]): Result<Nil|0..1>[1] {
+  ^Result<Nil|0..1>(errors=$errors);
 }
 
 function meta::rel::utils::andThen<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
@@ -127,7 +127,7 @@ function meta::rel::utils::collect<T>(results: Result<T|0..1>[*]): Result<T|*>[1
 function meta::rel::utils::expand<T>(result: Result<T|*>[1]): Result<T|0..1>[*] {
   if ($result.errors->isEmpty(),
     | $result.values->map(v | ok($v)),
-    | $result.errors->map(e | error($e, @T))
+    | $result.errors->map(e | error($e))
   );
 }
 

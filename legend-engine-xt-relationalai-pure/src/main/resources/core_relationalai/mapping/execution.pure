@@ -65,7 +65,7 @@ function <<access.private>> meta::rel::mapping::execution(
     ->andThen({node: PExpr[1] | 
       //$debug->debug(| 'PURE Expression plan:');
       //$debug->debug(| $node->meta::rel::compile::ir::utils::display());
-      $node->compile({_a: Any[1] | error('Unexpected error during compilation.', @Expr); }, $state);
+      $node->compile({_a: Any[1] | error('Unexpected error during compilation.'); }, $state);
     })
     ->andThen({state: CompilationState[1] | 
       $debug->debug(| 'Column names:');

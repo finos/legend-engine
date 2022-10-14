@@ -56,7 +56,8 @@ function meta::rel::compile::compile(
     forAll: meta::rel::compile::ir::ForAll[1] | $forAll->compile($callback, $state),
     step: CompilationStep[1] | $step.logic->eval($callback, $state),
     ifThenElse: meta::rel::compile::ir::IfThenElse[1] | $ifThenElse->compile($callback, $state),
-    join: meta::rel::compile::ir::tds::Join[1] | $join->meta::rel::compile::tds::compile($callback, $state);
+    join: meta::rel::compile::ir::tds::Join[1] | $join->meta::rel::compile::tds::compile($callback, $state),
+    filter: meta::rel::compile::ir::tds::TDSFilter[1] | $filter->meta::rel::compile::tds::compile($callback, $state)
   ]);
 }
 
