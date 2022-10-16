@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.18.2-SNAPSHOT</version>
+    <version>3.18.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -137,9 +137,6 @@
         <module>legend-engine-xt-analytics-mapping-api</module>
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
-
-        <module>legend-engine-xt-analytics-lineage-api</module>
-        <module>legend-engine-xt-analytics-lineage-pure</module>
 
         <module>legend-engine-pure-code-compiled-core</module>
 
@@ -1108,17 +1105,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
