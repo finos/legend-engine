@@ -267,7 +267,7 @@ function meta::external::store::service::executionPlan::generation::nodeFromServ
                                                                              mimeType        = $serviceMapping.service.response.binding.contentType,
                                                                              params          = $serviceMapping.service.parameters,
                                                                              securitySchemes = $serviceMapping.service.security,
-                                                                             authSpecs = $serviceMapping.service.security->map(scheme| pair($scheme.id,$s.authSpecs->toOne()->keyValues()->filter(kv | $kv.first==$scheme.id)->toOne()->cast(@Pair<String,AuthenticationTokenGenerationSpecification>).second))->newMap();
+                                                                             authSpecs = $serviceMapping.service.security->map(scheme| pair($scheme.id,$s.authSpecs->toOne()->keyValues()->filter(kv | $kv.first==$scheme.id)->toOne()->cast(@Pair<String,AuthenticationTokenGenerationSpecification>).second))->newMap(),
                                                                              requestBodyDescription = $requestBodyDescription,
                                                                              resultType      = ^DataTypeResultType(type = String));
 
