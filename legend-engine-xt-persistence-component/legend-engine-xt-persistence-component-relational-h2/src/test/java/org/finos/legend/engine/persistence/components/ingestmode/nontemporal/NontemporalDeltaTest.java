@@ -47,10 +47,19 @@ class NontemporalDeltaTest extends BaseTest
     private final String basePath = "src/test/resources/data/incremental-delta-milestoning/";
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenarios:
+    1. Auditing is not enabled
+    2. Staging data imported from CSV and has lesser columns than main dataset
+    3. Staging data cleanup
+    4. Auditing is not enabled
+    5. Data Splits enabled
+    */
+
+    /*
+    Scenario: Test NonTemporal Delta when Auditing is not enabled
      */
     @Test
-    void testMilestoningStagingTablePrePopulated() throws Exception
+    void testNonTemporalDeltaWithNoAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -94,10 +103,10 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
+    Scenario: Test NonTemporal Delta when staging data comes from CSV and has lesser columns than main dataset
     */
     @Test
-    void testIncrementalDeltaMilestoningLogicWithLessColumnsInStaging() throws Exception
+    void testNonTemporalDeltaWithLessColumnsInStaging() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
@@ -133,11 +142,10 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    staging table is cleaned up in the end
+    Scenario: Test NonTemporal Delta when staging table is cleaned up in the end
     */
     @Test
-    void testGeneratePhysicalPlanWithCleanStagingData() throws Exception
+    void testNonTemporalDeltaWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -174,11 +182,10 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated
-    and isUpdateBatchTimeEnabled is enabled
+    Scenario: Test NonTemporal Delta when Auditing is enabled
     */
     @Test
-    void testGeneratePhysicalPlanWithUpdateTimestampColumn() throws Exception
+    void testNonTemporalDeltaWithAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -210,8 +217,11 @@ class NontemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
     }
 
+    /*
+    Scenario: Test NonTemporal Delta when Data splits are enabled
+    */
     @Test
-    void testIncrementalDeltaNoAuditingWithDataSplits() throws Exception
+    void testNonTemporalDeltaNoAuditingWithDataSplits() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";

@@ -243,16 +243,6 @@ public class TestUtils
             .build();
     }
 
-    public static SchemaDefinition getStagingSchemaWithDataSplit()
-    {
-        return SchemaDefinition.builder()
-                .addFields(name)
-                .addFields(income)
-                .addFields(expiryDate)
-                .addFields(dataSplit)
-                .build();
-    }
-
     public static DatasetDefinition getBasicStagingTable()
     {
         return DatasetDefinition.builder()

@@ -49,12 +49,24 @@ import static org.finos.legend.engine.persistence.components.TestUtils.dataSplit
 class AppendOnlyTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-append-milestoning/";
+    /*
+    Scenarios:
+    1. FilterDuplicates and No Auditing
+    2. Staging data is imported along with Digest field population
+    3. Staging has lesser columns than main dataset
+    4. Staging data cleanup
+    5. FilterDuplicates and Auditing enabled
+    6. Add column schema evolution
+    7. implicit data type change schema evolution
+    8. Filter Duplicates and Data Splits enabled
+    */
+
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenario: Test Append Only Logic with FilterDuplicates and No Auditing
     */
     @Test
-    void testIncrementalAppendMilestoningLogic() throws Exception
+    void testAppendOnlyWithFilterDuplicatesAndNoAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -100,10 +112,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenario: test AppendOnly when staging data is imported along with Digest field population
     */
     @Test
-    void testIncrementalAppendWithStagingDataImportedWithPopulateDigest() throws Exception
+    void testAppendOnlyWithStagingDataImportedWithPopulateDigest() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = "src/test/resources/data/import-data/data_pass1.json";
@@ -142,10 +154,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
+    Scenario: Test AppendOnly when staging has lesser columns than main
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithLessColumnsInStaging() throws Exception
+    void testAppendOnlyWithLessColumnsInStaging() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
@@ -183,11 +195,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    staging table is cleaned up in the end
+    Scenario: Test AppendOnly when staging table is cleaned up in the end
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithCleanStagingData() throws Exception
+    void testAppendOnlyWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -226,11 +237,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV
-    and isUpdateBatchTimeEnabled is enabled
+    Scenario: Test AppendOnly with FilterDuplicates and Auditing enabled
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithUpdateTimestampField() throws Exception
+    void testAppendOnlyWithFilterDuplicatesAndAuditingEnabled() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
@@ -256,11 +266,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning logic when staging table is pre populated and
-    Staging table has extra column which should be handled invoke schema evolution
+    Scenario: Test Append Only when Staging table has extra column which should be handled invoke schema evolution
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithAddColumnEvolution() throws Exception
+    void testAppendOnlyWithAddColumnEvolution() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getSchemaEvolMainTableWithMissingColumn();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -306,11 +315,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    Test implicit data change schema evolution
+    Scenario: Test AppendOnly with implicit data type change schema evolution
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithImplicitDataTypeChange() throws Exception
+    void testAppendOnlyWithImplicitDataTypeChange() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableForImplicitSchemaEvolution();
@@ -356,6 +364,10 @@ class AppendOnlyTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
+
+    /*
+    Scenario: Test AppendOnly with Filter Duplicates and Data Splits enabled
+    */
     @Test
     void testAppendOnlyWithFilterDuplicatesAuditEnabledWithDataSplits() throws Exception
     {

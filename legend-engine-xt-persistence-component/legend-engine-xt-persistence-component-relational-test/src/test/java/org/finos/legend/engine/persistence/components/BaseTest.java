@@ -426,29 +426,6 @@ public class BaseTest
         .addFields(deleteIndicator)
         .build();
 
-    protected String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
-
-    protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
-
-    protected String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") (SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
-
-    protected String expectedSchemaEvolutionAddColumn = "ALTER TABLE \"mydb\".\"main\" ADD COLUMN \"biz_date\" DATE";
-
-    protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
-
-    protected String expectedSchemaEvolutionModifySize = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"name\" VARCHAR(64) PRIMARY KEY";
-
-    protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"NAME\" VARCHAR(64) PRIMARY KEY";
-
-    protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"id\" TINYINT PRIMARY KEY";
-
-    protected String getExpectedCleanupSql(String fullName, String alias)
-    {
-        return String.format("DELETE FROM %s as %s", fullName, alias);
-    }
-
     public void assertIfListsAreSameIgnoringOrder(List<String> first, List<String> second)
     {
         assertTrue(first.size() == second.size() &&

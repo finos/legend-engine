@@ -114,12 +114,6 @@ public class IngestModeTest
     protected Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
     protected Field deleteIndicatorBoolean = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
 
-    protected List<DataSplitRange> dataSplitRangesOneToTwo = new ArrayList<DataSplitRange>()
-    {{
-        add(DataSplitRange.of(1, 1));
-        add(DataSplitRange.of(2, 2));
-    }};
-
     protected List<DataSplitRange> dataSplitRanges = new ArrayList<DataSplitRange>()
     {{
         add(DataSplitRange.of(2, 5));
@@ -445,8 +439,6 @@ public class IngestModeTest
 
     protected String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 
-    protected String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\"";
-
     protected String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
         "(\"id\" INTEGER," +
         "\"name\" VARCHAR," +
@@ -487,13 +479,6 @@ public class IngestModeTest
         "(\"ID\" INTEGER,\"NAME\" VARCHAR,\"AMOUNT\" DOUBLE,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
         "\"BATCH_TIME_IN\" DATETIME,\"BATCH_TIME_OUT\" DATETIME,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_TIME_IN\"))";
 
-    protected String expectedBaseTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
     protected String expectedSchemaEvolutionAddColumn = "ALTER TABLE \"mydb\".\"main\" ADD COLUMN \"biz_date\" DATE";
 
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
@@ -503,44 +488,6 @@ public class IngestModeTest
     protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"NAME\" VARCHAR(64) PRIMARY KEY";
 
     protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"id\" TINYINT PRIMARY KEY";
-
-    protected String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "PRIMARY KEY (\"ID\", \"NAME\"))";
-
-    protected String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "\"digest\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
-    protected String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
-
-    protected String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
-            "(\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_update_time\" DATETIME)";
-
-    protected String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
-        "\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "\"DIGEST\" VARCHAR," +
-        "PRIMARY KEY (\"ID\", \"NAME\"))";
-
-    protected String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "\"digest\" VARCHAR," +
-        "\"batch_update_time\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\"))";
 
     protected String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
         "(\"id\" INTEGER," +
@@ -625,65 +572,4 @@ public class IngestModeTest
             first.stream().sorted().collect(Collectors.toList())
                 .equals(second.stream().sorted().collect(Collectors.toList())));
     }
-
-    private static final String SINGLE_QUOTE = "'";
-
-    protected String enrichSqlWithDataSplits(String sql, DataSplitRange dataSplitRange)
-    {
-        return sql
-                .replace(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.lowerBound()))
-                .replace(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.upperBound()));
-    }
-
-
-    // All the main table and staging table
-
-    protected Dataset mainTableWithBaseSchema = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
-            .build();
-
-    protected Dataset stagingTableWithBaseSchema = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchema)
-            .build();
-    protected Dataset mainTableWithNoPrimaryKeys = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
-            .build();
-
-    protected Dataset stagingTableWithNoPrimaryKeys = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
-            .build();
-
-    protected Dataset mainTableWithNoPrimaryKeysHavingAuditField = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithAuditAndNoPrimaryKeys)
-            .build();
-
-    protected Dataset mainTableWithBaseSchemaAndDigest = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-    protected Dataset stagingTableWithBaseSchemaAndDigest = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-    protected Dataset mainTableWithBaseSchemaHavingDigestAndAuditField = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-    protected Dataset stagingTableWithBaseSchemaHavingDigestAndDataSplit = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigestAndDataSplit)
-            .build();
-
-    protected Dataset stagingTableWithBaseSchemaHavingDataSplit = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDataSplit)
-            .build();
 }

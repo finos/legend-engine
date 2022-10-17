@@ -45,10 +45,21 @@ class NontemporalSnapshotTest extends BaseTest
     private final String basePath = "src/test/resources/data/snapshot-milestoning/";
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenarios:
+    1. No Auditing
+    2. With Auditing
+    3. No Auditing & import external JSON dataset
+    4. No Auditing & import external CSV dataset
+    5. Staging has lesser columns than main dataset
+    6. Staging data cleanup
+    7. Data Splits enabled
+     */
+
+    /*
+    Scenario: Test Nontemporal Snapshot with no auditing
      */
     @Test
-    void testMilestoningStagingTablePrePopulated() throws Exception
+    void testNontemporalSnapshotNoAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -88,10 +99,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and isUpdateBatchTimeEnabled is enabled
+    Scenario: Test Nontemporal Snapshot when auditing is enabled
     */
     @Test
-    void testSnapshotMilestoningLogicWithUpdateTimestampField() throws Exception
+    void testNontemporalSnapshotWithAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
@@ -115,10 +126,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from Json
+    Scenario: Test Nontemporal Snapshot when staging data comes from JSON and auditing is disabled
      */
     @Test
-    void testMilestoningWithExternalJsonData() throws Exception
+    void testNontemporalSnapshotImportExternalJson() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.json";
@@ -147,10 +158,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV
+    Scenario: Test Nontemporal Snapshot when staging data comes from CSV and auditing is disabled
     */
     @Test
-    void testMilestoningWithExternalCsvData() throws Exception
+    void testNontemporalSnapshotImportExternalCsv() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -179,10 +190,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
+    Scenario: Test Nontemporal Snapshot when staging data comes from CSV and has lesser columns than main dataset
     */
     @Test
-    void testSnapshotMilestoningLogicWithLessColumnsInStaging() throws Exception
+    void testNontemporalSnapshotWithLessColumnsInStaging() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
@@ -212,11 +223,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    staging table is cleaned up in the end
+    Scenario: Test Nontemporal Snapshot when staging table is cleaned up in the end
      */
     @Test
-    void testMilestoningWithCleanStagingData() throws Exception
+    void testNontemporalSnapshotWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -244,8 +254,11 @@ class NontemporalSnapshotTest extends BaseTest
         Assertions.assertEquals(stagingTableList.size(), 0);
     }
 
+    /*
+    Scenario: Test Nontemporal Snapshot when data splits are enabled
+    */
     @Test
-    void testSnapshotMilestoningLogicWithDataSplits() throws Exception
+    void testNontemporalSnapshotWithDataSplits() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
