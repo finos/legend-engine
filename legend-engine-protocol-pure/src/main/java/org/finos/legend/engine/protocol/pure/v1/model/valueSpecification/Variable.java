@@ -14,16 +14,18 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.One;
 
 public class Variable extends ValueSpecification
 {
     public String name;
+    public Multiplicity multiplicity;
     @JsonProperty(value = "class")
     public String _class;
     public Boolean supportsStream;
-    public Multiplicity multiplicity;
 
     public Variable()
     {

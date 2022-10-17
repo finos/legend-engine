@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-
-public abstract class CDate extends ValueSpecification
+public abstract class CDate extends PrimitiveValueSpecification
 {
-    public Multiplicity multiplicity;
 }

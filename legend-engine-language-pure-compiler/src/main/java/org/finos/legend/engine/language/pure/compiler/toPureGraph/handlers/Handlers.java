@@ -43,12 +43,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
@@ -156,6 +157,7 @@ public class Handlers
     {
         Lambda aggFirstLambda = null;
         Lambda aggSecondLambda = null;
+        obj = obj instanceof ClassInstance ? ((ClassInstance) obj).value : obj;
         if (obj instanceof AppliedFunction)
         {
             aggFirstLambda = ((Lambda) ((AppliedFunction) obj).parameters.get(mapOffset));
@@ -173,7 +175,7 @@ public class Handlers
         }
         if (aggFirstLambda != null && aggSecondLambda != null)
         {
-            updateSimpleLambda(aggFirstLambda, gt, new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+            updateSimpleLambda(aggFirstLambda, gt, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity.PURE_ONE);
             ValueSpecification processLambda = aggFirstLambda.accept(new ValueSpecificationBuilder(cc, ov, pc));
             updateSimpleLambda(aggSecondLambda, funcReturnType(processLambda, cc.pureModel), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
         }
@@ -292,13 +294,14 @@ public class Handlers
     {
         parameters.forEach(parameter ->
         {
-            if (parameter instanceof TdsOlapRank)
+            Object param = parameter instanceof ClassInstance ? ((ClassInstance) parameter).value : parameter;
+            if (param instanceof TdsOlapRank)
             {
-                updateSimpleLambda(((TdsOlapRank) parameter).function, cc.pureModel.getGenericType("meta::pure::metamodel::type::Any"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
+                updateSimpleLambda(((TdsOlapRank) param).function, cc.pureModel.getGenericType("meta::pure::metamodel::type::Any"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
             }
-            else if (parameter instanceof TdsOlapAggregation)
+            else if (param instanceof TdsOlapAggregation)
             {
-                updateSimpleLambda(((TdsOlapAggregation) parameter).function, cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
+                updateSimpleLambda(((TdsOlapAggregation) param).function, cc.pureModel.getGenericType("Number"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity());
             }
             if (parameter instanceof Lambda)
             {

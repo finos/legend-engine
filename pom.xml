@@ -37,6 +37,7 @@
         <module>legend-engine-test-reports</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
+        <module>legend-engine-xt-graphQL-grammar-integration</module>
         <module>legend-engine-xt-graphQL-compiler</module>
         <module>legend-engine-xt-graphQL-protocol</module>
         <module>legend-engine-xt-graphQL-query</module>
@@ -467,7 +468,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <argLine>-Xmx2g</argLine>
+                    <argLine>-Xmx2200M</argLine>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
@@ -633,6 +634,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-graphQL-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -670,6 +676,12 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                <type>test-jar</type>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

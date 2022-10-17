@@ -67,10 +67,6 @@ import static org.finos.legend.pure.generated.core_relational_relational_extensi
 
 public class TestServiceRunner
 {
-
-    public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
-    public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
-
     private void testOptionalParameter(String fetchFunction, String argName, Object optionalParameter, String expectedResultWithParameter, String expectedResultWithoutParameter)
     {
         SimpleOptionalParameterServiceRunner simpleOptionalParameterServiceRunner = new SimpleOptionalParameterServiceRunner(fetchFunction, argName);
@@ -262,7 +258,7 @@ public class TestServiceRunner
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceVariable("businessDate", Date.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("businessDate", Date.class, Multiplicity.PURE_ONE));
         }
     }
 
@@ -748,7 +744,7 @@ public class TestServiceRunner
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceVariable("input", String.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("input", String.class, Multiplicity.PURE_ONE));
         }
     }
 
@@ -763,8 +759,8 @@ public class TestServiceRunner
         public List<ServiceVariable> getServiceVariables()
         {
             return Lists.mutable.of(
-                    new ServiceVariable("input1", String.class, PURE_ONE),
-                    new ServiceVariable("input2", String.class, PURE_ONE)
+                    new ServiceVariable("input1", String.class, Multiplicity.PURE_ONE),
+                    new ServiceVariable("input2", String.class, Multiplicity.PURE_ONE)
             );
         }
     }
@@ -780,8 +776,8 @@ public class TestServiceRunner
         public List<ServiceVariable> getServiceVariables()
         {
             return Lists.mutable.of(
-                    new ServiceVariable("input1", String.class, PURE_ONE),
-                    new ServiceVariable("input2", String.class, PURE_ONE)
+                    new ServiceVariable("input1", String.class, Multiplicity.PURE_ONE),
+                    new ServiceVariable("input2", String.class, Multiplicity.PURE_ONE)
             );
         }
     }
@@ -796,7 +792,7 @@ public class TestServiceRunner
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceVariable("input", String.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("input", String.class, Multiplicity.PURE_ONE));
         }
     }
 

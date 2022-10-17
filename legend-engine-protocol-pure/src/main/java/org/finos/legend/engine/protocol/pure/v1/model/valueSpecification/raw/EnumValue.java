@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-public class EnumValue extends ValueSpecification
+public class EnumValue extends DataTypeValueSpecification
 {
     public String fullPath;
     public String value;
