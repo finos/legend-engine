@@ -17,9 +17,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applic
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AbstractAppliedFunction;
 
 @Deprecated
-public class UnknownAppliedFunction extends ValueSpecification
+public class UnknownAppliedFunction extends AbstractAppliedFunction
 {
     public String function;
     public String returnType;

@@ -114,7 +114,7 @@ public class GenerateIntrospectionPureModel
 
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(introspection);
-        RichIterable<? extends Type> types = org.finos.legend.pure.generated.core_external_query_graphql_transformation.Root_meta_external_query_graphQL_binding_toPure_typeSystem_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new Translator().translate(document, pureModel), "meta::external::query::graphQL::introspection::model", pureModel.getExecutionSupport());
+        RichIterable<? extends Type> types = org.finos.legend.pure.generated.core_external_query_graphql_binding_toPure_sdl_toPure_sdl.Root_meta_external_query_graphQL_binding_toPure_sdl_graphQLTypeSystemtoPure_Document_1__String_1__Type_MANY_(new Translator().translate(document, pureModel), "meta::external::query::graphQL::metamodel::introspection", pureModel.getExecutionSupport());
         String res = types.collect(t -> core_pure_serialization_toPureGrammar.Root_meta_pure_metamodel_serialization_grammar_printType_Type_1__String_1_(t, pureModel.getExecutionSupport())).makeString("\n");
         System.out.println(res);
     }

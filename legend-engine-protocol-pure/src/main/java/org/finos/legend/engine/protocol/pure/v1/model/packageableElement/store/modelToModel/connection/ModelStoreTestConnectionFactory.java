@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.Da
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 
 import java.io.Closeable;
@@ -52,9 +53,10 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         {
             for (Map.Entry<String, ValueSpecification> map : ((ModelStoreData) testData).instances.entrySet())
             {
-                if (map.getValue() instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair &&  ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair) map.getValue()).second instanceof PackageableElementPtr)
+                ValueSpecification vs = map.getValue();
+                if (vs instanceof ClassInstance && ((ClassInstance) vs).value instanceof org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair && ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair) ((ClassInstance) vs).value).second instanceof PackageableElementPtr)
                 {
-                    EmbeddedData testDataElement = Iterate.detect(dataElementList, e -> ((PackageableElementPtr)((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair) map.getValue()).second).fullPath.equals(e.getPath())).data;
+                    EmbeddedData testDataElement = Iterate.detect(dataElementList, e -> ((PackageableElementPtr) ((org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair) ((ClassInstance) map.getValue()).value).second).fullPath.equals(e.getPath())).data;
                     if (testDataElement instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) testDataElement).contentType))
                     {
                         JsonModelConnection jsonModelConnection = new JsonModelConnection();

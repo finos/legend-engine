@@ -86,10 +86,7 @@ public class HelperModelBuilder
         final GenericType _classGenericType = context.resolveGenericType(classPackageString);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this");
         ve._genericType(_classGenericType);
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
-        multiplicity.lowerBound = 1;
-        multiplicity.setUpperBound(1);
-        ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
+        ve._multiplicity(context.pureModel.getMultiplicity(Multiplicity.PURE_ONE));
         return ve;
     }
 
@@ -98,10 +95,7 @@ public class HelperModelBuilder
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(variableName);
         final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("Number"));
         ve._genericType(genericType);
-        Multiplicity multiplicity = new Multiplicity();
-        multiplicity.lowerBound = 1;
-        multiplicity.setUpperBound(1);
-        ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
+        ve._multiplicity(context.pureModel.getMultiplicity(Multiplicity.PURE_ONE));
         return ve;
     }
 

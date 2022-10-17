@@ -1,5 +1,5 @@
 {
   "name" : "core_external_query_graphql",
   "pattern" : "(meta::external::query::graphQL)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_query_graphql_metamodel"]
+  "dependencies" : ["platform", "core", "core_external_compiler", "core_external_query_graphql_metamodel"]
 }

@@ -22,7 +22,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
@@ -33,44 +32,42 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = PackageableElementPtr.class, name = "packageableElementPtr"),
-        @JsonSubTypes.Type(value = HackedClass.class, name = "hackedClass"),
-        @JsonSubTypes.Type(value = EnumValue.class, name = "enumValue"),
-        @JsonSubTypes.Type(value = Variable.class, name = "var"),
-        @JsonSubTypes.Type(value = Lambda.class, name = "lambda"),
-        @JsonSubTypes.Type(value = Path.class, name = "path"),
+        // Collection
+        @JsonSubTypes.Type(value = Collection.class, name = "collection"),
+        // Applied Function
         @JsonSubTypes.Type(value = AppliedFunction.class, name = "func"),
         @JsonSubTypes.Type(value = AppliedProperty.class, name = "property"),
-        @JsonSubTypes.Type(value = Collection.class, name = "collection"),
+        // Packageable Element Ptr
+        @JsonSubTypes.Type(value = PackageableElementPtr.class, name = "packageableElementPtr"),
+        @JsonSubTypes.Type(value = GenericTypeInstance.class, name = "genericTypeInstance"),
+        // Variable
+        @JsonSubTypes.Type(value = Variable.class, name = "var"),
+        // Core Class Instances (could be moved to classInstance)
+        @JsonSubTypes.Type(value = Lambda.class, name = "lambda"),
+        @JsonSubTypes.Type(value = KeyExpression.class, name = "keyExpression"), // Used for new
+        // Data Type - Enumeration
+        @JsonSubTypes.Type(value = EnumValue.class, name = "enumValue"),
+        // Data Type - Unit
+        @JsonSubTypes.Type(value = UnitInstance.class, name = "unitInstance"),
+        // Data Type - Primitives
         @JsonSubTypes.Type(value = CInteger.class, name = "integer"),
         @JsonSubTypes.Type(value = CDecimal.class, name = "decimal"),
         @JsonSubTypes.Type(value = CString.class, name = "string"),
@@ -80,36 +77,45 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.pat
         @JsonSubTypes.Type(value = CStrictDate.class, name = "strictDate"),
         @JsonSubTypes.Type(value = CStrictTime.class, name = "strictTime"),
         @JsonSubTypes.Type(value = CLatestDate.class, name = "latestDate"),
+        // Class Instance
+        @JsonSubTypes.Type(value = ClassInstance.class, name = "classInstance"),
 
-        @JsonSubTypes.Type(value = AggregateValue.class, name = "aggregateValue"),
-        @JsonSubTypes.Type(value = Pair.class, name = "pair"),
-        @JsonSubTypes.Type(value = RuntimeInstance.class, name = "runtimeInstance"),
-        @JsonSubTypes.Type(value = ExecutionContextInstance.class, name = "executionContextInstance"),
-        @JsonSubTypes.Type(value = PureList.class, name = "listInstance"),
-        @JsonSubTypes.Type(value = RootGraphFetchTree.class, name = "rootGraphFetchTree"),
-        @JsonSubTypes.Type(value = PropertyGraphFetchTree.class, name = "propertyGraphFetchTree"),
-        @JsonSubTypes.Type(value = SerializationConfig.class, name = "alloySerializationConfig"),
-        @JsonSubTypes.Type(value = UnitType.class, name = "unitType"),
-        @JsonSubTypes.Type(value = UnitInstance.class, name = "unitInstance"),
-        @JsonSubTypes.Type(value = KeyExpression.class, name = "keyExpression"),
-        @JsonSubTypes.Type(value = PrimitiveType.class, name = "primitiveType"),
 
-        // TDS (to be moved)?
-        @JsonSubTypes.Type(value = TDSAggregateValue.class, name = "tdsAggregateValue"),
-        @JsonSubTypes.Type(value = TDSColumnInformation.class, name = "tdsColumnInformation"),
-        @JsonSubTypes.Type(value = TDSSortInformation.class, name = "tdsSortInformation"),
-        @JsonSubTypes.Type(value = TdsOlapRank.class, name = "tdsOlapRank"),
-        @JsonSubTypes.Type(value = TdsOlapAggregation.class, name = "tdsOlapAggregation"),
+        // Instances understood by the protocol ----------------------------------------------------------
+        // !!! ValueSpecification SHOULD NOT BE EXTENDED anymore (The Classes below are here only for backward compatibility) !!!
+        // !!! Please now use ClassInstance and its extension mechanism !!!
+        // Move to VS extension
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "path"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "rootGraphFetchTree"),
+        // Below not used in the grammar parser (No instantiation in the project)
+        // Move to functions and deprecate
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "listInstance"),                          // Used for anonymous collection of collection
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "pair"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "aggregateValue"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "tdsAggregateValue"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "tdsColumnInformation"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "tdsSortInformation"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "tdsOlapRank"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "tdsOlapAggregation"),
+        // Move to VS extension
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "runtimeInstance"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "executionContextInstance"),
+        @JsonSubTypes.Type(value = ClassInstanceWrapper.class, name = "alloySerializationConfig"),
+        //  ---------------------------------------------------------- Instances understood by the protocol
 
         // TO BE DELETED
-        @JsonSubTypes.Type(value = MappingInstance.class, name = "mappingInstance"),
-        @JsonSubTypes.Type(value = AppliedQualifiedProperty.class, name = "qualifiedProperty"),
-        @JsonSubTypes.Type(value = HackedUnit.class, name = "hackedUnit"),
-        @JsonSubTypes.Type(value = Whatever.class, name = "whatever"),
-        @JsonSubTypes.Type(value = UnknownAppliedFunction.class, name = "unknownFunc"),
-        @JsonSubTypes.Type(value = Class.class, name = "class"),
-        @JsonSubTypes.Type(value = Enum.class, name = "enum")
+        @JsonSubTypes.Type(value = AppliedQualifiedProperty.class, name = "qualifiedProperty"),     // Should not be coming to the system
+        @JsonSubTypes.Type(value = Whatever.class, name = "whatever"),                              // Should not be coming to the system
+        @JsonSubTypes.Type(value = UnknownAppliedFunction.class, name = "unknownFunc"),             // Should not be coming to the system
+        @JsonSubTypes.Type(value = MappingInstance.class, name = "mappingInstance"),                // Go to PackageableElementPtr
+        @JsonSubTypes.Type(value = PrimitiveType.class, name = "primitiveType"),                    // Go to PackageableElementPtr
+        @JsonSubTypes.Type(value = UnitType.class, name = "unitType"),                              // Go to PackageableElementPtr
+        @JsonSubTypes.Type(value = Class.class, name = "class"),                                    // Go to PackageableElementPtr
+        @JsonSubTypes.Type(value = Enum.class, name = "enum"),                                      // Go to PackageableElementPtr
+        @JsonSubTypes.Type(value = HackedClass.class, name = "hackedClass"),                        // Go to GenericTypeInstance
+        @JsonSubTypes.Type(value = HackedUnit.class, name = "hackedUnit")                           // Go to GenericTypeInstance
 })
+
 // NOTE: due to plan generator producing duplicated _type field, we need to enable this
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class ValueSpecification
