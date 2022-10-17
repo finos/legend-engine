@@ -104,3 +104,58 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 }
 
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testInlineInEmbeddedPropertyMapping():Boolean[1]
+{
+   let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1' )
+                                    ->project( [p | $p.type, p | $p.issuer.address.name,p | $p.holder.address.name], ['type','i','h'])
+                                    , testInlineEmbeddedMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('type,i,h\n' + '5 years,addressi1,addressh1\n'+ '5 years,addressi2,addressh1\n', $result.values->toOne()->toCSV());
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER_ADDRESS_NAME as "i", "root".HOLDER_ADDRESS_NAME as "h" from PRODUCT_DENORM as "root" where "root".HOLDER_ADDRESS_NAME = \'addressh1\'', $result);
+
+}
+
+###Mapping
+import meta::relational::tests::mapping::embedded::advanced::store::*;
+import meta::relational::tests::mapping::embedded::advanced::model::*;
+import meta::relational::tests::model::simple::*;
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testInlineInEmbeddedPropertyMapping
+(
+  Address[add]: Relational
+    {
+        scope([eDB]PRODUCT_DENORM)
+        (
+          name: [eDB] ISSUER_ADDRESS_NAME,
+          street: [eDB] ISSUER_ADDRESS_STREET
+        )
+    }
+
+  PartyType: EnumerationMapping partyType
+    {
+       Company: 'C', 
+       Bearer:'B', 
+       Goverment: 'G'
+    } 
+   
+  BondDetail[myBondMapping]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        description:BOND_DETAILS,
+        type: BOND_TYPE,
+        issuer(
+              name:ISSUER,
+              type:  EnumerationMapping partyType : ISSUER_TYPE, 
+              address() Inline[add]
+        ),
+        holder(
+              name:HOLDER,
+              type:  EnumerationMapping partyType : HOLDER_TYPE , 
+              address() Inline[add]
+        )
+     )
+  } 
+)
+
+
