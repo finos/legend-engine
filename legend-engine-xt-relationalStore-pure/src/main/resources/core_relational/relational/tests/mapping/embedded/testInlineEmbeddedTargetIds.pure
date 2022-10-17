@@ -140,7 +140,45 @@ function <<test.ToFix>> meta::relational::tests::mapping::embedded::advanced::in
 ###Mapping
 import meta::relational::tests::mapping::embedded::advanced::store::*;
 import meta::relational::tests::mapping::embedded::advanced::model::*;
+import meta::relational::tests::model::simple::*;
 
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testInlineInEmbeddedPropertyMapping
+(
+  Address[add]: Relational
+    {
+        scope([eDB]PRODUCT_DENORM)
+        (
+          name: [eDB] ISSUER_ADDRESS_NAME,
+          street: [eDB] ISSUER_ADDRESS_STREET
+        )
+    }
+
+  PartyType: EnumerationMapping partyType
+    {
+       Company: 'C', 
+       Bearer:'B', 
+       Goverment: 'G'
+    } 
+   
+  BondDetail[myBondMapping]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        description:BOND_DETAILS,
+        type: BOND_TYPE,
+        issuer(
+              name:ISSUER,
+              type:  EnumerationMapping partyType : ISSUER_TYPE, 
+              address() Inline[add]
+        ),
+        holder(
+              name:HOLDER,
+              type:  EnumerationMapping partyType : HOLDER_TYPE , 
+              address() Inline[add]
+        )
+     )
+  } 
+)
 
 Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedTargetIds
 (
