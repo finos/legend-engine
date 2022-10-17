@@ -1,0 +1,62 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::meta::external::query::sql::metamodel::*;
+
+Class meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::Statement extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::Query extends meta::external::query::sql::metamodel::Statement
+{
+  queryBody: meta::external::query::sql::metamodel::QueryBody[1];
+}
+
+Class meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::QueryBody extends meta::external::query::sql::metamodel::Relation
+{
+}
+
+Class meta::external::query::sql::metamodel::QuerySpecification extends meta::external::query::sql::metamodel::QueryBody
+{
+  select: meta::external::query::sql::metamodel::Select[1];
+  from: meta::external::query::sql::metamodel::Relation[*];
+}
+
+Class meta::external::query::sql::metamodel::Select extends meta::external::query::sql::metamodel::Node
+{
+  distinct: Boolean[1];
+  selectItems: meta::external::query::sql::metamodel::SelectItem[*];
+}
+
+Class meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::AllColumns extends meta::external::query::sql::metamodel::SelectItem
+{
+  prefix: String[0..1];
+}
+
+Class meta::external::query::sql::metamodel::Table extends meta::external::query::sql::metamodel::QueryBody
+{
+  name: String[1];
+}
