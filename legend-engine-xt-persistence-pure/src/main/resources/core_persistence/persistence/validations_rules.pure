@@ -18,6 +18,10 @@ import meta::legend::service::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::pure::extension::*;
 
+import meta::pure::functions::collection::*;
+
+import meta::pure::graphFetch::*;
+
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::targetshape::*;
@@ -72,7 +76,7 @@ function meta::pure::persistence::validation::validateServiceAndTarget(service: 
 function meta::pure::persistence::validation::validateSingleExecutionServiceAndFlatTarget(service: Service[1], execution: PureSingleExecution[1], target: FlatTarget[1]): ValidationResult[1]
 {
   let classification = $execution->classify();
-  if ($classification == ExecutionClassification.GRAPH_FETCH_SERIALIZE || $classification == ExecutionClassification.TDS,
+  if ($classification->instanceOf(FlatGraphFetchSerialize) || $classification->instanceOf(TdsExecutionClassification),
     | success(),
     | failure('Flat target requires a service that returns a TDS'));
 }
@@ -80,7 +84,7 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndF
 function meta::pure::persistence::validation::validateSingleExecutionServiceAndMultiFlatTarget(service: Service[1], execution: PureSingleExecution[1], target: MultiFlatTarget[1]): ValidationResult[1]
 {
   let classification = $execution->classify();
-  if ($classification == ExecutionClassification.GRAPH_FETCH_SERIALIZE,
+  if ($classification->instanceOf(OneLevelGraphFetchSerialize),
     | success(),
     | failure('Multi flat target requires a service that ends with "graphFetch()->serialize()'));
 }
@@ -101,28 +105,78 @@ function meta::pure::persistence::validation::validateMultiExecutionServiceAndMu
  * execution validations
  **********/
 
-Enum meta::pure::persistence::validation::ExecutionClassification
+Class
+<<typemodifiers.abstract>>
+meta::pure::persistence::validation::ExecutionClassification
 {
-  GRAPH_FETCH_SERIALIZE,
-  TDS,
-  OTHER
+}
+
+Class meta::pure::persistence::validation::TdsExecutionClassification extends ExecutionClassification
+{
+}
+
+Class meta::pure::persistence::validation::FlatGraphFetchSerialize extends ExecutionClassification
+{
+  validLeafProperties: PropertyGraphFetchTree[*];
+  invalidLeafProperties: PropertyGraphFetchTree[*];
+}
+
+Class meta::pure::persistence::validation::OneLevelGraphFetchSerialize extends ExecutionClassification
+{
+  validRootProperties: PropertyGraphFetchTree[*];
+  invalidRootProperties: PropertyGraphFetchTree[*];
+
+  validLeafProperties: PropertyGraphFetchTree[*];
+  invalidLeafProperties: PropertyGraphFetchTree[*];
+}
+
+Class meta::pure::persistence::validation::OtherExecutionClassification extends ExecutionClassification
+{
 }
 
 function meta::pure::persistence::validation::classify(execution: PureSingleExecution[1]): ExecutionClassification[1]
 {
-  let serviceEndsWithGraphFetchSerialize = $execution.func.expressionSequence->evaluateAndDeactivate()->last()->match([
-    fe: FunctionExpression[1] | if ($fe.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_, | true, | false),
-    any: Any[1] | false
-  ]);
-
-  if (!$serviceEndsWithGraphFetchSerialize,
-    | ExecutionClassification.GRAPH_FETCH_SERIALIZE,
-    | let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
+  $execution.func.expressionSequence->evaluateAndDeactivate()->last()->match([
+    fe: FunctionExpression[1] | if ($fe.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
+      | classifyFunctionExpression($execution.func, $fe),
+      | ^OtherExecutionClassification()
+    ),
+    any: Any[1] |
+      let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
       $plan.rootExecutionNode.resultType->match([
-        tds: TDSResultType[1] | ExecutionClassification.TDS,
-        any: Any[1] | ExecutionClassification.OTHER
+        tds: TDSResultType[1] | ^TdsExecutionClassification(),
+        any: Any[1] | ^OtherExecutionClassification()
       ]);
+  ]);
+}
+
+function <<access.private>> meta::pure::persistence::validation::classifyFunctionExpression(functionDefinition: FunctionDefinition<Any>[1], functionExpression: FunctionExpression[1]): ExecutionClassification[1]
+{
+  let root = $functionExpression->instanceValuesAtParameter(1, $functionDefinition->openVariableValues())->toOne()->cast(@RootGraphFetchTree<Any>);
+  let firstLevelChildren = $root.subTrees->cast(@PropertyGraphFetchTree);
+  let secondLevelChildren = $firstLevelChildren.subTrees->cast(@PropertyGraphFetchTree);
+  if ($firstLevelChildren->forAll(p | $p.isPrimitive()),
+    | ^FlatGraphFetchSerialize(
+        validLeafProperties = $firstLevelChildren->filter(p | $p->validLeafGraphFetchProperty()),
+        invalidLeafProperties = $firstLevelChildren->filter(p | !$p->validLeafGraphFetchProperty())),
+    | if ($firstLevelChildren->forAll(p | !$p.isPrimitive()) && $secondLevelChildren->forAll(p | $p.isPrimitive()),
+      | ^OneLevelGraphFetchSerialize(
+          validRootProperties = $firstLevelChildren->filter(p | $p->validRootGraphFetchRootProperty()),
+          invalidRootProperties = $firstLevelChildren->filter(p | !$p->validRootGraphFetchRootProperty()),
+          validLeafProperties = $secondLevelChildren->filter(p | $p->validLeafGraphFetchProperty()),
+          invalidLeafProperties = $firstLevelChildren->filter(p | !$p->validLeafGraphFetchProperty())),
+      | ^OtherExecutionClassification())
   );
+}
+
+function <<access.private>> meta::pure::persistence::validation::validRootGraphFetchRootProperty(property: PropertyGraphFetchTree[1]): Boolean[1]
+{
+  !$property.isPrimitive() && $property.alias->isEmpty() && $property.parameters->isEmpty() && $property.subType->isEmpty();
+}
+
+function <<access.private>> meta::pure::persistence::validation::validLeafGraphFetchProperty(property: PropertyGraphFetchTree[1]): Boolean[1]
+{
+  $property.isPrimitive() && $property.alias->isEmpty() && $property.parameters->isEmpty() && $property.subType->isEmpty();
 }
 
 /**********
