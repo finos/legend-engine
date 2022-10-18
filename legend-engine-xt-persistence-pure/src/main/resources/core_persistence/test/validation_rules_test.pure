@@ -24,7 +24,7 @@ Class meta::pure::persistence::test::WrapperInput
 
 Class meta::pure::persistence::test::FlatInput
 {
-  idIn: String[1];
+  idIn: Integer[1];
   booleanIn: Boolean[1];
   integerIn: Integer[1];
   floatIn: Float[1];
@@ -42,7 +42,7 @@ Class meta::pure::persistence::test::WrapperOutput
 
 Class meta::pure::persistence::test::FlatOutput
 {
-  idOut: String[1];
+  idOut: Integer[1];
   booleanOut: Boolean[1];
   integerOut: Integer[1];
   floatOut: Float[1];
@@ -76,12 +76,37 @@ Mapping meta::pure::persistence::test::M2mMapping
   }
 )
 
+###Relational
+Database meta::pure::persistence::test::M2mDatabase
+(
+  Table FlatTable (
+    id INTEGER PRIMARY KEY,
+    boolean_col BIT,
+    integer_col INTEGER,
+    float_col DOUBLE,
+    decimal_col DECIMAL(10,2),
+    strict_date_col DATE,
+    date_time_col TIMESTAMP,
+    string_col VARCHAR(200)
+  )
+)
+
 ###Pure
 
 import meta::legend::service::metamodel::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::notifier::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::deduplication::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::*;
+import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
+import meta::pure::persistence::metamodel::persister::sink::*;
+import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::runtime::*;
 import meta::pure::test::assertion::*;
 
@@ -169,5 +194,29 @@ function meta::pure::persistence::test::M2mService(): Service[1]
       data = '',
       asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
     tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+  );
+}
+
+function meta::pure::persistence::test::M2mPersistence(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Graph fetch m2m service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::M2mService(),
+    persister = ^BatchPersister(
+      ingestMode = ^UnitemporalDelta(
+        mergeStrategy = ^NoDeletesMergeStrategy(),
+        transactionMilestoning = ^BatchIdTransactionMilestoning(
+          batchIdInName = 'IN_Z',
+          batchIdOutName = 'OUT_Z'
+        )
+      ),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::M2mDatabase),
+      targetShape = ^FlatTarget(
+        targetName = 'FlatTable',
+        deduplicationStrategy = ^NoDeduplicationStrategy()
+      )
+    ),
+    notifier = ^Notifier(notifyees = [])
   );
 }
