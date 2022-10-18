@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.GraphFetchTreeParserGrammar;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
@@ -25,16 +24,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDa
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class GraphFetchTreeParseTreeWalker
 {
@@ -45,12 +44,12 @@ public class GraphFetchTreeParseTreeWalker
         this.walkerSourceInformation = sourceInformation;
     }
 
-    public GraphFetchTree visitDefinition(GraphFetchTreeParserGrammar.DefinitionContext definitionContext)
+    public ClassInstance visitDefinition(GraphFetchTreeParserGrammar.DefinitionContext definitionContext)
     {
         return this.visitRootGraphDefinition(definitionContext.graphDefinition(), definitionContext);
     }
 
-    private RootGraphFetchTree visitRootGraphDefinition(GraphFetchTreeParserGrammar.GraphDefinitionContext graphDefinitionContext, GraphFetchTreeParserGrammar.DefinitionContext definitionContext)
+    private ClassInstance visitRootGraphDefinition(GraphFetchTreeParserGrammar.GraphDefinitionContext graphDefinitionContext, GraphFetchTreeParserGrammar.DefinitionContext definitionContext)
     {
         List<GraphFetchTree> subTrees = new ArrayList<>();
         for (GraphFetchTreeParserGrammar.GraphPathContext graphPathContext : graphDefinitionContext.graphPaths().graphPath())
@@ -61,7 +60,7 @@ public class GraphFetchTreeParseTreeWalker
         result._class = PureGrammarParserUtility.fromQualifiedName(definitionContext.qualifiedName().packagePath() == null ? Collections.emptyList() : definitionContext.qualifiedName().packagePath().identifier(), definitionContext.qualifiedName().identifier());
         result.sourceInformation = walkerSourceInformation.getSourceInformation(definitionContext.qualifiedName());
         result.subTrees = subTrees;
-        return result;
+        return DomainParseTreeWalker.wrapWithClassInstance(result, "rootGraphFetchTree");
     }
 
     private PropertyGraphFetchTree visitGraphPathContext(GraphFetchTreeParserGrammar.GraphPathContext graphPathContext)
@@ -110,13 +109,11 @@ public class GraphFetchTreeParseTreeWalker
         }
         else
         {
-            Collection result = new Collection();
             for (GraphFetchTreeParserGrammar.ScalarParameterContext scalarParameterContext : parameterContext.collectionParameter().scalarParameter())
             {
                 values.add(this.visitScalarParameterContext(scalarParameterContext));
             }
-            result.values = values;
-            return result;
+            return new Collection(values);
         }
     }
 
@@ -145,56 +142,25 @@ public class GraphFetchTreeParseTreeWalker
         ValueSpecification result;
         try
         {
-            Multiplicity m = this.getPureOne();
             if (ctx.STRING() != null)
             {
-                List<String> values = new ArrayList<>();
-                values.add(PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
-                CString instance = new CString();
-                instance.multiplicity = m;
-                instance.values = values;
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
+                result = new CString(PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
             }
             else if (ctx.INTEGER() != null)
             {
-                List<Long> values = new ArrayList<>();
-                values.add(Long.parseLong(ctx.getText()));
-                CInteger instance = new CInteger();
-                instance.multiplicity = m;
-                instance.values = values;
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
+                result = new CInteger(Long.parseLong(ctx.getText()));
             }
             else if (ctx.FLOAT() != null)
             {
-                List<Double> values = new ArrayList<>();
-                values.add(Double.parseDouble(ctx.getText()));
-                CFloat instance = new CFloat();
-                instance.multiplicity = m;
-                instance.values = values;
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
+                result = new CFloat(Double.parseDouble(ctx.getText()));
             }
             else if (ctx.DATE() != null)
             {
-                List<String> values = new ArrayList<>();
-                values.add(ctx.getText());  // Likely wrong
-                CDateTime instance = new CDateTime();
-                instance.multiplicity = this.getPureOne();
-                instance.values = values.stream().map(value -> value.substring(value.lastIndexOf('%') + 1)).collect(Collectors.toList());
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
+                result = new CDateTime(ctx.getText());
             }
             else if (ctx.BOOLEAN() != null)
             {
-                List<Boolean> values = new ArrayList<>();
-                values.add(Boolean.parseBoolean(ctx.getText()));
-                CBoolean instance = new CBoolean();
-                instance.multiplicity = m;
-                instance.values = values;
-                instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                result = instance;
+                result = new CBoolean(Boolean.parseBoolean(ctx.getText()));
             }
             else
             {
@@ -206,14 +172,7 @@ public class GraphFetchTreeParseTreeWalker
         {
             throw new UnsupportedOperationException(ctx.getText());
         }
+        result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return result;
-    }
-
-    private Multiplicity getPureOne()
-    {
-        Multiplicity m = new Multiplicity();
-        m.lowerBound = 1;
-        m.setUpperBound(1);
-        return m;
     }
 }

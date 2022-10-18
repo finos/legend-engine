@@ -196,11 +196,11 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
     $v.values->isEmpty() && $v.multiplicity == PureOne && (($rawType->instanceOf(DataType) && !$rawType->instanceOf(Unit)) || $rawType->instanceOf(Class) && (($ishacked && $rawType.name != 'Class') || (!$ishacked && $rawType.name == 'Class')));
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedClass(v:InstanceValue[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::HackedClassValue[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedClass(v:InstanceValue[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::HackedClassValue
+   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance
    (
-      _type = 'hackedClass',
+      _type = 'genericTypeInstance',
       fullPath = $v.genericType.rawType->toOne()->match([
          d:DataType[1]|$d->makeString(),
          c:Class<Any>[1]|$c->elementToPath()
@@ -230,9 +230,9 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
 
 }
 
-function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedUnit(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::HackedUnit[1]
+function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformHackedUnit(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance[1]
 {
-   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::HackedUnit(_type='hackedUnit', unitType=$v.genericType.rawType->toOne()->elementToPath());
+   ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance(_type='genericTypeInstance', fullPath=$v.genericType.rawType->toOne()->elementToPath());
 }
 
 function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformUnitInstance(v:ValueSpecification[1]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance[1]
@@ -261,60 +261,52 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         _type = 'collection',
                         multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
                      ),
-                  s:String[*]|
+                  s:String[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString
                      (
                         _type = 'string',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $s
+                        value = $s
                      ),
-                  i:Integer[*]|
+                  i:Integer[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger
                      (
                         _type = 'integer',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $i
+                        value = $i
                      ),
-                  d:Decimal[*]|
+                  d:Decimal[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDecimal
                      (
                         _type = 'decimal',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $d
+                        value = $d
                      ),
-                  f:Float[*]|
+                  f:Float[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CFloat
                      (
                         _type = 'float',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $f
+                        value = $f
                      ),
-                  b:Boolean[*]|
+                  b:Boolean[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CBoolean
                      (
                         _type = 'boolean',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $b
+                        value = $b
                      ),
-                  d:StrictDate[*]|
+                  d:StrictDate[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CStrictDate
                      (
                         _type = 'strictDate',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $d->map(st|$st->toString())
+                        value = $d->map(st|$st->toString())
                      ),
-                  d:DateTime[*]|
+                  d:DateTime[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDateTime
                      (
                         _type = 'dateTime',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-                        values = $d->map(st|$st->toString())
+                        value = $d->map(st|$st->toString())
                      ),
-                  l:LatestDate[*]|
+                  l:LatestDate[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CLatestDate
                      (
-                        _type = 'latestDate',
-                        multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+                        _type = 'latestDate'
                      ),
                   c:Class<Any>[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
@@ -345,82 +337,115 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         fullPath = $e->elementToPath()
                      ),
                   u:Unit[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitType
-                     (
-                        _type='unitType',
-                        unitType=$u->elementToPath()
-                     );,
+                    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                    (
+                       _type = 'packageableElementPtr',
+                       fullPath = $u->elementToPath()
+                    ),
                   v:ValueSpecification[1]|$v->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open,false,$useAppliedFunction, $extensions),
                   a:Path<Nil,Any|*>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
                      (
-                        _type = 'path',
-                        name = if ($a.name->isEmpty(),|'',|$a.name->toOne()),
-                        startType = $a.start.rawType->toOne()->elementToPath(),
-                        path = $a.path->map(
-                                    p|$p->match(
-                                       [
-                                          p:PropertyPathElement[1]|^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PropertyPathElement(
-                                                                        _type='propertyPath',
-                                                                        property=$p.property.name->toOne(),
-                                                                        parameters = $p.parameters->map(pa|$pa->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, $extensions))
-                                                                   )
-                                       ]
-                                    )
-                               )
-                     );,
+                       _type = 'classInstance',
+                       type = 'path',
+                       value =  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path
+                                (
+                                    name = if ($a.name->isEmpty(),|'',|$a.name->toOne()),
+                                    startType = $a.start.rawType->toOne()->elementToPath(),
+                                    path = $a.path->map(
+                                                p|$p->match(
+                                                  [
+                                                      p:PropertyPathElement[1]|^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PropertyPathElement(
+                                                                                    _type='propertyPath',
+                                                                                    property=$p.property.name->toOne(),
+                                                                                    parameters = $p.parameters->map(pa|$pa->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, $extensions))
+                                                                              )
+                                                  ]
+                                                )
+                                          )
+                                )
+                     )
+                     ;,
                   a:meta::pure::functions::collection::AggregateValue<Any, Any, Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
                      (
-                        _type = 'aggregateValue',
-                        mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
-                        aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                       _type = 'classInstance',
+                       type = 'aggregateValue',
+                       value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
+                                (
+                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
+                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                )
                      ),
                   a:meta::pure::tds::AggregateValue<Any,Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
                      (
-                        _type = 'tdsAggregateValue',
-                        name = $a.name,
-                        mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
-                        aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                       _type = 'classInstance',
+                       type = 'tdsAggregateValue',
+                       value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue
+                                (
+                                    name = $a.name,
+                                    mapFn = $a.mapFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda),
+                                    aggregateFn= $a.aggregateFn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                )
                      ),
                   oo:meta::pure::tds::OlapOperation<Any>[1]|
                      $oo->match([
                         oa : meta::pure::tds::TdsOlapAggregation<Any>[1]|
-                           ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation
-                           (
-                              _type = 'tdsOlapAggregation',
-                              columnName = $oa.colName,
-                              function = $oa.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
-                           ),
+                          ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          (
+                            _type = 'classInstance',
+                            type = 'tdsOlapAggregation',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation
+                                    (
+                                        columnName = $oa.colName,
+                                        function = $oa.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    )
+                          ),
                         or :  meta::pure::tds::TdsOlapRank<Any>[1]|
-                           ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank
-                           (
-                              _type = 'tdsOlapRank',
-                              function = $or.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
-                           )
+                           ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          (
+                            _type = 'classInstance',
+                            type = 'tdsOlapRank',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank
+                                    (
+                                        function = $or.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    )
+                          )
                         ]),
                   si:meta::pure::tds::SortInformation[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSSortInformation
-                     (
-                        _type = 'tdsSortInformation',
-                        column = $si.column,
-                        direction = $si.direction->toString()
-                     ),
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          (
+                            _type = 'classInstance',
+                            type = 'tdsSortInformation',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSSortInformation
+                                    (
+                                        column = $si.column,
+                                        direction = $si.direction->toString()
+                                    )
+                          ),
                   co:meta::pure::tds::BasicColumnSpecification<Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation
-                     (
-                        _type = 'tdsColumnInformation',
-                        name = $co.name,
-                        columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
-                     );,
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          (
+                            _type = 'classInstance',
+                            type = 'tdsColumnInformation',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation
+                                    (
+                                        name = $co.name,
+                                        columnFn = $co.func->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda)
+                                    )
+                          ),
                   pair:Pair<Any,Any>[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair
-                     (
-                        _type = 'pair',
-                        first = $pair.first->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions),
-                        second = $pair.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)
-                     );,
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          (
+                            _type = 'classInstance',
+                            type = 'pair',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair
+                                    (
+                                        first = $pair.first->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions),
+                                        second = $pair.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions)
+                                    )
+                          ),
                  m:meta::pure::mapping::Mapping[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
                      (
@@ -428,30 +453,44 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         fullPath = $m->elementToPath()->toOne()
                      ),
                  r:meta::pure::runtime::Runtime[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance
-                     (
-                        _type = 'runtimeInstance',
-                        runtime = $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime($extensions)
-                     ),
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                      (
+                        _type = 'classInstance',
+                        type = 'runtimeInstance',
+                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance
+                                (
+                                    runtime = $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime($extensions)
+                                )
+                      ),
                  l:List<Any>[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::List
                      (
-                        _type = 'listInstance',
+                        _type = 'collection',
                         values = $l.values->map(la|$la->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, $extensions))
                      ),
-                  a:AlloySerializationConfig[1] | ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySerializationConfig
-                     (
-                        _type = 'alloySerializationConfig',
-                        typeKeyName = $a.typeKeyName,
-                        includeType = $a.includeType,
-                        includeEnumType = $a.includeEnumType,
-                        removePropertiesWithNullValues = $a.removePropertiesWithNullValues,
-                        removePropertiesWithEmptySets = $a.removePropertiesWithEmptySets,
-                        fullyQualifiedTypePath = $a.fullyQualifiedTypePath,
-                        includeObjectReference = $a.includeObjectReference
-                     ),
+                  a:AlloySerializationConfig[1] |
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                      (
+                        _type = 'classInstance',
+                        type = 'alloySerializationConfig',
+                        value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySerializationConfig
+                                (
+                                    typeKeyName = $a.typeKeyName,
+                                    includeType = $a.includeType,
+                                    includeEnumType = $a.includeEnumType,
+                                    removePropertiesWithNullValues = $a.removePropertiesWithNullValues,
+                                    removePropertiesWithEmptySets = $a.removePropertiesWithEmptySets,
+                                    fullyQualifiedTypePath = $a.fullyQualifiedTypePath,
+                                    includeObjectReference = $a.includeObjectReference
+                                )
+                      ),
                   g:GraphFetchTree[1]|
-                     $g->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions),
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
+                          (
+                            _type = 'classInstance',
+                            type = 'rootGraphFetchTree',
+                            value = $g->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree($inScope, $open, $extensions)
+                          ),
                   k:KeyExpression[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpression
                      (
@@ -461,13 +500,13 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                         expression = $k.expression->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions)
                      );,
                     p:PrimitiveType[1]|
-                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PrimitiveTypeRef
-                        ( _type = 'primitiveType',
-                          name= $p.name->toOne()
-                         ),
-
+                    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+                    (
+                        _type = 'packageableElementPtr',
+                        fullPath = $p.name->toOne()
+                    ),
                   a:Any[1]|
-                             meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction($a, $m, $fe,  $inScope, $open, $extensions);,
+                     meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::possiblyTransformNewFunction($a, $m, $fe,  $inScope, $open, $extensions);,
                   a:Any[*]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection
                      (
@@ -492,13 +531,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
 
 
       | let class = $any->genericType().rawType->toOne()->cast(@PackageableElement);
-         ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Whatever
-         (
-            _type = 'whatever',
-            class = $class->elementToPath(),
-            multiplicity = $m->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
-            values = [] // newMap([]->cast(@Pair<String,meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification>))//->genericType().rawType->toOne()->cast(@Class<Any>).properties->map(p|pair($p.name->toOne(), $p->eval($a)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open , $m, $depth+1)))->newMap()
-         );
+        ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString
+        (
+          _type = 'string',
+          value = $class->elementToPath() + ' can\'t be translated'
+        );
    );
 }
 
@@ -587,7 +624,6 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transform
 
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda(f:FunctionDefinition<Any>[1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1]
 {
-
    ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda
    (
       _type = 'lambda',
@@ -595,5 +631,5 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transform
       parameters = $f->functionType().parameters->map(p |
          $p->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, $useAppliedFunction, $extensions)->cast(@meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Variable)
       )
-   )
+   );
 }
