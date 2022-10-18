@@ -13,8 +13,27 @@
 // limitations under the License.
 
 import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::test::*;
 import meta::pure::persistence::validation::*;
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget(): Boolean[1]
+{
+  let persistence = meta::pure::persistence::test::M2mPersistence();
+  let result = validateTarget($persistence.persister->subType(@BatchPersister).targetShape);
+  $result.valid();
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget(): Boolean[1]
+{
+  let persistence = meta::pure::persistence::test::M2mPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->subType(@BatchPersister).targetShape);
+  $result.valid();
+}
+
+/**********
+ * test specification
+ **********/
 
 Class meta::pure::persistence::test::WrapperInput
 {
