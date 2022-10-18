@@ -33,7 +33,12 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "{\n" +
             "  fullName: String[1];\n" +
             "  birthTime: DateTime[0..1];\n" +
-            "}\n\n\n";
+            "}\n"+
+            "Class test::Address\n" +
+            "{\n" +
+            "    name : String[1];\n" +
+            "    street : String[0..1];\n" +
+            "}\n";
 
     private static final String STORE_MODEL = "###Relational\n" +
             "Database test::DB\n" +
@@ -44,6 +49,15 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "    addressName VARCHAR(100),\n" +
             "    birthTime TIMESTAMP\n" +
             "  )\n" +
+            "  Table Address(\n" +
+            "    name VARCHAR(255) PRIMARY KEY\n" +
+            "  )\n" +
+            "\n" +
+            "  Table Street(\n" +
+            "    name VARCHAR(255) PRIMARY KEY,\n" +
+            "    address_name VARCHAR(255) \n" +
+            "  )\n" +
+            "Join Address_Street(Address.name = Street.address_name)\n"+
             ")\n\n\n";
 
     private static final String MAPPING = "###Mapping\n" +
@@ -59,6 +73,12 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "    fullName: [test::DB]PERSON.fullName,\n" +
             "    birthTime: [test::DB]PERSON.birthTime\n" +
             "  }\n" +
+            "   test::Address: Relational\n" +
+            "   {\n" +
+            "     ~mainTable [test::DB]Address\n" +
+            "     name: [test::DB]Address.name,\n" +
+            "     street: [test::DB]@Address_Street | Street.name\n" +
+            "   }\n"+
             ")\n\n\n";
 
     private static final String RUNTIME = "###Runtime\n" +
@@ -95,6 +115,30 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P4',null,'A3','2020-12-15 20:00:00');");
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P5','F1','A1','2020-12-16 20:00:00');");
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P10','F1','A1','2020-12-17 20:00:00');");
+
+        statement.execute("Drop table if exists Address;");
+        statement.execute("Create Table Address(name VARCHAR(100) NOT NULL, PRIMARY KEY(name));");
+        statement.execute("insert into Address (name) values ('Hoboken');");
+        statement.execute("insert into Address (name) values ('NYC');");
+
+        statement.execute("Drop table if exists Street;");
+        statement.execute("Create Table Street(name VARCHAR(100) NOT NULL, address_name VARCHAR(100), PRIMARY KEY(name));");
+        statement.execute("insert into Street (name, address_name) values ('Hoboken','Hoboken');");
+    }
+
+    @Test
+    public void testInExecutionWithStringListAndFilterPushDown()
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "{names:String[*]|test::Address.all()->filter(x| $x.name->in($names) && $x.street->in($names))\n" +
+                "                                    ->project(x|$x.name, 'addressName')}\n" +
+                "}";
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
+        Map<String, ?> paramWithMultipleValues = Maps.mutable.with("names", Lists.mutable.with("Hoboken", "NYC"));
+        String expectedResWithMultipleValues = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"addressName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(255)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"addressName\\\" from Address as \\\"root\\\" left outer join Street as \\\"street_0\\\" on (\\\"root\\\".name = \\\"street_0\\\".address_name and \\\"street_0\\\".address_name in ('Hoboken','NYC')) where (\\\"root\\\".name in ('Hoboken','NYC') and \\\"street_0\\\".name in ('Hoboken','NYC'))\"}], \"result\" : {\"columns\" : [\"addressName\"], \"rows\" : [{\"values\": [\"Hoboken\"]}]}}";
+        Assert.assertEquals(expectedResWithMultipleValues, executePlan(plan, paramWithMultipleValues));
     }
 
     @Test
@@ -202,6 +246,5 @@ public class TestPlanExecutionForIn extends AlloyTestServer
     {
         return super.buildPlan(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction, withTimeZone ? "US/Arizona" : null);
     }
-
 }
 
