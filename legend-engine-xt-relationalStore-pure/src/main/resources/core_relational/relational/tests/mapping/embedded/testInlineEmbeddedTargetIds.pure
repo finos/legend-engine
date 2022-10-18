@@ -144,12 +144,21 @@ import meta::relational::tests::model::simple::*;
 
 Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testInlineInEmbeddedPropertyMapping
 (
-  Address[add]: Relational
+  Address[issuer_add]: Relational
     {
         scope([eDB]PRODUCT_DENORM)
         (
           name: [eDB] ISSUER_ADDRESS_NAME,
           street: [eDB] ISSUER_ADDRESS_STREET
+        )
+    }
+    
+    Address[holder_add]: Relational
+    {
+        scope([eDB]PRODUCT_DENORM)
+        (
+          name: [eDB] HOLDER_ADDRESS_NAME,
+          street: [eDB] HOLDER_ADDRESS_STREET
         )
     }
 
@@ -169,12 +178,12 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testInlin
         issuer(
               name:ISSUER,
               type:  EnumerationMapping partyType : ISSUER_TYPE, 
-              address() Inline[add]
+              address() Inline[issuer_add]
         ),
         holder(
               name:HOLDER,
               type:  EnumerationMapping partyType : HOLDER_TYPE , 
-              address() Inline[add]
+              address() Inline[holder_add]
         )
      )
   } 
