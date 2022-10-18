@@ -80,8 +80,10 @@ Mapping meta::pure::persistence::test::M2mMapping
 
 import meta::legend::service::metamodel::*;
 import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::runtime::*;
+import meta::pure::test::assertion::*;
 
 function meta::pure::persistence::test::M2mRuntime(): Runtime[1]
 {
@@ -161,12 +163,11 @@ function meta::pure::persistence::test::M2mService(): Service[1]
         }#
       ),
       mapping = meta::pure::persistence::test::M2mMapping,
-      runtime = ^Nil()
+      runtime = meta::pure::persistence::test::M2mRuntime()
     ),
-    test = ^SingleExecutionTest
-    (
+    test = ^SingleExecutionTest(
       data = '',
-      asserts = [^Nil()]
-    )
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
+    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
   );
 }
