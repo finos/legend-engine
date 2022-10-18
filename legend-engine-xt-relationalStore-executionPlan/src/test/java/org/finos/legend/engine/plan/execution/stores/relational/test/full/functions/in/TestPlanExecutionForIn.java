@@ -33,7 +33,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "{\n" +
             "  fullName: String[1];\n" +
             "  birthTime: DateTime[0..1];\n" +
-            "}\n"+
+            "}\n" +
             "Class test::Address\n" +
             "{\n" +
             "    name : String[1];\n" +
@@ -57,7 +57,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "    name VARCHAR(255) PRIMARY KEY,\n" +
             "    address_name VARCHAR(255) \n" +
             "  )\n" +
-            "Join Address_Street(Address.name = Street.address_name)\n"+
+            "Join Address_Street(Address.name = Street.address_name)\n" +
             ")\n\n\n";
 
     private static final String MAPPING = "###Mapping\n" +
@@ -78,7 +78,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "     ~mainTable [test::DB]Address\n" +
             "     name: [test::DB]Address.name,\n" +
             "     street: [test::DB]@Address_Street | Street.name\n" +
-            "   }\n"+
+            "   }\n" +
             ")\n\n\n";
 
     private static final String RUNTIME = "###Runtime\n" +
