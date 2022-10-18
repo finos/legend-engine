@@ -984,7 +984,8 @@ public class HelperRelationalBuilder
     private static PropertyMapping processInlineEmbeddedPropertyMapping(InlineEmbeddedPropertyMapping propertyMapping, CompileContext context, PropertyMappingsImplementation immediateParent, InstanceSetImplementation topParent, MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<EnumerationMapping<Object>> allEnumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
         InlineEmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_InlineEmbeddedRelationalInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::InlineEmbeddedRelationalInstanceSetImplementation"))._inlineSetImplementationId(propertyMapping.setImplementationId);
-        Property property = HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, context.resolveClass(propertyMapping.property._class, propertyMapping.property.sourceInformation), Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class propertyOwnerClass = extractPropertyOwner(context, propertyMapping, immediateParent);
+        Property property = HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, propertyOwnerClass, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
         String sourceId = HelperRelationalBuilder.getPropertyMappingSourceId(propertyMapping, immediateParent, property, context);
         rpm._property(property)
                 ._sourceSetImplementationId(sourceId)
