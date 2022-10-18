@@ -658,9 +658,7 @@ public class DomainParseTreeWalker
         org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr newClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
         newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         List<ValueSpecification> keyExpressions = processExpressionInstanceParserPropertyAssignments(ctx.expressionInstanceParserPropertyAssignment(), typeParametersNames, lambdaContext, addLines, space);
-        Collection valueAssignments = new Collection();
-        valueAssignments.values = keyExpressions;
-        valueAssignments.multiplicity = getMultiplicityOneOne();
+        Collection valueAssignments = new Collection(keyExpressions);
         return this.createAppliedFunction(Lists.mutable.with(newClass, new CString(""), valueAssignments), "new");
     }
 
@@ -1568,9 +1566,7 @@ public class DomainParseTreeWalker
 
     private Collection collect(List<ValueSpecification> values, SourceInformation si)
     {
-        Collection c = new Collection();
-        c.multiplicity = this.createMultiplicity(values.size(), values.size());
-        c.values = values;
+        Collection c = new Collection(values);
         c.sourceInformation = si;
         return c;
     }
@@ -1595,14 +1591,6 @@ public class DomainParseTreeWalker
         Multiplicity m = new Multiplicity();
         m.lowerBound = 1;
         m.setUpperBound(1);
-        return m;
-    }
-
-    private Multiplicity createMultiplicity(int lowerBound, int upperBound)
-    {
-        Multiplicity m = new Multiplicity();
-        m.lowerBound = lowerBound;
-        m.setUpperBound(upperBound);
         return m;
     }
 

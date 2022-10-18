@@ -84,10 +84,7 @@ public class NavigationParseTreeWalker
 
     private ValueSpecification visitCollection(NavigationParserGrammar.CollectionContext collectionContext)
     {
-        Collection collection = new Collection();
-        collection.multiplicity = this.getMultiplicityOneOne();
-        collection.values = ListIterate.collect(collectionContext.scalar(), this::visitScalar);
-        return collection;
+        return new Collection(ListIterate.collect(collectionContext.scalar(), this::visitScalar));
     }
 
     private ValueSpecification visitScalar(NavigationParserGrammar.ScalarContext ctx)

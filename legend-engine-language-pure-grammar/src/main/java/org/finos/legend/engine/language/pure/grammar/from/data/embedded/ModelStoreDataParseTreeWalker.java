@@ -113,9 +113,7 @@ public class ModelStoreDataParseTreeWalker
         newClass.fullPath = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
 
         List<ValueSpecification> keyExpressions = ctx.instancePropertyAssignment().stream().map(this::visitPropertyAssignment).collect(Collectors.toList());
-        Collection valueAssignments = new Collection();
-        valueAssignments.values = keyExpressions;
-        valueAssignments.multiplicity = Multiplicity.PURE_ONE;
+        Collection valueAssignments = new Collection(keyExpressions);
 
         AppliedFunction appliedFunction = new AppliedFunction();
         appliedFunction.parameters = Lists.mutable.with(newClass, new CString("dummy"), valueAssignments);
@@ -234,17 +232,6 @@ public class ModelStoreDataParseTreeWalker
 
     private static Collection collection(List<ValueSpecification> values)
     {
-        Collection result = new Collection();
-        result.values = values;
-        result.multiplicity = multiplicity(values.size(), values.size());
-        return result;
-    }
-
-    private static Multiplicity multiplicity(int lowerBound, int upperBound)
-    {
-        Multiplicity m = new Multiplicity();
-        m.lowerBound = lowerBound;
-        m.setUpperBound(upperBound);
-        return m;
+        return new Collection(values);
     }
 }

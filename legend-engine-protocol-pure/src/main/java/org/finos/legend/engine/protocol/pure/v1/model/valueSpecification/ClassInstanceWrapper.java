@@ -22,6 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.fasterxml.jackson.databind.node.POJONode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
@@ -39,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 
 import java.io.IOException;
+import java.util.List;
 
 @JsonDeserialize(using = ClassInstanceWrapper.ClassInstanceWrapperDeserializer.class)
 public class ClassInstanceWrapper extends ValueSpecification
@@ -56,9 +60,18 @@ public class ClassInstanceWrapper extends ValueSpecification
         public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
         {
             JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-             JsonNode jtype = node.get("_type");
+            JsonNode jtype = node.get("_type");
             String type = jtype == null ? null : jtype.asText();
-            ((ObjectNode)node).remove("_type");
+            if (!(node instanceof  NullNode))
+            {
+                ((ObjectNode) node).remove("_type");
+            }
+            else
+            {
+                node = new POJONode(new PureList());
+            }
+            List<String> fields = Lists.mutable.empty();
+            node.fieldNames().forEachRemaining(fields::add);
             if ("path".equals(type) || node.get("path") != null)
             {
                 return wrapClassInstance(node, Path.class, "path");
@@ -68,7 +81,7 @@ public class ClassInstanceWrapper extends ValueSpecification
                 ((ObjectNode) node).set("_type", new TextNode("rootGraphFetchTree"));
                 return wrapClassInstance(node, RootGraphFetchTree.class, "rootGraphFetchTree");
             }
-            if ("listInstance".equals(type) || node.get("values") != null)
+            if ("listInstance".equals(type) || node.get("values") != null || fields.isEmpty() || (fields.size() == 1 && "sourceInformation".equals(fields.get(0))))
             {
                 return wrapClassInstance(node, PureList.class, "listInstance");
             }
@@ -104,11 +117,11 @@ public class ClassInstanceWrapper extends ValueSpecification
             {
                 return wrapClassInstance(node, RuntimeInstance.class, "runtimeInstance");
             }
-            if ("executionContext".equals(type) || node.get("executionContext") != null)
+            if ("executionContextInstance".equals(type) || node.get("executionContext") != null)
             {
-                return wrapClassInstance(node, ExecutionContextInstance.class, "executionContext");
+                return wrapClassInstance(node, ExecutionContextInstance.class, "executionContextInstance");
             }
-            if ("alloySerializationConfig".equals(type) || node.get("includeType") != null)
+            if ("alloySerializationConfig".equals(type) || node.get("typeKeyName") != null)
             {
                 return wrapClassInstance(node, SerializationConfig.class, "alloySerializationConfig");
             }

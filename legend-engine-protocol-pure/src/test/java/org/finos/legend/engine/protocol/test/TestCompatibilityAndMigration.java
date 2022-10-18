@@ -698,6 +698,140 @@ public class TestCompatibilityAndMigration
                 "}");
     }
 
+    @Test
+    public void testListInstance() throws Exception
+    {
+        check("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"listInstance\",\n" +
+                        "          \"sourceInformation\": {\n" +
+                        "            \"endColumn\": 4,\n" +
+                        "            \"endLine\": 1,\n" +
+                        "            \"sourceId\": \"a::a\",\n" +
+                        "            \"startColumn\": 2,\n" +
+                        "            \"startLine\": 1\n" +
+                        "          }\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"a\",\n" +
+                        "      \"package\": \"a\",\n" +
+                        "      \"parameters\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"String\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"classInstance\",\n" +
+                        "      \"type\" : \"listInstance\",\n" +
+                        "      \"value\" : {\n" +
+                        "        \"sourceInformation\" : {\n" +
+                        "          \"sourceId\" : \"a::a\",\n" +
+                        "          \"startLine\" : 1,\n" +
+                        "          \"startColumn\" : 2,\n" +
+                        "          \"endLine\" : 1,\n" +
+                        "          \"endColumn\" : 4\n" +
+                        "        }\n" +
+                        "      }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}"
+        );
+
+        check("{\n" +
+                        "  \"_type\": \"data\",\n" +
+                        "  \"elements\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"function\",\n" +
+                        "      \"body\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"listInstance\"\n" +
+                        "        }\n" +
+                        "      ],\n" +
+                        "      \"name\": \"a\",\n" +
+                        "      \"package\": \"a\",\n" +
+                        "      \"parameters\": [],\n" +
+                        "      \"returnMultiplicity\": {\n" +
+                        "        \"lowerBound\": 0\n" +
+                        "      },\n" +
+                        "      \"returnType\": \"String\"\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"classInstance\",\n" +
+                        "      \"type\" : \"listInstance\",\n" +
+                        "      \"value\" : { }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}"
+        );
+
+        check("{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"classInstance\",\n" +
+                        "      \"type\" : \"listInstance\",\n" +
+                        "      \"value\" : { }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"classInstance\",\n" +
+                        "      \"type\" : \"listInstance\",\n" +
+                        "      \"value\" : { }\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}"
+        );
+
+    }
+
     private void check(String input, String output) throws Exception
     {
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);

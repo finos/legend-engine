@@ -55,11 +55,8 @@ public class TestTestAssertionEvaluator
         CInteger pureInteger1 = new CInteger(1L);
         CInteger pureInteger2 = new CInteger(2L);
 
-        Collection collection = new Collection();
-        collection.values = Lists.mutable.with(pureInteger1, pureInteger2);
-
         EqualTo equalTo = new EqualTo();
-        equalTo.expected = collection;
+        equalTo.expected = new Collection(Lists.mutable.with(pureInteger1, pureInteger2));
 
         AssertionStatus assertionStatus = equalTo.accept(new TestAssertionEvaluator(constantResult));
 
@@ -74,11 +71,8 @@ public class TestTestAssertionEvaluator
         CInteger pureInteger1 = new CInteger(1L);
         CInteger pureInteger2 = new CInteger(2L);
 
-        Collection collection = new Collection();
-        collection.values = Lists.mutable.with(pureInteger1, pureInteger2);
-
         EqualTo equalTo = new EqualTo();
-        equalTo.expected = collection;
+        equalTo.expected = new Collection(Lists.mutable.with(pureInteger1, pureInteger2));;
 
         AssertionStatus assertionStatus = equalTo.accept(new TestAssertionEvaluator(constantResult));
 

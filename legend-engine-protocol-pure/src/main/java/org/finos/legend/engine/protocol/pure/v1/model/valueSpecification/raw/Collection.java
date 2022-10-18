@@ -27,6 +27,7 @@ public class Collection extends Many
 
     public Collection()
     {
+        this.multiplicity = new Multiplicity(0, 0);
     }
 
     public Collection(List<ValueSpecification> values)

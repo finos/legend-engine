@@ -109,13 +109,11 @@ public class GraphFetchTreeParseTreeWalker
         }
         else
         {
-            Collection result = new Collection();
             for (GraphFetchTreeParserGrammar.ScalarParameterContext scalarParameterContext : parameterContext.collectionParameter().scalarParameter())
             {
                 values.add(this.visitScalarParameterContext(scalarParameterContext));
             }
-            result.values = values;
-            return result;
+            return new Collection(values);
         }
     }
 

@@ -37,7 +37,7 @@ public abstract class PrimitiveValueSpecification extends DataTypeValueSpecifica
         {
             if (values.size() == 0)
             {
-                throw new RuntimeException("ERROR: Primitive holder can't be empty");
+                return new Collection();
             }
             else if (values.size() == 1)
             {
