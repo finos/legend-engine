@@ -17,17 +17,17 @@ import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::test::*;
 import meta::pure::persistence::validation::*;
 
-function <<test.Test>> meta::pure::persistence::test::validateTarget(): Boolean[1]
+function <<test.Test>> meta::pure::persistence::test::validateTargetTest(): Boolean[1]
 {
   let persistence = meta::pure::persistence::test::M2mPersistence();
-  let result = validateTarget($persistence.persister->subType(@BatchPersister).targetShape);
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
   $result.valid();
 }
 
-function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget(): Boolean[1]
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTargetTest(): Boolean[1]
 {
   let persistence = meta::pure::persistence::test::M2mPersistence();
-  let result = validateServiceAndTarget($persistence.service, $persistence.persister->subType(@BatchPersister).targetShape);
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   $result.valid();
 }
 
