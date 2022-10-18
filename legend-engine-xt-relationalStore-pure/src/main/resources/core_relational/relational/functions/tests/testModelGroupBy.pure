@@ -456,6 +456,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testFilterWithQualified
              ,meta::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
+
    assertEquals(['Firm X', -25.0, 'Firm C', -71.0, 'Firm A', -43.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", sum(-"root".quantity) as "qt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where "accounttable_0".name = \'Account 1\' group by "prodName" order by "prodName" desc', $result);

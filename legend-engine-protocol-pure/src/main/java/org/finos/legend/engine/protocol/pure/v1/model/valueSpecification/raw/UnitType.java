@@ -14,53 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.io.IOException;
-
-@Deprecated
-@JsonDeserialize(using = UnitType.UnitTypeDeserializer.class)
-public class UnitType extends PackageableElementPtr
+public class UnitType extends ValueSpecification
 {
+    public String unitType;
+
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
-    }
-
-    private UnitType()
-    {
-    }
-
-    public static class UnitTypeDeserializer extends JsonDeserializer<ValueSpecification>
-    {
-        @Override
-        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
-        {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-            JsonNode unitType = node.get("unitType");
-            ValueSpecification result;
-            if (unitType != null)
-            {
-                result = new PackageableElementPtr(unitType.asText());
-            }
-            else
-            {
-                result = new PackageableElementPtr(node.get("fullPath").asText());
-            }
-            JsonNode sourceInformation = node.get("sourceInformation");
-            if (sourceInformation != null)
-            {
-                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
-            }
-            return result;
-        }
     }
 }

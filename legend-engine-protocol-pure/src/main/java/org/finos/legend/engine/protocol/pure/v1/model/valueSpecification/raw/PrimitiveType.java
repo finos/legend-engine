@@ -14,60 +14,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.io.IOException;
-
-@Deprecated
-@JsonDeserialize(using = PrimitiveType.PrimitiveTypeDeserializer.class)
-public class PrimitiveType extends PackageableElementPtr
+public class PrimitiveType extends ValueSpecification
 {
-    private static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
-    private PrimitiveType()
-    {
-
-    }
+    public String name;
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
     }
-
-    public static class PrimitiveTypeDeserializer extends JsonDeserializer<ValueSpecification>
-    {
-        @Override
-        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
-        {
-            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-            JsonNode name = node.get("name");
-            ValueSpecification result;
-            if (name != null)
-            {
-                result = new PackageableElementPtr(name.asText());
-            }
-            else
-            {
-                result = new PackageableElementPtr(node.get("fullPath").asText());
-            }
-            JsonNode sourceInformation = node.get("sourceInformation");
-            if (sourceInformation != null)
-            {
-                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
-            }
-            return result;
-        }
-    }
-
 }
 

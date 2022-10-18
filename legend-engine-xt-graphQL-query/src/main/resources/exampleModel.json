@@ -20,7 +20,7 @@
   "elements": [
     {
       "superTypes": [
-        "meta::external::query::graphQL::transformation::introspection::BaseGraphQLType"
+        "meta::external::query::graphQL::introspection::BaseGraphQLType"
       ],
       "qualifiedProperties": [
         {
@@ -249,7 +249,7 @@
       "superTypes": [
         "meta::pure::metamodel::type::Any"
       ],
-      "package": "meta::external::query::graphQL::transformation::introspection",
+      "package": "meta::external::query::graphQL::introspection",
       "_type": "class",
       "name": "BaseGraphQLType",
       "properties": [
@@ -259,7 +259,7 @@
             "lowerBound": 1
           },
           "name": "__schema",
-          "type": "meta::external::query::graphQL::metamodel::introspection::__Schema"
+          "type": "meta::external::query::graphQL::introspection::model::__Schema"
         }
       ]
     },
@@ -267,7 +267,7 @@
       "superTypes": [
         "meta::pure::metamodel::type::Any"
       ],
-      "package": "meta::external::query::graphQL::metamodel::introspection",
+      "package": "meta::external::query::graphQL::introspection::model",
       "_type": "class",
       "name": "__Schema",
       "properties": [
@@ -276,7 +276,7 @@
             "lowerBound": 0
           },
           "name": "types",
-          "type": "meta::external::query::graphQL::metamodel::introspection::__Type"
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
         },
         {
           "multiplicity": {
@@ -284,7 +284,7 @@
             "lowerBound": 1
           },
           "name": "queryType",
-          "type": "meta::external::query::graphQL::metamodel::introspection::__Type"
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
         },
         {
           "multiplicity": {
@@ -292,7 +292,7 @@
             "lowerBound": 0
           },
           "name": "mutationType",
-          "type": "meta::external::query::graphQL::metamodel::introspection::__Type"
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
         },
         {
           "multiplicity": {
@@ -300,14 +300,14 @@
             "lowerBound": 0
           },
           "name": "subscriptionType",
-          "type": "meta::external::query::graphQL::metamodel::introspection::__Type"
+          "type": "meta::external::query::graphQL::introspection::model::__Type"
         },
         {
           "multiplicity": {
             "lowerBound": 0
           },
           "name": "directives",
-          "type": "meta::external::query::graphQL::metamodel::introspection::__Directive"
+          "type": "meta::external::query::graphQL::introspection::model::__Directive"
         }
       ]
     },

@@ -14,35 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.io.IOException;
-
 @Deprecated
-@JsonDeserialize(using = MappingInstance.MappingInstanceDeserializer.class)
 public class MappingInstance extends PackageableElementPtr
 {
-    private MappingInstance()
-    {
-    }
-
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
-    }
-
-    public static class MappingInstanceDeserializer extends JsonDeserializer<ValueSpecification>
-    {
-        @Override
-        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
-        {
-            return convert(jsonParser.getCodec().readTree(jsonParser));
-        }
     }
 }

@@ -23,6 +23,6 @@ public interface EmbeddedPureParser
 {
     String getType();
 
-    Object parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions);
+    ListIterable<ValueSpecification> parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions);
 
 }

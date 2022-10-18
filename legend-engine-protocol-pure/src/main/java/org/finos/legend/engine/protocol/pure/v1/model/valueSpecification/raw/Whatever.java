@@ -16,13 +16,15 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
 @Deprecated
-public class Whatever extends DeprecatedValueSpecification
+public class Whatever extends ValueSpecification
 {
     @JsonProperty(value = "class")
     public String _class;
+    public Multiplicity multiplicity;
     public Object values;
 
     @Override

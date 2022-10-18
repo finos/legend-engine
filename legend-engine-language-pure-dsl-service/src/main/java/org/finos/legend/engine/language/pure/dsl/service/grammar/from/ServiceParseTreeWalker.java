@@ -51,9 +51,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -383,7 +382,7 @@ public class ServiceParseTreeWalker
                 PureList param = new PureList();
                 param.values = paramValues;
                 param.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.testListValueParam());
-                return new ClassInstance("listInstance", param);
+                return param;
             }
             else if (ctx.testSingleValueParam() != null)
             {

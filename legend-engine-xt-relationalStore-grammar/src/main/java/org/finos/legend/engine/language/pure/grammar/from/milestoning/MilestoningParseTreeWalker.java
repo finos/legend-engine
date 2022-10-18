@@ -84,19 +84,23 @@ public class MilestoningParseTreeWalker
         CDate date = strictDateMatcher.matches() ? visitStrictDate(new CStrictDate(), val) : visitDateTime(new CDateTime(), val);
 
         date.sourceInformation = sourceInformation;
-        date.multiplicity = Multiplicity.PURE_ONE;
+        date.multiplicity = new Multiplicity();
+        date.multiplicity.lowerBound = 1;
+        date.multiplicity.setUpperBound(1);
         return date;
     }
 
     private static CDate visitStrictDate(CStrictDate strictDate, String val)
     {
-        strictDate.value = val.substring(val.lastIndexOf('%') + 1);
+        strictDate.values = new ArrayList<>();
+        strictDate.values.add(val.substring(val.lastIndexOf('%') + 1));
         return strictDate;
     }
 
     private static CDate visitDateTime(CDateTime dateTime, String val)
     {
-        dateTime.value = val.substring(val.lastIndexOf('%') + 1);
+        dateTime.values = new ArrayList<>();
+        dateTime.values.add(val.substring(val.lastIndexOf('%') + 1));
         return dateTime;
     }
 }

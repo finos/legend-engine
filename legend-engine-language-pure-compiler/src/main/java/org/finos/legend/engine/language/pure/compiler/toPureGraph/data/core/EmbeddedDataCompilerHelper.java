@@ -25,17 +25,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_data_ExternalFormatData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -67,7 +66,7 @@ public class EmbeddedDataCompilerHelper
                 Class<?> c = context.resolveClass(entry.getKey(), entry.getValue().sourceInformation);
                 InstanceValue collection = (InstanceValue) entry.getValue().accept(builder);
 
-                if (!(collection._genericType()._rawType().equals(c) || collection._genericType()._rawType()._generalizations().contains(c) || (entry.getValue() instanceof ClassInstance && ((ClassInstance) entry.getValue()).value instanceof Pair && validatePairForModelStoreData((Pair) ((ClassInstance) entry.getValue()).value, context))))
+                if (!(collection._genericType()._rawType().equals(c) || collection._genericType()._rawType()._generalizations().contains(c) || (entry.getValue() instanceof Pair && validatePairForModelStoreData((Pair) entry.getValue(), context))))
                 {
                     throw new EngineException("Instance types does not align with associated type", entry.getValue().sourceInformation, EngineErrorType.COMPILATION);
                 }
@@ -98,10 +97,10 @@ public class EmbeddedDataCompilerHelper
 
     private static boolean validatePairForModelStoreData(Pair value, CompileContext context)
     {
-        return (value.first instanceof PackageableElementPtr && value.second instanceof PackageableElementPtr &&
+       return (value.first instanceof PackageableElementPtr && value.second instanceof PackageableElementPtr &&
                 context.pureModel.getPackageableElement(((PackageableElementPtr) value.first).fullPath) instanceof Root_meta_external_shared_format_binding_Binding &&
                 context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath) instanceof Root_meta_pure_data_DataElement &&
-                ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath))._data() instanceof Root_meta_external_shared_format_metamodel_data_ExternalFormatData
-        );
+               ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(((PackageableElementPtr) value.second).fullPath))._data() instanceof Root_meta_external_shared_format_metamodel_data_ExternalFormatData
+               );
     }
 }

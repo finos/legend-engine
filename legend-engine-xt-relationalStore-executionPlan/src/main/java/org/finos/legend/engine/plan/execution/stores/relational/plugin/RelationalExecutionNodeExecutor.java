@@ -111,9 +111,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 import org.pac4j.core.profile.CommonProfile;
@@ -187,11 +187,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     Object value = ((ConstantResult) result).getValue();
                     if (value instanceof Map && ((Map<?, ?>) value).get("values") instanceof List)
                     {
-                        return ((List<?>) ((Map<?, ?>) value).get("values")).stream().map(val ->
-                        {
-                            Map<?, ?> struct = (Map<?, ?>) val;
-                            return struct.get("value") != null ? struct.get("value") : ((List<?>) struct.get("values")).get(0);
-                        });
+                        return ((List<?>) ((Map<?, ?>) value).get("values")).stream().map(val -> ((List<?>) ((Map<?, ?>) val).get("values")).get(0));
                     }
                     if (value instanceof List)
                     {

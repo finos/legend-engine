@@ -9,38 +9,38 @@ import meta::relational::graphFetch::domain::tests::*;
 
 // function <<test.Test>> meta::relational::graphFetch::tests::domain::testGraphQLQuery():Boolean[1]
 // {
-//   let graphQLQuery = ^meta::external::query::graphQL::metamodel::sdl::ExecutableDocument (
-//                         definitions = ^meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition (
+//   let graphQLQuery = ^meta::external::query::graphQL::metamodel::ExecutableDocument (
+//                         definitions = ^meta::external::query::graphQL::metamodel::executable::OperationDefinition (
 //                           name = 'MyQuery',
-//                           selectionSet = [^meta::external::query::graphQL::metamodel::sdl::executable::Field (
-//                             arguments = ^meta::external::query::graphQL::metamodel::sdl::executable::Argument (
+//                           selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
+//                             arguments = ^meta::external::query::graphQL::metamodel::executable::Argument (
 //                               name = 'legalName',
-//                               value = ^meta::external::query::graphQL::metamodel::sdl::value::StringValue (
+//                               value = ^meta::external::query::graphQL::metamodel::value::StringValue (
 //                                 value = 'ork'
 //                               )
 //                             ),
 //                             name = 'firmByLegalName',
-//                             selectionSet = [^meta::external::query::graphQL::metamodel::sdl::executable::Field (
+//                             selectionSet = [^meta::external::query::graphQL::metamodel::executable::Field (
 //                               name = 'legalName'
-//                             ), ^meta::external::query::graphQL::metamodel::sdl::executable::Field (
+//                             ), ^meta::external::query::graphQL::metamodel::executable::Field (
 //                               name = 'employees',
-//                               selectionSet = ^meta::external::query::graphQL::metamodel::sdl::executable::Field (
+//                               selectionSet = ^meta::external::query::graphQL::metamodel::executable::Field (
 //                                 name = 'lastName'
 //                               )
 //                             )]
-//                           ), ^meta::external::query::graphQL::metamodel::sdl::executable::Field (
-//                             arguments = ^meta::external::query::graphQL::metamodel::sdl::executable::Argument (
+//                           ), ^meta::external::query::graphQL::metamodel::executable::Field (
+//                             arguments = ^meta::external::query::graphQL::metamodel::executable::Argument (
 //                               name = 'lastName',
-//                               value = ^meta::external::query::graphQL::metamodel::sdl::value::StringValue (
+//                               value = ^meta::external::query::graphQL::metamodel::value::StringValue (
 //                                 value = 'yro'
 //                               )
 //                             ),
 //                             name = 'employeeByLastName',
-//                             selectionSet = ^meta::external::query::graphQL::metamodel::sdl::executable::Field (
+//                             selectionSet = ^meta::external::query::graphQL::metamodel::executable::Field (
 //                               name = 'firstName'
 //                             )
 //                           )],
-//                           type = meta::external::query::graphQL::metamodel::sdl::executable::OperationType.query
+//                           type = meta::external::query::graphQL::metamodel::executable::OperationType.query
 //                         )
 //                       );
 

@@ -204,7 +204,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"averageEmployeesAge()\":39.5,\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"fullName(true)\":\"Smith, Peter\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"fullName(true)\":\"Johnson, John\"},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"fullName(true)\":\"Hill, John\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"fullName(true)\":\"Allen, Anthony\"}]}}";
-        String expectedSubTree = "{legalName,averageEmployeesAge,employees{firstName,lastName,fullName(true)}}";
+        String expectedSubTree = "{legalName,averageEmployeesAge,employees{firstName,lastName,fullName([true])}}";
 
         assertCachingForAllObjects(plan, params, firmCache, expectedRes, expectedSubTree, 1);
     }
@@ -222,7 +222,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employeeByLastName('Smith')\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"address\":{\"name\":\"Hoboken\"}},\"employeesByCityOrManager('New York', '')\":[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"address\":{\"name\":\"New York\"}}]}}";
-        String expectedSubTree = "{legalName,employeeByLastName('Smith'){firstName,lastName,address{name}},employeesByCityOrManager('New York',''){firstName,lastName,address{name}}}";
+        String expectedSubTree = "{legalName,employeeByLastName(['Smith']){firstName,lastName,address{name}},employeesByCityOrManager(['New York'],['']){firstName,lastName,address{name}}}";
 
         assertCachingForAllObjects(plan, params, firmCache, expectedRes, expectedSubTree, 1);
     }
@@ -241,7 +241,7 @@ public class TestPlanExecutionWithGraphFetchEqualityCache extends AlloyTestServe
         );
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"legalName\":\"FirmA\",\"employeeByLastName('Smith')\":{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"address\":{\"name\":\"Hoboken\"}},\"employeesByCityOrManager('New York', '')\":[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"John\",\"lastName\":\"Hill\",\"address\":{\"name\":\"New York\"}},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\",\"address\":{\"name\":\"New York\"}}]}}";
-        String expectedSubTree = "{legalName,employeeByLastName('Smith'){firstName,lastName,address{name}},employeesByCityOrManager('New York',''){firstName,lastName,address{name}}}";
+        String expectedSubTree = "{legalName,employeeByLastName(['Smith']){firstName,lastName,address{name}},employeesByCityOrManager(['New York'],['']){firstName,lastName,address{name}}}";
 
         assertCachingForAllObjects(plan, params, firmCache, expectedRes, expectedSubTree, 1);
         Assert.assertEquals(Sets.mutable.with("RelationalObjectGraphFetchCacheKey{1}"), guavaCache.asMap().keySet().stream().map(GraphFetchCacheKey::getStringIdentifier).collect(Collectors.toSet()));

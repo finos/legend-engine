@@ -31,9 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +124,7 @@ public class DomainParser implements DEPRECATED_SectionGrammarParser
 
     public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return (RootGraphFetchTree) ((ClassInstance) parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo)).value;
+        return (RootGraphFetchTree) parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)

@@ -16,7 +16,6 @@ package org.finos.legend.engine.language.pure.grammar.from.domain;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -65,9 +64,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CIn
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -647,7 +645,11 @@ public class DomainParseTreeWalker
     {
         ValueSpecification result = this.combinedExpression(ctx.combinedExpression(), "", typeParametersNames, lambdaContext, space, true, addLines);
         result.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        CString cString = new CString(PureGrammarParserUtility.fromIdentifier(ctx.identifier()));
+        CString cString = new CString();
+        List<String> values = new ArrayList<>();
+        values.add(PureGrammarParserUtility.fromIdentifier(ctx.identifier()));
+        cString.multiplicity = this.getMultiplicityOneOne();
+        cString.values = values;
         AppliedFunction appliedFunction = this.createAppliedFunction(Lists.mutable.of(cString, result), "letFunction");
         appliedFunction.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return appliedFunction;
@@ -661,10 +663,17 @@ public class DomainParseTreeWalker
         Collection valueAssignments = new Collection();
         valueAssignments.values = keyExpressions;
         valueAssignments.multiplicity = getMultiplicityOneOne();
-        return this.createAppliedFunction(Lists.mutable.with(newClass, new CString(""), valueAssignments), "new");
+        return this.createAppliedFunction(Lists.mutable.with(newClass, variableForNew(), valueAssignments), "new");
     }
 
     // necessary for proper compilation of new function
+    private ValueSpecification variableForNew()
+    {
+        CString string = new CString();
+        string.multiplicity = getMultiplicityOneOne();
+        string.values = FastList.newListWith("");
+        return string;
+    }
 
     private MutableList<ValueSpecification> processExpressionInstanceParserPropertyAssignments(List<DomainParserGrammar.ExpressionInstanceParserPropertyAssignmentContext> keyExpressions, List<String> typeParametersNames, LambdaContext lambdaContext, boolean addLines, String space)
     {
@@ -672,7 +681,7 @@ public class DomainParseTreeWalker
         for (DomainParserGrammar.ExpressionInstanceParserPropertyAssignmentContext val : keyExpressions)
         {
             KeyExpression v = new KeyExpression();
-            v.key = new CString(val.identifier(0).getText());
+            v.key = processKey(val.identifier(0).getText());
             v.expression = processRightSide(val.expressionInstanceRightSide(), typeParametersNames, lambdaContext, addLines, space);
             values.add(v);
         }
@@ -688,6 +697,14 @@ public class DomainParseTreeWalker
         }
         return ctx;
 
+    }
+
+    private ValueSpecification processKey(String name)
+    {
+        CString key = new CString();
+        key.values = FastList.newListWith(name);
+        key.multiplicity = getMultiplicityOneOne();
+        return key;
     }
 
     private ValueSpecification expressionOrExpressionGroup(DomainParserGrammar.ExpressionOrExpressionGroupContext ctx, String exprName, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
@@ -818,17 +835,32 @@ public class DomainParseTreeWalker
 
     private CString getInstanceString(String string)
     {
-        return new CString(PureGrammarParserUtility.fromGrammarString(string, true));
+        List<String> values = new ArrayList<>();
+        values.add(PureGrammarParserUtility.fromGrammarString(string, true));
+        CString instance = new CString();
+        instance.multiplicity = getMultiplicityOneOne();
+        instance.values = values;
+        return instance;
     }
 
     private CInteger getInstanceInteger(String integerString)
     {
-        return new CInteger(Long.parseLong(integerString));
+        List<Long> values = new ArrayList<>();
+        values.add(Long.parseLong(integerString));
+        CInteger instance = new CInteger();
+        instance.multiplicity = getMultiplicityOneOne();
+        instance.values = values;
+        return instance;
     }
 
     private CFloat getInstanceFloat(String floatString)
     {
-        return new CFloat(Double.parseDouble(floatString));
+        List<Double> values = new ArrayList<>();
+        values.add(Double.parseDouble(floatString));
+        CFloat instance = new CFloat();
+        instance.multiplicity = getMultiplicityOneOne();
+        instance.values = values;
+        return instance;
     }
 
     private boolean isLowerPrecedenceBoolean(String boolop1, String boolop2)
@@ -968,6 +1000,7 @@ public class DomainParseTreeWalker
         ValueSpecification result;
         try
         {
+            Multiplicity m = this.getMultiplicityOneOne();
             if (ctx.STRING() != null)
             {
                 CString instance = getInstanceString(ctx.getText());
@@ -1005,7 +1038,11 @@ public class DomainParseTreeWalker
             }
             else if (ctx.BOOLEAN() != null)
             {
-                CBoolean instance = new CBoolean(Boolean.parseBoolean(ctx.getText()));
+                List<Boolean> values = new ArrayList<>();
+                values.add(Boolean.parseBoolean(ctx.getText()));
+                CBoolean instance = new CBoolean();
+                instance.multiplicity = m;
+                instance.values = values;
                 instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 result = instance;
             }
@@ -1116,8 +1153,8 @@ public class DomainParseTreeWalker
                 {
                     throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(p -> p.getType()).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
                 }
-                String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), RuleContext::getText).makeString("").trim();
-                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions())));
+                String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), c -> c.getText()).makeString("").trim();
+                return embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions());
             }
         }
         else if (ctx.dslNavigationPath() != null)
@@ -1254,8 +1291,8 @@ public class DomainParseTreeWalker
             }
             else if (primitiveTypes.contains(fullPath))  // is Primitive
             {
-                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr primitiveType = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr();
-                primitiveType.fullPath = fullPath;
+                org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType primitiveType = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType();
+                primitiveType.name = fullPath;
                 primitiveType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
                 instance = primitiveType;
 
@@ -1272,8 +1309,8 @@ public class DomainParseTreeWalker
         else if (ctx.unitName() != null)
         {
             String fullPath = ctx.unitName().qualifiedName().getText().concat(TILDE).concat(ctx.unitName().identifier().getText());
-            PackageableElementPtr _unit = new PackageableElementPtr();
-            _unit.fullPath = fullPath;
+            org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType _unit = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType();
+            _unit.unitType = fullPath;
             _unit.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.unitName());
             instance = _unit;
         }
@@ -1289,22 +1326,22 @@ public class DomainParseTreeWalker
         return instance;
     }
 
-    private GenericTypeInstance typeReference(DomainParserGrammar.TypeContext ctx)
+    private HackedClass typeReference(DomainParserGrammar.TypeContext ctx)
     {
         String fullPath = ctx.getText();
-        GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-        genericTypeInstance.fullPath = fullPath;
-        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        return genericTypeInstance;
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass hackedClass = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass();
+        hackedClass.fullPath = fullPath;
+        hackedClass.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return hackedClass;
     }
 
-    private GenericTypeInstance unitTypeReference(DomainParserGrammar.TypeContext ctx)
+    private HackedUnit unitTypeReference(DomainParserGrammar.TypeContext ctx)
     {
         String fullPath = ctx.unitName().qualifiedName().getText().concat(TILDE).concat(ctx.unitName().identifier().getText());
-        GenericTypeInstance genericTypeInstance = new GenericTypeInstance();
-        genericTypeInstance.fullPath = fullPath;
-        genericTypeInstance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        return genericTypeInstance;
+        org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit hackedUnit = new org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit();
+        hackedUnit.unitType = fullPath;
+        hackedUnit.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return hackedUnit;
     }
 
 
@@ -1590,7 +1627,7 @@ public class DomainParseTreeWalker
         return appliedFunction;
     }
 
-    private static Multiplicity getMultiplicityOneOne()
+    private Multiplicity getMultiplicityOneOne()
     {
         Multiplicity m = new Multiplicity();
         m.lowerBound = 1;
@@ -1605,13 +1642,4 @@ public class DomainParseTreeWalker
         m.setUpperBound(upperBound);
         return m;
     }
-
-    public static ClassInstance wrapWithClassInstance(Object obj, String val)
-    {
-        ClassInstance value = new ClassInstance();
-        value.type = val;
-        value.value = obj;
-        return value;
-    }
-
 }

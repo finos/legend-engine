@@ -21,6 +21,7 @@
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
                         <repository>platform</repository>
+                        <repository>core</repository>
                         <repository>core_text</repository>
                     </repositories>
                     <extraRepositories>
@@ -40,6 +41,11 @@
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-code-compiled-platform-par</artifactId>
                         <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -68,6 +74,11 @@
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-code-compiled-platform-par</artifactId>
                         <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
