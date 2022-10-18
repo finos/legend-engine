@@ -76,8 +76,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
@@ -202,10 +201,6 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         {
             result = new ConstantResult(((List<?>) ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values")).get(0));
         }
-        if (result instanceof ConstantResult && ((ConstantResult) result).getValue() instanceof Map && ((Map<?, ?>) ((ConstantResult) result).getValue()).get("value") != null)
-        {
-            result = new ConstantResult(((Map<?, ?>) ((ConstantResult) result).getValue()).get("value"));
-        }
         if (this.executionState.realizeAllocationResults)
         {
             result = result.realizeInMemory();
@@ -234,7 +229,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 IExecutionNodeContext context = new DefaultExecutionNodeContext(this.executionState, childResult);
 
                 AppliedFunction f = (AppliedFunction) pureExpressionPlatformExecutionNode.pure;
-                SerializationConfig config = f.parameters.size() == 3 ? (SerializationConfig) ((ClassInstance) f.parameters.get(2)).value : null;
+                SerializationConfig config = f.parameters.size() == 3 ? (SerializationConfig) f.parameters.get(2) : null;
 
                 return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, config, childResult, context);
             }

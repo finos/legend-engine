@@ -301,10 +301,8 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::KeyExpr
    key: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
    expression: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
 }
-
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GenericTypeInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::HackedClassValue extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
 {
-
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::EnumValue extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
@@ -313,42 +311,42 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::EnumVal
    value : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSAggregateValue extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    name : String[1];
    mapFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
    aggregateFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSSortInformation
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSSortInformation extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    column : String[1];
    direction : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TDSColumnInformation extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    name: String[1];
    columnFn: meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AggregateValue extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    mapFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
    aggregateFn : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::OlapOperation
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::OlapOperation extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapAggregation extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::OlapOperation
 {
    function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
    columnName : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::TdsOlapRank extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::OlapOperation
 {
    function : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Lambda[1];
 }
@@ -369,24 +367,24 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Package
    fullPath : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    runtime : meta::protocols::pure::vX_X_X::metamodel::Runtime[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ExecutionContextInstance
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ExecutionContextInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    executionContext : meta::protocols::pure::vX_X_X::metamodel::ExecutionContext[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Path extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    name : String[1];
    startType : String[1];
    path : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PathElement[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Pair extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
    first : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
    second : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[1];
@@ -414,10 +412,14 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::Collection e
    values : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::HackedUnit extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
 {
-   type : String[1];
-   value : Any[1];
+   unitType : String[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitType extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
+{
+   unitType : String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
@@ -426,50 +428,55 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::UnitInstance
    unitValue : Number[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PrimitiveTypeRef extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ValueSpecification
 {
-   value : Integer[1];
+   name : String[1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDecimal extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CInteger extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::MulRawValue
 {
-   value : Decimal[1];
+   values : Integer[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDecimal extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::MulRawValue
 {
-   value : String[1];
+   values : Decimal[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CBoolean extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CString extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::MulRawValue
 {
-   value : Boolean[1];
+   values : String[*];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CFloat extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CBoolean extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::MulRawValue
 {
-   value : Float[1];
+   values : Boolean[*];
 }
 
-Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CFloat extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::MulRawValue
+{
+   values : Float[*];
+}
+
+Class <<typemodifiers.abstract>> meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::MulRawValue
 {
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDateTime extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate
 {
-   value : String[1];
+   values : String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CStrictDate extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate
 {
-   value : String[1];
+   values : String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CLatestDate extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::CDate
 {
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
     _type : String[1];
     subTrees : meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::GraphFetchTree[*];
@@ -488,8 +495,10 @@ Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::Propert
    subType    : String[0..1];
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySerializationConfig
+Class meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::AlloySerializationConfig extends meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RawValue
 {
+    _type    : String[1];
+
     typeKeyName : String[1];
     includeType: Boolean[0..1];
     includeEnumType: Boolean[0..1];

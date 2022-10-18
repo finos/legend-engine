@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.domain;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
@@ -29,9 +30,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLa
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NavigationParseTreeWalker
 {
@@ -42,19 +46,19 @@ public class NavigationParseTreeWalker
         this.walkerSourceInformation = sourceInformation;
     }
 
-    public ValueSpecification visitDefinition(NavigationParserGrammar.DefinitionContext ctx)
+    public Path visitDefinition(NavigationParserGrammar.DefinitionContext ctx)
     {
         return this.visitPath(ctx);
     }
 
-    private ValueSpecification visitPath(NavigationParserGrammar.DefinitionContext ctx)
+    private Path visitPath(NavigationParserGrammar.DefinitionContext ctx)
     {
         Path path = new Path();
         path.name = ctx.name() != null ? ctx.name().VALID_STRING().getText() : null;
         path.startType = ctx.genericType() != null ? ctx.genericType().getText() : null;
         path.path = ctx.propertyWithParameters() == null ? FastList.newList() : ListIterate.collect(ctx.propertyWithParameters(), this::visitPropertyPathElement);
         path.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        return DomainParseTreeWalker.wrapWithClassInstance(path, "path");
+        return path;
     }
 
     private PropertyPathElement visitPropertyPathElement(NavigationParserGrammar.PropertyWithParametersContext context)
@@ -114,7 +118,11 @@ public class NavigationParseTreeWalker
     {
         if (ctx.BOOLEAN() != null)
         {
-            CBoolean instance = new CBoolean(Boolean.parseBoolean(ctx.getText()));
+            CBoolean instance = new CBoolean();
+            List<Boolean> values = new ArrayList<>();
+            values.add(Boolean.parseBoolean(ctx.getText()));
+            instance.multiplicity = this.getMultiplicityOneOne();
+            instance.values = values;
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             return instance;
         }
@@ -132,14 +140,18 @@ public class NavigationParseTreeWalker
         }
         else if (ctx.FLOAT() != null)
         {
-            CFloat instance = new CFloat(Double.parseDouble(ctx.getText()));
+            CFloat instance = new CFloat();
+            instance.multiplicity = this.getMultiplicityOneOne();
+            instance.values = Lists.mutable.with(Double.parseDouble(ctx.getText()));
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             return instance;
         }
         else if (ctx.DATE() != null)
         {
+            CDateTime instance = new CDateTime();
+            instance.multiplicity = this.getMultiplicityOneOne();
             String var = ctx.getText();
-            CDateTime instance = new CDateTime(var.substring(var.lastIndexOf('%') + 1));
+            instance.values = Lists.mutable.with(var.substring(var.lastIndexOf('%') + 1));
             instance.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
             return instance;
         }
@@ -155,12 +167,22 @@ public class NavigationParseTreeWalker
 
     private CInteger getInstanceInteger(String integerString)
     {
-        return new CInteger(Long.parseLong(integerString));
+        List<Long> values = new ArrayList<>();
+        values.add(Long.parseLong(integerString));
+        CInteger instance = new CInteger();
+        instance.multiplicity = getMultiplicityOneOne();
+        instance.values = values;
+        return instance;
     }
 
     private CString getInstanceString(String string)
     {
-        return new CString(PureGrammarParserUtility.fromGrammarString(string, true));
+        List<String> values = new ArrayList<>();
+        values.add(PureGrammarParserUtility.fromGrammarString(string, true));
+        CString instance = new CString();
+        instance.multiplicity = getMultiplicityOneOne();
+        instance.values = values;
+        return instance;
     }
 
     private Multiplicity getMultiplicityOneOne()

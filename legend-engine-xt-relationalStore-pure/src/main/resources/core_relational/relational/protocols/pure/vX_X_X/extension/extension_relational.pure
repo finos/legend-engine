@@ -50,25 +50,17 @@ function meta::protocols::pure::vX_X_X::extension::getRelationalExtension():meta
           inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
           [
                 r:meta::pure::runtime::Runtime[1]|
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
-                (
-                  _type = 'classInstance',
-                  type = 'runtimeInstance',
-                  value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance
-                          (
-                            runtime = $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime($extensions)
-                          )
-                ),
+                 ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::RuntimeInstance
+                  (
+                     _type = 'runtimeInstance',
+                     runtime = $r->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime($extensions)
+                   ),
                 e:meta::pure::runtime::ExecutionContext[1]|
-                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance                     
-                (
-                  _type = 'classInstance',
-                  type = 'executionContextInstance',
-                  value = ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ExecutionContextInstance
-                          (
-                            executionContext = $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::context::transformContext($extensions)
-                          )
-                 ),
+                 ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::ExecutionContextInstance
+                  (
+                     _type = 'executionContextInstance',
+                     executionContext = $e->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::context::transformContext($extensions)
+                  ),
                 d:meta::relational::metamodel::Database[1]|
                  ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
                   (

@@ -14,20 +14,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-public class CStrictTime extends PrimitiveValueSpecification
+import java.util.Collections;
+import java.util.List;
+
+public class CStrictTime extends ValueSpecification
 {
-    public String value;
-
-    public CStrictTime()
-    {
-    }
-
-    public CStrictTime(String value)
-    {
-        this.value = value;
-    }
+    public Multiplicity multiplicity;
+    public List<String> values = Collections.emptyList();
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)

@@ -43,7 +43,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::query::graphQL::metamodel::sdl</argument>
+                                <argument>meta::external::query::graphQL::metamodel</argument>
                                 <argument>org.finos.legend.engine.protocol.graphQL.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
@@ -60,7 +60,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::query::graphQL::metamodel::introspection::</argument>
+                                <argument>meta::external::query::graphQL::introspection::model::</argument>
                                 <argument>org.finos.legend.engine.protocol.graphQL.introspection.model</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>

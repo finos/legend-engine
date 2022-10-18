@@ -21,7 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import java.util.Collections;
 import java.util.List;
 
-public class Lambda extends CoreClassInstances
+public class Lambda extends ValueSpecification
 {
     public List<ValueSpecification> body;
     public List<Variable> parameters = Collections.emptyList();

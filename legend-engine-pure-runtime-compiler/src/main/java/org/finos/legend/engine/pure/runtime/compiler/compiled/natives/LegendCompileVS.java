@@ -44,6 +44,6 @@ public class LegendCompileVS extends AbstractNative
 
     public static Object compileExecVS(String code, final ExecutionSupport es)
     {
-        return ((InstanceValue)org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompileVS(code, null))._values().getFirst();
+        return ((InstanceValue)org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompileVS(code, ((CompiledExecutionSupport)es).getMetadataProvider().getMetadata()))._values().getFirst();
     }
 }

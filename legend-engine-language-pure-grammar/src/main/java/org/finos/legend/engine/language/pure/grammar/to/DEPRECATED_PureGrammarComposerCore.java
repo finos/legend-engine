@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.block.factory.Functions;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
@@ -62,6 +61,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
@@ -71,29 +71,35 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLa
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTreeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -627,7 +633,9 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(ValueSpecification valueSpecification)
     {
-        return unsupported(valueSpecification.getClass());
+        PureGrammarComposerContext context = this.toContext();
+        Optional<String> valueSpecString = context.extraEmbeddedPureComposers.stream().map(composer -> composer.value(valueSpecification, context)).filter(Objects::nonNull).findFirst();
+        return valueSpecString.orElseGet(() -> unsupported(valueSpecification.getClass()));
     }
 
     @Override
@@ -681,45 +689,17 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(ClassInstance iv)
+    public String visit(Path path)
     {
-        switch (iv.type)
+        if (this.isRenderingHTML())
         {
-            case "path":
-                Path path = (Path) iv.value;
-                if (this.isRenderingHTML())
-                {
-                    int index = path.startType.lastIndexOf("::");
-                    String type = index == -1 ?
-                            "<span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertPath(path.startType) + "</span>" :
-                            "<span class='pureGrammar-package'>" + PureGrammarComposerUtility.convertPath(path.startType.substring(0, index + 2)) + "</span><span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertIdentifier(path.startType.substring(index + 2)) + "</span>";
-                    return "#/" + type + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
-                }
-                return "#/" + PureGrammarComposerUtility.convertPath(path.startType) + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
-            case "rootGraphFetchTree":
-                RootGraphFetchTree rootGraphFetchTree = (RootGraphFetchTree) iv.value;
-                return processGraphFetchTree(rootGraphFetchTree);
-            case "keyExpression":
-                KeyExpression keyExpression = (KeyExpression) iv.value;
-                return PureGrammarParserUtility.removeQuotes(keyExpression.key.accept(this)) + "=" + keyExpression.expression.accept(this);
-            case "primitiveType":
-                PrimitiveType primitiveType = (PrimitiveType) iv.value;
-                return primitiveType.fullPath;
-            case "listInstance":
-                PureList pureList = (PureList) iv.value;
-                return LazyIterate.collect(pureList.values, v -> v.accept(this)).makeString("list([", ",", "])");
-            case "aggregateValue":
-                AggregateValue aggregateValue = (AggregateValue) iv.value;
-                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" + aggregateValue.mapFn.accept(this) + ", " + aggregateValue.aggregateFn.accept(this) + ")";
-            default:
-                PureGrammarComposerContext context = this.toContext();
-                Function2<Object, PureGrammarComposerContext, String> val = context.extraEmbeddedPureComposers.get(iv.type);
-                if (val != null)
-                {
-                    return val.value(iv.value, context);
-                }
-                throw new RuntimeException("/* Unsupported instance value " + iv.type + " */");
+            int index = path.startType.lastIndexOf("::");
+            String type = index == -1 ?
+                    "<span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertPath(path.startType) + "</span>" :
+                    "<span class='pureGrammar-package'>" + PureGrammarComposerUtility.convertPath(path.startType.substring(0, index + 2)) + "</span><span class='pureGrammar-packageableElement'>" + PureGrammarComposerUtility.convertIdentifier(path.startType.substring(index + 2)) + "</span>";
+            return "#/" + type + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
         }
+        return "#/" + PureGrammarComposerUtility.convertPath(path.startType) + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, this)).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
     }
 
     @Override
@@ -738,7 +718,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         }
         else if ("letFunction".equals(function))
         {
-            return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).value) + " = " + parameters.get(1).accept(this);
+            return "let " + PureGrammarComposerUtility.convertIdentifier(((CString) parameters.get(0)).values.get(0)) + " = " + parameters.get(1).accept(this);
         }
         else if ("new".equals(function))
         {
@@ -818,50 +798,50 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(CInteger cInteger)
     {
-        return HelperValueSpecificationGrammarComposer.renderInteger(cInteger.value, this);
+        return cInteger.multiplicity.isUpperBoundGreaterThan(1) ? HelperValueSpecificationGrammarComposer.renderCollection(cInteger.values, v -> HelperValueSpecificationGrammarComposer.renderInteger((Long) v, this), this) : cInteger.values.isEmpty() ? "[]" : HelperValueSpecificationGrammarComposer.renderInteger(cInteger.values.get(0), this);
     }
 
     @Override
     public String visit(CDecimal cDecimal)
     {
-        return HelperValueSpecificationGrammarComposer.renderDecimal(cDecimal.value, this);
+        return cDecimal.multiplicity.isUpperBoundGreaterThan(1) ? HelperValueSpecificationGrammarComposer.renderCollection(cDecimal.values, v -> HelperValueSpecificationGrammarComposer.renderDecimal((BigDecimal) v, this), this) : cDecimal.values.isEmpty() ? "[]" : HelperValueSpecificationGrammarComposer.renderDecimal(cDecimal.values.get(0), this);
     }
 
     @Override
     public String visit(CString cString)
     {
-        return HelperValueSpecificationGrammarComposer.renderString(cString.value, this);
+        return cString.multiplicity.isUpperBoundGreaterThan(1) ? HelperValueSpecificationGrammarComposer.renderCollection(cString.values, v -> HelperValueSpecificationGrammarComposer.renderString(v.toString(), this), this) : cString.values.isEmpty() ? "[]" : HelperValueSpecificationGrammarComposer.renderString(cString.values.get(0), this);
     }
 
     @Override
     public String visit(CBoolean cBoolean)
     {
-        return HelperValueSpecificationGrammarComposer.renderBoolean(cBoolean.value, this);
+        return cBoolean.multiplicity.isUpperBoundGreaterThan(1) ? HelperValueSpecificationGrammarComposer.renderCollection(cBoolean.values, v -> HelperValueSpecificationGrammarComposer.renderBoolean((Boolean) v, this), this) : cBoolean.values.isEmpty() ? "[]" : HelperValueSpecificationGrammarComposer.renderBoolean(cBoolean.values.get(0), this);
     }
 
     @Override
     public String visit(CFloat cFloat)
     {
-        return HelperValueSpecificationGrammarComposer.renderFloat(cFloat.value, this);
+        return cFloat.multiplicity.isUpperBoundGreaterThan(1) ? HelperValueSpecificationGrammarComposer.renderCollection(cFloat.values, v -> HelperValueSpecificationGrammarComposer.renderFloat((Double) v, this), this) : cFloat.values.isEmpty() ? "[]" : HelperValueSpecificationGrammarComposer.renderFloat(cFloat.values.get(0), this);
     }
 
     @Override
     public String visit(CDateTime cDateTime)
     {
-        return HelperValueSpecificationGrammarComposer.renderDate(cDateTime.value, this);
+        return cDateTime.multiplicity.isUpperBoundGreaterThan(1) ? HelperValueSpecificationGrammarComposer.renderCollection(cDateTime.values, v -> HelperValueSpecificationGrammarComposer.renderDate(v.toString(), this), this) : cDateTime.values.isEmpty() ? "[]" : HelperValueSpecificationGrammarComposer.renderDate(cDateTime.values.get(0), this);
     }
 
     @Override
     public String visit(CStrictDate cStrictDate)
     {
-        String strictDateValue = HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cStrictDate.value);
+        String strictDateValue = HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cStrictDate.values.get(0));
         return this.isValueSpecificationExternalParameter ? strictDateValue.replaceFirst(Character.toString(StrictTimeParseTreeWalker.STRICT_TIME_PREFIX), "") : strictDateValue;
     }
 
     @Override
     public String visit(CStrictTime CStrictTime)
     {
-        String strictTimeValue = HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(CStrictTime.value);
+        String strictTimeValue = HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(CStrictTime.values.get(0));
         return this.isValueSpecificationExternalParameter ? strictTimeValue.replaceFirst(Character.toString(StrictTimeParseTreeWalker.STRICT_TIME_PREFIX), "") : strictTimeValue;
     }
 
@@ -872,36 +852,30 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
+    public String visit(AggregateValue aggregateValue)
+    {
+        return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" + aggregateValue.mapFn.accept(this) + ", " + aggregateValue.aggregateFn.accept(this) + ")";
+    }
+
+    @Override
     public String visit(MappingInstance mappingInstance)
     {
         return mappingInstance.fullPath;
     }
 
-
-    public String processGraphFetchTree(GraphFetchTree graphFetchTree, int tab)
+    @Override
+    public String visit(PureList pureList)
     {
-        return graphFetchTree.accept(new GraphFetchTreeVisitor<String>()
-        {
-            @Override
-            public String visit(PropertyGraphFetchTree valueSpecification)
-            {
-                return processGraphFetchTree(valueSpecification);
-            }
-
-            @Override
-            public String visit(RootGraphFetchTree valueSpecification)
-            {
-                return processGraphFetchTree(valueSpecification);
-            }
-        });
+        return LazyIterate.collect(pureList.values, v -> v.accept(this)).makeString("list([", ",", "])");
     }
 
-    private String processGraphFetchTree(RootGraphFetchTree rootGraphFetchTree)
+    @Override
+    public String visit(RootGraphFetchTree rootGraphFetchTree)
     {
         String subTreeString = "";
         if (rootGraphFetchTree.subTrees != null && !rootGraphFetchTree.subTrees.isEmpty())
         {
-            subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build().processGraphFetchTree(x, getTabSize(1))).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
+            subTreeString = rootGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : "")));
         }
         return "#{" + (this.isRenderingPretty() ? this.returnChar() : "") +
                 DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + HelperValueSpecificationGrammarComposer.printFullPath(rootGraphFetchTree._class, this) + "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
@@ -910,7 +884,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 this.indentationString + "}#";
     }
 
-    public String processGraphFetchTree(PropertyGraphFetchTree propertyGraphFetchTree)
+    @Override
+    public String visit(PropertyGraphFetchTree propertyGraphFetchTree)
     {
         String aliasString = "";
         if (propertyGraphFetchTree.alias != null)
@@ -922,7 +897,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         if (propertyGraphFetchTree.subTrees != null && !propertyGraphFetchTree.subTrees.isEmpty())
         {
             subTreeString = "{" + (this.isRenderingPretty() ? this.returnChar() : "") +
-                    propertyGraphFetchTree.subTrees.stream().map(x -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build().processGraphFetchTree(x, getTabSize(1))).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
+                    propertyGraphFetchTree.subTrees.stream().map(x -> x.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this).withIndentation(getTabSize(1)).build())).collect(Collectors.joining("," + (this.isRenderingPretty() ? this.returnChar() : ""))) + (this.isRenderingPretty() ? this.returnChar() : "") +
                     DEPRECATED_PureGrammarComposerCore.computeIndentationString(this, getTabSize(1)) + "}";
         }
 
@@ -957,9 +932,33 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
-    public String visit(GenericTypeInstance genericTypeInstance)
+    public String visit(HackedClass hackedClass)
     {
-        return '@' + HelperValueSpecificationGrammarComposer.printFullPath(genericTypeInstance.fullPath, this);
+        return '@' + HelperValueSpecificationGrammarComposer.printFullPath(hackedClass.fullPath, this);
+    }
+
+    @Override
+    public String visit(RuntimeInstance runtimeInstance)
+    {
+        return unsupported(RuntimeInstance.class);
+    }
+
+    @Override
+    public String visit(ExecutionContextInstance executionContextInstance)
+    {
+        return unsupported(ExecutionContextInstance.class);
+    }
+
+    @Override
+    public String visit(Pair pair)
+    {
+        return unsupported(Pair.class);
+    }
+
+    @Override
+    public String visit(SerializationConfig serializationConfig)
+    {
+        return unsupported(SerializationConfig.class);
     }
 
     @Override
@@ -969,9 +968,39 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     }
 
     @Override
+    public String visit(TDSAggregateValue tdsAggregateValue)
+    {
+        return unsupported(TDSAggregateValue.class);
+    }
+
+    @Override
+    public String visit(TDSColumnInformation tdsColumnInformation)
+    {
+        return unsupported(TDSColumnInformation.class);
+    }
+
+    @Override
+    public String visit(TdsOlapRank tdsOlapRank)
+    {
+        return unsupported(TdsOlapRank.class);
+    }
+
+    @Override
+    public String visit(TdsOlapAggregation tdsOlapAggregation)
+    {
+        return unsupported(TdsOlapAggregation.class);
+    }
+
+    @Override
+    public String visit(TDSSortInformation tdsSortInformation)
+    {
+        return unsupported(TDSSortInformation.class);
+    }
+
+    @Override
     public String visit(HackedUnit hackedUnit)
     {
-        return "@" + hackedUnit.fullPath;
+        return "@" + hackedUnit.unitType;
     }
 
     @Override
@@ -983,7 +1012,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(UnitType unitType)
     {
-        return unitType.fullPath;
+        return unitType.unitType;
     }
 
     @Override
@@ -995,7 +1024,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(PrimitiveType primitiveType)
     {
-        return primitiveType.fullPath;
+        return primitiveType.name;
     }
 
     @Override

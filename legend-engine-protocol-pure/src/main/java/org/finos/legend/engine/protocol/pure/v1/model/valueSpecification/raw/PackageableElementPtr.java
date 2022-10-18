@@ -14,47 +14,16 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.io.IOException;
-
-public class PackageableElementPtr extends One
+public class PackageableElementPtr extends ValueSpecification
 {
-    protected static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
-
     public String fullPath;
-
-    public PackageableElementPtr()
-    {
-
-    }
-
-    public PackageableElementPtr(String fullPath)
-    {
-        this.fullPath = fullPath;
-    }
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
-    }
-
-
-    protected static ValueSpecification convert(JsonNode node) throws IOException
-    {
-        JsonNode name = node.get("fullPath");
-        ValueSpecification result = new PackageableElementPtr(name.asText());
-        JsonNode sourceInformation = node.get("sourceInformation");
-        if (sourceInformation != null)
-        {
-            result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
-        }
-        return result;
     }
 }

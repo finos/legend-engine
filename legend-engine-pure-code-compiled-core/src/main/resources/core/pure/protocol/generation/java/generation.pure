@@ -47,14 +47,7 @@ function meta::protocols::generation::java::generateProtocolClasses(purePackage:
 
 function meta::protocols::generation::java::conventions(purePackage:String[1], javaPackage:String[1], basePackageStr:String[1]):Conventions[1]
 {
-  let library = newConventionsLibrary()
-                ->usesInteger(javaLong(), javaLongBoxed(), {i:Integer[1] | j_long($i)})
-                ->usesFloat(javaDouble(), javaDoubleBoxed(), {f:Float[1] | j_double($f)})
-                ->usesBoolean(javaBoolean(), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
-                ->usesString(javaString(), javaString(), {s:String[1]| j_string($s)});
-
-  newConventions([], [])
-  ->registerLibrary($library)
+  engineConventions([])
   ->setBasePackageName($javaPackage)
   ->setTypeAndPackageNameStrategy(
       {t,c|
@@ -134,13 +127,7 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
                             )
                         )
                   },
-                  j_new(javaClass('public', javaPackage('org.finos.legend.pure.generated'), 'Root_'+$c.package->toOne()->elementToPath('_')+'_'+$c.name->toOne()+'_Impl'),
-                                            [
-                                              j_string(''),
-                                              j_null(),
-                                              j_invoke($parameters->at(1), 'getType', [j_string($c->elementToPath())], javaClass('public', javaPackage('org.finos.legend.pure.m4.coreinstance'), 'CoreInstance'))
-                                            ]
-                                 )
+                  j_new(javaClass('public', javaPackage('org.finos.legend.pure.generated'), 'Root_'+$c.package->toOne()->elementToPath('_')+'_'+$c.name->toOne()+'_Impl'), j_string(''))
                 )
           )
   );

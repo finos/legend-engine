@@ -24,19 +24,6 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.ExecutionContextInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.RuntimeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSColumnInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSSortInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 
 import java.util.Collection;
 import java.util.Map;
@@ -74,29 +61,6 @@ public class PureProtocolObjectMapperFactory
     public static <T extends ObjectMapper> T withPureProtocolExtensions(T objectMapper, Predicate<? super String> excludeSubType)
     {
         return withPureProtocolExtensions(objectMapper, ObjectMapper::registerModule, ObjectMapper::registerSubtypes, excludeSubType);
-    }
-
-    public static Map<String, Class> getClassInstanceTypeMappings()
-    {
-        Map<String, Class> result = Maps.mutable.empty();
-        result.put("path", Path.class);
-        result.put("rootGraphFetchTree", RootGraphFetchTree.class);
-        // Below Not supported by the grammar
-        // Move to functions and deprecate
-        result.put("listInstance", PureList.class);
-        result.put("pair", Pair.class);
-        result.put("aggregateValue", AggregateValue.class);
-        result.put("tdsAggregateValue", TDSAggregateValue.class);
-        result.put("tdsColumnInformation", TDSColumnInformation.class);
-        result.put("tdsSortInformation", TDSSortInformation.class);
-        result.put("tdsOlapRank", TdsOlapRank.class);
-        result.put("tdsOlapAggregation", TdsOlapAggregation.class);
-        // Move to VS extension
-        result.put("runtimeInstance", RuntimeInstance.class);
-        result.put("executionContextInstance", ExecutionContextInstance.class);
-        result.put("alloySerializationConfig", SerializationConfig.class);
-        PureProtocolExtensionLoader.extensions().forEach(extension -> extension.getExtraClassInstanceTypeMappings().entrySet().forEach(e -> result.put(e.getKey(), e.getValue())));
-        return result;
     }
 
     private static <T> T withPureProtocolExtensions(T mapperOrBuilder, BiConsumer<? super T, ? super Module> addModule, BiConsumer<? super T, ? super NamedType> registerSubTypes, Predicate<? super String> excludeSubType)

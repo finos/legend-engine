@@ -1,0 +1,111 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::binding::toPure::typeSystem::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::typeSystem::tests::testConvertToPure():Boolean[1]
+{
+  let types = graphQLTypeSystemtoPure(meta::external::query::graphQL::binding::toPure::typeSystem::tests::buildIntrospection(), 'meta::external::query::graphQL::introspection::model');
+  let pureTypes = $types->sortBy(t|$t->elementToPath())->map(t | $t->meta::pure::metamodel::serialization::grammar::printType())->joinStrings('\n\n');
+  assertEquals(   'Class meta::external::query::graphQL::introspection::model::__Directive\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  locations : meta::external::query::graphQL::introspection::model::__DirectiveLocation[*];\n' +
+                  '  args : meta::external::query::graphQL::introspection::model::__InputValue[*];\n' +
+                  '}\n' +
+                  '\n' +
+                  'Enum meta::external::query::graphQL::introspection::model::__DirectiveLocation\n' +
+                  '{\n' +
+                  '  QUERY,\n' +
+                  '  MUTATION,\n' +
+                  '  SUBSCRIPTION,\n' +
+                  '  FIELD,\n' +
+                  '  FRAGMENT_DEFINITION,\n' +
+                  '  FRAGMENT_SPREAD,\n' +
+                  '  INLINE_FRAGMENT,\n' +
+                  '  SCHEMA,\n' +
+                  '  SCALAR,\n' +
+                  '  OBJECT,\n' +
+                  '  FIELD_DEFINITION,\n' +
+                  '  ARGUMENT_DEFINITION,\n' +
+                  '  INTERFACE,\n' +
+                  '  UNION,\n' +
+                  '  ENUM,\n' +
+                  '  ENUM_VALUE,\n' +
+                  '  INPUT_OBJECT,\n' +
+                  '  INPUT_FIELD_DEFINITION\n' +
+                  '}\n' +
+                  '\n' +
+                  'Class meta::external::query::graphQL::introspection::model::__EnumValue\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  isDeprecated : Boolean[1];\n' +
+                  '  deprecationReason : String[0..1];\n' +
+                  '}\n' +
+                  '\n' +
+                  'Class meta::external::query::graphQL::introspection::model::__Field\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  args : meta::external::query::graphQL::introspection::model::__InputValue[*];\n' +
+                  '  type : meta::external::query::graphQL::introspection::model::__Type[1];\n' +
+                  '  isDeprecated : Boolean[1];\n' +
+                  '  deprecationReason : String[0..1];\n' +
+                  '}\n' +
+                  '\n' +
+                  'Class meta::external::query::graphQL::introspection::model::__InputValue\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  type : meta::external::query::graphQL::introspection::model::__Type[1];\n' +
+                  '  defaultValue : String[0..1];\n' +
+                  '}\n' +
+                  '\n' +
+                  'Class meta::external::query::graphQL::introspection::model::__Schema\n' +
+                  '{\n' +
+                  '  types : meta::external::query::graphQL::introspection::model::__Type[*];\n' +
+                  '  queryType : meta::external::query::graphQL::introspection::model::__Type[1];\n' +
+                  '  mutationType : meta::external::query::graphQL::introspection::model::__Type[0..1];\n' +
+                  '  subscriptionType : meta::external::query::graphQL::introspection::model::__Type[0..1];\n' +
+                  '  directives : meta::external::query::graphQL::introspection::model::__Directive[*];\n' +
+                  '}\n' +
+                  '\n' +
+                  'Class meta::external::query::graphQL::introspection::model::__Type\n' +
+                  '{\n' +
+                  '  kind : meta::external::query::graphQL::introspection::model::__TypeKind[1];\n' +
+                  '  name : String[0..1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  fields : meta::external::query::graphQL::introspection::model::__Field[*];\n' +
+                  '  interfaces : meta::external::query::graphQL::introspection::model::__Type[*];\n' +
+                  '  possibleTypes : meta::external::query::graphQL::introspection::model::__Type[*];\n' +
+                  '  enumValues : meta::external::query::graphQL::introspection::model::__EnumValue[*];\n' +
+                  '  inputFields : meta::external::query::graphQL::introspection::model::__InputValue[*];\n' +
+                  '  ofType : meta::external::query::graphQL::introspection::model::__Type[0..1];\n' +
+                  '}\n' +
+                  '\n' +
+                  'Enum meta::external::query::graphQL::introspection::model::__TypeKind\n' +
+                  '{\n' +
+                  '  SCALAR,\n' +
+                  '  OBJECT,\n' +
+                  '  INTERFACE,\n' +
+                  '  UNION,\n' +
+                  '  ENUM,\n' +
+                  '  INPUT_OBJECT,\n' +
+                  '  LIST,\n' +
+                  '  NON_NULL\n' +
+                  '}'
+                  , $pureTypes);
+}

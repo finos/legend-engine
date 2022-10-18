@@ -37,7 +37,8 @@ public class TestTestAssertionEvaluator
     {
         ConstantResult constantResult = new ConstantResult(1L);
 
-        CInteger pureInteger = new CInteger(1L);
+        CInteger pureInteger = new CInteger();
+        pureInteger.values = Collections.singletonList(1L);
 
         EqualTo equalTo = new EqualTo();
         equalTo.expected = pureInteger;
@@ -52,8 +53,10 @@ public class TestTestAssertionEvaluator
     {
         ConstantResult constantResult = new ConstantResult(Lists.mutable.with(1L, 2L));
 
-        CInteger pureInteger1 = new CInteger(1L);
-        CInteger pureInteger2 = new CInteger(2L);
+        CInteger pureInteger1 = new CInteger();
+        pureInteger1.values = Lists.mutable.with(1L);
+        CInteger pureInteger2 = new CInteger();
+        pureInteger2.values = Lists.mutable.with(2L);
 
         Collection collection = new Collection();
         collection.values = Lists.mutable.with(pureInteger1, pureInteger2);
@@ -71,8 +74,10 @@ public class TestTestAssertionEvaluator
     {
         ConstantResult constantResult = new ConstantResult(Lists.mutable.with(1L, 5L));
 
-        CInteger pureInteger1 = new CInteger(1L);
-        CInteger pureInteger2 = new CInteger(2L);
+        CInteger pureInteger1 = new CInteger();
+        pureInteger1.values = Lists.mutable.with(1L);
+        CInteger pureInteger2 = new CInteger();
+        pureInteger2.values = Lists.mutable.with(2L);
 
         Collection collection = new Collection();
         collection.values = Lists.mutable.with(pureInteger1, pureInteger2);

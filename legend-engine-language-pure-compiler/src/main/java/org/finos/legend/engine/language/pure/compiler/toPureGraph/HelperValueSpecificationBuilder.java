@@ -33,8 +33,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pac
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_graphFetch_RootGraphFetchTree_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_LambdaFunction_Impl;
@@ -146,8 +146,13 @@ public class HelperValueSpecificationBuilder
         if (firstArgument instanceof Enum // Only for backward compatibility!
                 || (processedParameters.get(0)._genericType()._rawType().equals(context.pureModel.getType("meta::pure::metamodel::type::Enumeration"))))
         {
-            CString enumValue = new CString(property);
-            context.resolveEnumValue(((PackageableElementPtr) firstArgument).fullPath, enumValue.value, firstArgument.sourceInformation, sourceInformation); // validation to make sure the enum value can be found
+            Multiplicity m = new Multiplicity();
+            m.lowerBound = 1;
+            m.setUpperBound(1);
+            CString enumValue = new CString();
+            enumValue.values = Lists.mutable.of(property);
+            enumValue.multiplicity = m;
+            context.resolveEnumValue(((PackageableElementPtr) firstArgument).fullPath, enumValue.values.get(0), firstArgument.sourceInformation, sourceInformation); // validation to make sure the enum value can be found
             AppliedFunction extractEnum = new AppliedFunction();
             extractEnum.function = "extractEnumValue";
             extractEnum.parameters = Lists.mutable.of(firstArgument, enumValue);
@@ -193,6 +198,9 @@ public class HelperValueSpecificationBuilder
             {
                 processingContext.push("Building Automap for  " + property);
 
+                Multiplicity m = new Multiplicity();
+                m.lowerBound = 1;
+                m.setUpperBound(1);
                 List<ValueSpecification> localParameters = Lists.mutable.ofAll(parameters);
                 final String automapName = "v_automap";
 
@@ -210,7 +218,7 @@ public class HelperValueSpecificationBuilder
                 appliedProperty.parameters.addAll(localParameters);
                 automaLambdaparam.name = automapName;
                 automaLambdaparam._class = HelperModelBuilder.getElementFullPath((PackageableElement) inferredVariable._genericType()._rawType(), context.pureModel.getExecutionSupport());
-                automaLambdaparam.multiplicity = Multiplicity.PURE_ONE;
+                automaLambdaparam.multiplicity = m;
                 automapLambda.body = Lists.mutable.of(appliedProperty);
 
                 List<Variable> lambdaParams = new FastList<>();
@@ -277,7 +285,7 @@ public class HelperValueSpecificationBuilder
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported execution context type '" + executionContext.getClass() + "'"));
     }
 
-    public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree graphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
+    public static GraphFetchTree buildGraphFetchTree(org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree graphFetchTree, CompileContext context, Class<?> parentClass, MutableList<String> openVariables, ProcessingContext processingContext)
     {
         if (graphFetchTree instanceof PropertyGraphFetchTree)
         {

@@ -22,7 +22,6 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -56,22 +55,15 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public interface CompilerExtension
 {
     Iterable<? extends Processor<?>> getExtraProcessors();
 
-    @Deprecated
     default List<Function4<ValueSpecification, CompileContext, List<String>, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraValueSpecificationProcessors()
     {
         return Collections.emptyList();
-    }
-
-    default Map<String, Function3<Object, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraClassInstanceProcessors()
-    {
-        return Maps.mutable.empty();
     }
 
     default List<Function3<LambdaFunction, CompileContext, ProcessingContext, LambdaFunction>> getExtraLambdaPostProcessor()

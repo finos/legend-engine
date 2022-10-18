@@ -21,8 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.AggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
@@ -36,29 +35,29 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.ExecutionContextInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.RuntimeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSColumnInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TDSSortInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.TdsOlapRank;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 
 public class ValueSpecificationToResultVisitor implements ValueSpecificationVisitor<ConstantResult>
 {
@@ -83,13 +82,13 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     @Override
     public ConstantResult visit(CString cString)
     {
-        return new ConstantResult(cString.value);
+        return new ConstantResult(cString.values.get(0));
     }
 
     @Override
     public ConstantResult visit(CDateTime cDateTime)
     {
-        return new ConstantResult(cDateTime.value);
+        return new ConstantResult(cDateTime.values.get(0));
     }
 
     @Override
@@ -101,13 +100,19 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     @Override
     public ConstantResult visit(CStrictDate cStrictDate)
     {
-        return new ConstantResult(cStrictDate.value);
+        return new ConstantResult(cStrictDate.values.get(0));
     }
 
     @Override
     public ConstantResult visit(CStrictTime cStrictTime)
     {
-        return new ConstantResult(cStrictTime.value);
+        return new ConstantResult(cStrictTime.values.get(0));
+    }
+
+    @Override
+    public ConstantResult visit(AggregateValue aggregateValue)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
     }
 
     @Override
@@ -119,7 +124,7 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     @Override
     public ConstantResult visit(CBoolean cBoolean)
     {
-        return new ConstantResult(cBoolean.value);
+        return new ConstantResult(cBoolean.values.get(0));
     }
 
     @Override
@@ -141,26 +146,49 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     }
 
     @Override
-    public ConstantResult visit(ClassInstance iv)
+    public ConstantResult visit(RuntimeInstance runtimeInstance)
     {
-        System.out.println(((CString)((PureList)iv.value).values.get(1)).value);
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(Path path)
+    {
         throw new UnsupportedOperationException("Unsupported value specification type");
     }
 
     @Override
     public ConstantResult visit(CInteger cInteger)
     {
-        return new ConstantResult(cInteger.value);
+        return new ConstantResult(cInteger.values.get(0));
     }
 
     @Override
     public ConstantResult visit(CDecimal cDecimal)
     {
-        return new ConstantResult(cDecimal.value);
+        return new ConstantResult(cDecimal.values.get(0));
     }
 
     @Override
     public ConstantResult visit(Lambda lambda)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(ExecutionContextInstance executionContextInstance)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(Pair pair)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(PureList pureList)
     {
         throw new UnsupportedOperationException("Unsupported value specification type");
     }
@@ -174,7 +202,7 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     @Override
     public ConstantResult visit(CFloat cFloat)
     {
-        return new ConstantResult(cFloat.value);
+        return new ConstantResult(cFloat.values.get(0));
     }
 
     @Override
@@ -184,7 +212,7 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     }
 
     @Override
-    public ConstantResult visit(GenericTypeInstance genericTypeInstance)
+    public ConstantResult visit(HackedClass hackedClass)
     {
         throw new UnsupportedOperationException("Unsupported value specification type");
     }
@@ -208,7 +236,55 @@ public class ValueSpecificationToResultVisitor implements ValueSpecificationVisi
     }
 
     @Override
+    public ConstantResult visit(PropertyGraphFetchTree propertyGraphFetchTree)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(RootGraphFetchTree rootGraphFetchTree)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(SerializationConfig serializationConfig)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
     public ConstantResult visit(AppliedProperty appliedProperty)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(TdsOlapAggregation tdsOlapAggregation)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(TDSAggregateValue tdsAggregateValue)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(TDSSortInformation tdsSortInformation)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(TDSColumnInformation tdsColumnInformation)
+    {
+        throw new UnsupportedOperationException("Unsupported value specification type");
+    }
+
+    @Override
+    public ConstantResult visit(TdsOlapRank tdsOlapRank)
     {
         throw new UnsupportedOperationException("Unsupported value specification type");
     }

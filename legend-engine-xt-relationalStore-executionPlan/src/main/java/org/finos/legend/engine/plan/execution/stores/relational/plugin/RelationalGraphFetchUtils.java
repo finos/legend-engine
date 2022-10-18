@@ -27,8 +27,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleHashingStrategy;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
 
@@ -556,19 +556,19 @@ class RelationalGraphFetchUtils
 
             return propertyGraphFetchTree.parameters.stream().map(param ->
                     param instanceof CBoolean ?
-                            String.valueOf(((CBoolean) param).value) :
+                            ((CBoolean) param).values.stream().map(Object::toString).collect(joinStrings) :
                             param instanceof CInteger ?
-                                    String.valueOf(((CInteger) param).value) :
+                                    ((CInteger) param).values.stream().map(Object::toString).collect(joinStrings) :
                                     param instanceof CFloat ?
-                                            String.valueOf(((CFloat) param).value) :
+                                            ((CFloat) param).values.stream().map(Object::toString).collect(joinStrings) :
                                             param instanceof CDecimal ?
-                                                    String.valueOf(((CDecimal) param).value) :
+                                                    ((CDecimal) param).values.stream().map(Object::toString).collect(joinStrings) :
                                                     param instanceof CString ?
-                                                            "'" + ((CString) param).value.replace("'", "\\'") + "'" :
+                                                            ((CString) param).values.stream().map(x -> "'" + x.replace("'", "\\'") + "'").collect(joinStrings) :
                                                             param instanceof CStrictDate ?
-                                                                    "'" + ((CStrictDate) param).value + "'" :
+                                                                    ((CStrictDate) param).values.stream().map(x -> "'" + x + "'").collect(joinStrings) :
                                                                     param instanceof CDateTime ?
-                                                                            "'" + ((CDateTime) param).value + "'" :
+                                                                            ((CDateTime) param).values.stream().map(x -> "'" + x + "'").collect(joinStrings) :
                                                                             param instanceof EnumValue ?
                                                                                     ((EnumValue) param).fullPath + "." + ((EnumValue) param).value :
                                                                                     (param instanceof Collection && ((Collection) param).values.stream().allMatch(x -> x instanceof EnumValue)) ?

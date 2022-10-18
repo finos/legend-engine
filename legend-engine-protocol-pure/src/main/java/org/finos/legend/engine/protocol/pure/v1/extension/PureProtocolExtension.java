@@ -15,7 +15,6 @@
 package org.finos.legend.engine.protocol.pure.v1.extension;
 
 import org.eclipse.collections.api.block.function.Function0;
-import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
 import java.util.Collections;
@@ -24,7 +23,6 @@ import java.util.Map;
 
 public interface PureProtocolExtension
 {
-    @Deprecated
     default List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Collections.emptyList();
@@ -33,11 +31,6 @@ public interface PureProtocolExtension
     default Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
         return Collections.emptyMap();
-    }
-
-    default Map<String, Class> getExtraClassInstanceTypeMappings()
-    {
-        return Maps.mutable.empty();
     }
 
 }

@@ -35,12 +35,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDe
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.math.BigDecimal;
@@ -50,6 +49,8 @@ import java.util.stream.Collectors;
 
 public class ModelStoreDataParseTreeWalker
 {
+    private static final Multiplicity PURE_ONE = multiplicity(1, 1);
+
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final SourceInformation sourceInformation;
     private final PureGrammarParserExtensions extensions;
@@ -87,7 +88,7 @@ public class ModelStoreDataParseTreeWalker
                     Pair pair = new Pair();
                     pair.first = bindingPtr;
                     pair.second = ptr;
-                    instances = new ClassInstance("pair", pair);
+                    instances = pair;
                 }
                 else
                 {
@@ -115,10 +116,10 @@ public class ModelStoreDataParseTreeWalker
         List<ValueSpecification> keyExpressions = ctx.instancePropertyAssignment().stream().map(this::visitPropertyAssignment).collect(Collectors.toList());
         Collection valueAssignments = new Collection();
         valueAssignments.values = keyExpressions;
-        valueAssignments.multiplicity = Multiplicity.PURE_ONE;
+        valueAssignments.multiplicity = PURE_ONE;
 
         AppliedFunction appliedFunction = new AppliedFunction();
-        appliedFunction.parameters = Lists.mutable.with(newClass, new CString("dummy"), valueAssignments);
+        appliedFunction.parameters = Lists.mutable.with(newClass, cString("dummy"), valueAssignments);
         appliedFunction.function = "new";
         return appliedFunction;
     }
@@ -127,8 +128,9 @@ public class ModelStoreDataParseTreeWalker
     {
         KeyExpression result = new KeyExpression();
         result.add = false;
+
         String property = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        result.key = new CString(property);
+        result.key = cString(property);
         List<ValueSpecification> values = ctx.instanceRightSide().instanceAtomicRightSide().stream().map(this::visitAtomicRightSide).collect(Collectors.toList());
         result.expression = collection(values);
         return result;
@@ -166,20 +168,20 @@ public class ModelStoreDataParseTreeWalker
             ModelStoreDataParserGrammar.InstanceLiteralTokenContext literalToken = ctx.instanceLiteralToken();
             if (literalToken.STRING() != null)
             {
-                result = new CString(PureGrammarParserUtility.fromGrammarString(literalToken.STRING().getText(), true));
+                result = cString(PureGrammarParserUtility.fromGrammarString(literalToken.STRING().getText(), true));
             }
             else if (literalToken.INTEGER() != null)
             {
-                result = new CInteger(Long.parseLong(literalToken.INTEGER().getText()));
+                result = cInteger(Long.parseLong(literalToken.INTEGER().getText()));
             }
             else if (literalToken.FLOAT() != null)
             {
-                result = new CFloat(Double.parseDouble(literalToken.FLOAT().getText()));
+                result = cFloat(Double.parseDouble(literalToken.FLOAT().getText()));
             }
             else if (literalToken.DECIMAL() != null)
             {
                 String text = literalToken.DECIMAL().getText();
-                result = new CDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
+                result = cDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
             }
             else if (literalToken.DATE() != null)
             {
@@ -187,7 +189,7 @@ public class ModelStoreDataParseTreeWalker
             }
             else if (literalToken.BOOLEAN() != null)
             {
-                result = new CBoolean(Boolean.parseBoolean(literalToken.BOOLEAN().getText()));
+                result = cBoolean(Boolean.parseBoolean(literalToken.BOOLEAN().getText()));
             }
             else if (literalToken.STRICTTIME() != null)
             {
@@ -200,29 +202,29 @@ public class ModelStoreDataParseTreeWalker
         }
         else if (ctx.INTEGER() != null && ctx.MINUS() != null)
         {
-            result = new CInteger(Long.parseLong(ctx.MINUS().getText() + ctx.INTEGER().getText()));
+            result = cInteger(Long.parseLong(ctx.MINUS().getText() + ctx.INTEGER().getText()));
         }
         else if (ctx.FLOAT() != null && ctx.MINUS() != null)
         {
-            result = new CFloat(Double.parseDouble(ctx.MINUS().getText() + ctx.FLOAT().getText()));
+            result = cFloat(Double.parseDouble(ctx.MINUS().getText() + ctx.FLOAT().getText()));
         }
         else if (ctx.DECIMAL() != null && ctx.MINUS() != null)
         {
             String text = ctx.MINUS().getText() + ctx.DECIMAL().getText();
-            result = new CDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
+            result = cDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
         }
         else if (ctx.INTEGER() != null && ctx.PLUS() != null)
         {
-            result = new CInteger(Long.parseLong(ctx.PLUS().getText() + ctx.INTEGER().getText()));
+            result = cInteger(Long.parseLong(ctx.PLUS().getText() + ctx.INTEGER().getText()));
         }
         else if (ctx.FLOAT() != null && ctx.PLUS() != null)
         {
-            result = new CFloat(Double.parseDouble(ctx.PLUS().getText() + ctx.FLOAT().getText()));
+            result = cFloat(Double.parseDouble(ctx.PLUS().getText() + ctx.FLOAT().getText()));
         }
         else if (ctx.DECIMAL() != null && ctx.PLUS() != null)
         {
             String text = ctx.PLUS().getText() + ctx.DECIMAL().getText();
-            result = new CDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
+            result = cDecimal(new BigDecimal(text.substring(0, text.length() - 1)));
         }
         else
         {
@@ -237,6 +239,56 @@ public class ModelStoreDataParseTreeWalker
         Collection result = new Collection();
         result.values = values;
         result.multiplicity = multiplicity(values.size(), values.size());
+        return result;
+    }
+
+    private static CString cString(String value)
+    {
+        return cString(Collections.singletonList(value), PURE_ONE);
+    }
+
+    private static CString cString(List<String> values)
+    {
+        return cString(values, multiplicity(values.size(), values.size()));
+    }
+
+    private static CString cString(List<String> values, Multiplicity multiplicity)
+    {
+        CString result = new CString();
+        result.multiplicity = multiplicity;
+        result.values = values;
+        return result;
+    }
+
+    private static CInteger cInteger(long value)
+    {
+        CInteger result = new CInteger();
+        result.multiplicity = PURE_ONE;
+        result.values = Collections.singletonList(value);
+        return result;
+    }
+
+    private static CFloat cFloat(double value)
+    {
+        CFloat result = new CFloat();
+        result.multiplicity = PURE_ONE;
+        result.values = Collections.singletonList(value);
+        return result;
+    }
+
+    private static CDecimal cDecimal(BigDecimal value)
+    {
+        CDecimal result = new CDecimal();
+        result.multiplicity = PURE_ONE;
+        result.values = Collections.singletonList(value);
+        return result;
+    }
+
+    private static CBoolean cBoolean(boolean value)
+    {
+        CBoolean result = new CBoolean();
+        result.multiplicity = PURE_ONE;
+        result.values = Collections.singletonList(value);
         return result;
     }
 

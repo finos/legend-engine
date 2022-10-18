@@ -24,9 +24,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -48,7 +48,7 @@ public abstract class FunctionExpressionBuilder
 
         if (func._functionName().equals("letFunction"))
         {
-            vars = FastList.newListWith(vars.getFirst(), (VariableExpression) processingContext.getInferredVariable(((CString) parameters.get(0)).value));
+            vars = FastList.newListWith(vars.getFirst(), (VariableExpression) processingContext.getInferredVariable(((CString) parameters.get(0)).values.get(0)));
         }
 
         if (vars.size() == parameters.size())
@@ -61,7 +61,7 @@ public abstract class FunctionExpressionBuilder
     private boolean comp(VariableExpression vv, org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification vs, PureModel pureModel, ProcessingContext processingContext)
     {
         boolean isSignatureFunction = vv._genericType()._rawType() != null && Type.subTypeOf(vv._genericType()._rawType(), pureModel.getType("meta::pure::metamodel::function::Function"), pureModel.getExecutionSupport().getProcessorSupport());
-        boolean isParamFunction = vs instanceof Lambda || (vs instanceof ClassInstance && ((ClassInstance) vs).type.equals("path")) || isVariableSubtypeOfFunction(vs, processingContext, pureModel) || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || (v instanceof ClassInstance && ((ClassInstance) v).type.equals("path")) || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
+        boolean isParamFunction = vs instanceof Lambda || vs instanceof Path || isVariableSubtypeOfFunction(vs, processingContext, pureModel) || (vs instanceof Collection && ((Collection) vs).values.stream().allMatch(v -> v instanceof Lambda || v instanceof Path || isVariableSubtypeOfFunction(v, processingContext, pureModel)));
 
         boolean isParamEmpty = vs instanceof Collection && ((Collection) vs).values.isEmpty();
         return isParamEmpty || (isSignatureFunction && isParamFunction) || (!isSignatureFunction && !isParamFunction);
