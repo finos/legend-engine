@@ -34,8 +34,8 @@ function meta::pure::persistence::validation::commonRules(): ValidationRuleSet<P
   ^ValidationRuleSet<PersistenceContext>(
     name = 'Common',
     rules = [
-      c: PersistenceContext[1] | validateTarget($c.persistence.persister->subType(@BatchPersister).targetShape),
-      c: PersistenceContext[1] | validateServiceAndTarget($c.persistence.service, $c.persistence.persister->subType(@BatchPersister).targetShape)
+      c: PersistenceContext[1] | validateTarget($c.persistence.persister->cast(@BatchPersister).targetShape),
+      c: PersistenceContext[1] | validateServiceAndTarget($c.persistence.service, $c.persistence.persister->cast(@BatchPersister).targetShape)
     ]
   );
 }
@@ -113,6 +113,7 @@ meta::pure::persistence::validation::ExecutionClassification
 
 Class meta::pure::persistence::validation::TdsExecutionClassification extends ExecutionClassification
 {
+  columnByName: Map<String, TDSColumn>[*];
 }
 
 Class meta::pure::persistence::validation::FlatGraphFetchSerialize extends ExecutionClassification
@@ -141,7 +142,9 @@ function meta::pure::persistence::validation::classify(execution: PureSingleExec
       | classifyFunctionExpression($execution.func, $fe),
       | let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
         $plan.rootExecutionNode.resultType->match([
-          tds: TDSResultType[1] | ^TdsExecutionClassification(),
+          tds: TDSResultType[1] |
+            let columnByName = $tds.tdsColumns->map(c | pair($c.name, $c))->newMap();
+            ^TdsExecutionClassification(columnByName = $columnByName);,
           any: Any[1] | ^OtherExecutionClassification()
         ]);
     ),

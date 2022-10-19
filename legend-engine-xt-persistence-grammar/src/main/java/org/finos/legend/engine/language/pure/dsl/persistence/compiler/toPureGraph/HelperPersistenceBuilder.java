@@ -495,7 +495,6 @@ public class HelperPersistenceBuilder
         @Override
         public Root_meta_pure_persistence_metamodel_persister_targetshape_TargetShape visit(FlatTarget val)
         {
-            PackageableElement packageableElement = context.resolvePackageableElement(new PackageableElementPointer().path, new PackageableElementPointer().sourceInformation);
             Class<?> modelClass = context.resolveClass(val.modelClass, val.sourceInformation);
             return new Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::targetshape::FlatTarget"))
                     ._targetName(val.targetName)

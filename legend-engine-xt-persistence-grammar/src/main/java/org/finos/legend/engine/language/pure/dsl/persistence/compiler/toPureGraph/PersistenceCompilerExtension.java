@@ -18,13 +18,15 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
-import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.Validator;
+import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
@@ -55,10 +57,15 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_cont
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_CronTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_ManualTrigger_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_ValidationResult;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_ValidationRuleSet;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static org.finos.legend.pure.generated.core_persistence_persistence_validation.Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_;
+import static org.finos.legend.pure.generated.core_persistence_persistence_validations_rules.Root_meta_pure_persistence_validation_commonRules__ValidationRuleSet_1_;
 
 public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
@@ -104,15 +111,29 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                         (persistenceContext, context) ->
                         {
                             Root_meta_pure_persistence_metamodel_PersistenceContext purePersistenceContext = (Root_meta_pure_persistence_metamodel_PersistenceContext) context.pureModel.getOrCreatePackage(persistenceContext._package)._children().detect(c -> persistenceContext.name.equals(c._name()));
-                            Validator<Root_meta_pure_persistence_metamodel_PersistenceContext> validator = new Validator<>(ListIterate.flatCollect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraValidationRules));
-                            ValidationResult result = validator.execute(purePersistenceContext);
-                            if (result.invalid())
+
+                            // execute common validations
+                            Root_meta_pure_persistence_validation_ValidationRuleSet<? extends Root_meta_pure_persistence_metamodel_PersistenceContext> pureValidationRuleSet = Root_meta_pure_persistence_validation_commonRules__ValidationRuleSet_1_(context.getExecutionSupport());
+                            Root_meta_pure_persistence_validation_ValidationResult pureValidationResult = Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_(purePersistenceContext, pureValidationRuleSet, context.getExecutionSupport());
+                            boolean passedCoreValidations = pureValidationResult.valid(context.getExecutionSupport());
+                            if (!passedCoreValidations)
                             {
-                                throw new EngineException(
-                                        String.format("Error validating persistence context [%s]: %s", persistenceContext._package + "::" + persistenceContext.name, result.reasons()),
-                                        persistenceContext.sourceInformation,
-                                        EngineErrorType.COMPILATION);
+                                RichIterable<? extends String> failureReasons = pureValidationResult.reasons(context.getExecutionSupport());
+                                throw new EngineException(Iterate.makeString(failureReasons, "Core validation error(s) for persistence context [" + persistenceContext._package + "::" + persistenceContext.name + "]:\n", "\n", ""), persistenceContext.sourceInformation, EngineErrorType.COMPILATION);
                             }
+
+                            // discover and execute platform-specific validations
+                            List<ValidationRuleSet<PersistenceContext>> validationRuleSets = ListIterate.collect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraValidationRuleset);
+                            validationRuleSets.forEach(validationRuleSet -> {
+                                ValidationResult result = validationRuleSet.validate(persistenceContext);
+                                if (result.invalid())
+                                {
+                                    throw new EngineException(
+                                            String.format("[" + validationRuleSet.name() + "] platform validation error(s) for persistence context [%s]: %s", persistenceContext._package + "::" + persistenceContext.name, result.reasons()),
+                                            persistenceContext.sourceInformation,
+                                            EngineErrorType.COMPILATION);
+                                }
+                            });
                         }
                 ));
     }
