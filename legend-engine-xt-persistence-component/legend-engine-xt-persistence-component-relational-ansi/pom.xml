@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-persistence-component</artifactId>
-        <version>3.19.5-SNAPSHOT</version>
+        <version>3.20.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
