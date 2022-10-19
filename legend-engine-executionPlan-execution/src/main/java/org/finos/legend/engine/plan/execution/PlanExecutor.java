@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.concurrent.Executor;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
@@ -70,14 +71,16 @@ public class PlanExecutor
     private final PlanExecutorInfo planExecutorInfo;
     private long graphFetchBatchMemoryLimit;
     private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
+    private final Executor sideTasksExecutor;
 
-    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit)
+    private PlanExecutor(boolean isJavaCompilationAllowed, ImmutableList<StoreExecutor> extraExecutors, long graphFetchBatchMemoryLimit, Executor executor)
     {
         EngineUrlStreamHandlerFactory.initialize();
         this.isJavaCompilationAllowed = isJavaCompilationAllowed;
         this.extraExecutors = extraExecutors;
         this.planExecutorInfo = PlanExecutorInfo.fromStoreExecutors(this.extraExecutors);
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;
+        this.sideTasksExecutor = executor;
     }
 
     public PlanExecutorInfo getPlanExecutorInfo()
@@ -327,7 +330,7 @@ public class PlanExecutor
 
     private ExecutionState buildDefaultExecutionState(SingleExecutionPlan executionPlan, Map<String, Result> vars, PlanExecutionContext planExecutionContext)
     {
-        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit);
+        ExecutionState executionState = new ExecutionState(vars, executionPlan.templateFunctions, this.extraExecutors.collect(StoreExecutor::buildStoreExecutionState), this.isJavaCompilationAllowed, this.graphFetchBatchMemoryLimit, this.sideTasksExecutor);
 
         if (planExecutionContext != null)
         {
@@ -371,7 +374,12 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit);
+        return newPlanExecutor(isJavaCompilationAllowed, storeExecutors, graphFetchBatchMemoryLimit, null);
+    }
+
+    public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors, long graphFetchBatchMemoryLimit, Executor executor)
+    {
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.withAll(storeExecutors), graphFetchBatchMemoryLimit, executor);
     }
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Iterable<? extends StoreExecutor> storeExecutors)
@@ -386,7 +394,17 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor... storeExecutors)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return newPlanExecutor(isJavaCompilationAllowed, null, storeExecutors);
+    }
+
+    public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, Executor executor, StoreExecutor... storeExecutors)
+    {
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutors), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, executor);
+    }
+
+    public static PlanExecutor newPlanExecutor(Executor executor, StoreExecutor... storeExecutors)
+    {
+        return newPlanExecutor(DEFAULT_IS_JAVA_COMPILATION_ALLOWED, executor, storeExecutors);
     }
 
     public static PlanExecutor newPlanExecutor(StoreExecutor... storeExecutors)
@@ -396,7 +414,7 @@ public class PlanExecutor
 
     public static PlanExecutor newPlanExecutor(boolean isJavaCompilationAllowed, StoreExecutor storeExecutor)
     {
-        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutor), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
+        return new PlanExecutor(isJavaCompilationAllowed, Lists.immutable.with(storeExecutor), DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT, null);
     }
 
     public static PlanExecutor newPlanExecutor(StoreExecutor storeExecutor)

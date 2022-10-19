@@ -592,7 +592,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             finally
             {
                 relationalStoreExecutionState.getBlockConnectionContext().unlockAllBlockConnections();
-                relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync();
+                relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync(executionState.getSideTasksExecutor());
                 relationalStoreExecutionState.setBlockConnectionContext(oldBlockConnectionContext);
                 relationalStoreExecutionState.setRetainConnection(oldRetainConnectionFlag);
             }
@@ -738,7 +738,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 }
 
                 relationalStoreExecutionState.getBlockConnectionContext().unlockAllBlockConnections();
-                relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync();
+                relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync(executionState.getSideTasksExecutor());
 
                 relationalStoreExecutionState.setBlockConnectionContext(oldBlockConnectionContext);
                 relationalStoreExecutionState.setRetainConnection(oldRetainConnectionFlag);
@@ -1307,7 +1307,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     finally
                     {
                         relationalStoreExecutionState.getBlockConnectionContext().unlockAllBlockConnections();
-                        relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync();
+                        relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync(executionState.getSideTasksExecutor());
                         relationalStoreExecutionState.setBlockConnectionContext(oldBlockConnectionContext);
                         relationalStoreExecutionState.setRetainConnection(oldRetainConnectionFlag);
                     }
@@ -1706,7 +1706,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
 
             relationalStoreExecutionState.getBlockConnectionContext().unlockAllBlockConnections();
-            relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync();
+            relationalStoreExecutionState.getBlockConnectionContext().closeAllBlockConnectionsAsync(executionState.getSideTasksExecutor());
             relationalStoreExecutionState.setBlockConnectionContext(oldBlockConnectionContext);
             relationalStoreExecutionState.setRetainConnection(oldRetainConnectionFlag);
         }

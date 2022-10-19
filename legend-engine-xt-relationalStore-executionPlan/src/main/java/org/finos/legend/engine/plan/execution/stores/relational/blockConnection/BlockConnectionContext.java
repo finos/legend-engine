@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.blockConnection;
 
+import java.util.concurrent.Executor;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
@@ -68,9 +69,16 @@ public class BlockConnectionContext
         this.blockConnectionMap.values().forEach(BlockConnection::close);
     }
 
-    public void closeAllBlockConnectionsAsync()
+    public void closeAllBlockConnectionsAsync(Executor executor)
     {
-        this.blockConnectionMap.values().forEach(blockConnection -> CompletableFuture.runAsync(blockConnection::close));
+        if (executor != null)
+        {
+            this.blockConnectionMap.values().forEach(blockConnection -> CompletableFuture.runAsync(blockConnection::close, executor));
+        }
+        else
+        {
+            this.closeAllBlockConnections();
+        }
     }
 
     private BlockConnection setBlockConnection(ConnectionManagerSelector connectionManager, DatabaseConnection databaseConnection, BlockConnection blockConnection)

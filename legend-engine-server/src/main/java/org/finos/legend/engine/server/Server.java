@@ -14,17 +14,23 @@
 
 package org.finos.legend.engine.server;
 
+import com.codahale.metrics.InstrumentedExecutorService;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
+import io.dropwizard.lifecycle.ExecutorServiceManager;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.util.Duration;
 import io.federecio.dropwizard.swagger.SwaggerBundle;
 import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
 import io.prometheus.client.CollectorRegistry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
@@ -161,8 +167,20 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         ChainFixingFilterHandler.apply(environment.getApplicationContext(), serverConfiguration.filterPriorities);
 
+        String poolName = "plan-executor-side-task";
+
+        ExecutorService planExecutorService = Executors.newCachedThreadPool(
+                new BasicThreadFactory.Builder().daemon(true).namingPattern(poolName + "-%d").build());
+        environment.lifecycle().manage(new ExecutorServiceManager(planExecutorService, Duration.seconds(5), poolName));
+
+        InstrumentedExecutorService instrumentedPlanExecutorService = new InstrumentedExecutorService(
+                planExecutorService,
+                environment.metrics(),
+                poolName
+        );
+
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
-        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor, ServiceStore.build(), InMemory.build());
+        PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(instrumentedPlanExecutorService, relationalStoreExecutor, ServiceStore.build(), InMemory.build());
 
         // Session Management
         SessionTracker sessionTracker = new SessionTracker();

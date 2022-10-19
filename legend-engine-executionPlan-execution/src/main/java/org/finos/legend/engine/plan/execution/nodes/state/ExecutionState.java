@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.nodes.state;
 
 import io.opentracing.Span;
+import java.util.concurrent.Executor;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -62,6 +63,7 @@ public class ExecutionState
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
+    private final Executor executor;
 
     public ExecutionState(ExecutionState state)
     {
@@ -84,9 +86,15 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+        this.executor = state.executor;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)
+    {
+        this(res, templateFunctions, extraStates, isJavaCompilationAllowed, graphFetchBatchMemoryLimit, null);
+    }
+
+    public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit, Executor executor)
     {
         this.inAllocation = false;
         this.inLake = false;
@@ -99,6 +107,7 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+        this.executor = executor;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed)
@@ -232,5 +241,10 @@ public class ExecutionState
     public List<? extends String> getTemplateFunctions()
     {
         return Collections.unmodifiableList(this.templateFunctions);
+    }
+
+    public Executor getSideTasksExecutor()
+    {
+        return this.executor;
     }
 }
