@@ -86,7 +86,7 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndM
   let classification = $execution->classify();
   if ($classification->instanceOf(OneLevelGraphFetchSerialize),
     | success(),
-    | failure('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has exactly one level of nested objects'));
+    | failure('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1'));
 }
 
 function meta::pure::persistence::validation::validateMultiExecutionServiceAndFlatTarget(service: Service[1], execution: PureMultiExecution[1], target: FlatTarget[1]): ValidationResult[1]

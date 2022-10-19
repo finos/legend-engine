@@ -48,6 +48,7 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_t
   let persistence = TdsServiceWithMultiFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert(!$result.valid());
+  assertEq('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1', $result.reasons->at(0));
 }
 
 /**********
@@ -80,6 +81,7 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_f
   let persistence = FlatM2mServiceWithMultiFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert(!$result.valid());
+  assertEq('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1', $result.reasons->at(0));
 }
 
 /**********
@@ -98,6 +100,7 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_n
   let persistence = NestedM2mServiceWithFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert(!$result.valid());
+  assertEq('Flat target requires a service that returns a TDS or ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node', $result.reasons->at(0));
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
