@@ -29,6 +29,11 @@ meta::pure::persistence::validation::ValidationResult
     $this->match([s: Success[1] | true, f: Failure[1] | false])
   }: Boolean[1];
 
+  invalid()
+  {
+    !$this.valid();
+  }: Boolean[1];
+
   reasons()
   {
     $this->match([s: Success[1] | 'Success', f: Failure[1] | $f.errors])

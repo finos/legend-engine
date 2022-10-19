@@ -115,8 +115,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             // execute common validations
                             Root_meta_pure_persistence_validation_ValidationRuleSet<? extends Root_meta_pure_persistence_metamodel_PersistenceContext> pureValidationRuleSet = Root_meta_pure_persistence_validation_commonRules__ValidationRuleSet_1_(context.getExecutionSupport());
                             Root_meta_pure_persistence_validation_ValidationResult pureValidationResult = Root_meta_pure_persistence_validation_validate_T_1__ValidationRuleSet_1__ValidationResult_1_(purePersistenceContext, pureValidationRuleSet, context.getExecutionSupport());
-                            boolean passedCoreValidations = pureValidationResult.valid(context.getExecutionSupport());
-                            if (!passedCoreValidations)
+                            if (pureValidationResult.invalid(context.getExecutionSupport()))
                             {
                                 RichIterable<? extends String> failureReasons = pureValidationResult.reasons(context.getExecutionSupport());
                                 throw new EngineException(Iterate.makeString(failureReasons, "Core validation error(s) for persistence context [" + persistenceContext._package + "::" + persistenceContext.name + "]:\n", "\n", ""), persistenceContext.sourceInformation, EngineErrorType.COMPILATION);
