@@ -18,33 +18,37 @@ import meta::pure::persistence::test::*;
 import meta::pure::persistence::validation::*;
 
 /**********
+ * tds service tests
+ **********/
+
+/**********
  * flat graph fetch service tests
  **********/
 
 function <<test.Test>> meta::pure::persistence::test::validateTarget_flatM2mService_flatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::FlatM2mServiceWithFlatPersistence();
+  let persistence = FlatM2mServiceWithFlatPersistence();
   let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
   assert($result.valid());
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_flatM2mService_flatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::FlatM2mServiceWithFlatPersistence();
+  let persistence = FlatM2mServiceWithFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert($result.valid());
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateTarget_flatM2mService_multiFlatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::FlatM2mServiceWithMultiFlatPersistence();
+  let persistence = FlatM2mServiceWithMultiFlatPersistence();
   let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
   assert($result.valid());
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_flatM2mService_multiFlatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::FlatM2mServiceWithMultiFlatPersistence();
+  let persistence = FlatM2mServiceWithMultiFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert(!$result.valid());
 }
@@ -55,28 +59,28 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_f
 
 function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_flatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::NestedM2mServiceWithFlatPersistence();
+  let persistence = NestedM2mServiceWithFlatPersistence();
   let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
   assert($result.valid());
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_flatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::NestedM2mServiceWithFlatPersistence();
+  let persistence = NestedM2mServiceWithFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert(!$result.valid());
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence();
+  let persistence = NestedM2mServiceWithMultiFlatPersistence();
   let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
   assert($result.valid());
 }
 
 function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence();
+  let persistence = NestedM2mServiceWithMultiFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
   assert($result.valid());
 }
@@ -122,11 +126,11 @@ Class meta::pure::persistence::test::FlatOutput
 }
 
 /**********
- * database tables
+ * relational database, mapping, connection
  **********/
 
 ###Relational
-Database meta::pure::persistence::test::TestDatabase
+Database meta::pure::persistence::test::RelationalDatabase
 (
   Table FlatTable1 (
     id INTEGER PRIMARY KEY,
@@ -150,6 +154,60 @@ Database meta::pure::persistence::test::TestDatabase
     string_col VARCHAR(200)
   )
 )
+
+###Mapping
+import meta::pure::persistence::test::*;
+
+Mapping meta::pure::persistence::test::RelationalMapping
+(
+  *meta::pure::persistence::test::FlatInput: Relational
+  {
+    ~primaryKey
+    (
+      [RelationalDatabase] FlatTable1.id
+    )
+    ~mainTable [RelationalDatabase] FlatTable1
+    booleanIn: [RelationalDatabase] FlatTable1.boolean_col,
+    integerIn: [RelationalDatabase] FlatTable1.integer_col,
+    floatIn: [RelationalDatabase] FlatTable1.float_col,
+    decimalIn: [RelationalDatabase] FlatTable1.decimal_col,
+    strictDateIn: [RelationalDatabase] FlatTable1.strict_date_col,
+    dateTimeIn: [RelationalDatabase] FlatTable1.date_time_col,
+    stringIn: [RelationalDatabase] FlatTable1.string_col
+  }
+)
+
+###Pure
+import meta::pure::alloy::connections::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+
+function meta::pure::persistence::test::RelationalConnection(): Connection[1]
+{
+  ^RelationalDatabaseConnection(
+    element = meta::pure::persistence::test::RelationalDatabase,
+    type = DatabaseType.H2,
+    authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
+    datasourceSpecification = ^LocalH2DatasourceSpecification()
+  );
+}
+
+/**********
+ * tds runtime, service, persistence
+ **********/
+
+###Pure
+import meta::pure::runtime::*;
+
+function meta::pure::persistence::test::RelationalRuntime(): Runtime[1]
+{
+  ^EngineRuntime(
+    mappings = meta::pure::persistence::test::RelationalMapping,
+    connections = meta::pure::persistence::test::RelationalConnection()
+  );
+}
 
 /**********
  * flat mapping, runtime, service, persistence
@@ -263,7 +321,7 @@ function meta::pure::persistence::test::FlatM2mServiceWithFlatPersistence(): Per
           batchIdOutName = 'OUT_Z'
         )
       ),
-      sink = ^RelationalSink(database = meta::pure::persistence::test::TestDatabase),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::RelationalDatabase),
       targetShape = ^FlatTarget(
         targetName = 'FlatTable1',
         deduplicationStrategy = ^NoDeduplicationStrategy()
@@ -287,7 +345,7 @@ function meta::pure::persistence::test::FlatM2mServiceWithMultiFlatPersistence()
           batchIdOutName = 'OUT_Z'
         )
       ),
-      sink = ^RelationalSink(database = meta::pure::persistence::test::TestDatabase),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::RelationalDatabase),
       targetShape = ^MultiFlatTarget(
         modelClass = meta::pure::persistence::test::WrapperOutput,
         transactionScope = TransactionScope.ALL_TARGETS,
@@ -456,7 +514,7 @@ function meta::pure::persistence::test::NestedM2mServiceWithFlatPersistence(): P
           batchIdOutName = 'OUT_Z'
         )
       ),
-      sink = ^RelationalSink(database = meta::pure::persistence::test::TestDatabase),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::RelationalDatabase),
       targetShape = ^FlatTarget(
         targetName = 'FlatTable',
         deduplicationStrategy = ^NoDeduplicationStrategy()
@@ -480,7 +538,7 @@ function meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence
           batchIdOutName = 'OUT_Z'
         )
       ),
-      sink = ^RelationalSink(database = meta::pure::persistence::test::TestDatabase),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::RelationalDatabase),
       targetShape = ^MultiFlatTarget(
         modelClass = meta::pure::persistence::test::WrapperOutput,
         transactionScope = TransactionScope.ALL_TARGETS,
