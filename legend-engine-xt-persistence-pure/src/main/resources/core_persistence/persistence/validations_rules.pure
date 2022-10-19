@@ -86,7 +86,7 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndM
   let classification = $execution->classify();
   if ($classification->instanceOf(OneLevelGraphFetchSerialize),
     | success(),
-    | failure('Multi flat target requires a service that ends with "graphFetch()->serialize()'));
+    | failure('Multi flat target requires a service that ends with "graphFetch()->serialize()" that ne'));
 }
 
 function meta::pure::persistence::validation::validateMultiExecutionServiceAndFlatTarget(service: Service[1], execution: PureMultiExecution[1], target: FlatTarget[1]): ValidationResult[1]
@@ -164,7 +164,7 @@ function <<access.private>> meta::pure::persistence::validation::classifyFunctio
           validRootProperties = $firstLevelChildren->filter(p | $p->validRootGraphFetchRootProperty()),
           invalidRootProperties = $firstLevelChildren->filter(p | !$p->validRootGraphFetchRootProperty()),
           validLeafProperties = $secondLevelChildren->filter(p | $p->validLeafGraphFetchProperty()),
-          invalidLeafProperties = $firstLevelChildren->filter(p | !$p->validLeafGraphFetchProperty())),
+          invalidLeafProperties = $secondLevelChildren->filter(p | !$p->validLeafGraphFetchProperty())),
       | ^OtherExecutionClassification())
   );
 }

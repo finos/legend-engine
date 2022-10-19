@@ -17,18 +17,32 @@ import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::test::*;
 import meta::pure::persistence::validation::*;
 
-function <<test.Test>> meta::pure::persistence::test::validateTargetTest(): Boolean[1]
+function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_flatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::M2mPersistence();
+  let persistence = meta::pure::persistence::test::NestedM2mServiceWithFlatPersistence();
   let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
-  $result.valid();
+  assert($result.valid());
 }
 
-function <<test.Test>> meta::pure::persistence::test::validateServiceAndTargetTest(): Boolean[1]
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_flatPersistence(): Boolean[1]
 {
-  let persistence = meta::pure::persistence::test::M2mPersistence();
+  let persistence = meta::pure::persistence::test::NestedM2mServiceWithFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
-  $result.valid();
+  assert(!$result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_nestedM2mService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
 }
 
 /**********
@@ -72,7 +86,7 @@ Class meta::pure::persistence::test::FlatOutput
 }
 
 ###Mapping
-Mapping meta::pure::persistence::test::M2mMapping
+Mapping meta::pure::persistence::test::NestedM2mMapping
 (
   *meta::pure::persistence::test::WrapperOutput: Pure
   {
@@ -98,7 +112,18 @@ Mapping meta::pure::persistence::test::M2mMapping
 ###Relational
 Database meta::pure::persistence::test::M2mDatabase
 (
-  Table FlatTable (
+  Table FlatTable1 (
+    id INTEGER PRIMARY KEY,
+    boolean_col BIT,
+    integer_col INTEGER,
+    float_col DOUBLE,
+    decimal_col DECIMAL(10,2),
+    strict_date_col DATE,
+    date_time_col TIMESTAMP,
+    string_col VARCHAR(200)
+  )
+
+  Table FlatTable2 (
     id INTEGER PRIMARY KEY,
     boolean_col BIT,
     integer_col INTEGER,
@@ -129,17 +154,17 @@ import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::runtime::*;
 import meta::pure::test::assertion::*;
 
-function meta::pure::persistence::test::M2mRuntime(): Runtime[1]
+function meta::pure::persistence::test::NestedM2mRuntime(): Runtime[1]
 {
   ^EngineRuntime(
-    mappings = meta::pure::persistence::test::M2mMapping,
+    mappings = meta::pure::persistence::test::NestedM2mMapping,
     connections = ^JsonModelConnection(
       element=^ModelStore(),
       class = meta::pure::persistence::test::WrapperInput,
       url = 'executor:default'));
 }
 
-function meta::pure::persistence::test::M2mService(): Service[1]
+function meta::pure::persistence::test::NestedM2mService(): Service[1]
 {
   ^Service
   (
@@ -206,8 +231,8 @@ function meta::pure::persistence::test::M2mService(): Service[1]
           }
         }#
       ),
-      mapping = meta::pure::persistence::test::M2mMapping,
-      runtime = meta::pure::persistence::test::M2mRuntime()
+      mapping = meta::pure::persistence::test::NestedM2mMapping,
+      runtime = meta::pure::persistence::test::NestedM2mRuntime()
     ),
     test = ^SingleExecutionTest(
       data = '',
@@ -216,12 +241,12 @@ function meta::pure::persistence::test::M2mService(): Service[1]
   );
 }
 
-function meta::pure::persistence::test::M2mPersistence(): Persistence[1]
+function meta::pure::persistence::test::NestedM2mServiceWithFlatPersistence(): Persistence[1]
 {
   ^Persistence(
     documentation = 'Graph fetch m2m service into a flat target',
     trigger = ^ManualTrigger(),
-    service = meta::pure::persistence::test::M2mService(),
+    service = meta::pure::persistence::test::NestedM2mService(),
     persister = ^BatchPersister(
       ingestMode = ^UnitemporalDelta(
         mergeStrategy = ^NoDeletesMergeStrategy(),
@@ -234,6 +259,42 @@ function meta::pure::persistence::test::M2mPersistence(): Persistence[1]
       targetShape = ^FlatTarget(
         targetName = 'FlatTable',
         deduplicationStrategy = ^NoDeduplicationStrategy()
+      )
+    ),
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::NestedM2mServiceWithMultiFlatPersistence(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Graph fetch m2m service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::NestedM2mService(),
+    persister = ^BatchPersister(
+      ingestMode = ^UnitemporalDelta(
+        mergeStrategy = ^NoDeletesMergeStrategy(),
+        transactionMilestoning = ^BatchIdTransactionMilestoning(
+          batchIdInName = 'IN_Z',
+          batchIdOutName = 'OUT_Z'
+        )
+      ),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::M2mDatabase),
+      targetShape = ^MultiFlatTarget(
+        modelClass = meta::pure::persistence::test::WrapperOutput,
+        transactionScope = TransactionScope.ALL_TARGETS,
+        parts = [
+          ^MultiFlatTargetPart(
+            modelProperty = meta::pure::persistence::test::WrapperOutput.properties->filter(p | $p.name == 'flatOutput1')->first(),
+            targetName = 'FlatTable1',
+            deduplicationStrategy = ^NoDeduplicationStrategy()
+          ),
+          ^MultiFlatTargetPart(
+            modelProperty = meta::pure::persistence::test::WrapperOutput.properties->filter(p | $p.name == 'flatOutput2')->first()->toOne(),
+            targetName = 'FlatTable2',
+            deduplicationStrategy = ^NoDeduplicationStrategy()
+          )
+        ]
       )
     ),
     notifier = ^Notifier(notifyees = [])
