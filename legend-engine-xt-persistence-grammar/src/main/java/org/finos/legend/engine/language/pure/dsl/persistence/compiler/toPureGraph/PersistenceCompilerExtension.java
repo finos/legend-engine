@@ -123,7 +123,8 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
 
                             // discover and execute platform-specific validations
                             List<ValidationRuleSet<PersistenceContext>> validationRuleSets = ListIterate.collect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraValidationRuleset);
-                            validationRuleSets.forEach(validationRuleSet -> {
+                            validationRuleSets.forEach(validationRuleSet ->
+                            {
                                 ValidationResult result = validationRuleSet.validate(persistenceContext);
                                 if (result.invalid())
                                 {
