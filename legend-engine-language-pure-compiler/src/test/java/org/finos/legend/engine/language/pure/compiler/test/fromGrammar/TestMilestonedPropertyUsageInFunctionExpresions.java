@@ -89,7 +89,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all(%2022-12-12).firm.name\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___String_MANY_";
+        String WALK_TREE = "main::walkTree__String_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (((SimpleFunctionExpression) functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -120,7 +120,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all(%2022-12-12, %2022-12-13).firm.name\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___String_MANY_";
+        String WALK_TREE = "main::walkTree__String_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (((SimpleFunctionExpression) functionExpression._parametersValues().toList().get(0))._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -185,7 +185,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all(%2021-11-12, %2021-11-13)->project([x| $x.name, x| $x.firm.name], ['City name', 'name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(1);
@@ -229,7 +229,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all(%2021-11-12, %2021-11-13)->project([x| $x.firm.name + $x.firm.name], ['name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -279,7 +279,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all(%2021-11-12, %2021-11-13)->project([x| if($x.firm.name->startsWith('a'), | 'Firm' , |'Name')], ['City name', 'name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -324,7 +324,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all(%2021-11-12)->project([x| $x.firm.city(%2021-11-12)->filter(y | $y.name == '').name, x| $x.firm1.city(%2021-11-12)->filter(y | $y.name == '').name], ['City name1', 'City Name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -364,7 +364,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all()->project([x| $x.firm(%2021-11-12, %2021-11-12).city.name], ['City name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -400,7 +400,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all()->project([x| $x.firm(%2021-11-12, %2021-11-12).city.name], ['City name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -436,7 +436,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all()->project([x| $x.firm(%2021-11-12).city(%2021-11-13).name], ['City name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);
@@ -472,7 +472,7 @@ public class TestMilestonedPropertyUsageInFunctionExpresions extends TestCompila
                         "   main::Person.all()->project([x| $x.firm(%2021-11-12).city(%2021-11-13).name], ['City name'])\n" +
                         "}\n");
         PureModel pureModel = modelWithInput.getTwo();
-        String WALK_TREE = "main::walkTree___Any_MANY_";
+        String WALK_TREE = "main::walkTree__Any_MANY_";
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression functionExpression = (SimpleFunctionExpression) walkTree._expressionSequence().toList().get(0);
         LambdaFunction lambdaFunction = (LambdaFunction) ((InstanceValue) (functionExpression._parametersValues().toList().get(1)))._values().toList().get(0);

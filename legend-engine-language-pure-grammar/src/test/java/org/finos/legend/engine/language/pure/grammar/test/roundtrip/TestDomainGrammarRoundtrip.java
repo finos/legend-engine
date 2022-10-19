@@ -857,4 +857,19 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "   main::Person.all(%2020-12-12, %2020-12-13).firm(%2020-12-12, %2020-12-13)\n" +
                 "}\n");
     }
+
+    @Test
+    public void testFunctionOverloading()
+    {
+        test("function model::test(a: String[1]): String[1]\n" +
+                "{\n" +
+                "   'a'\n" +
+                "}\n" +
+                "\n" +
+                "function model::test(a: String[1], b: Integer[1]): String[1]\n" +
+                "{\n" +
+                "   'a'\n" +
+                "}" +
+                "\n");
+    }
 }
