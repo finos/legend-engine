@@ -76,9 +76,9 @@ function meta::pure::persistence::validation::validateServiceAndTarget(service: 
 function meta::pure::persistence::validation::validateSingleExecutionServiceAndFlatTarget(service: Service[1], execution: PureSingleExecution[1], target: FlatTarget[1]): ValidationResult[1]
 {
   let classification = $execution->classify();
-  if ($classification->instanceOf(FlatGraphFetchSerialize) || $classification->instanceOf(TdsExecutionClassification),
+  if ($classification->instanceOf(TdsExecutionClassification) || $classification->instanceOf(FlatGraphFetchSerialize),
     | success(),
-    | failure('Flat target requires a service that returns a TDS'));
+    | failure('Flat target requires a service that returns a TDS or ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node'));
 }
 
 function meta::pure::persistence::validation::validateSingleExecutionServiceAndMultiFlatTarget(service: Service[1], execution: PureSingleExecution[1], target: MultiFlatTarget[1]): ValidationResult[1]
@@ -86,7 +86,7 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndM
   let classification = $execution->classify();
   if ($classification->instanceOf(OneLevelGraphFetchSerialize),
     | success(),
-    | failure('Multi flat target requires a service that ends with "graphFetch()->serialize()" that ne'));
+    | failure('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has exactly one level of nested objects'));
 }
 
 function meta::pure::persistence::validation::validateMultiExecutionServiceAndFlatTarget(service: Service[1], execution: PureMultiExecution[1], target: FlatTarget[1]): ValidationResult[1]
@@ -139,14 +139,13 @@ function meta::pure::persistence::validation::classify(execution: PureSingleExec
   $execution.func.expressionSequence->evaluateAndDeactivate()->last()->match([
     fe: FunctionExpression[1] | if ($fe.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
       | classifyFunctionExpression($execution.func, $fe),
-      | ^OtherExecutionClassification()
+      | let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
+        $plan.rootExecutionNode.resultType->match([
+          tds: TDSResultType[1] | ^TdsExecutionClassification(),
+          any: Any[1] | ^OtherExecutionClassification()
+        ]);
     ),
-    any: Any[1] |
-      let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
-      $plan.rootExecutionNode.resultType->match([
-        tds: TDSResultType[1] | ^TdsExecutionClassification(),
-        any: Any[1] | ^OtherExecutionClassification()
-      ]);
+    any: Any[1] | ^OtherExecutionClassification()
   ]);
 }
 

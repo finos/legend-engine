@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::functions::collection::*;
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::test::*;
@@ -20,6 +21,34 @@ import meta::pure::persistence::validation::*;
 /**********
  * tds service tests
  **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_tdsService_flatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_tdsService_flatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateTarget_tdsService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithMultiFlatPersistence();
+  let result = validateTarget($persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_tdsService_multiFlatPersistence(): Boolean[1]
+{
+  let persistence = TdsServiceWithMultiFlatPersistence();
+  let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  assert(!$result.valid());
+}
 
 /**********
  * flat graph fetch service tests
@@ -86,13 +115,14 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_n
 }
 
 /**********
- * model classes
+ * classes
  **********/
 
 Class meta::pure::persistence::test::WrapperInput
 {
   flatInput1: FlatInput[1];
   flatInput2: FlatInput[1];
+  flatInput3: FlatInput[1];
 }
 
 Class meta::pure::persistence::test::FlatInput
@@ -111,6 +141,7 @@ Class meta::pure::persistence::test::WrapperOutput
 {
   flatOutput1: FlatOutput[1];
   flatOutput2: FlatOutput[1];
+  flatOutput3: FlatOutput[1];
 }
 
 Class meta::pure::persistence::test::FlatOutput
@@ -144,6 +175,17 @@ Database meta::pure::persistence::test::RelationalDatabase
   )
 
   Table FlatTable2 (
+    id INTEGER PRIMARY KEY,
+    boolean_col BIT,
+    integer_col INTEGER,
+    float_col DOUBLE,
+    decimal_col DECIMAL(10,2),
+    strict_date_col DATE,
+    date_time_col TIMESTAMP,
+    string_col VARCHAR(200)
+  )
+
+  Table FlatTable3 (
     id INTEGER PRIMARY KEY,
     boolean_col BIT,
     integer_col INTEGER,
@@ -199,13 +241,114 @@ function meta::pure::persistence::test::RelationalConnection(): Connection[1]
  **********/
 
 ###Pure
+import meta::legend::service::metamodel::*;
+import meta::pure::mapping::*;
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::notifier::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::deduplication::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::*;
+import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
+import meta::pure::persistence::metamodel::persister::sink::*;
+import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::runtime::*;
+import meta::pure::test::assertion::*;
 
 function meta::pure::persistence::test::RelationalRuntime(): Runtime[1]
 {
   ^EngineRuntime(
     mappings = meta::pure::persistence::test::RelationalMapping,
     connections = meta::pure::persistence::test::RelationalConnection()
+  );
+}
+
+function meta::pure::persistence::test::TdsService(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = | meta::pure::persistence::test::FlatInput.all()->project(
+        [
+          x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn
+        ],
+        [
+          'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'
+        ]
+      ),
+      mapping = meta::pure::persistence::test::RelationalMapping,
+      runtime = meta::pure::persistence::test::RelationalRuntime()
+    ),
+    test = ^SingleExecutionTest(
+      data = '',
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
+    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+  );
+}
+
+function meta::pure::persistence::test::TdsServiceWithFlatPersistence(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::TdsService(),
+    persister = ^BatchPersister(
+      ingestMode = ^UnitemporalDelta(
+        mergeStrategy = ^NoDeletesMergeStrategy(),
+        transactionMilestoning = ^BatchIdTransactionMilestoning(
+          batchIdInName = 'IN_Z',
+          batchIdOutName = 'OUT_Z'
+        )
+      ),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::RelationalDatabase),
+      targetShape = ^FlatTarget(
+        targetName = 'FlatTable2',
+        deduplicationStrategy = ^NoDeduplicationStrategy()
+      )
+    ),
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::TdsServiceWithMultiFlatPersistence(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::TdsService(),
+    persister = ^BatchPersister(
+      ingestMode = ^UnitemporalDelta(
+        mergeStrategy = ^NoDeletesMergeStrategy(),
+        transactionMilestoning = ^BatchIdTransactionMilestoning(
+          batchIdInName = 'IN_Z',
+          batchIdOutName = 'OUT_Z'
+        )
+      ),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::RelationalDatabase),
+      targetShape = ^MultiFlatTarget(
+        modelClass = meta::pure::persistence::test::WrapperOutput,
+        transactionScope = TransactionScope.ALL_TARGETS,
+        parts = [
+          ^MultiFlatTargetPart(
+            modelProperty = meta::pure::persistence::test::WrapperOutput.properties->filter(p | $p.name == 'flatOutput2')->first()->toOne(),
+            targetName = 'FlatTable2',
+            deduplicationStrategy = ^NoDeduplicationStrategy()
+          ),
+          ^MultiFlatTargetPart(
+            modelProperty = meta::pure::persistence::test::WrapperOutput.properties->filter(p | $p.name == 'flatOutput3')->first()->toOne(),
+            targetName = 'FlatTable3',
+            deduplicationStrategy = ^NoDeduplicationStrategy()
+          )
+        ]
+      )
+    ),
+    notifier = ^Notifier(notifyees = [])
   );
 }
 
