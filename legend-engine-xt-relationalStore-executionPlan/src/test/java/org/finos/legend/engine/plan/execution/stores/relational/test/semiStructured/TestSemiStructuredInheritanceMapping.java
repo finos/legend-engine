@@ -28,7 +28,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtBaseClass()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtBaseClass", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address Name, String, \"\", \"\")]\n" +
@@ -38,7 +38,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtBaseClass", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtBaseClass__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,A1\n" +
                 "John,A1\n" +
                 "John,A1\n" +
@@ -51,7 +51,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtSubClass()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClass", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n" +
@@ -61,7 +61,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClass", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClass__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1\n" +
                 "John,1\n" +
                 "John,1\n" +
@@ -75,7 +75,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtSubClassNested()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNested", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
@@ -85,7 +85,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNested", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNested__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
@@ -98,7 +98,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
     @Test
     public void testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions()
     {
-        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions", snowflakeMapping, snowflakeRuntime);
+        String snowflakePlan = this.buildExecutionPlanString("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
         String snowflakeExpected = "Relational\n" +
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
@@ -108,7 +108,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 ")\n";
         Assert.assertEquals(snowflakeExpected, snowflakePlan);
 
-        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions", h2Mapping, h2Runtime);
+        String h2Result = this.executeFunction("inheritance::semiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions__TabularDataSet_1_", h2Mapping, h2Runtime);
         Assert.assertEquals("Peter,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +
                 "John,1,s1,c1,s1\n" +

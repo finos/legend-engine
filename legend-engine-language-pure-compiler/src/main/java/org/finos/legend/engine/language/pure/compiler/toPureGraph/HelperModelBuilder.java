@@ -252,15 +252,7 @@ public class HelperModelBuilder
      */
     public static String getSignature(Function function)
     {
-        return getFunctionNameWithoutSignature(function) + getFunctionSignatureSuffix(function);
-    }
-
-
-    private static String getFunctionSignatureSuffix(Function function)
-    {
-        return "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
-                // TODO: do we have to take care of void return type ~ Nil?
-                + "__" + function.returnType + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+        return getFunctionNameWithoutSignature(function) + terseSignatureSuffix(function);
     }
 
     public static String getFunctionNameWithoutSignature(Function function)
@@ -279,10 +271,10 @@ public class HelperModelBuilder
 
     private static String terseSignatureSuffix(Function function)
     {
-        return "_" + LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature =  LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
-
+        return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }
 
 

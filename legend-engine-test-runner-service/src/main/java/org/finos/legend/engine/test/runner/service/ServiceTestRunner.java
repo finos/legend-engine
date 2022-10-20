@@ -172,9 +172,19 @@ public class ServiceTestRunner
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Single Pure Tests And Run").startActive(true))
             {
-                List<TestContainer> asserts = ((SingleExecutionTest) service.test).asserts;
-                String noAssertMessage = "No test assert found !!";
-                return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, ((SingleExecutionTest) service.test).data, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
+                SingleExecutionTest test = (SingleExecutionTest) service.test;
+                List<TestContainer> asserts = Collections.emptyList();
+                String testData = null;
+                String noAssertMessage = "No tests found !!";
+                // In some 'legacy' code paths, test is null.
+                if (test != null)
+                {
+                    testData = test.data;
+                    asserts = test.asserts;
+                    noAssertMessage = "No test assert found !!";
+
+                }
+                return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, testData, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
             }
         }
         else
