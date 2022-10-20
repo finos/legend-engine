@@ -196,8 +196,7 @@ class NontemporalDeltaTest extends BaseTest
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
     }
