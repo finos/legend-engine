@@ -19,7 +19,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.IPersistenceCompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
-import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRule;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.cloud.context.AwsGluePersistencePlatform;
@@ -34,13 +33,9 @@ public class PersistenceCloudCompilerExtension implements IPersistenceCompilerEx
     public static final ValidationRuleSet<PersistenceContext> VALIDATION_RULE_SET = new ValidationRuleSet<>(
             "AWS Glue",
             context -> context.platform instanceof AwsGluePersistencePlatform,
-            Collections.singletonList(context ->
-            {
-                AwsGluePersistencePlatform platform = ((AwsGluePersistencePlatform) context.platform);
-                return platform.dataProcessingUnits < 2
-                        ? ValidationResult.failure("Data processing units value must be at least 2")
-                        : ValidationResult.success();
-            }));
+            Collections.singletonList(context -> ((AwsGluePersistencePlatform) context.platform).dataProcessingUnits < 2
+                    ? ValidationResult.failure("Data processing units value must be at least 2")
+                    : ValidationResult.success()));
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
