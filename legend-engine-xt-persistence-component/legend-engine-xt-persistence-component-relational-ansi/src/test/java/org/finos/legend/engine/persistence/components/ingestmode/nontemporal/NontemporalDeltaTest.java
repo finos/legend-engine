@@ -471,7 +471,7 @@ public class NontemporalDeltaTest extends IngestModeTest
                 "stage.\"digest\" " +
                 "FROM \"mydb\".\"staging\" as stage " +
                 "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
-                "AND (sink.\"digest\" = stage.\"digest\")" + 
+                "AND (sink.\"digest\" = stage.\"digest\") " + 
                 "AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
