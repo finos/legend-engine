@@ -467,9 +467,15 @@ public class NontemporalDeltaTest extends IngestModeTest
                 "(sink.\"digest\" = stage.\"digest\"))))";
 
         String deleteSql = "DELETE FROM \"mydb\".\"main\" as sink " +
-                "WHERE ((sink.\"id\" = stage.\"id\") " +
-                "AND (sink.\"name\" = stage.\"name\")) " +
-                "AND (stage.\"delete_indicator\" IN ('yes','1','true'))";
+                "WHERE EXISTS (SELECT " +
+                "stage.\"id\"," +
+                "stage.\"name\"," +
+                "stage.\"amount\"," +
+                "stage.\"biz_date\"," +
+                "stage.\"digest\" " +
+                "FROM \"mydb\".\"staging\" as stage " +
+                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
+                "AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
