@@ -217,15 +217,15 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
 
         Root_meta_pure_persistence_metamodel_PersistenceTestBatch pureTestBatch = new Root_meta_pure_persistence_metamodel_PersistenceTestBatch_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::PersistenceTestBatch"));
 
-        if (batch.assertions == null)
+        if (batch.assertions.isEmpty())
         {
-            throw new EngineException("Persistence TestBatch shouldn't have null assert", batch.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Persistence TestBatch must include asserts", batch.sourceInformation, EngineErrorType.COMPILATION);
         }
         pureTestBatch._assertions(ListIterate.collect(batch.assertions, assertion -> assertion.accept(new TestAssertionFirstPassBuilder(context, processingContext))));
 
         if (batch.testData == null)
         {
-            throw new EngineException("Persistence TestBatch shouldn't have null test data", batch.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Persistence TestBatch must include test data", batch.sourceInformation, EngineErrorType.COMPILATION);
         }
         pureTestBatch._testData(HelperPersistenceBuilder.processPersistenceTestBatchData(batch.testData, context, processingContext));
 
