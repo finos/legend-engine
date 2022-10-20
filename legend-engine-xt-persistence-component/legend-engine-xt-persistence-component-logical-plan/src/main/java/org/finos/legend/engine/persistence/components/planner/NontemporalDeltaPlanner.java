@@ -112,7 +112,7 @@ class NontemporalDeltaPlanner extends Planner
         // Op2: Delete data from main table if delete indicator is present & match
         if (this.deleteIndicatorField.isPresent() && this.deleteIndicatorIsSetCondition.isPresent())
         {
-            Delete delete = getDeleteOperation();
+            Delete delete = getDeleteOperation(digestMatchCondition);
             operations.add(delete);
         }
 
@@ -120,9 +120,9 @@ class NontemporalDeltaPlanner extends Planner
     }
 
     /*
-        DELETE FROM main_table WHERE EXIST (SELECT * FROM staging_table WHERE pk_match AND staging.delete_indicator_is_match)
+        DELETE FROM main_table WHERE EXIST (SELECT * FROM staging_table WHERE pk_match AND digest_match AND staging.delete_indicator_is_match)
      */
-    private Delete getDeleteOperation()
+    private Delete getDeleteOperation(Condition digestMatchCondition)
     {
         List<Value> stagingFields = stagingDataset().schemaReference().fieldValues()
                 .stream()
@@ -135,7 +135,7 @@ class NontemporalDeltaPlanner extends Planner
                     .source(Selection.builder()
                         .source(stagingDataset())
                         .addAllFields(stagingFields)
-                        .condition(And.builder().addConditions(this.pkMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
+                        .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
                         .build())
                     .build())
                 .build();
@@ -274,10 +274,7 @@ class NontemporalDeltaPlanner extends Planner
         {
             if (this.deleteIndicatorField.isPresent() && this.deleteIndicatorIsSetCondition.isPresent() && !options().cleanupStagingData())
             {
-                List<Value> stagingFields = stagingDataset().schemaReference().fieldValues()
-                        .stream()
-                        .filter(field -> this.deleteIndicatorField.isPresent() ? !field.fieldName().equals(this.deleteIndicatorField.get()) : !field.fieldName().isEmpty())
-                        .collect(Collectors.toList());
+                Condition digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
 
                 //Rows Deleted = rows removed(hard-deleted) from sink table
                 preRunStatisticsResult.put(
@@ -288,7 +285,7 @@ class NontemporalDeltaPlanner extends Planner
                                                 Exists.builder()
                                                     .source(Selection.builder()
                                                         .source(mainDataset())
-                                                        .condition(this.pkMatchCondition)
+                                                        .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
                                                         .build()).build()).build(),
                                         ROWS_DELETED.get()))
                                 .build());
