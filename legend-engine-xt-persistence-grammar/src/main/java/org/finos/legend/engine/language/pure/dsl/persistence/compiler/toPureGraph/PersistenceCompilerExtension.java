@@ -118,7 +118,10 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             if (pureValidationResult.invalid(context.getExecutionSupport()))
                             {
                                 RichIterable<? extends String> failureReasons = pureValidationResult.reasons(context.getExecutionSupport());
-                                throw new EngineException(Iterate.makeString(failureReasons, "Core validation error(s) for persistence context [" + persistenceContext._package + "::" + persistenceContext.name + "]:\n", "\n", ""), persistenceContext.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException(
+                                        String.format("Core validation error(s) for persistence context [%s]: %s", persistenceContext._package + "::" + persistenceContext.name, failureReasons),
+                                        persistenceContext.sourceInformation,
+                                        EngineErrorType.COMPILATION);
                             }
 
                             // discover and execute platform-specific validations
@@ -129,7 +132,7 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                                 if (result.invalid())
                                 {
                                     throw new EngineException(
-                                            String.format("[" + validationRuleSet.name() + "] platform validation error(s) for persistence context [%s]: %s", persistenceContext._package + "::" + persistenceContext.name, result.reasons()),
+                                            String.format("%s platform validation error(s) for persistence context [%s]: %s", validationRuleSet.name(), persistenceContext._package + "::" + persistenceContext.name, result.reasons()),
                                             persistenceContext.sourceInformation,
                                             EngineErrorType.COMPILATION);
                                 }

@@ -197,4 +197,132 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
         Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform awsGluePlatform = (Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform) persistencePlatform;
         assertEquals(10, awsGluePlatform._dataProcessingUnits());
     }
+    @Test
+    public void persistencePlatformDataProcessingUnitsValidationFailure()
+    {
+        Pair<PureModelContextData, PureModel> result = test("Class test::Person\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::ServiceResult\n" +
+                "{\n" +
+                "   deleted: String[1];\n" +
+                "   dateTimeIn: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::Mapping (" +
+                "  *test::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [test::TestDatabase] personTable.ID\n" +
+                "    )\n" +
+                "    ~mainTable [test::TestDatabase] personTable\n" +
+                "    name: [test::TestDatabase] personTable.NAME\n" +
+                "  }" +
+                ")\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::Service \n" +
+                "{\n" +
+                "  pattern : 'test';\n" +
+                "  documentation : 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: test::Person.all()->project([x | $x.name], ['Name']);\n" +
+                "    mapping: test::Mapping;\n" +
+                "    runtime:\n" +
+                "    #{\n" +
+                "      mappings: [test::Mapping];" +
+                "      connections: [" +
+                "        test::TestDatabase: [connection1: test::ServiceConnection]\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'test';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "###Relational\n" +
+                "Database test::TestDatabase\n" +
+                "(\n" +
+                "  Table personTable\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(100)\n" +
+                "  )\n" +
+                ")" +
+                "\n" +
+                "###Connection" +
+                "\n" +
+                "RelationalDatabaseConnection test::ServiceConnection\n" +
+                "{\n" +
+                "  store: test::TestDatabase;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: Test;\n" +
+                "}\n" +
+                "\n" +
+                "RelationalDatabaseConnection test::SinkConnection\n" +
+                "{\n" +
+                "  store: test::TestDatabase;\n" +
+                "  type: MemSQL;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: Test;\n" +
+                "}\n" +
+                "\n" +
+                "###Persistence\n" +
+                "\n" +
+                "PersistenceContext test::TestPersistenceContext \n" +
+                "\n" +
+                "{\n" +
+                "  persistence: test::TestPersistence;\n" +
+                "  platform: AwsGlue\n" +
+                "  #{\n" +
+                "    dataProcessingUnits: 1;\n" +
+                "  }#;\n" +
+                "}\n" +
+                "\n" +
+                "Persistence test::TestPersistence \n" +
+                "{\n" +
+                "  doc: 'This is test documentation.';\n" +
+                "  trigger: Manual;\n" +
+                "  service: test::Service;\n" +
+                "  persister: Batch\n" +
+                "  {\n" +
+                "    sink: Relational\n" +
+                "    {\n" +
+                "      database: test::TestDatabase;" +
+                "    }\n" +
+                "    ingestMode: UnitemporalDelta\n" +
+                "    {\n" +
+                "      mergeStrategy: NoDeletes;\n" +
+                "      transactionMilestoning: DateTime\n" +
+                "      {\n" +
+                "        dateTimeInName: 'IN_Z';\n" +
+                "        dateTimeOutName: 'OUT_Z';\n" +
+                "        derivation: SourceSpecifiesInDateTime\n" +
+                "        {\n" +
+                "          sourceDateTimeInField: 'dateTimeIn';\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "    targetShape: Flat\n" +
+                "    {\n" +
+                "      targetName: 'TestDataset1';\n" +
+                "      modelClass: test::ServiceResult;\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n", "COMPILATION error at [78:1-86:1]: AWS Glue platform validation error(s) for persistence context [test::TestPersistenceContext]: [Data processing units value must be at least 2]");
+    }
 }

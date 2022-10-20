@@ -18,10 +18,11 @@ import org.eclipse.collections.impl.utility.Iterate;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class ValidationRuleSet<T>
 {
-    private static final ValidationRuleSet<Object> EMPTY = new ValidationRuleSet<>("EMPTY", Collections.emptyList());
+    private static final ValidationRuleSet<Object> EMPTY = new ValidationRuleSet<>("EMPTY", x -> true, Collections.emptyList());
 
     @SuppressWarnings("unchecked")
     public static <R> ValidationRuleSet<R> empty()
@@ -30,11 +31,13 @@ public class ValidationRuleSet<T>
     }
 
     private final String name;
+    private final Predicate<T> filter;
     private final List<ValidationRule<T>> rules;
 
-    public ValidationRuleSet(String name, List<ValidationRule<T>> rules)
+    public ValidationRuleSet(String name, Predicate<T> filter, List<ValidationRule<T>> rules)
     {
         this.name = name;
+        this.filter = filter;
         this.rules = rules;
     }
 
@@ -45,6 +48,8 @@ public class ValidationRuleSet<T>
 
     public ValidationResult validate(T object)
     {
-        return Iterate.injectInto(ValidationResult.success(), rules, (result, rule) -> result.combine(rule.execute(object)));
+        return filter.test(object)
+                ? Iterate.injectInto(ValidationResult.success(), rules, (result, rule) -> result.combine(rule.execute(object)))
+                : ValidationResult.success();
     }
 }
