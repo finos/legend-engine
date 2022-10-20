@@ -197,6 +197,7 @@ public class TestPersistenceCloudCompilationFromGrammar extends TestCompilationF
         Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform awsGluePlatform = (Root_meta_external_persistence_aws_metamodel_AwsGluePersistencePlatform) persistencePlatform;
         assertEquals(10, awsGluePlatform._dataProcessingUnits());
     }
+
     @Test
     public void persistencePlatformDataProcessingUnitsValidationFailure()
     {
