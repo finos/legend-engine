@@ -366,11 +366,9 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         List<String> expectedSQL = new ArrayList<>();
         String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
-        String rowsDeleted = "SELECT 0 as rowsDeleted";
         String rowsTerminated = "SELECT 0 as rowsTerminated";
 
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
     }
 
@@ -403,11 +401,9 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         GeneratorResult operations = generator.generateOperations(datasets);
         String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
-        String rowsDeleted = "SELECT 0 as rowsDeleted";
         String rowsTerminated = "SELECT 0 as rowsTerminated";
 
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
 
         List<String> postActionsSql = operations.postActionsSql();
@@ -475,6 +471,7 @@ public class NontemporalDeltaTest extends IngestModeTest
                 "stage.\"digest\" " +
                 "FROM \"mydb\".\"staging\" as stage " +
                 "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
+                "AND (sink.\"digest\" = stage.\"digest\") + 
                 "AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
 
         Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
