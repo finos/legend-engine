@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-public class UnitInstance extends ValueSpecification
+public class UnitInstance extends DataTypeValueSpecification
 {
     public String unitType;
     public Long unitValue;

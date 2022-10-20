@@ -14,13 +14,30 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
+import java.io.IOException;
+
+@JsonDeserialize(using = CLatestDate.CLatestDateDeserializer.class)
 public class CLatestDate extends CDate
 {
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class CLatestDateDeserializer extends JsonDeserializer<ValueSpecification>
+    {
+        @Override
+        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CLatestDate());
+        }
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,13 +14,46 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
+
+import java.io.IOException;
+
+@Deprecated
+@JsonDeserialize(using = HackedClass.HackedClassDeserializer.class)
 
 public class HackedClass extends PackageableElementPtr
 {
+    private HackedClass()
+    {
+    }
+
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class HackedClassDeserializer extends JsonDeserializer<ValueSpecification>
+    {
+        @Override
+        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            JsonNode name = node.get("fullPath");
+            ValueSpecification result = new GenericTypeInstance(name.asText());
+            JsonNode sourceInformation = node.get("sourceInformation");
+            if (sourceInformation != null)
+            {
+                result.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+            }
+            return result;
+        }
     }
 }

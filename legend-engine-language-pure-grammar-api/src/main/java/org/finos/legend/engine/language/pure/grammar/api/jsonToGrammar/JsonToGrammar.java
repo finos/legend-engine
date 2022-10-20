@@ -24,7 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.pac4j.core.profile.CommonProfile;
@@ -71,7 +71,7 @@ public class JsonToGrammar extends GrammarAPI
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammar(graphFetchTree, renderStyle, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), pm, "Json to Grammar : Graph Fetch");
+        return jsonToGrammar(graphFetchTree, renderStyle, (vs, renderStyle1) -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build().processGraphFetchTree(vs, 0), pm, "Json to Grammar : Graph Fetch");
     }
 
     @POST
@@ -84,7 +84,7 @@ public class JsonToGrammar extends GrammarAPI
                                     @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         PureGrammarComposerExtensionLoader.logExtensionList();
-        return jsonToGrammarBatch(renderStyle, graphFetchTrees, (vs, renderStyle1) -> vs.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build()), pm, "Json to Grammar : Graph Fetch Batch");
+        return jsonToGrammarBatch(renderStyle, graphFetchTrees, (vs, renderStyle1) -> DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(renderStyle1).build().processGraphFetchTree(vs, 0), pm, "Json to Grammar : Graph Fetch Batch");
     }
 
     @POST
