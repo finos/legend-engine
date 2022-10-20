@@ -24,6 +24,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.GraphFetchTreeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -73,6 +75,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class DomainParseTreeWalker
@@ -377,7 +380,6 @@ public class DomainParseTreeWalker
     private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function visitFunction(DomainParserGrammar.FunctionDefinitionContext ctx)
     {
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function func = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function();
-        func.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         func._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         func.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         func.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
@@ -395,6 +397,7 @@ public class DomainParseTreeWalker
         func.returnType = ctx.functionTypeSignature().type().getText();
         func.returnMultiplicity = this.buildMultiplicity(ctx.functionTypeSignature().multiplicity().multiplicityArgument());
         func.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        func.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier()) + HelperValueSpecificationGrammarComposer.getFunctionSignature(func);
         return func;
     }
 

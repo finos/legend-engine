@@ -254,7 +254,7 @@ public class HelperValueSpecificationGrammarComposer
         return fn._package == null || fn._package.isEmpty() ? name : fn._package + "::" + name;
     }
 
-    private static String getFunctionSignature(Function function)
+    public static String getFunctionSignature(Function function)
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";

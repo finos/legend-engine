@@ -53,7 +53,7 @@ public class TestRoundTripWithPureTransformation
     {
         String pureFunctionCode = "function test::package::newClassWithConstraint(c: meta::legend::test::model::model::ClassWithConstraint[1]): meta::legend::test::model::model::ClassWithConstraint[1]\n{\n" + body + "}";
         PureModel pm = compileIntoPureModel(pureFunctionCode);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> pureFunction = pm.getConcreteFunctionDefinition_safe("test::package::newClassWithConstraint_meta::legend::test::model::model::ClassWithConstraint_1__meta::legend::test::model::model::ClassWithConstraint_1_");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> pureFunction = pm.getConcreteFunctionDefinition_safe("test::package::newClassWithConstraint_ClassWithConstraint_1__ClassWithConstraint_1_");
         Function pureFunctionAsPureEngineProtocol = transformPureFunctionToPureProtocolViaPure(pureFunction, pm.getExecutionSupport());
         String pureCodeViaEngineComposer = pureFunctionAsPureEngineProtocol.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build());
         Assert.assertEquals(pureFunctionCode, pureCodeViaEngineComposer);
