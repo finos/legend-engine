@@ -22,7 +22,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -70,8 +69,9 @@ public interface IPersistenceCompilerExtension extends CompilerExtension
         return Collections.emptyList();
     }
 
-    default ValidationRuleSet<PersistenceContext> getExtraValidationRuleset()
+    default ValidationRuleSet<ValidationContext> getExtraValidationRuleset()
     {
         return ValidationRuleSet.empty();
     }
+
 }

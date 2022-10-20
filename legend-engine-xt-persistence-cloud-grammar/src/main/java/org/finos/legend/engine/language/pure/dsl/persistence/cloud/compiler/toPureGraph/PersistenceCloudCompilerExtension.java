@@ -18,9 +18,9 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.IPersistenceCompilerExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.ValidationContext;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.cloud.context.AwsGluePersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
@@ -30,10 +30,10 @@ import java.util.List;
 
 public class PersistenceCloudCompilerExtension implements IPersistenceCompilerExtension
 {
-    public static final ValidationRuleSet<PersistenceContext> VALIDATION_RULE_SET = new ValidationRuleSet<>(
+    public static final ValidationRuleSet<ValidationContext> VALIDATION_RULE_SET = new ValidationRuleSet<>(
             "AWS Glue",
-            context -> context.platform instanceof AwsGluePersistencePlatform,
-            Collections.singletonList(context -> ((AwsGluePersistencePlatform) context.platform).dataProcessingUnits < 2
+            context -> context.persistenceContextProtocol().platform instanceof AwsGluePersistencePlatform,
+            Collections.singletonList(context -> ((AwsGluePersistencePlatform) context.persistenceContextProtocol().platform).dataProcessingUnits < 2
                     ? ValidationResult.failure("Data processing units value must be at least 2")
                     : ValidationResult.success()));
 
@@ -57,7 +57,7 @@ public class PersistenceCloudCompilerExtension implements IPersistenceCompilerEx
     }
 
     @Override
-    public ValidationRuleSet<PersistenceContext> getExtraValidationRuleset()
+    public ValidationRuleSet<ValidationContext> getExtraValidationRuleset()
     {
         return VALIDATION_RULE_SET;
     }

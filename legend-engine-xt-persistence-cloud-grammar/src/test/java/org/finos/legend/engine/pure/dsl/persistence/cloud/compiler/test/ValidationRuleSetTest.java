@@ -15,6 +15,7 @@
 package org.finos.legend.engine.pure.dsl.persistence.cloud.compiler.test;
 
 import org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph.PersistenceCloudCompilerExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.ValidationContext;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
@@ -29,8 +30,8 @@ public class ValidationRuleSetTest
     @Test
     public void dpuCountEqualsMinimum()
     {
-        ValidationRuleSet<PersistenceContext> ruleSet = PersistenceCloudCompilerExtension.VALIDATION_RULE_SET;
-        PersistenceContext context = createPersistenceContextWithDpuCount(2);
+        ValidationRuleSet<ValidationContext> ruleSet = PersistenceCloudCompilerExtension.VALIDATION_RULE_SET;
+        ValidationContext context = createPersistenceContextWithDpuCount(2);
 
         assertTrue(ruleSet.validate(context).valid());
     }
@@ -38,8 +39,8 @@ public class ValidationRuleSetTest
     @Test
     public void dpuCountLessThanMinimum()
     {
-        ValidationRuleSet<PersistenceContext> ruleSet = PersistenceCloudCompilerExtension.VALIDATION_RULE_SET;
-        PersistenceContext context = createPersistenceContextWithDpuCount(1);
+        ValidationRuleSet<ValidationContext> ruleSet = PersistenceCloudCompilerExtension.VALIDATION_RULE_SET;
+        ValidationContext context = createPersistenceContextWithDpuCount(1);
 
         ValidationResult result = ruleSet.validate(context);
         assertTrue(result.invalid());
@@ -50,18 +51,19 @@ public class ValidationRuleSetTest
     @Test
     public void dpuCountGreaterThanMinimum()
     {
-        ValidationRuleSet<PersistenceContext> ruleSet = PersistenceCloudCompilerExtension.VALIDATION_RULE_SET;
-        PersistenceContext context = createPersistenceContextWithDpuCount(10);
+        ValidationRuleSet<ValidationContext> ruleSet = PersistenceCloudCompilerExtension.VALIDATION_RULE_SET;
+        ValidationContext context = createPersistenceContextWithDpuCount(10);
 
         assertTrue(ruleSet.validate(context).valid());
     }
 
-    private static PersistenceContext createPersistenceContextWithDpuCount(int dataProcessingUnits)
+    private static ValidationContext createPersistenceContextWithDpuCount(int dataProcessingUnits)
     {
         AwsGluePersistencePlatform platform = new AwsGluePersistencePlatform();
         platform.dataProcessingUnits = dataProcessingUnits;
         PersistenceContext context = new PersistenceContext();
         context.platform = platform;
-        return context;
+
+        return new ValidationContext(null, context, null);
     }
 }

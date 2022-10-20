@@ -18,8 +18,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
@@ -125,10 +123,11 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
                             }
 
                             // discover and execute platform-specific validations
-                            List<ValidationRuleSet<PersistenceContext>> validationRuleSets = ListIterate.collect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraValidationRuleset);
+                            ValidationContext validationContext = new ValidationContext(purePersistenceContext, persistenceContext, context);
+                            List<ValidationRuleSet<ValidationContext>> validationRuleSets = ListIterate.collect(IPersistenceCompilerExtension.getExtensions(), IPersistenceCompilerExtension::getExtraValidationRuleset);
                             validationRuleSets.forEach(validationRuleSet ->
                             {
-                                ValidationResult result = validationRuleSet.validate(persistenceContext);
+                                ValidationResult result = validationRuleSet.validate(validationContext);
                                 if (result.invalid())
                                 {
                                     throw new EngineException(
