@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
@@ -26,26 +27,23 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class IngestModeMapper
 {
     public static final String DIGEST_FIELD_DEFAULT = "DIGEST";
 
+    public static String STAGING_SUFFIX = "_staging";
+
     /*
     Mapper from Persistence model to IngestMode object
      */
-    public static org.finos.legend.engine.persistence.components.ingestmode.IngestMode from(Persistence persistence, Dataset mainDataSet,
-                                                                     Dataset stagingDataset) throws Exception
+    public static org.finos.legend.engine.persistence.components.ingestmode.IngestMode from(Persistence persistence) throws Exception
     {
         IngestMode ingestMode = getIngestMode(persistence);
         IngestModeType mode = getIngestModeName(ingestMode);
+
         switch (mode)
         {
             case NontemporalSnapshot:
@@ -62,6 +60,32 @@ public class IngestModeMapper
                 return BitemporalSnapshotMapper.from((BitemporalSnapshot) ingestMode);
             case BitemporalDelta:
                 return BitemporalDeltaMapper.from((BitemporalDelta) ingestMode);
+            default:
+                throw new Exception("Unsupported Ingest mode");
+        }
+    }
+
+    public static Datasets enrichAndDeriveDatasets(Persistence persistence, Dataset mainDataSet, String testData) throws Exception
+    {
+        IngestMode ingestMode = getIngestMode(persistence);
+        IngestModeType mode = getIngestModeName(ingestMode);
+
+        switch (mode)
+        {
+            case NontemporalSnapshot:
+                return NontemporalSnapshotMapper.enrichAndDeriveDatasets((NontemporalSnapshot) ingestMode, mainDataSet, testData);
+            case AppendOnly:
+                return AppendOnlyMapper.enrichAndDeriveDatasets((AppendOnly) ingestMode, mainDataSet, testData);
+            case NontemporalDelta:
+                return NontemporalDeltaMapper.enrichAndDeriveDatasets((NontemporalDelta) ingestMode, mainDataSet, testData);
+            case UnitemporalSnapshot:
+                return UnitemporalSnapshotMapper.enrichAndDeriveDatasets((UnitemporalSnapshot) ingestMode, mainDataSet, testData);
+            case UnitemporalDelta:
+                return UnitemporalDeltaMapper.enrichAndDeriveDatasets((UnitemporalDelta) ingestMode, mainDataSet, testData);
+            case BitemporalSnapshot:
+                return BitemporalSnapshotMapper.enrichAndDeriveDatasets((BitemporalSnapshot) ingestMode, mainDataSet, testData);
+            case BitemporalDelta:
+                return BitemporalDeltaMapper.enrichAndDeriveDatasets((BitemporalDelta) ingestMode, mainDataSet, testData);
             default:
                 throw new Exception("Unsupported Ingest mode");
         }
@@ -95,6 +119,11 @@ public class IngestModeMapper
         String clazz = ingestMode.getClass().getSimpleName();
         IngestModeType ingestModeType = IngestModeType.valueOf(clazz);
         return ingestModeType;
+    }
+
+    static boolean isFieldNamePresent(Dataset dataset, String fieldName)
+    {
+        return dataset.schema().fields().stream().anyMatch(field -> field.name().equals(fieldName));
     }
 
 }

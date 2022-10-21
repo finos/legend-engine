@@ -19,16 +19,6 @@ Database test::TestDatabase
   Table personTable
   (
     ID INTEGER PRIMARY KEY,
-    NAME VARCHAR(100),
-    BATCH_IN INTEGER PRIMARY KEY,
-    BATCH_OUT INTEGER,
-    DIGEST VARCHAR(100),
-    IN_Z TIMESTAMP,
-    OUT_Z TIMESTAMP
-  )
-  Table personTable_staging
-  (
-    ID INTEGER PRIMARY KEY,
     NAME VARCHAR(100)
   )
 )

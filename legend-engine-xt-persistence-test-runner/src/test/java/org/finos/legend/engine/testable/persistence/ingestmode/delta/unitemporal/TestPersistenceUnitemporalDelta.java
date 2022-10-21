@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.persistence.ingestmode.delta.unitemporal;
 
+import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.persistence.ingestmode.TestPersistenceBase;
@@ -47,15 +48,15 @@ public class TestPersistenceUnitemporalDelta extends TestPersistenceBase
         Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
     }
 
-    @Test
-    public void testTimeBasedWithDeleteIndicator() throws Exception
-    {
-        String path = "src/test/resources/unitemporal-delta/date_time_based/persistence_with_delete_indicator.txt";
-        String persistenceSpec = readPureCode(path);
-
-        TestResult result = testPersistence(persistenceSpec).results.get(0);
-
-        assertTrue(result instanceof TestPassed);
-        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
-    }
+//    @Test
+//    public void testTimeBasedWithDeleteIndicator() throws Exception
+//    {
+//        String path = "src/test/resources/unitemporal-delta/date_time_based/persistence_with_delete_indicator.txt";
+//        String persistenceSpec = readPureCode(path);
+//
+//        TestResult result = testPersistence(persistenceSpec).results.get(0);
+//
+//        assertTrue(result instanceof TestPassed);
+//        Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
+//    }
 }

@@ -73,6 +73,11 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
+
+        System.out.println(this.deleteIndicatorField);
+        System.out.println(this.deleteIndicatorValues);
+        System.out.println(this.deleteIndicatorIsNotSetCondition);
+        System.out.println(this.deleteIndicatorIsSetCondition);
     }
 
     @Override

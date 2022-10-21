@@ -20,13 +20,6 @@ Database test::TestDatabase
   (
     ID INTEGER PRIMARY KEY,
     NAME VARCHAR(100),
-    DIGEST VARCHAR(100),
-    BATCH_TIME_IN TIMESTAMP
-  )
-  Table personTable_staging
-  (
-    ID INTEGER PRIMARY KEY,
-    NAME VARCHAR(100)
   )
 )
 ###Service

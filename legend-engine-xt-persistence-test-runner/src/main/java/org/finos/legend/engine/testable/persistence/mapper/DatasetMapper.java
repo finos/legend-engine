@@ -16,7 +16,6 @@ package org.finos.legend.engine.testable.persistence.mapper;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -37,7 +36,6 @@ import org.finos.legend.pure.generated.platform_relational_relational;
 
 public class DatasetMapper
 {
-    private static String STAGING_SUFFIX = "_staging";
     private static String DEFAULT_SCHEMA = "default";
     private static String H2_PUBLIC_SCHEMA = "PUBLIC";
 
@@ -70,38 +68,6 @@ public class DatasetMapper
                 .build();
 
         return datasetDefinition;
-    }
-
-    public static Dataset getStagingDataset(String jsonData, Root_meta_pure_persistence_metamodel_Persistence persistence) throws Exception
-    {
-        // TODO: (kminky) In future derive the schema definition of stagingTable from targetDataset and jsonData
-        Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = getBatchPersister(persistence);
-        Database database = getDatabase(batchPersister);
-        Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget flatTarget = getTarget(batchPersister);
-
-        // Find the table
-        RichIterable<? extends Table> tables = database._schemas().flatCollect(SchemaAccessor::_tables);
-        String stagingTableName = flatTarget._targetName() + STAGING_SUFFIX;
-        Table table = tables.detect(t -> t._name().equals(flatTarget._targetName() + STAGING_SUFFIX));
-        if (table == null)
-        {
-            throw new PersistenceException(String.format("Staging table [%s] not found in Persistence Spec", stagingTableName));
-        }
-        String tableName = table._name();
-        String schemaName = table._schema()._name();
-        if (schemaName.equals(DEFAULT_SCHEMA))
-        {
-            schemaName = H2_PUBLIC_SCHEMA;
-        }
-        SchemaDefinition schemaDefinition = getSchemaDefinition(table);
-        JsonExternalDatasetReference stagingDataset = JsonExternalDatasetReference.builder()
-                .group(schemaName)
-                .name(tableName)
-                .schema(schemaDefinition)
-                .data(jsonData)
-                .build();
-
-        return stagingDataset;
     }
 
     private static Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget getTarget(Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister)
