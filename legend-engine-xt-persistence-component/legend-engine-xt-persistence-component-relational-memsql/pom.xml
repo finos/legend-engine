@@ -57,8 +57,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-test</artifactId>
             <type>test-jar</type>
-            <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
