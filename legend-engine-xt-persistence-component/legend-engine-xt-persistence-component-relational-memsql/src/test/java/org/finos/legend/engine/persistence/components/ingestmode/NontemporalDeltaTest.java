@@ -359,11 +359,9 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         GeneratorResult operations = generator.generateOperations(datasets);
         String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-        String rowsDeleted = "SELECT 0 as rowsDeleted";
         String rowsTerminated = "SELECT 0 as rowsTerminated";
 
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
     }
 
@@ -396,11 +394,9 @@ public class NontemporalDeltaTest extends IngestModeTest
 
         GeneratorResult operations = generator.generateOperations(datasets);
         String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-        String rowsDeleted = "SELECT 0 as rowsDeleted";
         String rowsTerminated = "SELECT 0 as rowsTerminated";
 
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
 
         List<String> postActionsSql = operations.postActionsSql();
