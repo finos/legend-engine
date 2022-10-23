@@ -255,7 +255,7 @@ function meta::relational::mapping::findPropertySequence(v:ValueSpecification[1]
 function meta::relational::mapping::findPropertyMapping(property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], currentPropertyMapping:PropertyMapping[*], propertyMappingFromRouter:PropertyMapping[*], mapping:Mapping[1],debug:DebugContext[1]):PropertyMapping[*]
 {
    let propertyName = $property.name->toOne();
-   if($currentPropertyMapping->size() >= 1  && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
+   let propertyMappings = if($currentPropertyMapping->size() >= 1  && $currentPropertyMapping->at(0)->instanceOf(EmbeddedRelationalInstanceSetImplementation),
          | let embeddedPropertyMapping = $currentPropertyMapping->cast(@EmbeddedRelationalInstanceSetImplementation)->map(c|$c.propertyMappingsByPropertyName($propertyName));
 
            let result = if( !$embeddedPropertyMapping->isEmpty()
@@ -295,9 +295,14 @@ function meta::relational::mapping::findPropertyMapping(property:AbstractPropert
                $result;,
               |$propMappings
            );
-
-
    );
+
+   $propertyMappings->map({pm |
+      $pm->match([
+         i: InlineEmbeddedSetImplementation[1] | $i->inlineEmbeddedMapping($mapping),
+         p: PropertyMapping[1]                 | $p
+      ])
+   });
 }
 
 function meta::relational::mapping::dataTypePropertyMappings(impl:RelationalInstanceSetImplementation[1]):PropertyMapping[*]
