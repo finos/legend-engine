@@ -38,6 +38,7 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
+                        <repository>core_authentication</repository>
                         <repository>core_relational</repository>
                         <repository>core_relational_sqlserver</repository>
                     </repositories>
@@ -62,6 +63,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-authentication-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>

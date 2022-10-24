@@ -38,8 +38,8 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
-                        <repository>core_relational</repository>
                         <repository>core_authentication</repository>
+                        <repository>core_relational</repository>
                     </repositories>
                     <extraRepositories>
                         <extraRepository>${project.basedir}/src/main/resources/core_relational.definition.json</extraRepository>
