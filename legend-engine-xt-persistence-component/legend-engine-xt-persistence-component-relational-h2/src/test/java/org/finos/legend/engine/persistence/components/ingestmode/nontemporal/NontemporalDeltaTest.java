@@ -24,9 +24,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +40,26 @@ import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 
 class NontemporalDeltaTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-delta-milestoning/";
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenarios:
+    1. Auditing is not enabled
+    2. Staging data imported from CSV and has lesser columns than main dataset
+    3. Staging data cleanup
+    4. Auditing is not enabled
+    5. Data Splits enabled
+    */
+
+    /*
+    Scenario: Test NonTemporal Delta when Auditing is not enabled
      */
     @Test
-    void testMilestoningStagingTablePrePopulated() throws Exception
+    void testNonTemporalDeltaWithNoAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -74,6 +86,9 @@ class NontemporalDeltaTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -88,10 +103,10 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
+    Scenario: Test NonTemporal Delta when staging data comes from CSV and has lesser columns than main dataset
     */
     @Test
-    void testIncrementalDeltaMilestoningLogicWithLessColumnsInStaging() throws Exception
+    void testNonTemporalDeltaWithLessColumnsInStaging() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
@@ -113,6 +128,9 @@ class NontemporalDeltaTest extends BaseTest
         // Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform incremental (delta) milestoning Pass2 ------------------------
@@ -124,11 +142,10 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    staging table is cleaned up in the end
+    Scenario: Test NonTemporal Delta when staging table is cleaned up in the end
     */
     @Test
-    void testGeneratePhysicalPlanWithCleanStagingData() throws Exception
+    void testNonTemporalDeltaWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -155,6 +172,9 @@ class NontemporalDeltaTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -162,11 +182,10 @@ class NontemporalDeltaTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated
-    and isUpdateBatchTimeEnabled is enabled
+    Scenario: Test NonTemporal Delta when Auditing is enabled
     */
     @Test
-    void testGeneratePhysicalPlanWithUpdateTimestampColumn() throws Exception
+    void testNonTemporalDeltaWithAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -196,5 +215,48 @@ class NontemporalDeltaTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+    }
+
+    /*
+    Scenario: Test NonTemporal Delta when Data splits are enabled
+    */
+    @Test
+    void testNonTemporalDeltaNoAuditingWithDataSplits() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
+        Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestName)
+                .dataSplitField(dataSplitName)
+                .auditing(NoAuditing.builder().build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePath + "expected/with_data_splits/expected_pass1.csv";
+        // Execute plans and verify results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1 = new HashMap<>();
+        expectedStats1.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats1.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats1.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
+        Map<String, Object> expectedStats2 = new HashMap<>();
+        expectedStats2.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
+        expectedStats2.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats2.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
     }
 }

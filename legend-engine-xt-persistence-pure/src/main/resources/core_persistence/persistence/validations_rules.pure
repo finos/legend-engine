@@ -1,0 +1,191 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::*;
+import meta::legend::service::metamodel::*;
+
+import meta::pure::executionPlan::*;
+import meta::pure::extension::*;
+
+import meta::pure::functions::collection::*;
+
+import meta::pure::graphFetch::*;
+
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::validation::*;
+
+import meta::relational::extension::*;
+
+function meta::pure::persistence::validation::commonRules(): ValidationRuleSet<PersistenceContext>[1]
+{
+  ^ValidationRuleSet<PersistenceContext>(
+    name = 'Common',
+    rules = [
+      c: PersistenceContext[1] | validateTarget($c.persistence.persister->cast(@BatchPersister).targetShape),
+      c: PersistenceContext[1] | validateServiceAndTarget($c.persistence.service, $c.persistence.persister->cast(@BatchPersister).targetShape)
+    ]
+  );
+}
+
+/**********
+ * target validations
+ **********/
+
+function meta::pure::persistence::validation::validateTarget(target: TargetShape[1]): ValidationResult[1]
+{
+  $target->match([
+    f: FlatTarget[1] | if ($f.targetName->isEmpty(), | failure('Flat target name must not be empty'), | success()),
+    mf: MultiFlatTarget[1] | if ($mf.parts->exists(p | $p.targetName->isEmpty()), | failure('Multi flat part target names must not be empty'), | success())
+  ]);
+}
+
+/**********
+ * service + target validations
+ **********/
+
+function meta::pure::persistence::validation::validateServiceAndTarget(service: Service[1], target: TargetShape[1]): ValidationResult[1]
+{
+  $service.execution->match([
+    se: PureSingleExecution[1] | $target->match([
+      f: FlatTarget[1] | validateSingleExecutionServiceAndFlatTarget($service, $se, $f),
+      mf: MultiFlatTarget[1] | validateSingleExecutionServiceAndMultiFlatTarget($service, $se, $mf),
+      any: Any[1] | failure('Unknown target shape')
+    ]),
+    me: PureMultiExecution[1] | $target->match([
+      f: FlatTarget[1] | validateMultiExecutionServiceAndFlatTarget($service, $me, $f),
+      mf: MultiFlatTarget[1] | validateMultiExecutionServiceAndMultiFlatTarget($service, $me, $mf),
+      any: Any[1] | failure('Unknown target shape')
+    ]),
+    any: Any[1] | failure('Unknown service execution')
+  ]);
+}
+
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndFlatTarget(service: Service[1], execution: PureSingleExecution[1], target: FlatTarget[1]): ValidationResult[1]
+{
+  let classification = $execution->classify();
+  if ($classification->instanceOf(TdsExecutionClassification) || $classification->instanceOf(FlatGraphFetchSerialize),
+    | success(),
+    | failure('Flat target requires a service that returns a TDS or ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node'));
+}
+
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndMultiFlatTarget(service: Service[1], execution: PureSingleExecution[1], target: MultiFlatTarget[1]): ValidationResult[1]
+{
+  let classification = $execution->classify();
+  if ($classification->instanceOf(OneLevelGraphFetchSerialize),
+    | success(),
+    | failure('Multi flat target requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1'));
+}
+
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndFlatTarget(service: Service[1], execution: PureMultiExecution[1], target: FlatTarget[1]): ValidationResult[1]
+{
+  //TODO: ledav -- implement flat validations
+  success();
+}
+
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndMultiFlatTarget(service: Service[1], execution: PureMultiExecution[1], target: MultiFlatTarget[1]): ValidationResult[1]
+{
+  //TODO: ledav -- implement multi flat validations
+  success();
+}
+
+/**********
+ * execution validations
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+meta::pure::persistence::validation::ExecutionClassification
+{
+}
+
+Class meta::pure::persistence::validation::TdsExecutionClassification extends ExecutionClassification
+{
+  columnByName: Map<String, TDSColumn>[*];
+}
+
+Class meta::pure::persistence::validation::FlatGraphFetchSerialize extends ExecutionClassification
+{
+  validLeafProperties: PropertyGraphFetchTree[*];
+  invalidLeafProperties: PropertyGraphFetchTree[*];
+}
+
+Class meta::pure::persistence::validation::OneLevelGraphFetchSerialize extends ExecutionClassification
+{
+  validRootProperties: PropertyGraphFetchTree[*];
+  invalidRootProperties: PropertyGraphFetchTree[*];
+
+  validLeafProperties: PropertyGraphFetchTree[*];
+  invalidLeafProperties: PropertyGraphFetchTree[*];
+}
+
+Class meta::pure::persistence::validation::OtherExecutionClassification extends ExecutionClassification
+{
+}
+
+function meta::pure::persistence::validation::classify(execution: PureSingleExecution[1]): ExecutionClassification[1]
+{
+  $execution.func.expressionSequence->evaluateAndDeactivate()->last()->match([
+    fe: FunctionExpression[1] | if ($fe.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
+      | classifyFunctionExpression($execution.func, $fe),
+      | let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
+        $plan.rootExecutionNode.resultType->match([
+          tds: TDSResultType[1] |
+            let columnByName = $tds.tdsColumns->map(c | pair($c.name, $c))->newMap();
+            ^TdsExecutionClassification(columnByName = $columnByName);,
+          any: Any[1] | ^OtherExecutionClassification()
+        ]);
+    ),
+    any: Any[1] | ^OtherExecutionClassification()
+  ]);
+}
+
+function <<access.private>> meta::pure::persistence::validation::classifyFunctionExpression(functionDefinition: FunctionDefinition<Any>[1], functionExpression: FunctionExpression[1]): ExecutionClassification[1]
+{
+  let root = $functionExpression->instanceValuesAtParameter(1, $functionDefinition->openVariableValues())->toOne()->cast(@RootGraphFetchTree<Any>);
+  let firstLevelChildren = $root.subTrees->cast(@PropertyGraphFetchTree);
+  let secondLevelChildren = $firstLevelChildren.subTrees->cast(@PropertyGraphFetchTree);
+  if ($firstLevelChildren->forAll(p | $p.isPrimitive()),
+    | ^FlatGraphFetchSerialize(
+        validLeafProperties = $firstLevelChildren->filter(p | $p->validLeafGraphFetchProperty()),
+        invalidLeafProperties = $firstLevelChildren->filter(p | !$p->validLeafGraphFetchProperty())),
+    | if ($firstLevelChildren->forAll(p | !$p.isPrimitive()) && $secondLevelChildren->forAll(p | $p.isPrimitive()),
+      | ^OneLevelGraphFetchSerialize(
+          validRootProperties = $firstLevelChildren->filter(p | $p->validRootGraphFetchRootProperty()),
+          invalidRootProperties = $firstLevelChildren->filter(p | !$p->validRootGraphFetchRootProperty()),
+          validLeafProperties = $secondLevelChildren->filter(p | $p->validLeafGraphFetchProperty()),
+          invalidLeafProperties = $secondLevelChildren->filter(p | !$p->validLeafGraphFetchProperty())),
+      | ^OtherExecutionClassification())
+  );
+}
+
+function <<access.private>> meta::pure::persistence::validation::validRootGraphFetchRootProperty(property: PropertyGraphFetchTree[1]): Boolean[1]
+{
+  !$property.isPrimitive() && $property.alias->isEmpty() && $property.parameters->isEmpty() && $property.subType->isEmpty();
+}
+
+function <<access.private>> meta::pure::persistence::validation::validLeafGraphFetchProperty(property: PropertyGraphFetchTree[1]): Boolean[1]
+{
+  $property.isPrimitive() && $property.alias->isEmpty() && $property.parameters->isEmpty() && $property.subType->isEmpty();
+}
+
+/**********
+ * utility functions
+ **********/
+
+function meta::pure::persistence::validation::extensions(): Extension[*]
+{
+  defaultExtensions()->add(externalFormatExtension())->concatenate(relationalExtensions());
+}
