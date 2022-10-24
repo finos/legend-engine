@@ -17,21 +17,22 @@ package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
@@ -44,10 +45,21 @@ class NontemporalSnapshotTest extends BaseTest
     private final String basePath = "src/test/resources/data/snapshot-milestoning/";
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenarios:
+    1. No Auditing
+    2. With Auditing
+    3. No Auditing & import external JSON dataset
+    4. No Auditing & import external CSV dataset
+    5. Staging has lesser columns than main dataset
+    6. Staging data cleanup
+    7. Data Splits enabled
+     */
+
+    /*
+    Scenario: Test Nontemporal Snapshot with no auditing
      */
     @Test
-    void testMilestoningStagingTablePrePopulated() throws Exception
+    void testNontemporalSnapshotNoAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -87,10 +99,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and isUpdateBatchTimeEnabled is enabled
+    Scenario: Test Nontemporal Snapshot when auditing is enabled
     */
     @Test
-    void testSnapshotMilestoningLogicWithUpdateTimestampField() throws Exception
+    void testNontemporalSnapshotWithAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
@@ -114,10 +126,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from Json
+    Scenario: Test Nontemporal Snapshot when staging data comes from JSON and auditing is disabled
      */
     @Test
-    void testMilestoningWithExternalJsonData() throws Exception
+    void testNontemporalSnapshotImportExternalJson() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.json";
@@ -146,10 +158,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV
+    Scenario: Test Nontemporal Snapshot when staging data comes from CSV and auditing is disabled
     */
     @Test
-    void testMilestoningWithExternalCsvData() throws Exception
+    void testNontemporalSnapshotImportExternalCsv() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -178,10 +190,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
+    Scenario: Test Nontemporal Snapshot when staging data comes from CSV and has lesser columns than main dataset
     */
     @Test
-    void testSnapshotMilestoningLogicWithLessColumnsInStaging() throws Exception
+    void testNontemporalSnapshotWithLessColumnsInStaging() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
@@ -211,11 +223,10 @@ class NontemporalSnapshotTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    staging table is cleaned up in the end
+    Scenario: Test Nontemporal Snapshot when staging table is cleaned up in the end
      */
     @Test
-    void testMilestoningWithCleanStagingData() throws Exception
+    void testNontemporalSnapshotWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -242,4 +253,40 @@ class NontemporalSnapshotTest extends BaseTest
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
     }
+
+    /*
+    Scenario: Test Nontemporal Snapshot when data splits are enabled
+    */
+    @Test
+    void testNontemporalSnapshotWithDataSplits() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
+        Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
+
+        // Generate the milestoning object
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
+                .auditing(NoAuditing.builder().build())
+                .dataSplitField(dataSplitName)
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePath + "expected/with_data_splits/expected_pass1.csv";
+        // Execute plans and verify results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        dataSplitRanges.add(DataSplitRange.of(3, 3));
+
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 3, 0, 0);
+        expectedStatsList.add(expectedStats);
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+    }
+
 }

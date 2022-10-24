@@ -71,13 +71,6 @@ public class IngestModeTest
     Field batchTimeOut = Field.builder().name(batchTimeOutField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
     Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
 
-    SchemaDefinition baseTableSchema = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .build();
-
     SchemaDefinition mainTableSchema = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
@@ -161,35 +154,4 @@ public class IngestModeTest
         "\"BATCH_TIME_IN\" DATETIME," +
         "\"BATCH_TIME_OUT\" DATETIME," +
         "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"BATCH_TIME_IN\"))";
-
-    String expectedBaseTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
-    String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
-        "\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "PRIMARY KEY (\"ID\", \"NAME\"))";
-
-    String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "\"digest\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
-    String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "\"DIGEST\" VARCHAR," +
-        "PRIMARY KEY (\"ID\", \"NAME\"))";
-
 }

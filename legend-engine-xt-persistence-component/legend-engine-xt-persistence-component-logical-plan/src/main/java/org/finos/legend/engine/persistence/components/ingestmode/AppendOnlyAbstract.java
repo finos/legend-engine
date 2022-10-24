@@ -69,6 +69,10 @@ public interface AppendOnlyAbstract extends IngestMode
             @Override
             public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
             {
+                if (dataSplitField().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build AppendOnly, DataSplits not supported for failOnDuplicates mode");
+                }
                 return null;
             }
         });

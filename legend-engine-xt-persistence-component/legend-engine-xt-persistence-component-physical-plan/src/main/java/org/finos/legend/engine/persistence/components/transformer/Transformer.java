@@ -41,7 +41,7 @@ public interface Transformer<C extends PhysicalPlanNode, P extends PhysicalPlan<
     abstract class TransformOptionsAbstract
     {
 
-        private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
         @Default
         public Clock executionTimestampClock()

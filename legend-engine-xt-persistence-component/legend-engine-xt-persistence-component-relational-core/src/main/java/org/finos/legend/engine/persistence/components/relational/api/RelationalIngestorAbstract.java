@@ -29,7 +29,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -48,6 +50,7 @@ import org.immutables.value.Value.Style;
 
 import java.sql.Connection;
 import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +60,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
+import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
 @Immutable
 @Style(
@@ -72,6 +76,8 @@ public abstract class RelationalIngestorAbstract
     private static final String UNDERSCORE = "_";
     private static final String SINGLE_QUOTE = "'";
     private static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
+
+    private static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
 
     //---------- FLAGS ----------
 
@@ -184,10 +190,12 @@ public abstract class RelationalIngestorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .caseConversion(caseConversion())
             .executionTimestampClock(executionTimestampClock())
+            .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
             .batchIdPattern(BATCH_ID_PATTERN)
             .build();
 
-        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build());
+        Planner planner = Planners.get(updatedDatasets, ingestMode(), plannerOptions());
+        GeneratorResult generatorResult = generator.generateOperations(updatedDatasets, resourcesBuilder.build(), planner);
         if (generatorResult.schemaEvolutionDataset().isPresent())
         {
             updatedDatasets = updatedDatasets.withMainDataset(generatorResult.schemaEvolutionDataset().get());
@@ -198,11 +206,11 @@ public abstract class RelationalIngestorAbstract
         // 2. Perform schema evolution
         generatorResult.schemaEvolutionSqlPlan().ifPresent(executor::executePhysicalPlan);
         // 3. Perform Ingestion
-        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, executor, generatorResult, dataSplitRanges);
+        List<IngestorResult> result = performIngestion(updatedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges);
         return result;
     }
 
-    private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen,
+    private List<IngestorResult> performIngestion(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Planner planner, Executor<SqlGen,
         TabularData, SqlPlan> executor, GeneratorResult generatorResult, List<DataSplitRange> dataSplitRanges)
     {
         try
@@ -215,7 +223,7 @@ public abstract class RelationalIngestorAbstract
             {
                 Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
                 // Extract the Placeholders values
-                Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, transformer, ingestMode(), dataSplitRange);
+                Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode(), dataSplitRange);
                 // Load main table, extract stats and update metadata table
                 Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
                 IngestorResult result = IngestorResult.builder()
@@ -227,7 +235,7 @@ public abstract class RelationalIngestorAbstract
                 results.add(result);
                 dataSplitIndex++;
             }
-            while (dataSplitIndex < dataSplitsCount);
+            while (planner.dataSplitExecutionSupported() && dataSplitIndex < dataSplitsCount);
             // Clean up
             executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());
             executor.commit();
@@ -350,7 +358,7 @@ public abstract class RelationalIngestorAbstract
     }
 
     private Map<String, String> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                            Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
+                                                            Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                             Optional<DataSplitRange> dataSplitRange)
     {
         Map<String, String> placeHolderKeyValues = new HashMap<>();
@@ -359,11 +367,12 @@ public abstract class RelationalIngestorAbstract
         {
             placeHolderKeyValues.put(BATCH_ID_PATTERN, nextBatchId.get().toString());
         }
-        if (dataSplitRange.isPresent())
+        if (planner.dataSplitExecutionSupported() && dataSplitRange.isPresent())
         {
             placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.get().lowerBound()));
             placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.get().upperBound()));
         }
+        placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
         return placeHolderKeyValues;
     }
 

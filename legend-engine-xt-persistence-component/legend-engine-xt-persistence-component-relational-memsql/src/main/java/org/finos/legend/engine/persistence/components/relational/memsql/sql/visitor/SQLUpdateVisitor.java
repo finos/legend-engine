@@ -39,7 +39,7 @@ public class SQLUpdateVisitor implements LogicalPlanVisitor<Update>
         current.joinDataset().ifPresent(joinDataset ->
         {
             logicalPlanNodeList.add(joinDataset);
-            current.joinCondition().ifPresent(logicalPlanNodeList::add);
+            logicalPlanNodeList.add(current.joinCondition().get());
         });
 
         current.whereCondition().ifPresent(logicalPlanNodeList::add);
