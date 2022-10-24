@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.query.graphQL.api.GraphQL;
 import org.finos.legend.engine.query.graphQL.api.debug.model.GraphFetchResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
@@ -43,7 +43,7 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult;
-import org.finos.legend.pure.generated.core_external_query_graphql_transformation;
+import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_graphFetch;
 import org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
@@ -136,9 +136,9 @@ public class GraphQLDebug extends GraphQL
         }
     }
 
-    private static Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult buildGraphFetch(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_Document document, PureModel pureModel)
+    private static Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult buildGraphFetch(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document document, PureModel pureModel)
     {
-        return core_external_query_graphql_transformation.Root_meta_external_query_graphQL_transformation_queryToPure_getGraphFetchFromGraphQL_Class_1__Document_1__GraphFetchResult_1_(_class, document, pureModel.getExecutionSupport());
+        return core_external_query_graphql_transformation_transformation_graphFetch.Root_meta_external_query_graphQL_transformation_queryToPure_getGraphFetchFromGraphQL_Class_1__Document_1__GraphFetchResult_1_(_class, document, pureModel.getExecutionSupport());
     }
 
     @POST

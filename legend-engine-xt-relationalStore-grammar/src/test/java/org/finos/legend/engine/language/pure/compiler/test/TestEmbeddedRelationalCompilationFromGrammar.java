@@ -228,6 +228,61 @@ public class TestEmbeddedRelationalCompilationFromGrammar
     }
 
     @Test
+    public void inlineEmbeddedMappingTest()
+    {
+        test("import other::*;\n" +
+                "\n" +
+                "Class other::Person\n" +
+                "{\n" +
+                "    name:String[1];\n" +
+                "    firm:Firm[1];\n" +
+                "}\n" +
+                "Class other::Firm\n" +
+                "{\n" +
+                "    legalName:String[1];\n" +
+                "    address:Address[1];\n" +
+                "}\n" +
+                "Class other::Address\n" +
+                "{\n" +
+                "    line1:String[1];\n" +
+                "    postcode:String[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database mapping::db(\n" +
+                "   Table employeeFirmDenormTable\n" +
+                "   (\n" +
+                "    id INT PRIMARY KEY,\n" +
+                "    name VARCHAR(200),\n" +
+                "    firmId INT,\n" +
+                "    legalName VARCHAR(200),\n" +
+                "    address1 VARCHAR(200),\n" +
+                "    postcode VARCHAR(10)\n" +
+                "   )\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "import other::*;\n" +
+                "import mapping::*;\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "    Address[alias2]: Relational\n" +
+                "    {\n" +
+                "       line1: [db]employeeFirmDenormTable.address1,\n" +
+                "       postcode: [db]employeeFirmDenormTable.postcode\n" +
+                "    }\n" +
+                "    Person[alias1]: Relational\n" +
+                "    {\n" +
+                "        name : [db]employeeFirmDenormTable.name,\n" +
+                "        firm\n" +
+                "        (\n" +
+                "            ~primaryKey ([db]employeeFirmDenormTable.legalName)\n" +
+                "            legalName : [db]employeeFirmDenormTable.legalName,\n" +
+                "            address () Inline [alias2]\n" +
+                "        )\n" +
+                "    }\n" +
+                ")\n");
+    }
+
+    @Test
     public void embeddedMappingsWithOtherwise()
     {
         test("import other::*;\n" +

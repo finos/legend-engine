@@ -24,13 +24,13 @@ public class SimpleRelationalServiceRunner extends AbstractServicePlanExecutor
     public SimpleRelationalServiceRunner()
     {
         super("test::Service",
-                TestServiceRunner.buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetch"), false);
+                TestServiceRunner.buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetch_String_MANY__String_1_"), false);
     }
 
     public SimpleRelationalServiceRunner(StoreExecutorConfiguration... storeExecutorConfigurations)
     {
         super("test::Service",
-                TestServiceRunner.buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetch"),
+                TestServiceRunner.buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetch_String_MANY__String_1_"),
                 PlanExecutor.newPlanExecutorWithConfigurations(storeExecutorConfigurations));
     }
 

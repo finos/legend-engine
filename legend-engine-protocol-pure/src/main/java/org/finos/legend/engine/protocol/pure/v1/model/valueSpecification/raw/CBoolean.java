@@ -14,21 +14,41 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
 
-public class CBoolean extends ValueSpecification
+@JsonDeserialize(using = CBoolean.CBooleanDeserializer.class)
+public class CBoolean extends PrimitiveValueSpecification
 {
-    public List<Boolean> values = Collections.emptyList();
-    public Multiplicity multiplicity;
+    public boolean value;
+
+    public CBoolean()
+    {
+    }
+
+    public CBoolean(boolean value)
+    {
+        this.value = value;
+    }
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class CBooleanDeserializer extends JsonDeserializer<ValueSpecification>
+    {
+        @Override
+        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CBoolean(Boolean.parseBoolean(x.asText())));
+        }
     }
 }

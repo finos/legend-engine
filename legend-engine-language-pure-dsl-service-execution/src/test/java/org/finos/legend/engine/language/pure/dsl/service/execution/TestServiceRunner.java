@@ -67,10 +67,6 @@ import static org.finos.legend.pure.generated.core_relational_relational_extensi
 
 public class TestServiceRunner
 {
-
-    public static final Multiplicity PURE_ONE = new Multiplicity(1, 1);
-    public static final Multiplicity PURE_MANY = new Multiplicity(1, null);
-
     private void testOptionalParameter(String fetchFunction, String argName, Object optionalParameter, String expectedResultWithParameter, String expectedResultWithoutParameter)
     {
         SimpleOptionalParameterServiceRunner simpleOptionalParameterServiceRunner = new SimpleOptionalParameterServiceRunner(fetchFunction, argName);
@@ -99,80 +95,80 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalString()
     {
-        this.testOptionalParameter("test::fetchOptionalCity", "optionalCity", "New York", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"}", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null}");
+        this.testOptionalParameter("test::fetchOptionalCity_String_$0_1$__Any_MANY_", "optionalCity", "New York", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"city\":\"New York\"}", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"city\":null}");
     }
 
     @Test
     public void testSimpleServiceForOptionalInteger()
     {
-        this.testOptionalParameter("test::fetchOptionalAge", "optionalAge", 35, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"age\":35}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"age\":null}");
+        this.testOptionalParameter("test::fetchOptionalAge_Integer_$0_1$__Any_MANY_", "optionalAge", 35, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"age\":35}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"age\":null}");
     }
 
     @Test
     public void testSimpleServiceForOptionalFloat()
     {
-        this.testOptionalParameter("test::fetchOptionalSalary", "optionalSalary", 80000.75, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"salary\":null}");
+        this.testOptionalParameter("test::fetchOptionalSalary_Float_$0_1$__Any_MANY_", "optionalSalary", 80000.75, "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75}", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"salary\":null}");
     }
 
     @Test
     public void testSimpleServiceForOptionalDate()
     {
-        this.testOptionalParameter("test::fetchOptionalDateOfBirth", "optionalDate", "1982-01-20", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"}", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"dob\":null}");
+        this.testOptionalParameter("test::fetchOptionalDateOfBirth_Date_$0_1$__Any_MANY_", "optionalDate", "1982-01-20", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"}", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"dob\":null}");
     }
 
     @Test
     public void testSimpleServiceForOptionalDateTimeWithNoTimeZone()
     {
-        this.testOptionalParameter("test::fetchOptionalEmploymentDateTime", "optionalDateTime", "2005-03-15T18:47:52", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTime_DateTime_$0_1$__Any_MANY_", "optionalDateTime", "2005-03-15T18:47:52", "{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
     }
 
     @Test
     public void testSimpleServiceForOptionalDateTimeWithTimeZone()
     {
-        this.testOptionalParameter("test::fetchOptionalEmploymentDateTimeWithTZ", "optionalDateTimeWithTZ", "2012-05-20T03:10:52.501", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTimeWithTZ_DateTime_$0_1$__Any_MANY_", "optionalDateTimeWithTZ", "2012-05-20T03:10:52.501", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
     }
 
     @Test
     public void testSimpleServiceForOptionalBoolean()
     {
-        this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", true, "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}", "[]");
-        this.testOptionalParameter("test::fetchOptionalActiveEmployment", "optionalActiveEmployment", false, "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalActiveEmployment_Boolean_$0_1$__Any_MANY_", "optionalActiveEmployment", true, "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}", "[]");
+        this.testOptionalParameter("test::fetchOptionalActiveEmployment_Boolean_$0_1$__Any_MANY_", "optionalActiveEmployment", false, "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"}]", "[]");
     }
 
     @Test
     public void testSimpleServiceForOptionalString_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalCityMany", "optionalCity", Arrays.asList("New York","Dallas"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalCityMany_String_MANY__Any_MANY_", "optionalCity", Arrays.asList("New York","Dallas"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
     }
 
     @Test
     public void testSimpleServiceForOptionalInteger_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalAgeMany", "optionalAge", Arrays.asList(25,35), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalAgeMany_Integer_MANY__Any_MANY_", "optionalAge", Arrays.asList(25,35), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\"}]", "[]");
     }
 
     @Test
     public void testSimpleServiceForOptionalFloat_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalSalaryMany", "optionalSalary", Arrays.asList(80000.75,75000.75), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"salary\":75000.75}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalSalaryMany_Float_MANY__Any_MANY_", "optionalSalary", Arrays.asList(80000.75,75000.75), "[{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"salary\":80000.75},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"salary\":75000.75}]", "[]");
     }
 
     @Test
     public void testSimpleServiceForOptionalDate_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalDobMany", "optionalDate", Arrays.asList("1982-01-20","1997-12-16"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"dob\":\"1997-12-16\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalDobMany_Date_MANY__Any_MANY_", "optionalDate", Arrays.asList("1982-01-20","1997-12-16"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"dob\":\"1982-01-20\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"dob\":\"1997-12-16\"}]", "[]");
     }
 
     @Test
     public void testSimpleServiceForOptionalDateTimeWithNoTZ_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalDateTimeWithNoTZMany", "optionalDateTime", Arrays.asList("2005-03-15T18:47:52", "2012-05-20T13:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithNoTZMany_DateTime_MANY__Any_MANY_", "optionalDateTime", Arrays.asList("2005-03-15T18:47:52", "2012-05-20T13:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
     }
 
     @Test
     public void testSimpleServiceForOptionalDateTimeWithTZ_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalDateTimeWithTZMany", "optionalDateTime", Arrays.asList("2005-03-15T08:47:52", "2012-05-20T03:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithTZMany_DateTime_MANY__Any_MANY_", "optionalDateTime", Arrays.asList("2005-03-15T08:47:52", "2012-05-20T03:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
     }
 
     @Test
@@ -256,13 +252,13 @@ public class TestServiceRunner
     {
         SimpleServiceRunnerWithLetVariablePureExpression()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithMandatoryTemporalDate"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithMandatoryTemporalDate_StrictDate_$0_1$__String_1_"), true);
         }
 
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceVariable("businessDate", Date.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("businessDate", Date.class, Multiplicity.PURE_ONE));
         }
     }
 
@@ -398,49 +394,49 @@ public class TestServiceRunner
     @Test
     public void testServiceWithEnumParamEqualOpFilter()
     {
-        this.testServiceExecutionWithEnumParam("test::EnumParamEqualOpFilter", "eType", "FULL_TIME", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[102,\"Bob\",\"FULL_TIME\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::EnumParamEqualOpFilter_EmployeeType_1__TabularDataSet_1_", "eType", "FULL_TIME", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[102,\"Bob\",\"FULL_TIME\"]}]}");
     }
 
     @Test
     public void testServiceWithEnumParamInOpFilter()
     {
-        this.testServiceExecutionWithEnumParam("test::EnumParamInOpFilter", "eType", "CONTRACT", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::EnumParamInOpFilter_EmployeeType_1__TabularDataSet_1_", "eType", "CONTRACT", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]}]}");
     }
 
     @Test
     public void testServiceWithEnumParamNotEqualOpFilter()
     {
-        this.testServiceExecutionWithEnumParam("test::EnumParamNotEqualOpFilter", "eType", "CONTRACT", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[102,\"Bob\",\"FULL_TIME\"]},{\"values\":[104,\"Bob\",null]}]}");
+        this.testServiceExecutionWithEnumParam("test::EnumParamNotEqualOpFilter_EmployeeType_1__TabularDataSet_1_", "eType", "CONTRACT", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[102,\"Bob\",\"FULL_TIME\"]},{\"values\":[104,\"Bob\",null]}]}");
     }
 
     @Test
     public void testServiceWithEnumParamNotInOpFilter()
     {
-        this.testServiceExecutionWithEnumParam("test::EnumParamNotInOpFilter", "eType", "FULL_TIME", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]},{\"values\":[104,\"Bob\",null]}]}");
+        this.testServiceExecutionWithEnumParam("test::EnumParamNotInOpFilter_EmployeeType_1__TabularDataSet_1_", "eType", "FULL_TIME", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]},{\"values\":[103,\"Curtis\",\"CONTRACT\"]},{\"values\":[104,\"Bob\",null]}]}");
     }
 
     @Test
     public void testServiceWithInvalidEnumParam()
     {
-        this.testServiceExecutionWithEnumParamException("test::EnumParamEqualOpFilter", "eType", "CONTRCT", "Invalid provided parameter(s): [Invalid enum value CONTRCT for test::EmployeeType, valid enum values: [CONTRACT, FULL_TIME]]");
+        this.testServiceExecutionWithEnumParamException("test::EnumParamEqualOpFilter_EmployeeType_1__TabularDataSet_1_", "eType", "CONTRCT", "Invalid provided parameter(s): [Invalid enum value CONTRCT for test::EmployeeType, valid enum values: [CONTRACT, FULL_TIME]]");
     }
 
     @Test
     public void testServiceWithEnumParamIfOpFilter()
     {
-        this.testServiceExecutionWithEnumParam("test::EnumParamIfOpFilter", "yesOrNo", "NO", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"InActive User\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"InActive User\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::EnumParamIfOpFilter_YesNo_1__TabularDataSet_1_", "yesOrNo", "NO", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"InActive User\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"InActive User\"]}]}");
     }
 
     @Test
     public void testServiceWithEnumParamIfOpFilterWithClassProp()
     {
-        this.testServiceExecutionWithEnumParam("test::EnumParamIfOpFilterWithClassProp", "yesOrNo", "YES", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::EnumParamIfOpFilterWithClassProp_YesNo_1__TabularDataSet_1_", "yesOrNo", "YES", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
     }
 
     @Test
     public void testServiceWithIfOpFilterEnumValueWithClassProp()
     {
-        this.testServiceExecutionWithEnumParam("test::IfOpFilterEnumValueWithClassProp", "str", "random", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::IfOpFilterEnumValueWithClassProp_String_1__TabularDataSet_1_", "str", "random", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
     }
 
     private static class EnumMultipleParamServiceRunner extends AbstractServicePlanExecutor
@@ -481,25 +477,25 @@ public class TestServiceRunner
     @Test
     public void testServiceWithEnumParamStringParamFilters()
     {
-        this.testServiceExecutionWithMultipleEnumParam("test::EnumParamStringParamFilters", "eType", "eName", Arrays.asList("CONTRACT", "Alice"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]}]}");
+        this.testServiceExecutionWithMultipleEnumParam("test::EnumParamStringParamFilters_EmployeeType_1__String_1__TabularDataSet_1_", "eType", "eName", Arrays.asList("CONTRACT", "Alice"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"},{\"name\":\"Employee Type\",\"type\":\"test::EmployeeType\"}],\"rows\":[{\"values\":[101,\"Alice\",\"CONTRACT\"]}]}");
     }
 
     @Test
     public void testServiceWithMultipleEnumParamsInOPEqualOpFilter()
     {
-        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsInOPEqualOpFilter", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "NO"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[]}");
+        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsInOPEqualOpFilter_EmployeeType_1__YesNo_1__TabularDataSet_1_", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "NO"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[]}");
     }
 
     @Test
     public void testServiceWithMultipleEnumParamsNotInOPEqualOpFilter()
     {
-        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsNotInOPEqualOpFilter", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "YES"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[{\"values\":[104]}]}");
+        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsNotInOPEqualOpFilter_EmployeeType_1__YesNo_1__TabularDataSet_1_", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "YES"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[{\"values\":[104]}]}");
     }
 
     @Test
     public void testServiceWithMultipleEnumParamsNotInOPNotEqualOpFilter()
     {
-        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsNotInOPNotEqualOpFilter", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "YES"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[{\"values\":[101]},{\"values\":[103]}]}");
+        this.testServiceExecutionWithMultipleEnumParam("test::MultipleEnumParamsNotInOPNotEqualOpFilter_EmployeeType_1__YesNo_1__TabularDataSet_1_", "eType", "yesOrNo", Arrays.asList("FULL_TIME", "YES"), "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"}],\"rows\":[{\"values\":[101]},{\"values\":[103]}]}");
     }
 
     @Test
@@ -710,7 +706,7 @@ public class TestServiceRunner
     {
         SimpleRelationalServiceWithUserRunner()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetchWithUserId"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::fetchWithUserId__String_1_"), true);
         }
 
         @Override
@@ -726,7 +722,7 @@ public class TestServiceRunner
     {
         SimpleServiceWithMultiplePureExpressions()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithPropertyPath"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::testMultiExpressionQueryWithPropertyPath__Any_MANY_"), true);
         }
 
         @Override
@@ -742,13 +738,13 @@ public class TestServiceRunner
     {
         SimpleM2MServiceRunner()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::function"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::function_String_1__String_1_"), true);
         }
 
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceVariable("input", String.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("input", String.class, Multiplicity.PURE_ONE));
         }
     }
 
@@ -756,15 +752,15 @@ public class TestServiceRunner
     {
         MultiParameterM2MServiceRunner()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/multiParamM2MService.pure", "test::function"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/multiParamM2MService.pure", "test::function_String_1__String_1__String_1_"), true);
         }
 
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
             return Lists.mutable.of(
-                    new ServiceVariable("input1", String.class, PURE_ONE),
-                    new ServiceVariable("input2", String.class, PURE_ONE)
+                    new ServiceVariable("input1", String.class, Multiplicity.PURE_ONE),
+                    new ServiceVariable("input2", String.class, Multiplicity.PURE_ONE)
             );
         }
     }
@@ -773,15 +769,15 @@ public class TestServiceRunner
     {
         MultiParameterM2MServiceRunnerWithMerge()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/multiParamM2MServiceMerge.pure", "test::function"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/multiParamM2MServiceMerge.pure", "test::function_String_1__String_1__String_1_"), true);
         }
 
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
             return Lists.mutable.of(
-                    new ServiceVariable("input1", String.class, PURE_ONE),
-                    new ServiceVariable("input2", String.class, PURE_ONE)
+                    new ServiceVariable("input1", String.class, Multiplicity.PURE_ONE),
+                    new ServiceVariable("input2", String.class, Multiplicity.PURE_ONE)
             );
         }
     }
@@ -790,13 +786,13 @@ public class TestServiceRunner
     {
         SimpleM2MServiceRunnerWthGraphFetchBatchSize()
         {
-            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::functionWithBatchSize"), true);
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::functionWithBatchSize_String_1__String_1_"), true);
         }
 
         @Override
         public List<ServiceVariable> getServiceVariables()
         {
-            return Collections.singletonList(new ServiceVariable("input", String.class, PURE_ONE));
+            return Collections.singletonList(new ServiceVariable("input", String.class, Multiplicity.PURE_ONE));
         }
     }
 
@@ -828,7 +824,7 @@ public class TestServiceRunner
 
     private static class XStoreServiceRunnerWithNoCrossPropertyAccess extends AbstractXStoreServiceRunner
     {
-        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch1");
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch1__String_1_");
 
         XStoreServiceRunnerWithNoCrossPropertyAccess() throws JavaCompileException
         {
@@ -838,7 +834,7 @@ public class TestServiceRunner
 
     private static class XStoreServiceRunnerWithSingleCrossPropertyAccess extends AbstractXStoreServiceRunner
     {
-        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch2");
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch2__String_1_");
 
         XStoreServiceRunnerWithSingleCrossPropertyAccess() throws JavaCompileException
         {
@@ -848,7 +844,7 @@ public class TestServiceRunner
 
     private static class XStoreServiceRunnerWithToManyCrossPropertyAccess extends AbstractXStoreServiceRunner
     {
-        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch3");
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch3__String_1_");
 
         XStoreServiceRunnerWithToManyCrossPropertyAccess() throws JavaCompileException
         {
@@ -858,7 +854,7 @@ public class TestServiceRunner
 
     private static class XStoreServiceRunnerWithMultiCrossPropertyAccess extends AbstractXStoreServiceRunner
     {
-        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch4");
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch4__String_1_");
 
         XStoreServiceRunnerWithMultiCrossPropertyAccess() throws JavaCompileException
         {
@@ -868,7 +864,7 @@ public class TestServiceRunner
 
     private static class XStoreServiceRunnerWithDeepCrossPropertyAccess extends AbstractXStoreServiceRunner
     {
-        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch5");
+        private static final SingleExecutionPlan plan = buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/xStorePropertyAccessServices.pure", "test::fetch5__String_1_");
 
         XStoreServiceRunnerWithDeepCrossPropertyAccess() throws JavaCompileException
         {
