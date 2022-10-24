@@ -1,0 +1,151 @@
+###Pure
+import meta::external::query::graphQL::metamodel::introspection::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspection::tests::testCountriesFromIntrospection():Boolean[1]
+{
+    let str = readFile('/core_external_query_graphql/binding/toPure/introspection/tests/continents/continents.json')->toOne();
+    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    assertEquals( 'Enum CacheControlScope\n' +
+                  '{\n' +
+                  '  PUBLIC,\n' +
+                  '  PRIVATE\n' +
+                  '}\n' +
+                  'Class Continent\n' +
+                  '{\n' +
+                  '  code : String[1];\n' +
+                  '  name : String[1];\n' +
+                  '  countries : Country[1];\n' +
+                  '}\n' +
+                  'Class ContinentFilterInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class Country\n' +
+                  '{\n' +
+                  '  code : String[1];\n' +
+                  '  name : String[1];\n' +
+                  '  native : String[1];\n' +
+                  '  phone : String[1];\n' +
+                  '  continent : Continent[1];\n' +
+                  '  capital : String[0..1];\n' +
+                  '  currency : String[0..1];\n' +
+                  '  languages : Language[1];\n' +
+                  '  emoji : String[1];\n' +
+                  '  emojiU : String[1];\n' +
+                  '  states : State[1];\n' +
+                  '}\n' +
+                  'Class CountryFilterInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class Language\n' +
+                  '{\n' +
+                  '  code : String[1];\n' +
+                  '  name : String[0..1];\n' +
+                  '  native : String[0..1];\n' +
+                  '  rtl : Boolean[1];\n' +
+                  '}\n' +
+                  'Class LanguageFilterInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class Query\n' +
+                  '{\n' +
+                  '  continents : Continent[1];\n' +
+                  '  continent : Continent[0..1];\n' +
+                  '  countries : Country[1];\n' +
+                  '  country : Country[0..1];\n' +
+                  '  languages : Language[1];\n' +
+                  '  language : Language[0..1];\n' +
+                  '}\n' +
+                  'Class State\n' +
+                  '{\n' +
+                  '  code : String[0..1];\n' +
+                  '  name : String[1];\n' +
+                  '  country : Country[1];\n' +
+                  '}\n' +
+                  'Class StringQueryOperatorInput\n' +
+                  '{\n' +
+                  '}\n' +
+                  'Class __Directive\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  locations : __DirectiveLocation[1];\n' +
+                  '  args : __InputValue[1];\n' +
+                  '}\n' +
+                  'Enum __DirectiveLocation\n' +
+                  '{\n' +
+                  '  QUERY,\n' +
+                  '  MUTATION,\n' +
+                  '  SUBSCRIPTION,\n' +
+                  '  FIELD,\n' +
+                  '  FRAGMENT_DEFINITION,\n' +
+                  '  FRAGMENT_SPREAD,\n' +
+                  '  INLINE_FRAGMENT,\n' +
+                  '  VARIABLE_DEFINITION,\n' +
+                  '  SCHEMA,\n' +
+                  '  SCALAR,\n' +
+                  '  OBJECT,\n' +
+                  '  FIELD_DEFINITION,\n' +
+                  '  ARGUMENT_DEFINITION,\n' +
+                  '  INTERFACE,\n' +
+                  '  UNION,\n' +
+                  '  ENUM,\n' +
+                  '  ENUM_VALUE,\n' +
+                  '  INPUT_OBJECT,\n' +
+                  '  INPUT_FIELD_DEFINITION\n' +
+                  '}\n' +
+                  'Class __EnumValue\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  isDeprecated : Boolean[1];\n' +
+                  '  deprecationReason : String[0..1];\n' +
+                  '}\n' +
+                  'Class __Field\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  args : __InputValue[1];\n' +
+                  '  type : __Type[1];\n' +
+                  '  isDeprecated : Boolean[1];\n' +
+                  '  deprecationReason : String[0..1];\n' +
+                  '}\n' +
+                  'Class __InputValue\n' +
+                  '{\n' +
+                  '  name : String[1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  type : __Type[1];\n' +
+                  '  defaultValue : String[0..1];\n' +
+                  '}\n' +
+                  'Class __Schema\n' +
+                  '{\n' +
+                  '  types : __Type[1];\n' +
+                  '  queryType : __Type[1];\n' +
+                  '  mutationType : __Type[0..1];\n' +
+                  '  subscriptionType : __Type[0..1];\n' +
+                  '  directives : __Directive[1];\n' +
+                  '}\n' +
+                  'Class __Type\n' +
+                  '{\n' +
+                  '  kind : __TypeKind[1];\n' +
+                  '  name : String[0..1];\n' +
+                  '  description : String[0..1];\n' +
+                  '  fields : __Field[*];\n' +
+                  '  interfaces : __Type[*];\n' +
+                  '  possibleTypes : __Type[*];\n' +
+                  '  enumValues : __EnumValue[*];\n' +
+                  '  inputFields : __InputValue[*];\n' +
+                  '  ofType : __Type[0..1];\n' +
+                  '}\n' +
+                  'Enum __TypeKind\n' +
+                  '{\n' +
+                  '  SCALAR,\n' +
+                  '  OBJECT,\n' +
+                  '  INTERFACE,\n' +
+                  '  UNION,\n' +
+                  '  ENUM,\n' +
+                  '  INPUT_OBJECT,\n' +
+                  '  LIST,\n' +
+                  '  NON_NULL\n' +
+                  '}',$res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
+}

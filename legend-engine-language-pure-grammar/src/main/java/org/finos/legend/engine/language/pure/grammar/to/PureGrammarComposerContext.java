@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -32,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.util.List;
+import java.util.Map;
 
 public class PureGrammarComposerContext
 {
@@ -59,7 +61,7 @@ public class PureGrammarComposerContext
     public final List<Function2<InputData, PureGrammarComposerContext, String>> extraMappingTestInputDataComposers;
     public final List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> extraEmbeddedDataComposers;
     public final List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> extraTestAssertionComposers;
-    public final List<Function2<ValueSpecification, PureGrammarComposerContext, String>> extraEmbeddedPureComposers;
+    public final Map<String, Function2<Object, PureGrammarComposerContext, String>> extraEmbeddedPureComposers;
 
     protected PureGrammarComposerContext(Builder builder)
     {
@@ -77,9 +79,10 @@ public class PureGrammarComposerContext
         this.extraConnectionValueComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraConnectionValueComposers);
         this.extraMappingTestInputDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingTestInputDataComposers);
         this.extraEmbeddedDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedDataComposers);
-        this.extraEmbeddedPureComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedPureComposers);
+        this.extraEmbeddedPureComposers = merge(ListIterate.collect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedPureComposers));
         this.extraTestAssertionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraTestAssertionComposers);
     }
+
 
     public String getIndentationString()
     {
@@ -214,5 +217,12 @@ public class PureGrammarComposerContext
     public String returnChar()
     {
         return this.isRenderingHTML() ? "</BR>\n" : "\n";
+    }
+
+    private static Map<String, Function2<Object, PureGrammarComposerContext, String>> merge(List<Map<String, Function2<Object, PureGrammarComposerContext, String>>> vals)
+    {
+        Map<String, Function2<Object, PureGrammarComposerContext, String>> result = Maps.mutable.empty();
+        vals.forEach(f -> f.entrySet().forEach(q -> result.put(q.getKey(), q.getValue())));
+        return result;
     }
 }

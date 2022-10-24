@@ -14,21 +14,41 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
 
-public class CFloat extends ValueSpecification
+@JsonDeserialize(using = CFloat.CFloatDeserializer.class)
+public class CFloat extends PrimitiveValueSpecification
 {
-    public List<Double> values = Collections.emptyList();
-    public Multiplicity multiplicity;
+    public double value;
+
+    public CFloat()
+    {
+    }
+
+    public CFloat(double db)
+    {
+        this.value = db;
+    }
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class CFloatDeserializer extends JsonDeserializer<ValueSpecification>
+    {
+        @Override
+        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CFloat(Double.parseDouble((x.asText()))));
+        }
     }
 }
