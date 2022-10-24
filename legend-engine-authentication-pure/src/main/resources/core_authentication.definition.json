@@ -1,0 +1,5 @@
+{
+  "name" : "core_authentication",
+  "pattern" : "(meta::pure::authentication|meta::pure::credential)(::.*)?",
+  "dependencies" : ["platform"]
+}

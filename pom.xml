@@ -155,6 +155,8 @@
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-runtime-compiler</module>
 
+        <module>legend-engine-authentication-pure</module>
+
         <module>legend-engine-executionPlan-generation</module>
         <module>legend-engine-executionPlan-dependencies</module>
         <module>legend-engine-executionPlan-execution</module>
@@ -1215,6 +1217,13 @@
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-authentication-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>

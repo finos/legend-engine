@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+Class <<typemodifiers.abstract>> meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy extends meta::pure::authentication::Authentication
 {
 }
 

@@ -1,0 +1,235 @@
+###Diagram
+Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::pure::authentication::KeyPairAuthentication,
+        position=(749.00000, 575.00000),
+        width=217.25879,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::authentication::OpenIdConnectAuthentication,
+        position=(888.00000, 680.00000),
+        width=195.23193,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::authentication::Authentication,
+        position=(908.00000, 440.00000),
+        width=158.00000,
+        height=85.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::authentication::ApiKeyAuthentication,
+        position=(1005.00000, 576.00000),
+        width=172.01270,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::credential::PlainTextCredential,
+        position=(343.00000, 578.00000),
+        width=177.00000,
+        height=69.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::credential::Credential,
+        position=(358.00000, 362.00000),
+        width=146.00000,
+        height=65.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::credential::PrivateKeyCredential,
+        position=(459.00000, 479.00000),
+        width=140.72070,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::credential::CredentialProvider,
+        position=(96.00000, 373.00000),
+        width=127.36719,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::credential::VaultCredentialProvider,
+        position=(83.00000, 469.00000),
+        width=156.04297,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(857.62939,611.00000),(987.00000,482.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_3,
+        target=cview_1,
+        points=[(1091.00635,612.00000),(987.00000,482.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_4,
+        target=cview_1,
+        points=[(988.00000,704.00000),(987.00000,482.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_7,
+        target=cview_5,
+        points=[(431.50000,612.50000),(431.00000,394.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_8,
+        target=cview_5,
+        points=[(529.36035,494.00000),(431.00000,394.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_9,
+        target=cview_6,
+        points=[(161.02148,491.00000),(159.68359,395.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::credential::Credential.provider,
+        source=cview_5,
+        target=cview_6
+,        points=[(431.00000,394.50000),(159.68359,395.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::authentication::KeyPairAuthentication.passphrase,
+        source=cview_2,
+        target=cview_7
+,        points=[(770.00000,626.00000),(495.00000,626.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::authentication::OpenIdConnectAuthentication.password,
+        source=cview_4,
+        target=cview_7
+,        points=[(985.61597,709.00000),(494.00000,709.00000),(494.00000,635.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::authentication::ApiKeyAuthentication.value,
+        source=cview_3,
+        target=cview_7
+,        points=[(1130.00000,629.00000),(1132.00000,782.00000),(376.00000,780.00000),(375.00000,629.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::pure::authentication::KeyPairAuthentication.privateKey,
+        source=cview_2,
+        target=cview_8
+,        points=[(779.00000,590.00000),(575.00000,588.00000),(574.00000,497.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}
