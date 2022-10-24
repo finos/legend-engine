@@ -32,6 +32,6 @@ public class TestTranslator extends TestGraphQLRoundtrip
         PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(value);
-        Assert.assertEquals(value, org.finos.legend.pure.generated.core_external_query_graphql_serialization.Root_meta_external_query_graphQL_serialization_graphQLtoString_Document_1__String_1_(new Translator().translate(document, pureModel), pureModel.getExecutionSupport()));
+        Assert.assertEquals(value, org.finos.legend.pure.generated.core_external_query_graphql_serialization_serialization.Root_meta_external_query_graphQL_serialization_graphQLtoString_Document_1__String_1_(new Translator().translate(document, pureModel), pureModel.getExecutionSupport()));
     }
 }

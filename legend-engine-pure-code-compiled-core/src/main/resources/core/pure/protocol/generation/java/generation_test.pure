@@ -67,208 +67,229 @@ function <<test.Test>> meta::protocols::generation::java::tests::testTranslatorJ
 {
   let sources = meta::protocols::generation::java::translation::generateTranslation('meta::protocols::generation::java::tests::model', 'org.finos', [])->meta::pure::executionPlan::engine::java::projectToImplementation().classes.source->sort();
   assertEquals(1, $sources->size());
-  assertEquals( 'package org.finos;\n'+
-                '\n'+
-                'import java.util.Collections;\n'+
-                'import java.util.List;\n'+
-                'import org.eclipse.collections.impl.factory.Lists;\n'+
-                'import org.eclipse.collections.impl.utility.ListIterate;\n'+
-                'import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enum;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_EnumPtr;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_EnumPtr_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enum_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enumeration;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enumeration_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Field;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Field_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Message;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_MessagePtr;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_MessagePtr_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Message_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ProtoBufType;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ScalarType;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ScalarType_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Bool;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Bool_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Int32;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Int32_Impl;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_String;\n'+
-                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_String_Impl;\n'+
-                'import org.finos.scalar.Bool;\n'+
-                'import org.finos.scalar.Int32;\n'+
-                'import org.finos.scalar.String;\n'+
-                '\n'+
-                'public class Translator\n'+
-                '{\n'+
-                '    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum translate(FieldFlag fieldflag,\n'+
-                '                                                                                         PureModel pureModel)\n'+
-                '    {\n'+
+  assertEquals( 'package org.finos;\n' +
+                '\n' +
+                'import java.util.Collections;\n' +
+                'import java.util.List;\n' +
+                'import org.eclipse.collections.impl.factory.Lists;\n' +
+                'import org.eclipse.collections.impl.utility.ListIterate;\n' +
+                'import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enum;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_EnumPtr;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_EnumPtr_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enum_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enumeration;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Enumeration_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Field;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Field_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Message;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_MessagePtr;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_MessagePtr_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_Message_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ProtoBufType;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ScalarType;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_ScalarType_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Bool;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Bool_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Int32;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_Int32_Impl;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_String;\n' +
+                'import org.finos.legend.pure.generated.Root_meta_protocols_generation_java_tests_model_scalar_String_Impl;\n' +
+                'import org.finos.legend.pure.m4.coreinstance.CoreInstance;\n' +
+                'import org.finos.scalar.Bool;\n' +
+                'import org.finos.scalar.Int32;\n' +
+                'import org.finos.scalar.String;\n' +
+                '\n' +
+                'public class Translator\n' +
+                '{\n' +
+                '    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum translate(FieldFlag fieldflag,\n' +
+                '                                                                                         PureModel pureModel)\n' +
+                '    {\n' +
                 '        return fieldflag == null ? null\n' +
-                '                                 : pureModel.getEnumValue("meta::protocols::generation::java::tests::model::FieldFlag",\n'+
-                '                                                          fieldflag.name());\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_Enum translate(Enum _enum,\n'+
-                '                                                                          PureModel pureModel)\n'+
-                '    {\n'+
-                '        return _enum == null ? null\n'+
-                '                             : new Root_meta_protocols_generation_java_tests_model_Enum_Impl("")._constant(_enum.constant)\n'+
-                '                                                                                                ._constantNumber(_enum.constantNumber);\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_EnumPtr translate(EnumPtr enumptr,\n'+
-                '                                                                             PureModel pureModel)\n'+
-                '    {\n'+
-                '        return enumptr == null ? null\n'+
-                '                               : new Root_meta_protocols_generation_java_tests_model_EnumPtr_Impl("")._name(enumptr.name);\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_Enumeration translate(Enumeration enumeration,\n'+
-                '                                                                                 PureModel pureModel)\n'+
-                '    {\n'+
-                '        return enumeration == null ? null\n'+
-                '                                   : new Root_meta_protocols_generation_java_tests_model_Enumeration_Impl("")._name(enumeration.name)\n'+
-                '                                                                                                             ._values(ListIterate.collect(enumeration.values == null\n'+
-                '                                                                                                                                                     ? Collections.<Enum>emptyList()\n'+
-                '                                                                                                                                                     : enumeration.values,\n'+
-                '                                                                                                                                          (Enum x) -> this.translate(x, pureModel)));\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_Field translate(Field field,\n'+
-                '                                                                           PureModel pureModel)\n'+
-                '    {\n'+
-                '        return field == null ? null\n'+
-                '                             : new Root_meta_protocols_generation_java_tests_model_Field_Impl("")._flag(this.translate(field.flag, pureModel))\n'+
-                '                                                                                                 ._binaryFieldNumber(field.binaryFieldNumber)\n'+
-                '                                                                                                 ._name(field.name)\n'+
-                '                                                                                                 ._type(this.translate(field.type, pureModel))\n'+
-                '                                                                                                 ._repeated(field.repeated);\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_Message translate(Message message,\n'+
-                '                                                                             PureModel pureModel)\n'+
-                '    {\n'+
-                '        return message == null ? null\n'+
-                '                               : new Root_meta_protocols_generation_java_tests_model_Message_Impl("")._name(message.name)\n'+
-                '                                                                                                     ._fields(ListIterate.collect(message.fields == null\n'+
-                '                                                                                                                                         ? Collections.<Field>emptyList()\n'+
-                '                                                                                                                                         : message.fields,\n'+
-                '                                                                                                                                  (Field x) -> this.translate(x, pureModel)))\n'+
-                '                                                                                                     ._reservedFieldNames(Lists.mutable.withAll(message.reservedFieldNames))\n'+
-                '                                                                                                     ._reservedFieldNumbers(Lists.mutable.withAll(message.reservedFieldNumbers));\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_MessagePtr translate(MessagePtr messageptr,\n'+
-                '                                                                                PureModel pureModel)\n'+
-                '    {\n'+
-                '        return messageptr == null ? null\n'+
-                '                                  : new Root_meta_protocols_generation_java_tests_model_MessagePtr_Impl("")._name(messageptr.name);\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_ProtoBufType translate(ProtoBufType protobuftype,\n'+
-                '                                                                                  PureModel pureModel)\n'+
-                '    {\n'+
-                '        return protobuftype == null ? null\n'+
-                '                                    : protobuftype.accept(new ProtoBufTypeVisitor<Root_meta_protocols_generation_java_tests_model_ProtoBufType>()\n'+
-                '        {\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Bool val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(EnumPtr val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Enumeration val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Int32 val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Message val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(MessagePtr val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(ScalarType val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(String val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '        });\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_ScalarType translate(ScalarType scalartype,\n'+
-                '                                                                                PureModel pureModel)\n'+
-                '    {\n'+
-                '        return scalartype == null ? null\n'+
-                '                                  : scalartype.accept(new ProtoBufTypeVisitor<Root_meta_protocols_generation_java_tests_model_ScalarType>()\n'+
-                '        {\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Bool val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(EnumPtr val)\n'+
-                '            {\n'+
-                '                return null;\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Enumeration val)\n'+
-                '            {\n'+
-                '                return null;\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Int32 val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Message val)\n'+
-                '            {\n'+
-                '                return null;\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(MessagePtr val)\n'+
-                '            {\n'+
-                '                return null;\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(ScalarType val)\n'+
-                '            {\n'+
-                '                return scalartype == null ? null\n'+
-                '                                          : new Root_meta_protocols_generation_java_tests_model_ScalarType_Impl("");\n'+
-                '            }\n'+
-                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(String val)\n'+
-                '            {\n'+
-                '                return Translator.this.translate(val, pureModel);\n'+
-                '            }\n'+
-                '        });\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_scalar_Bool translate(Bool bool,\n'+
-                '                                                                                 PureModel pureModel)\n'+
-                '    {\n'+
-                '        return bool == null ? null\n'+
-                '                            : new Root_meta_protocols_generation_java_tests_model_scalar_Bool_Impl("");\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_scalar_Int32 translate(Int32 int32,\n'+
-                '                                                                                  PureModel pureModel)\n'+
-                '    {\n'+
-                '        return int32 == null ? null\n'+
-                '                             : new Root_meta_protocols_generation_java_tests_model_scalar_Int32_Impl("");\n'+
-                '    }\n'+
-                '\n'+
-                '    public Root_meta_protocols_generation_java_tests_model_scalar_String translate(String string,\n'+
-                '                                                                                   PureModel pureModel)\n'+
-                '    {\n'+
-                '        return string == null ? null\n'+
-                '                              : new Root_meta_protocols_generation_java_tests_model_scalar_String_Impl("");\n'+
-                '    }\n'+
+                '                                 : pureModel.getEnumValue(\"meta::protocols::generation::java::tests::model::FieldFlag\",\n' +
+                '                                                          fieldflag.name());\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_Enum translate(Enum _enum,\n' +
+                '                                                                          PureModel pureModel)\n' +
+                '    {\n' +
+                '        return _enum == null ? null\n' +
+                '                             : new Root_meta_protocols_generation_java_tests_model_Enum_Impl(\"\",                                                                null,\n' +
+                '                                                                                                                                                                pureModel.getType(\"meta::protocols::generation::java::tests::model::Enum\"))\n' +
+                '                                                                                                ._constant(_enum.constant)\n' +
+                '                                                                                                ._constantNumber(_enum.constantNumber);\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_EnumPtr translate(EnumPtr enumptr,\n' +
+                '                                                                             PureModel pureModel)\n' +
+                '    {\n' +
+                '        return enumptr == null ? null\n' +
+                '                               : new Root_meta_protocols_generation_java_tests_model_EnumPtr_Impl(\"\",                                                                   null,\n' +
+                '                                                                                                                                                                        pureModel.getType(\"meta::protocols::generation::java::tests::model::EnumPtr\"))\n' +
+                '                                                                                                     ._name(enumptr.name);\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_Enumeration translate(Enumeration enumeration,\n' +
+                '                                                                                 PureModel pureModel)\n' +
+                '    {\n' +
+                '        return enumeration == null ? null\n' +
+                '                                   : new Root_meta_protocols_generation_java_tests_model_Enumeration_Impl(\"\",                                                                       null,\n' +
+                '                                                                                                                                                                                    pureModel.getType(\"meta::protocols::generation::java::tests::model::Enumeration\"))\n' +
+                '                                                                                                             ._name(enumeration.name)\n' +
+                '                                                                                                             ._values(ListIterate.collect(enumeration.values == null\n' +
+                '                                                                                                                                                     ? Collections.<Enum>emptyList()\n' +
+                '                                                                                                                                                     : enumeration.values,\n' +
+                '                                                                                                                                          (Enum x) -> this.translate(x, pureModel)));\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_Field translate(Field field,\n' +
+                '                                                                           PureModel pureModel)\n' +
+                '    {\n' +
+                '        return field == null ? null\n' +
+                '                             : new Root_meta_protocols_generation_java_tests_model_Field_Impl(\"\",                                                                 null,\n' +
+                '                                                                                                                                                                  pureModel.getType(\"meta::protocols::generation::java::tests::model::Field\"))\n' +
+                '                                                                                                 ._flag(this.translate(field.flag, pureModel))\n' +
+                '                                                                                                 ._binaryFieldNumber(field.binaryFieldNumber)\n' +
+                '                                                                                                 ._name(field.name)\n' +
+                '                                                                                                 ._type(this.translate(field.type, pureModel))\n' +
+                '                                                                                                 ._repeated(field.repeated);\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_Message translate(Message message,\n' +
+                '                                                                             PureModel pureModel)\n' +
+                '    {\n' +
+                '        return message == null ? null\n' +
+                '                               : new Root_meta_protocols_generation_java_tests_model_Message_Impl(\"\",                                                                   null,\n' +
+                '                                                                                                                                                                        pureModel.getType(\"meta::protocols::generation::java::tests::model::Message\"))\n' +
+                '                                                                                                     ._name(message.name)\n' +
+                '                                                                                                     ._fields(ListIterate.collect(message.fields == null\n' +
+                '                                                                                                                                         ? Collections.<Field>emptyList()\n' +
+                '                                                                                                                                         : message.fields,\n' +
+                '                                                                                                                                  (Field x) -> this.translate(x, pureModel)))\n' +
+                '                                                                                                     ._reservedFieldNames(Lists.mutable.withAll(message.reservedFieldNames))\n' +
+                '                                                                                                     ._reservedFieldNumbers(Lists.mutable.withAll(message.reservedFieldNumbers));\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_MessagePtr translate(MessagePtr messageptr,\n' +
+                '                                                                                PureModel pureModel)\n' +
+                '    {\n' +
+                '        return messageptr == null ? null\n' +
+                '                                  : new Root_meta_protocols_generation_java_tests_model_MessagePtr_Impl(\"\",                                                                      null,\n' +
+                '                                                                                                                                                                                 pureModel.getType(\"meta::protocols::generation::java::tests::model::MessagePtr\"))\n' +
+                '                                                                                                           ._name(messageptr.name);\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_ProtoBufType translate(ProtoBufType protobuftype,\n' +
+                '                                                                                  PureModel pureModel)\n' +
+                '    {\n' +
+                '        return protobuftype == null ? null\n' +
+                '                                    : protobuftype.accept(new ProtoBufTypeVisitor<Root_meta_protocols_generation_java_tests_model_ProtoBufType>()\n' +
+                '        {\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Bool val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(EnumPtr val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Enumeration val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Int32 val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(Message val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(MessagePtr val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(ScalarType val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ProtoBufType visit(String val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '        });\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_ScalarType translate(ScalarType scalartype,\n' +
+                '                                                                                PureModel pureModel)\n' +
+                '    {\n' +
+                '        return scalartype == null ? null\n' +
+                '                                  : scalartype.accept(new ProtoBufTypeVisitor<Root_meta_protocols_generation_java_tests_model_ScalarType>()\n' +
+                '        {\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Bool val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(EnumPtr val)\n' +
+                '            {\n' +
+                '                return null;\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Enumeration val)\n' +
+                '            {\n' +
+                '                return null;\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Int32 val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(Message val)\n' +
+                '            {\n' +
+                '                return null;\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(MessagePtr val)\n' +
+                '            {\n' +
+                '                return null;\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(ScalarType val)\n' +
+                '            {\n' +
+                '                return scalartype == null ? null\n' +
+                '                                          : new Root_meta_protocols_generation_java_tests_model_ScalarType_Impl(\"\",\n' +
+                '                                                                                                                null,\n' +
+                '                                                                                                                pureModel.getType(\"meta::protocols::generation::java::tests::model::ScalarType\"));\n' +
+                '            }\n' +
+                '            public Root_meta_protocols_generation_java_tests_model_ScalarType visit(String val)\n' +
+                '            {\n' +
+                '                return Translator.this.translate(val, pureModel);\n' +
+                '            }\n' +
+                '        });\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_scalar_Bool translate(Bool bool,\n' +
+                '                                                                                 PureModel pureModel)\n' +
+                '    {\n' +
+                '        return bool == null ? null\n' +
+                '                            : new Root_meta_protocols_generation_java_tests_model_scalar_Bool_Impl(\"\",\n' +
+                '                                                                                                   null,\n' +
+                '                                                                                                   pureModel.getType(\"meta::protocols::generation::java::tests::model::scalar::Bool\"));\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_scalar_Int32 translate(Int32 int32,\n' +
+                '                                                                                  PureModel pureModel)\n' +
+                '    {\n' +
+                '        return int32 == null ? null\n' +
+                '                             : new Root_meta_protocols_generation_java_tests_model_scalar_Int32_Impl(\"\",\n' +
+                '                                                                                                     null,\n' +
+                '                                                                                                     pureModel.getType(\"meta::protocols::generation::java::tests::model::scalar::Int32\"));\n' +
+                '    }\n' +
+                '\n' +
+                '    public Root_meta_protocols_generation_java_tests_model_scalar_String translate(String string,\n' +
+                '                                                                                   PureModel pureModel)\n' +
+                '    {\n' +
+                '        return string == null ? null\n' +
+                '                              : new Root_meta_protocols_generation_java_tests_model_scalar_String_Impl(\"\",\n' +
+                '                                                                                                       null,\n' +
+                '                                                                                                       pureModel.getType(\"meta::protocols::generation::java::tests::model::scalar::String\"));\n' +
+                '    }\n' +
                 '}', $sources->at(0));
 }
 

@@ -1,0 +1,13 @@
+import meta::external::query::graphQL::metamodel::introspection::*;
+
+Class meta::external::query::graphQL::transformation::introspection::BaseGraphQLType
+{
+  __schema : __Schema[1];
+}
+
+function meta::external::query::graphQL::transformation::introspection::graphQLIntrospectionQuery(cl:Class<Any>[1], query:meta::external::query::graphQL::metamodel::sdl::Document[1]):String[1]
+{
+  let fullTypeGraph = meta::external::query::graphQL::binding::fromPure::introspection::buildGraphQLSchemaFromPureTypes($cl);
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, meta::external::query::graphQL::transformation::introspection::BaseGraphQLType);
+  $fullTypeGraph->meta::json::toJSON($graphFetch, meta::json::config(false, false, false, false, true));
+}

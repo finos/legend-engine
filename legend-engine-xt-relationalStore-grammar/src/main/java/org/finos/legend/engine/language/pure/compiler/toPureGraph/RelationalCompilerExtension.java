@@ -350,6 +350,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         List<PostProcessor> postProcessors = relationalDatabaseConnection.postProcessors == null ? FastList.newList() : relationalDatabaseConnection.postProcessors;
 
                         MutableList<Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>> pp = ListIterate.collect(postProcessors, p -> IRelationalCompilerExtension.process(
+                                relationalDatabaseConnection,
                                 p,
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraConnectionPostProcessor),
                                 context));
@@ -530,9 +531,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function2<PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
+    public List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
     {
-        return Lists.mutable.with((processor, context) ->
+        return Lists.mutable.with((connection, processor, context) ->
         {
             if (processor instanceof MapperPostProcessor)
             {
