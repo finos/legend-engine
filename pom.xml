@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos</groupId>
         <artifactId>finos</artifactId>
-        <version>4</version>
+        <version>5</version>
     </parent>
 
     <name>Legend Engine</name>
@@ -269,6 +269,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
+        <project.build.outputTimestamp>1674482618</project.build.outputTimestamp>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -338,10 +339,10 @@
         <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
-        <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
+        <maven.jar.plugin.version>3.3.0</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
-        <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
+        <versions.maven.plugin.version>2.13.0</versions.maven.plugin.version>
         <nexus.staging.maven.plugin.version>1.6.8</nexus.staging.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
