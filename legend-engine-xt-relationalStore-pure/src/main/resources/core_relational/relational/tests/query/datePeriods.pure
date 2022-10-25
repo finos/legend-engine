@@ -361,6 +361,21 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    assertEquals('select "org_chart_entity_0".name as "Sales Division", "income_function_0".code as "Income Function", sum((case when "calendar_0"."fiscal day" <= 37 then 1.0 else 0.0 end * "root".credits)) as "YTD Gross Credits", sum((case when (week("calendar_0"."date") = week(\'2015-02-25\') and DAY_OF_WEEK("calendar_0"."date") <= DAY_OF_WEEK(\'2015-02-25\')) then 1.0 else 0.0 end * "root".credits)) as "WTD Gross Credits" from SALES_GCS as "root" left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) left outer join INCOME_FUNCTION as "income_function_0" on ("root".if_code = "income_function_0".code) left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") where ("calendar_0"."date" > \'2015-02-01\' and "calendar_0"."date" <= \'2015-02-25\') group by "Sales Division","Income Function" order by "Sales Division" desc,"Income Function" desc',$result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testDayOfWeek(): Boolean[1]
+{
+  let result = execute(| let startDate = mostRecentDayOfWeek(%2022-02-25, DayOfWeek.Monday);
+                         let endDate = %2022-03-25;
+                         let datePath = #/meta::relational::tests::groupBy::datePeriods::domain::SalesCredit/tradeDate/date#;
+                         meta::relational::tests::groupBy::datePeriods::domain::SalesCredit.all()
+                            ->filter(gc | $gc->meta::relational::tests::groupBy::datePeriods::filterReportDates($startDate, $endDate, #/meta::relational::tests::groupBy::datePeriods::domain::SalesCredit/tradeDate/date#))
+                            ->project([#/meta::relational::tests::groupBy::datePeriods::domain::SalesCredit/salesDivision/name#],'name');,
+                       meta::relational::tests::groupBy::datePeriods::mapping::myMapping,
+                       testRuntime(),
+                       meta::relational::extension::relationalExtensions());
+
+   assertEquals('select "org_chart_entity_0".name as "name" from SALES_GCS as "root" left outer join calendar as "calendar_0" on ("root".tradeDate = "calendar_0"."date") left outer join ORG_CHART_ENTITY as "org_chart_entity_0" on ("root".division_id = "org_chart_entity_0".oe_id) where ("calendar_0"."date" > \'2022-02-21\' and "calendar_0"."date" <= \'2022-03-25\')', $result->sqlRemoveFormatting(0));
+}
+
 function meta::relational::tests::groupBy::datePeriods::ytd(value:Float[1], reportEndDate:FiscalCalendarDate[1], elementBusinessDate:FiscalCalendarDate[1]):Float[1]
 {
    if ($elementBusinessDate.isYtd($reportEndDate), | $value, | 0.0)
