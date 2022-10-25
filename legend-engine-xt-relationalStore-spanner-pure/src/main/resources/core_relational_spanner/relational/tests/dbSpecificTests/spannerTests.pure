@@ -22,7 +22,7 @@ function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::spann
 {
   let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Spanner, meta::relational::extension::relationalExtensions());
 
-  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions
+  meta::relational::tests::dbSpecificTests::sqlQueryTests
           ->collectParameterizedTests('Spanner',
                 ^DbTestConfig(dbType=DatabaseType.Spanner, connection=$connection), [],
                 meta::relational::tests::dbSpecificTests::postgres::testsFilter_FunctionDefinition_1__Boolean_1_
