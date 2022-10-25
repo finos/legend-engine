@@ -624,6 +624,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableIdBased();
         DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getLoansStagingTableWithoutDuplicatesIdBased();
 
         String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
@@ -631,6 +632,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         createStagingTable(stagingTable);
         // Create temp table
         createTempTable(tempTable);
+        // Create staging table without duplicates
+        createStagingTable(stagingTableWithoutDuplicates);
 
         BitemporalDelta ingestMode = BitemporalDelta.builder()
             .digestField(digestName)
@@ -649,7 +652,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
-        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates).build();
 
         // ------------ Perform Pass1 ------------------------
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass1.csv";
@@ -1307,11 +1310,14 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     {
         DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getLoansStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
 
         String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
+        // Create staging table without duplicates
+        createStagingTable(stagingTableWithoutDuplicates);
 
         BitemporalDelta ingestMode = BitemporalDelta.builder()
             .digestField(digestName)
@@ -1335,7 +1341,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
-        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates).build();
 
         // ------------ Perform Pass1 ------------------------
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
@@ -1384,11 +1390,14 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     {
         DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
         DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getLoansStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
 
         String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
+        // Create staging table without duplicates
+        createStagingTable(stagingTableWithoutDuplicates);
 
         BitemporalDelta ingestMode = BitemporalDelta.builder()
             .digestField(digestName)
@@ -1412,7 +1421,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
-        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates).build();
 
         // ------------ Perform Pass1 ------------------------
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";

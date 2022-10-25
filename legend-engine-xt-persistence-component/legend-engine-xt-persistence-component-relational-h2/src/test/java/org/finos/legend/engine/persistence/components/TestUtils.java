@@ -51,6 +51,7 @@ public class TestUtils
     public static String stagingTableName = "staging";
     public static String tempTableName = "temp";
     public static String tempWithDeleteIndicatorTableName = "tempWithDeleteIndicator";
+    public static String stagingTableWithoutDuplicatesName = "stagingWihtoutDuplicates";
 
     // Sample table 1
     public static String idName = "id";
@@ -705,6 +706,21 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getLoansStagingTableWithoutDuplicatesIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableWithoutDuplicatesName)
+            .schema(SchemaDefinition.builder()
+                .addFields(loanId)
+                .addFields(loanDateTime)
+                .addFields(loanBalance)
+                .addFields(digest)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getLoansStagingTableWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
@@ -742,6 +758,23 @@ public class TestUtils
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(loanId)
+                .addFields(loanDateTime)
+                .addFields(loanBalance)
+                .addFields(digest)
+                .addFields(deleteIndicator)
+                .addFields(dataSplit)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getLoansStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableWithoutDuplicatesName)
             .schema(SchemaDefinition.builder()
                 .addFields(loanId)
                 .addFields(loanDateTime)
