@@ -24,7 +24,9 @@ public class SpannerRelationalTestServerInvoker
   {
     RelationalTestServer.execute(
         args.length == 0 ? new String[] {"server",
-            "org/finos/legend/engine/server/test/userTestConfig_withSpannerTestConnection.json"} : args,
+            "legend-engine-xt-relationalStore-spanner-execution-tests/src/test/resources/org/finos/legend/engine" 
+            + "/server/test/userTestConfig_withSpannerTestConnection.json"} :
+            args,
         new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "spannerTest")
     );
   }

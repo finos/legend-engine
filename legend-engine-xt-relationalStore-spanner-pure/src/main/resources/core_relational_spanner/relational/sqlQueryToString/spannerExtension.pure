@@ -12,11 +12,156 @@
 // See the License for the specific languameta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SpannerDatasourceSpecification governing permissions and
 // limitations under the License.
 
-import meta::relational::functions::sqlQueryToString::postgres::*;
+import meta::relational::functions::sqlQueryToString::spanner::*;
+import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
 
 function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::spanner::dbExtensionLoaderForSpanner():DbExtensionLoader[1]
 {
-  ^DbExtensionLoader(dbType = DatabaseType.Spanner, loader = createDbExtensionForPostgres__DbExtension_1_);
+  ^DbExtensionLoader(dbType = DatabaseType.Spanner, loader = createDbExtensionForSpanner__DbExtension_1_);
+}
+
+function meta::relational::functions::sqlQueryToString::spanner::createDbExtensionForSpanner():DbExtension[1]
+{
+   let reservedWords = spannerReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSpanner());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForSpanner()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      joinStringsProcessor = processJoinStringsOperationForSpanner_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForSpanner_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::spannerReservedWords():String[*]
+{
+  [];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getLiteralProcessorsForSpanner():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_->literalTransform())),
+      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',          transform = convertStringToSQLString_String_1__String_1_->literalTransform())),
+      pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_->literalTransform())),
+      pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getDynaFunctionToSqlForSpanner(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForSpanner($p)})),
+    dynaFnToSql('exp',                    $allStates,            ^ToSql(format='exp(%s::float)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s::float)')),
+    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('pow',                    $allStates,            ^ToSql(format='dpow(%s, %s)')),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s::float)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::generateDateDiffExpressionForSpanner(params:String[*]):String[1]
+{
+  let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+
+  let dbSpecificUnits = [
+
+     { | format('(%s)', [
+        'DATE_PART(\'year\', %s) - DATE_PART(\'year\', %s)'
+     ])},
+     {| format('(%s * 12 + (%s))', [
+        generateDateDiffExpressionForSpanner([$params->at(0), $params->at(1), DurationUnit.YEARS->toString()]),
+        'DATE_PART(\'month\', %s) - DATE_PART(\'month\', %s)'
+     ])},
+     {| format('(%s)', [
+        'TRUNC(DATE_PART(\'day\', %s - %s)/7)'
+     ])},
+     {| format('(%s)', [
+        'DATE_PART(\'day\', %s - %s)'
+     ])},
+     {| format('(%s * 24 + (%s))', [
+        generateDateDiffExpressionForSpanner([$params->at(0), $params->at(1), DurationUnit.DAYS->toString()]),
+        'DATE_PART(\'hour\', %s - %s)'
+     ])},
+     {| format('(%s * 60 + (%s))', [
+        generateDateDiffExpressionForSpanner([$params->at(0), $params->at(1), DurationUnit.HOURS->toString()]),
+        'DATE_PART(\'minute\', %s - %s)'
+     ])},
+     {| format('(%s * 60 + (%s))', [
+        generateDateDiffExpressionForSpanner([$params->at(0), $params->at(1), DurationUnit.MINUTES->toString()]),
+        'DATE_PART(\'second\', %s - %s)'
+     ])},
+     {| format('(%s * 1000 + (%s))', [
+        generateDateDiffExpressionForSpanner([$params->at(0), $params->at(1), DurationUnit.SECONDS->toString()]),
+        'DATE_PART(\'milliseconds\', %s - %s)'
+     ])}
+  ];
+
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processJoinStringsOperationForSpanner(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('Text\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processSelectSQLQueryForSpanner(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSpanner($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processSelectSQLQueryForSpanner(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropForSpanner_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processSliceOrDropForSpanner(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+{
+   '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' limit %s'->format($size));
 }
