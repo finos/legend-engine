@@ -370,6 +370,15 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
+
+        // ------------ Perform Pass6 (identical records) -------------------------
+        String dataPass6 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass6.csv";
+        String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass6.csv";
+        // 1. Load staging table
+        loadStagingDataForLoans(dataPass6);
+        // 2. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
 
@@ -490,6 +499,20 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats.add(new HashMap<>());
         expectedStats.add(new HashMap<>());
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass3 (identical records) ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
+        String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass6.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDataSplit(dataPass3);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -569,6 +592,27 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats = new ArrayList<>();
         expectedStats.add(new HashMap<>());
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass5 (identical records) ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
+        String expectedDataPass5 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass5.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDataSplit(dataPass3);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass6 (identical records) ------------------------
+        String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass6.csv";
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -928,6 +972,15 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
+
+        // ------------ Perform Pass6 (identical records) ------------------------
+        String dataPass6 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass6.csv";
+        String expectedDataPass6 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass6.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass6);
+        // 2. Execute Plan and Verify Results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
     /*
@@ -1052,6 +1105,18 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats.add(new HashMap<>());
         expectedStats.add(new HashMap<>());
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass3 (identical records) ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
+        String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass4.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(70, 70));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
     /*
@@ -1123,6 +1188,18 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats = new ArrayList<>();
         expectedStats.add(new HashMap<>());
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass4 (identical records) ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
+        String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass4.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(70, 71));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
     /*
