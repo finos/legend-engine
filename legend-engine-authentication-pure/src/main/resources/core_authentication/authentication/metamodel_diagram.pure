@@ -27,71 +27,11 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_5(
-        type=meta::pure::credential::Credential,
-        position=(358.00000, 362.00000),
-        width=146.00000,
-        height=65.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_6(
-        type=meta::pure::credential::CredentialProvider,
-        position=(96.00000, 373.00000),
-        width=127.36719,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_9(
-        type=meta::pure::credential::VaultCredentialProvider,
-        position=(83.00000, 469.00000),
-        width=156.04297,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_7(
-        type=meta::pure::credential::PlainTextCredential,
-        position=(219.00000, 554.00000),
-        width=235.50635,
-        height=114.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_2(
         type=meta::pure::authentication::KeyPairAuthentication,
         position=(680.00000, 574.00000),
         width=217.25879,
         height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_4(
-        type=meta::pure::authentication::OpenIdConnectAuthentication,
-        position=(784.00000, 679.00000),
-        width=195.23193,
-        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -123,11 +63,107 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_7(
+        type=meta::pure::credential::PlainTextCredential,
+        position=(145.00000, 561.00000),
+        width=235.50635,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     TypeView cview_8(
         type=meta::pure::credential::PrivateKeyCredential,
-        position=(447.00000, 482.00000),
+        position=(494.00000, 478.00000),
         width=140.72070,
         height=53.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::credential::Credential,
+        position=(376.00000, 363.00000),
+        width=146.00000,
+        height=65.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::pure::credential::JsonWebTokenCredential,
+        position=(434.00635, 650.25000),
+        width=166.25000,
+        height=49.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::credential::CredentialProvider,
+        position=(-105.00000, 373.00000),
+        width=127.36719,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::credential::OAuthTokenProvider,
+        position=(-109.99365, 534.75000),
+        width=139.78906,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::pure::credential::OidcCredentialProvider,
+        position=(-226.99365, 469.75000),
+        width=154.03906,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::credential::VaultCredentialProvider,
+        position=(-11.00000, 469.00000),
+        width=156.04297,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::pure::authentication::OAuthAuthentication,
+        position=(803.00953, 678.75000),
+        width=164.00000,
+        height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -154,45 +190,72 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         lineStyle=SIMPLE)
 
     GeneralizationView gview_2(
-        source=cview_4,
-        target=cview_1,
-        points=[(884.00000,703.00000),(987.00000,482.50000)],
+        source=cview_7,
+        target=cview_5,
+        points=[(262.75317,618.00000),(449.00000,395.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
-        source=cview_7,
+        source=cview_8,
         target=cview_5,
-        points=[(336.75317,611.00000),(431.00000,394.50000)],
+        points=[(564.36035,504.50000),(449.00000,395.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_4(
-        source=cview_8,
-        target=cview_5,
-        points=[(517.36035,508.50000),(431.00000,394.50000)],
+        source=cview_9,
+        target=cview_6,
+        points=[(67.02148,491.00000),(-41.31641,395.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_5(
-        source=cview_9,
-        target=cview_6,
-        points=[(161.02148,491.00000),(159.68359,395.00000)],
+        source=cview_10,
+        target=cview_1,
+        points=[(1100.86377,707.50000),(987.00000,482.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_6(
-        source=cview_10,
+        source=cview_12,
+        target=cview_5,
+        points=[(491.00635,678.75000),(454.60443,423.22859)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_13,
+        target=cview_6,
+        points=[(-149.97412,491.75000),(-41.31641,395.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_14,
+        target=cview_6,
+        points=[(-40.09912,556.75000),(-41.31641,395.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_15,
         target=cview_1,
-        points=[(1100.86377,707.50000),(987.00000,482.50000)],
+        points=[(885.00953,707.75000),(987.00000,482.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -202,7 +265,7 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         property=meta::pure::credential::Credential.provider,
         source=cview_5,
         target=cview_6
-,        points=[(431.00000,394.50000),(159.68359,395.00000)],
+,        points=[(449.00000,395.50000),(-41.31641,395.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -216,7 +279,7 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         property=meta::pure::authentication::KeyPairAuthentication.passphrase,
         source=cview_2,
         target=cview_7
-,        points=[(701.00000,625.00000),(400.25317,624.50000)],
+,        points=[(687.22447,606.73099),(679.00953,604.75000),(379.00953,605.75000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -227,10 +290,10 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         lineStyle=SIMPLE)
 
     PropertyView pview_2(
-        property=meta::pure::authentication::OpenIdConnectAuthentication.password,
-        source=cview_4,
+        property=meta::pure::authentication::ApiKeyAuthentication.value,
+        source=cview_3,
         target=cview_7
-,        points=[(881.61597,708.00000),(444.50635,707.00000),(443.50635,662.00000)],
+,        points=[(1232.50635,641.00000),(1232.50635,790.50000),(161.00635,787.25000),(161.50635,666.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -241,10 +304,10 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::pure::authentication::ApiKeyAuthentication.value,
-        source=cview_3,
-        target=cview_7
-,        points=[(1232.50635,641.00000),(1232.50635,790.50000),(236.50635,790.00000),(235.50635,659.00000)],
+        property=meta::pure::authentication::KeyPairAuthentication.privateKey,
+        source=cview_2,
+        target=cview_8
+,        points=[(710.00000,589.00000),(709.00635,507.25000),(609.00000,507.50000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -255,10 +318,10 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         lineStyle=SIMPLE)
 
     PropertyView pview_4(
-        property=meta::pure::authentication::KeyPairAuthentication.privateKey,
-        source=cview_2,
-        target=cview_8
-,        points=[(710.00000,589.00000),(563.50635,588.00000),(562.00000,511.50000)],
+        property=meta::pure::authentication::UsernamePasswordAuthentication.password,
+        source=cview_10,
+        target=cview_7
+,        points=[(1100.86377,707.50000),(1101.50635,771.50000),(239.00635,767.25000),(240.50635,662.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -269,10 +332,24 @@ Diagram meta::pure::authentication::Authentication_Diagram(width=0.0, height=0.0
         lineStyle=SIMPLE)
 
     PropertyView pview_5(
-        property=meta::pure::authentication::UsernamePasswordAuthentication.password,
-        source=cview_10,
+        property=meta::pure::authentication::OAuthAuthentication.secret,
+        source=cview_15,
         target=cview_7
-,        points=[(1100.86377,707.50000),(1101.50635,771.50000),(314.50635,770.50000),(314.50635,655.00000)],
+,        points=[(818.00953,722.75000),(362.00953,722.75000),(362.00953,669.75000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::pure::authentication::OAuthAuthentication.token,
+        source=cview_15,
+        target=cview_12
+,        points=[(807.00953,690.75000),(568.00953,687.75000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
