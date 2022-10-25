@@ -83,7 +83,7 @@ public class CreateTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expectedAdd = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,KEY CLUSTERED_COLUMN_INDEX (`col_int`) USING CLUSTERED COLUMNSTORE)";
+        String expectedAdd = "CREATE REFERENCE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,KEY CLUSTERED_COLUMN_INDEX (`col_int`) USING CLUSTERED COLUMNSTORE)";
 
         Assertions.assertEquals(expectedAdd, list.get(0));
     }
@@ -107,7 +107,7 @@ public class CreateTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expectedAdd = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,INDEX `my_idx` (`col_int`))";
+        String expectedAdd = "CREATE REFERENCE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,INDEX `my_idx` (`col_int`))";
 
         Assertions.assertEquals(expectedAdd, list.get(0));
     }
