@@ -32,8 +32,7 @@ function meta::relational::functions::sqlQueryToString::spanner::createDbExtensi
    let reservedWords = spannerReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSpanner());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
-   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
-     getDynaFunctionToSqlForSpanner()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+   let dynaFuncDispatch = getDynaFunctionToSqlForSpanner($literalProcessor)->groupBy(d| $d.funcName)->getDynaFunctionDispatcher();
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
@@ -64,19 +63,39 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
    ])
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getDynaFunctionToSqlForSpanner(): DynaFunctionToSql[*]
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getDynaFunctionToSqlForSpanner(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
 
   [
+    dynaFnToSql('abs',                    $allStates,            ^ToSql(format='abs(%s)')),
+    dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
+    dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('asin',                   $allStates,            ^ToSql(format='asin(%s)')),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('atan',                   $allStates,            ^ToSql(format='atan(%s)')),
+    dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
+    dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
+    dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')), 
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForSpanner($p)})),
+    dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
+    dynaFnToSql('equal',                  $allStates,            ^ToSql(format='%s = %s')),
     dynaFnToSql('exp',                    $allStates,            ^ToSql(format='exp(%s::float)')),
+    dynaFnToSql('floor',                  $allStates,            ^ToSql(format='floor(%s)')),
+    dynaFnToSql('greaterThan',            $allStates,            ^ToSql(format='%s > %s')),
+    dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
+    dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
+    dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s::float)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
+    dynaFnToSql('notEqualAnsi',           $allStates,            ^ToSql(format='%s <> %s')),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
@@ -84,13 +103,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('replace',                $allStates,            ^ToSql(format='replace(%s, %s, %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s::float)')),
+    dynaFnToSql('sin',                    $allStates,            ^ToSql(format='sin(%s)')),
+    dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),
+    dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null')),
+    dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(true, [], $literalProcessor)})),
+    dynaFnToSql('sqrt',                   $allStates,            ^ToSql(format='sqrt(%s)')),
+    dynaFnToSql('startsWith',             $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('tan',                    $allStates,            ^ToSql(format='tan(%s)')),
+    dynaFnToSql('toLower',                $allStates,            ^ToSql(format='lower(%s)')),
+    dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
+    dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
-    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)'))
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)'))
   ];
 }
 

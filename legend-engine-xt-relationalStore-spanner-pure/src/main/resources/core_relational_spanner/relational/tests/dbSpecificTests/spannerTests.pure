@@ -25,7 +25,7 @@ function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::spann
   meta::relational::tests::dbSpecificTests::sqlQueryTests
           ->collectParameterizedTests('Spanner',
                 ^DbTestConfig(dbType=DatabaseType.Spanner, connection=$connection), [],
-                meta::relational::tests::dbSpecificTests::postgres::testsFilter_FunctionDefinition_1__Boolean_1_
+                meta::relational::tests::dbSpecificTests::spanner::testsFilter_FunctionDefinition_1__Boolean_1_
                 );
 }
 

@@ -583,7 +583,7 @@ function meta::relational::functions::sqlQueryToString::default::processLiteralV
    processLiteralValue($a, $dbConfig);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processLiteralValue(a:Any[1], dbTimeZone: String[0..1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::processLiteralValue(a:Any[1], dbTimeZone: String[0..1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
 {
    let processor = $literalProcessor->eval($a->type());
    $processor.formatValue($a, $dbTimeZone);
