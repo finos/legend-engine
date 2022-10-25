@@ -34,16 +34,6 @@ public class ClusteredColumnStoreIndexConstraint extends TableConstraint
         this.quoteIdentifier = quoteIdentifier;
     }
 
-    public List<String> getColumnNames()
-    {
-        return columnNames;
-    }
-
-    public ClusteredColumnStoreIndexConstraint withColumnNames(List<String> columnNames)
-    {
-        return new ClusteredColumnStoreIndexConstraint(columnNames, quoteIdentifier);
-    }
-
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {

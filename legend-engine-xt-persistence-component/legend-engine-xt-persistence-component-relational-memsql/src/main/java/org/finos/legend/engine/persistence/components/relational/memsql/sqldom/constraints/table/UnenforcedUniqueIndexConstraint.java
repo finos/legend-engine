@@ -34,16 +34,6 @@ public class UnenforcedUniqueIndexConstraint extends TableConstraint
         this.quoteIdentifier = quoteIdentifier;
     }
 
-    public List<String> getColumnNames()
-    {
-        return columnNames;
-    }
-
-    public UnenforcedUniqueIndexConstraint withColumnNames(List<String> columnNames)
-    {
-        return new UnenforcedUniqueIndexConstraint(columnNames, quoteIdentifier);
-    }
-
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {

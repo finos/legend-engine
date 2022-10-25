@@ -34,16 +34,6 @@ public class ShardKeyConstraint extends TableConstraint
         this.quoteIdentifier = quoteIdentifier;
     }
 
-    public List<String> getColumnNames()
-    {
-        return columnNames;
-    }
-
-    public ShardKeyConstraint withColumnNames(List<String> columnNames)
-    {
-        return new ShardKeyConstraint(columnNames, quoteIdentifier);
-    }
-
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
