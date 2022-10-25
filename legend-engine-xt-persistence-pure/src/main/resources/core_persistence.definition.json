@@ -1,5 +1,5 @@
 {
     "name" : "core_persistence",
     "pattern" : "(meta::pure::persistence)(::.*)?",
-    "dependencies" : ["platform", "core", "core_relational"]
+    "dependencies" : ["platform", "core", "core_authentication", "core_relational"]
 }

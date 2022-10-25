@@ -1,5 +1,5 @@
 {
   "name" : "core_persistence_cloud",
   "pattern" : "(meta::external::persistence)(::.*)?",
-  "dependencies" : ["platform", "core", "core_persistence"]
+  "dependencies" : ["platform", "core", "core_authentication","core_persistence"]
 }

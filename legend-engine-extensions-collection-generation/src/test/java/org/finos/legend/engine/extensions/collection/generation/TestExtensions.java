@@ -318,6 +318,7 @@ public class TestExtensions
         return Lists.mutable.<String>empty()
                 .with("core")
                 .with("core_analytics_mapping")
+                .with("core_authentication")
                 .with("core_data_space")
                 .with("core_diagram")
                 .with("core_external_format_avro")

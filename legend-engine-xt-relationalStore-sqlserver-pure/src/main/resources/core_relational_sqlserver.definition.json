@@ -1,5 +1,5 @@
 {
   "name" : "core_relational_sqlserver",
   "pattern" : "(meta::relational::functions::sqlQueryToString::sqlServer|meta::relational::tests::sqlQueryToString::sqlServer)(::.*)?",
-  "dependencies" : ["platform", "core", "core_relational"]
+  "dependencies" : ["platform", "core", "core_authentication", "core_relational"]
 }
