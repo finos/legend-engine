@@ -1041,7 +1041,6 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass2.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
@@ -1126,5 +1125,261 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
     }
 
+    /*
+    Scenario: Test milestoning Logic with only validity from time specified with delete indicator when staging table pre populated
+    */
+    @Test
+    void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet4FilterDuplicates() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorIdBased();
+        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getLoansTempTableWithDeleteIndicatorIdBased();
 
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+        // Create temp table
+        createTempTable(tempTable);
+        createTempTable(tempTableWithDeleteIndicator);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(loanStartDateTimeName)
+                .dateTimeThruName(loanEndDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(loanDateTimeName)
+                    .build())
+                .build())
+            .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                .deleteField(deleteIndicatorName)
+                .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator).build();
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass1.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass1);
+        // 2. Execute Plan and Verify Results
+        Map<String, Object> expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass2);
+        // 2. Execute Plan and Verify Results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+
+        // ------------ Perform Pass3 ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass3.csv";
+        String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass3);
+        // 2. Execute Plan and Verify Results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform Pass4 ------------------------
+        String dataPass4 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass4.csv";
+        String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass4.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass4);
+        // 2. Execute Plan and Verify Results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
+
+        // ------------ Perform Pass5 ------------------------
+        String dataPass5 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass5.csv";
+        String expectedDataPass5 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass5.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass5);
+        // 2. Execute Plan and Verify Results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
+
+        // ------------ Perform Pass5 (identical records) ------------------------
+        String dataPass6 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass6.csv";
+        String expectedDataPass6 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass6.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteInd(dataPass6);
+        // 2. Execute Plan and Verify Results
+        expectedStats = new HashMap<>();
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with only validity from time specified when staging table pre populated
+    */
+    @Test
+    void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet5WithDataSplitFilterDuplicates() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .dataSplitField(dataSplitName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(loanStartDateTimeName)
+                .dateTimeThruName(loanEndDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(loanDateTimeName)
+                    .build())
+                .build())
+            .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                .deleteField(deleteIndicatorName)
+                .addAllDeleteValues(Arrays.asList(deleteIndicatorValuesEdgeCase))
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass1.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass1);
+        // 2. Execute Plan and Verify Results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(5, 5));
+        List<Map<String, Object>> expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
+        String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(0, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass3 (identical records) ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass4.csv";
+        String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(5, 100));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with only validity from time specified when staging table pre populated
+    */
+    @Test
+    void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet5WithDataSplitFilterDuplicatesWithMultiplePasses() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+
+        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .dataSplitField(dataSplitName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(loanStartDateTimeName)
+                .dateTimeThruName(loanEndDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(loanDateTimeName)
+                    .build())
+                .build())
+            .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                .deleteField(deleteIndicatorName)
+                .addAllDeleteValues(Arrays.asList(deleteIndicatorValuesEdgeCase))
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass1.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass1);
+        // 2. Execute Plan and Verify Results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(5, 5));
+        List<Map<String, Object>> expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass2 ------------------------
+        String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(0, 1));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass3 ------------------------
+        String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass3.csv";
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
+
+        // ------------ Perform Pass4 (identical records) ------------------------
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
+        String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
+        // 1. Load Staging table
+        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        // 2. Execute Plan and Verify Results
+        dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(0, 100));
+        expectedStats = new ArrayList<>();
+        expectedStats.add(new HashMap<>());
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
+    }
 }
