@@ -134,12 +134,12 @@ function meta::external::language::java::transform::setterName(conventions: Conv
 
 function meta::external::language::java::transform::getProvidedType(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
-   $conventions.providedTypes->filter(pt| $pt.type == $type).providedAs->toOne();
+   $conventions.providedTypes->filter(pt| $pt.type->elementToPath() == $type->elementToPath()).providedAs->toOne();
 }
 
 function meta::external::language::java::transform::isProvidedType(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): Boolean[1]
 {
-   $conventions.providedTypes->filter(pt| $pt.type == $type)->isNotEmpty();
+   $conventions.providedTypes->filter(pt| $pt.type->elementToPath() == $type->elementToPath())->isNotEmpty();
 }
 
 function meta::external::language::java::transform::getProvidedVariable(conventions: Conventions[1], name:String[1]): Code[1]
