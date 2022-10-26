@@ -216,6 +216,7 @@
         <module>legend-engine-xt-sql-grammar</module>
         <module>legend-engine-xt-sql-protocol</module>
         <module>legend-engine-xt-sql-compiler</module>
+        <module>legend-engine-xt-sql-grammar-integration</module>
     </modules>
 
     <properties>
@@ -1488,6 +1489,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId> legend-engine-xt-sql-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
