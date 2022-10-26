@@ -121,6 +121,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='today(%s)', transform={p:String[*] | ''})),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
@@ -167,6 +168,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
    let dateTimeFormat = if( $params->size() == 1,| 120 ,| dateTimeFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
    //http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1520/html/iqrefbb/Dateformat.htm
    'convert( timestamp,'+$params->at(0)+','+$dateTimeFormat->toString() +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformToTimestampSybaseIQ(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');    
+   let timestampFormat = 121;   
+   'convert(datetime,'+$params->at(0)+','+$timestampFormat->toString() +')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::formatMostRecentSybase(p:String[1..2], defaultDay:String[1]):String[*]

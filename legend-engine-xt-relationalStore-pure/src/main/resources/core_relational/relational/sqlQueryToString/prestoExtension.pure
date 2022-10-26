@@ -94,6 +94,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampPresto()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
@@ -142,6 +143,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
    $params->convertDateTimeFunctionHasCorrectParams();
    let dateTimeFormat = if( $params->size() == 1,|'\'%Y-%m-%d %H:%i:%s\'',| $params->at(1););
    'date_parse('+$params->at(0)+','+$dateTimeFormat +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::presto::transformToTimestampPresto(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported '); 
+   let timestampFormat = '\'%Y-%m-%d %H:%i:%s\'';   
+   'date_parse('+$params->at(0)+','+$timestampFormat+')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::presto::processDateDiffDurationUnitForPresto(durationUnit:String[1]):String[1]

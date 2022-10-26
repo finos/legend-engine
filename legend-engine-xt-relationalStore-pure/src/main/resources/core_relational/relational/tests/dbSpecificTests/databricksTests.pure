@@ -34,7 +34,7 @@ function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::datab
 function meta::relational::tests::dbSpecificTests::databricks::testsFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
 {
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
-  let unsupportedDynaFunctions = ['sqlTrue'];
+  let unsupportedDynaFunctions = ['toTimestamp','sqlTrue'];
 
   //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
   let failingSupportedDynaFunctions = ['sqlTrue', 'sqlFalse'];
