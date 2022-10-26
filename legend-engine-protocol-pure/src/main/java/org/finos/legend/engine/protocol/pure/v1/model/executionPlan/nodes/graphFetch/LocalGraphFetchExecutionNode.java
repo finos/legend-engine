@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graph
 
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.GraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 
 public class LocalGraphFetchExecutionNode extends ExecutionNode
 {

@@ -119,6 +119,7 @@ public class CompilerExtensions
     private final ImmutableList<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> extraEmbeddedDataProcessors;
     private final ImmutableList<Function3<Test, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test>> extraTestProcessors;
     private final ImmutableList<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> extraTestAssertionProcessors;
+    private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -146,6 +147,8 @@ public class CompilerExtensions
         this.extraEmbeddedDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraEmbeddedDataProcessors);
         this.extraTestProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestProcessors);
         this.extraTestAssertionProcessors = this.extensions.flatCollect(CompilerExtension::getExtraTestAssertionProcessors);
+        this.extraClassInstanceProcessors = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraClassInstanceProcessors.putAll(e.getExtraClassInstanceProcessors()));
     }
 
     public List<CompilerExtension> getExtensions()
@@ -460,5 +463,10 @@ public class CompilerExtensions
             }
         }
         return index;
+    }
+
+    public Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> getExtraClassInstanceProcessors()
+    {
+        return extraClassInstanceProcessors;
     }
 }

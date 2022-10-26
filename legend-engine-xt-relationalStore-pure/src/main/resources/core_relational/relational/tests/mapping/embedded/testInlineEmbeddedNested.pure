@@ -104,3 +104,13 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 }
 
+function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::nested::testInlineInEmbedded():Boolean[1]
+{
+   let result = execute(|BondDetail.all()->filter(b | $b.holder.address.name == 'addressh1' )
+                                    ->project( [p | $p.type, p | $p.issuer.address.name,p | $p.holder.address.name], ['type','i','h'])
+                                    , testInlineInEmbeddedPropertyMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER_ADDRESS_NAME as "i", "root".HOLDER_ADDRESS_NAME as "h" from PRODUCT_DENORM as "root" where "root".HOLDER_ADDRESS_NAME = \'addressh1\'', $result);
+
+}
+

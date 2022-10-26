@@ -17,13 +17,15 @@ package org.finos.legend.engine.protocol.pure.v1.model.test.assertion;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import java.util.Collections;
+import java.util.List;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public abstract class TestAssertion
 {
     @JsonProperty(required = true)
     public String id;
-
+    public List<String> assertForKeys = Collections.emptyList();
     public SourceInformation sourceInformation;
 
     public <T> T accept(TestAssertionVisitor<T> assertionVisitor)

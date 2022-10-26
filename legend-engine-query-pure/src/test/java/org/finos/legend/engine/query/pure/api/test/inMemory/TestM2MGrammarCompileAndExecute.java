@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.query.pure.api.test.inMemory;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -29,11 +28,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.query.pure.api.Execute;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -97,7 +97,7 @@ public class TestM2MGrammarCompileAndExecute
                 ")\n"
         );
 
-        RootGraphFetchTree fetchTree = rootGFT("test::Person");
+        ClassInstance fetchTree = rootGFT("test::Person");
         Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Person")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
@@ -135,7 +135,7 @@ public class TestM2MGrammarCompileAndExecute
                 ")\n"
         );
 
-        RootGraphFetchTree fetchTree = rootGFT("test::A", propertyGFT("d"));
+        ClassInstance fetchTree = rootGFT("test::A", propertyGFT("d"));
         Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::A")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
@@ -204,7 +204,7 @@ public class TestM2MGrammarCompileAndExecute
                 ")"
         );
 
-        RootGraphFetchTree fetchTree = rootGFT("test::Company", propertyGFT("name"), propertyGFT("employees", propertyGFT("fullName")));
+        ClassInstance fetchTree = rootGFT("test::Company", propertyGFT("name"), propertyGFT("employees", propertyGFT("fullName")));
         Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::Company")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
@@ -228,7 +228,7 @@ public class TestM2MGrammarCompileAndExecute
 
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(derivedPure);
 
-        RootGraphFetchTree fetchTree = rootGFT("test::FirstEmployee", propertyGFT("name"));
+        ClassInstance fetchTree = rootGFT("test::FirstEmployee", propertyGFT("name"));
         Lambda lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::FirstEmployee")), fetchTree), fetchTree));
 
         ExecuteInput input = new ExecuteInput();
@@ -262,9 +262,9 @@ public class TestM2MGrammarCompileAndExecute
         return baos.toString("UTF-8");
     }
 
-    private Class clazz(String fullPath)
+    private PackageableElementPtr clazz(String fullPath)
     {
-        Class clazz = new Class();
+        PackageableElementPtr clazz = new PackageableElementPtr();
         clazz.fullPath = fullPath;
         return clazz;
     }
@@ -285,12 +285,12 @@ public class TestM2MGrammarCompileAndExecute
         return apply;
     }
 
-    private RootGraphFetchTree rootGFT(String clazz, PropertyGraphFetchTree... subTrees)
+    private ClassInstance rootGFT(String clazz, PropertyGraphFetchTree... subTrees)
     {
         RootGraphFetchTree fetchTree = new RootGraphFetchTree();
         fetchTree._class = clazz;
         fetchTree.subTrees = Arrays.asList(subTrees);
-        return fetchTree;
+        return new ClassInstance("rootGraphFetchTree", fetchTree);
     }
 
     private PropertyGraphFetchTree propertyGFT(String property, PropertyGraphFetchTree... subTrees)

@@ -35,4 +35,7 @@ public interface DropAbstract extends Operation
 
     @Parameter(order = 1)
     Dataset dataset();
+
+    @Parameter(order = 2)
+    boolean cascade();
 }

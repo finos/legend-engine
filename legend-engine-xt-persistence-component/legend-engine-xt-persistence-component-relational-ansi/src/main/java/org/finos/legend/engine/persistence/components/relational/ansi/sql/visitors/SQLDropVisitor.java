@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
+import org.finos.legend.engine.persistence.components.logicalplan.constraints.CascadeTableConstraint;
 import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfExistsTableModifier;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
@@ -40,6 +41,11 @@ public class SQLDropVisitor implements LogicalPlanVisitor<Drop>
         if (current.ifExists())
         {
             logicalPlanNodes.add(IfExistsTableModifier.INSTANCE);
+        }
+
+        if (current.cascade())
+        {
+            logicalPlanNodes.add(CascadeTableConstraint.INSTANCE);
         }
 
         return new VisitorResult(dropTable, logicalPlanNodes);

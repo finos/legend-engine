@@ -63,7 +63,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('snowflakePublic', 'SnowflakePublicAuthenticationStrategy'),
                                                             pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
                                                             pair('apiToken', 'ApiTokenAuthenticationStrategy'),
-                                                            pair('gcpWorkloadIdentityFederationWithAWS','GCPWorkloadIdentityFederationWithAWSAuthenticationStrategy'),
+                                                            pair('gcpWorkloadIdentityFederation','GCPWorkloadIdentityFederationAuthenticationStrategy'),
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),

@@ -17,9 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-public class KeyExpression extends ValueSpecification
+public class KeyExpression extends CoreClassInstances
 {
-
     public boolean add;
     public ValueSpecification expression;
     public ValueSpecification key;

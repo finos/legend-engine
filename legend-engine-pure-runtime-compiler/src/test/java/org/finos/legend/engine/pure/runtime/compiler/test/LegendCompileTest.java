@@ -16,6 +16,7 @@ package org.finos.legend.engine.pure.runtime.compiler.test;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.pure.runtime.compiler.Tools;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -109,25 +110,9 @@ public abstract class LegendCompileTest
 
 
 
-
-
     private void test(String code)
     {
-        try
-        {
-            runtime.createInMemoryAndCompile(
-                    Tuples.pair("testSource.pure",
-                                    "function test():Any[*] \n"
-                                    + "{"
-                                    + code
-                                    + "}\n"));
-            CoreInstance func = runtime.getFunction("test():Any[*]");
-            functionExecution.start(func, Lists.immutable.empty());
-        }
-        finally
-        {
-            runtime.delete("testSource.pure");
-        }
+        Tools.test(code, functionExecution, runtime);
     }
 
 
