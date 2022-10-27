@@ -25,7 +25,6 @@ import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -34,7 +33,6 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput;
 import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerOutput;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -46,11 +44,8 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FunctionParametersValidationNode;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -81,13 +76,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
 import static org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizerInput.ExecutionMode.INTERACTIVE_EXECUTION;
+import static org.finos.legend.engine.plan.execution.nodes.helpers.ExecuteNodeParameterTransformationHelper.buildParameterToConstantResult;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Pure - Execution")
@@ -411,33 +404,6 @@ public class Execute
         try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
             return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
-        }
-    }
-
-    private void buildParameterToConstantResult(SingleExecutionPlan plan, Map<String, ?> parameterToValues, MutableMap<String, Result> parametersToConstantResult)
-    {
-        List<Variable> functionParameters = plan.rootExecutionNode.executionNodes.stream().filter(node -> node instanceof FunctionParametersValidationNode).map(executionNode -> ((FunctionParametersValidationNode) executionNode).functionParameters).flatMap(Collection::stream).collect(Collectors.toList());
-        Multiplicity paraMultiplicity = new Multiplicity();
-        for (Map.Entry<String, ?> parameterToValue : parameterToValues.entrySet())
-        {
-            for (Variable var : functionParameters)
-            {
-                if (var.name.equals(parameterToValue.getKey()))
-                {
-                    paraMultiplicity = var.multiplicity;
-                    break;
-                }
-            }
-            Object parameterValue = parameterToValue.getValue();
-            boolean isSingularListValue = parameterValue instanceof FastList && ((FastList) parameterValue).size() == 1 && paraMultiplicity.isUpperBoundEqualTo(1);
-            if (isSingularListValue)
-            {
-                parametersToConstantResult.put(parameterToValue.getKey(), new ConstantResult(((FastList) parameterValue).getFirst()));
-            }
-            else
-            {
-                parametersToConstantResult.put(parameterToValue.getKey(), new ConstantResult(parameterValue));
-            }
         }
     }
 }
