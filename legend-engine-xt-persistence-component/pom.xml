@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.20.2-SNAPSHOT</version>
+        <version>3.21.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,6 +30,7 @@
         <module>legend-engine-xt-persistence-component-logical-plan</module>
         <module>legend-engine-xt-persistence-component-physical-plan</module>
         <module>legend-engine-xt-persistence-component-relational-core</module>
+        <module>legend-engine-xt-persistence-component-relational-test</module>
         <module>legend-engine-xt-persistence-component-relational-ansi</module>
         <module>legend-engine-xt-persistence-component-relational-h2</module>
         <module>legend-engine-xt-persistence-component-relational-memsql</module>
@@ -106,6 +107,20 @@
             </dependency>
 
             <!-- TEST -->
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-test</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-persistence-component-relational-ansi</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-api</artifactId>

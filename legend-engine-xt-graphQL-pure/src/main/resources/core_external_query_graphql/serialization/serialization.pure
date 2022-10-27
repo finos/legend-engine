@@ -1,0 +1,198 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::serialization::*;
+
+function meta::external::query::graphQL::serialization::graphQLtoString(document: Document[1]):String[1]
+{
+  $document.definitions->map(x|$x->graphQLtoString())->joinStrings('\n\n');
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(definition: Definition[1]):String[1]
+{
+  $definition->match(
+    [
+      o:OperationDefinition[1] | $o->graphQLtoString(),
+      p:ObjectTypeDefinition[1] | $p->graphQLtoString(),
+      i:InterfaceTypeDefinition[1] | $i->graphQLtoString(),
+      u:UnionTypeDefinition[1] | $u->graphQLtoString(),
+      e:EnumTypeDefinition[1] | $e->graphQLtoString(),
+      f:FragmentDefinition[1] | $f->graphQLtoString(),
+      s:ScalarTypeDefinition[1] | $s->graphQLtoString(),
+      s:SchemaDefinition[1] | $s->graphQLtoString(),
+      d:DirectiveDefinition[1] |$d->graphQLtoString()
+    ]
+  );
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(f: FragmentDefinition[1]):String[1]
+{
+  'fragment ' + $f.name + if($f.typeCondition->isEmpty(),|'',|' on ' + $f.typeCondition) + $f.directives->graphQLtoString() + $f.selectionSet->graphQLtoString('');
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(d: DirectiveDefinition[1]):String[1]
+{
+  'directive @' + $d.name +
+  $d.argumentDefinitions->graphQLtoString() +
+  ' on ' + $d.typeSystemLocation->map(e|$e.name)->concatenate($d.executableLocation->map(e|$e.name))->joinStrings(' | ')
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(s: SchemaDefinition[1]):String[1]
+{
+  'schema {\n' + $s.rootOperationTypeDefinitions->map(r|'  '+$r.operationType->id() + ' : ' + $r.type)->joinStrings('\n') + '\n}'
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(s: ScalarTypeDefinition[1]):String[1]
+{
+  'scalar ' + $s.name;
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(type: EnumTypeDefinition[1]):String[1]
+{
+  'enum ' + $type.name + $type.directives->graphQLtoString() + ' {\n' + $type.values->map(v | '  '+$v.value + $v.directives->graphQLtoString())->joinStrings('\n')+'\n}';
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(type: UnionTypeDefinition[1]):String[1]
+{
+  'union ' + $type.name + $type.directives->graphQLtoString() + ' = ' + $type.members->joinStrings(' | ');
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(type: ObjectTypeDefinition[1]):String[1]
+{
+  'type ' + $type.name + $type.directives->graphQLtoString() + if ($type.implements->isEmpty(),|'',|' implements '+$type.implements->joinStrings(' & ')) + ' {\n'+
+    $type.fields->map(f|'  ' + $f->graphQLtoString())->joinStrings('\n') +
+  '\n}'
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(field: FieldDefinition[1]):String[1]
+{
+  $field.name + $field.argumentDefinitions->graphQLtoString() + ': ' + $field.type->graphQLtoString() + $field.directives->graphQLtoString()
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(type: InterfaceTypeDefinition[1]):String[1]
+{
+  'interface ' + $type.name+' {\n' +
+    $type.fields->map(f|'  ' + $f->graphQLtoString())->joinStrings('\n') +
+  '\n}'
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(argumentDefinitions: InputValueDefinition[*]):String[1]
+{
+  if($argumentDefinitions->isEmpty(),
+  | '',
+  | '(' + $argumentDefinitions->map(a | $a.name + ': ' + $a.type->graphQLtoString() + if($a.defaultValue->isEmpty(),|'',|' = '+$a.defaultValue->toOne()->graphQLtoString()))->joinStrings(', ') + ')'
+  )
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(operation: OperationDefinition[1]):String[1]
+{
+  $operation.type->id() +
+  if ( $operation.name->isEmpty(),
+    |'',
+    |' '+$operation.name->toOne() + if ($operation.variables->isEmpty(),
+            |'',
+            |'(' + 
+              $operation.variables->map(v |
+                    $v.name + ': ' + $v.type->graphQLtoString() + if($v.defaultValue->isEmpty(),|'',|' = ' + $v.defaultValue->toOne()->graphQLtoString())
+                  )->joinStrings(', ') 
+             +')'
+         )
+  ) +
+  $operation.directives->graphQLtoString() + 
+  $operation.selectionSet->graphQLtoString('');
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(typeReference: TypeReference[1]):String[1]
+{
+  $typeReference->match(
+    [
+      type : NamedTypeReference[1] | $type.name , 
+      list : ListTypeReference[1] | '[' + $list.itemType->graphQLtoString() + ']'
+    ]
+  ) + if ($typeReference.nullable,|'',|'!')
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(selections: Selection[*], space: String[1]):String[1]
+{
+  if ($selections->isEmpty(),
+    |'',
+    |' {\n'+
+       $selections->map(s|$s->graphQLtoString($space))->joinStrings('\n')+
+     '\n' + $space + '}'
+  )
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(selection: Selection[1], space: String[1]):String[1]
+{
+  $selection->match(
+    [
+      field : Field[1] | $field->graphQLtoString($space),
+      fragment : InLineFragment[1] | $fragment->graphQLtoString($space),
+      spread : FragmentSpread[1] | $spread->graphQLtoString($space)
+    ]
+  );
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(frag: FragmentSpread[1], space: String[1]):String[1]
+{
+  '  ' + $space + '... ' + $frag.name + $frag.directives->graphQLtoString()
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(frag: InLineFragment[1], space: String[1]):String[1]
+{
+  '  ' + $space + '...' + if($frag.typeCondition->isEmpty(), |'', |' on '+$frag.typeCondition->toOne()+' ') + $frag.directives->graphQLtoString() + 
+  $frag.selectionSet->graphQLtoString($space + '  ');
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(field: Field[1], space: String[1]):String[1]
+{
+  '  ' + $space + if ($field.alias->isEmpty(), |'', |$field.alias->toOne()+': ') + $field.name + $field.arguments->graphQLtoString() + $field.directives->graphQLtoString() + 
+  $field.selectionSet->graphQLtoString($space + '  ');
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(arguments: Argument[*]):String[1]
+{
+  if($arguments->isEmpty(),
+    | '',
+    | '(' + $arguments->map(a | $a.name + ': ' + $a.value->graphQLtoString())->joinStrings(', ') + ')'
+  )
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(directives: Directive[*]):String[1]
+{
+  if ($directives->isEmpty(),
+    |'',
+    |' ' + $directives->map(d | '@'+ $d.name + $d.arguments->graphQLtoString())->joinStrings(' ')
+  )
+}
+
+function meta::external::query::graphQL::serialization::graphQLtoString(value: Value[1]):String[1]
+{
+  $value->match(
+    [
+      s : StringValue[1] | '"' + $s.value + '"',
+      b : BooleanValue[1] | $b.value->toString(),
+      i : IntValue[1] | $i.value->toString(),
+      f : FloatValue[1] | $f.value->toString(),
+      l : ListValue[1] | '['+$l.values->map(v|$v->graphQLtoString())->joinStrings(', ')+']',
+      v : Variable[1] | '$'+$v.name,
+      e : EnumValue[1] | $e.value,
+      n : NullValue[1] | 'null'
+    ]
+  )
+}

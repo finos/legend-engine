@@ -14,18 +14,41 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
-import java.util.Collections;
-import java.util.List;
+import java.io.IOException;
 
+@JsonDeserialize(using = CDateTime.CDateTimeDeserializer.class)
 public class CDateTime extends CDate
 {
-    public List<String> values = Collections.emptyList();
+    public String value;
+
+    public CDateTime()
+    {
+    }
+
+    public CDateTime(String value)
+    {
+        this.value = value;
+    }
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    public static class CDateTimeDeserializer extends JsonDeserializer<ValueSpecification>
+    {
+        @Override
+        public ValueSpecification deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            return customParsePrimitive(jsonParser.getCodec().readTree(jsonParser), x -> new CDateTime(x.asText()));
+        }
     }
 }

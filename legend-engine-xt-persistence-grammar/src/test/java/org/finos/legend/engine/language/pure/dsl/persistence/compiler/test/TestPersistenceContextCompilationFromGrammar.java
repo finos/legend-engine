@@ -266,7 +266,17 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "}\n" +
                 "\n" +
                 "###Mapping\n" +
-                "Mapping test::Mapping ()\n" +
+                "Mapping test::Mapping (" +
+                "  *test::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [test::TestDatabase] personTable.ID\n" +
+                "    )\n" +
+                "    ~mainTable [test::TestDatabase] personTable\n" +
+                "    name: [test::TestDatabase] personTable.NAME\n" +
+                "  }" +
+                ")\n" +
                 "\n" +
                 "###Service\n" +
                 "Service test::Service \n" +
@@ -276,11 +286,14 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: src: test::Person[1]|$src.name;\n" +
+                "    query: test::Person.all()->project([x | $x.name], ['Name']);\n" +
                 "    mapping: test::Mapping;\n" +
                 "    runtime:\n" +
                 "    #{\n" +
-                "      connections: [];\n" +
+                "      mappings: [test::Mapping];" +
+                "      connections: [" +
+                "        test::TestDatabase: [connection1: test::ServiceConnection]\n" +
+                "      ];\n" +
                 "    }#;\n" +
                 "  }\n" +
                 "  test: Single\n" +
@@ -291,7 +304,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "}\n" +
                 "\n" +
                 "###Relational\n" +
-                "Database test::Database\n" +
+                "Database test::TestDatabase\n" +
                 "(\n" +
                 "  Table personTable\n" +
                 "  (\n" +
@@ -358,7 +371,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      database: test::Database;" +
+                "      database: test::TestDatabase;" +
                 "    }\n" +
                 "    ingestMode: UnitemporalDelta\n" +
                 "    {\n" +
@@ -454,7 +467,17 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "}\n" +
                 "\n" +
                 "###Mapping\n" +
-                "Mapping test::Mapping ()\n" +
+                "Mapping test::Mapping (" +
+                "  *test::Person: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [test::TestDatabase] personTable.ID\n" +
+                "    )\n" +
+                "    ~mainTable [test::TestDatabase] personTable\n" +
+                "    name: [test::TestDatabase] personTable.NAME\n" +
+                "  }" +
+                ")\n" +
                 "\n" +
                 "###Service\n" +
                 "Service test::Service \n" +
@@ -464,11 +487,14 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "  autoActivateUpdates: true;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: src: test::Person[1]|$src.name;\n" +
+                "    query: test::Person.all()->project([x | $x.name], ['Name']);\n" +
                 "    mapping: test::Mapping;\n" +
                 "    runtime:\n" +
                 "    #{\n" +
-                "      connections: [];\n" +
+                "      mappings: [test::Mapping];" +
+                "      connections: [" +
+                "        test::TestDatabase: [connection1: test::TestConnection]\n" +
+                "      ];\n" +
                 "    }#;\n" +
                 "  }\n" +
                 "  test: Single\n" +
@@ -479,7 +505,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "}\n" +
                 "\n" +
                 "###Relational\n" +
-                "Database test::Database\n" +
+                "Database test::TestDatabase\n" +
                 "(\n" +
                 "  Table personTable\n" +
                 "  (\n" +
@@ -547,7 +573,7 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
                 "  {\n" +
                 "    sink: Relational\n" +
                 "    {\n" +
-                "      database: test::Database;" +
+                "      database: test::TestDatabase;" +
                 "    }\n" +
                 "    ingestMode: UnitemporalDelta\n" +
                 "    {\n" +

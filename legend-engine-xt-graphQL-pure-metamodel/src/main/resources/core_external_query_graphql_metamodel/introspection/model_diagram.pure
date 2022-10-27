@@ -16,7 +16,7 @@
 Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0, height=0.0)
 {
     TypeView cview_5(
-        type=meta::external::query::graphQL::introspection::model::__Schema,
+        type=meta::external::query::graphQL::metamodel::introspection::__Schema,
         position=(221.00000, 175.00000),
         width=111.00000,
         height=344.00000,
@@ -28,7 +28,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineWidth=1.0)
 
     TypeView cview_1(
-        type=meta::external::query::graphQL::introspection::model::__Directive,
+        type=meta::external::query::graphQL::metamodel::introspection::__Directive,
         position=(428.00000, 177.00000),
         width=192.99219,
         height=72.00000,
@@ -40,7 +40,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineWidth=1.0)
 
     TypeView cview_6(
-        type=meta::external::query::graphQL::introspection::model::__Type,
+        type=meta::external::query::graphQL::metamodel::introspection::__Type,
         position=(504.00000, 304.00000),
         width=162.00000,
         height=222.00000,
@@ -52,7 +52,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineWidth=1.0)
 
     TypeView cview_4(
-        type=meta::external::query::graphQL::introspection::model::__InputValue,
+        type=meta::external::query::graphQL::metamodel::introspection::__InputValue,
         position=(847.00000, 170.00000),
         width=157.00000,
         height=131.00000,
@@ -64,7 +64,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineWidth=1.0)
 
     TypeView cview_3(
-        type=meta::external::query::graphQL::introspection::model::__Field,
+        type=meta::external::query::graphQL::metamodel::introspection::__Field,
         position=(1141.00000, 301.00000),
         width=188.09375,
         height=169.00000,
@@ -76,7 +76,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineWidth=1.0)
 
     TypeView cview_2(
-        type=meta::external::query::graphQL::introspection::model::__EnumValue,
+        type=meta::external::query::graphQL::metamodel::introspection::__EnumValue,
         position=(886.00000, 493.00000),
         width=188.09375,
         height=86.00000,
@@ -88,7 +88,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineWidth=1.0)
 
     PropertyView pview_0(
-        property=meta::external::query::graphQL::introspection::model::__Directive.args,
+        property=meta::external::query::graphQL::metamodel::introspection::__Directive.args,
         source=cview_1,
         target=cview_4
 ,        points=[(609.02942,196.00000),(874.00000,196.00000)],
@@ -102,7 +102,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_1(
-        property=meta::external::query::graphQL::introspection::model::__Field.args,
+        property=meta::external::query::graphQL::metamodel::introspection::__Field.args,
         source=cview_3,
         target=cview_4
 ,        points=[(1156.54688,336.00000),(1066.00000,335.00000),(1066.00000,215.00000),(994.00000,215.00000)],
@@ -116,7 +116,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_2(
-        property=meta::external::query::graphQL::introspection::model::__Schema.directives,
+        property=meta::external::query::graphQL::metamodel::introspection::__Schema.directives,
         source=cview_5,
         target=cview_1
 ,        points=[(299.00000,214.00000),(524.49609,213.00000)],
@@ -130,7 +130,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_3(
-        property=meta::external::query::graphQL::introspection::model::__Type.enumValues,
+        property=meta::external::query::graphQL::metamodel::introspection::__Type.enumValues,
         source=cview_6,
         target=cview_2
 ,        points=[(619.00000,506.00000),(902.03021,505.00000)],
@@ -144,7 +144,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_4(
-        property=meta::external::query::graphQL::introspection::model::__Type.fields,
+        property=meta::external::query::graphQL::metamodel::introspection::__Type.fields,
         source=cview_6,
         target=cview_3
 ,        points=[(664.00000,464.00000),(1154.03021,463.00000)],
@@ -158,7 +158,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_5(
-        property=meta::external::query::graphQL::introspection::model::__Field.type,
+        property=meta::external::query::graphQL::metamodel::introspection::__Field.type,
         source=cview_3,
         target=cview_6
 ,        points=[(1165.03021,425.00000),(657.00000,425.00000)],
@@ -172,7 +172,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_6(
-        property=meta::external::query::graphQL::introspection::model::__Type.inputFields,
+        property=meta::external::query::graphQL::metamodel::introspection::__Type.inputFields,
         source=cview_6,
         target=cview_4
 ,        points=[(664.00000,312.00000),(715.00000,312.00000),(715.00000,252.00000),(856.00000,253.00000)],
@@ -186,7 +186,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_7(
-        property=meta::external::query::graphQL::introspection::model::__InputValue.type,
+        property=meta::external::query::graphQL::metamodel::introspection::__InputValue.type,
         source=cview_4,
         target=cview_6
 ,        points=[(859.00000,292.00000),(773.00000,292.00000),(773.00000,363.00000),(661.00000,363.00000)],
@@ -200,7 +200,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_8(
-        property=meta::external::query::graphQL::introspection::model::__Schema.types,
+        property=meta::external::query::graphQL::metamodel::introspection::__Schema.types,
         source=cview_5,
         target=cview_6
 ,        points=[(321.00000,509.00000),(530.00000,509.00000)],
@@ -214,7 +214,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_9(
-        property=meta::external::query::graphQL::introspection::model::__Schema.queryType,
+        property=meta::external::query::graphQL::metamodel::introspection::__Schema.queryType,
         source=cview_5,
         target=cview_6
 ,        points=[(319.00000,457.00000),(517.00000,457.00000)],
@@ -228,7 +228,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_10(
-        property=meta::external::query::graphQL::introspection::model::__Schema.mutationType,
+        property=meta::external::query::graphQL::metamodel::introspection::__Schema.mutationType,
         source=cview_5,
         target=cview_6
 ,        points=[(323.00000,391.00000),(514.00000,391.00000)],
@@ -242,7 +242,7 @@ Diagram meta::external::query::graphQL::GraphQL_Introspection_Diagram(width=0.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_11(
-        property=meta::external::query::graphQL::introspection::model::__Schema.subscriptionType,
+        property=meta::external::query::graphQL::metamodel::introspection::__Schema.subscriptionType,
         source=cview_5,
         target=cview_6
 ,        points=[(321.00000,335.00000),(533.00000,335.00000)],

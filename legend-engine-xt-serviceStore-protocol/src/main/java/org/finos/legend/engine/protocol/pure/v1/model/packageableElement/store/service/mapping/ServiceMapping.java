@@ -17,9 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
-
-import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceMapping

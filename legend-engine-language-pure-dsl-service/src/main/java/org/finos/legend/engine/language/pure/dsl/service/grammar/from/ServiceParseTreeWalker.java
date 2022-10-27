@@ -51,8 +51,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -210,7 +211,8 @@ public class ServiceParseTreeWalker
     {
         TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
         testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-
+        ServiceParserGrammar.AssertForKeysContext scopeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.assertForKeys(), "assertForKeys", testAssertion.sourceInformation);
+        testAssertion.assertForKeys = scopeContext != null && scopeContext.STRING() != null ? ListIterate.collect(scopeContext.STRING(), keyInScopeCtx -> PureGrammarParserUtility.fromGrammarString(keyInScopeCtx.getText(), true)) : new ArrayList<>();
         return testAssertion;
     }
 
@@ -382,7 +384,7 @@ public class ServiceParseTreeWalker
                 PureList param = new PureList();
                 param.values = paramValues;
                 param.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.testListValueParam());
-                return param;
+                return new ClassInstance("listInstance", param);
             }
             else if (ctx.testSingleValueParam() != null)
             {

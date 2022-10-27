@@ -1,0 +1,59 @@
+###Pure
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::query::graphQL::binding::toPure::*;
+
+function meta::external::query::graphQL::binding::toPure::primitiveTypeMapping() : Pair<String, meta::pure::metamodel::type::Type>[*]
+{
+    [
+      pair('String', String),
+      pair('Boolean', Boolean),
+      pair('Int', Integer),
+      pair('Float', Float),
+      pair('ID', String)
+    ]
+}
+
+function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystemtoPure(doc:Document[1], package:String[1]) : meta::pure::metamodel::type::Type[*]
+{
+  let pack = buildTransientPackageFromString($package);
+
+  // Pass 1
+  let typesByName = $doc.definitions->map(def|
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | let no = newClass($o.name);
+                                      let cp = ^$no(package = $pack);
+                                      pair($o.name, $cp);,
+        e : EnumTypeDefinition[1] | let ne = newEnumeration($e.name, $e.values.value);
+                                    let ep = ^$ne(package = $pack);
+                                    pair($e.name, $ep);
+      ]
+    )
+  )->concatenate(meta::external::query::graphQL::binding::toPure::primitiveTypeMapping())->newMap();
+
+  // Pass 2
+  $doc.definitions->map(def|
+    $def->match(
+      [
+        o : ObjectTypeDefinition[1] | let ownerType = $typesByName->get($o.name)->toOne();
+                                      let ownerGType = ^GenericType(rawType=$ownerType);
+                                      let properties = $o.fields->map(f |
+                                          let targetName = $f.type->match([
+                                            o:NamedTypeReference[1] | pair(if($o.nullable,|ZeroOne,|PureOne), $o.name),
+                                            l:ListTypeReference[1] | pair(ZeroMany, $l.itemType->cast(@NamedTypeReference).name)
+                                          ]);
+                                          let targeType = $typesByName->get($targetName.second)->toOne();
+                                          meta::pure::functions::meta::newProperty($f.name, $ownerGType, ^GenericType(rawType=$targeType), $targetName.first);
+                                      );
+                                      $ownerType->mutateAdd('properties', $properties);,
+        e : EnumTypeDefinition[1] | $typesByName->get($e.name)->toOne();
+      ]
+    )
+  );
+}
+
+function meta::external::query::graphQL::binding::toPure::buildTransientPackageFromString(package:String[1]) : Package[1]
+{
+  $package->split('::')->fold({a,b|^Package(name = $a, package=$b)}, ^Package());
+}

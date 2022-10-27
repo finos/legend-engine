@@ -16,6 +16,8 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
 
+import java.util.Optional;
+
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -30,6 +32,8 @@ import static org.immutables.value.Value.Style;
 public interface NontemporalSnapshotAbstract extends IngestMode
 {
     Auditing auditing();
+
+    Optional<String> dataSplitField();
 
     @Override
     default <T> T accept(IngestModeVisitor<T> visitor)

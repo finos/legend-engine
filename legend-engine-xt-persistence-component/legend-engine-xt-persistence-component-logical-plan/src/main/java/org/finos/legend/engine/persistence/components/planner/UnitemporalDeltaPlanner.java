@@ -41,15 +41,11 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
@@ -105,53 +101,6 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
             Create.of(true, mainDataset()),
             Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()))
             .build();
-    }
-
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
-    {
-        return Collections.emptyMap();
-    }
-
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
-    {
-        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
-
-        if (options().collectStatistics())
-        {
-            //Incoming dataset record count
-            postRunStatisticsResult.put(INCOMING_RECORD_COUNT,
-                LogicalPlan.builder()
-                    .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get()))
-                    .build());
-
-            //Rows terminated = Rows invalidated in Sink - Rows updated
-            postRunStatisticsResult.put(ROWS_TERMINATED,
-                LogicalPlan.builder()
-                    .addOps(Selection.builder()
-                        .addFields(DiffBinaryValueOperator.of(getRowsInvalidatedInSink(), getRowsUpdated()).withAlias(ROWS_TERMINATED.get()))
-                        .build())
-                    .build());
-
-            //Rows inserted (no previous active row with same primary key) = Rows added in sink - rows updated
-            postRunStatisticsResult.put(ROWS_INSERTED,
-                LogicalPlan.builder()
-                    .addOps(Selection.builder()
-                        .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), getRowsUpdated()).withAlias(ROWS_INSERTED.get()))
-                        .build())
-                    .build());
-
-            //Rows updated (when it is invalidated and a new row for same primary keys is added)
-            postRunStatisticsResult.put(ROWS_UPDATED,
-                LogicalPlan.builder().addOps(getRowsUpdated(ROWS_UPDATED.get())).build());
-
-            //Rows Deleted = rows removed(hard-deleted) from sink table
-            postRunStatisticsResult.put(ROWS_DELETED,
-                LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L));
-        }
-
-        return postRunStatisticsResult;
     }
 
     /*
@@ -267,5 +216,60 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
 
         Condition milestoningCondition = And.builder().addConditions(openRecordCondition, existsCondition).build();
         return UpdateAbstract.of(mainDataset(), updatePairs, milestoningCondition);
+    }
+
+    // Stats related methods
+    @Override
+    protected void addPostRunStatsForRowsTerminated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // If delete indicator is not present, then rows terminated = 0
+        if (!deleteIndicatorField.isPresent())
+        {
+            LogicalPlan rowsTerminatedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L);
+            postRunStatisticsResult.put(ROWS_TERMINATED, rowsTerminatedCountPlan);
+        }
+        else
+        {
+            super.addPostRunStatsForRowsTerminated(postRunStatisticsResult);
+        }
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // If delete indicator is not present, then rows updated = rows invalidated
+        if (!deleteIndicatorField.isPresent())
+        {
+            LogicalPlan rowsUpdatedCountPlan = LogicalPlan.builder().addOps(getRowsInvalidatedInSink(ROWS_UPDATED.get())).build();
+            postRunStatisticsResult.put(ROWS_UPDATED, rowsUpdatedCountPlan);
+        }
+        else
+        {
+            super.addPostRunStatsForRowsUpdated(postRunStatisticsResult);
+        }
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // if delete indicator is not present, then rows inserted = Rows added - Rows invalidated
+        if (!deleteIndicatorField.isPresent())
+        {
+            LogicalPlan rowsInsertedCountPlan = LogicalPlan.builder()
+                    .addOps(Selection.builder()
+                            .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), getRowsInvalidatedInSink()).withAlias(ROWS_INSERTED.get()))
+                            .build())
+                    .build();
+            postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
+        }
+        else
+        {
+            super.addPostRunStatsForRowsInserted(postRunStatisticsResult);
+        }
+    }
+
+    public Optional<Condition> getDataSplitInRangeCondition()
+    {
+        return dataSplitInRangeCondition;
     }
 }

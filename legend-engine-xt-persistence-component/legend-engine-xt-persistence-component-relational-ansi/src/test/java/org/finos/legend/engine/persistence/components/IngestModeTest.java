@@ -15,10 +15,13 @@
 package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -125,6 +128,14 @@ public class IngestModeTest
         .addFields(amount)
         .addFields(bizDate)
         .build();
+
+    protected SchemaDefinition baseTableSchemaWithDataSplit = SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(dataSplit)
+            .build();
 
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
         .addFields(id)
@@ -240,7 +251,16 @@ public class IngestModeTest
         .addFields(digest)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithDataSplit = SchemaDefinition.builder()
+    protected SchemaDefinition baseTableSchemaWithAuditAndNoPrimaryKeys = SchemaDefinition.builder()
+            .addFields(idNonPrimary)
+            .addFields(nameNonPrimary)
+            .addFields(amount)
+            .addFields(bizDate)
+            .addFields(digest)
+            .addFields(batchUpdateTime)
+            .build();
+
+    protected SchemaDefinition baseTableSchemaWithDigestAndDataSplit = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
@@ -419,8 +439,6 @@ public class IngestModeTest
 
     protected String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 
-    protected String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\"";
-
     protected String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
         "(\"id\" INTEGER," +
         "\"name\" VARCHAR," +
@@ -461,13 +479,6 @@ public class IngestModeTest
         "(\"ID\" INTEGER,\"NAME\" VARCHAR,\"AMOUNT\" DOUBLE,\"BIZ_DATE\" DATE,\"DIGEST\" VARCHAR," +
         "\"BATCH_TIME_IN\" DATETIME,\"BATCH_TIME_OUT\" DATETIME,PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_TIME_IN\"))";
 
-    protected String expectedBaseTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
     protected String expectedSchemaEvolutionAddColumn = "ALTER TABLE \"mydb\".\"main\" ADD COLUMN \"biz_date\" DATE";
 
     protected String expectedSchemaEvolutionAddColumnWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ADD COLUMN \"BIZ_DATE\" DATE";
@@ -477,42 +488,6 @@ public class IngestModeTest
     protected String expectedSchemaEvolutionModifySizeWithUpperCase = "ALTER TABLE \"MYDB\".\"MAIN\" ALTER COLUMN \"NAME\" VARCHAR(64) PRIMARY KEY";
 
     protected String expectedSchemaNonBreakingChange = "ALTER TABLE \"mydb\".\"main\" ALTER COLUMN \"id\" TINYINT PRIMARY KEY";
-
-    protected String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-        "(\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "PRIMARY KEY (\"ID\", \"NAME\"))";
-
-    protected String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "\"digest\" VARCHAR," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
-    protected String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
-        "\"ID\" INTEGER," +
-        "\"NAME\" VARCHAR," +
-        "\"AMOUNT\" DOUBLE," +
-        "\"BIZ_DATE\" DATE," +
-        "\"DIGEST\" VARCHAR," +
-        "PRIMARY KEY (\"ID\", \"NAME\"))";
-
-    protected String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-        "\"id\" INTEGER," +
-        "\"name\" VARCHAR," +
-        "\"amount\" DOUBLE," +
-        "\"biz_date\" DATE," +
-        "\"digest\" VARCHAR," +
-        "\"batch_update_time\" DATETIME," +
-        "PRIMARY KEY (\"id\", \"name\"))";
-
-    protected String expectedStagingDigestUpdateQuery = "UPDATE \"mydb\".\"staging\" as stage SET " +
-        "stage.\"digest\" = MD5(CONCAT(stage.\"id\",stage.\"name\",stage.\"amount\"," +
-        "stage.\"biz_date\",stage.\"digest\"))";
 
     protected String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
         "(\"id\" INTEGER," +

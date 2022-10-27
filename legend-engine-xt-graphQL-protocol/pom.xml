@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.20.2-SNAPSHOT</version>
+        <version>3.21.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -43,7 +43,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::query::graphQL::metamodel</argument>
+                                <argument>meta::external::query::graphQL::metamodel::sdl</argument>
                                 <argument>org.finos.legend.engine.protocol.graphQL.metamodel</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
@@ -60,7 +60,7 @@
                             <includePluginDependencies>true</includePluginDependencies>
                             <mainClass>org.finos.legend.engine.protocol.generation.GenerateMetaClasses</mainClass>
                             <arguments>
-                                <argument>meta::external::query::graphQL::introspection::model::</argument>
+                                <argument>meta::external::query::graphQL::metamodel::introspection::</argument>
                                 <argument>org.finos.legend.engine.protocol.graphQL.introspection.model</argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>
@@ -72,7 +72,7 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-protocol-generation</artifactId>
-                        <version>3.20.2-SNAPSHOT</version>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
@@ -83,11 +83,6 @@
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
                         <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-java</artifactId>
-                        <version>${legend.pure.version}</version>
                     </dependency>
                    </dependencies>
             </plugin>

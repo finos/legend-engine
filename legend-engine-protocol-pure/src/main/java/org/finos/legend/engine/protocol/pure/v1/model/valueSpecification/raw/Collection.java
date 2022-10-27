@@ -21,10 +21,20 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import java.util.Collections;
 import java.util.List;
 
-public class Collection extends ValueSpecification
+public class Collection extends Many
 {
     public List<ValueSpecification> values = Collections.emptyList();
-    public Multiplicity multiplicity;
+
+    public Collection()
+    {
+        this.multiplicity = new Multiplicity(0, 0);
+    }
+
+    public Collection(List<ValueSpecification> values)
+    {
+        this.values = values;
+        this.multiplicity = new Multiplicity(values.size(), values.size());
+    }
 
     @Override
     public <T> T accept(ValueSpecificationVisitor<T> visitor)
