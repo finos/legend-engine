@@ -48,7 +48,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.constrai
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.PKColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.UniqueColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.CreateTable;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;

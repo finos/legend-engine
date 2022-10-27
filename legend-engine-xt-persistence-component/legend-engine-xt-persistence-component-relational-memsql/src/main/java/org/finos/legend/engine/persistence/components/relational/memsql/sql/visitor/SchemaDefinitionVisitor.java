@@ -85,10 +85,11 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
             prev.push(constraint);
         }
 
+        boolean isShard = current.shardSpecification().isPresent() && current.shardSpecification().get().shardKeys().size() > 0;
         // if table is sharded and primary keys are present
         if (isTableColumnStore)
         {
-            if (pkNum >= 1 && current.shardSpecification().isPresent() && current.shardSpecification().get().shardKeys().size() > 0)
+            if (pkNum >= 1 && isShard)
             {
                 //todo : check if comma is required before the constraint?
                 TableConstraint constraint = new UnenforcedUniqueIndexConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
@@ -96,7 +97,7 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
             }
         }
 
-        if (current.shardSpecification().isPresent() && current.shardSpecification().get().shardKeys().size() > 0)
+        if (isShard)
         {
             TableConstraint constraint = new ShardKeyConstraint(current.shardSpecification().get().shardKeys().stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
             prev.push(constraint);
