@@ -33,7 +33,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "(stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
     protected String rowsTerminated = "SELECT 0 as rowsTerminated";
     protected String rowsDeleted = "SELECT 0 as rowsDeleted";
-    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as rowsDeleted FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" IN ('yes','1','true')) AND (EXISTS (SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"biz_date\",sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\")))";
+    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as rowsDeleted FROM \"mydb\".\"main\" as sink WHERE EXISTS (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\") AND (stage.\"delete_indicator\" IN ('yes','1','true')))";
 
     @Override
     public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)

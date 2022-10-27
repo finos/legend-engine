@@ -54,15 +54,17 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 
 class NontemporalDeltaPlanner extends Planner
 {
-    private Condition pkMatchCondition;
+    private final Condition pkMatchCondition;
+    private final Condition digestDoesNotMatchCondition;
+    private final Condition digestMatchCondition;
 
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
 
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
-    private Optional<Condition> deleteIndicatorIsSetCondition;
+    private final Optional<Condition> deleteIndicatorIsSetCondition;
 
-    private BatchStartTimestamp batchStartTimestamp;
+    private final BatchStartTimestamp batchStartTimestamp;
 
     private final Optional<Condition> dataSplitInRangeCondition;
 
@@ -73,6 +75,8 @@ class NontemporalDeltaPlanner extends Planner
         // validate
         validatePrimaryKeysNotEmpty(primaryKeys);
         this.pkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
+        this.digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
+        this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
 
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
@@ -94,20 +98,17 @@ class NontemporalDeltaPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
     {
-        Condition digestDoesNotMatchCondition = LogicalPlanUtils.getDigestDoesNotMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
-        Condition digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
-
         List<Operation> operations = new ArrayList<>();
         // Op1: Merge data from staging to main
         if (capabilities.contains(Capability.MERGE))
         {
-            Merge merge = getMergeOperation(digestDoesNotMatchCondition);
+            Merge merge = getMergeOperation();
             operations.add(merge);
         }
         else
         {
-            Insert insert = getInsertOperation(digestMatchCondition);
-            Update update = getUpdateOperation(digestDoesNotMatchCondition);
+            Insert insert = getInsertOperation();
+            Update update = getUpdateOperation();
             operations.add(update);
             operations.add(insert);
         }
@@ -115,7 +116,7 @@ class NontemporalDeltaPlanner extends Planner
         // Op2: Delete data from main table if delete indicator is present & match
         if (this.deleteIndicatorField.isPresent() && this.deleteIndicatorIsSetCondition.isPresent())
         {
-            Delete delete = getDeleteOperation(digestMatchCondition);
+            Delete delete = getDeleteOperation();
             operations.add(delete);
         }
 
@@ -125,7 +126,7 @@ class NontemporalDeltaPlanner extends Planner
     /*
         DELETE FROM main_table WHERE EXIST (SELECT * FROM staging_table WHERE pk_match AND digest_match AND staging.delete_indicator_is_match)
      */
-    private Delete getDeleteOperation(Condition digestMatchCondition)
+    private Delete getDeleteOperation()
     {
         List<Value> stagingFields = stagingDataset().schemaReference().fieldValues()
                 .stream()
@@ -138,7 +139,7 @@ class NontemporalDeltaPlanner extends Planner
                     .source(Selection.builder()
                         .source(stagingDataset())
                         .addAllFields(stagingFields)
-                        .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
+                        .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
                         .build())
                     .build())
                 .build();
@@ -156,7 +157,7 @@ class NontemporalDeltaPlanner extends Planner
         INSERT (staging_columns)
         VALUES (staging_values)
     */
-    private Merge getMergeOperation(Condition digestDoesNotMatchCondition)
+    private Merge getMergeOperation()
     {
         List<Pair<FieldValue, Value>> keyValuePairs = stagingDataset().schemaReference().fieldValues()
             .stream()
@@ -174,16 +175,16 @@ class NontemporalDeltaPlanner extends Planner
             keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
             List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
             LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
+            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.dataSplitInRangeCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
         }
 
-        if (deleteIndicatorIsNotSetCondition.isPresent())
+        if (this.deleteIndicatorIsNotSetCondition.isPresent())
         {
-            digestCondition = Or.builder().addConditions(digestDoesNotMatchCondition, deleteIndicatorIsNotSetCondition.get()).build();
+            digestCondition = And.builder().addConditions(this.digestDoesNotMatchCondition, this.deleteIndicatorIsNotSetCondition.get()).build();
         }
         else
         {
-            digestCondition = digestDoesNotMatchCondition;
+            digestCondition = this.digestDoesNotMatchCondition;
         }
 
         Merge merge = Merge.builder()
@@ -214,9 +215,9 @@ class NontemporalDeltaPlanner extends Planner
     WHERE EXISTS
     (SELECT * FROM staging_table WHERE (PKs match) AND (DIGEST does not match) AND DATA_SPLIT_CONDITION)
      */
-    private Update getUpdateOperation(Condition digestDoesNotMatchCondition)
+    private Update getUpdateOperation()
     {
-        Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, digestDoesNotMatchCondition).build();
+        Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, this.digestDoesNotMatchCondition).build();
         Dataset stagingDataset = stagingDataset();
 
         List<Pair<FieldValue, Value>> keyValuePairs = stagingDataset().schemaReference().fieldValues()
@@ -230,13 +231,13 @@ class NontemporalDeltaPlanner extends Planner
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
+            keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), this.batchStartTimestamp));
         }
 
         if (ingestMode().dataSplitField().isPresent())
         {
             keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
-            stagingDataset = Selection.builder().source(stagingDataset()).condition(dataSplitInRangeCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
+            stagingDataset = Selection.builder().source(stagingDataset()).condition(this.dataSplitInRangeCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
         }
         Update update = UpdateAbstract.of(mainDataset(), stagingDataset, keyValuePairs, joinCondition);
 
@@ -249,7 +250,7 @@ class NontemporalDeltaPlanner extends Planner
     where not exists
     (select * from main_table where digest_match and pks match )
     */
-    private Insert getInsertOperation(Condition digestMatchCondition)
+    private Insert getInsertOperation()
     {
         List<Value> fieldsToInsert = stagingDataset().schemaReference().fieldValues()
                 .stream()
@@ -264,7 +265,7 @@ class NontemporalDeltaPlanner extends Planner
         Condition notExistInSinkCondition = Not.of(Exists.of(
             Selection.builder()
                 .source(mainDataset())
-                .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
+                .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition).build())
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build())
         );
@@ -274,14 +275,14 @@ class NontemporalDeltaPlanner extends Planner
         {
             LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
             LogicalPlanUtils.removeField(fieldsToInsert, ingestMode().dataSplitField().get());
-            selectCondition = And.builder().addConditions(dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
+            selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
         }
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
-            fieldsToSelect.add(batchStartTimestamp);
+            fieldsToSelect.add(this.batchStartTimestamp);
         }
         else if (!ingestMode().dataSplitField().isPresent())
         {
@@ -329,54 +330,48 @@ class NontemporalDeltaPlanner extends Planner
     }
 
     @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
+    protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
-        if (options().collectStatistics())
+        if (!this.deleteIndicatorField.isPresent() || !this.deleteIndicatorIsSetCondition.isPresent())
         {
-            //Incoming dataset record count
-            addPostRunStatsForIncomingRecords(postRunStatisticsResult);
-            //Rows terminated
-            addPostRunStatsForRowsTerminated(postRunStatisticsResult);
-            //Rows inserted
-            addPostRunStatsForRowsInserted(postRunStatisticsResult);
-            //Rows updated
-            addPostRunStatsForRowsUpdated(postRunStatisticsResult);
-            //Rows deleted
-            if (!this.deleteIndicatorField.isPresent() || !this.deleteIndicatorIsSetCondition.isPresent())
-            {
-                addPostRunStatsForRowsDeleted(postRunStatisticsResult);
-            }
+            super.addPostRunStatsForRowsDeleted(postRunStatisticsResult);
         }
-
-        return postRunStatisticsResult;
     }
 
     @Override
-    protected void addPreRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    protected void addPreRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> preRunStatisticsResult)
     {
         if (this.deleteIndicatorField.isPresent() && this.deleteIndicatorIsSetCondition.isPresent())
         {
-            Condition digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
+            List<Value> stagingFields = stagingDataset().schemaReference().fieldValues()
+                    .stream()
+                    .filter(field -> !field.fieldName().equals(this.deleteIndicatorField.get()))
+                    .collect(Collectors.toList());
 
             // Rows Deleted = rows removed (hard-deleted) from sink table
             LogicalPlan rowsDeletedCountPlan = LogicalPlan.builder().addOps(LogicalPlanUtils
-                .getRecordCount(
-                    stagingDataset(),
-                    ROWS_DELETED.get(),
-                    Optional.of(And.builder().addConditions(this.deleteIndicatorIsSetCondition.get(),
-                        Exists.builder()
-                            .source(Selection.builder()
-                                .source(mainDataset())
-                                .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
-                                .build())
-                            .build()).build()))).build();
+                .getRecordCount(mainDataset(),
+                        ROWS_DELETED.get(),
+                        Optional.of(Exists.builder()
+                                .source(Selection.builder()
+                                        .source(stagingDataset())
+                                        .addAllFields(stagingFields)
+                                        .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
+                                        .build())
+                                .build()))).build();
+//            LogicalPlan rowsDeletedCountPlan = LogicalPlan.builder().addOps(LogicalPlanUtils
+//                .getRecordCount(
+//                    stagingDataset(),
+//                    ROWS_DELETED.get(),
+//                    Optional.of(And.builder().addConditions(this.deleteIndicatorIsSetCondition.get(),
+//                        Exists.builder()
+//                            .source(Selection.builder()
+//                                .source(mainDataset())
+//                                .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
+//                                .build())
+//                            .build()).build()))).build();
 
-            postRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
-        }
-        else
-        {
-            super.addPreRunStatsForRowsDeleted(postRunStatisticsResult);
+            preRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
         }
     }
 }

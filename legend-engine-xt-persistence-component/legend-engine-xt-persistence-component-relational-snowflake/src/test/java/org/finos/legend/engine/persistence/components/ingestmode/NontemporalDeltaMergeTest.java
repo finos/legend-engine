@@ -150,7 +150,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
                 "USING \"mydb\".\"staging\" as stage " +
                 "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
-                "WHEN MATCHED AND (sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" NOT IN ('yes','1','true')) " +
+                "WHEN MATCHED AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')) " +
                 "THEN UPDATE SET " +
                 "sink.\"id\" = stage.\"id\"," +
                 "sink.\"name\" = stage.\"name\"," +
