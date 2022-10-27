@@ -324,7 +324,7 @@ public class UnitemporalDeltaTest extends IngestModeTest
             "(sink.\"batch_id_out\" = 999999999) AND " +
             "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
             "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
-            "AND ((sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" = true))))";
+            "AND ((sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" = 'true'))))";
 
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id_in\", \"batch_id_out\", " +
@@ -335,7 +335,7 @@ public class UnitemporalDeltaTest extends IngestModeTest
             "WHERE (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
             "WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"digest\" = stage.\"digest\") " +
             "AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))) AND " +
-            "(stage.\"delete_indicator\" <> true))";
+            "(stage.\"delete_indicator\" <> 'true'))";
 
         Assertions.assertEquals(expectedMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));

@@ -204,11 +204,7 @@ public class LogicalPlanUtils
 
     private static Value getDeleteIndicatorValue(Object value, boolean isStringDatatype)
     {
-        if (isStringDatatype)
-        {
-            return StringValue.of(value.toString());
-        }
-        return ObjectValue.of(value);
+        return StringValue.of(value.toString());
     }
 
     public static void removeField(List<Value> fieldsList, String fieldName)
