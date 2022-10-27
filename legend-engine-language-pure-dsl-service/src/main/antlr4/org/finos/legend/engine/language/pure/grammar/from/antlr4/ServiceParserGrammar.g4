@@ -18,7 +18,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
-                                        | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP
+                                        | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS
 ;
 
 
@@ -143,7 +143,13 @@ serviceTestParameter:                   identifier EQUAL primitiveValue
 ;
 serviceTestAsserts:                     SERVICE_TEST_ASSERTS COLON BRACKET_OPEN ( serviceTestAssert ( COMMA serviceTestAssert )* )? BRACKET_CLOSE
 ;
-serviceTestAssert:                      identifier COLON testAssertion
+serviceTestAssert:                      identifier COLON assertForKeys* testAssertion
+;
+assertForKeys:                             ASSERT_FOR_KEYS COLON
+                                                 BRACKET_OPEN
+                                                            (STRING (COMMA STRING)*)
+                                                 BRACKET_CLOSE
+                                        SEMI_COLON
 ;
 testAssertion:                          identifier ISLAND_OPEN (testAssertionContent)*
 ;
