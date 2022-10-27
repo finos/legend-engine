@@ -27,7 +27,7 @@ public class TestScenario
 
     public TestScenario(Dataset mainTable, Dataset stagingTable, IngestMode ingestMode)
     {
-        this. mainTable = mainTable;
+        this.mainTable = mainTable;
         this.stagingTable = stagingTable;
         this.ingestMode = ingestMode;
         this.datasets = Datasets.of(mainTable, stagingTable);

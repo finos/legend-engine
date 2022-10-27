@@ -142,6 +142,37 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
+    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
+                "USING \"mydb\".\"staging\" as stage " +
+                "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
+                "WHEN MATCHED AND (sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" NOT IN ('yes','1','true')) " +
+                "THEN UPDATE SET " +
+                "sink.\"id\" = stage.\"id\"," +
+                "sink.\"name\" = stage.\"name\"," +
+                "sink.\"amount\" = stage.\"amount\"," +
+                "sink.\"biz_date\" = stage.\"biz_date\"," +
+                "sink.\"digest\" = stage.\"digest\" " +
+                "WHEN NOT MATCHED THEN " +
+                "INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+                "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        System.out.println(milestoningSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(null, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertEquals(rowsDeletedWithDeleteIndicator, operations.preIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
     public void verifyNontemporalDeltaWithUpperCaseOptimizer(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();

@@ -52,6 +52,22 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
     public abstract void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations);
 
     @Test
+    void testNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator()
+    {
+        TestScenario testScenario = scenarios.NO_AUDTING__NO_DATASPLIT__WITH_DELETE_INDICATOR();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(testScenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .collectStatistics(true)
+                .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations);
+
+    @Test
     void testNontemporalDeltaWithAuditingNoDataSplit()
     {
         TestScenario testScenario = scenarios.WITH_AUDTING__NO_DATASPLIT();

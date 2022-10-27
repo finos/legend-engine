@@ -202,6 +202,12 @@ public abstract class Planner
         return Optional.empty();
     }
 
+    protected void addPreRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> preRunStatisticsResult)
+    {
+        LogicalPlan rowsDeletedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L);
+        preRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
+    }
+
     protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
         Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeCondition() : Optional.empty();

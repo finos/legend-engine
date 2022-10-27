@@ -249,15 +249,6 @@ public class LogicalPlanUtils
                 .build();
     }
 
-    public static Selection getRecordCount(Dataset dataset, Condition condition, String alias)
-    {
-        return Selection.builder()
-                .source(dataset)
-                .condition(condition)
-                .addFields(FunctionImpl.builder().functionName(FunctionName.COUNT).alias(alias).addValue(All.INSTANCE).build())
-                .build();
-    }
-
     public static Condition getBatchIdEqualityCondition(Dataset dataset, Value batchId, String batchIdField)
     {
         return Equals.of(

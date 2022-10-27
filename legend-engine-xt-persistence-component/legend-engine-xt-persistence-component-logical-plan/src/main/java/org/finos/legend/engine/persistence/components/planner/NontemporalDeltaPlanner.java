@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import java.util.Collections;
+import java.util.HashMap;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -43,7 +45,6 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -301,54 +302,81 @@ class NontemporalDeltaPlanner extends Planner
         return dataSplitInRangeCondition;
     }
 
+    // stats related
+    @Override
+    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // Not supported at the moment
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // Not supported at the moment
+    }
+
     @Override
     public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
     {
         Map<StatisticName, LogicalPlan> preRunStatisticsResult = new HashMap<>();
         if (options().collectStatistics())
         {
-            if (this.deleteIndicatorField.isPresent() && this.deleteIndicatorIsSetCondition.isPresent() && !options().cleanupStagingData())
-            {
-                Condition digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
-
-                //Rows Deleted = rows removed(hard-deleted) from sink table
-                preRunStatisticsResult.put(
-                        ROWS_DELETED,
-                        LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset(),
-                                        And.builder()
-                                                .addConditions(this.deleteIndicatorIsSetCondition.get(),
-                                                        Exists.builder()
-                                                                .source(Selection.builder()
-                                                                        .source(mainDataset())
-                                                                        .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
-                                                                        .build()).build()).build(),
-                                        ROWS_DELETED.get()))
-                                .build());
-            }
+            //Rows deleted
+            addPreRunStatsForRowsDeleted(preRunStatisticsResult);
         }
+
         return preRunStatisticsResult;
     }
 
-    // stats related
-    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    @Override
+    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
     {
-        // Not supported at the moment
-    }
-
-    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
-    {
-        // Not supported at the moment
-    }
-
-    protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
-    {
-        if (!deleteIndicatorField.isPresent())
+        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
+        if (options().collectStatistics())
         {
-            super.addPostRunStatsForRowsDeleted(postRunStatisticsResult);
+            //Incoming dataset record count
+            addPostRunStatsForIncomingRecords(postRunStatisticsResult);
+            //Rows terminated
+            addPostRunStatsForRowsTerminated(postRunStatisticsResult);
+            //Rows inserted
+            addPostRunStatsForRowsInserted(postRunStatisticsResult);
+            //Rows updated
+            addPostRunStatsForRowsUpdated(postRunStatisticsResult);
+            //Rows deleted
+            if (!this.deleteIndicatorField.isPresent() || !this.deleteIndicatorIsSetCondition.isPresent())
+            {
+                addPostRunStatsForRowsDeleted(postRunStatisticsResult);
+            }
+        }
+
+        return postRunStatisticsResult;
+    }
+
+    @Override
+    protected void addPreRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        if (this.deleteIndicatorField.isPresent() && this.deleteIndicatorIsSetCondition.isPresent())
+        {
+            Condition digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField());
+
+            // Rows Deleted = rows removed (hard-deleted) from sink table
+            LogicalPlan rowsDeletedCountPlan = LogicalPlan.builder().addOps(LogicalPlanUtils
+                .getRecordCount(
+                    stagingDataset(),
+                    ROWS_DELETED.get(),
+                    Optional.of(And.builder().addConditions(this.deleteIndicatorIsSetCondition.get(),
+                        Exists.builder()
+                            .source(Selection.builder()
+                                .source(mainDataset())
+                                .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
+                                .build())
+                            .build()).build()))).build();
+
+            postRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
         }
         else
         {
-            // Not supported at the moment
+            super.addPreRunStatsForRowsDeleted(postRunStatisticsResult);
         }
     }
 }
