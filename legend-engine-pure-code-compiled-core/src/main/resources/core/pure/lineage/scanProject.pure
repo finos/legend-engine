@@ -1,0 +1,89 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::lineage::scanProject::*;
+import meta::pure::mapping::*;
+
+Class meta::pure::lineage::scanProject::Project
+{
+   projectfuncEntryPoint : ValueSpecification[1];
+   columns : Pair<String, FunctionDefinition<Any>>[*];
+}
+
+function meta::pure::lineage::scanProject::scanProject(f:ValueSpecification[1]):Project[*]
+{
+   $f->scanProjectRecursive([],[]);
+}
+
+Class <<access.private>> meta::pure::lineage::scanProject::Unknown
+{
+
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::scanProjectRecursive(val:Any[1], project:Project[*], processed:Function<Any>[*]):Project[*]
+{
+   $val->match([
+      l:FunctionDefinition<Any>[1]| $l.expressionSequence->map(e|$e->scanProjectRecursive($project, $processed)),
+      n:NativeFunction<Any>[1]| $project,
+      fe:FunctionExpression[1]| let res = if ($fe.func->isNotEmpty(),
+                                    | let dispatch = [
+                                                      pair('meta::pure::tds::project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_',
+                                                           |let funcs = $fe.parametersValues->at(1)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
+                                                            let names = $fe.parametersValues->at(2)->match([s:InstanceValue[1]|$s.values, a:Any[*]|^Unknown()]);
+                                                            ^Project(projectfuncEntryPoint = $fe,
+                                                                     columns = zip($names->match([s:String[*]|$s, a:Unknown[*]|range(1, $funcs->size(),1)->map(z|'unknown_'+$z->toString())]),
+                                                                                   $funcs->match([s:FunctionDefinition<Any>[*]|$s, a:Unknown[*]|[]]))
+                                                            );
+                                                      ),
+                                                      pair('meta::pure::tds::project_T_MANY__ColumnSpecification_MANY__TabularDataSet_1_',
+                                                           |let ins = $fe.parametersValues->at(1)->evaluateAndDeactivate();
+                                                            $ins->match(
+                                                               [
+                                                                 i:InstanceValue[1] |
+                                                                  let cols = $i.values->evaluateAndDeactivate()->cast(@SimpleFunctionExpression);
+                                                                  let colSpecs = $cols->map(c | $c->reactivate()->cast(@BasicColumnSpecification<Any>));
+                                                                  ^Project(projectfuncEntryPoint = $fe,
+                                                                           columns = zip($colSpecs.name, $colSpecs.func->cast(@FunctionDefinition<Any>)));,
+                                                                 a:Any[*]|[]
+                                                               ]
+                                                            );
+
+                                                      )
+                                                    ];
+                                     let funcFullPath = $fe.func->toOne()->elementToPath();
+                                     let res = $dispatch->filter(d|$funcFullPath == $d.first);
+                                     if ($res->isEmpty(),
+                                         |let params = $fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed));
+                                          if($processed->contains($fe.func->toOne()) || $fe.func->toOne()->elementToPath()->startsWith('meta::'),
+                                             |[],
+                                             |$fe.func->toOne()->scanProjectRecursive($project, $processed->concatenate($fe.func->toOne()))
+                                          )->concatenate($params);,
+                                         |$res->toOne().second->eval()
+                                     );,
+                                    |$fe.parametersValues->map(a|$a->scanProjectRecursive($project, $processed))
+                                ),
+      i:InstanceValue[1]|$i.values->map(a|$a->scanProjectRecursive($project, $processed)),
+      p:VariableExpression[1]|$project,
+      p:KeyExpression[1]|$p.expression->scanProjectRecursive($project, $processed),
+      p:Mapping[1]|$project,
+      c:Class<Any>[1]|$project,
+      p:Property<Nil,Any|*>[1]|$project,
+      e:Enumeration<Any>[1]|$project,
+      p:String[1]|$project,
+      p:Boolean[1]|$project,
+      p:Integer[1]|$project,
+      a:Any[1]|$project
+   ]
+  );
+}
