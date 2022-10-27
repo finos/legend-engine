@@ -14,394 +14,217 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.relational.RelationalSink;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSink;
+import org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal.NontemporalDeltaTestCases;
+import org.junit.jupiter.api.Assertions;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.relational.CaseConversion;
-import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
-import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSink;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
-public class NontemporalDeltaTest extends IngestModeTest
+public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 {
+    protected String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
+    protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage WHERE " +
+            "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+    protected String rowsTerminated = "SELECT 0 as rowsTerminated";
+    protected String rowsDeleted = "SELECT 0 as rowsDeleted";
 
-    @Test
-    void testGeneratePhysicalPlan()
+    @Override
+    public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
-            "INNER JOIN `mydb`.`staging` as stage " +
-            "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-            "SET sink.`id` = stage.`id`," +
-            "sink.`name` = stage.`name`," +
-            "sink.`amount` = stage.`amount`," +
-            "sink.`biz_date` = stage.`biz_date`," +
-            "sink.`digest` = stage.`digest`";
+                "INNER JOIN `mydb`.`staging` as stage " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
+                "SET sink.`id` = stage.`id`," +
+                "sink.`name` = stage.`name`," +
+                "sink.`amount` = stage.`amount`," +
+                "sink.`biz_date` = stage.`biz_date`," +
+                "sink.`digest` = stage.`digest`";
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
-            "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
-            "(SELECT * FROM `mydb`.`staging` as stage " +
-            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-            "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-            "(sink.`digest` = stage.`digest`))))";
+                "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
+                "(SELECT * FROM `mydb`.`staging` as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
+                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+                "(sink.`digest` = stage.`digest`))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
     }
 
-    @Test
-    void testGeneratePhysicalPlanWithUpperCaseOptimizer()
+    @Override
+    public void verifyNontemporalDeltaWithAuditingNoDataSplit(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
 
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
+        String updateSql = "UPDATE `mydb`.`main` as sink " +
+                "INNER JOIN `mydb`.`staging` as stage " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
+                "SET sink.`id` = stage.`id`," +
+                "sink.`name` = stage.`name`," +
+                "sink.`amount` = stage.`amount`," +
+                "sink.`biz_date` = stage.`biz_date`," +
+                "sink.`digest` = stage.`digest`," +
+                "sink.`batch_update_time` = '2000-01-01 00:00:00'";
 
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        String insertSql = "INSERT INTO `mydb`.`main` " +
+                "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' " +
+                "FROM `mydb`.`staging` as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
+                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+                "(sink.`digest` = stage.`digest`))))";
 
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(NoAuditing.builder().build())
-            .build();
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .caseConversion(CaseConversion.TO_UPPER)
-            .build();
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
 
-        GeneratorResult operations = generator.generateOperations(datasets);
+    @Override
+    public void verifyNonTemporalDeltaNoAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    {
+        String updateSql = "UPDATE `mydb`.`main` as sink " +
+                "INNER JOIN " +
+                "(SELECT * FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
+                "SET sink.`id` = stage.`id`," +
+                "sink.`name` = stage.`name`," +
+                "sink.`amount` = stage.`amount`," +
+                "sink.`biz_date` = stage.`biz_date`," +
+                "sink.`digest` = stage.`digest`";
+
+        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
+                "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
+                "AND (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`)))))";
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
+
+        Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
+        
+        // Stats
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplits, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplits, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNonTemporalDeltaWithWithAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    {
+        String updateSql = "UPDATE `mydb`.`main` as sink " +
+                "INNER JOIN " +
+                "(SELECT * FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) SET " +
+                "sink.`id` = stage.`id`," +
+                "sink.`name` = stage.`name`," +
+                "sink.`amount` = stage.`amount`," +
+                "sink.`biz_date` = stage.`biz_date`," +
+                "sink.`digest` = stage.`digest`," +
+                "sink.`batch_update_time` = '2000-01-01 00:00:00'";
+
+        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' FROM `mydb`.`staging` as stage " +
+                "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
+                "AND (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`)))))";
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
+        Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(1));
+
+        // Stats
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplits, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplits, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNontemporalDeltaWithUpperCaseOptimizer(GeneratorResult operations)
+    {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String updateSql = "UPDATE `MYDB`.`MAIN` as sink " +
-            "INNER JOIN `MYDB`.`STAGING` as stage " +
-            "ON ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`) " +
-            "SET sink.`ID` = stage.`ID`," +
-            "sink.`NAME` = stage.`NAME`," +
-            "sink.`AMOUNT` = stage.`AMOUNT`," +
-            "sink.`BIZ_DATE` = stage.`BIZ_DATE`," +
-            "sink.`DIGEST` = stage.`DIGEST`";
+                "INNER JOIN `MYDB`.`STAGING` as stage " +
+                "ON ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`) " +
+                "SET sink.`ID` = stage.`ID`," +
+                "sink.`NAME` = stage.`NAME`," +
+                "sink.`AMOUNT` = stage.`AMOUNT`," +
+                "sink.`BIZ_DATE` = stage.`BIZ_DATE`," +
+                "sink.`DIGEST` = stage.`DIGEST`";
 
         String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`) " +
-            "(SELECT * FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink " +
-            "WHERE ((sink.`ID` = stage.`ID`) " +
-            "AND (sink.`NAME` = stage.`NAME`)) " +
-            "AND (sink.`DIGEST` = stage.`DIGEST`))))";
+                "(SELECT * FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink " +
+                "WHERE ((sink.`ID` = stage.`ID`) " +
+                "AND (sink.`NAME` = stage.`NAME`)) " +
+                "AND (sink.`DIGEST` = stage.`DIGEST`))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
-    @Test
-    void testMilestoningWithLessColumnsInStaging()
+    @Override
+    public void verifyNontemporalDeltaWithLessColumnsInStaging(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(stagingTableSchemaWithLimitedColumns)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
-            "INNER JOIN `mydb`.`staging` as stage " +
-            "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-            "SET sink.`id` = stage.`id`," +
-            "sink.`name` = stage.`name`," +
-            "sink.`amount` = stage.`amount`," +
-            "sink.`digest` = stage.`digest`";
+                "INNER JOIN `mydb`.`staging` as stage " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
+                "SET sink.`id` = stage.`id`," +
+                "sink.`name` = stage.`name`," +
+                "sink.`amount` = stage.`amount`," +
+                "sink.`digest` = stage.`digest`";
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `digest`) " +
-            "(SELECT * FROM `mydb`.`staging` as stage " +
-            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-            "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-            "(sink.`digest` = stage.`digest`))))";
+                "(SELECT * FROM `mydb`.`staging` as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
+                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+                "(sink.`digest` = stage.`digest`))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
     }
 
-    @Test
-    void testGeneratePhysicalPlanWithUpdateBatchTimeField()
+    @Override
+    public void verifyNontemporalDeltaPostActionSqlAndCleanStagingData(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .executionTimestampClock(fixedClock_2000_01_01)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
-        List<String> preActionsSqlList = operations.preActionsSql();
-        List<String> milestoningSqlList = operations.ingestSql();
-
-        String updateSql = "UPDATE `mydb`.`main` as sink " +
-            "INNER JOIN `mydb`.`staging` as stage " +
-            "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
-            "SET sink.`id` = stage.`id`," +
-            "sink.`name` = stage.`name`," +
-            "sink.`amount` = stage.`amount`," +
-            "sink.`biz_date` = stage.`biz_date`," +
-            "sink.`digest` = stage.`digest`," +
-            "sink.`batch_update_time` = '2000-01-01 00:00:00'";
-
-        String insertSql = "INSERT INTO `mydb`.`main` " +
-            "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00' " +
-            "FROM `mydb`.`staging` as stage " +
-            "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-            "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
-            "(sink.`digest` = stage.`digest`))))";
-
-        Assertions.assertEquals(expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-    }
-
-    @Test
-    void testIncrementalDeltaMilestoningValidationPkFieldsMissing()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        try
-        {
-            RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(MemSqlSink.get())
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .build();
-
-            GeneratorResult operations = generator.generateOperations(datasets);
-
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (Exception e)
-        {
-            Assertions.assertEquals("Primary key list must not be empty", e.getMessage());
-        }
-    }
-
-    @Test
-    void testIncrementalDeltaMilestoningValidationupdateBatchTimeFieldMissing()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        try
-        {
-            NontemporalDelta ingestMode = NontemporalDelta.builder()
-                .digestField(digestField)
-                .auditing(DateTimeAuditing.builder().build())
-                .build();
-
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (Exception e)
-        {
-            Assertions.assertEquals("Cannot build DateTimeAuditing, some of required attributes are not set [dateTimeField]", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testPostRunStatisticsSqlWithoutUpdateBatchColumn()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-
-        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-    }
-
-    @Test
-    public void testPostRunStatisticsWithUpdateBatchColumn() throws Exception
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-        String rowsTerminated = "SELECT 0 as rowsTerminated";
-
-        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
-    }
-
-    @Test
-    public void testPostRunStatisticsAndPostActionSqlWithUpdateBatchColumnAndCleanStagingData()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestField)
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(MemSqlSink.get())
-            .cleanupStagingData(true)
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-        String rowsTerminated = "SELECT 0 as rowsTerminated";
-
-        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
-
         List<String> postActionsSql = operations.postActionsSql();
         List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedStagingCleanupQuery);
+        expectedSQL.add(MemsqlTestArtifacts.expectedStagingCleanupQuery);
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
+    }
+
+    public RelationalSink getRelationalSink()
+    {
+        return MemSqlSink.get();
     }
 }

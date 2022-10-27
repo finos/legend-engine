@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotEquals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.NotIn;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
+import org.finos.legend.engine.persistence.components.logicalplan.constraints.CascadeTableConstraint;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
@@ -121,6 +122,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableModifierVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TabularValuesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TableConstraintVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -191,6 +193,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(DistinctQuantifier.class, new DistinctQuantifierVisitor());
         logicalPlanVisitorByClass.put(IfExistsTableModifier.class, new TableModifierVisitor());
         logicalPlanVisitorByClass.put(IfNotExistsTableModifier.class, new TableModifierVisitor());
+        logicalPlanVisitorByClass.put(CascadeTableConstraint.class, new TableConstraintVisitor());
         logicalPlanVisitorByClass.put(SelectValue.class, new SelectValueVisitor());
         logicalPlanVisitorByClass.put(SumBinaryValueOperator.class, new SumBinaryValueOperatorVisitor());
         logicalPlanVisitorByClass.put(DiffBinaryValueOperator.class, new DiffBinaryValueOperatorVisitor());

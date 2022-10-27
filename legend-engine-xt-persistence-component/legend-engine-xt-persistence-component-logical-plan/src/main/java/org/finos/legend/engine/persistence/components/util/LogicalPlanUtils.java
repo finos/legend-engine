@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 public class LogicalPlanUtils
 {
@@ -231,20 +232,21 @@ public class LogicalPlanUtils
             LogicalPlanUtils.INFINITE_BATCH_TIME());
     }
 
-    public static List<Pair<FieldValue, Value>> getDigestUpdatePair(Dataset stagingDataSet, String digestField, HashFunction.HashAlgorithm hashAlgorithm)
-    {
-        List<Value> stagingFields = new ArrayList<>(stagingDataSet.schemaReference().fieldValues());
-        return Collections.singletonList(Pair.of(
-            FieldValue.builder().datasetRef(stagingDataSet.datasetReference()).fieldName(digestField).build(),
-            HashFunction.builder().hashAlgorithm(hashAlgorithm).addAllValue(stagingFields).build()));
-    }
-
     public static Selection getRecordCount(Dataset dataset, String alias)
     {
         return Selection.builder()
             .source(dataset.datasetReference())
             .addFields(FunctionImpl.builder().functionName(FunctionName.COUNT).alias(alias).addValue(All.INSTANCE).build())
             .build();
+    }
+
+    public static Selection getRecordCount(Dataset dataset, String alias, Optional<Condition> condition)
+    {
+        return Selection.builder()
+                .source(dataset.datasetReference())
+                .addFields(FunctionImpl.builder().functionName(FunctionName.COUNT).alias(alias).addValue(All.INSTANCE).build())
+                .condition(condition)
+                .build();
     }
 
     public static Selection getRecordCount(Dataset dataset, Condition condition, String alias)

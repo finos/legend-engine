@@ -133,9 +133,7 @@ public class StrictTimeParseTreeWalker
 
     private CStrictTime createStrictTime(String value)
     {
-        CStrictTime cStrictTime = new CStrictTime();
-        cStrictTime.multiplicity = ParserTreeWalkerUtility.getMultiplicityOneOne();
-        cStrictTime.values = Lists.mutable.with(value.substring(value.lastIndexOf(STRICT_TIME_PREFIX) + 1));
+        CStrictTime cStrictTime = new CStrictTime(value.substring(value.lastIndexOf(STRICT_TIME_PREFIX) + 1));
         cStrictTime.sourceInformation = walkerSourceInformation.getSourceInformation(this.timeToken.getSymbol());
         return cStrictTime;
     }

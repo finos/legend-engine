@@ -14,55 +14,94 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
+import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.relational.RelationalSink;
+import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal.AppendOnlyTestCases;
+import org.junit.jupiter.api.Assertions;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import org.finos.legend.engine.persistence.components.IngestModeTest;
-import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.relational.CaseConversion;
-import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
-import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
-public class AppendOnlyTest extends IngestModeTest
+public class AppendOnlyTest extends AppendOnlyTestCases
 {
+    String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
+    String rowsUpdated = "SELECT 0 as rowsUpdated";
+    String rowsTerminated = "SELECT 0 as rowsTerminated";
+    String rowsDeleted = "SELECT 0 as rowsDeleted";
+    String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"staging\" as stage";
 
-    @Test
-    void testIncrementalAppendMilestoning()
+    @Override
+    public void verifyAppendOnlyAllowDuplicatesNoAuditing(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
 
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+                "(SELECT * FROM \"mydb\".\"staging\" as stage)";
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
-            .build();
+        // Stats
+        verifyStats(operations);
+    }
 
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
+    @Override
+    public void verifyAppendOnlyAllowDuplicatesWithAuditing(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
 
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .build();
+        String insertSql = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' " +
+                "FROM \"mydb\".\"staging\" as stage)";
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQueryWithAuditAndNoPKs, preActionsSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
-        GeneratorResult operations = generator.generateOperations(datasets);
+        // Stats
+        verifyStats(operations);
+    }
+
+    @Override
+    public void verifyAppendOnlyFailOnDuplicatesNoAuditing(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+                "(SELECT * FROM \"mydb\".\"staging\" as stage)";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
+
+        // Stats
+        verifyStats(operations);
+    }
+
+    @Override
+    public void verifyAppendOnlyFailOnDuplicatesWithAuditing(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String insertSql = "INSERT INTO \"mydb\".\"main\" " +
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' " +
+                "FROM \"mydb\".\"staging\" as stage)";
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
+
+        // Stats
+        verifyStats(operations);
+    }
+
+    @Override
+    public void verifyAppendOnlyFilterDuplicatesNoAuditing(GeneratorResult operations)
+    {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
@@ -73,83 +112,77 @@ public class AppendOnlyTest extends IngestModeTest
             "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
             "(sink.\"digest\" = stage.\"digest\"))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
+
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
     }
 
-    @Test
-    void testIncrementalAppendMilestoningWithDataSplits()
+    @Override
+    public void verifyAppendOnlyFilterDuplicatesWithAuditing(GeneratorResult queries)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
+        List<String> preActionsSqlList = queries.preActionsSql();
+        List<String> milestoningSqlList = queries.ingestSql();
 
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDataSplit)
-            .build();
+        String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' FROM \"mydb\".\"staging\" as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE ((sink.\"id\" = stage.\"id\") AND " +
+                "(sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\"))))";
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
 
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .dataSplitField(Optional.of(dataSplitField))
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
-            .build();
+        List<String> postActionsSql = queries.postActionsSql();
+        List<String> expectedSQL = new ArrayList<>();
+        expectedSQL.add(AnsiTestArtifacts.expectedStagingCleanupQuery);
+        assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
 
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
+        // Stats
+        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
+        Assertions.assertEquals(incomingRecordCount, queries.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, queries.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsDeleted, queries.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertEquals(rowsInserted, queries.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
+        Assertions.assertEquals(rowsTerminated, queries.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
 
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .build();
-
-        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(datasets, dataSplitRanges);
-
+    @Override
+    public void verifyAppendOnlyFilterDuplicatesWithAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    {
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" " +
-            "FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) AND " +
-            "(NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
-            "(sink.\"digest\" = stage.\"digest\")))))";
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",'2000-01-01 00:00:00' " +
+                "FROM \"mydb\".\"staging\" as stage " +
+                "WHERE ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
+                "(NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
+                "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
+                "(sink.\"digest\" = stage.\"digest\")))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, operations.get(0).preActionsSql().get(0));
-        Assertions.assertEquals(String.format(insertSql, "2", "5"), operations.get(0).ingestSql().get(0));
-        Assertions.assertEquals(String.format(insertSql, "6", "7"), operations.get(1).ingestSql().get(0));
-        Assertions.assertEquals(4, operations.size());
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, operations.get(0).preActionsSql().get(0));
+
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
+        Assertions.assertEquals(2, operations.size());
+
+        // Stats
+        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage " +
+                "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
+
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsDeleted, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertEquals(rowsInserted, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
+        Assertions.assertEquals(rowsTerminated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
     }
 
-    @Test
-    void testIncrementalAppendMilestoningWithUpperCaseOptimizer()
+    @Override
+    public void verifyAppendOnlyWithUpperCaseOptimizer(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .caseConversion(CaseConversion.TO_UPPER)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
-
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
@@ -160,37 +193,13 @@ public class AppendOnlyTest extends IngestModeTest
             "AND (sink.\"NAME\" = stage.\"NAME\")) " +
             "AND (sink.\"DIGEST\" = stage.\"DIGEST\"))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
     }
 
-    @Test
-    void testIncrementalAppendMilestoningWithLessColumnsInStaging()
+    @Override
+    public void verifyAppendOnlyWithLessColumnsInStaging(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(stagingTableSchemaWithLimitedColumns)
-            .build();
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
@@ -201,267 +210,21 @@ public class AppendOnlyTest extends IngestModeTest
             "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
             "(sink.\"digest\" = stage.\"digest\"))))";
 
-        Assertions.assertEquals(expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
     }
 
-    @Test
-    void testIncrementalAppendMilestoningWithUpdateBatchTimeField()
+    private void verifyStats(GeneratorResult operations)
     {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .executionTimestampClock(fixedClock_2000_01_01)
-            .build();
-
-        GeneratorResult queries = generator.generateOperations(datasets);
-        List<String> preActionsSqlList = queries.preActionsSql();
-        List<String> milestoningSqlList = queries.ingestSql();
-
-        String insertSql = "INSERT INTO \"mydb\".\"main\" " +
-            "(" +
-            "\"id\", " +
-            "\"name\", " +
-            "\"amount\", " +
-            "\"biz_date\", " +
-            "\"digest\", " +
-            "\"batch_update_time\"" +
-            ") " +
-            "(" +
-            "SELECT " +
-            "stage.\"id\"," +
-            "stage.\"name\"," +
-            "stage.\"amount\"," +
-            "stage.\"biz_date\"," +
-            "stage.\"digest\"," +
-            "'2000-01-01 00:00:00' " +
-            "FROM \"mydb\".\"staging\" as stage " +
-            "WHERE NOT " +
-            "(" +
-            "EXISTS " +
-            "(" +
-            "SELECT * " +
-            "FROM \"mydb\".\"main\" as sink " +
-            "WHERE " +
-            "((sink.\"id\" = stage.\"id\") " +
-            "AND " +
-            "(sink.\"name\" = stage.\"name\")) " +
-            "AND " +
-            "(sink.\"digest\" = stage.\"digest\")" +
-            ")" +
-            ")" +
-            ")";
-
-        Assertions.assertEquals(expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
-    }
-
-    @Test
-    void testIncrementalAppendMilestoningValidationPkFieldsMissing()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
-            .build();
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        try
-        {
-            RelationalGenerator generator = RelationalGenerator.builder()
-                .ingestMode(ingestMode)
-                .relationalSink(AnsiSqlSink.get())
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .build();
-
-            GeneratorResult queries = generator.generateOperations(datasets);
-
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (Exception e)
-        {
-            Assertions.assertEquals("Primary key list must not be empty", e.getMessage());
-        }
-    }
-
-    @Test
-    void testIncrementalAppendMilestoningValidationupdateBatchTimeFieldMissing()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        try
-        {
-            AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
-                .deduplicationStrategy(FilterDuplicates.builder().build())
-                .auditing(DateTimeAuditing.builder().build())
-                .build();
-
-            Assertions.fail("Exception was not thrown");
-        }
-        catch (Exception e)
-        {
-            Assertions.assertEquals("Cannot build DateTimeAuditing, some of required attributes are not set [dateTimeField]", e.getMessage());
-        }
-    }
-
-    @Test
-    public void testPostRunStatsSqlWithoutUpdateBatchColumn()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult queries = generator.generateOperations(datasets);
-        List<String> postRunStatisticsSql = new ArrayList<>(queries.postIngestStatisticsSql().values());
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
-        Assertions.assertEquals(incomingRecordCount, queries.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-    }
-
-    @Test
-    public void testPostRunStatisticsSqlWithUpdateBatchColumn()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult queries = generator.generateOperations(datasets);
-        List<String> postRunStatisticsSql = new ArrayList<>(queries.postIngestStatisticsSql().values());
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
-        String rowsUpdated = "SELECT 0 as rowsUpdated";
-        String rowsDeleted = "SELECT 0 as rowsDeleted";
-        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
-        String rowsTerminated = "SELECT 0 as rowsTerminated";
-
-        Assertions.assertEquals(incomingRecordCount, queries.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(rowsUpdated, queries.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
-        Assertions.assertEquals(rowsDeleted, queries.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
-        Assertions.assertEquals(rowsInserted, queries.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
-        Assertions.assertEquals(rowsTerminated, queries.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
-    }
-
-    @Test
-    public void testPostRunStatisticsAndPostActionSqlWithUpdateBatchColumnAndCleanStagingData()
-    {
-        Dataset mainTable = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
-            .build();
-
-        Dataset stagingTable = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
-            .build();
-
-        AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
-            .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-            .build();
-
-        Datasets datasets = Datasets.of(mainTable, stagingTable);
-
-        RelationalGenerator generator = RelationalGenerator.builder()
-            .ingestMode(ingestMode)
-            .relationalSink(AnsiSqlSink.get())
-            .cleanupStagingData(true)
-            .collectStatistics(true)
-            .build();
-
-        GeneratorResult operations = generator.generateOperations(datasets);
-
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
-        String rowsUpdated = "SELECT 0 as rowsUpdated";
-        String rowsDeleted = "SELECT 0 as rowsDeleted";
-        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
-        String rowsTerminated = "SELECT 0 as rowsTerminated";
-
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
         Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
-        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
 
-        List<String> postActionsSql = operations.postActionsSql();
-        List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(expectedStagingCleanupQuery);
-        assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
+    public RelationalSink getRelationalSink()
+    {
+        return AnsiSqlSink.get();
     }
 }

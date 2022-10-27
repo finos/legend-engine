@@ -84,6 +84,7 @@ public class MemSqlDataTypeMapping implements DataTypeMapping
             case CHAR:
                 dataType = new Char();
                 break;
+            case STRING:
             case VARCHAR:
                 dataType = new VarChar();
                 if (!type.length().isPresent())

@@ -14,24 +14,16 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
-import org.eclipse.collections.api.block.function.Function0;
-import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
+import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-import java.util.List;
+import java.util.Map;
 
 public class ProtocolExtension implements PureProtocolExtension
 {
-    public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
+    @Override
+    public Map<String, Class> getExtraClassInstanceTypeMappings()
     {
-        return Lists.fixedSize.with(() -> Lists.fixedSize.with(
-                // Value specification
-                ProtocolSubTypeInfo.newBuilder(ValueSpecification.class)
-                        .withSubtype(NewValueSpecification.class, "testVS")
-                        .build()
-        ));
+        return Maps.mutable.of(NewValueSpecificationForTest.KEY, NewValueSpecificationForTest.class);
     }
-
 }

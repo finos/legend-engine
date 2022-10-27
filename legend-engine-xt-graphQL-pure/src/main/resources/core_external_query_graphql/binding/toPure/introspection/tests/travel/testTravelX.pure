@@ -1,0 +1,11 @@
+###Pure
+import meta::external::query::graphQL::metamodel::introspection::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::introspection::tests::testTravelFromIntrospection():Boolean[1]
+{
+    let str = readFile('/core_external_query_graphql/binding/toPure/introspection/tests/travel/travelx.json')->toOne();
+    let expected = readFile('/core_external_query_graphql/binding/toPure/introspection/tests/travel/travelResult.txt')->toOne();
+    let res = $str->meta::json::fromJson(__Schema)->meta::external::query::graphQL::binding::toPure::introspection::buildPureTypesFromGraphQLSchema('');
+    assertEquals($expected, $res->sortBy(r|$r->elementToPath())->map(r|$r->printType())->joinStrings('\n'));
+}

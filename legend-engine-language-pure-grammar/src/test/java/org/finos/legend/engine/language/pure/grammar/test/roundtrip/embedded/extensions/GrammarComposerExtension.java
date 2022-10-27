@@ -15,25 +15,20 @@
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
 import org.eclipse.collections.api.block.function.Function2;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
-import java.util.List;
+import java.util.Map;
 
 public class GrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
-    public List<Function2<ValueSpecification, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
+    public Map<String, Function2<Object, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
     {
-        return Lists.mutable.with((elements, context) ->
-        {
-            if (elements instanceof NewValueSpecification)
-            {
-                return "#Test{" + ((NewValueSpecification) elements).x + "}#";
-            }
-            return null;
-        });
+        return Maps.mutable.with(
+                NewValueSpecificationForTest.KEY,
+                (element, context) -> "#Test{" + ((NewValueSpecificationForTest) element).x + "}#"
+        );
     }
 }

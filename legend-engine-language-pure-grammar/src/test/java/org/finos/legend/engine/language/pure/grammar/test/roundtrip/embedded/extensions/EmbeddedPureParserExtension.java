@@ -14,25 +14,22 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
-import org.eclipse.collections.api.list.ListIterable;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 
 public class EmbeddedPureParserExtension implements EmbeddedPureParser
 {
     @Override
     public String getType()
     {
-        return "Test";
+        return NewValueSpecificationForTest.KEY;
     }
 
     @Override
-    public ListIterable<ValueSpecification> parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
+    public Object parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
-        return Lists.mutable.with(new NewValueSpecification(code));
+        return new NewValueSpecificationForTest(code);
     }
 }
