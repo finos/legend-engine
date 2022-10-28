@@ -14,6 +14,12 @@
 
 package org.finos.legend.engine.server.test.shared;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -22,11 +28,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.api.result.ResultManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
@@ -38,6 +39,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
+
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Utilities - ExecuteInRelationalDb")
@@ -58,7 +60,8 @@ public class ExecuteInRelationalDb
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response executeInRelationalDb(@Context HttpServletRequest request,
                                           ExecuteInRelationalDbInput input,
-                                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+                                          @ApiParam(hidden = true) @Pac4JProfileManager
+                                              ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
@@ -69,22 +72,32 @@ public class ExecuteInRelationalDb
             try
             {
                 Connection jdbcConn =
-                        this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null,
-                                input.connection);
+                    this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null,
+                        input.connection);
 
                 Statement stmt = jdbcConn.createStatement();
 
                 for (String sql : input.sqls)
                 {
-                    stmt.execute(sql);
+                    try
+                    {
+                        stmt.execute(sql);
+                    }
+                    catch (SQLException e)
+                    {
+                        LOGGER.warn("Exception during sql execution", e);
+                        if (!sql.toLowerCase(Locale.ROOT).contains("drop table"))
+                        {
+                            throw e;
+                        }
+                    }
                 }
-
                 return Response.ok().build();
             }
             catch (SQLException e)
             {
                 return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE)
-                        .entity(new ResultManager.ErrorMessage(20, "{\"message\":\"" + e.getMessage() + "\"}")).build();
+                    .entity(new ResultManager.ErrorMessage(20, "{\"message\":\"" + e.getMessage() + "\"}")).build();
             }
         }
         catch (Exception ex)
