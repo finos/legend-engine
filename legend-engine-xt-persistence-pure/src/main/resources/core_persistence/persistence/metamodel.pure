@@ -16,8 +16,11 @@ import meta::external::shared::format::binding::*;
 
 import meta::legend::service::metamodel::*;
 
+import meta::pure::metamodel::path::*;
+
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::context::*;
+import meta::pure::persistence::metamodel::mapping::*;
 import meta::pure::persistence::metamodel::notifier::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::audit::*;
@@ -38,6 +41,8 @@ import meta::pure::persistence::metamodel::persistenceTest::*;
 
 import meta::pure::runtime::*;
 
+import meta::pure::tds::*;
+
 import meta::relational::metamodel::*;
 
 /**********
@@ -56,6 +61,10 @@ meta::pure::persistence::metamodel::Persistence extends PackageableElement, meta
 
    {doc.doc = 'The service that sources and optionally transforms data to persist.'}
    service: Service[1];
+
+   //TODO: ledav -- switch to 1..* once migrating composer is implemented
+   {doc.doc = 'The mapping of the service output (or part of the service output) to a persistence target.'}
+   serviceOutputTargets: ServiceOutputTarget[*];
 
    {doc.doc = 'The persister that writes data to a datastore.'}
    persister: meta::pure::persistence::metamodel::persister::Persister[1];
@@ -128,6 +137,72 @@ meta::pure::persistence::metamodel::trigger::CronTrigger extends Trigger
    month: String[1];
    dayOfWeek: String[1];
    year: String[1];
+}
+
+/**********
+ * service output mapping
+ **********/
+
+Class
+{doc.doc = 'The mapping of the service output (or part of the service output in the case of a deep graph fetch) to a persistence target.'}
+meta::pure::persistence::metamodel::service::ServiceOutputTarget
+{
+  serviceOutput: ServiceOutput[1];
+  target: PersistenceTarget[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The output (or part of the output in the case of a deep graph fetch) of the service to be mapped.'}
+meta::pure::persistence::metamodel::service::ServiceOutput
+{
+  keyNames()
+  {
+    $this->match([
+      tdsRoot: TdsRootServiceOutput[1] | $tdsRoot.keys,
+      graphFetchRoot: GraphFetchRootServiceOutput[1] | $graphFetchRoot.keys->map(k | $k.name)->toOneMany(),
+      graphFetchPath: GraphFetchPathServiceOutput[1] | $graphFetchPath.keys->map(k | $k.name)->toOneMany()
+    ])
+  }: String[1..*];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Service output representing the entire result of a service.'}
+meta::pure::persistence::metamodel::service::RootServiceOutput extends ServiceOutput
+{
+}
+
+Class
+{doc.doc = 'Service output representing the entire result of a TDS service.'}
+meta::pure::persistence::metamodel::service::TdsRootServiceOutput extends RootServiceOutput
+{
+  tds: TabularDataSet[1];
+  keys: String[1..*];
+}
+
+Class
+{doc.doc = 'Service output representing the entire result of a graph fetch service.'}
+meta::pure::persistence::metamodel::service::GraphFetchRootServiceOutput extends RootServiceOutput
+{
+  class: Class<Any>[1];
+  keys: Path<Nil, Any|*>[1..*];
+}
+
+Class
+{doc.doc = 'Service output representing a path within a graph fetch tree.'}
+meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput extends ServiceOutput
+{
+  path: Path<Nil, Any|*>[1];
+  keys: Path<Nil, Any|*>[1..*];
+}
+
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The persistence target to which service output is being mapped'}
+meta::pure::persistence::metamodel::target::PersistenceTarget
+{
 }
 
 /**********
@@ -582,21 +657,21 @@ meta::pure::persistence::metamodel::persister::validitymilestoning::derivation::
 
 Class meta::pure::persistence::metamodel::PersistenceTest extends meta::pure::test::AtomicTest
 {
-  testBatches                 : PersistenceTestBatch[*];
-  isTestDataFromServiceOutput : Boolean[0..1];
+  testBatches: PersistenceTestBatch[*];
+  isTestDataFromServiceOutput: Boolean[0..1];
 }
 
 Class meta::pure::persistence::metamodel::PersistenceTestBatch extends meta::pure::test::TestBatch
 {
-  testData   : meta::pure::persistence::metamodel::TestData[1];
+  testData: meta::pure::persistence::metamodel::TestData[1];
 }
 
 Class meta::pure::persistence::metamodel::TestData
 {
-  connection : meta::pure::persistence::metamodel::ConnectionTestData[1];
+  connection: meta::pure::persistence::metamodel::ConnectionTestData[1];
 }
 
 Class meta::pure::persistence::metamodel::ConnectionTestData
 {
-  data      : meta::pure::data::EmbeddedData[1];
+  data: meta::pure::data::EmbeddedData[1];
 }
