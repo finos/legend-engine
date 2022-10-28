@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
+import java.util.Arrays;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
@@ -21,6 +22,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorName;
+import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorValues;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.idName;
@@ -100,6 +104,64 @@ class NontemporalDeltaTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass2);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+    }
+
+    /*
+    Scenario: Test NonTemporal Delta when delete indicator is present
+     */
+    @Test
+    void testNonTemporalDeltaWithDeleteIndicator() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithDeleteIndicator();
+
+        // Create staging table
+        createStagingTable(stagingTable);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                    .deleteField(deleteIndicatorName)
+                    .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                    .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/with_delete_indicator/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/with_delete_indicator/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithDeleteInd(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
+
+        // ------------ Perform incremental (delta) milestoning Pass2 ------------------------
+        String dataPass2 = basePath + "input/with_delete_indicator/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/with_delete_indicator/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithDeleteInd(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 1);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 3);
     }
 
     /*
@@ -187,7 +249,7 @@ class NontemporalDeltaTest extends BaseTest
     @Test
     void testNonTemporalDeltaWithAuditing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
