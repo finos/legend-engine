@@ -86,6 +86,8 @@ public class ExecuteInRelationalDb
                     catch (SQLException e)
                     {
                         LOGGER.warn("Exception during sql execution", e);
+                        // skipping failed "drop table ..." statement cause some dbs doesn't have "if exists", 
+                        // for example Spanner
                         if (!sql.toLowerCase(Locale.ROOT).contains("drop table"))
                         {
                             throw e;
