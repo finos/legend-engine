@@ -1,0 +1,137 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::persistence::test::example::*;
+
+/**********
+ * classes
+ **********/
+
+Class meta::pure::persistence::test::example::WrapperInput
+{
+  flatInput1: FlatInput[1];
+  flatInput2: FlatInput[1];
+  flatInput3: FlatInput[1];
+}
+
+Class meta::pure::persistence::test::example::FlatInput
+{
+  idIn: Integer[1];
+  booleanIn: Boolean[1];
+  integerIn: Integer[1];
+  floatIn: Float[1];
+  decimalIn: Decimal[1];
+  strictDateIn: StrictDate[1];
+  dateTimeIn: DateTime[1];
+  stringIn: String[1];
+}
+
+Class meta::pure::persistence::test::example::WrapperOutput
+{
+  flatOutput1: FlatOutput[1];
+  flatOutput2: FlatOutput[1];
+  flatOutput3: FlatOutput[1];
+}
+
+Class meta::pure::persistence::test::example::FlatOutput
+{
+  idOut: Integer[1];
+  booleanOut: Boolean[1];
+  integerOut: Integer[1];
+  floatOut: Float[1];
+  decimalOut: Decimal[1];
+  strictDateOut: StrictDate[1];
+  dateTimeOut: DateTime[1];
+  stringOut: String[1];
+}
+
+/**********
+ * relational database, mapping, connection
+ **********/
+
+###Relational
+Database meta::pure::persistence::test::example::RelationalDatabase
+(
+  Table FlatTable1 (
+    id INTEGER PRIMARY KEY,
+    boolean_col BIT,
+    integer_col INTEGER,
+    float_col DOUBLE,
+    decimal_col DECIMAL(10,2),
+    strict_date_col DATE,
+    date_time_col TIMESTAMP,
+    string_col VARCHAR(200)
+  )
+
+  Table FlatTable2 (
+    id INTEGER PRIMARY KEY,
+    boolean_col BIT,
+    integer_col INTEGER,
+    float_col DOUBLE,
+    decimal_col DECIMAL(10,2),
+    strict_date_col DATE,
+    date_time_col TIMESTAMP,
+    string_col VARCHAR(200)
+  )
+
+  Table FlatTable3 (
+    id INTEGER PRIMARY KEY,
+    boolean_col BIT,
+    integer_col INTEGER,
+    float_col DOUBLE,
+    decimal_col DECIMAL(10,2),
+    strict_date_col DATE,
+    date_time_col TIMESTAMP,
+    string_col VARCHAR(200)
+  )
+)
+
+###Mapping
+import meta::pure::persistence::test::example::*;
+
+Mapping meta::pure::persistence::test::example::RelationalMapping
+(
+  *meta::pure::persistence::test::example::FlatInput: Relational
+  {
+    ~primaryKey
+    (
+      [RelationalDatabase] FlatTable1.id
+    )
+    ~mainTable [RelationalDatabase] FlatTable1
+    booleanIn: [RelationalDatabase] FlatTable1.boolean_col,
+    integerIn: [RelationalDatabase] FlatTable1.integer_col,
+    floatIn: [RelationalDatabase] FlatTable1.float_col,
+    decimalIn: [RelationalDatabase] FlatTable1.decimal_col,
+    strictDateIn: [RelationalDatabase] FlatTable1.strict_date_col,
+    dateTimeIn: [RelationalDatabase] FlatTable1.date_time_col,
+    stringIn: [RelationalDatabase] FlatTable1.string_col
+  }
+)
+
+###Pure
+import meta::pure::alloy::connections::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+
+function meta::pure::persistence::test::example::RelationalConnection(): Connection[1]
+{
+  ^RelationalDatabaseConnection(
+    element = meta::pure::persistence::test::example::RelationalDatabase,
+    type = DatabaseType.H2,
+    authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
+    datasourceSpecification = ^LocalH2DatasourceSpecification()
+  );
+}

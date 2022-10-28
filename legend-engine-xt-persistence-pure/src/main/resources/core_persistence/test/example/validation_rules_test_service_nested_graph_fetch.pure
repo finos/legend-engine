@@ -1,0 +1,249 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**********
+ * nested mapping, runtime, service, persistence
+ **********/
+
+###Mapping
+Mapping meta::pure::persistence::test::example::NestedM2mMapping
+(
+  *meta::pure::persistence::test::example::WrapperOutput: Pure
+  {
+    ~src meta::pure::persistence::test::example::WrapperInput
+    flatOutput1: $src.flatInput1
+    flatOutput2: $src.flatOutput2
+  }
+
+  *meta::pure::persistence::test::example::FlatOutput: Pure
+  {
+    ~src meta::pure::persistence::test::example::FlatInput
+    idOut: $src.idIn
+    booleanOut: $src.booleanIn
+    integerOut: $src.integerIn
+    floatOut: $src.floatIn
+    decimalOut: $src.decimalIn
+    strictDateOut: $src.strictDateIn
+    dateTimeOut: $src.dateTimeIn
+    stringOut: $src.stringIn
+  }
+)
+
+###Pure
+import meta::legend::service::metamodel::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::notifier::*;
+import meta::pure::persistence::metamodel::persister::*;
+import meta::pure::persistence::metamodel::persister::deduplication::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::*;
+import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::*;
+import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
+import meta::pure::persistence::metamodel::persister::sink::*;
+import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::service::*;
+import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::persistence::test::example::*;
+import meta::pure::runtime::*;
+import meta::pure::test::assertion::*;
+
+function meta::pure::persistence::test::example::NestedM2mRuntime(): Runtime[1]
+{
+  ^EngineRuntime(
+    mappings = meta::pure::persistence::test::example::NestedM2mMapping,
+    connections = ^JsonModelConnection(
+      element=^ModelStore(),
+      class = meta::pure::persistence::test::example::WrapperInput,
+      url = 'executor:default'));
+}
+
+function meta::pure::persistence::test::example::NestedM2mService(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = | meta::pure::persistence::test::example::WrapperOutput.all()->graphFetch(
+        #{
+          meta::pure::persistence::test::example::WrapperOutput
+          {
+            flatOutput1
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            },
+            flatOutput2
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            }
+          }
+        }#
+      )->serialize(
+        #{
+          meta::pure::persistence::test::example::WrapperOutput
+          {
+            flatOutput1
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            },
+            flatOutput2
+            {
+              idOut,
+              booleanOut,
+              integerOut,
+              floatOut,
+              decimalOut,
+              strictDateOut,
+              dateTimeOut,
+              stringOut
+            }
+          }
+        }#
+      ),
+      mapping = meta::pure::persistence::test::example::NestedM2mMapping,
+      runtime = meta::pure::persistence::test::example::NestedM2mRuntime()
+    ),
+    test = ^SingleExecutionTest(
+      data = '',
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true)),
+    tests = ^ServiceTest(id = 'test1', assertions = ^EqualTo(id = 'assertion1', expected = ''))
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithFlatPersistence(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Graph fetch m2m service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    persister = ^BatchPersister(
+      ingestMode = ^UnitemporalDelta(
+        mergeStrategy = ^NoDeletesMergeStrategy(),
+        transactionMilestoning = ^BatchIdTransactionMilestoning(
+          batchIdInName = 'IN_Z',
+          batchIdOutName = 'OUT_Z'
+        )
+      ),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::example::RelationalDatabase),
+      targetShape = ^FlatTarget(
+        targetName = 'FlatTable',
+        deduplicationStrategy = ^NoDeduplicationStrategy()
+      )
+    ),
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithMultiFlatPersistence(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Graph fetch m2m service into a multi flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    persister = ^BatchPersister(
+      ingestMode = ^UnitemporalDelta(
+        mergeStrategy = ^NoDeletesMergeStrategy(),
+        transactionMilestoning = ^BatchIdTransactionMilestoning(
+          batchIdInName = 'IN_Z',
+          batchIdOutName = 'OUT_Z'
+        )
+      ),
+      sink = ^RelationalSink(database = meta::pure::persistence::test::example::RelationalDatabase),
+      targetShape = ^MultiFlatTarget(
+        modelClass = meta::pure::persistence::test::example::WrapperOutput,
+        transactionScope = TransactionScope.ALL_TARGETS,
+        parts = [
+          ^MultiFlatTargetPart(
+            modelProperty = meta::pure::persistence::test::example::WrapperOutput.properties->filter(p | $p.name == 'flatOutput1')->first()->toOne(),
+            targetName = 'FlatTable1',
+            deduplicationStrategy = ^NoDeduplicationStrategy()
+          ),
+          ^MultiFlatTargetPart(
+            modelProperty = meta::pure::persistence::test::example::WrapperOutput.properties->filter(p | $p.name == 'flatOutput2')->first()->toOne(),
+            targetName = 'FlatTable2',
+            deduplicationStrategy = ^NoDeduplicationStrategy()
+          )
+        ]
+      )
+    ),
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithTdsRootServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(serviceOutput = ^TdsRootServiceOutput(keys = ['integerID']), target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithGraphFetchRootServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^GraphFetchRootServiceOutput(
+        class = meta::pure::persistence::test::example::FlatOutput,
+        keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#]),
+      target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithGraphFetchPathServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^GraphFetchPathServiceOutput(
+        path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
+        keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#]),
+      target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
