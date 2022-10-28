@@ -20,6 +20,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.memsql.sql.MemSqlDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.memsql.sqldom.constraints.table.ClusteredColumnStoreIndexConstraint;
+import org.finos.legend.engine.persistence.components.relational.memsql.sqldom.constraints.table.ShardKeyConstraint;
+import org.finos.legend.engine.persistence.components.relational.memsql.sqldom.constraints.table.UnenforcedUniqueIndexConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.NotNullColumnConstraint;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.PKColumnConstraint;
@@ -71,7 +74,8 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
             prev.push(column);
         }
 
-        if (pkNum > 1)
+        boolean isTableColumnStore = current.columnStoreSpecification().isPresent() && current.columnStoreSpecification().get().columnStore();
+        if (pkNum > 1 && !isTableColumnStore)
         {
             TableConstraint constraint = new PrimaryKeyTableConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
             for (Optimizer optimizer : context.optimizers())
@@ -81,23 +85,49 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
             prev.push(constraint);
         }
 
-        for (Index idx : current.indexes())
+        boolean isShard = current.shardSpecification().isPresent() && current.shardSpecification().get().shardKeys().size() > 0;
+        // if table is sharded and primary keys are present
+        if (isTableColumnStore)
         {
-            TableConstraint constraint;
-            List<String> columns = idx.columns().stream().map(Field::name).collect(Collectors.toList());
-            if (idx.unique())
+            if (pkNum >= 1 && isShard)
             {
-                constraint = new UniqueTableConstraint(columns, context.quoteIdentifier());
+                //todo : check if comma is required before the constraint?
+                TableConstraint constraint = new UnenforcedUniqueIndexConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
+                prev.push(constraint);
             }
-            else
-            {
-                constraint = new TableIndexConstraint(columns, idx.indexName(), context.quoteIdentifier());
-            }
-            for (Optimizer optimizer : context.optimizers())
-            {
-                constraint = (TableConstraint) optimizer.optimize(constraint);
-            }
+        }
+
+        if (isShard)
+        {
+            TableConstraint constraint = new ShardKeyConstraint(current.shardSpecification().get().shardKeys().stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
             prev.push(constraint);
+        }
+
+        if (isTableColumnStore)
+        {
+            TableConstraint constraint = new ClusteredColumnStoreIndexConstraint(current.columnStoreSpecification().get().columnStoreKeys().stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
+            prev.push(constraint);
+        }
+        else
+        {
+            for (Index idx : current.indexes())
+            {
+                TableConstraint constraint;
+                List<String> columns = idx.columns().stream().map(Field::name).collect(Collectors.toList());
+                if (idx.unique())
+                {
+                    constraint = new UniqueTableConstraint(columns, context.quoteIdentifier());
+                }
+                else
+                {
+                    constraint = new TableIndexConstraint(columns, idx.indexName(), context.quoteIdentifier());
+                }
+                for (Optimizer optimizer : context.optimizers())
+                {
+                    constraint = (TableConstraint) optimizer.optimize(constraint);
+                }
+                prev.push(constraint);
+            }
         }
 
         return new VisitorResult(null);
