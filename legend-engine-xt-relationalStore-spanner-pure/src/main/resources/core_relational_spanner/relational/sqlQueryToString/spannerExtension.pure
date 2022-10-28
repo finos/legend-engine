@@ -41,8 +41,9 @@ function meta::relational::functions::sqlQueryToString::spanner::createDbExtensi
       joinStringsProcessor = processJoinStringsOperationForSpanner_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSpanner_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      schemaNameToIdentifier = schemaNameToIdentifierForSpanner_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
+      ddlCommandsTranslator = getSpannerDDLCommandsTranslator()
    );
 }
 
@@ -195,4 +196,92 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processSliceOrDropForSpanner(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
    '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake()]) + if ($size == -1, | '', | ' limit %s'->format($size));
+}
+
+function meta::relational::functions::sqlQueryToString::spanner::getSpannerDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementSpanner_CreateSchemaSQL_1__String_1_,
+                dropSchema =  translateDropSchemaStatementSpanner_DropSchemaSQL_1__String_1_,
+                createTable =  translateCreateTableStatementSpanner_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementSpanner_DropTableSQL_1__String_1_,
+                loadTable =  loadValuesToDbTableForSpanner_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateCreateSchemaStatementSpanner(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
+{
+   '';
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateDropSchemaStatementSpanner(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
+{
+   '';
+}
+
+function meta::relational::functions::sqlQueryToString::spanner::translateDropTableStatementSpanner(dropTableSQL:DropTableSQL[1]) : String[1]
+{
+  let t= $dropTableSQL.table;
+  if (isNeededForSpannerTestsTable($t.name),
+  |
+    'Drop table '+$t.name+';',
+  |
+    ''
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::schemaNameToIdentifierForSpanner(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+  // println($schemaName);
+   'default';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::translateCreateTableStatementSpanner(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t= $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  if (isNeededForSpannerTestsTable($t.name),
+  |
+    // no schema here
+    'Create Table '+$t.name+
+        + '('
+        + $t.columns->cast(@meta::relational::metamodel::Column)
+          ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextSpanner($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+          ->joinStrings(',')
+        + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
+        +');',
+  | 
+    '';
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getColumnTypeSqlTextSpanner(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::Timestamp[1] | 'timestamptz',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function meta::relational::functions::sqlQueryToString::spanner::loadValuesToDbTableForSpanner(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+  if (isNeededForSpannerTestsTable($loadTableSQL.table.name),
+  |
+    // no schema here
+    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + $loadTableSQL.table.name + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ');';
+   ),
+  |
+    ''
+  );
+}
+
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::isNeededForSpannerTestsTable(tableName: String[1]) : Boolean[1]
+{
+  $tableName -> in(['personTable', 'firmTable', 'tradeTable', 'addressTable', 'orderTable', 'orderPnlTable', 'productTable']);
 }

@@ -406,13 +406,13 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::defa
    'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' cascade;';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1]) : String[1]
 {
   let t= $dropTableSQL.table;
   'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
@@ -433,7 +433,7 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::defa
    ])
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
 
     $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
