@@ -41,8 +41,6 @@ import meta::pure::persistence::metamodel::persistenceTest::*;
 
 import meta::pure::runtime::*;
 
-import meta::pure::tds::*;
-
 import meta::relational::metamodel::*;
 
 /**********
@@ -140,7 +138,7 @@ meta::pure::persistence::metamodel::trigger::CronTrigger extends Trigger
 }
 
 /**********
- * service output mapping
+ * service output target
  **********/
 
 Class
@@ -160,10 +158,15 @@ meta::pure::persistence::metamodel::service::ServiceOutput
   {
     $this->match([
       tdsRoot: TdsRootServiceOutput[1] | $tdsRoot.keys,
-      graphFetchRoot: GraphFetchRootServiceOutput[1] | $graphFetchRoot.keys->map(k | $k.name)->toOneMany(),
-      graphFetchPath: GraphFetchPathServiceOutput[1] | $graphFetchPath.keys->map(k | $k.name)->toOneMany()
+      graphFetchRoot: GraphFetchRootServiceOutput[1] | $graphFetchRoot.keys->map(k | $k->leafPropertyName())->toOneMany(),
+      graphFetchPath: GraphFetchPathServiceOutput[1] | $graphFetchPath.keys->map(k | $k->leafPropertyName())->toOneMany()
     ])
   }: String[1..*];
+}
+
+function <<access.private>> meta::pure::persistence::metamodel::service::leafPropertyName(path: Path<Nil, Any|*>[1]): String[1]
+{
+  $path.path->filter(pe | $pe->instanceOf(PropertyPathElement))->last()->cast(@PropertyPathElement).property.name->toOne();
 }
 
 Class
@@ -177,7 +180,6 @@ Class
 {doc.doc = 'Service output representing the entire result of a TDS service.'}
 meta::pure::persistence::metamodel::service::TdsRootServiceOutput extends RootServiceOutput
 {
-  tds: TabularDataSet[1];
   keys: String[1..*];
 }
 
@@ -196,7 +198,6 @@ meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput extends
   path: Path<Nil, Any|*>[1];
   keys: Path<Nil, Any|*>[1..*];
 }
-
 
 Class
 <<typemodifiers.abstract>>
