@@ -91,7 +91,6 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
         {
             if (pkNum >= 1 && isShard)
             {
-                //todo : check if comma is required before the constraint?
                 TableConstraint constraint = new UnenforcedUniqueIndexConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
                 prev.push(constraint);
             }
