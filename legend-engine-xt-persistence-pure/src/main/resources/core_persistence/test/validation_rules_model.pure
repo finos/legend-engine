@@ -334,7 +334,9 @@ import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::
 import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
 import meta::pure::persistence::metamodel::persister::sink::*;
 import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::persistence::test::example::*;
 import meta::pure::runtime::*;
 import meta::pure::test::assertion::*;
 
@@ -457,6 +459,47 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithMultiFlatPers
   );
 }
 
+function meta::pure::persistence::test::example::FlatM2mServiceWithTdsRootServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::FlatM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(serviceOutput = ^TdsRootServiceOutput(keys = ['integerID']), target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::FlatM2mServiceWithGraphFetchRootServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::FlatM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^GraphFetchRootServiceOutput(
+        class = meta::pure::persistence::test::example::FlatOutput,
+        keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#]),
+      target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::FlatM2mServiceWithGraphFetchPathServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::FlatM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^GraphFetchPathServiceOutput(
+        path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
+        keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#]),
+      target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
 /**********
  * nested mapping, runtime, service, persistence
  **********/
@@ -499,7 +542,9 @@ import meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::
 import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
 import meta::pure::persistence::metamodel::persister::sink::*;
 import meta::pure::persistence::metamodel::persister::targetshape::*;
+import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::trigger::*;
+import meta::pure::persistence::test::example::*;
 import meta::pure::runtime::*;
 import meta::pure::test::assertion::*;
 
@@ -646,6 +691,47 @@ function meta::pure::persistence::test::example::NestedM2mServiceWithMultiFlatPe
         ]
       )
     ),
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithTdsRootServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(serviceOutput = ^TdsRootServiceOutput(keys = ['integerID']), target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithGraphFetchRootServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^GraphFetchRootServiceOutput(
+        class = meta::pure::persistence::test::example::FlatOutput,
+        keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#]),
+      target = ^TestTarget())],
+    notifier = ^Notifier(notifyees = [])
+  );
+}
+
+function meta::pure::persistence::test::example::NestedM2mServiceWithGraphFetchPathServiceOutput(): Persistence[1]
+{
+  ^Persistence(
+    documentation = 'Tds service into a flat target',
+    trigger = ^ManualTrigger(),
+    service = meta::pure::persistence::test::example::NestedM2mService(),
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^GraphFetchPathServiceOutput(
+        path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
+        keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#]),
+      target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );
 }

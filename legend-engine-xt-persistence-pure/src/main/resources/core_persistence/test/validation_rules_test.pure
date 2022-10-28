@@ -78,6 +78,31 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_t
 }
 
 /**********
+ * flat graph fetch service and output tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_flatM2mService_tdsRoot(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithTdsRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput);
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_flatM2mService_graphFetchRoot(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithGraphFetchRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput);
+  assert($result.valid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_flatM2mService_graphFetchPath(): Boolean[1]
+{
+  let persistence = FlatM2mServiceWithGraphFetchPathServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput);
+  assert($result.invalid());
+}
+
+/**********
  * flat graph fetch service tests
  **********/
 
@@ -140,5 +165,30 @@ function <<test.Test>> meta::pure::persistence::test::validateServiceAndTarget_n
 {
   let persistence = NestedM2mServiceWithMultiFlatPersistence();
   let result = validateServiceAndTarget($persistence.service, $persistence.persister->cast(@BatchPersister).targetShape);
+  assert($result.valid());
+}
+
+/**********
+ * nested graph fetch service and output tests
+ **********/
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_nestedM2mService_tdsRoot(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithTdsRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput);
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_nestedM2mService_graphFetchRoot(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithGraphFetchRootServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput);
+  assert($result.invalid());
+}
+
+function <<test.Test>> meta::pure::persistence::test::validateServiceAndOutput_nestedM2mService_graphFetchPath(): Boolean[1]
+{
+  let persistence = NestedM2mServiceWithGraphFetchPathServiceOutput();
+  let result = validateServiceAndOutput($persistence.service, $persistence.serviceOutputTargets->at(0).serviceOutput);
   assert($result.valid());
 }

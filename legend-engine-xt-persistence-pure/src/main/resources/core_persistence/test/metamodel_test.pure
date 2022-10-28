@@ -16,7 +16,7 @@ import meta::pure::metamodel::path::*;
 
 import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::target::*;
-import meta::pure::persistence::test::*;
+import meta::pure::persistence::test::example::*;
 
 /**********
  * service root tests
@@ -44,27 +44,27 @@ function <<test.Test>> meta::pure::persistence::metamodel::tests::keyNames_graph
  * service roots
  **********/
 
-Class meta::pure::persistence::test::TestResult
+Class meta::pure::persistence::test::example::TestResult
 {
   id: Integer[1];
   part1: TestResultPart[1];
   part2: TestResultPart[1];
 }
 
-Class meta::pure::persistence::test::TestResultPart
+Class meta::pure::persistence::test::example::TestResultPart
 {
   id: Integer[1];
   value: String[1];
 }
 
-function meta::pure::persistence::test::TdsRoot(): TdsRootServiceOutput[1]
+function meta::pure::persistence::test::example::TdsRoot(): TdsRootServiceOutput[1]
 {
   ^TdsRootServiceOutput(
     keys = ['id1', 'id2']
   );
 }
 
-function meta::pure::persistence::test::GraphFetchRoot(): GraphFetchRootServiceOutput[1]
+function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchRootServiceOutput[1]
 {
   ^GraphFetchRootServiceOutput(
     class = TestResult,
@@ -72,7 +72,7 @@ function meta::pure::persistence::test::GraphFetchRoot(): GraphFetchRootServiceO
   );
 }
 
-function meta::pure::persistence::test::GraphFetchPath(): GraphFetchPathServiceOutput[1]
+function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchPathServiceOutput[1]
 {
   ^GraphFetchPathServiceOutput(
     path = #/TestResult/part1#,
