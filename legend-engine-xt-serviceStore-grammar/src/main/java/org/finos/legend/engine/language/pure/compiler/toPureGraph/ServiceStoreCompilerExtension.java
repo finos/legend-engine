@@ -142,35 +142,4 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
         return Collections.singletonList(ServiceStoreEmbeddedDataCompiler::compileServiceStoreEmbeddedDataCompiler);
     }
 
-
-    @Override
-    public List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
-    {
-        return Lists.mutable.with(
-                (scheme, context) ->
-                {
-                    if (scheme instanceof SimpleHttpSecurityScheme)
-                    {
-                        SimpleHttpSecurityScheme simpleHttpSecurityScheme = (SimpleHttpSecurityScheme) scheme;
-                        return new Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl(simpleHttpSecurityScheme.id,null, context.pureModel.getClass("meta::external::store::service::metamodel::SimpleHttpSecurityScheme"))
-                                ._scheme(simpleHttpSecurityScheme.scheme);
-
-                    }
-                    else if (scheme instanceof ApiKeySecurityScheme)
-                    {
-                        ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
-                        return new Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl(apiKeySecurityScheme.id, null, context.pureModel.getClass("eta::external::store::service::metamodel::ApiKeySecurityScheme"))
-                                ._location(apiKeySecurityScheme.location)
-                                ._keyName(apiKeySecurityScheme.keyName);
-                    }
-                    else if (scheme instanceof OauthSecurityScheme)
-                    {
-                        OauthSecurityScheme oauthSecurityScheme = (OauthSecurityScheme) scheme;
-                        return new Root_meta_external_store_service_metamodel_OauthSecurityScheme_Impl(oauthSecurityScheme.id, null, context.pureModel.getClass("meta::external::store::service::metamodel::OauthSecurityScheme"))
-                                ._scopeAddAll(org.eclipse.collections.impl.factory.Lists.mutable.withAll(oauthSecurityScheme.scopes));
-                    }
-                    return null;
-                }
-        );
-    }
 }

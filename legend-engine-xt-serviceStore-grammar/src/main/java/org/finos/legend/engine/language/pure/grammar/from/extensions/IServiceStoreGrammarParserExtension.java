@@ -29,8 +29,10 @@ import org.finos.legend.engine.language.pure.grammar.from.connection.authenticat
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IdentifiedSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +50,11 @@ public interface IServiceStoreGrammarParserExtension extends PureGrammarParserEx
     static SecurityScheme process(SecuritySchemeSourceCode code, List<Function<SecuritySchemeSourceCode, SecurityScheme>> processors)
     {
         return process(code, processors, "Security Scheme");
+    }
+
+    default void validateSecurity(List<IdentifiedSecurityScheme> supportedSecuritySchemes, SourceInformation sourceInformation, List<SecurityScheme> availableSecuritySchemes)
+    {
+
     }
 
     static AuthenticationSpecification process(AuthenticationSpecificationSourceCode code, List<Function<AuthenticationSpecificationSourceCode, AuthenticationSpecification>> processors)

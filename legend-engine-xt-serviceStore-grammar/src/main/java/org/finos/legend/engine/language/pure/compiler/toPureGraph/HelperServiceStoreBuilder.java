@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -32,6 +33,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class HelperServiceStoreBuilder
@@ -296,7 +298,7 @@ public class HelperServiceStoreBuilder
             pureService._parameters(ListIterate.collect(service.parameters, param -> compileServiceParameter(param, context)));
         }
         pureService._response((Root_meta_external_store_service_metamodel_ComplexTypeReference) compileTypeReference(service.response, context));
-        pureService._security(ListIterate.collect(service.security, scheme -> compileSecurityScheme(scheme.id,scheme.sourceInformation,context,owner)));
+        pureService._security(ListIterate.collect(service.security, scheme -> compileSecurityScheme(scheme,scheme.sourceInformation,context,owner)));
 
         RichIterable<String> parameters = pureService._parameters().collect(param -> param._name());
         List<String> parametersDefinedMoreThanOnce = parameters.select(e -> Collections.frequency(parameters.toList(), e) > 1).toSet().toList();
@@ -408,13 +410,14 @@ public class HelperServiceStoreBuilder
         return pureTypeReference;
     }
 
-    private static Root_meta_external_store_service_metamodel_SecurityScheme compileSecurityScheme(String id, SourceInformation info, CompileContext context, Root_meta_external_store_service_metamodel_ServiceStore owner)
+    private static Root_meta_external_store_service_metamodel_SecurityScheme compileSecurityScheme(SecurityScheme securityScheme, SourceInformation info, CompileContext context, Root_meta_external_store_service_metamodel_ServiceStore owner)
     {
-        Root_meta_external_store_service_metamodel_SecurityScheme securityScheme = (Root_meta_external_store_service_metamodel_SecurityScheme) owner._securitySchemes().getMap().get(id);
-        if (securityScheme == null)
-        {
-            throw new EngineException(" Can't find Security Scheme : " + id, info, EngineErrorType.COMPILATION);
-        }
-        return securityScheme;
+       List<Function3<SecurityScheme,CompileContext,Root_meta_external_store_service_metamodel_ServiceStore,Root_meta_external_store_service_metamodel_SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreCompilerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemeProcessors());
+
+       return ListIterate
+               .collect(processors,processor -> processor.value(securityScheme,context,owner))
+               .select(Objects::nonNull)
+               .getFirstOptional()
+               .orElseThrow(() -> new EngineException("Can't fi9nd security scheme : " + securityScheme.id,info,EngineErrorType.COMPILATION));
     }
 }

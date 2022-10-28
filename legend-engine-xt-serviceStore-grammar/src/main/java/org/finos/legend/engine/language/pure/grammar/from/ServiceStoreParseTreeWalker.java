@@ -255,14 +255,8 @@ public class ServiceStoreParseTreeWalker
 
     private void validateSecurity(List<IdentifiedSecurityScheme> supportedSecuritySchemes, SourceInformation sourceInformation, List<SecurityScheme>availableSecuritySchemes)
     {
-        RichIterable<String> supportedIds = ListIterate.collect(supportedSecuritySchemes, scheme -> scheme.id);
-        RichIterable<String> availableIds = ListIterate.collect(availableSecuritySchemes, scheme -> scheme.id);
-        List<String> nonAvailableIds = supportedIds.select(e -> !availableIds.contains(e)).toSet().toList();
-
-        if (nonAvailableIds != null && !nonAvailableIds.isEmpty())
-        {
-            throw new EngineException("These security schemes are not defined in ServiceStore - [" + String.join(",", nonAvailableIds) + "]", sourceInformation, EngineErrorType.PARSER);
-        }
+        List<IServiceStoreGrammarParserExtension> extensions = IServiceStoreGrammarParserExtension.getExtensions();
+        extensions.forEach(e -> e.validateSecurity(supportedSecuritySchemes,sourceInformation,availableSecuritySchemes));
     }
 
     private void validateService(Service service)

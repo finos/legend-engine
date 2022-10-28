@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.LocalMappingProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceMapping;
@@ -52,6 +53,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.from.ServiceStoreParseTreeWalker.SERVICE_MAPPING_PATH_PREFIX;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
@@ -81,7 +83,23 @@ public class HelperServiceStoreGrammarComposer
 
     public static void renderSecuritySchemes(List<SecurityScheme> securitySchemes, StringBuilder builder, int baseIndentation)
     {
-        builder.append(getTabString(baseIndentation + 1)).append("SecuritySchemes ").append(": ").append("[\n").append(LazyIterate.collect(securitySchemes, s -> renderSecurityScheme(s,baseIndentation + 2)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
+        if (securitySchemes!=null  && !securitySchemes.isEmpty())
+        {
+            builder.append(getTabString(baseIndentation + 1)).append("SecuritySchemes ").append(": ").append("[\n").append(LazyIterate.collect(securitySchemes, s -> renderSecurityScheme(s, baseIndentation + 2)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
+        }
+    }
+
+    public static String renderAuthSpecs (ServiceStoreConnection serviceStoreConnection, PureGrammarComposerContext context)
+    {
+        if (serviceStoreConnection.authSpecs!=null)
+        {
+            return "\n" + context.getIndentationString() + getTabString() + "authSpecs: [\n" +
+                    serviceStoreConnection. authSpecs.entrySet().stream().map(entry
+                            -> HelperServiceStoreGrammarComposer .renderTokenGenerationSpecification(entry.getKey(), entry.getValue(), 2))
+                            .collect (Collectors. joining(",\n")) +
+                          "\n" + context.getIndentationString() + getTabString() + "];";
+        }
+        return "";
     }
 
     private static void renderServiceStoreElements(List<ServiceStoreElement> elements, StringBuilder builder, int baseIndentation)

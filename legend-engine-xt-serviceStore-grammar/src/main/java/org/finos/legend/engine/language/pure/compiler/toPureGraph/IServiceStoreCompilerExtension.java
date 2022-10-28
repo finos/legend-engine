@@ -14,12 +14,13 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SecurityScheme;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -31,7 +32,7 @@ public interface IServiceStoreCompilerExtension extends CompilerExtension
         return Lists.mutable.withAll(ServiceLoader.load(IServiceStoreCompilerExtension.class));
     }
 
-    default List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
+    default List<Function3<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_ServiceStore, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
     {
         return FastList.newList();
     }
