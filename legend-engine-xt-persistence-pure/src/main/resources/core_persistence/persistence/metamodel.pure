@@ -65,7 +65,7 @@ meta::pure::persistence::metamodel::Persistence extends PackageableElement, meta
    serviceOutputTargets: ServiceOutputTarget[*];
 
    {doc.doc = 'The persister that writes data to a datastore.'}
-   persister: meta::pure::persistence::metamodel::persister::Persister[1];
+   persister: meta::pure::persistence::metamodel::persister::Persister[0..1];
 
    {doc.doc = 'The notifier that sends updates on significant persistence events.'}
    notifier: Notifier[1];
