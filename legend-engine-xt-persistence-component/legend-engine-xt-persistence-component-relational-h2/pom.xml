@@ -43,7 +43,6 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-ansi</artifactId>
         </dependency>
-
         <!-- H2 -->
         <dependency>
             <groupId>com.h2database</groupId>

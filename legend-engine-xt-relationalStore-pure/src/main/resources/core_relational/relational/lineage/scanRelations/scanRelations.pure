@@ -510,7 +510,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::addChildTree(par
    let parentRelation = $parent.relation->toOne();
    let parentRelationFromJoin = $child.join.otherTable($child.relation->toOne()).relation->toOne();
    
-   if(getRelationName($parentRelation) == getRelationName($parentRelationFromJoin), 
+   if(getRelationName($parentRelation) == getRelationName($parentRelationFromJoin),
       | ^$parent(children += $child);, 
       | ^$parent(children = $parent.children->map(pc | addChildTree($pc, $child))));
 }
@@ -534,13 +534,13 @@ function meta::pure::lineage::scanRelations::addColumnToRelationTree(tree:Relati
 function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromTreeNode(j:JoinTreeNode[1], sourceOperation:TableAlias[1], sourceRelations:NamedRelation[*], targetRelation:NamedRelation[1], targetTree:RelationTree[1], sourceTree:RelationTree[1], debug:meta::pure::tools::DebugContext[1], extensions:Extension[*]):Join[0..1]
 {
    let relationIndentifiers     = $sourceRelations->concatenate($targetRelation)->map(rel | $rel->getRelationName());
-   
+
    let targetOperation          = $j.alias;
    let targetAliasName          = $targetOperation.name;
    let sourceAliasName          = $sourceOperation.name;
-   
+
    let tableAliasColumns        = $j.join.operation->extractTableAliasColumns()->removeDuplicates();
-   
+
    let oldToNewTableColumnAlias = $tableAliasColumns->map(tac | let orgColumn     = $tac.column;
                                                           
                                                                 assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]), | 'Columns in join should refer either source alias or target alias');
@@ -555,7 +555,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
                                                                     let newTableAliasColumn = ^TableAliasColumn(alias=^TableAlias(name = $namedRelation.name, relationalElement=$namedRelation), column = $sourceColumn->toOne(), columnName = $sourceColumn.name->toOne());
                                                                     pair($tac, $newTableAliasColumn);
                                                                 ););
-   
+
    let nonNullPairs             = $oldToNewTableColumnAlias->filter(p | $p.second->instanceOf(TableAliasColumn))->cast(@Pair<TableAliasColumn, TableAliasColumn>);
    let newAliases               = $nonNullPairs.second.alias->removeDuplicatesBy(ta | $ta.relation->getRelationName());
    
@@ -641,14 +641,25 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
 {
    $sourceOperation->match([
                               // v:ViewSelectSQLQuery[1]| if(getRelationName($v.view)->in($relationIdentifiers), |$tableAliasColumn.column, |[]), // Need not handle views in generated SQL query (as they should have been converted to subqueries)
-                              t:Table[1]             | if(getRelationName($t)->in($relationIdentifiers), |$tableAliasColumn.column, |[]),
+                              t:Table[1]             | if(getRelationName($t)->in($relationIdentifiers) || meta::pure::lineage::scanRelations::canUseTableAlias($tableAliasColumn, $t, $relationIdentifiers), |$tableAliasColumn.column, |[]);,
                               // v:View[1]              | if(getRelationName($v)->in($relationIdentifiers), |$tableAliasColumn.column, |[]), // Need not handle views in generated SQL query (as they should have been converted to subqueries)
                               ta:TableAlias[1]       | if($tableAliasColumn.alias.name == $ta.name,| $tableAliasColumn->extractSourceColumn($ta.relation, $relationIdentifiers, $sourceTree), | []);,
                               s:SelectSQLQuery[1]    | $s->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree);,
-                              u:Union[1]             | let colNames = $u.queries->map(query | $query->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree))->removeDuplicates()->filter(c | $c.name->in($sourceTree.columns.name));
+                              u:Union[1]             | let colNames = $u.queries->map(query | $query->extractSourceColumnFromSelectSQLQuery($tableAliasColumn, $relationIdentifiers, $sourceTree))->removeDuplicates()->filter(c | $c.name->in($sourceTree.columns.name) && $c.owner->in($sourceTree.columns.owner));
                                                        assert($colNames->size() <=1 ,|'Expected max 1 column. Found : ' + $colNames->size()->toString());
                                                        if($colNames->isEmpty(), | [], | $colNames->toOne());
                            ]);
+}
+
+//check the table if its a view that has a table included in the db that the table alias column's table is in;
+function <<access.private>> meta::pure::lineage::scanRelations::canUseTableAlias(ta:TableAliasColumn[1],table:Table[1], relationalIdentifiers:String[*]):Boolean[1]
+{
+  if($table->instanceOf(ViewSelectSQLQuery),
+    |let v =$table->cast(@ViewSelectSQLQuery);
+     let viewIdentifier = '['+$v.view.schema.database->elementToPath()+']'+$table.schema.name+'_'+ $table.name;
+     $viewIdentifier->in($relationalIdentifiers);,
+    |false
+  )
 }
 
 function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumnFromSelectSQLQuery(select : SelectSQLQuery[1], tableAliasColumn:TableAliasColumn[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
@@ -658,7 +669,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
                                                            $colName == $tableAliasColumn.column.name;)->extractTableAliasColumns()->removeDuplicates();
 
    assert($reqTableAliasColumn->size() <= 1 ,|'Expected max 1 column. Found : ' + $reqTableAliasColumn->size()->toString());
-   
+
    if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(), 
       |[], 
       |let rootTree        = $select.data->toOne();

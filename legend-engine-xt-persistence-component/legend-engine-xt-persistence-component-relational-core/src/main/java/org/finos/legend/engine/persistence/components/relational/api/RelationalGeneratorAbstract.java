@@ -150,6 +150,11 @@ public abstract class RelationalGeneratorAbstract
     GeneratorResult generateOperations(Datasets datasets, Resources resources)
     {
         Planner planner = Planners.get(datasets, ingestMode(), plannerOptions());
+        return generateOperations(datasets, resources, planner);
+    }
+
+    GeneratorResult generateOperations(Datasets datasets, Resources resources, Planner planner)
+    {
         Transformer<SqlGen, SqlPlan> transformer = new RelationalTransformer(relationalSink(), transformOptions());
 
         // pre-run statistics
