@@ -48,6 +48,7 @@ import meta::pure::persistence::metamodel::persister::transactionmilestoning::*;
 import meta::pure::persistence::metamodel::persister::sink::*;
 import meta::pure::persistence::metamodel::persister::targetshape::*;
 import meta::pure::persistence::metamodel::service::*;
+import meta::pure::persistence::metamodel::service::output::*;
 import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::persistence::test::example::*;
 import meta::pure::runtime::*;
@@ -178,7 +179,9 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithTdsRootServic
     documentation = 'Tds service into a flat target',
     trigger = ^ManualTrigger(),
     service = meta::pure::persistence::test::example::FlatM2mService(),
-    serviceOutputTargets = [^ServiceOutputTarget(serviceOutput = ^TdsRootServiceOutput(keys = ['integerID']), target = ^TestTarget())],
+    serviceOutputTargets = [^ServiceOutputTarget(
+      serviceOutput = ^TdsRootServiceOutput(keys = ['integerID'], eventTime = ^NoEventTime()),
+      target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );
 }
@@ -192,7 +195,8 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithGraphFetchRoo
     serviceOutputTargets = [^ServiceOutputTarget(
       serviceOutput = ^GraphFetchRootServiceOutput(
         class = meta::pure::persistence::test::example::FlatOutput,
-        keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#]),
+        keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#],
+        eventTime = ^NoEventTime()),
       target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );
@@ -207,7 +211,8 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithGraphFetchPat
     serviceOutputTargets = [^ServiceOutputTarget(
       serviceOutput = ^GraphFetchPathServiceOutput(
         path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
-        keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#]),
+        keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#],
+        eventTime = ^NoEventTime()),
       target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );

@@ -16,8 +16,6 @@ import meta::external::shared::format::binding::*;
 
 import meta::legend::service::metamodel::*;
 
-import meta::pure::metamodel::path::*;
-
 import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::context::*;
 import meta::pure::persistence::metamodel::mapping::*;
@@ -135,75 +133,6 @@ meta::pure::persistence::metamodel::trigger::CronTrigger extends Trigger
    month: String[1];
    dayOfWeek: String[1];
    year: String[1];
-}
-
-/**********
- * service output target
- **********/
-
-Class
-{doc.doc = 'The mapping of the service output (or part of the service output in the case of a deep graph fetch) to a persistence target.'}
-meta::pure::persistence::metamodel::service::ServiceOutputTarget
-{
-  serviceOutput: ServiceOutput[1];
-  target: PersistenceTarget[1];
-}
-
-Class
-<<typemodifiers.abstract>>
-{doc.doc = 'The output (or part of the output in the case of a deep graph fetch) of the service to be mapped.'}
-meta::pure::persistence::metamodel::service::ServiceOutput
-{
-  keyNames()
-  {
-    $this->match([
-      tdsRoot: TdsRootServiceOutput[1] | $tdsRoot.keys,
-      graphFetchRoot: GraphFetchRootServiceOutput[1] | $graphFetchRoot.keys->map(k | $k->leafPropertyName())->toOneMany(),
-      graphFetchPath: GraphFetchPathServiceOutput[1] | $graphFetchPath.keys->map(k | $k->leafPropertyName())->toOneMany()
-    ])
-  }: String[1..*];
-}
-
-function <<access.private>> meta::pure::persistence::metamodel::service::leafPropertyName(path: Path<Nil, Any|*>[1]): String[1]
-{
-  $path.path->filter(pe | $pe->instanceOf(PropertyPathElement))->last()->cast(@PropertyPathElement).property.name->toOne();
-}
-
-Class
-<<typemodifiers.abstract>>
-{doc.doc = 'Service output representing the entire result of a service.'}
-meta::pure::persistence::metamodel::service::RootServiceOutput extends ServiceOutput
-{
-}
-
-Class
-{doc.doc = 'Service output representing the entire result of a TDS service.'}
-meta::pure::persistence::metamodel::service::TdsRootServiceOutput extends RootServiceOutput
-{
-  keys: String[1..*];
-}
-
-Class
-{doc.doc = 'Service output representing the entire result of a graph fetch service.'}
-meta::pure::persistence::metamodel::service::GraphFetchRootServiceOutput extends RootServiceOutput
-{
-  class: Class<Any>[1];
-  keys: Path<Nil, Any|*>[1..*];
-}
-
-Class
-{doc.doc = 'Service output representing a path within a graph fetch tree.'}
-meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput extends ServiceOutput
-{
-  path: Path<Nil, Any|*>[1];
-  keys: Path<Nil, Any|*>[1..*];
-}
-
-Class
-<<typemodifiers.abstract>>
-{doc.doc = 'The persistence target to which service output is being mapped'}
-meta::pure::persistence::metamodel::target::PersistenceTarget
-{
 }
 
 /**********

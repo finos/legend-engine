@@ -15,6 +15,7 @@
 import meta::pure::metamodel::path::*;
 
 import meta::pure::persistence::metamodel::service::*;
+import meta::pure::persistence::metamodel::service::output::*;
 import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::test::example::*;
 
@@ -60,7 +61,8 @@ Class meta::pure::persistence::test::example::TestResultPart
 function meta::pure::persistence::test::example::TdsRoot(): TdsRootServiceOutput[1]
 {
   ^TdsRootServiceOutput(
-    keys = ['id1', 'id2']
+    keys = ['id1', 'id2'],
+    eventTime = ^NoEventTime()
   );
 }
 
@@ -68,7 +70,8 @@ function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchRoo
 {
   ^GraphFetchRootServiceOutput(
     class = TestResult,
-    keys = [#/TestResult/id#]
+    keys = [#/TestResult/id#],
+    eventTime = ^NoEventTime()
   );
 }
 
@@ -76,6 +79,7 @@ function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchPat
 {
   ^GraphFetchPathServiceOutput(
     path = #/TestResult/part1#,
-    keys = [#/TestResult/part1/value#]
+    keys = [#/TestResult/part1/value#],
+    eventTime = ^NoEventTime()
   );
 }

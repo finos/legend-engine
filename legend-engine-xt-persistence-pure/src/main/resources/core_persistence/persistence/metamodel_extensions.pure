@@ -1,0 +1,285 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::path::*;
+
+import meta::pure::persistence::metamodel::service::*;
+import meta::pure::persistence::metamodel::service::output::*;
+import meta::pure::persistence::metamodel::target::*;
+
+/**********
+ * service output target
+ **********/
+
+Class
+{doc.doc = 'The mapping of the service output (or part of the service output in the case of a deep graph fetch) to a persistence target.'}
+meta::pure::persistence::metamodel::service::ServiceOutputTarget
+{
+  serviceOutput: ServiceOutput[1];
+  target: PersistenceTarget[1];
+}
+
+/**********
+ * service output
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The output (or part of the output in the case of a deep graph fetch) of the service to be mapped.'}
+meta::pure::persistence::metamodel::service::ServiceOutput
+{
+  keyNames()
+  {
+    $this->match([
+      tdsRoot: TdsRootServiceOutput[1] | $tdsRoot.keys,
+      graphFetchRoot: GraphFetchRootServiceOutput[1] | $graphFetchRoot.keys->map(k | $k->leafPropertyName())->toOneMany(),
+      graphFetchPath: GraphFetchPathServiceOutput[1] | $graphFetchPath.keys->map(k | $k->leafPropertyName())->toOneMany()
+    ])
+  }: String[1..*];
+
+  eventTime: EventTimeFields[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Service output representing the entire result of a service.'}
+meta::pure::persistence::metamodel::service::RootServiceOutput extends ServiceOutput
+{
+}
+
+Class
+{doc.doc = 'Service output representing the entire result of a TDS service.'}
+meta::pure::persistence::metamodel::service::TdsRootServiceOutput extends RootServiceOutput
+{
+  keys: String[1..*];
+}
+
+Class
+{doc.doc = 'Service output representing the entire result of a graph fetch service.'}
+meta::pure::persistence::metamodel::service::GraphFetchRootServiceOutput extends RootServiceOutput
+{
+  class: Class<Any>[1];
+  keys: Path<Nil, Any|*>[1..*];
+}
+
+Class
+{doc.doc = 'Service output representing a path within a graph fetch tree.'}
+meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput extends ServiceOutput
+{
+  path: Path<Nil, Any|*>[1];
+  keys: Path<Nil, Any|*>[1..*];
+}
+
+function <<access.private>> meta::pure::persistence::metamodel::service::leafPropertyName(path: Path<Nil, Any|*>[1]): String[1]
+{
+  $path.path->filter(pe | $pe->instanceOf(PropertyPathElement))->last()->cast(@PropertyPathElement).property.name->toOne();
+}
+
+/**********
+ * service output field
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::ServiceOutputField
+{
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::TdsColumn extends ServiceOutputField
+{
+  columnName: String[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::GraphFetchPath extends ServiceOutputField
+{
+  path: Path<Nil, Any|*>[1];
+}
+
+/**********
+ * event time fields
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::EventTimeFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::NoEventTime extends EventTimeFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::EventTimeStart extends EventTimeFields
+{
+  startField: ServiceOutputField[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::EventTimeStartAndEnd extends EventTimeFields
+{
+  startField: ServiceOutputField[1];
+  endField: ServiceOutputField[1];
+}
+
+/**********
+ * persistence target
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The persistence target to which service output is being mapped'}
+meta::pure::persistence::metamodel::target::PersistenceTarget
+{
+}
+
+/**********
+ * dataset type
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'Semantic interpretation of the dataset within the service output.'}
+meta::pure::persistence::metamodel::service::output::DatasetType
+{
+  deduplication: Deduplication[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::Snapshot extends DatasetType
+{
+  partitioning: Partitioning[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::Delta extends DatasetType
+{
+}
+
+/**********
+ * deduplication
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::NoDeduplication extends Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::AnyVersionDeduplication extends Deduplication
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::MaxVersionDeduplication extends Deduplication
+{
+  versionField: ServiceOutputField[1];
+}
+
+/**********
+ * partitioning
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::Partitioning
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::NoPartitioning extends Partitioning
+{
+  emptyDatasetHandling: EmptyDatasetHandling[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::FieldBasedPartitioning extends Partitioning
+{
+  partitionFields: ServiceOutputField[1..*];
+}
+
+/**********
+ * empty dataset handling
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::EmptyDatasetHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::NoOp extends EmptyDatasetHandling
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::PurgeTargetData extends EmptyDatasetHandling
+{
+}
+
+/**********
+ * action metafields
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::ActionMetaFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::NoActionMetaFields extends ActionMetaFields
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::metamodel::service::output::DeleteIndicator extends ActionMetaFields
+{
+  deleteField: ServiceOutputField[1];
+  deleteValues: String[1..*];
+}
