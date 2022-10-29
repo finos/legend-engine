@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.testable.assertion;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
@@ -30,7 +32,10 @@ public class TestAssertionHelper
 {
     public static ObjectMapper buildObjectMapperForJSONComparison()
     {
-        return new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+        return new ObjectMapper()
+                .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+                .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
+                .setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
     }
 
     protected static AssertionStatus compareAssertionJSON(TestAssertion parentAssertion, String _expected, String _actual) throws IOException
