@@ -17,6 +17,7 @@ import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
+import meta::relational::functions::sqlQueryToString::*;
 
 Class meta::relational::dbTestRunner::DbTestConfig
 {
