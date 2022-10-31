@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.testable.assertion;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
@@ -23,11 +25,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Collections;
 
 public class TestTestAssertionEvaluator
@@ -151,5 +155,23 @@ public class TestTestAssertionEvaluator
         assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
         Assert.assertTrue(assertionStatus instanceof AssertPass);
         Assert.assertEquals("assert1", assertionStatus.id);
+    }
+
+    @Test
+    public void testEqualToAssertionWithFloatPrecision() throws IOException
+    {
+        ConstantResult constantResult = new ConstantResult("{\"some\": 2.0}");
+        ExternalFormatData data = new ExternalFormatData();
+        data.contentType = "application/json";
+        EqualToJson equalToJson = new EqualToJson();
+        equalToJson.id = "assert1";
+        equalToJson.expected = data;
+        data.data = "{\"some\":2.0}";
+
+        ObjectMapper objectMapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", objectMapper.writer(SerializationFeature.INDENT_OUTPUT, SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).writeValueAsString(objectMapper.readTree((((String)constantResult.getValue()).getBytes()))));
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", objectMapper.writer(SerializationFeature.INDENT_OUTPUT, SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).writeValueAsString(objectMapper.readTree((equalToJson.expected.data.getBytes()))));
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof AssertPass);
     }
 }
