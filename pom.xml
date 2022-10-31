@@ -218,6 +218,7 @@
         <module>legend-engine-xt-sql-compiler</module>
         <module>legend-engine-xt-sql-grammar-integration</module>
         <module>legend-engine-xt-sql-query</module>
+        <module>legend-engine-xt-sql-pure</module>
     </modules>
 
     <properties>
