@@ -24,20 +24,17 @@ Class meta::pure::mapping::modelToModel::inMemory::ModelPayload extends MappingI
    src : Any[1];
 }
 
-function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpecification[1], e:ExtendedRoutedValueSpecification[0..1], mapping: Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], advancedRouting:Boolean[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpecification[1], e:ExtendedRoutedValueSpecification[0..1], mapping: Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let res = $v->match([
                f:FunctionExpression[1]|if($f.func.name == 'getAll_Class_1__T_MANY_' || $f.func.name == 'getAllVersions_Class_1__T_MANY_' || $f.func.name == 'getAll_Class_1__Date_1__T_MANY_',
                                           |let impls = $e.sets->resolveOperation($mapping)->cast(@PureInstanceSetImplementation);
                                            let res = $impls->map(impl|inMemoryGetAll($impl, $e->toOne(), $mapping, $mc, $runtime, $exeCtx, $extensions, $debug))->setOperation($e);,
-                                          |$f.func->evaluate($f.parametersValues->map(p|list($p->executeInMemory($e, $mapping, $mc, $runtime, $advancedRouting, $exeCtx, $extensions, $debug).values)))
+                                          |$f.func->evaluate($f.parametersValues->map(p|list($p->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values)))
                                        ),
-               r:FunctionRoutedValueSpecification[1]|if ($advancedRouting,
-                                                         |$r.value->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>)->routeGettersInCode($e),
-                                                         |$r.originalFunction
-                                                     ),
-               e:ExtendedRoutedValueSpecification[1]|$e.value->executeInMemory($e, $mapping, $mc, $runtime, $advancedRouting, $exeCtx, $extensions, $debug).values;,
-               i:InstanceValue[1]|$i.values->map(v|$v->match([vs:ValueSpecification[1]|$vs->executeInMemory($e, $mapping, $mc, $runtime, $advancedRouting, $exeCtx, $extensions, $debug).values,a:Any[1]|$a]))
+               r:FunctionRoutedValueSpecification[1]|$r.value->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>)->routeGettersInCode($e),
+               e:ExtendedRoutedValueSpecification[1]|$e.value->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values;,
+               i:InstanceValue[1]|$i.values->map(v|$v->match([vs:ValueSpecification[1]|$vs->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values,a:Any[1]|$a]))
              ]);
    ^Result<Any|*>(values=$res);
 }
@@ -166,37 +163,39 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
               $srcRes->map(v|$v->transformWithMapping($setImpl->toOne()->cast(@PureInstanceSetImplementation), [],$static));
            );
         );,
-       |$pms->cast(@PurePropertyMapping)->map(pm|
-             let targetImpl = $modelPayload.static.mapping.classMappingById($pm->toOne().targetSetImplementationId)->toOne();
-             let src= $pm->toOne().transform->evaluate(list($modelPayload.src));
-             let resolved   = if($targetImpl->instanceOf(OperationSetImplementation), 
-                                 |$targetImpl->cast(@OperationSetImplementation)->resolveOperation($modelPayload.static.mapping)->cast(@PureInstanceSetImplementation), 
-                                 |$targetImpl->cast(@PureInstanceSetImplementation)
-                              )
-                                           ->map(r| if($r.srcClass->isEmpty()  ||  $src->isEmpty() || $src->at(0)->instanceOf($r.srcClass->toOne())  ,
-                                               |$r ,
-                                               |[];
-                                             ););
-                                            
-            $resolved->map({pisi|
-                let filtered = if ($pisi.filter->isEmpty(),
-                                   |$src, 
-                                   |let f = $pisi.filter->toOne(); 
-                                    $src->filter(v|$f->evaluate(list($v))->toOne()->cast(@Boolean));
-                                  );
-                let static = ^StaticMappingInstanceData
-                              (
-                                 setImplementation = $pisi,
-                                 mapping           = $modelPayload.static.mapping->toOne(),
-                                 runtime           = $modelPayload.static.runtime,
-                                 systemMapping     = meta::pure::mapping::modelToModel::contract::modelStoreContract(),
-                                 exeCtx            = $modelPayload.static.exeCtx,
-                                 debug             = $modelPayload.static.debug,
-                                 extensions = $modelPayload.static.extensions
-                              );
-                $filtered->map(v|$v->transformWithMapping($pisi, [], $static));
-             });                                             
-        );
+       |$pms->cast(@PurePropertyMapping)
+            ->filter(pm | $modelPayload.src->toOne()->instanceOf($pm.owner->cast(@PureInstanceSetImplementation).srcClass->toOne()))
+            ->map(pm|
+                    let targetImpl = $modelPayload.static.mapping.classMappingById($pm->toOne().targetSetImplementationId)->toOne();
+                    let src= $pm->toOne().transform->evaluate(list($modelPayload.src));
+                    let resolved   = if($targetImpl->instanceOf(OperationSetImplementation),
+                                        |$targetImpl->cast(@OperationSetImplementation)->resolveOperation($modelPayload.static.mapping)->cast(@PureInstanceSetImplementation),
+                                        |$targetImpl->cast(@PureInstanceSetImplementation)
+                                      )
+                                                  ->map(r| if($r.srcClass->isEmpty()  ||  $src->isEmpty() || $src->at(0)->instanceOf($r.srcClass->toOne())  ,
+                                                      |$r ,
+                                                      |[];
+                                                    ););
+
+                    $resolved->map({pisi|
+                        let filtered = if ($pisi.filter->isEmpty(),
+                                          |$src,
+                                          |let f = $pisi.filter->toOne();
+                                            $src->filter(v|$f->evaluate(list($v))->toOne()->cast(@Boolean));
+                                          );
+                        let static = ^StaticMappingInstanceData
+                                      (
+                                        setImplementation = $pisi,
+                                        mapping           = $modelPayload.static.mapping->toOne(),
+                                        runtime           = $modelPayload.static.runtime,
+                                        systemMapping     = meta::pure::mapping::modelToModel::contract::modelStoreContract(),
+                                        exeCtx            = $modelPayload.static.exeCtx,
+                                        debug             = $modelPayload.static.debug,
+                                        extensions = $modelPayload.static.extensions
+                                      );
+                        $filtered->map(v|$v->transformWithMapping($pisi, [], $static));
+                    });
+            );
    );
 }
 

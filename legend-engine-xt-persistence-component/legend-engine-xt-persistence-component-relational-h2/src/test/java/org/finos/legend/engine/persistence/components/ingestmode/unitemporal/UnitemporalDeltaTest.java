@@ -98,7 +98,6 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        // ------------ Perform Pass3 empty batch (No Impact) -------------------------
         String dataPass3 = basePathForInput + "without_delete_ind/staging_data_pass3.csv";
         String expectedDataPass3 = basePathForExpected + "without_delete_ind/expected_pass3.csv";
         // 1. Load staging table

@@ -76,7 +76,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
@@ -196,15 +197,14 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     public Result visit(AllocationExecutionNode allocationExecutionNode)
     {
         String varName = allocationExecutionNode.varName;
-        Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName)));
-//        if (!(r instanceof ConstantResult) && !(r instanceof RelationalResult) && !(r instanceof StreamingObjectResult))
-//        {
-//            r.close();
-//            throw new RuntimeException("Not supported yet! " + r.getClass().getName());
-//        }
+        Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName).setRealizeInMemory(allocationExecutionNode.realizeInMemory)));
         if (result instanceof ConstantResult && ((ConstantResult) result).getValue() instanceof Map && ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values") != null)
         {
             result = new ConstantResult(((List<?>) ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values")).get(0));
+        }
+        if (result instanceof ConstantResult && ((ConstantResult) result).getValue() instanceof Map && ((Map<?, ?>) ((ConstantResult) result).getValue()).get("value") != null)
+        {
+            result = new ConstantResult(((Map<?, ?>) ((ConstantResult) result).getValue()).get("value"));
         }
         if (this.executionState.realizeAllocationResults)
         {
@@ -234,7 +234,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 IExecutionNodeContext context = new DefaultExecutionNodeContext(this.executionState, childResult);
 
                 AppliedFunction f = (AppliedFunction) pureExpressionPlatformExecutionNode.pure;
-                SerializationConfig config = f.parameters.size() == 3 ? (SerializationConfig) f.parameters.get(2) : null;
+                SerializationConfig config = f.parameters.size() == 3 ? (SerializationConfig) ((ClassInstance) f.parameters.get(2)).value : null;
 
                 return ExecutionNodeSerializerHelper.executeSerialize(nodeSpecifics, config, childResult, context);
             }

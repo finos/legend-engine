@@ -1,0 +1,73 @@
+{
+  "logging": {
+    "level": "info",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "pac4j": {
+    "clients": [
+      {
+        "org.pac4j.core.client.direct.AnonymousClient": {
+        }
+      }
+    ]
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 6060
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9099
+    },
+    "flowProviderClass": "org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type": "bigQueryTest",
+      "awsConfig": {
+        "region": "us-east-1",
+        "accountId": "564704738649",
+        "role": "integration-wif-role1",
+        "awsAccessKeyIdVaultReference": "AWS_ACCESS_KEY_ID",
+        "awsSecretAccessKeyVaultReference": "AWS_SECRET_ACCESS_KEY"
+      },
+      "gcpWorkloadConfig": {
+        "projectNumber": "412074507462",
+        "poolId": "integration-wif-pool1",
+        "providerId": "integration-wif-pool1-provider"
+      }
+    }
+  },
+  "testConnectionsToEnable" : ["bigQuery"],
+  "staticTestConnections": {
+    "bigQuery": {
+      "_type": "RelationalDatabaseConnection",
+      "datasourceSpecification": {
+        "_type": "bigQuery",
+        "projectId": "legend-integration-testing",
+        "defaultDataset": "integration_dataset1"
+      },
+      "authenticationStrategy": {
+        "_type": "gcpWorkloadIdentityFederation",
+        "serviceAccountEmail": "integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com"
+      },
+      "databaseType": "bigQuery",
+      "type": "bigQuery",
+      "element": ""
+    }
+  }
+}

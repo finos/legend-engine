@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to.data;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
@@ -25,7 +26,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.AggregateValue;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
@@ -36,32 +36,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ExecutionContextInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedClass;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.GenericTypeInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.HackedUnit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.MappingInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pair;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.RuntimeInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.SerializationConfig;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSAggregateValue;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSColumnInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TDSSortInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapAggregation;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.TdsOlapRank;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.graph.RootGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.Pair;
 
 import java.util.List;
 import java.util.Stack;
@@ -95,7 +84,14 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                     str.append(context.getIndentationString());
                     str.append(type).append(":\n");
 
-                    if (((Collection) data.instances.get(type)).values.size() == 1)
+                    ValueSpecification vs = data.instances.get(type);
+                    if ((vs instanceof ClassInstance && ((ClassInstance) vs).value instanceof Pair))
+                    {
+                        DataElementReference reference = new DataElementReference();
+                        reference.dataElement = ((PackageableElementPtr) ((Pair) ((ClassInstance) data.instances.get(type)).value).second).fullPath;
+                        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
+                    }
+                    else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)
                     {
                         str.append(indentString).append("[\n");
 
@@ -139,13 +135,13 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     @Override
     public String visit(CString cString)
     {
-        return formatCollection(cString.values.stream().map(v -> (Supplier<String>) () -> PureGrammarComposerUtility.convertString(v, true)).collect(Collectors.toList()), true);
+        return PureGrammarComposerUtility.convertString(cString.value, true);
     }
 
     @Override
     public String visit(CDateTime cDateTime)
     {
-        return formatCollection(cDateTime.values.stream().map(v -> (Supplier<String>) () -> HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(v)).collect(Collectors.toList()), true);
+        return HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cDateTime.value);
     }
 
     @Override
@@ -157,19 +153,13 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     @Override
     public String visit(CStrictDate cStrictDate)
     {
-        return formatCollection(cStrictDate.values.stream().map(v -> (Supplier<String>) () -> HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(v)).collect(Collectors.toList()), true);
+        return HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cStrictDate.value);
     }
 
     @Override
     public String visit(CStrictTime cStrictTime)
     {
-        return formatCollection(cStrictTime.values.stream().map(v -> (Supplier<String>) () -> HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(v)).collect(Collectors.toList()), true);
-    }
-
-    @Override
-    public String visit(AggregateValue aggregateValue)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
+        return HelperValueSpecificationGrammarComposer.generateValidDateValueContainingPercent(cStrictTime.value);
     }
 
     @Override
@@ -181,7 +171,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     @Override
     public String visit(CBoolean cBoolean)
     {
-        return formatCollection(cBoolean.values.stream().map(v -> (Supplier<String>) () -> String.valueOf(v)).collect(Collectors.toList()), true);
+        return String.valueOf(cBoolean.value);
     }
 
     @Override
@@ -204,14 +194,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
                 PureGrammarComposerUtility.convertIdentifier(enumValue.value);
     }
 
-    @Override
-    public String visit(RuntimeInstance runtimeInstance)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(Path path)
+    public String visit(ClassInstance vs)
     {
         throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }
@@ -219,35 +202,17 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     @Override
     public String visit(CInteger cInteger)
     {
-        return formatCollection(cInteger.values.stream().map(v -> (Supplier<String>) () -> String.valueOf(v)).collect(Collectors.toList()), true);
+        return String.valueOf(cInteger.value);
     }
 
     @Override
     public String visit(CDecimal cDecimal)
     {
-        return formatCollection(cDecimal.values.stream().map(v -> (Supplier<String>) () -> v.toPlainString() + 'D').collect(Collectors.toList()), true);
+        return cDecimal.value.toPlainString() + "D";
     }
 
     @Override
     public String visit(Lambda lambda)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(ExecutionContextInstance executionContextInstance)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(Pair pair)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(PureList pureList)
     {
         throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }
@@ -261,7 +226,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     @Override
     public String visit(CFloat cFloat)
     {
-        return formatCollection(cFloat.values.stream().map(v -> (Supplier<String>) () -> String.valueOf(v)).collect(Collectors.toList()), true);
+        return String.valueOf(cFloat.value);
     }
 
     @Override
@@ -271,7 +236,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     }
 
     @Override
-    public String visit(HackedClass hackedClass)
+    public String visit(GenericTypeInstance genericTypeInstance)
     {
         throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }
@@ -346,55 +311,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     }
 
     @Override
-    public String visit(PropertyGraphFetchTree propertyGraphFetchTree)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(RootGraphFetchTree rootGraphFetchTree)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(SerializationConfig serializationConfig)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
     public String visit(AppliedProperty appliedProperty)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(TdsOlapAggregation tdsOlapAggregation)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(TDSAggregateValue tdsAggregateValue)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(TDSSortInformation tdsSortInformation)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(TDSColumnInformation tdsColumnInformation)
-    {
-        throw new UnsupportedOperationException("Not implemented for ModelStoreData");
-    }
-
-    @Override
-    public String visit(TdsOlapRank tdsOlapRank)
     {
         throw new UnsupportedOperationException("Not implemented for ModelStoreData");
     }
@@ -420,7 +337,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
     @Override
     public String visit(KeyExpression keyExpression)
     {
-        String key = ((CString) keyExpression.key).values.get(0);
+        String key = ((CString) keyExpression.key).value;
         collectionStyle.push(BRACKETS);
         String value = keyExpression.expression.accept(this);
         collectionStyle.pop();

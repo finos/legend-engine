@@ -86,10 +86,7 @@ public class HelperModelBuilder
         final GenericType _classGenericType = context.resolveGenericType(classPackageString);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("this");
         ve._genericType(_classGenericType);
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity multiplicity = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity();
-        multiplicity.lowerBound = 1;
-        multiplicity.setUpperBound(1);
-        ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
+        ve._multiplicity(context.pureModel.getMultiplicity(Multiplicity.PURE_ONE));
         return ve;
     }
 
@@ -98,10 +95,7 @@ public class HelperModelBuilder
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name(variableName);
         final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("Number"));
         ve._genericType(genericType);
-        Multiplicity multiplicity = new Multiplicity();
-        multiplicity.lowerBound = 1;
-        multiplicity.setUpperBound(1);
-        ve._multiplicity(context.pureModel.getMultiplicity(multiplicity));
+        ve._multiplicity(context.pureModel.getMultiplicity(Multiplicity.PURE_ONE));
         return ve;
     }
 
@@ -252,15 +246,7 @@ public class HelperModelBuilder
      */
     public static String getSignature(Function function)
     {
-        return getFunctionNameWithoutSignature(function) + getFunctionSignatureSuffix(function);
-    }
-
-
-    private static String getFunctionSignatureSuffix(Function function)
-    {
-        return "_" + LazyIterate.collect(function.parameters, p -> p._class != null ? p._class + "_" + getMultiplicitySignature(p.multiplicity) : null).select(Objects::nonNull).makeString("__")
-                // TODO: do we have to take care of void return type ~ Nil?
-                + "__" + function.returnType + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
+        return getFunctionNameWithoutSignature(function) + terseSignatureSuffix(function);
     }
 
     public static String getFunctionNameWithoutSignature(Function function)
@@ -279,10 +265,10 @@ public class HelperModelBuilder
 
     private static String terseSignatureSuffix(Function function)
     {
-        return "_" + LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature =  LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
-
+        return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
     }
 
 

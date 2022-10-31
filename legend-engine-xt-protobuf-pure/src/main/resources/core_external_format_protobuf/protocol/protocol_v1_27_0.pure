@@ -1,0 +1,160 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+
+###Pure
+
+import meta::json::*;
+import meta::pure::generation::metamodel::*;
+import meta::external::format::protobuf::metamodel::*;
+import meta::external::format::protobuf::deprecated::generation::configuration::*;
+import meta::external::format::protobuf::transformation::fromPure::*;
+import meta::protocols::pure::v1_27_0::invocation::generation::protobuf::*;
+import meta::protocols::pure::v1_27_0::transformation::fromPureGraph::*;
+import meta::alloy::metadataServer::*;
+import meta::pure::functions::io::http::*;
+import meta::external::format::protobuf::deprecated::generation::*;
+import meta::protocols::pure::v1_27_0::invocation::externalFormat::protobuf::*;
+
+import meta::pure::model::unit::*;
+
+function meta::protocols::pure::v1_27_0::invocation::externalFormat::protobuf::legendGenerateProtobuf(modelUnit:ModelUnit[1], input:ModelToProtobufDataConfiguration[1], host:String[1], port:Integer[1], version:String[1]):meta::external::shared::format::metamodel::data::SchemaData[*]
+{
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/external/format/generateSchema'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 '{ "clientVersion":"v1_27_0",'+
+                                 '  "sourceModelUnit": {"packageableElementIncludes" : ' + $modelUnit->resolve().packageableElements->map(e | $e->elementToPath())->joinStrings('["', '","', '"]') + '},' +
+                                 '  "config":'+$input->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::external::format::protobuf::transformModelToProtobufDataConfiguration()->alloyToJSON()+','+
+                                 '  "model":'+$modelUnit.packageableElementIncludes->match(
+                                                    [
+                                                      p:Package[1]|$p->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                      c:Type[1]|$c->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON()
+                                                    ]
+                                                  )+
+                                 '}'
+                                );
+   assertEq(200, $resp.statusCode, | $resp.entity);
+   let jsonRes = $resp.entity->parseJSON()->cast(@JSONObject);
+   let schemas = $jsonRes->navigateArray('elements').values->at(0)->cast(@JSONObject)->navigateArray('schemas').values;
+   $schemas->cast(@JSONObject)->map(s|
+      ^meta::external::shared::format::metamodel::data::SchemaData
+      (
+        location = $s->navigateString('location').value,
+        content = $s->navigateString('content').value
+      )
+   );
+}
+
+function <<access.private>> meta::protocols::pure::v1_27_0::invocation::externalFormat::protobuf::navigateString( o:JSONObject[1], p:String[1]):JSONString[1]
+{
+  $o.keyValuePairs->filter(k|$k.key.value == $p).value->toOne()->cast(@JSONString);
+}
+
+function <<access.private>> meta::protocols::pure::v1_27_0::invocation::externalFormat::protobuf::navigateArray( o:JSONObject[1], p:String[1]):JSONArray[1]
+{
+  $o.keyValuePairs->filter(k|$k.key.value == $p).value->toOne()->cast(@JSONArray);
+}
+
+
+function meta::protocols::pure::v1_27_0::invocation::generation::protobuf::legendGenerateProtobuf(input:ProtobufConfig[1], host:String[1], port:Integer[1], version:String[1]):meta::external::format::protobuf::deprecated::generation::ProtobufOutput[*]
+{
+   let resp = executeHTTPRaw(^URL(host = $host , port=$port, path = '/api/pure/'+$version+'/schemaGeneration/protobuf'),
+                                 HTTPMethod.POST,
+                                 'application/json',
+                                 '{ "clientVersion":"v1_27_0",'+
+                                 '  "config":'+$input->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::external::format::protobuf::transformProtobufConfig()->alloyToJSON()+','+
+                                 '  "model":'+if ($input.package->isEmpty(),
+                                                  |if (!$input.class->isEmpty(),
+                                                      |$input.class->toOne()->pathToElement()->toOne()->cast(@Type)->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                      | if ($input.scopeElements->at(0)->instanceOf(Class),
+                                                          |$input.scopeElements->at(0)->cast(@Class<Any>)->buildPureModelFromType(meta::pure::extension::defaultExtensions())->alloyToJSON(),
+                                                          |$input.scopeElements->at(0)->cast(@Package)->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON()
+                                                      )
+                                                   ),
+                                                  |$input.package->toOne()->pathToElement()->toOne()->cast(@Package)->buildPureModelFromPackage(meta::pure::extension::defaultExtensions())->alloyToJSON()
+                                              )+
+                                 '}'
+                                );
+   assertEq(200, $resp.statusCode, | $resp.entity);
+   $resp.entity->parseJSON()->fromJSON(meta::external::format::protobuf::deprecated::generation::ProtobufOutput, ^ExtendedJSONDeserializationConfig(nullReplacementInArray = ^TDSNull(), typeKeyName='__TYPE', failOnUnknownProperties=true))->cast(@ProtobufOutput);
+}
+
+###Pure
+Class meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::ProtobufConfig extends meta::protocols::pure::v1_27_0::metamodel::invocation::generation::GenerationConfiguration
+{
+   options : meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::Options[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::Options
+{
+  javaPackage:String[0..1];
+  javaOuterClassname:String[0..1];
+  javaMultipleFiles:Boolean[0..1];
+  optimizeFor:meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::OptimizeMode[0..1];
+  customOptions:Map<String,Any>[0..1];
+}
+
+Class meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration
+{
+   format : String[1];
+   targetSchemaSet : String[1];
+   javaPackage : String[0..1];
+   javaOuterClassname:String[0..1];
+   javaMultipleFiles:Boolean[0..1];
+   optimizeFor:meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::OptimizeMode[0..1];
+   customOptions:Map<String,Any>[0..1];
+}
+
+Enum meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::OptimizeMode
+{
+  SPEED,
+  CODE_SIZE,
+  LITE_RUNTIME
+}
+
+
+###Pure
+import meta::external::format::protobuf::deprecated::generation::configuration::*;
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::external::format::protobuf::transformProtobufConfig(input:ProtobufConfig[1]):meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::ProtobufConfig[1]
+{
+   ^meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::ProtobufConfig(
+        package = $input.package,
+        class = $input.class,
+        scopeElements = $input.scopeElements->map(e|$e->elementToPath()),
+        options = ^meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::Options
+                  (
+                      javaPackage = $input.javaPackage,
+                      javaOuterClassname = $input.javaOuterClassname,
+                      javaMultipleFiles = $input.javaMultipleFiles,
+                      optimizeFor = if($input.optimizeFor->isEmpty(),|[],|extractEnumValue(meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::OptimizeMode, $input.optimizeFor->toOne()->id())),
+                      customOptions = $input.customOptions
+                  )
+   )
+}
+
+function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::external::format::protobuf::transformModelToProtobufDataConfiguration(input:meta::external::format::protobuf::transformation::fromPure::ModelToProtobufDataConfiguration[1]):meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration[1]
+{
+  ^meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::ModelToProtobufDataConfiguration
+  (
+    format = $input.format,
+    targetSchemaSet = $input.targetSchemaSet,
+    javaPackage = $input.javaPackage,
+    javaOuterClassname = $input.javaOuterClassname,
+    javaMultipleFiles = $input.javaMultipleFiles,
+    optimizeFor = if($input.optimizeFor->isEmpty(),|[],|extractEnumValue(meta::protocols::pure::v1_27_0::metamodel::invocation::generation::protobuf::OptimizeMode, $input.optimizeFor->toOne()->id())),
+    customOptions = $input.customOptions
+  );
+}

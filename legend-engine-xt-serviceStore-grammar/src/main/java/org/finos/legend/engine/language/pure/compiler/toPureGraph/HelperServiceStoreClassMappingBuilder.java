@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
@@ -176,7 +176,7 @@ public class HelperServiceStoreClassMappingBuilder
     {
         pathOffset.startType = getElementFullPath(service._response()._type(), ctx.pureModel.getExecutionSupport());
 
-        Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl instanceValue = (Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) pathOffset.accept(new ValueSpecificationBuilder(ctx, Lists.mutable.empty(), new ProcessingContext("")));
+        Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl instanceValue = (Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl)new ValueSpecificationBuilder(ctx, Lists.mutable.empty(), new ProcessingContext("")).processClassInstance(pathOffset);
 
         return (Root_meta_pure_metamodel_path_Path_Impl) instanceValue._values.getOnly();
     }
@@ -287,7 +287,7 @@ public class HelperServiceStoreClassMappingBuilder
         RichIterable<Property> nonPrimitiveProperties = properties.select(prop -> !core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_isPrimitiveValueProperty_AbstractProperty_1__Boolean_1_(prop, context.getExecutionSupport()));
 
         List<PropertyMapping> primitivePropertyMappings = primitiveProperties.collect(prop -> buildPrimitivePropertyMapping(prop, sourceSetId, context)).toList();
-        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, processedClasses, context)).toList();
+        List<PropertyMapping> nonPrimitivePropertyMappings = nonPrimitiveProperties.collect(prop -> buildNonPrimitivePropertyMapping(prop, sourceSetId, bindingDetail, owner._parent(), embeddedSetImplementations, owner, sourceInformation, new HashSet<>(processedClasses), context)).toList();
 
         List<PropertyMapping> allPropertyMapping = Lists.mutable.empty();
         allPropertyMapping.addAll(primitivePropertyMappings);
@@ -322,7 +322,7 @@ public class HelperServiceStoreClassMappingBuilder
         propertyMapping._sourceSetImplementationId(sourceSetId);
         propertyMapping._targetSetImplementationId(id);
 
-        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, processedClasses, context)).toImmutable());
+        propertyMapping._propertyMappings(FastList.newList(generatePropertyMappings(bindingDetail, pureClass, id, embeddedSetImplementations, propertyMapping, sourceInformation, new HashSet<>(processedClasses), context)).toImmutable());
 
         embeddedSetImplementations.add(propertyMapping);
         return propertyMapping;

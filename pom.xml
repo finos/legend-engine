@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.17.1-SNAPSHOT</version>
+    <version>3.21.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -37,6 +37,7 @@
         <module>legend-engine-test-reports</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
+        <module>legend-engine-xt-graphQL-grammar-integration</module>
         <module>legend-engine-xt-graphQL-compiler</module>
         <module>legend-engine-xt-graphQL-protocol</module>
         <module>legend-engine-xt-graphQL-query</module>
@@ -104,6 +105,7 @@
         <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
         <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
         <module>legend-engine-xt-relationalStore-bigquery-pure</module>
+        <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
 
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
@@ -188,8 +190,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.6.2</legend.pure.version>
-        <legend.shared.version>0.22.0</legend.shared.version>
+        <legend.pure.version>3.7.1</legend.pure.version>
+        <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -212,7 +214,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
-        <maven.enforcer.requireJavaVersion>[11.0.10,16)</maven.enforcer.requireJavaVersion>
+        <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
 
         <!-- Databases -->
         <hikaricp.version>4.0.3</hikaricp.version>
@@ -240,7 +242,7 @@
         <commons-lang.version>2.6</commons-lang.version>
         <commons-csv.version>1.5</commons-csv.version>
         <commons-io.version>2.7</commons-io.version>
-        <commons-text.version>1.8</commons-text.version>
+        <commons-text.version>1.10.0</commons-text.version>
         <freemarker.version>2.3.30</freemarker.version>
         <opentracing.version>0.32.0</opentracing.version>
         <prometheus.version>0.8.1</prometheus.version>
@@ -458,6 +460,7 @@
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    <stagingProgressTimeoutMinutes>10</stagingProgressTimeoutMinutes>
                 </configuration>
             </plugin>
             <plugin>
@@ -465,6 +468,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <argLine>-Xmx2200M</argLine>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <useManifestOnlyJar>false</useManifestOnlyJar>
                     <trimStackTrace>false</trimStackTrace>
@@ -630,6 +634,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-graphQL-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -667,6 +676,12 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-runtime-compiler</artifactId>
+                <type>test-jar</type>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

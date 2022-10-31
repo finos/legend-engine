@@ -41,14 +41,14 @@ function meta::pure::store::platform::contract::platformStoreContract():StoreCon
 // Platform Store Execution
 function meta::pure::store::platform::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
-  let newOne = ^Container(value = $sq.fe)->resolve($sq.inScopeVars, $sq.advancedRouting->toOne(), $extensions, $debug);
+  let newOne = ^Container(value = $sq.fe)->resolve($sq.inScopeVars, $extensions, $debug);
   ^Result<Any|*>(activities = $newOne.activities, values=$newOne.value->reactivate($sq.inScopeVars));
 }
 
 // Platform Store Execution Plan Generation Flow
 function meta::pure::store::platform::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let state = ^meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $sq.inScopeVars, advancedRouting = $sq.advancedRouting, exeCtx = $exeCtx);
+   let state = ^meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $sq.inScopeVars, exeCtx = $exeCtx);
    $sq.fe->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug)->toOne();
 }
 

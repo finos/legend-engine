@@ -18,8 +18,9 @@ import org.antlr.v4.runtime.Vocabulary;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.domain.DomainParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions.NewValueSpecification;
+import org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions.NewValueSpecificationForTest;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,7 +53,7 @@ public class TestEmbeddedPureExtension extends TestGrammarParser.TestGrammarPars
     public void testParseValueSpecification()
     {
         ValueSpecification vs = PureGrammarParser.newInstance().parseValueSpecification("#Test{My random Parser #Test{ OK OK } Yo}#", "", 1, 1, false);
-        NewValueSpecification nv = (NewValueSpecification)vs;
+        NewValueSpecificationForTest nv = (NewValueSpecificationForTest)((ClassInstance)vs).value;
         Assert.assertEquals("My random Parser #Test{ OK OK } Yo", nv.x);
     }
 

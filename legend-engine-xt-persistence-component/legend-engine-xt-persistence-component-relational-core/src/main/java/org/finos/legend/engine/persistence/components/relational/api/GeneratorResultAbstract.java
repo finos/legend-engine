@@ -73,9 +73,7 @@ public abstract class GeneratorResultAbstract
         return ingestDataSplitRange()
             .map(dataSplitRange -> ingestSqlPlan().getSqlList()
                 .stream()
-                .map(sql -> sql
-                    .replace(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.lowerBound()))
-                    .replace(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.upperBound())))
+                .map(sql -> enrichSqlWithDataSplits(sql, dataSplitRange))
                 .collect(Collectors.toList()))
             .orElseGet(ingestSqlPlan()::getSqlList);
     }
@@ -103,6 +101,24 @@ public abstract class GeneratorResultAbstract
         return postIngestStatisticsSqlPlan().keySet().stream()
             .collect(Collectors.toMap(
                 k -> k,
-                k -> postIngestStatisticsSqlPlan().get(k).getSql()));
+                k ->
+                {
+                    String statsSql = postIngestStatisticsSqlPlan().get(k).getSql();
+                    if (ingestDataSplitRange().isPresent())
+                    {
+                        return enrichSqlWithDataSplits(statsSql, ingestDataSplitRange().get());
+                    }
+                    else
+                    {
+                        return statsSql;
+                    }
+                }));
+    }
+
+    private String enrichSqlWithDataSplits(String sql, DataSplitRange dataSplitRange)
+    {
+        return sql
+                .replace(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.lowerBound()))
+                .replace(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.upperBound()));
     }
 }

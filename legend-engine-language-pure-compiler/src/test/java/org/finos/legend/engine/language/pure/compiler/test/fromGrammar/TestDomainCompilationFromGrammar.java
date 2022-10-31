@@ -1247,6 +1247,133 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testOlapGroupByTDS()
+    {
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'],desc('age'), func(y|$y->count()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'],desc('age'), y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(a|$a.name, 'Account_No')])->olapGroupBy( ['age'],desc('age'), func('age', y|$y->count()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'], func(y|$y->rank()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'], y|$y->rank(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy( ['age'], func('age', y|$y->max()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(desc('age'), func( y|$y->denseRank()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(asc('age'), y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(desc('age'), func('age', y|$y->max()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(func(y|$y->count()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(y|$y->count(),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+        test("Class test::A" +
+                "{" +
+                "   name : String[1];" +
+                "   age : Integer[1];" +
+                "}" +
+                "" +
+                "Class test::B" +
+                "{" +
+                "   z(){test::A.all()->project([col(p|$p.name, 'Name'), col(p|$p.age, 'Age')])->olapGroupBy(func('age',y|$y->min()),'testCol')}:meta::pure::tds::TabularDataSet[1];\n" +
+                "}");
+
+    }
+
+    @Test
     public void testMultiplicityErrorInCollection()
     {
         test("Class test::A\n" +
@@ -1390,7 +1517,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "}"
         ).getTwo();
 
-        Function<?> f = model.getConcreteFunctionDefinition("test::f_test::A_1__String_1_", null);
+        Function<?> f = model.getConcreteFunctionDefinition("test::f_A_1__String_1_", null);
         Assert.assertTrue(f instanceof ConcreteFunctionDefinition);
         ConcreteFunctionDefinition<?> cfd = (ConcreteFunctionDefinition<?>) f;
         Assert.assertEquals("f_A_1__String_1_", cfd._name());
@@ -1528,7 +1655,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "function test::f(a:test::A[1]):String[1]" +
                 "{" +
                 "   $a;" +
-                "}", "COMPILATION error at [1:75-76]: Error in function 'test::f_test::A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
+                "}", "COMPILATION error at [1:75-76]: Error in function 'test::f_A_1__String_1_' - Type error: 'test::A' is not a subtype of 'String'"
         );
     }
 
@@ -2193,7 +2320,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "} \n");
         PureModel pureModel = modelWithInput.getTwo();
 
-        String WALK_TREE = "main::walkTree_String_$2_MANY$__main::Person_MANY__String_MANY_";
+        String WALK_TREE = "main::walkTree_String_$2_MANY$__Person_MANY__String_MANY_";
 
         ConcreteFunctionDefinition walkTree = pureModel.getConcreteFunctionDefinition(WALK_TREE, null);
         SimpleFunctionExpression fold = (SimpleFunctionExpression) walkTree._expressionSequence().getFirst();

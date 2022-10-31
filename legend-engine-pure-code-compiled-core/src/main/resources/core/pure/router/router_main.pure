@@ -34,7 +34,6 @@ Class meta::pure::router::RoutingQuery<T|m>
 Class meta::pure::router::RoutingResult
 {
    functions:FunctionDefinition<Any>[*];
-   advancedRouting : Boolean[1];
 }
 
 Class meta::pure::router::RoutedVariablePlaceHolder
@@ -86,10 +85,6 @@ Class meta::pure::router::ClassSetImplementationHolder extends RoutedValueSpecif
 Class meta::pure::router::routing::PropertyMap
 {
    v:Pair<String,Any>[*];
-}
-
-Class meta::pure::router::store::embedded::EmbeddedStore extends meta::pure::store::Store
-{
 }
 
 function meta::pure::router::permute(var:PermutationSet[*]):List<PermutationSet>[*]
@@ -285,7 +280,7 @@ function <<access.private>> meta::pure::router::execute<X|n>(rq:RoutingQuery<X|n
    print(if($debug.debug,|'\nExecuting:\n',|''));
    let results = $routed.functions->evaluateAndDeactivate()->fold({f:FunctionDefinition<Any>[1],a:Result<X|*>[1]|
                       let clusterVS = $f.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
-                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $clusterVS->at(0).exeCtx, $routed.advancedRouting, $extensions, $debug);
+                      let res = $clusterVS->executeExpression($clusterVS->at(0).openVars, [], $clusterVS->at(0).exeCtx, $extensions, $debug);
                       let values = if ($a.values->isEmpty(),
                                         |$res.values,
                                         |if($a.values->at(0)->instanceOf(TabularDataSet),
@@ -334,8 +329,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
                                                                               let temp = $routed.functions->toOne();
           ^$a(
             first = ^RoutingResult(
-              functions       = ^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
-              advancedRouting = $a.first.advancedRouting || $routed.advancedRouting
+              functions       = ^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)
             ),
             second = $vars
           );
@@ -354,7 +348,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
               let unRoutedFunction = ^$l(expressionSequence = $vs);
                                                                                                                            let vars = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
                                                                                                                            let temp = $unRoutedFunction->toOne();
-                                                                                                                           ^$a(first=^RoutingResult(functions=^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>), advancedRouting=$a.first.advancedRouting), second=$vars);
+                                                                                                                           ^$a(first=^RoutingResult(functions=^$temp(expressionSequence = $a.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)), second=$vars);
             },
             {|
               let re = $vs->reactivate($a.second);
@@ -365,7 +359,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
         }
       );
     },
-    pair(^RoutingResult(advancedRouting=false), $f->openVariableValues())
+    pair(^RoutingResult(), $f->openVariableValues())
   );
 
   let vs      = $expressions->last()->toOne();
@@ -382,8 +376,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
    let routed = routeFunction($newF, ^Mapping(name = ''), ^meta::pure::runtime::Runtime(), $exeCtx, $vars, $extensions, $debug);
    let temp   = $routed.functions->toOne();
    ^RoutingResult(
-     functions       = ^$temp(expressionSequence = $initStatements.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
-     advancedRouting = $initStatements.first.advancedRouting || $routed.advancedRouting
+     functions       = ^$temp(expressionSequence = $initStatements.first.functions.expressionSequence->concatenate($temp.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>)
    );
 }
 
@@ -464,14 +457,12 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping
 
       ^RoutingResult
       (
-         functions = $nbuilt->doCluster($f, $mapping, $runtime, $exeCtx, $extensions, $debug),
-         advancedRouting = $permutations->size() > 1
+         functions = $nbuilt->doCluster($f, $mapping, $runtime, $exeCtx, $extensions, $debug)
       );
       ,
       |^RoutingResult
       (
-         functions = ^List<ValueSpecification>(values=$processedCollection.value->cast(@ValueSpecification))->doCluster($f, $mapping, $runtime, $exeCtx, $extensions, $debug),
-         advancedRouting = false
+         functions = ^List<ValueSpecification>(values=$processedCollection.value->cast(@ValueSpecification))->doCluster($f, $mapping, $runtime, $exeCtx, $extensions, $debug)
       );
    );
 

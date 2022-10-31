@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.17.1-SNAPSHOT</version>
+        <version>3.21.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,6 +37,7 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
+                        <repository>core_relational</repository>
                         <repository>core_persistence</repository>
                         <repository>core_persistence_cloud</repository>
                     </repositories>
@@ -66,6 +67,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-persistence-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -104,6 +110,11 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-persistence-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>

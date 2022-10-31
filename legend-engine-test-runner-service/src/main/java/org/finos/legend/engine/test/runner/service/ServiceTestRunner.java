@@ -63,8 +63,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PureList;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -172,9 +173,19 @@ public class ServiceTestRunner
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Generate Single Pure Tests And Run").startActive(true))
             {
-                List<TestContainer> asserts = ((SingleExecutionTest) service.test).asserts;
-                String noAssertMessage = "No test assert found !!";
-                return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, ((SingleExecutionTest) service.test).data, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
+                SingleExecutionTest test = (SingleExecutionTest) service.test;
+                List<TestContainer> asserts = Collections.emptyList();
+                String testData = null;
+                String noAssertMessage = "No tests found !!";
+                // In some 'legacy' code paths, test is null.
+                if (test != null)
+                {
+                    testData = test.data;
+                    asserts = test.asserts;
+                    noAssertMessage = "No test assert found !!";
+
+                }
+                return Collections.singletonList(executeSingleExecutionTest((PureSingleExecution) service.execution, testData, asserts, noAssertMessage, pureModelContextData, pureModel, scope));
             }
         }
         else
@@ -310,9 +321,9 @@ public class ServiceTestRunner
                                 p -> p.getTwo() instanceof Collection   // Condition evoked in case of studio-flow
                                         ? new ConstantResult(
                                         ListIterate.collect(((Collection) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
-                                        : p.getTwo() instanceof PureList   // Condition evoked in case of pureIDE-flow
+                                        : p.getTwo() instanceof ClassInstance && ((ClassInstance) p.getTwo()).value instanceof PureList   // Condition evoked in case of pureIDE-flow
                                         ? new ConstantResult(
-                                        ListIterate.collect(((PureList) p.getTwo()).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
+                                        ListIterate.collect(((PureList) ((ClassInstance) p.getTwo()).value).values, v -> v.accept(new ValueSpecificationToResultVisitor()).getValue()))
                                         : p.getTwo().accept(new ValueSpecificationToResultVisitor()));
                     }
 

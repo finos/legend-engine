@@ -14,6 +14,7 @@
 
 import meta::pure::mapping::*;
 import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::postProcessor::*;
 import meta::relational::postProcessor::filterPushDown::*;
@@ -85,7 +86,7 @@ function <<access.private>> meta::relational::postProcessor::filterPushDown::try
 function <<access.private>> meta::relational::postProcessor::filterPushDown::getPairForBinaryOp(param1: RelationalOperationElement[1], param2: RelationalOperationElement[1], op: RelationalOperationElement[1]):Pair<TableAliasColumn, RelationalOperationElement>[*]
 {
    let allOpsInParam2 = meta::relational::functions::pureToSqlQuery::gatherAllOperations($param2, true);
-   let param2Filter = $allOpsInParam2->filter(elem | !($elem->instanceOf(Literal) || $elem->instanceOf(LiteralList)))->isEmpty();
+   let param2Filter = $allOpsInParam2->filter(elem | !($elem->instanceOf(Literal) || $elem->instanceOf(LiteralList) || ($elem->instanceOf(VarPlaceHolder) && $elem->cast(@VarPlaceHolder).type->instanceOf(PrimitiveType)) ))->isEmpty();
    if($param1->instanceOf(TableAliasColumn) && $param2Filter,
       | pair($param1->cast(@TableAliasColumn), $op),
       | []);

@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.to.extension;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public interface PureGrammarComposerExtension
 {
@@ -85,9 +87,9 @@ public interface PureGrammarComposerExtension
         return new ArrayList<>();
     }
 
-    default List<Function2<ValueSpecification, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
+    default Map<String, Function2<Object, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
     {
-        return new ArrayList<>();
+        return Maps.mutable.empty();
     }
 
     default List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> getExtraTestAssertionComposers()

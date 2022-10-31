@@ -218,7 +218,7 @@ function meta::relational::contract::getStore(r:InstanceSetImplementation[1]):St
             |$mainTableAlias.database->toOne()
           );,
       e:EmbeddedRelationalInstanceSetImplementation[1]|
-        ^meta::pure::router::store::embedded::EmbeddedStore(package=::),
+          $e->resolveRootFromEmbedded()->meta::relational::contract::getStore(),
       s:CrossSetImplementation[1]|$s.targetStore
     ]
   )  

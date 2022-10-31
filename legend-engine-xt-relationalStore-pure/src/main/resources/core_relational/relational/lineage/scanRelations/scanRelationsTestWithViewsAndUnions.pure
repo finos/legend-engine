@@ -1,0 +1,148 @@
+import meta::pure::lineage::scanRelations::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations::test::testRelationalTreeCalculation():Any[*]
+{
+
+  let relationTree =   meta::pure::lineage::scanRelations::scanRelations({|meta::pure::lineage::scanRelations::test::Party.all()->project([r | $r.identifier.identifier],['id'])->distinct()}
+                               , meta::pure::lineage::scanRelations::test::TopMapping
+                               , meta::relational::extension::relationalExtensions());
+  let expected =  'root\n'+
+                  '  ------> (t) Entity [entityID]\n'+
+                  '    ------> (v) AltID_View(Entity_AltId_View) [entityID, txt]\n'+
+                  '      root\n'+
+                  '        ------> (t) AltIDToEntityMapping [alternativeID, entityID]\n'+
+                  '          ------> (t) AlternativeID(AltIDToEntityMapping_AlternativeID) [alternativeID, alternativeNameTXT, alternativeTypeID]\n'+
+                  '            ------> (t) LookupTable(AlternativeID_AltIdentifierType) [altrnIdentTypeCD, altrnIdentTypeID, altrnIdentTypeNameTXT]\n'+
+                  '    ------> (t) Entity(Entity_Self) [entityID]\n';
+   assertEquals($expected, $relationTree-> relationTreeAsString());
+}
+
+Class meta::pure::lineage::scanRelations::test::Party
+{
+   isLegallyCompetent: Boolean[1];
+   recognitionDate: Date[0..1];
+}
+
+Association meta::pure::lineage::scanRelations::test::Party_Identifier {
+   party: meta::pure::lineage::scanRelations::test::Party[1];
+   identifier: meta::pure::lineage::scanRelations::test::Identifier[*];
+}
+
+
+Class meta::pure::lineage::scanRelations::test::Identifier
+{
+    identifier: String[1];
+    version: Integer[0..1];
+ 
+}
+
+
+###Mapping
+import meta::pure::lineage::scanRelations::test::*;
+import meta::pure::router::operations::*;
+
+Mapping meta::pure::lineage::scanRelations::test::TopMapping
+(
+   
+  include meta::pure::lineage::scanRelations::test::DetailMapping
+   
+  *Identifier[idAll] : Operation 
+  {
+    union_OperationSetImplementation_1__SetImplementation_MANY_(id1, id2)
+  }
+  
+)
+
+###Mapping
+import meta::pure::lineage::scanRelations::test::*;
+
+Mapping meta::pure::lineage::scanRelations::test::DetailMapping
+(
+
+  Party [p] : Relational
+  {
+     ~mainTable [DB1] E.Entity
+     
+      identifier [id1]: [DB2]@Entity_AltId_View,
+      identifier [id2]: [DB2]@Entity_Self
+ 
+  }
+ 
+   Identifier [id1]: Relational
+   {
+      scope([DB2]E.AltID_View)
+      (
+         identifier: txt
+      )
+   }   
+   
+   *Identifier [id2]: Relational
+   {
+     scope([DB2]E.Entity)
+     (
+         identifier : convertVarchar128(entityID)
+     )
+   }
+   
+)
+
+###Relational
+Database meta::pure::lineage::scanRelations::test::DB2 
+(
+   include meta::pure::lineage::scanRelations::test::DB1
+
+   Schema E 
+   (        
+      View AltID_View
+      (
+         altID: E.AltIDToEntityMapping.alternativeID  PRIMARY KEY,
+         entityID:   E.AltIDToEntityMapping.entityID       PRIMARY KEY,
+         txt:        @AltIDToEntityMapping_AlternativeID | AlternativeID.alternativeNameTXT,
+         idtype:     @AltIDToEntityMapping_AlternativeID | AlternativeID.alternativeTypeID,
+         idcode:     @AltIDToEntityMapping_AlternativeID > @AlternativeID_AltIdentifierType | LookupTable.altrnIdentTypeCD,
+         iddesc:     @AltIDToEntityMapping_AlternativeID > @AlternativeID_AltIdentifierType | LookupTable.altrnIdentTypeNameTXT
+      )
+
+   )
+   Join Entity_AltId_View( E.Entity.entityID = E.AltID_View.entityID )
+   Join Entity_Self( E.Entity.entityID = {target}.entityID)
+
+
+)
+
+###Relational 
+Database meta::pure::lineage::scanRelations::test::DB1 
+(
+
+   Schema E (
+    Table Entity (
+      entityID                      INT                  PRIMARY KEY
+                
+    )
+
+    Table AlternativeID (
+        alternativeID                 INT                  PRIMARY KEY,
+        alternativeNameTXT            VARCHAR(255)         ,
+        alternativeTypeID             INT                  
+        
+    )
+
+    Table AltIDToEntityMapping (
+      alternativeID                 INT                  PRIMARY KEY,
+      entityID                      INT                  PRIMARY KEY
+     
+    )
+
+    Table LookupTable (
+      altrnIdentTypeCD              CHAR(4)              PRIMARY KEY,
+      altrnIdentTypeID              INT                  NOT NULL,
+      altrnIdentTypeNameTXT         CHAR(60)       
+     
+    )
+
+   )
+  Join AltIDToEntityMapping_AlternativeID(E.AltIDToEntityMapping.alternativeID = E.AlternativeID.alternativeID)
+  Join AlternativeID_AltIdentifierType(E.AlternativeID.alternativeTypeID = E.LookupTable.altrnIdentTypeID)
+
+
+)

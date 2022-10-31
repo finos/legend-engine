@@ -29,6 +29,6 @@ public class ApplicationQueryException extends RuntimeException
 
     public Response toResponse()
     {
-        return Response.status(this.statusCode).type(MediaType.APPLICATION_JSON_TYPE).entity("{\"message\":" + this.getMessage() + "}").build();
+        return Response.status(this.statusCode).type(MediaType.APPLICATION_JSON_TYPE).entity("{\"message\":\"" + this.getMessage() + "\"}").build();
     }
 }

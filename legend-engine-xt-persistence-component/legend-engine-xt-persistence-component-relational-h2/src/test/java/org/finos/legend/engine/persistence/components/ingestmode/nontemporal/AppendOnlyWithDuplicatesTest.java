@@ -44,12 +44,19 @@ import static org.finos.legend.engine.persistence.components.TestUtils.startTime
 class AppendOnlyWithDuplicatesTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-append-milestoning/";
+    /*
+    Scenarios:
+    1. Allow Duplicates where PKs are provided
+    2. Allow Duplicates where no PKs are provided
+    3. FAIL_ON_DUPLICATES validation with primary keys empty
+    4. FAIL_ON_DUPLICATES causing the test to fail
+     */
 
     /*
-    Scenario: ALLOW_DUPLICATES validation with primary keys not empty
+    Scenario: Test Append Only with ALLOW_DUPLICATES validation when primary keys are not empty
     */
     @Test
-    void testIncrementalAppendAllowDuplicatesPKsNotEmpty() throws Exception
+    void testAppendOnlyWithAllowDuplicatesWherePKsNotEmpty() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -88,11 +95,10 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     }
 
     /*
-   Scenario: Test milestoning Logic when staging table pre populated
-   Duplicates are allowed, no pks in dataset
+   Scenario: Test Append Only with ALLOW_DUPLICATES and no PKs
    */
     @Test
-    void testMilestoningWithAllowDuplicates() throws Exception
+    void testAppendOnlyWithAllowDuplicates() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicTableWithNoPks();
         String dataPass1 = basePath + "input/allow_duplicates/data_pass1.csv";
@@ -116,6 +122,10 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
         expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
@@ -130,7 +140,7 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     Scenario: FAIL_ON_DUPLICATES validation with primary keys empty
     */
     @Test
-    void testMilestoningWithFailOnDuplicatesValidation() throws Exception
+    void testAppendOnlyWithFailOnDuplicatesValidation() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicTableWithNoPks();
         String dataPass1 = basePath + "input/allow_duplicates/data_pass1.csv";
@@ -166,11 +176,10 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
-    FAIL_ON_DUPLICATES strategy will cause the test to fail
+    Scenario: Test Append Only with FAIL_ON_DUPLICATES strategy will cause the test to fail
     */
     @Test
-    void testMilestoningWithFailOnDuplicates() throws Exception
+    void testAppendOnlyWithFailOnDuplicates() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -198,6 +207,11 @@ class AppendOnlyWithDuplicatesTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");

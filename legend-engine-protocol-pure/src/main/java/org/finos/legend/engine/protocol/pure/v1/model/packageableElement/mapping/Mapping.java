@@ -16,7 +16,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,7 +28,8 @@ public class Mapping extends PackageableElement
     public List<MappingInclude> includedMappings = Collections.emptyList();
     public List<AssociationMapping> associationMappings = Collections.emptyList();
     public List<EnumerationMapping> enumerationMappings = Collections.emptyList();
-    public List<MappingTest> tests = Collections.emptyList();
+    public List<MappingTest_Legacy> tests = Collections.emptyList();
+    public List<MappingTestSuite> testSuites;
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

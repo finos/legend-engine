@@ -47,6 +47,6 @@ public class LegendCompile extends AbstractNative
 
     public static MutableList<PackageableElement> compileExec(String code, final ExecutionSupport es)
     {
-        return org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompile(code, ((CompiledExecutionSupport)es).getMetadataProvider().getMetadata());
+        return org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompile(code, null);
     }
 }

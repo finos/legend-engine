@@ -36,8 +36,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CStrictTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PathElement;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PathElement;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -254,7 +254,7 @@ public class HelperValueSpecificationGrammarComposer
         return fn._package == null || fn._package.isEmpty() ? name : fn._package + "::" + name;
     }
 
-    private static String getFunctionSignature(Function function)
+    public static String getFunctionSignature(Function function)
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";

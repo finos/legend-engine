@@ -1,0 +1,15 @@
+{
+  "_type": "bigQueryTest",
+  "awsConfig": {
+    "region": "us-east-1",
+    "accountId": "564704738649",
+    "role": "integration-wif-role1",
+    "awsAccessKeyIdVaultReference": "AWS_ACCESS_KEY_ID",
+    "awsSecretAccessKeyVaultReference": "AWS_SECRET_ACCESS_KEY"
+  },
+  "gcpWorkloadConfig": {
+    "projectNumber": "412074507462",
+    "poolId": "integration-wif-pool1",
+    "providerId": "integration-wif-pool1-provider"
+  }
+}
