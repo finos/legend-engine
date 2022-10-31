@@ -62,6 +62,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestCo
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
@@ -102,12 +103,27 @@ public class HelperServiceBuilder
         if (execution instanceof PureSingleExecution)
         {
             PureSingleExecution pureSingleExecution = (PureSingleExecution) execution;
-            Mapping mapping = context.resolveMapping(pureSingleExecution.mapping, pureSingleExecution.mappingSourceInformation);
-            inferEmbeddedRuntimeMapping(pureSingleExecution.runtime, pureSingleExecution.mapping);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(pureSingleExecution.runtime, context);
-            HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, pureSingleExecution.runtime.sourceInformation);
+            Mapping mapping = null;
+            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = null;
+            LambdaFunction<?> lambda;
+            if (pureSingleExecution.mapping != null && pureSingleExecution.runtime != null)
+            {
+                mapping = context.resolveMapping(pureSingleExecution.mapping, pureSingleExecution.mappingSourceInformation);
+                inferEmbeddedRuntimeMapping(pureSingleExecution.runtime, pureSingleExecution.mapping);
+                runtime = HelperRuntimeBuilder.buildPureRuntime(pureSingleExecution.runtime, context);
+                HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, pureSingleExecution.runtime.sourceInformation);
+                lambda = HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context);
+            }
+            else
+            {
+                lambda = HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context);
+                if (!org.finos.legend.pure.generated.core_legend_service_serviceValidationHelper.Root_meta_legend_service_validateServiceLambda_FunctionDefinition_1__Boolean_1_(lambda, context.getExecutionSupport()))
+                {
+                    throw new EngineException("Mapping, runtime has not been provided. Either provide via the 'from' function or as separate 'mapping', 'runtime' attributes", pureSingleExecution.sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
             return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureSingleExecution"))
-                    ._func(HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context))
+                    ._func(lambda)
                     ._mapping(mapping)
                     ._runtime(runtime);
         }
