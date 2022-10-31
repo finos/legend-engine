@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Locale;
 import javax.ws.rs.core.Response;
-import jersey.repackaged.com.google.common.collect.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import static org.hamcrest.CoreMatchers.is;
@@ -50,7 +50,7 @@ public class ExecuteInRelationalDbTest
     when(statement.execute(DROP_TABLE_SQL)).thenThrow(new SQLException());
 
     ExecuteInRelationalDbInput input = new ExecuteInRelationalDbInput();
-    input.sqls = Lists.newArrayList(DROP_TABLE_SQL, DROP_TABLE_SQL.toLowerCase(Locale.ROOT), CREATE_TABLE_SQL);
+    input.sqls = Lists.mutable.with(DROP_TABLE_SQL, DROP_TABLE_SQL.toLowerCase(Locale.ROOT), CREATE_TABLE_SQL);
     Response response = executeInRelationalDb.executeInRelationalDb(null, input, null);
 
     assertThat(response.getStatus(), is(200));
@@ -64,7 +64,7 @@ public class ExecuteInRelationalDbTest
     when(statement.execute(CREATE_TABLE_SQL)).thenThrow(new SQLException());
 
     ExecuteInRelationalDbInput input = new ExecuteInRelationalDbInput();
-    input.sqls = Lists.newArrayList(DROP_TABLE_SQL, DROP_TABLE_SQL.toLowerCase(Locale.ROOT), CREATE_TABLE_SQL);
+    input.sqls = Lists.mutable.with(DROP_TABLE_SQL, DROP_TABLE_SQL.toLowerCase(Locale.ROOT), CREATE_TABLE_SQL);
     Response response = executeInRelationalDb.executeInRelationalDb(null, input, null);
 
     assertThat(response.getStatus(), is(500));
