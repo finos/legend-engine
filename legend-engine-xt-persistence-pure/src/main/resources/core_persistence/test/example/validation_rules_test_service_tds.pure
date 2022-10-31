@@ -142,7 +142,11 @@ function meta::pure::persistence::test::example::TdsServiceWithTdsRootServiceOut
     trigger = ^ManualTrigger(),
     service = meta::pure::persistence::test::example::TdsService(),
     serviceOutputTargets = [^ServiceOutputTarget(
-      serviceOutput = ^TdsRootServiceOutput(keys = ['integerID'], eventTime = ^NoEventTime()),
+      serviceOutput = ^TdsRootServiceOutput(
+        keys = ['integerID'],
+        eventTime = ^NoEventTime(),
+        datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+        deduplication = ^NoDeduplication()),
       target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );
@@ -156,9 +160,10 @@ function meta::pure::persistence::test::example::TdsServiceWithGraphFetchRootSer
     service = meta::pure::persistence::test::example::TdsService(),
     serviceOutputTargets = [^ServiceOutputTarget(
       serviceOutput = ^GraphFetchRootServiceOutput(
-        class = meta::pure::persistence::test::example::FlatOutput,
         keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#],
-        eventTime = ^NoEventTime()),
+        eventTime = ^NoEventTime(),
+        datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+        deduplication = ^NoDeduplication()),
       target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );
@@ -174,7 +179,9 @@ function meta::pure::persistence::test::example::TdsServiceWithGraphFetchPathSer
       serviceOutput = ^GraphFetchPathServiceOutput(
         path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
         keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#],
-        eventTime = ^NoEventTime()),
+        eventTime = ^NoEventTime(),
+        datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+        deduplication = ^NoDeduplication()),
       target = ^TestTarget())],
     notifier = ^Notifier(notifyees = [])
   );

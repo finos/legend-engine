@@ -49,6 +49,8 @@ meta::pure::persistence::metamodel::service::ServiceOutput
   }: String[1..*];
 
   eventTime: EventTimeFields[1];
+  datasetType: DatasetType[1];
+  deduplication: Deduplication[1];
 }
 
 Class
@@ -69,7 +71,6 @@ Class
 {doc.doc = 'Service output representing the entire result of a graph fetch service.'}
 meta::pure::persistence::metamodel::service::GraphFetchRootServiceOutput extends RootServiceOutput
 {
-  class: Class<Any>[1];
   keys: Path<Nil, Any|*>[1..*];
 }
 
@@ -84,6 +85,17 @@ meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput extends
 function <<access.private>> meta::pure::persistence::metamodel::service::leafPropertyName(path: Path<Nil, Any|*>[1]): String[1]
 {
   $path.path->filter(pe | $pe->instanceOf(PropertyPathElement))->last()->cast(@PropertyPathElement).property.name->toOne();
+}
+
+/**********
+ * persistence target
+ **********/
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = 'The persistence target to which service output is being mapped'}
+meta::pure::persistence::metamodel::target::PersistenceTarget
+{
 }
 
 /**********
@@ -146,17 +158,6 @@ meta::pure::persistence::metamodel::service::output::EventTimeStartAndEnd extend
 }
 
 /**********
- * persistence target
- **********/
-
-Class
-<<typemodifiers.abstract>>
-{doc.doc = 'The persistence target to which service output is being mapped'}
-meta::pure::persistence::metamodel::target::PersistenceTarget
-{
-}
-
-/**********
  * dataset type
  **********/
 
@@ -165,7 +166,6 @@ Class
 {doc.doc = 'Semantic interpretation of the dataset within the service output.'}
 meta::pure::persistence::metamodel::service::output::DatasetType
 {
-  deduplication: Deduplication[1];
 }
 
 Class
@@ -179,6 +179,7 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::service::output::Delta extends DatasetType
 {
+  actionFields: ActionFields[1];
 }
 
 /**********
@@ -260,25 +261,25 @@ meta::pure::persistence::metamodel::service::output::PurgeTargetData extends Emp
 }
 
 /**********
- * action metafields
+ * action fields
  **********/
 
 Class
 <<typemodifiers.abstract>>
 {doc.doc = ''}
-meta::pure::persistence::metamodel::service::output::ActionMetaFields
+meta::pure::persistence::metamodel::service::output::ActionFields
 {
 }
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::metamodel::service::output::NoActionMetaFields extends ActionMetaFields
+meta::pure::persistence::metamodel::service::output::NoActionFields extends ActionFields
 {
 }
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::metamodel::service::output::DeleteIndicator extends ActionMetaFields
+meta::pure::persistence::metamodel::service::output::DeleteIndicator extends ActionFields
 {
   deleteField: ServiceOutputField[1];
   deleteValues: String[1..*];

@@ -1,0 +1,599 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_8(
+        type=meta::pure::persistence::metamodel::service::output::DatasetType,
+        position=(864.59570, 632.00000),
+        width=221.11719,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::pure::persistence::metamodel::service::output::NoPartitioning,
+        position=(1308.83412, 993.47213),
+        width=133.00000,
+        height=60.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::pure::persistence::metamodel::service::output::FieldBasedPartitioning,
+        position=(1462.68637, 993.47213),
+        width=229.03223,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::pure::persistence::metamodel::service::ServiceOutputTarget,
+        position=(269.80591, 353.24446),
+        width=232.46094,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_25(
+        type=meta::pure::persistence::metamodel::Persistence,
+        position=(-116.38646, 307.61883),
+        width=222.45313,
+        height=160.37609,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::pure::persistence::metamodel::service::output::EmptyDatasetHandling,
+        position=(1012.91001, 996.47213),
+        width=151.35547,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::pure::persistence::metamodel::service::output::NoOp,
+        position=(974.02821, 1131.00806),
+        width=103.31665,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::pure::persistence::metamodel::service::output::PurgeTargetData,
+        position=(1099.26864, 1131.81397),
+        width=115.80078,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_26(
+        type=meta::pure::persistence::metamodel::target::PersistenceTarget,
+        position=(648.00441, 340.80889),
+        width=229.12109,
+        height=97.05560,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::persistence::metamodel::service::ServiceOutput,
+        position=(242.00000, 537.00000),
+        width=288.34486,
+        height=246.36449,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::pure::persistence::metamodel::service::output::EventTimeFields,
+        position=(-35.83479, 527.19409),
+        width=115.14453,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::pure::persistence::metamodel::service::output::EventTimeStartAndEnd,
+        position=(24.13566, 631.22364),
+        width=192.36914,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::pure::persistence::metamodel::service::output::EventTimeStart,
+        position=(-180.02888, 631.41773),
+        width=192.36914,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_27(
+        type=meta::pure::persistence::metamodel::service::output::Deduplication,
+        position=(-102.65514, 732.36449),
+        width=99.33594,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_29(
+        type=meta::pure::persistence::metamodel::service::output::MaxVersionDeduplication,
+        position=(-278.65514, 824.36449),
+        width=207.65527,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_30(
+        type=meta::pure::persistence::metamodel::service::output::NoDeduplication,
+        position=(-109.65514, 908.36449),
+        width=115.33203,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_28(
+        type=meta::pure::persistence::metamodel::service::output::AnyVersionDeduplication,
+        position=(-33.65514, 825.36449),
+        width=165.35938,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::persistence::metamodel::service::RootServiceOutput,
+        position=(153.00000, 876.00000),
+        width=227.79688,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput,
+        position=(394.73047, 875.00000),
+        width=227.79688,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::persistence::metamodel::service::TdsRootServiceOutput,
+        position=(264.73047, 1005.00000),
+        width=227.79688,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::persistence::metamodel::service::GraphFetchRootServiceOutput,
+        position=(23.73047, 1005.00000),
+        width=227.79688,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::persistence::metamodel::service::output::Partitioning,
+        position=(1390.74547, 828.39624),
+        width=97.38477,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::persistence::metamodel::service::output::Delta,
+        position=(734.13361, 806.46600),
+        width=204.00000,
+        height=98.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::persistence::metamodel::service::output::Snapshot,
+        position=(1008.42781, 806.51914),
+        width=198.00000,
+        height=98.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::pure::persistence::metamodel::service::output::ActionFields,
+        position=(788.31969, 987.54311),
+        width=97.38477,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::pure::persistence::metamodel::service::output::DeleteIndicator,
+        position=(737.41236, 1102.11014),
+        width=200.31836,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_3,
+        target=cview_2,
+        points=[(266.89844,905.00000),(386.17243,660.18224)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_3,
+        points=[(137.62891,1034.00000),(266.89844,905.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_2,
+        points=[(508.62891,911.00000),(386.17243,660.18224)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_3,
+        points=[(378.62891,1034.00000),(266.89844,905.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_9,
+        target=cview_8,
+        points=[(836.13361,855.46600),(975.15430,661.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_10,
+        target=cview_8,
+        points=[(1107.42781,855.51914),(975.15430,661.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_12,
+        target=cview_11,
+        points=[(-83.84430,660.41773),(21.73748,556.19409)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_13,
+        target=cview_11,
+        points=[(120.32024,667.22364),(21.73748,556.19409)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_15,
+        target=cview_14,
+        points=[(1375.33412,1023.47213),(1439.43785,857.39624)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_16,
+        target=cview_14,
+        points=[(1577.20248,1022.47213),(1439.43785,857.39624)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_19,
+        target=cview_17,
+        points=[(1025.68654,1153.00806),(1088.58774,1025.47213)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_20,
+        target=cview_17,
+        points=[(1157.16903,1153.81397),(1088.58774,1025.47213)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_21,
+        target=cview_18,
+        points=[(837.57154,1138.11014),(837.01208,1016.54311)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_28,
+        target=cview_27,
+        points=[(49.02455,847.36449),(-52.98717,761.36449)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_29,
+        target=cview_27,
+        points=[(-174.82750,853.36449),(-52.98717,761.36449)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_30,
+        target=cview_27,
+        points=[(-51.98912,930.36449),(-52.98717,761.36449)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::persistence::metamodel::service::ServiceOutputTarget.serviceOutput,
+        source=cview_1,
+        target=cview_2
+,        points=[(386.03638,389.24446),(386.17243,660.18224)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::persistence::metamodel::service::ServiceOutput.datasetType,
+        source=cview_2,
+        target=cview_8
+,        points=[(386.17243,660.18224),(975.15430,661.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::persistence::metamodel::service::ServiceOutput.eventTime,
+        source=cview_2,
+        target=cview_11
+,        points=[(263.34486,555.36449),(21.73748,556.19409)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::persistence::metamodel::service::output::Snapshot.partitioning,
+        source=cview_10,
+        target=cview_14
+,        points=[(1107.42781,855.51914),(1439.43785,857.39624)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::pure::persistence::metamodel::service::output::NoPartitioning.emptyDatasetHandling,
+        source=cview_15,
+        target=cview_17
+,        points=[(1375.33412,1023.47213),(1088.58774,1025.47213)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::pure::persistence::metamodel::service::output::Delta.actionFields,
+        source=cview_9,
+        target=cview_18
+,        points=[(836.13361,855.46600),(837.01208,1016.54311)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::pure::persistence::metamodel::Persistence.serviceOutputTargets,
+        source=cview_25,
+        target=cview_1
+,        points=[(-5.15989,387.80688),(386.03638,389.24446)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::pure::persistence::metamodel::service::ServiceOutputTarget.target,
+        source=cview_1,
+        target=cview_26
+,        points=[(386.03638,389.24446),(762.56496,389.33669)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::pure::persistence::metamodel::service::ServiceOutput.deduplication,
+        source=cview_2,
+        target=cview_27
+,        points=[(305.34486,760.36449),(-52.98717,761.36449)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

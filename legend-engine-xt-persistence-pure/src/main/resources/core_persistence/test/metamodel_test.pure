@@ -62,16 +62,19 @@ function meta::pure::persistence::test::example::TdsRoot(): TdsRootServiceOutput
 {
   ^TdsRootServiceOutput(
     keys = ['id1', 'id2'],
-    eventTime = ^NoEventTime()
+    eventTime = ^NoEventTime(),
+    datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+    deduplication = ^NoDeduplication()
   );
 }
 
 function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchRootServiceOutput[1]
 {
   ^GraphFetchRootServiceOutput(
-    class = TestResult,
     keys = [#/TestResult/id#],
-    eventTime = ^NoEventTime()
+    eventTime = ^NoEventTime(),
+    datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+    deduplication = ^NoDeduplication()
   );
 }
 
@@ -80,6 +83,8 @@ function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchPat
   ^GraphFetchPathServiceOutput(
     path = #/TestResult/part1#,
     keys = [#/TestResult/part1/value#],
-    eventTime = ^NoEventTime()
+    eventTime = ^NoEventTime(),
+    datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
+    deduplication = ^NoDeduplication()
   );
 }
