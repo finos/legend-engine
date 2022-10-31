@@ -215,7 +215,7 @@ function meta::pure::persistence::test::example::NestedM2mServiceWithTdsRootServ
     trigger = ^ManualTrigger(),
     service = meta::pure::persistence::test::example::NestedM2mService(),
     serviceOutputTargets = [^ServiceOutputTarget(
-      serviceOutput = ^TdsRootServiceOutput(
+      serviceOutput = ^TdsServiceOutput(
         keys = ['integerID'],
         eventTime = ^NoEventTime(),
         datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
@@ -232,7 +232,7 @@ function meta::pure::persistence::test::example::NestedM2mServiceWithGraphFetchR
     trigger = ^ManualTrigger(),
     service = meta::pure::persistence::test::example::NestedM2mService(),
     serviceOutputTargets = [^ServiceOutputTarget(
-      serviceOutput = ^GraphFetchRootServiceOutput(
+      serviceOutput = ^GraphFetchServiceOutput(
         keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#],
         eventTime = ^NoEventTime(),
         datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
@@ -249,7 +249,7 @@ function meta::pure::persistence::test::example::NestedM2mServiceWithGraphFetchP
     trigger = ^ManualTrigger(),
     service = meta::pure::persistence::test::example::NestedM2mService(),
     serviceOutputTargets = [^ServiceOutputTarget(
-      serviceOutput = ^GraphFetchPathServiceOutput(
+      serviceOutput = ^GraphFetchServiceOutput(
         path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
         keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#],
         eventTime = ^NoEventTime(),

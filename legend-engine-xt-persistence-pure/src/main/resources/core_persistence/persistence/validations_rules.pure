@@ -49,22 +49,24 @@ function meta::pure::persistence::validation::validateServiceAndOutput(service: 
 {
   $service.execution->match([
     se: PureSingleExecution[1] | $serviceOutput->match([
-      tds: TdsRootServiceOutput[1] | validateSingleExecutionServiceAndTdsRootServiceOutput($service, $se, $tds),
-      root: GraphFetchRootServiceOutput[1] | validateSingleExecutionServiceAndGraphFetchRootServiceOutput($service, $se, $root),
-      path: GraphFetchPathServiceOutput[1] | validateSingleExecutionServiceAndGraphFetchPathServiceOutput($service, $se, $path),
+      tds: TdsServiceOutput[1] | validateSingleExecutionServiceAndTdsServiceOutput($service, $se, $tds),
+      graphFetch: GraphFetchServiceOutput[1] | if ($graphFetch.path->isEmpty(),
+        | validateSingleExecutionServiceAndGraphFetchRootServiceOutput($service, $se, $graphFetch),
+        | validateSingleExecutionServiceAndGraphFetchPathServiceOutput($service, $se, $graphFetch)),
       any: Any[1] | failure('Unknown service output')
     ]),
     me: PureMultiExecution[1] | $serviceOutput->match([
-      tds: TdsRootServiceOutput[1] | validateMultiExecutionServiceAndTdsRootServiceOutput($service, $me, $tds),
-      root: GraphFetchRootServiceOutput[1] | validateMultiExecutionServiceAndGraphFetchRootServiceOutput($service, $me, $root),
-      path: GraphFetchPathServiceOutput[1] | validateMultiExecutionServiceAndGraphFetchPathServiceOutput($service, $me, $path),
+      tds: TdsServiceOutput[1] | validateMultiExecutionServiceAndTdsServiceOutput($service, $me, $tds),
+      graphFetch: GraphFetchServiceOutput[1] | if ($graphFetch.path->isEmpty(),
+        | validateMultiExecutionServiceAndGraphFetchRootServiceOutput($service, $me, $graphFetch),
+        | validateMultiExecutionServiceAndGraphFetchPathServiceOutput($service, $me, $graphFetch)),
       any: Any[1] | failure('Unknown target shape')
     ]),
     any: Any[1] | failure('Unknown service output')
   ]);
 }
 
-function meta::pure::persistence::validation::validateSingleExecutionServiceAndTdsRootServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: TdsRootServiceOutput[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndTdsServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: TdsServiceOutput[1]): ValidationResult[1]
 {
   let classification = $execution->classify();
   if ($classification->instanceOf(TdsExecutionClassification),
@@ -72,7 +74,7 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndT
     | failure('TDS service output requires a service that returns a TDS'));
 }
 
-function meta::pure::persistence::validation::validateSingleExecutionServiceAndGraphFetchRootServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: GraphFetchRootServiceOutput[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndGraphFetchRootServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: GraphFetchServiceOutput[1]): ValidationResult[1]
 {
   let classification = $execution->classify();
   if ($classification->instanceOf(FlatGraphFetchSerialize),
@@ -80,7 +82,7 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndG
     | failure('Graph fetch root service output requires a service that ends with a "graphFetch()->serialize()" expression that has only primitive properties off the root node'));
 }
 
-function meta::pure::persistence::validation::validateSingleExecutionServiceAndGraphFetchPathServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: GraphFetchPathServiceOutput[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateSingleExecutionServiceAndGraphFetchPathServiceOutput(service: Service[1], execution: PureSingleExecution[1], serviceOutput: GraphFetchServiceOutput[1]): ValidationResult[1]
 {
   let classification = $execution->classify();
   if ($classification->instanceOf(OneLevelGraphFetchSerialize),
@@ -88,19 +90,19 @@ function meta::pure::persistence::validation::validateSingleExecutionServiceAndG
     | failure('Graph fetch path service output requires a service that ends with a "graphFetch()->serialize()" expression that has 1) only complex properties off the root node and 2) only primitive properties off nodes at depth 1'));
 }
 
-function meta::pure::persistence::validation::validateMultiExecutionServiceAndTdsRootServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: TdsRootServiceOutput[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndTdsServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: TdsServiceOutput[1]): ValidationResult[1]
 {
   //TODO: ledav -- implement
   success();
 }
 
-function meta::pure::persistence::validation::validateMultiExecutionServiceAndGraphFetchRootServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: GraphFetchRootServiceOutput[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndGraphFetchRootServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: GraphFetchServiceOutput[1]): ValidationResult[1]
 {
   //TODO: ledav -- implement
   success();
 }
 
-function meta::pure::persistence::validation::validateMultiExecutionServiceAndGraphFetchPathServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: GraphFetchPathServiceOutput[1]): ValidationResult[1]
+function meta::pure::persistence::validation::validateMultiExecutionServiceAndGraphFetchPathServiceOutput(service: Service[1], execution: PureMultiExecution[1], serviceOutput: GraphFetchServiceOutput[1]): ValidationResult[1]
 {
   //TODO: ledav -- implement
   success();

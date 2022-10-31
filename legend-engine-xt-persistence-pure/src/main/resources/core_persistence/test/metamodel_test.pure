@@ -58,9 +58,9 @@ Class meta::pure::persistence::test::example::TestResultPart
   value: String[1];
 }
 
-function meta::pure::persistence::test::example::TdsRoot(): TdsRootServiceOutput[1]
+function meta::pure::persistence::test::example::TdsRoot(): TdsServiceOutput[1]
 {
-  ^TdsRootServiceOutput(
+  ^TdsServiceOutput(
     keys = ['id1', 'id2'],
     eventTime = ^NoEventTime(),
     datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
@@ -68,9 +68,9 @@ function meta::pure::persistence::test::example::TdsRoot(): TdsRootServiceOutput
   );
 }
 
-function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchRootServiceOutput[1]
+function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchServiceOutput[1]
 {
-  ^GraphFetchRootServiceOutput(
+  ^GraphFetchServiceOutput(
     keys = [#/TestResult/id#],
     eventTime = ^NoEventTime(),
     datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
@@ -78,9 +78,9 @@ function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchRoo
   );
 }
 
-function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchPathServiceOutput[1]
+function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchServiceOutput[1]
 {
-  ^GraphFetchPathServiceOutput(
+  ^GraphFetchServiceOutput(
     path = #/TestResult/part1#,
     keys = [#/TestResult/part1/value#],
     eventTime = ^NoEventTime(),

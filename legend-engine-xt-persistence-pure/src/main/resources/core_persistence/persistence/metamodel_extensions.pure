@@ -42,9 +42,8 @@ meta::pure::persistence::metamodel::service::ServiceOutput
   keyNames()
   {
     $this->match([
-      tdsRoot: TdsRootServiceOutput[1] | $tdsRoot.keys,
-      graphFetchRoot: GraphFetchRootServiceOutput[1] | $graphFetchRoot.keys->map(k | $k->leafPropertyName())->toOneMany(),
-      graphFetchPath: GraphFetchPathServiceOutput[1] | $graphFetchPath.keys->map(k | $k->leafPropertyName())->toOneMany()
+      tds: TdsServiceOutput[1] | $tds.keys,
+      graphFetch: GraphFetchServiceOutput[1] | $graphFetch.keys->map(k | $k->leafPropertyName())->toOneMany()
     ])
   }: String[1..*];
 
@@ -54,31 +53,17 @@ meta::pure::persistence::metamodel::service::ServiceOutput
 }
 
 Class
-<<typemodifiers.abstract>>
-{doc.doc = 'Service output representing the entire result of a service.'}
-meta::pure::persistence::metamodel::service::RootServiceOutput extends ServiceOutput
-{
-}
-
-Class
-{doc.doc = 'Service output representing the entire result of a TDS service.'}
-meta::pure::persistence::metamodel::service::TdsRootServiceOutput extends RootServiceOutput
+{doc.doc = 'Service output dataset that is the entire result of a TDS service.'}
+meta::pure::persistence::metamodel::service::TdsServiceOutput extends ServiceOutput
 {
   keys: String[1..*];
 }
 
 Class
-{doc.doc = 'Service output representing the entire result of a graph fetch service.'}
-meta::pure::persistence::metamodel::service::GraphFetchRootServiceOutput extends RootServiceOutput
+{doc.doc = 'Service output dataset that starts at a path within a graph fetch tree.'}
+meta::pure::persistence::metamodel::service::GraphFetchServiceOutput extends ServiceOutput
 {
-  keys: Path<Nil, Any|*>[1..*];
-}
-
-Class
-{doc.doc = 'Service output representing a path within a graph fetch tree.'}
-meta::pure::persistence::metamodel::service::GraphFetchPathServiceOutput extends ServiceOutput
-{
-  path: Path<Nil, Any|*>[1];
+  path: Path<Nil, Any|*>[0..1];
   keys: Path<Nil, Any|*>[1..*];
 }
 
@@ -95,6 +80,18 @@ Class
 <<typemodifiers.abstract>>
 {doc.doc = 'The persistence target to which service output is being mapped'}
 meta::pure::persistence::metamodel::target::PersistenceTarget
+{
+}
+
+Class
+{doc.doc = 'TODO: move into relational'}
+meta::pure::persistence::metamodel::target::relational::RelationalPersistenceTarget extends PersistenceTarget
+{
+}
+
+Class
+{doc.doc = 'TODO: move into mongodb'}
+meta::pure::persistence::metamodel::target::mongodb::MongoDbPersistenceTarget extends PersistenceTarget
 {
 }
 
