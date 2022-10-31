@@ -247,7 +247,7 @@ public class TestM2MGrammarCompileAndExecute
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build());
-        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new ReflectiveInvocationHandler(new Request()));
+        HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new TestExecutionUtility.ReflectiveInvocationHandler(new TestExecutionUtility.Request()));
         //Should use: core_pure_extensions_extension.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(modelManager.)
         Response result = new Execute(modelManager, executor, (PureModel pureModel) -> core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
         Assert.assertEquals(200, result.getStatus());
@@ -322,41 +322,5 @@ public class TestM2MGrammarCompileAndExecute
         LegacyRuntime runtime = new LegacyRuntime();
         runtime.connections = Collections.singletonList(connection);
         return runtime;
-    }
-
-    private static class ReflectiveInvocationHandler implements InvocationHandler
-    {
-        private final Object[] delegates;
-
-        private ReflectiveInvocationHandler(Object... delegates)
-        {
-            this.delegates = delegates;
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
-        {
-            for (Object delegate : delegates)
-            {
-                try
-                {
-                    return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
-                }
-                catch (NoSuchMethodException e)
-                {
-                    // The loop will complete if all delegates fail
-                }
-            }
-            throw new UnsupportedOperationException("Method not simulated: " + method);
-        }
-    }
-
-    private static class Request
-    {
-        @SuppressWarnings("unused")
-        public String getRemoteUser()
-        {
-            return "someone";
-        }
     }
 }
