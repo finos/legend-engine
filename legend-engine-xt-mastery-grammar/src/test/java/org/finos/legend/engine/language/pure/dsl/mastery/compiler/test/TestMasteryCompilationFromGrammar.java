@@ -136,7 +136,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      tags: [\'Refinitive DSP\'];\n" +
             "      partitions:\n" +
             "      [\n" +
-            "        partition-1-of-5:{\n" +
+            "        partition-1-of-5: {\n" +
             "          tags: [\'Equity\', \'Global\', \'Full-Universe\'];\n" +
             "        }\n" +
             "      ]\n" +
@@ -153,13 +153,13 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      tags: [\'Refinitive DSP Delta Files\'];\n" +
             "      partitions:\n" +
             "      [\n" +
-            "        ASIA_Equity:{\n" +
+            "        ASIA_Equity: {\n" +
             "          tags: [\'Equity\', \'ASIA\'];\n" +
             "        },\n" +
-            "        EMEA_Equity:{\n" +
+            "        EMEA_Equity: {\n" +
             "          tags: [\'Equity\', \'EMEA\'];\n" +
             "        },\n" +
-            "        US_Equity:{\n" +
+            "        US_Equity: {\n" +
             "          tags: [\'Equity\', \'US\'];\n" +
             "        }\n" +
             "      ]\n" +
@@ -205,13 +205,13 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "  }\n" +
             "  recordSources:\n" +
             "  [\n" +
-            "    widget-file-single-partition:{\n" +
+            "    widget-file-single-partition: {\n" +
             "      description: \'Single partition source.\';\n" +
             "      status: Development;\n" +
             "      transformService: org::dataeng::TransformWidget;\n" +
             "      partitions:\n" +
             "      [\n" +
-            "        partition-1a:{\n" +
+            "        partition-1a: {\n" +
             "        }\n" +
             "      ]\n" +
             "    }\n" +
@@ -298,7 +298,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         {
             if (i == 0)
             {
-                assertEquals("widget-file-single-partition", source._id());
+                assertEquals("widget-file-single-partition-14", source._id());
                 assertEquals("Development", source._status().getName());
                 assertEquals(true, source._sequentialData());
                 assertEquals(false, source._stagedLoad());
@@ -307,13 +307,13 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 assertEquals("[Refinitive DSP]", source._tags().toString());
                 ListIterate.forEachWithIndex(source._partitions().toList(), (partition, j) ->
                 {
-                    assertEquals("partition-1", partition._id());
+                    assertEquals("partition-1-of-5", partition._id());
                     assertEquals("[Equity, Global, Full-Universe]", partition._tags().toString());
                 });
             }
             else if (i == 1)
             {
-                assertEquals("widget-file-multiple-partitions", source._id());
+                assertEquals("widget-file-multiple-partition", source._id());
                 assertEquals("Production", source._status().getName());
                 assertEquals(false, source._sequentialData());
                 assertEquals(true, source._stagedLoad());
@@ -324,17 +324,17 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 {
                     if (j == 0)
                     {
-                        assertEquals("ASIA-Equity", partition._id());
+                        assertEquals("ASIA_Equity", partition._id());
                         assertEquals("[Equity, ASIA]", partition._tags().toString());
                     }
                     else if (j == 1)
                     {
-                        assertEquals("EMEA-Equity", partition._id());
+                        assertEquals("EMEA_Equity", partition._id());
                         assertEquals("[Equity, EMEA]", partition._tags().toString());
                     }
                     else if (j == 2)
                     {
-                        assertEquals("US-Equity", partition._id());
+                        assertEquals("US_Equity", partition._id());
                         assertEquals("[Equity, US]", partition._tags().toString());
                     }
                     else
@@ -381,6 +381,6 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [8:1-45:1]: Duplicated element 'org::dataeng::Widget'";
+        return "COMPILATION error at [8:1-43:1]: Duplicated element 'org::dataeng::Widget'";
     }
 }
