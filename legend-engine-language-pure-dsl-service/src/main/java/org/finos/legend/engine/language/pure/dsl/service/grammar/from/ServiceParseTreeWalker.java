@@ -211,8 +211,7 @@ public class ServiceParseTreeWalker
     {
         TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
         testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        ServiceParserGrammar.AssertForKeysContext scopeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.assertForKeys(), "assertForKeys", testAssertion.sourceInformation);
-        testAssertion.assertForKeys = scopeContext != null && scopeContext.STRING() != null ? ListIterate.collect(scopeContext.STRING(), keyInScopeCtx -> PureGrammarParserUtility.fromGrammarString(keyInScopeCtx.getText(), true)) : new ArrayList<>();
+
         return testAssertion;
     }
 

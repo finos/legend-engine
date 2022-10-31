@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.grammar.to.test.assertion;
 
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
@@ -28,8 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAsserti
 
 import java.util.Objects;
 
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public class HelperTestAssertionGrammarComposer
@@ -50,15 +47,6 @@ public class HelperTestAssertionGrammarComposer
                 + indentedString + "#{\n"
                 + contentWithType.content + "\n"
                 + indentedString + "}#";
-
-        StringBuilder str = new StringBuilder();
-
-        if (!testAssertion.assertForKeys.isEmpty() && testAssertion.assertForKeys != null)
-        {
-            str.append(indentedString).append("assertForKeys:\n").append(indentedString).append("[\n").append(doubleIndentedString).append(LazyIterate.collect(testAssertion.assertForKeys, k -> convertString(k, true)).makeString(",\n")).append("\n").append(indentedString).append("];\n");
-            return context.getIndentationString() + testAssertion.id + ":\n"
-                    + str + assertionContent;
-        }
 
         return context.getIndentationString() + testAssertion.id + ":\n"
                 + assertionContent;
