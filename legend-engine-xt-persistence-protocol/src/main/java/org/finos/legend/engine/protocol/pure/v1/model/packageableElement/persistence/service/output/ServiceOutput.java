@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.DatasetType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.deduplication.Deduplication;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.eventtime.EventTimeFields;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeFields;
 
 public abstract class ServiceOutput
 {
