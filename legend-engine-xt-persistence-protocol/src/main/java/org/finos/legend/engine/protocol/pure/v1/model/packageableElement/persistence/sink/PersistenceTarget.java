@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink;
 
 public abstract class PersistenceTarget
 {

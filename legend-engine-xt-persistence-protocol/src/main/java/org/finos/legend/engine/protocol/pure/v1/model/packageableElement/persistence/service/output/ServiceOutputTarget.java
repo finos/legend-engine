@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.sink.PersistenceTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 
 public class ServiceOutputTarget
 {

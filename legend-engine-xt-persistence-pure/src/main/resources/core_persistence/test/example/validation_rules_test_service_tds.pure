@@ -16,10 +16,16 @@
  * tds runtime, service, persistence
  **********/
 
-###Pure
 import meta::legend::service::metamodel::*;
+
 import meta::pure::mapping::*;
+
 import meta::pure::persistence::metamodel::*;
+import meta::pure::persistence::metamodel::dataset::*;
+import meta::pure::persistence::metamodel::dataset::deduplication::*;
+import meta::pure::persistence::metamodel::dataset::emptyhandling::*;
+import meta::pure::persistence::metamodel::dataset::eventtime::*;
+import meta::pure::persistence::metamodel::dataset::partitioning::*;
 import meta::pure::persistence::metamodel::notifier::*;
 import meta::pure::persistence::metamodel::persister::*;
 import meta::pure::persistence::metamodel::persister::deduplication::*;
@@ -32,7 +38,9 @@ import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::service::output::*;
 import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::persistence::test::example::*;
+
 import meta::pure::runtime::*;
+
 import meta::pure::test::assertion::*;
 
 function meta::pure::persistence::test::example::RelationalRuntime(): Runtime[1]
