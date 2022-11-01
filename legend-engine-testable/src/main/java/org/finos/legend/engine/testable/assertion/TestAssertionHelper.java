@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.testable.assertion;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +33,6 @@ public class TestAssertionHelper
     {
         return new ObjectMapper()
                 .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-                .enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN)
                 .setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
     }
 

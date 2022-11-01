@@ -201,7 +201,6 @@ public class TestTestAssertionEvaluator
         Assert.assertTrue(assertionStatus instanceof AssertPass);
         Assert.assertEquals("assert1", assertionStatus.id);
 
-
         ConstantResult constantResult1 = new ConstantResult("{\"some\":2}");
 
         data.data = "{\"some\":2.0}";
