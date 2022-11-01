@@ -1,5 +1,6 @@
 import meta::external::language::daml::generation::tests::*;
 import meta::external::language::daml::generation::*;
+import meta::external::language::daml::transformation::fromPure::*;
 
 Class meta::external::language::daml::generation::tests::Person
 {
@@ -15,8 +16,9 @@ Class meta::external::language::daml::generation::tests::Address
 
 function <<test.Test>> meta::external::language::daml::generation::tests::testGenerateDamlFromPure():Boolean[1]
 {
-  let config = ^DamlConfig(scopeElements=[Person]);
-  let out = meta::external::language::daml::generation::generateDamlFromPure($config);
+  let config = ^ModelToDamlConfiguration(format = 'DAML',
+                               targetSchemaSet='res::ResSchemaSet');
+  let out = meta::external::language::daml::generation::generateDamlFromPure([Person],$config);
   assertEquals('module (Meta.External.Language.Daml.Generation.Tests) with\n' +
   '\n' +
 'data Person = Person {\n' +
@@ -28,5 +30,5 @@ function <<test.Test>> meta::external::language::daml::generation::tests::testGe
 'data Address = Address {\n' +
 '  street :: Text\n' +
 '} deriving (Eq, Ord, Show)\n'
-,$out.content);
+,$out.module->map(m | $m->meta::external::language::daml::format::toString()));
 }

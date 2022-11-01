@@ -1,9 +1,59 @@
 import meta::external::language::daml::generation::*;
 import meta::pure::generation::metamodel::*;
+import meta::external::shared::format::*;
+import meta::external::shared::format::metamodel::*;
+import meta::pure::model::unit::*;
+import meta::external::language::daml::transformation::fromPure::*;
+import meta::external::shared::format::transformation::fromPure::*;
+import meta::external::language::haskell::binding::toPure::*;
 
-function meta::external::language::daml::generation::generateDamlFromPure(config:DamlConfig[1]):GenerationOutput[*]
+function meta::external::language::daml::transformation::fromPure::damlFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToDamlConfiguration>[1]
 {
-   $config.allPackageScopeElements()->generateDamlFromPure();
+  ^ExternalFormatFromPureDescriptor<ModelToDamlConfiguration>
+  (
+    configuration        = ModelToDamlConfiguration,
+    generator            = pureToDaml_ModelUnit_1__ModelToDamlConfiguration_1__SchemaSet_1_,
+    defaultConfig        = defaultConfig()
+  )
+}
+
+function meta::external::language::daml::transformation::fromPure::defaultConfig():ModelToDamlConfiguration[1]
+{
+  ^ModelToDamlConfiguration(format = 'DAML', targetSchemaSet='target::package::GeneratedSchemaSet')
+}
+
+Class meta::external::language::daml::transformation::fromPure::ModelToDamlConfiguration extends ModelToSchemaConfiguration
+{
+}
+
+function meta::external::language::daml::transformation::fromPure::pureToDaml(modelUnit:ModelUnit[1], config:ModelToDamlConfiguration[1]): SchemaSet[1]
+{
+   let sourceModels = $modelUnit->resolve().classes();
+   createSchemaSet($sourceModels, $config);
+}
+
+function <<access.private>> meta::external::language::daml::transformation::fromPure::createSchemaSet(sourceModels:Class<Any>[*], config:ModelToDamlConfiguration[1]): SchemaSet[1]
+{
+   let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
+   let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
+
+   let damlSchemas     = generateDamlFromPure($sourceModels, $config);
+
+   ^SchemaSet(
+      package = pathToPackage($schemaSetPkgName, true),
+      name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
+      format  = 'DAML',
+      schemas = $damlSchemas->map(f | ^Schema(
+                                         location  = $f.module.id->replace('.','_') + '.daml',
+                                         detail    = $f
+                                        ))
+   );
+}
+
+function meta::external::language::daml::generation::generateDamlFromPure(elements:PackageableElement[*],config:ModelToDamlConfiguration[1]):HaskellModuleContainer[*]
+{
+    let modules = $elements->toOneMany()->meta::external::language::daml::binding::fromPure::damlFromPureElements();
+    $modules->map(m | ^HaskellModuleContainer(module=$m));
 }
 
 function meta::external::language::daml::generation::generateDamlFromPure(elements:PackageableElement[*]):GenerationOutput[*]
