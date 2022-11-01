@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.eventtime;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-
-public class ConnectionValue extends ServiceParameterValue
+public abstract class EventTimeFields
 {
-    public Connection connection;
 }

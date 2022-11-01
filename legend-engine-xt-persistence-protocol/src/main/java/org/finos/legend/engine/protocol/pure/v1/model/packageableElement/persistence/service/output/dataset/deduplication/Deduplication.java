@@ -12,16 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.deduplication;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = PrimitiveTypeValue.class, name = "primitiveTypeValue"),
-        @JsonSubTypes.Type(value = ConnectionValue.class, name = "connectionValue")
-})
-public abstract class ServiceParameterValue
+public abstract class Deduplication
 {
 }

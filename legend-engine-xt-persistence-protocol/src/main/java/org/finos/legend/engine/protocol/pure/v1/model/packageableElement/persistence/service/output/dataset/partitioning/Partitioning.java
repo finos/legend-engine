@@ -12,13 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.partitioning;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
-public class ServiceParameter
+public abstract class Partitioning
 {
-    public String name;
-    public ServiceParameterValue value;
-    public SourceInformation sourceInformation;
 }

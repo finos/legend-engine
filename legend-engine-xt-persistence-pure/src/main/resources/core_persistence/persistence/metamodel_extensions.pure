@@ -176,7 +176,7 @@ Class
 {doc.doc = ''}
 meta::pure::persistence::metamodel::service::output::Delta extends DatasetType
 {
-  actionFields: ActionFields[1];
+  actionIndicator: ActionIndicatorFields[1];
 }
 
 /**********
@@ -264,19 +264,19 @@ meta::pure::persistence::metamodel::service::output::PurgeTargetData extends Emp
 Class
 <<typemodifiers.abstract>>
 {doc.doc = ''}
-meta::pure::persistence::metamodel::service::output::ActionFields
+meta::pure::persistence::metamodel::service::output::ActionIndicatorFields
 {
 }
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::metamodel::service::output::NoActionFields extends ActionFields
+meta::pure::persistence::metamodel::service::output::NoActionIndicator extends ActionIndicatorFields
 {
 }
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::metamodel::service::output::DeleteIndicator extends ActionFields
+meta::pure::persistence::metamodel::service::output::DeleteIndicator extends ActionIndicatorFields
 {
   deleteField: ServiceOutputField[1];
   deleteValues: String[1..*];
