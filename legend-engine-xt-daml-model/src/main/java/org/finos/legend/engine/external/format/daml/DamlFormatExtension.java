@@ -23,9 +23,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
 import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
 import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl;
 
 public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer, ModelToDamlConfiguration>
 {

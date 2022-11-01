@@ -115,7 +115,6 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-platform</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-code-compiled-platform-java</artifactId>
@@ -124,7 +123,6 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
-            <scope>runtime</scope>
         </dependency>
         <!-- PURE -->
 
