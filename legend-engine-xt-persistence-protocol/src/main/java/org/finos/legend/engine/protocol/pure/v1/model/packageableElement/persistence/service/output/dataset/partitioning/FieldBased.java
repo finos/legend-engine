@@ -19,4 +19,10 @@ import java.util.List;
 public class FieldBased extends Partitioning
 {
     public List<String> partitionFields;
+
+    @Override
+    public <T> T accept(PartitioningVisitor<T> visitor)
+    {
+        return visitor.visitFieldBased(this);
+    }
 }

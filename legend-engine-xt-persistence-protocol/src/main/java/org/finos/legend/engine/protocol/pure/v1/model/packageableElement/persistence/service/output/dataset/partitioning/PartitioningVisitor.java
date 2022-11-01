@@ -14,7 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.partitioning;
 
-public abstract class Partitioning
+public interface PartitioningVisitor<T>
 {
-    public abstract <T> T accept(PartitioningVisitor<T> visitor);
+    T visitNoPartitioning(NoPartitioning val);
+    T visitFieldBased(FieldBased val);
 }

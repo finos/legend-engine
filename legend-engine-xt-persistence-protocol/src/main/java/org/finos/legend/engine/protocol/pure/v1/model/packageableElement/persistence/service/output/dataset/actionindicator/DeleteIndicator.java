@@ -20,4 +20,10 @@ public class DeleteIndicator extends ActionIndicatorFields
 {
     public String deleteField;
     public List<String> deleteValues;
+
+    @Override
+    public <T> T accept(ActionIndicatorFieldsVisitor<T> visitor)
+    {
+        return visitor.visitDeleteIndicator(this);
+    }
 }

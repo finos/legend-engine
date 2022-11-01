@@ -12,9 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.partitioning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.actionindicator;
 
-public abstract class Partitioning
+public interface ActionIndicatorFieldsVisitor<T>
 {
-    public abstract <T> T accept(PartitioningVisitor<T> visitor);
+    T visitNoActionIndicator(NoActionIndicator val);
+    T visitDeleteIndicator(DeleteIndicator val);
 }

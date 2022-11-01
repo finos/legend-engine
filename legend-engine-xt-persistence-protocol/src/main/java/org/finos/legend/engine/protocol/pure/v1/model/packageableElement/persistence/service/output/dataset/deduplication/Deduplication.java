@@ -16,4 +16,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public abstract class Deduplication
 {
+    public abstract <T> T accept(DeduplicationVisitor<T> visitor);
 }

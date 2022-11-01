@@ -16,4 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class NoEventTime extends EventTimeFields
 {
+    @Override
+    public <T> T accept(EventTimeFieldsVisitor<T> visitor)
+    {
+        return visitor.visitNoEventTime(this);
+    }
 }

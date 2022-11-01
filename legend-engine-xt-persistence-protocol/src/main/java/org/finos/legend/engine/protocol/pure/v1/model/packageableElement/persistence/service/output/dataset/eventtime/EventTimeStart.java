@@ -17,4 +17,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public class EventTimeStart extends EventTimeFields
 {
     public String startField;
+
+    @Override
+    public <T> T accept(EventTimeFieldsVisitor<T> visitor)
+    {
+        return visitor.visitEventTimeStart(this);
+    }
 }

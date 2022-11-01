@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.partitioning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.eventtime;
 
-public abstract class Partitioning
+public interface EventTimeFieldsVisitor<T>
 {
-    public abstract <T> T accept(PartitioningVisitor<T> visitor);
+    T visitNoEventTime(NoEventTime val);
+    T visitEventTimeStart(EventTimeStart val);
+    T visitEventTimeStartAndEnd(EventTimeStartAndEnd val);
 }

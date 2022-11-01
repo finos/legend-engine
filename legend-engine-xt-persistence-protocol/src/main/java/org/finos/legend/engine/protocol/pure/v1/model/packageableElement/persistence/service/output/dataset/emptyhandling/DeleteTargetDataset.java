@@ -16,4 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class DeleteTargetDataset extends EmptyDatasetHandling
 {
+    @Override
+    public <T> T accept(EmptyDatasetHandlingVisitor<T> visitor)
+    {
+        return visitor.visitDeleteTargetDataset(this);
+    }
 }

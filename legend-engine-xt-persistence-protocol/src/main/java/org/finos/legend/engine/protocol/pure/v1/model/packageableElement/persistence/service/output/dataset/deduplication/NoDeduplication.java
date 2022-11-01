@@ -16,4 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class NoDeduplication extends Deduplication
 {
+    @Override
+    public <T> T accept(DeduplicationVisitor<T> visitor)
+    {
+        return visitor.visitNoDeduplication(this);
+    }
 }

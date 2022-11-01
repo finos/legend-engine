@@ -16,4 +16,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public abstract class EmptyDatasetHandling
 {
+    public abstract <T> T accept(EmptyDatasetHandlingVisitor<T> visitor);
 }

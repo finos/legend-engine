@@ -16,4 +16,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public abstract class ActionIndicatorFields
 {
+    public abstract <T> T accept(ActionIndicatorFieldsVisitor<T> visitor);
 }

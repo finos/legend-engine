@@ -16,4 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public class NoActionIndicator extends ActionIndicatorFields
 {
+    @Override
+    public <T> T accept(ActionIndicatorFieldsVisitor<T> visitor)
+    {
+        return visitor.visitNoActionIndicator(this);
+    }
 }

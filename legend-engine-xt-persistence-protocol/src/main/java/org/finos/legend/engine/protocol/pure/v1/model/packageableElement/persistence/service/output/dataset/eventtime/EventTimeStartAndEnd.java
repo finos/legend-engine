@@ -18,4 +18,10 @@ public class EventTimeStartAndEnd extends EventTimeFields
 {
     public String startField;
     public String endField;
+
+    @Override
+    public <T> T accept(EventTimeFieldsVisitor<T> visitor)
+    {
+        return visitor.visitEventTimeStartAndEnd(this);
+    }
 }

@@ -17,4 +17,10 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public class MaxVersion extends Deduplication
 {
     public String versionField;
+
+    @Override
+    public <T> T accept(DeduplicationVisitor<T> visitor)
+    {
+        return visitor.visitMaxVersion(this);
+    }
 }

@@ -16,4 +16,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public abstract class EventTimeFields
 {
+    public abstract <T> T accept(EventTimeFieldsVisitor<T> visitor);
 }

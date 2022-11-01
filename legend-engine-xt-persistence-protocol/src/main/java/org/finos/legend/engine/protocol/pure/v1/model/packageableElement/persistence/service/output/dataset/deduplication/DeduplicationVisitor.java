@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.partitioning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.deduplication;
 
-public abstract class Partitioning
+public interface DeduplicationVisitor<T>
 {
-    public abstract <T> T accept(PartitioningVisitor<T> visitor);
+    T visitNoDeduplication(NoDeduplication val);
+    T visitAnyVersion(AnyVersion val);
+    T visitMaxVersion(MaxVersion val);
 }

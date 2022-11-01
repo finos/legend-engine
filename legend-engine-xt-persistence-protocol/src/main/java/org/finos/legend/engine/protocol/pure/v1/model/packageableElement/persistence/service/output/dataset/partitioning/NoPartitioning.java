@@ -19,4 +19,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public class NoPartitioning extends Partitioning
 {
     public EmptyDatasetHandling emptyDatasetHandling;
+
+    @Override
+    public <T> T accept(PartitioningVisitor<T> visitor)
+    {
+        return visitor.visitNoPartitioning(this);
+    }
 }
