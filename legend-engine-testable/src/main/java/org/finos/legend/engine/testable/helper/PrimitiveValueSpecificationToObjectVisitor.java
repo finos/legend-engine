@@ -123,7 +123,7 @@ public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecific
     @Override
     public Object visit(EnumValue enumValue)
     {
-        throw new UnsupportedOperationException("Unsupported value specification type");
+        return enumValue.value;
     }
 
     @Override

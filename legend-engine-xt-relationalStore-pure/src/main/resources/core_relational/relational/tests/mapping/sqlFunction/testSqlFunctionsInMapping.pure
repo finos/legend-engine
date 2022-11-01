@@ -1125,6 +1125,22 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::base64::te
     assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testDayOfWeekNumberWithFirstDay():Boolean[1]
+{
+    let mon = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dayOfWeekNumber],['Day Of Week Number']),
+    testMapping,
+    meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    assertEquals('select mod (datepart(weekday,"root".dateTime)+5,7)+1 as "Day Of Week Number" from dataTable as "root"',$mon);
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testDayOfWeekName():Boolean[1]
+{
+    let fn = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dayOfWeek],['WeekDay Name']),
+    testMapping,
+    meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+    assertEquals('select datename(WEEKDAY,"root".dateTime) as "WeekDay Name" from dataTable as "root"',$fn);
+}
+
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo
 {
    concatResult :String[1];
@@ -1184,8 +1200,10 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    week : Integer[1];
    date : Date[1];
 
+   dayOfWeekNumber: Integer[1];
    decodeBase64Result: String[1];
    encodeBase64Result: String[1];
+   dayOfWeek: String[1];
 }
 
 Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemoForPresto
@@ -1285,6 +1303,8 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           month : monthNumber(dateTime),
           week : weekOfYear(dateTime),
           date : datePart(dateTime),
+          dayOfWeekNumber: dayOfWeekNumber(dateTime,'Monday'),
+          dayOfWeek: dayOfWeek(dateTime),
 
           encodeBase64Result : encodeBase64(alphaNumericString),
           decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString))
