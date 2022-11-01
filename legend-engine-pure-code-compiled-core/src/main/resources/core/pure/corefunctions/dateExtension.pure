@@ -362,6 +362,15 @@ function meta::pure::functions::date::dayOfWeekNumber(day:DayOfWeek[1]):Integer[
     DayOfWeek->enumValues()->indexOf($day) + 1
 }
 
+function meta::pure::functions::date::dayOfWeekNumber(day:Date[1], firstDay:DayOfWeek[1]):Integer[1]
+[
+   firstDayMondayOrSundayOnly : $firstDay->in([DayOfWeek.Monday, DayOfWeek.Sunday])
+]
+{
+  if($firstDay==DayOfWeek.Sunday,| dayOfWeekNumber($day)->mod(7)+1;
+                                ,| dayOfWeekNumber($day));
+}
+
 function meta::pure::functions::date::dayOfWeek(number:Integer[1]):DayOfWeek[1]
 {
     DayOfWeek->enumValues()->at($number - 1)
