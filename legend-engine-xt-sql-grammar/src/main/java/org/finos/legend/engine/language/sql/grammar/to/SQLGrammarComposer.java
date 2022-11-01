@@ -15,6 +15,8 @@
 package org.finos.legend.engine.language.sql.grammar.to;
 
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
+import org.finos.legend.engine.protocol.sql.metamodel.Expression;
+import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
@@ -51,6 +53,18 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(Expression val)
+            {
+                return val.accept(this);
+            }
+
+            @Override
+            public String visit(Identifier val)
+            {
+                return val.delimited ? "\"" + val.value + "\"" : val.value;
+            }
+
+            @Override
             public String visit(Query val)
             {
                 return val.queryBody.accept(this);
@@ -65,7 +79,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(QuerySpecification val)
             {
-                return val.select.accept(this) + "from " + visit(val.from);
+                return val.select.accept(this) + "from " + visit(val.from, " ");
             }
 
             @Override
@@ -77,7 +91,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Select val)
             {
-                return "select " + (val.distinct ? "distinct " : "") + visit(val.selectItems);
+                return "select " + (val.distinct ? "distinct " : "") + visit(val.selectItems, " ");
             }
 
             @Override
@@ -95,14 +109,14 @@ public class SQLGrammarComposer
             @Override
             public String visit(Table val)
             {
-                return val.name + " ";
+                return visit(val.name, ".") + " ";
             }
 
-            private String visit(List<? extends Node> nodes)
+            private String visit(List<? extends Node> nodes, String delimiter)
             {
                 return nodes.stream()
                         .map(node -> node.accept(this))
-                        .collect(Collectors.joining(" "));
+                        .collect(Collectors.joining(delimiter));
             }
         });
     }

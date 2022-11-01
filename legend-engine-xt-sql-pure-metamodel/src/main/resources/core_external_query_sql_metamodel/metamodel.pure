@@ -58,5 +58,15 @@ Class meta::external::query::sql::metamodel::AllColumns extends meta::external::
 
 Class meta::external::query::sql::metamodel::Table extends meta::external::query::sql::metamodel::QueryBody
 {
-  name: String[1];
+  name: meta::external::query::sql::metamodel::Identifier[1..*];
+}
+
+Class meta::external::query::sql::metamodel::Expression extends meta::external::query::sql::metamodel::Node
+{
+}
+
+Class meta::external::query::sql::metamodel::Identifier extends meta::external::query::sql::metamodel::Expression
+{
+  value: String[1];
+  delimited: Boolean[1];
 }

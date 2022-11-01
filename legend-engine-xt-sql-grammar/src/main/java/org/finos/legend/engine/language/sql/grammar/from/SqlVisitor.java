@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseBaseVisitor;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
+import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
@@ -36,20 +37,19 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     @Override
     public Node visitSingleStatement(SqlBaseParser.SingleStatementContext ctx)
     {
-        return visit(ctx.statement());
+        return ctx.statement().accept(this);
     }
 
     @Override
     public Node visitQuery(SqlBaseParser.QueryContext ctx)
     {
-        Query body = (Query) visit(ctx.queryNoWith());
-        return body;
+        return ctx.queryNoWith().accept(this);
     }
 
     @Override
     public Node visitQueryNoWith(SqlBaseParser.QueryNoWithContext ctx)
     {
-        QueryBody term = (QueryBody) visit(ctx.queryTerm());
+        QueryBody term = (QueryBody) ctx.queryTerm().accept(this);
         Query query = new Query();
         query.queryBody = term;
         return query;
@@ -78,22 +78,42 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     @Override
     public Node visitAliasedRelation(SqlBaseParser.AliasedRelationContext ctx)
     {
-        Relation child = (Relation) visit(ctx.relationPrimary());
-        return child;
+        return ctx.relationPrimary().accept(this);
     }
 
     @Override
     public Node visitTableName(SqlBaseParser.TableNameContext ctx)
     {
         Table table = new Table();
-        table.name = ctx.qname().getText();
+        SqlBaseParser.QnameContext qname = ctx.qname();
+        table.name = getQualifiedName(qname);
         return table;
+    }
+
+    @Override
+    public Node visitUnquotedIdentifier(SqlBaseParser.UnquotedIdentifierContext ctx)
+    {
+        Identifier identifier = new Identifier();
+        identifier.delimited = false;
+        identifier.value = ctx.getText();
+        return identifier;
+    }
+
+    @Override
+    public Node visitQuotedIdentifier(SqlBaseParser.QuotedIdentifierContext ctx)
+    {
+        Identifier identifier = new Identifier();
+        identifier.delimited = true;
+        String text = ctx.getText();
+        identifier.value = text.substring(1, text.length() - 1)
+                .replace("\"\"", "\"");
+        return identifier;
     }
 
     private <T> List<T> visit(List<? extends ParserRuleContext> contexts, Class<T> clazz)
     {
         return contexts.stream()
-                .map(this::visit)
+                .map(i -> i.accept(this))
                 .map(clazz::cast)
                 .collect(toList());
     }
@@ -101,5 +121,11 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     private static boolean isDistinct(SqlBaseParser.SetQuantContext setQuantifier)
     {
         return setQuantifier != null && setQuantifier.DISTINCT() != null;
+    }
+
+    private List<Identifier> getQualifiedName(SqlBaseParser.QnameContext qnameContext)
+    {
+        List<SqlBaseParser.IdentContext> ident = qnameContext.ident();
+        return visit(ident, Identifier.class);
     }
 }
