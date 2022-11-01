@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.testable.assertion;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
@@ -30,7 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Col
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 
 public class TestTestAssertionEvaluator
 {
@@ -156,20 +153,68 @@ public class TestTestAssertionEvaluator
     }
 
     @Test
-    public void testEqualToAssertionWithFloatPrecision() throws IOException
+    public void testEqualToAssertionWithFloatPrecision()
     {
-        ConstantResult constantResult = new ConstantResult("{\"some\": 2.0}");
+        ConstantResult constantResult = new ConstantResult("{\"some\":2.0}");
+
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
+
         EqualToJson equalToJson = new EqualToJson();
         equalToJson.id = "assert1";
         equalToJson.expected = data;
-        data.data = "{\"some\":2.0}";
 
-        ObjectMapper objectMapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
-        Assert.assertEquals("{\n  \"some\" : 2.0\n}", objectMapper.writer(SerializationFeature.INDENT_OUTPUT, SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).writeValueAsString(objectMapper.readTree((((String)constantResult.getValue()).getBytes()))));
-        Assert.assertEquals("{\n  \"some\" : 2.0\n}", objectMapper.writer(SerializationFeature.INDENT_OUTPUT, SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).writeValueAsString(objectMapper.readTree((equalToJson.expected.data.getBytes()))));
+        data.data = "{\"some\":2}";
         AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 2\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":2.000000000000000001}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 2.000000000000000001\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":2000000000000000000}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 2000000000000000000\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":20}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 20\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":2.00000000000000000}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
         Assert.assertTrue(assertionStatus instanceof AssertPass);
+        Assert.assertEquals("assert1", assertionStatus.id);
+
+
+        ConstantResult constantResult1 = new ConstantResult("{\"some\":2}");
+
+        data.data = "{\"some\":2.0}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult1));
+        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", assertionStatus.id);
+        Assert.assertEquals("{\n  \"some\" : 2.0\n}", ((EqualToJsonAssertFail) assertionStatus).expected);
+        Assert.assertEquals("{\n  \"some\" : 2\n}", ((EqualToJsonAssertFail) assertionStatus).actual);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
+
+        data.data = "{\"some\":2}";
+        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult1));
+        Assert.assertTrue(assertionStatus instanceof AssertPass);
+        Assert.assertEquals("assert1", assertionStatus.id);
     }
 }
