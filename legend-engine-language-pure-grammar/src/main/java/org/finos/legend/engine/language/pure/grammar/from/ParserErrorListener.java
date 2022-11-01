@@ -85,7 +85,7 @@ public class ParserErrorListener extends BaseErrorListener
                         charPositionInLine + 1 + (line == 1 ? this.walkerSourceInformation.getColumnOffset() : 0) + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
                 // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
                 sourceInformation.startColumn = Math.min(sourceInformation.endColumn, sourceInformation.startColumn);
-                msg = "Unexpected token: " + offendingSymbol + ":" + sourceInformation + " line:" + line + " charPositionInLine:" + charPositionInLine;
+                msg = "Unexpected token";
                 throw new EngineException(msg, sourceInformation, EngineErrorType.PARSER);
             }
             SourceInformation sourceInformation = new SourceInformation(

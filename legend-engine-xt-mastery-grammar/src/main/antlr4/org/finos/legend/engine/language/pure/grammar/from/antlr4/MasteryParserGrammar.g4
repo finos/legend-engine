@@ -17,7 +17,6 @@ identifier:                                 VALID_STRING
 ;
 
 masteryIdentifier:                          (VALID_STRING | '-' | INTEGER) (VALID_STRING | '-' | INTEGER)*;
-//masteryIdentifier:                        (Letter | Digit | '_' | '-') (Letter | Digit | '_' | '-' | '$')*;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
@@ -76,7 +75,6 @@ recordSources:                              RECORD_SOURCES COLON
 ;
 recordSource:                               masteryIdentifier COLON BRACE_OPEN
                                             (
-//                                                id
                                                 recordStatus
                                                 | description
                                                 | parseService
@@ -125,7 +123,6 @@ sourcePartitions:                           SOURCE_PARTITIONS COLON
 ;
 sourcePartiton:                             masteryIdentifier COLON BRACE_OPEN
                                             (
-//                                                 id
                                                  tags
                                             )*
                                             BRACE_CLOSE
@@ -178,4 +175,3 @@ resolutionQueryKeyType:                  RESOLUTION_QUERY_KEY_TYPE COLON (
 ;
 resolutionQueryPrecedence:               RESOLUTION_QUERY_PRECEDENCE COLON INTEGER SEMI_COLON
 ;
-
