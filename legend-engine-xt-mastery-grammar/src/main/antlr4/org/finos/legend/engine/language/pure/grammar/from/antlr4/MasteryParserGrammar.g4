@@ -7,11 +7,9 @@ options
     tokenVocab = MasteryLexerGrammar;
 }
 
-
 // -------------------------------------- IDENTIFIER --------------------------------------
 
-identifier:                                 VALID_STRING
-                                            | STRING
+identifier:                                 VALID_STRING | STRING
                                             | TRUE | FALSE
                                             | MASTER_RECORD_DEFINITION | MODEL_CLASS | RECORD_SOURCES | SOURCE_PARTITIONS
 ;
@@ -175,3 +173,4 @@ resolutionQueryKeyType:                  RESOLUTION_QUERY_KEY_TYPE COLON (
 ;
 resolutionQueryPrecedence:               RESOLUTION_QUERY_PRECEDENCE COLON INTEGER SEMI_COLON
 ;
+
