@@ -28,7 +28,7 @@ public class TestSQLRoundtrip
     @Test
     public void testSelectAllRoundTrip()
     {
-        check("SELECT * FROM table");
+        check("SELECT * FROM alloy.\"table\"");
     }
 
     @Test
@@ -71,6 +71,6 @@ public class TestSQLRoundtrip
         Node node = parser.parseStatement(value);
         SQLGrammarComposer composer = SQLGrammarComposer.newInstance();
         String result = composer.renderNode(node);
-        MatcherAssert.assertThat(result, IsEqualIgnoringCase.equalToIgnoringCase(result));
+        MatcherAssert.assertThat(result.trim(), IsEqualIgnoringCase.equalToIgnoringCase(value));
     }
 }

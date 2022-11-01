@@ -1,0 +1,31 @@
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+
+function meta::external::query::sql::transformation::queryToPure::getPlansFromSQL(
+                                                                          lambda: meta::pure::metamodel::function::FunctionDefinition<Any>[1],
+                                                                          mapping: meta::pure::mapping::Mapping[1],
+                                                                          runtime: meta::pure::runtime::Runtime[1],
+                                                                          query: meta::external::query::sql::metamodel::Node[1],
+                                                                          extensions: meta::pure::extension::Extension[*]
+                                                                      ):meta::pure::executionPlan::ExecutionPlan[1]
+{
+  let node = ^meta::pure::executionPlan::ExecutionNode(resultType = ^meta::pure::executionPlan::ResultType(type=String));
+  let x = ^meta::pure::executionPlan::ExecutionPlan
+   (
+      func              = $lambda,
+      mapping           = $mapping,
+      runtime           = $runtime,
+      rootExecutionNode = $node,
+      authDependent     = false
+   );
+  $x;
+}
+
+
+function meta::external::query::sql::transformation::queryToPure::getTables(node: Node[1]):Table[*]{
+  $node->match([
+    query: Query[1]                   | $query.queryBody->getTables(),
+    querySpec: QuerySpecification[1]  | $querySpec.from->map(v | $v->getTables()),
+    table: Table[1]                   | $table
+  ])
+}

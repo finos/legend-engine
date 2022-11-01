@@ -225,7 +225,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver, routerExtensions));
 
         // SQL
-        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver));
+        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, serverConfiguration.deployment.mode));
 
         // Service
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));
