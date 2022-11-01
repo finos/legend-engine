@@ -16,36 +16,25 @@ package org.finos.legend.engine.external.format.daml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.finos.legend.engine.external.format.daml.toModel.DamlToModelConfiguration;
-import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
-import org.finos.legend.engine.external.shared.format.model.ExternalSchemaCompileContext;
-import org.finos.legend.engine.external.shared.format.model.fromModel.ModelToSchemaConfiguration;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.external.format.daml.fromModel.ModelToDamlConfiguration;
+import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
+import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
 import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
 import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_Binding;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_binding_validation_BindingDetail;
-import org.finos.legend.pure.generated.Root_meta_external_shared_format_metamodel_SchemaSet;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl;
 
-import java.util.Collections;
-import java.util.List;
-
-public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer, DamlToModelConfiguration, ModelToSchemaConfiguration>
+public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer, ModelToDamlConfiguration>
 {
 
-    @Override
-    public String getFormat()
-    {
-        return "DAML";
-    }
 
     @Override
-    public List<String> getContentTypes()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer> getExternalFormatContract()
     {
-        return Collections.emptyList();
+        return null;
     }
 
     @Override
@@ -68,38 +57,14 @@ public class DamlFormatExtension implements ExternalFormatExtension<Root_meta_ex
     }
 
     @Override
-    public Root_meta_external_shared_format_binding_validation_BindingDetail bindDetails(Root_meta_external_shared_format_binding_Binding binding, CompileContext context)
-    {
-        return null;
-    }
-
-    @Override
     public String metamodelToText(Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer schemaDetail, PureModel pureModel)
     {
         return null;
     }
 
     @Override
-    public boolean supportsModelGeneration()
-    {
-        return true;
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateModel(Root_meta_external_shared_format_metamodel_SchemaSet schema, DamlToModelConfiguration damlToModelConfiguration, PureModel pureModel)
+    public Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration compileModelToSchemaConfiguration(ModelToDamlConfiguration configuration, PureModel pureModel)
     {
         return null;
-    }
-
-    @Override
-    public Root_meta_external_shared_format_binding_Binding generateSchema(ModelToSchemaConfiguration modelToSchemaConfiguration, PureModel pureModel)
-    {
-        return null;
-    }
-
-    @Override
-    public List<String> getRegisterablePackageableElementNames()
-    {
-        return Collections.emptyList();
     }
 }

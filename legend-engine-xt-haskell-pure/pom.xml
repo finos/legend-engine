@@ -60,7 +60,8 @@
                             <goal>build-pure-compiled-jar</goal>
                         </goals>
                         <configuration>
-                            <generateSources>false</generateSources>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
