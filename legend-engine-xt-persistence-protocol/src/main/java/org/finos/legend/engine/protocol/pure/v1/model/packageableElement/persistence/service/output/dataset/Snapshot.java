@@ -19,4 +19,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 public class Snapshot extends DatasetType
 {
     public Partitioning partitioning;
+
+    @Override
+    public <T> T accept(DatasetTypeVisitor<T> visitor)
+    {
+        return visitor.visitSnapshot(this);
+    }
 }

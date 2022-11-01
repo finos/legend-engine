@@ -14,6 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.partitioning;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoPartitioning.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = NoPartitioning.class, name = "noPartitioning"),
+        @JsonSubTypes.Type(value = FieldBased.class, name = "fieldBased")
+})
 public abstract class Partitioning
 {
     public abstract <T> T accept(PartitioningVisitor<T> visitor);

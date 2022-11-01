@@ -17,5 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface ActionIndicatorFieldsVisitor<T>
 {
     T visitNoActionIndicator(NoActionIndicator val);
+
     T visitDeleteIndicator(DeleteIndicator val);
 }

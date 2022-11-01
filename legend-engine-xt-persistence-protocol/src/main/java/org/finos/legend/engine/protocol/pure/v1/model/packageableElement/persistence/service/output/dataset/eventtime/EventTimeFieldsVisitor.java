@@ -17,6 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface EventTimeFieldsVisitor<T>
 {
     T visitNoEventTime(NoEventTime val);
+
     T visitEventTimeStart(EventTimeStart val);
+
     T visitEventTimeStartAndEnd(EventTimeStartAndEnd val);
 }

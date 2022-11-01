@@ -17,6 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface DeduplicationVisitor<T>
 {
     T visitNoDeduplication(NoDeduplication val);
+
     T visitAnyVersion(AnyVersion val);
+
     T visitMaxVersion(MaxVersion val);
 }

@@ -14,6 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.actionindicator;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoActionIndicator.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = NoActionIndicator.class, name = "noActionIndicator"),
+        @JsonSubTypes.Type(value = DeleteIndicator.class, name = "deleteIndicator")
+})
 public abstract class ActionIndicatorFields
 {
     public abstract <T> T accept(ActionIndicatorFieldsVisitor<T> visitor);

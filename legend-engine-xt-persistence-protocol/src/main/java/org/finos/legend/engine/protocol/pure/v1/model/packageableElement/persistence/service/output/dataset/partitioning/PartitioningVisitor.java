@@ -17,5 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface PartitioningVisitor<T>
 {
     T visitNoPartitioning(NoPartitioning val);
+
     T visitFieldBased(FieldBased val);
 }

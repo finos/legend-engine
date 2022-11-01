@@ -17,5 +17,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 public interface EmptyDatasetHandlingVisitor<T>
 {
     T visitNoOp(NoOp val);
+
     T visitDeleteTargetDataset(DeleteTargetDataset val);
 }

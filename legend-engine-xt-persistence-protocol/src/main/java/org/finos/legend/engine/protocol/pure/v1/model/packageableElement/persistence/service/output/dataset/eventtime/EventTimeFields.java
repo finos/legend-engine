@@ -14,6 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.eventtime;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoEventTime.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = NoEventTime.class, name = "noEventTime"),
+        @JsonSubTypes.Type(value = EventTimeStart.class, name = "eventTimeStart"),
+        @JsonSubTypes.Type(value = EventTimeStartAndEnd.class, name = "eventTimeStartAndEnd")
+})
 public abstract class EventTimeFields
 {
     public abstract <T> T accept(EventTimeFieldsVisitor<T> visitor);

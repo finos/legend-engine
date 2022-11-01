@@ -14,6 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.deduplication;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoDeduplication.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = NoDeduplication.class, name = "noDeduplication"),
+        @JsonSubTypes.Type(value = AnyVersion.class, name = "anyVersion"),
+        @JsonSubTypes.Type(value = MaxVersion.class, name = "maxVersion")
+})
 public abstract class Deduplication
 {
     public abstract <T> T accept(DeduplicationVisitor<T> visitor);

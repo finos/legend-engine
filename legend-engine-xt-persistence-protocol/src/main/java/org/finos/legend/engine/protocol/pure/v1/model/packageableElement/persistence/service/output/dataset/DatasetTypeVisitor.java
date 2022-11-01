@@ -14,15 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.actionindicator.ActionIndicatorFields;
-
-public class Delta extends DatasetType
+public interface DatasetTypeVisitor<T>
 {
-    public ActionIndicatorFields actionIndicator;
+    T visitSnapshot(Snapshot val);
 
-    @Override
-    public <T> T accept(DatasetTypeVisitor<T> visitor)
-    {
-        return visitor.visitDelta(this);
-    }
+    T visitDelta(Delta val);
 }

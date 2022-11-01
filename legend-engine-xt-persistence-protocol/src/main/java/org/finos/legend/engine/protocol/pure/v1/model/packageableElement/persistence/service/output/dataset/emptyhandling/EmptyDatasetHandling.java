@@ -14,6 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.dataset.emptyhandling;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = NoOp.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = NoOp.class, name = "noOp"),
+        @JsonSubTypes.Type(value = DeleteTargetDataset.class, name = "deleteTargetDataset")
+})
 public abstract class EmptyDatasetHandling
 {
     public abstract <T> T accept(EmptyDatasetHandlingVisitor<T> visitor);
