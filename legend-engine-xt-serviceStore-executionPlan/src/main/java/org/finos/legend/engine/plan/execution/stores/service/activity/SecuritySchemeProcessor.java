@@ -7,7 +7,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordAuthentication;
 import org.pac4j.core.profile.CommonProfile;
 
 public class SecuritySchemeProcessor
@@ -31,7 +31,7 @@ public class SecuritySchemeProcessor
         {
             try
             {
-                UsernamePasswordSpecification spec = (UsernamePasswordSpecification) this.authSpecification;
+                UsernamePasswordAuthentication spec = (UsernamePasswordAuthentication) this.authSpecification;
                 String encoding = Base64.encodeBase64String((spec.username+ ":" + spec.password).getBytes());
                 requestBuilder.addHeader("Authorization", "Basic " + encoding);
                 return true;

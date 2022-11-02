@@ -31,14 +31,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OauthSecurityScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_OauthSecurityScheme_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SecurityScheme;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl;
@@ -113,7 +108,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                         Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection = new Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::runtime::ServiceStoreConnection"));
                         pureServiceStoreConnection._element(HelperServiceStoreBuilder.getServiceStore(serviceStoreConnection.element, serviceStoreConnection.elementSourceInformation, context));
                         pureServiceStoreConnection._baseUrl(serviceStoreConnection.baseUrl);
-                        pureServiceStoreConnection._authSpecs(new PureMap(HelperServiceStoreBuilder.compileAuthTokenGenerationSpecification(serviceStoreConnection, pureServiceStoreConnection, context).stream().collect(Collectors.toMap(Pair::getOne,Pair::getTwo))));
+                        pureServiceStoreConnection._authSpecs(new PureMap(HelperServiceStoreBuilder.compileAuthentication(serviceStoreConnection, pureServiceStoreConnection, context).stream().collect(Collectors.toMap(Pair::getOne,Pair::getTwo))));
                         return pureServiceStoreConnection;
                     }
                     return null;

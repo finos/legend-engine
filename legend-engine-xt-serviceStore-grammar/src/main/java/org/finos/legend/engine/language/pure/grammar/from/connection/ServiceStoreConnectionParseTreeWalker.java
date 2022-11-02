@@ -65,11 +65,11 @@ public class ServiceStoreConnectionParseTreeWalker
         ServiceStoreConnectionParserGrammar.AuthenticationContext authContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.authentication(), "authentication", connectionValue.sourceInformation);
         if (authContext!=null)
         {
-            connectionValue.authSpecs = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthSpecification).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo, (u, v) -> u, LinkedHashMap::new));
+            connectionValue.authSpecs = ListIterate.collect(authContext.authSpecificationObject(), this::visitAuthentication).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo, (u, v) -> u, LinkedHashMap::new));
         }
     }
 
-    private Pair<String, AuthenticationSpecification> visitAuthSpecification(ServiceStoreConnectionParserGrammar.AuthSpecificationObjectContext ctx)
+    private Pair<String, AuthenticationSpecification> visitAuthentication(ServiceStoreConnectionParserGrammar.AuthSpecificationObjectContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 

@@ -188,7 +188,7 @@ public class HelperServiceStoreBuilder
         });
     }
 
-    public static List<Pair<String, ? extends Root_meta_external_store_service_metamodel_runtime_AuthenticationTokenGenerationSpecification>> compileAuthTokenGenerationSpecification(ServiceStoreConnection serviceStoreConnection, Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection, CompileContext context)
+    public static List<Pair<String, ? extends Root_meta_external_store_service_metamodel_runtime_AuthenticationTokenGenerationSpecification>> compileAuthentication(ServiceStoreConnection serviceStoreConnection, Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection, CompileContext context)
     {
         return serviceStoreConnection.authSpecs.entrySet().stream().map(
                 entry ->
@@ -199,24 +199,25 @@ public class HelperServiceStoreBuilder
 
             validateSecurityScheme(securitySchemeId,authSpec,pureServiceStore,serviceStoreConnection.sourceInformation);
 
-            if (authSpec instanceof UsernamePasswordSpecification)
+            if (authSpec instanceof UsernamePasswordAuthentication)
             {
-                UsernamePasswordSpecification usernamePasswordSpecification = (UsernamePasswordSpecification) authSpec;
+                UsernamePasswordAuthentication usernamePasswordAuthentication = (UsernamePasswordAuthentication) authSpec;
                 return Tuples.pair(securitySchemeId,
                         new  Root_meta_external_store_service_metamodel_runtime_UsernamePasswordGenerationSpecification_Impl("")
-                           ._username(usernamePasswordSpecification.username)
-                           ._password(usernamePasswordSpecification.password));
+                           ._username(usernamePasswordAuthentication.username)
+                           ._password(usernamePasswordAuthentication.password));
 
             }
-           else if (authSpec instanceof OAuthTokenGenerationSpecification)
+           else if (authSpec instanceof OAuthAuthentication)
            {
-               OAuthTokenGenerationSpecification oAuthTokenGenerationSpecification = (OAuthTokenGenerationSpecification) authSpec;
+               OAuthAuthentication oAuthAuthentication = (OAuthAuthentication) authSpec;
                return Tuples.pair(securitySchemeId,
                        new Root_meta_external_store_service_metamodel_runtime_OauthTokenGenerationSpecification_Impl("")
-                          ._grantType(context.pureModel.getEnumValue("meta::external::store::service::metamodel::runtime::OauthGrantType", oAuthTokenGenerationSpecification.grantType.toString()))
-                          ._clientId(oAuthTokenGenerationSpecification.clientId)
-                          ._clientSecretVaultReference(oAuthTokenGenerationSpecification.clientSecretVaultReference)
-                          ._authServerUrl(oAuthTokenGenerationSpecification.authServerUrl));
+                          //._grantType(context.pureModel.getEnumValue("meta::external::store::service::metamodel::runtime::OauthGrantType", oAuthAuthentication.grantType.toString()))
+                               // ._grantType(oAuthAuthentication.grantType)
+                          ._clientId(oAuthAuthentication.clientId)
+                          ._clientSecretVaultReference(oAuthAuthentication.clientSecretVaultReference)
+                          ._authServerUrl(oAuthAuthentication.authServerUrl));
            }
            else
            {
@@ -235,9 +236,9 @@ public class HelperServiceStoreBuilder
 
         if (securityScheme instanceof Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl)
         {
-            if (!(authSpec instanceof UsernamePasswordSpecification))
+            if (!(authSpec instanceof UsernamePasswordAuthentication))
             {
-                throw new EngineException("securityScheme-AuthSpec combination is not supported. Only supported combinations are \n [Http, UsernamePasswordSpecification], [ApiKey, VaultSpecification], [Oauth, OauthTokenGenerationSpecification]",sourceInformation,EngineErrorType.COMPILATION);
+                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, VaultSpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
             }
         }
         else if (securityScheme instanceof Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl)
@@ -246,9 +247,9 @@ public class HelperServiceStoreBuilder
         }
         else if (securityScheme instanceof Root_meta_external_store_service_metamodel_OauthSecurityScheme_Impl)
         {
-            if (!(authSpec instanceof  OAuthTokenGenerationSpecification))
+            if (!(authSpec instanceof OAuthAuthentication))
             {
-                throw new EngineException("securityScheme-AuthSpec combination is not supported. Only supported combinations are \n [Http, UsernamePasswordSpecification], [ApiKey, VaultSpecification], [Oauth, OauthTokenGenerationSpecification]",sourceInformation,EngineErrorType.COMPILATION);
+                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, VaultSpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
             }
         }
         else
@@ -418,6 +419,6 @@ public class HelperServiceStoreBuilder
                .collect(processors,processor -> processor.value(securityScheme,context,owner))
                .select(Objects::nonNull)
                .getFirstOptional()
-               .orElseThrow(() -> new EngineException("Can't fi9nd security scheme : " + securityScheme.id,info,EngineErrorType.COMPILATION));
+               .orElseThrow(() -> new EngineException("Can't find security scheme : " + securityScheme.id,info,EngineErrorType.COMPILATION));
     }
 }

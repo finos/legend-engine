@@ -95,13 +95,13 @@ public class TestServiceStoreAuthGrammarParser extends TestGrammarParser.TestGra
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    authSpecs: [\n" +
-                "        oauth     : OauthTokenGenerationSpecification\n" +
+                "    auth: [\n" +
+                "        oauth     : OauthAuthentication\n" +
                 "              {\n" +
-                "                   grantType                   : 'ClientCredentials';\n" +
+                "                   grantType                   : 'client_credentials';\n" +
                 "                   clientId                    : 'testClientID';\n" +
                 "                   clientSecretVaultReference  : 'ref';\n" +
-                "                   authServerUrl               : 'dummy.com';\n" +
+                "                   authorizationServerUrl      : 'dummy.com';\n" +
                 "              }\n" +
                 "    ];\n" +
                 "}");
@@ -163,13 +163,13 @@ public class TestServiceStoreAuthGrammarParser extends TestGrammarParser.TestGra
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    authSpecs: [\n" +
-                "        oauth     : OauthTokenGenerationSpecification\n" +
+                "    auth: [\n" +
+                "        oauth     : OauthAuthentication\n" +
                 "              {\n" +
-                "                   grantType                   : 'ClientCredentials';\n" +
+                "                   grantType                   : 'client_credentials';\n" +
                 "                   clientId                    : 'testClientID';\n" +
                 "                   clientSecretVaultReference  : 'ref';\n" +
-                "                   authServerUrl               : 'dummy.com';\n" +
+                "                   authorizationServerUrl      : 'dummy.com';\n" +
                 "              }\n" +
                 "    ];\n" +
                 "}", "PARSER error at [28:10-33]: These security schemes are not defined in ServiceStore - [oauth]");
@@ -234,15 +234,15 @@ public class TestServiceStoreAuthGrammarParser extends TestGrammarParser.TestGra
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    authSpecs: [\n" +
-                "        oauth1     : OauthTokenGenerationSpecification\n" +
+                "    auth: [\n" +
+                "        oauth1     : OauthAuthentication\n" +
                 "              {\n" +
-                "                   grantType                   : 'ClientCredentials';\n" +
+                "                   grantType                   : 'client_credentials';\n" +
                 "                   clientId                    : 'testClientID';\n" +
                 "                   clientSecretVaultReference  : 'ref';\n" +
-                "                   authServerUrl               : 'dummy.com';\n" +
+                "                   authorizationServerUrl      : 'dummy.com';\n" +
                 "              },\n" +
-                "       http : UsernamePasswordSpecification\n" +
+                "       http : UsernamePasswordAuthentication\n" +
                 "             {\n" +
                 "                   username : 'username';\n" +
                 "                   password : 'password';\n" +

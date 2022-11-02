@@ -33,7 +33,7 @@ Class <<typemodifiers.abstract>> meta::external::store::service::metamodel::runt
 
 Class meta::external::store::service::metamodel::runtime::OauthTokenGenerationSpecification extends meta::external::store::service::metamodel::runtime::AuthenticationTokenGenerationSpecification
 {
-   grantType: OauthGrantType[1];
+   grantType: String[1];
    clientId: String[1];
    clientSecretVaultReference: String[1];
    authServerUrl: String[1];
@@ -45,7 +45,7 @@ Class meta::external::store::service::metamodel::runtime::UsernamePasswordGenera
    password: String[1];
 }
 
-Enum meta::external::store::service::metamodel::runtime::OauthGrantType
-{
-   ClientCredentials
-}
+//Enum meta::external::store::service::metamodel::runtime::OauthGrantType
+//{
+//   ClientCredentials
+//}

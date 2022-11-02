@@ -11,7 +11,7 @@ identifier:                      VALID_STRING
 ;
 
 
-oauthTokenGenerationSpecification:          OAUTH_TOKEN_GENERATION_SPECIFICATION
+oauthAuthentication:          OAUTH_AUTHENTICATION
                                             BRACE_OPEN
                                             (
                                                    grantType
@@ -34,7 +34,7 @@ clientSecret:                               CLIENT_SECRET_VAULT_REFERENCE COLON 
 authServerUrl:                              AUTH_SERVER_URL COLON STRING SEMI_COLON
 ;
 
-basicGenerationSpecification:               BASIC_GENERATION_SPECIFICATION
+basicAuthentication:                        BASIC_AUTHENTICATION
                                             BRACE_OPEN
                                             (
                                                    username

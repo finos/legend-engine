@@ -6,7 +6,7 @@ import CoreLexerGrammar;
 
 STORE:                                  'store';
 BASE_URL:                               'baseUrl';
-AUTH_SPECS:                             'authSpecs';
+AUTH_SPECS:                             'auth';
 
 // -------------------------------------- ISLAND ---------------------------------------
 BRACE_OPEN:                    '{' -> pushMode (AUTH_SPECIFICATION_ISLAND_MODE);

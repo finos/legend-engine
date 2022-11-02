@@ -28,15 +28,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParameterBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.FloatTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IdentifiedSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IntegerTypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OAuthTokenGenerationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OauthSecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OAuthAuthentication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroup;
@@ -45,10 +43,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordAuthentication;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
@@ -93,7 +90,7 @@ public class HelperServiceStoreGrammarComposer
     {
         if (serviceStoreConnection.authSpecs!=null)
         {
-            return "\n" + context.getIndentationString() + getTabString() + "authSpecs: [\n" +
+            return "\n" + context.getIndentationString() + getTabString() + "auth: [\n" +
                     serviceStoreConnection. authSpecs.entrySet().stream().map(entry
                             -> HelperServiceStoreGrammarComposer .renderTokenGenerationSpecification(entry.getKey(), entry.getValue(), 2))
                             .collect (Collectors. joining(",\n")) +
@@ -367,23 +364,23 @@ public class HelperServiceStoreGrammarComposer
 
     public static String renderTokenGenerationSpecification(String securityScheme, AuthenticationSpecification a, int baseIndentation)
     {
-        if (a instanceof OAuthTokenGenerationSpecification)
+        if (a instanceof OAuthAuthentication)
         {
-            OAuthTokenGenerationSpecification spec = (OAuthTokenGenerationSpecification) a;
+            OAuthAuthentication spec = (OAuthAuthentication) a;
             return getTabString(baseIndentation) + securityScheme +
-                    " : OauthTokenGenerationSpecification\n" +
+                    " : OauthAuthentication" +
                     getTabString(baseIndentation) + "{\n" +
                     getTabString(baseIndentation + 1) + "grantType : " + convertString(spec.grantType.toString(), true) + ";\n" +
                     getTabString(baseIndentation + 1) + "clientId : " + convertString(spec.clientId, true) + ";\n" +
                     getTabString(baseIndentation + 1) + "clientSecretVaultReference : " + convertString(spec.clientSecretVaultReference, true) + ";\n" +
-                    getTabString(baseIndentation + 1) + "authServerUrl : " + convertString(spec.authServerUrl, true) + ";\n" +
+                    getTabString(baseIndentation + 1) + "authorizationServerUrl : " + convertString(spec.authServerUrl, true) + ";\n" +
                     getTabString(baseIndentation) + "}";
         }
-        else if (a instanceof UsernamePasswordSpecification)
+        else if (a instanceof UsernamePasswordAuthentication)
         {
-            UsernamePasswordSpecification spec = (UsernamePasswordSpecification) a;
+            UsernamePasswordAuthentication spec = (UsernamePasswordAuthentication) a;
             return  getTabString(baseIndentation) + securityScheme +
-                    " : UsernamePasswordSpecification\n" +
+                    " : UsernamePasswordAuthentication\n" +
                     getTabString(baseIndentation) + "{\n" +
                     getTabString(baseIndentation + 1) + "username : " + convertString(spec.username.toString(), true) + ";\n" +
                     getTabString(baseIndentation + 1) + "password : " + convertString(spec.password.toString(), true) + ";\n" +

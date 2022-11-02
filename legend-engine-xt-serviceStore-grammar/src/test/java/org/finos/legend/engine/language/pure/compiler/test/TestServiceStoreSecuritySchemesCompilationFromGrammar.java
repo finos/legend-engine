@@ -39,19 +39,19 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar  extends Test
     }
 
     @Test
-    public void testAuthSpec()
+    public void testAuthentication()
     {
         test("###Connection\n" +
                 "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    authSpecs: [\n" +
-                "        oauth1     : OauthTokenGenerationSpecification\n" +
+                "    auth: [\n" +
+                "        oauth1     : OauthAuthentication\n" +
                 "              {\n" +
-                "                   grantType                   : 'ClientCredentials';\n" +
+                "                   grantType                   : 'client_credentials';\n" +
                 "                   clientId                    : 'testClientID';\n" +
-                "                   authServerUrl               : 'dummy.com';\n" +
+                "                   authorizationServerUrl      : 'dummy.com';\n" +
                 "              }\n" +
                 "    ];\n" +
                 "}\n" +
@@ -63,19 +63,19 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar  extends Test
     }
 
     @Test
-    public void testSecuritySchemeAndAuthSpecCombination()
+    public void testSecuritySchemeAndAuthenticationCombination()
     {
         test("###Connection\n" +
                 "ServiceStoreConnection meta::external::store::service::showcase::connection::serviceStoreConnection\n" +
                 "{\n" +
                 "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "    baseUrl : 'http://127.0.0.1:53008';\n" +
-                "    authSpecs: [\n" +
-                "        http     : OauthTokenGenerationSpecification\n" +
+                "    auth: [\n" +
+                "        http     : OauthAuthentication\n" +
                 "              {\n" +
-                "                   grantType                   : 'ClientCredentials';\n" +
+                "                   grantType                   : 'client_credentials';\n" +
                 "                   clientId                    : 'testClientID';\n" +
-                "                   authServerUrl               : 'dummy.com';\n" +
+                "                   authorizationServerUrl      : 'dummy.com';\n" +
                 "              }\n" +
                 "    ];\n" +
                 "}\n" +
@@ -89,8 +89,8 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar  extends Test
                 "          scheme : 'basic';\n" +
                 "       }\n" +
                 "    ];\n" +
-                ")\n", "COMPILATION error at [2:1-14:1]: securityScheme-AuthSpec combination is not supported. Only supported combinations are \n" +
-                " [Http, UsernamePasswordSpecification], [ApiKey, VaultSpecification], [Oauth, OauthTokenGenerationSpecification]");
+                ")\n", "COMPILATION error at [2:1-14:1]: securityScheme-Authentication combination is not supported. Only supported combinations are \n" +
+                " [Http, UsernamePasswordAuthentication], [ApiKey, VaultSpecification], [Oauth, OauthAuthentication]");
     }
 
 }

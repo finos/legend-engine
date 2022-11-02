@@ -26,22 +26,22 @@ public class TestBasicAuthWithServiceStore extends ServiceStoreTestSuite
                         "{\n" +
                         "    store   : meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                         "    baseUrl : 'http://127.0.0.1:" + getPort() + "';\n" +
-                        "    authSpecs: [\n" +
-                        "        oauth     : OauthTokenGenerationSpecification\n" +
+                        "    auth: [\n" +
+                        "        oauth     : OauthAuthentication\n" +
                         "              {\n" +
-                        "                   grantType                   : 'ClientCredentials';\n"+
+                        "                   grantType                   : 'client_credentials';\n"+
                         "                   clientId                    : 'testClientID';\n" +
                         "                   clientSecretVaultReference  : 'ref';\n" +
-                        "                   authServerUrl               : 'dummy.com';\n" +
+                        "                   authorizationServerUrl      : 'dummy.com';\n" +
                         "              },\n" +
-                        "       http : UsernamePasswordSpecification\n" +
+                        "       http : UsernamePasswordAuthentication\n" +
                         "             {\n" +
                         "                   username : 'username';\n" +
                         "                   password : 'password';\n" +
                         "             }\n" +
                         "    ];\n" +
                         "}";
-        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammar2.pure") + "\n\n" + serviceStoreConnection;
+        pureGrammar = ServiceStoreTestUtils.readGrammarFromPureFile("/securitySchemes/testGrammar.pure") + "\n\n" + serviceStoreConnection;
     }
 
     @Test

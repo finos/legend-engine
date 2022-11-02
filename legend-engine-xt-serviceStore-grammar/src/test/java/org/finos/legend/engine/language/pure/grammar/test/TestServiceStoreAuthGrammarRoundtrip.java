@@ -75,22 +75,22 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "{\n" +
                 "  store: meta::external::store::service::showcase::store::TradeProductServiceStore;\n" +
                 "  baseUrl: 'http://127.0.0.1:53008';\n" +
-                "  authSpecs: [\n" +
-                "    oauth1 : OauthTokenGenerationSpecification\n" +
+                "  auth: [\n" +
+                "    oauth1 : OauthAuthentication\n" +
+                "    {\n" +
+                "      grantType : 'client_credentials';\n" +
+                "      clientId : 'testClientID';\n" +
+                "      clientSecretVaultReference : 'ref';\n" +
+                "      authorizationServerUrl : 'dummy.com';\n" +
+                "    },\n" +
+                "    oauth2 : OauthAuthentication\n" +
                 "    {\n" +
                 "      grantType : 'ClientCredentials';\n" +
                 "      clientId : 'testClientID';\n" +
                 "      clientSecretVaultReference : 'ref';\n" +
-                "      authServerUrl : 'dummy.com';\n" +
+                "      authorizationServerUrl : 'dummy.com';\n" +
                 "    },\n" +
-                "    oauth2 : OauthTokenGenerationSpecification\n" +
-                "    {\n" +
-                "      grantType : 'ClientCredentials';\n" +
-                "      clientId : 'testClientID';\n" +
-                "      clientSecretVaultReference : 'ref';\n" +
-                "      authServerUrl : 'dummy.com';\n" +
-                "    },\n" +
-                "    http : UsernamePasswordSpecification\n" +
+                "    http : UsernamePasswordAuthentication\n" +
                 "    {\n" +
                 "      username : 'username';\n" +
                 "      password : 'password';\n" +
