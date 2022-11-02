@@ -18,7 +18,7 @@ function <<test.Test>> meta::external::language::daml::transformation::fromPure:
   let config = ^ModelToDamlConfiguration(format = 'DAML',
                                targetSchemaSet='res::ResSchemaSet');
   let out = meta::external::language::daml::transformation::fromPure::generateDamlFromPure([Person],$config);
-  assertEquals('module Meta.External.Language.Daml.Transformation.FromPure.Tests with\n' +
+  assertEquals('module Meta.External.Language.Daml.Transformation.FromPure.Tests where\n' +
   '\n' +
 'data Person = Person {\n' +
 '  name :: Text,\n' +

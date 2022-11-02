@@ -6,7 +6,7 @@ function <<test.Test>> meta::external::language::haskell::format::tests::testToS
   let modules = haskellFromPureElements(Trade);
   assertSize($modules, 1);
   assertEquals(
-'module Meta.External.Language.Haskell.Transformation.FromPure.Tests with\n' +
+'module Meta.External.Language.Haskell.Transformation.FromPure.Tests where\n' +
 '\n' +
 'data Trade = Trade {\n' +
 '  type :: Optional Text,\n' +
