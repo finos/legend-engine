@@ -138,8 +138,8 @@ Diagram meta::external::language::java::Java_Diagram(width=0.0, height=0.0)
     TypeView JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16(
         type=meta::external::language::java::metamodel::annotations::json::JsonIgnoreProperties,
         position=(-111.66533, 352.77785),
-        width=232.41406,
-        height=72.00000,
+        width=168.50537,
+        height=60.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -420,7 +420,7 @@ Diagram meta::external::language::java::Java_Diagram(width=0.0, height=0.0)
     GeneralizationView gview_14(
         source=JsonIgnoreProperties_19_19_19_19_18_18_18_18_18_18_18_18_18_18_18_18_18_17_16_$_16,
         target=Annotation_18_18_18_18_18_17_17_17_17_17_17_17_17_17_17_17_17_17_16_15_$_15,
-        points=[(4.54171,388.77785),(-26.92647,275.00980)],
+        points=[(-27.41264,382.77785),(-26.92647,275.00980)],
         label='',
         color=#000000,
         lineWidth=-1.0,
