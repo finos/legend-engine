@@ -118,6 +118,6 @@ Database meta::relational::tests::dbSpecificTests::db
 
     Schema productSchema
     (
-       Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+       Table productTable(ID INT PRIMARY KEY, NAME VARCHAR(200))
     )
 )
