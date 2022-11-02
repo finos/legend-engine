@@ -2417,7 +2417,7 @@ public class TestServiceTestSuite
     public void testPassingRelationalWithParams()
     {
         // setup
-        List<TestResult> relationalTestResult = executeServiceTest( "legend-testable-relational-service-parameters.pure", "service::RelationalServiceWithParams");
+        List<TestResult> relationalTestResult = executeServiceTest("legend-testable-relational-service-parameters.pure", "service::RelationalServiceWithParams");
         // Assertions
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
