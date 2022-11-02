@@ -31,7 +31,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.TransactionMilestoningVisitor;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -112,6 +114,51 @@ public class IngestModeVisitors
             Set<String> fieldsToIgnore = unitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_DATE_TIME_FIELDS);
             fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
             return fieldsToIgnore;
+        }
+    };
+
+    public static final IngestModeVisitor<Map<String, Object>> EXTRACT_MILESTONING_MAP = new IngestModeVisitor<Map<String, Object>>()
+    {
+        @Override
+        public Map<String, Object> visit(AppendOnly appendOnly)
+        {
+            return new HashMap<>();
+        }
+
+        @Override
+        public Map<String, Object> visit(BitemporalDelta bitemporalDelta)
+        {
+            return bitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+        }
+
+        @Override
+        public Map<String, Object> visit(BitemporalSnapshot bitemporalSnapshot)
+        {
+            return bitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+        }
+
+        @Override
+        public Map<String, Object> visit(NontemporalDelta nontemporalDelta)
+        {
+            return new HashMap<>();
+        }
+
+        @Override
+        public Map<String, Object> visit(NontemporalSnapshot nontemporalSnapshot)
+        {
+            return new HashMap<>();
+        }
+
+        @Override
+        public Map<String, Object> visit(UnitemporalDelta unitemporalDelta)
+        {
+            return unitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+        }
+
+        @Override
+        public Map<String, Object> visit(UnitemporalSnapshot unitemporalSnapshot)
+        {
+            return unitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
         }
     };
 
@@ -219,5 +266,30 @@ public class IngestModeVisitors
         }
     };
 
+    public static final TransactionMilestoningVisitor<Map<String, Object>> EXTRACT_TX_MILESTONING_MAP = new TransactionMilestoningVisitor<Map<String, Object>>()
+    {
+        @Override
+        public Map<String, Object> visit(BatchIdTransactionMilestoning val)
+        {
+            HashMap<String, Object> milestoningMap = new HashMap<>();
+            milestoningMap.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
+            return milestoningMap;
+        }
 
+        @Override
+        public Map<String, Object> visit(DateTimeTransactionMilestoning val)
+        {
+            HashMap<String, Object> milestoningMap = new HashMap<>();
+            milestoningMap.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
+            return milestoningMap;
+        }
+
+        @Override
+        public Map<String, Object> visit(BatchIdAndDateTimeTransactionMilestoning val)
+        {
+            HashMap<String, Object> milestoningMap = new HashMap<>();
+            milestoningMap.put(val.batchIdOutName, String.valueOf(IngestModeMapper.INFINITE_BATCH_ID));
+            return milestoningMap;
+        }
+    };
 }

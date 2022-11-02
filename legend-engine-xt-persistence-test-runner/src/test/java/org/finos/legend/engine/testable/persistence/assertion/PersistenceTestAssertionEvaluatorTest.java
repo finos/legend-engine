@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Equa
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,9 @@ public class PersistenceTestAssertionEvaluatorTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -67,8 +69,9 @@ public class PersistenceTestAssertionEvaluatorTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -91,8 +94,9 @@ public class PersistenceTestAssertionEvaluatorTest
         });
         Set<String> fieldsToIgnore = new HashSet<>();
         fieldsToIgnore.add("digest");
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -114,8 +118,9 @@ public class PersistenceTestAssertionEvaluatorTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -141,8 +146,9 @@ public class PersistenceTestAssertionEvaluatorTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -166,8 +172,9 @@ public class PersistenceTestAssertionEvaluatorTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -191,8 +198,9 @@ public class PersistenceTestAssertionEvaluatorTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
         EqualToJson equalToJson = new EqualToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";

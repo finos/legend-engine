@@ -40,11 +40,13 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
 {
     private List<Map<String, Object>> result;
     private Set<String> fieldsToIgnore;
+    private Map<String, Object> milestoningMap;
 
-    public PersistenceTestAssertionEvaluator(List<Map<String, Object>> result, Set<String> fieldsToIgnore)
+    public PersistenceTestAssertionEvaluator(List<Map<String, Object>> result, Set<String> fieldsToIgnore, Map<String, Object> milestoningMap)
     {
         this.result = result;
         this.fieldsToIgnore = fieldsToIgnore;
+        this.milestoningMap = milestoningMap;
     }
 
     @Override
@@ -63,7 +65,7 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
             {
                 actualResult = mapper.writeValueAsString(result);
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
-                compareJsonObjects(result, expected, fieldsToIgnore);
+                compareJsonObjects(result, expected, fieldsToIgnore, milestoningMap);
                 assertionStatus = new AssertPass();
 
             }
@@ -90,8 +92,21 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
         }
     }
 
-    private boolean compareJsonObjects(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore)
+    private boolean compareJsonObjects(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, Map<String, Object> milestoningMap)
     {
+        List<Map<String, Object>> openRecords = new ArrayList<>(result);
+        for (Map<String, Object> row: result)
+        {
+            for (String milestoningColumn: milestoningMap.keySet())
+            {
+                if (!row.get(milestoningColumn).toString().equals(milestoningMap.get(milestoningColumn).toString()))
+                {
+                    openRecords.remove(row);
+                }
+            }
+        }
+        result = openRecords;
+
         if (result.size() != expected.size())
         {
             throw new AssertionError(String.format("AssertionError: Number of rows in results [%d] does not match number of rows in expected data [%d]", result.size(), expected.size()));
