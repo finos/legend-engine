@@ -15,6 +15,7 @@ function meta::external::language::daml::transformation::fromPure::buildDamlPrim
          pair(Integer, ^meta::external::language::haskell::metamodel::Int()),
          //DAML uses Decimal, this might be problematic for type conversions
          pair(Float, ^meta::external::language::haskell::metamodel::Decimal()),
+         pair(Decimal, ^meta::external::language::haskell::metamodel::Decimal()),
          pair(String, ^meta::external::language::haskell::metamodel::Text()),
          pair(Boolean, ^meta::external::language::haskell::metamodel::Bool()),
          pair(DateTime , ^meta::external::language::haskell::metamodel::NamedTypeRef(module='DA',name='Time')),
