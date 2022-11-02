@@ -72,7 +72,7 @@ public class HelperMasteryGrammarComposer
                 .append(getTabString(indentLevel)).append("[\n");
                 ListIterate.forEachWithIndex(sources, (source, i) ->
                 {
-                    sourcesStr.append(i > 0 ? ",\n" : "");
+                    sourcesStr.append(i > 0 ? ",\n" : "").append(getTabString(indentLevel + 1)).append("{\n");;
                     sourcesStr.append(source.accept(new RecordSourceComposer(indentLevel, context)));
                     sourcesStr.append(getTabString(indentLevel + 1)).append("}");
                 });
@@ -94,7 +94,7 @@ public class HelperMasteryGrammarComposer
         @Override
         public String visit(RecordSource val)
         {
-              return getTabString(indentLevel + 1) + val.id + ": {\n" +
+              return getTabString(indentLevel + 2) + "id: " + convertString(val.id, true) + ";\n" +
                     getTabString(indentLevel + 2) + "description: " + convertString(val.description, true) + ";\n" +
                     getTabString(indentLevel + 2) + "status: " + val.status + ";\n" +
                       (val.parseService != null ? (getTabString(indentLevel + 2) + "parseService: " + val.parseService + ";\n") : "") +
@@ -115,7 +115,7 @@ public class HelperMasteryGrammarComposer
         strBuf.append(getTabString(indentLevel + 2)).append("[");
         ListIterate.forEachWithIndex(source.partitions, (partition, i) ->
         {
-            strBuf.append(i > 0 ? "," : "").append("\n");
+            strBuf.append(i > 0 ? "," : "").append("\n").append(getTabString(indentLevel + 3)).append("{\n");;
             strBuf.append(renderPartition(partition, indentLevel + 3)).append("\n");
             strBuf.append(getTabString(indentLevel + 3)).append("}");
         });
@@ -130,7 +130,7 @@ public class HelperMasteryGrammarComposer
 
     private static String renderPartition(RecordSourcePartition partition, int indentLevel)
     {
-        StringBuffer strBuf = new StringBuffer().append(getTabString(indentLevel)).append(partition.id).append(": {");
+        StringBuffer strBuf = new StringBuffer().append(getTabString(indentLevel + 1)).append("id: ").append(convertString(partition.id, true)).append(";");
         strBuf.append((partition.getTags() != null && !partition.getTags().isEmpty()) ? "\n" + renderTags(partition, indentLevel + 1) : "");
         return strBuf.toString();
     }
