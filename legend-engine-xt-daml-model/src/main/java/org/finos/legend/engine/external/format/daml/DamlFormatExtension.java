@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.external.format.daml;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.external.format.daml.fromModel.ModelToDamlConfiguration;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
+import org.finos.legend.engine.language.daml.grammar.from.DamlGrammarParser;
+import org.finos.legend.engine.language.haskell.grammar.from.HaskellParserException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
 import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
@@ -48,18 +48,22 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
     {
         try
         {
-            return new Root_meta_external_language_haskell_metamodel_HaskellSchema_Impl("")
+            HaskellModule module = DamlGrammarParser.newInstance().parseModule(context.getContent());
+
+            Root_meta_external_language_haskell_metamodel_HaskellSchema schema = new Root_meta_external_language_haskell_metamodel_HaskellSchema_Impl("")
                     ._module(
                             new Translator().translate(
-                                    new ObjectMapper().readValue(context.getContent(), HaskellModule.class),
+                                    module,
                                     context.getPureModel()
                             )
                     );
+            return schema;
         }
-        catch (JsonProcessingException e)
+        catch (HaskellParserException exception)
         {
-            throw new RuntimeException(e);
+            throw new RuntimeException(exception.toString());
         }
+
     }
 
     @Override
