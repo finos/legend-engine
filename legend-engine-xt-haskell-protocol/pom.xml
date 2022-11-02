@@ -25,6 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-haskell-protocol</artifactId>
+    <packaging>jar</packaging>
     <name>Legend Engine - XT - Haskell - Protocol</name>
 
     <build>
@@ -55,7 +56,7 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-protocol-generation</artifactId>
-                        <version>3.2.1-SNAPSHOT</version>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
