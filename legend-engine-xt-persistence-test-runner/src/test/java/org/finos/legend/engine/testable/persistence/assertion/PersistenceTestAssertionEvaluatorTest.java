@@ -108,6 +108,31 @@ public class PersistenceTestAssertionEvaluatorTest
     }
 
     @Test
+    public void testEvaluatorObjectsEqualWithMilestoningMap() throws Exception
+    {
+        String result = "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":1}," + "{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"NAME\":\"CATHY\", \"ID\":3, \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"ID\":4, \"NAME\":\"TOM\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":1}]";
+        String expected = "[{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"ID\":3, \"NAME\":\"CATHY\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}]";
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<Map<String, Object>> resultData = mapper.readValue(result, new TypeReference<List<Map<String, Object>>>()
+        {
+        });
+        Set<String> fieldsToIgnore = new HashSet<>();
+        Map<String, Object> milestoningMap = new HashMap<>();
+        milestoningMap.put("BATCH_ID_OUT", 999999999L);
+
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        EqualToJson equalToJson = new EqualToJson();
+        ExternalFormatData data = new ExternalFormatData();
+        data.contentType = "application/json";
+        data.data = expected;
+
+        equalToJson.expected = data;
+        AssertionStatus status = evaluator.visit(equalToJson);
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    @Test
     public void testEvaluatorObjectsValuesMismatch() throws Exception
     {
         String result = "[{\"ID\":1,\"NAME\":\"ANDY\"}," + "{\"ID\":2,\"NAME\":\"BRAD\"}," + "{\"NAME\":\"CATHY\",\"ID\":3}," + "{\"ID\":4,\"NAME\":\"TOMS\"}]";

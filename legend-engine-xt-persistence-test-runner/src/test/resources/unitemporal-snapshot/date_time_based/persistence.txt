@@ -125,7 +125,7 @@ Persistence test::TestPersistence
                  ExternalFormat
                  #{
                    contentType: 'application/json';
-                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}, {"ID":3, "NAME":"CATHY"}, {"ID":3, "NAME":"CATHERINE"}, {"ID":4, "NAME":"TOM"}]';
+                   data: '[{"ID":1, "NAME":"ANDY"}, {"ID":3, "NAME":"CATHERINE"}, {"ID":4, "NAME":"TOM"}]';
                  }#;
              }#
          ]
