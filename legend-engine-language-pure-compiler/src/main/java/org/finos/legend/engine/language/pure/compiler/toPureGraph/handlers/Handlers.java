@@ -827,7 +827,8 @@ public class Handlers
 
         register("meta::pure::functions::date::dayOfMonth_Date_1__Integer_1_", true, ps -> res("Integer", "one"));
 
-        register(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> true));
+        register(m(m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 1)),
+                m(h("meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_", false, ps -> res("Integer", "one"), ps -> ps.size() == 2))));
 
         register(h("meta::pure::functions::date::hasDay_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), DATE)));
         register(h("meta::pure::functions::date::hasHour_Date_1__Boolean_1_", true, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), DATE)));
@@ -1704,6 +1705,7 @@ public class Handlers
         map.put("meta::pure::functions::date::date_Integer_1__Integer_1__Integer_1__StrictDate_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Integer".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::date::dayOfMonth_Date_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "DayOfWeek".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::dayOfWeek_Integer_1__DayOfWeek_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "Integer".equals(ps.get(0)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::date::daysOfMonth_Date_1__Integer_MANY_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
