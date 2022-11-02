@@ -1,12 +1,12 @@
-import meta::external::language::haskell::binding::fromPure::tests::*;
-import meta::external::language::haskell::binding::fromPure::*;
+import meta::external::language::haskell::transformation::fromPure::tests::*;
+import meta::external::language::haskell::transformation::fromPure::*;
 
 function <<test.Test>> meta::external::language::haskell::format::tests::testToString():Boolean[1]
 {
   let modules = haskellFromPureElements(Trade);
   assertSize($modules, 1);
   assertEquals(
-'module (Meta.External.Language.Haskell.Binding.FromPure.Tests) with\n' +
+'module (Meta.External.Language.Haskell.Transformation.FromPure.Tests) with\n' +
 '\n' +
 'data Trade = Trade {\n' +
 '  type :: Optional Text,\n' +

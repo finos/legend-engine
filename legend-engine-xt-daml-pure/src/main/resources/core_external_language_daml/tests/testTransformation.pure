@@ -1,25 +1,24 @@
-import meta::external::language::daml::generation::tests::*;
-import meta::external::language::daml::generation::*;
 import meta::external::language::daml::transformation::fromPure::*;
+import meta::external::language::daml::transformation::fromPure::tests::*;
 
-Class meta::external::language::daml::generation::tests::Person
+Class meta::external::language::daml::transformation::fromPure::tests::Person
 {
   name:String[1];
   age:Integer[1];
   addresses:Address[*];
 }
 
-Class meta::external::language::daml::generation::tests::Address
+Class meta::external::language::daml::transformation::fromPure::tests::Address
 {
   street:String[1];
 }
 
-function <<test.Test>> meta::external::language::daml::generation::tests::testGenerateDamlFromPure():Boolean[1]
+function <<test.Test>> meta::external::language::daml::transformation::fromPure::tests::testGenerateDamlFromPure():Boolean[1]
 {
   let config = ^ModelToDamlConfiguration(format = 'DAML',
                                targetSchemaSet='res::ResSchemaSet');
-  let out = meta::external::language::daml::generation::generateDamlFromPure([Person],$config);
-  assertEquals('module (Meta.External.Language.Daml.Generation.Tests) with\n' +
+  let out = meta::external::language::daml::transformation::fromPure::generateDamlFromPure([Person],$config);
+  assertEquals('module (Meta.External.Language.Daml.Transformation.FromPure.Tests) with\n' +
   '\n' +
 'data Person = Person {\n' +
 '  name :: Text,\n' +

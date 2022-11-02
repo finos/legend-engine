@@ -1,16 +1,16 @@
 import meta::external::shared::format::*;
-import meta::external::language::haskell::binding::toPure::*;
+import meta::external::language::haskell::metamodel::*;
 import meta::external::language::daml::transformation::fromPure::*;
 
 
-function meta::external::language::daml::contract::damlFormatContract(): ExternalFormatContract<HaskellModuleContainer>[1]
+function meta::external::language::daml::contract::damlFormatContract(): ExternalFormatContract<HaskellSchema>[1]
 {
-   ^ExternalFormatContract<HaskellModuleContainer>
+   ^ExternalFormatContract<HaskellSchema>
    (
       id                               = 'DAML',
       contentTypes                     = ['application/daml'],
 
-      externalFormatMetamodel          = HaskellModuleContainer,
+      externalFormatMetamodel          = HaskellSchema,
 
       externalFormatFromPureDescriptor = damlFromPureDescriptor()
    )

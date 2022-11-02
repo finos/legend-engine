@@ -1,9 +1,9 @@
-import meta::external::language::daml::binding::fromPure::tests::*;
-import meta::external::language::daml::binding::fromPure::*;
+import meta::external::language::daml::transformation::fromPure::tests::*;
+import meta::external::language::daml::transformation::fromPure::*;
 import meta::external::language::haskell::format::*;
 
 
-Class meta::external::language::daml::binding::fromPure::tests::AllPrimitives
+Class meta::external::language::daml::transformation::fromPure::tests::AllPrimitives
 {
   name:String[0..1];
   id:Integer[1];
@@ -13,12 +13,12 @@ Class meta::external::language::daml::binding::fromPure::tests::AllPrimitives
   isOk:Boolean[1];
 }
 
-function <<test.Test>> meta::external::language::daml::binding::fromPure::tests::testPureToDaml():Boolean[1]
+function <<test.Test>> meta::external::language::daml::transformation::fromPure::tests::testPureToDaml():Boolean[1]
 {
   let modules = damlFromPureElements(AllPrimitives);
   assertSize($modules, 1);
   let res = $modules->first();
-  assertEquals('Meta.External.Language.Daml.Binding.FromPure.Tests', $res.id);
+  assertEquals('Meta.External.Language.Daml.Transformation.FromPure.Tests', $res.id);
   assertSize($res.elements, 1);
 
   let data = $res.elements->first()->cast(@meta::external::language::haskell::metamodel::DataType);

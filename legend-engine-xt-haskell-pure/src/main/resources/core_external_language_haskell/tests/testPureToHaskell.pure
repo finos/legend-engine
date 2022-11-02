@@ -1,8 +1,8 @@
-import meta::external::language::haskell::binding::fromPure::tests::*;
-import meta::external::language::haskell::binding::fromPure::*;
+import meta::external::language::haskell::transformation::fromPure::tests::*;
+import meta::external::language::haskell::transformation::fromPure::*;
 import meta::external::language::haskell::format::*;
 
-Class meta::external::language::haskell::binding::fromPure::tests::Trade
+Class meta::external::language::haskell::transformation::fromPure::tests::Trade
 {
    type:String[0..1];
    id:Integer[1];
@@ -13,7 +13,7 @@ Class meta::external::language::haskell::binding::fromPure::tests::Trade
 }
 
 Enum {doc.doc='Types of account'}
-meta::external::language::haskell::binding::fromPure::tests::AccountType
+meta::external::language::haskell::transformation::fromPure::tests::AccountType
 {
    TRADING,
    WASH,
@@ -22,19 +22,19 @@ meta::external::language::haskell::binding::fromPure::tests::AccountType
 }
 
 Class {doc.doc='A financial account'}
-meta::external::language::haskell::binding::fromPure::tests::Account
+meta::external::language::haskell::transformation::fromPure::tests::Account
 {
    name : String[1];
    enum : AccountType[1];
    opened: DateTime[1];
 }
 
-function <<test.Test>> meta::external::language::haskell::binding::fromPure::tests::testPureToHaskell():Boolean[1]
+function <<test.Test>> meta::external::language::haskell::transformation::fromPure::tests::testPureToHaskell():Boolean[1]
 {
   let modules = haskellFromPureElements(Trade);
   assertSize($modules, 1);
   let res = $modules->first();
-  assertEquals('Meta.External.Language.Haskell.Binding.FromPure.Tests',$res.id);
+  assertEquals('Meta.External.Language.Haskell.Transformation.FromPure.Tests',$res.id);
   assertSize($res.elements, 3);
   let trade = $res.elements->cast(@meta::external::language::haskell::metamodel::DataType)
                            ->filter(x | $x.name->toOne() == 'Trade');
@@ -62,11 +62,11 @@ function <<test.Test>> meta::external::language::haskell::binding::fromPure::tes
   assertEquals('A financial account', $account.documentation); 
 }
 
-function <<test.Test>> meta::external::language::haskell::binding::fromPure::tests::testPurePackageToHaskell():Boolean[1]
+function <<test.Test>> meta::external::language::haskell::transformation::fromPure::tests::testPurePackageToHaskell():Boolean[1]
 {
-  let modules = haskellFromPureElements(meta::external::language::haskell::binding::fromPure::tests);
+  let modules = haskellFromPureElements(meta::external::language::haskell::transformation::fromPure::tests);
   assertSize($modules, 1);
   let res = $modules->first();
-  assertEquals('Meta.External.Language.Haskell.Binding.FromPure.Tests',$res.id);
+  assertEquals('Meta.External.Language.Haskell.Transformation.FromPure.Tests',$res.id);
   assertSize($res.elements, 3);
 }

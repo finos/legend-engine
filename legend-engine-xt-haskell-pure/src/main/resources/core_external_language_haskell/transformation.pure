@@ -1,6 +1,56 @@
+import meta::pure::generation::metamodel::*;
+import meta::external::shared::format::*;
+import meta::external::shared::format::metamodel::*;
+import meta::pure::model::unit::*;
+import meta::external::language::haskell::transformation::fromPure::*;
+import meta::external::shared::format::transformation::fromPure::*;
+import meta::external::language::haskell::metamodel::*;
 
-
-Class meta::external::language::haskell::binding::toPure::HaskellModuleContainer extends meta::external::shared::format::metamodel::SchemaDetail
+function meta::external::language::haskell::transformation::fromPure::haskellFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToHaskellConfiguration>[1]
 {
-  module : meta::external::language::haskell::metamodel::HaskellModule[1];
+  ^ExternalFormatFromPureDescriptor<ModelToHaskellConfiguration>
+  (
+    configuration        = ModelToHaskellConfiguration,
+    generator            = pureToHaskell_ModelUnit_1__ModelToHaskellConfiguration_1__SchemaSet_1_,
+    defaultConfig        = defaultConfig()
+  )
+}
+
+function meta::external::language::haskell::transformation::fromPure::defaultConfig():ModelToHaskellConfiguration[1]
+{
+  ^ModelToHaskellConfiguration(format = 'Haskell', targetSchemaSet='target::package::GeneratedSchemaSet')
+}
+
+Class meta::external::language::haskell::transformation::fromPure::ModelToHaskellConfiguration extends ModelToSchemaConfiguration
+{
+}
+
+function meta::external::language::haskell::transformation::fromPure::pureToHaskell(modelUnit:ModelUnit[1], config:ModelToHaskellConfiguration[1]): SchemaSet[1]
+{
+   let sourceModels = $modelUnit->resolve().classes();
+   createSchemaSet($sourceModels, $config);
+}
+
+function <<access.private>> meta::external::language::haskell::transformation::fromPure::createSchemaSet(sourceModels:Class<Any>[*], config:ModelToHaskellConfiguration[1]): SchemaSet[1]
+{
+   let schemaSetSepPos  = $config.targetSchemaSet->lastIndexOf('::');
+   let schemaSetPkgName = $config.targetSchemaSet->substring(0, $schemaSetSepPos);
+
+   let schemas     = generateHaskellFromPure($sourceModels, $config);
+
+   ^SchemaSet(
+      package = pathToPackage($schemaSetPkgName, true),
+      name    = $config.targetSchemaSet->substring($schemaSetSepPos+2),
+      format  = 'Haskell',
+      schemas = $schemas->map(f | ^Schema(
+                                         location  = $f.module.id->replace('.','_') + '.hs',
+                                         detail    = $f
+                                        ))
+   );
+}
+
+function meta::external::language::haskell::transformation::fromPure::generateHaskellFromPure(elements:PackageableElement[*],config:ModelToHaskellConfiguration[1]):HaskellSchema[*]
+{
+    let modules = $elements->toOneMany()->meta::external::language::haskell::transformation::fromPure::haskellFromPureElements();
+    $modules->map(m | ^HaskellSchema(module=$m));
 }

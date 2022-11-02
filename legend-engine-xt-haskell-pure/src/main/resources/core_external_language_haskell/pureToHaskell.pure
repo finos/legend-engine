@@ -1,12 +1,12 @@
 import meta::external::language::haskell::metamodel::*;
-import meta::external::language::haskell::binding::fromPure::*;
+import meta::external::language::haskell::transformation::fromPure::*;
 
-function meta::external::language::haskell::binding::fromPure::haskellFromPureElements(elements:PackageableElement[1..*]):HaskellModule[*]
+function meta::external::language::haskell::transformation::fromPure::haskellFromPureElements(elements:PackageableElement[1..*]):HaskellModule[*]
 {
   $elements->haskellFromPureElements(buildDefaultPrimitiveTypesMap());
 }
 
-function meta::external::language::haskell::binding::fromPure::haskellFromPureElements(inputs:PackageableElement[1..*],primTypes:Map<Type,HaskellType>[1]):HaskellModule[*]
+function meta::external::language::haskell::transformation::fromPure::haskellFromPureElements(inputs:PackageableElement[1..*],primTypes:Map<Type,HaskellType>[1]):HaskellModule[*]
 {
   let elements = $inputs->map( i | $i->selectTransformableElements());
   let classes = $elements->filter(e | $e->instanceOf(Class))->cast(@Class<Any>);
@@ -17,7 +17,7 @@ function meta::external::language::haskell::binding::fromPure::haskellFromPureEl
   $typesByPackage->keyValues()->map(p|haskellModuleFromPurePackageElements($p.first,$p.second.values,$typesMap,$defaultDerivings));
 }
 
-function meta::external::language::haskell::binding::fromPure::selectTransformableElements(e:PackageableElement[1]):PackageableElement[*]
+function meta::external::language::haskell::transformation::fromPure::selectTransformableElements(e:PackageableElement[1]):PackageableElement[*]
 {
   $e->match([
     p:Package[1] | $p->getAllPackageElements(true)->map(pe | $pe->selectTransformableElements()),
@@ -27,19 +27,19 @@ function meta::external::language::haskell::binding::fromPure::selectTransformab
   ])
 }
 
-function meta::external::language::haskell::binding::fromPure::haskellModuleFromPurePackageElements(p:Package[1],elements:Type[*],typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):HaskellModule[1]
+function meta::external::language::haskell::transformation::fromPure::haskellModuleFromPurePackageElements(p:Package[1],elements:Type[*],typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):HaskellModule[1]
 {
   let decls = transformPureTypesToHaskell($elements, $typesMap, $deriving);
   ^HaskellModule(id=$p->purePackageToHaskellModuleName(),elements=$decls);
 }
 
-function meta::external::language::haskell::binding::fromPure::purePackageToHaskellModuleName(p:Package[1]):String[1]
+function meta::external::language::haskell::transformation::fromPure::purePackageToHaskellModuleName(p:Package[1]):String[1]
 {
   let path = $p->elementPath()->tail().name->map(s | $s->toUpperFirstCharacter());
   $path->joinStrings('.');
 }
 
-function meta::external::language::haskell::binding::fromPure::scanTypes(t:Type[1], processed:Type[*]):Type[*]
+function meta::external::language::haskell::transformation::fromPure::scanTypes(t:Type[1], processed:Type[*]):Type[*]
 {
   //println('fold');
    let r = if (!$processed->contains($t),
@@ -47,16 +47,15 @@ function meta::external::language::haskell::binding::fromPure::scanTypes(t:Type[
                          |$t->cast(@Class<Any>)->allProperties().genericType.rawType->distinct()
                             ->concatenate($t->cast(@Class<Any>)->meta::pure::functions::meta::findAllSpecializations())
                             ->filter(t|($t->instanceOf(Class) || $t->instanceOf(meta::pure::metamodel::type::Enumeration)) && $t != Any)
-                            ->map(c|$c->meta::external::language::haskell::binding::fromPure::scanTypes($processed->concatenate($t)))->distinct(),
+                            ->map(c|$c->meta::external::language::haskell::transformation::fromPure::scanTypes($processed->concatenate($t)))->distinct(),
                          |[]
                        )),
        |[]
    );
-   //println($r);
    $r;
 }
 
-function meta::external::language::haskell::binding::fromPure::buildDefaultPrimitiveTypesMap():Map<Type,HaskellType>[1]
+function meta::external::language::haskell::transformation::fromPure::buildDefaultPrimitiveTypesMap():Map<Type,HaskellType>[1]
 {
   newMap(
       [
@@ -71,17 +70,17 @@ function meta::external::language::haskell::binding::fromPure::buildDefaultPrimi
       ])
 }
 
-function meta::external::language::haskell::binding::fromPure::seedTypes(types:Type[*],primTypes:Map<Type,HaskellType>[1]):Map<Type,HaskellType>[1]
+function meta::external::language::haskell::transformation::fromPure::seedTypes(types:Type[*],primTypes:Map<Type,HaskellType>[1]):Map<Type,HaskellType>[1]
 {
   $primTypes->putAll($types->map(t | pair($t, ^NamedTypeRef(name=$t.name->toOne()))))
 }
 
-function meta::external::language::haskell::binding::fromPure::transformPureTypesToHaskell(types:Type[*], typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):ModuleElement[*]
+function meta::external::language::haskell::transformation::fromPure::transformPureTypesToHaskell(types:Type[*], typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):ModuleElement[*]
 {
   $types->map(t | $t->pureTypeToHaskell($typesMap,$deriving));
 }
 
-function meta::external::language::haskell::binding::fromPure::pureTypeToHaskell(t:Type[1], typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):ModuleElement[1]
+function meta::external::language::haskell::transformation::fromPure::pureTypeToHaskell(t:Type[1], typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):ModuleElement[1]
 {
   $t->match([
     c:Class<Any>[1] | $c->classToDataType($typesMap,$deriving),
@@ -89,7 +88,7 @@ function meta::external::language::haskell::binding::fromPure::pureTypeToHaskell
   ]);
 }
 
-function meta::external::language::haskell::binding::fromPure::classToDataType(c:Class<Any>[1], typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):meta::external::language::haskell::metamodel::DataType[1]
+function meta::external::language::haskell::transformation::fromPure::classToDataType(c:Class<Any>[1], typesMap:Map<Type,HaskellType>[1], deriving:Deriving[*]):meta::external::language::haskell::metamodel::DataType[1]
 {
   ^meta::external::language::haskell::metamodel::DataType(
     documentation=$c->documentation(),
@@ -110,7 +109,7 @@ function meta::external::language::haskell::binding::fromPure::classToDataType(c
   );
 }
 
-function meta::external::language::haskell::binding::fromPure::enumerationToDataType(e:Enumeration<Any>[1], deriving:Deriving[*]):meta::external::language::haskell::metamodel::DataType[1]
+function meta::external::language::haskell::transformation::fromPure::enumerationToDataType(e:Enumeration<Any>[1], deriving:Deriving[*]):meta::external::language::haskell::metamodel::DataType[1]
 {
   ^meta::external::language::haskell::metamodel::DataType(
     documentation=$e->documentation(),
@@ -121,7 +120,7 @@ function meta::external::language::haskell::binding::fromPure::enumerationToData
   );
 }
 
-function meta::external::language::haskell::binding::fromPure::documentation(a:meta::pure::metamodel::extension::AnnotatedElement[1]):String[0..1]
+function meta::external::language::haskell::transformation::fromPure::documentation(a:meta::pure::metamodel::extension::AnnotatedElement[1]):String[0..1]
 {
   let d = $a->meta::pure::functions::doc::getDocs();
   if($d->size() > 1, | $d->joinStrings('\n'), | $d->first());

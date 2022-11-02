@@ -1,11 +1,10 @@
-import meta::external::language::daml::generation::*;
 import meta::pure::generation::metamodel::*;
 import meta::external::shared::format::*;
 import meta::external::shared::format::metamodel::*;
 import meta::pure::model::unit::*;
 import meta::external::language::daml::transformation::fromPure::*;
 import meta::external::shared::format::transformation::fromPure::*;
-import meta::external::language::haskell::binding::toPure::*;
+import meta::external::language::haskell::metamodel::*;
 
 function meta::external::language::daml::transformation::fromPure::damlFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToDamlConfiguration>[1]
 {
@@ -50,14 +49,8 @@ function <<access.private>> meta::external::language::daml::transformation::from
    );
 }
 
-function meta::external::language::daml::generation::generateDamlFromPure(elements:PackageableElement[*],config:ModelToDamlConfiguration[1]):HaskellModuleContainer[*]
+function meta::external::language::daml::transformation::fromPure::generateDamlFromPure(elements:PackageableElement[*],config:ModelToDamlConfiguration[1]):HaskellSchema[*]
 {
-    let modules = $elements->toOneMany()->meta::external::language::daml::binding::fromPure::damlFromPureElements();
-    $modules->map(m | ^HaskellModuleContainer(module=$m));
-}
-
-function meta::external::language::daml::generation::generateDamlFromPure(elements:PackageableElement[*]):GenerationOutput[*]
-{
-    let modules = $elements->toOneMany()->meta::external::language::daml::binding::fromPure::damlFromPureElements();
-    $modules->map(m | ^GenerationOutput(content=$m->meta::external::language::daml::format::toString(),fileName=$m.id->replace('.','_') + '.daml'));
+    let modules = $elements->toOneMany()->meta::external::language::daml::transformation::fromPure::damlFromPureElements();
+    $modules->map(m | ^HaskellSchema(module=$m));
 }
