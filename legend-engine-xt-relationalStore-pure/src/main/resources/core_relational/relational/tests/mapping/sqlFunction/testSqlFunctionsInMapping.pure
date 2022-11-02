@@ -59,12 +59,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
   assertEquals('select date_parse("root".string2date,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSql->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForSnowflake():Boolean[1]
-{
-  let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());  
-  assertEquals('select to_timestamp("root".string2date,\'YYYY-MM-DD HH24:MI:SS\') as "timestamp" from dataTable as "root"',$snowflakeSql->sqlRemoveFormatting());
-}
-
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForMemSQL():Boolean[1]
 {
   let memSQLSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());  
@@ -88,12 +82,6 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
 {
   let prestoSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
   assertEquals('select date_parse("root".stringDateTimeFormat,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSQL->sqlRemoveFormatting());
-}
-
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateForSnowflake():Boolean[1]
-{
-  let trialSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-  assertEquals('select to_timestamp("root".stringDateTimeFormat,\'YYYY-MM-DD HH24:MI:SS\') as "timestamp" from dataTable as "root"',$trialSQL->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateForMemSQL():Boolean[1]
