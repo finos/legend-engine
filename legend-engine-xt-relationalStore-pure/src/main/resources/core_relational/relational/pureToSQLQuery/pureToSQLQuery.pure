@@ -2426,7 +2426,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsOlapOperation(o:
    $o->extractOperation().expressionSequence->at(0)->processAggFn(
       $o->match([
       t: TdsOlapAggregation<Any>[1]| let col = findAliasOrFail($t.colName->toString(), $operation.select).relationalElement;
-                                     assert($col->instanceOf(TableAliasColumn)|| $col->instanceOf(DynaFunction),'Window Function does not refer to a column or an aggregate function');
+                                     assert($col->instanceOf(ColumnName) || $col->instanceOf(TableAliasColumn) || $col->instanceOf(DynaFunction),'Window Function does not refer to a column or an aggregate function');
                                      $col;,
       r:TdsOlapRank<Any>[1]|[]
       ] )
