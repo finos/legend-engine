@@ -101,7 +101,23 @@ function meta::relational::tests::dbSpecificTests::createTableAndFillDb(config:D
                 '3,Firm C\n'+
                 '4,Firm D\n';
 
-  meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::db,
+  meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbSpecificTests::db,
                                                      $config, meta::relational::extension::relationalExtensions());
   true;
 }
+
+###Relational
+Database meta::relational::tests::dbSpecificTests::db
+(
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, CEOID INT)
+    Table tradeTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity FLOAT, tradeDate DATE, settlementDateTime TIMESTAMP)
+    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))
+    Table orderTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity INT, orderDate DATE, settlementDateTime TIMESTAMP)
+    Table orderPnlTable( ORDER_ID INT PRIMARY KEY, pnl FLOAT,from_z DATE,thru_z DATE )
+
+    Schema productSchema
+    (
+       Table synonymTable(ID INT PRIMARY KEY, PRODID INT, TYPE VARCHAR(200), NAME VARCHAR(200))
+    )
+)
