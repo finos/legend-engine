@@ -41,7 +41,6 @@ function meta::external::language::haskell::transformation::fromPure::purePackag
 
 function meta::external::language::haskell::transformation::fromPure::scanTypes(t:Type[1], processed:Type[*]):Type[*]
 {
-  //println('fold');
    let r = if (!$processed->contains($t),
        |$t->concatenate(if($t->instanceOf(Class),
                          |$t->cast(@Class<Any>)->allProperties().genericType.rawType->distinct()

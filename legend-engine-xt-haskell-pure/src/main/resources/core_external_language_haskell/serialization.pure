@@ -2,7 +2,7 @@ import meta::external::language::haskell::metamodel::*;
 
 function meta::external::language::haskell::format::toString(module:HaskellModule[1]):String[1]
 {
-  'module (' + $module.id + ') with\n\n' +
+  'module ' + $module.id + ' with\n\n' +
   $module.elements->map(e | $e->meta::external::language::haskell::format::toString())->makeString('','\n','')
 }
 
