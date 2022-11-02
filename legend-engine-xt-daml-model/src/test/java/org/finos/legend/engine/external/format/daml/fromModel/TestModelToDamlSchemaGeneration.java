@@ -48,15 +48,15 @@ public class TestModelToDamlSchemaGeneration extends ModelToSchemaGenerationTest
         ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
         String expectedDefinition = "module Test.Gen where\n" +
                 "\n" +
-                "data Data = Data {\n" +
-                "  name :: Text,\n" +
-                "  employed :: Optional Bool,\n" +
-                "  iq :: Optional Int,\n" +
-                "  weightKg :: Optional Decimal,\n" +
-                "  heightM :: Decimal,\n" +
-                "  dateOfBirth :: Date,\n" +
-                "  timeOfDeath :: Time\n" +
-                "} deriving (Eq, Ord, Show)\n";
+                "data Data = Data with\n" +
+                "  name : Text\n" +
+                "  employed : Optional Bool\n" +
+                "  iq : Optional Int\n" +
+                "  weightKg : Optional Decimal\n" +
+                "  heightM : Decimal\n" +
+                "  dateOfBirth : Date\n" +
+                "  timeOfDeath : Time\n" +
+                "    deriving (Eq, Ord, Show)\n";
         Assert.assertEquals(expectedDefinition, schemaSet.schemas.get(0).content);
     }
 
@@ -102,31 +102,32 @@ public class TestModelToDamlSchemaGeneration extends ModelToSchemaGenerationTest
         ExternalFormatSchemaSet schemaSet = generated.getElementsOfType(ExternalFormatSchemaSet.class).stream().findFirst().get();
         String expectedDefinition = "module Test.Simple where\n" +
                 "\n" +
-                "data Person = Person {\n" +
-                "  firstName :: Text,\n" +
-                "  lastName :: Text,\n" +
-                "  middleName :: Optional Text,\n" +
-                "  age :: Optional Int,\n" +
-                "  addresses :: Optional [Address],\n" +
-                "  firm :: Firm\n" +
-                "} deriving (Eq, Ord, Show)\n" +
+                "data Person = Person with\n" +
+                "  firstName : Text\n" +
+                "  lastName : Text\n" +
+                "  middleName : Optional Text\n" +
+                "  age : Optional Int\n" +
+                "  addresses : Optional [Address]\n" +
+                "  firm : Firm\n" +
+                "    deriving (Eq, Ord, Show)\n" +
                 "\n" +
-                "data Address = Address {\n" +
-                "  addressType :: AddressType,\n" +
-                "  addressLine1 :: Text,\n" +
-                "  addressLine2 :: Optional Text,\n" +
-                "  addressLine3 :: Optional Text\n" +
-                "} deriving (Eq, Ord, Show)\n" +
+                "data Address = Address with\n" +
+                "  addressType : AddressType\n" +
+                "  addressLine1 : Text\n" +
+                "  addressLine2 : Optional Text\n" +
+                "  addressLine3 : Optional Text\n" +
+                "    deriving (Eq, Ord, Show)\n" +
                 "\n" +
                 "data AddressType\n" +
                 "  = HOME\n" +
                 "  | OFFICE\n" +
-                "  | WORKSHOP deriving (Eq, Ord, Show)\n" +
+                "  | WORKSHOP\n" +
+                "    deriving (Eq, Ord, Show)\n" +
                 "\n" +
-                "data Firm = Firm {\n" +
-                "  legalName :: Text,\n" +
-                "  addresses :: Optional [Address]\n" +
-                "} deriving (Eq, Ord, Show)\n";
+                "data Firm = Firm with\n" +
+                "  legalName : Text\n" +
+                "  addresses : Optional [Address]\n" +
+                "    deriving (Eq, Ord, Show)\n";
         Assert.assertEquals(expectedDefinition, schemaSet.schemas.get(0).content);
     }
 

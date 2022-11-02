@@ -20,14 +20,14 @@ function <<test.Test>> meta::external::language::daml::transformation::fromPure:
   let out = meta::external::language::daml::transformation::fromPure::generateDamlFromPure([Person],$config);
   assertEquals('module Meta.External.Language.Daml.Transformation.FromPure.Tests where\n' +
   '\n' +
-'data Person = Person {\n' +
-'  name :: Text,\n' +
-'  age :: Int,\n' +
-'  addresses :: Optional [Address]\n' +
-'} deriving (Eq, Ord, Show)\n' +
+'data Person = Person with\n' +
+'  name : Text\n' +
+'  age : Int\n' +
+'  addresses : Optional [Address]\n' +
+'    deriving (Eq, Ord, Show)\n' +
 '\n'+
-'data Address = Address {\n' +
-'  street :: Text\n' +
-'} deriving (Eq, Ord, Show)\n'
+'data Address = Address with\n' +
+'  street : Text\n' +
+'    deriving (Eq, Ord, Show)\n'
 ,$out.module->map(m | $m->meta::external::language::daml::format::toString()));
 }
