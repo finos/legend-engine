@@ -15,10 +15,11 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
 
 public class NoPartitioning extends Partitioning
 {
-    public EmptyDatasetHandling emptyDatasetHandling;
+    public EmptyDatasetHandling emptyDatasetHandling = new NoOp();
 
     @Override
     public <T> T accept(PartitioningVisitor<T> visitor)

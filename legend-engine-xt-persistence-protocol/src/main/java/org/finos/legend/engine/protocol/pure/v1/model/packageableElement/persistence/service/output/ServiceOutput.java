@@ -17,13 +17,15 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeFields;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.NoEventTime;
 
 public abstract class ServiceOutput
 {
-    public EventTimeFields eventTimeFields;
+    public EventTimeFields eventTimeFields = new NoEventTime();
+    public Deduplication deduplication = new NoDeduplication();
     public DatasetType datasetType;
-    public Deduplication deduplication;
     public SourceInformation sourceInformation;
 
     public abstract <T> T accept(ServiceOutputVisitor<T> visitor);

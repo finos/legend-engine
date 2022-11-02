@@ -263,9 +263,11 @@ deduplicationMax:                           DEDUPLICATION_MAX
 ;
 deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLON identifier SEMI_COLON
 ;
-datasetType:                                DATASET_TYPE COLON dataset
-;
-dataset:                                    (datasetSnapshot | datasetDelta)
+datasetType:                                DATASET_TYPE COLON
+                                                (
+                                                    datasetSnapshot
+                                                    | datasetDelta
+                                                )
 ;
 datasetSnapshot:                            DATASET_SNAPSHOT
                                                 BRACE_OPEN

@@ -30,12 +30,25 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Snapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFields;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.AnyVersion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.DeleteTargetDataset;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeFields;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeStart;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeStartAndEnd;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.NoEventTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
@@ -370,12 +383,202 @@ public class PersistenceParseTreeWalker
 
     private Deduplication visitDeduplication(PersistenceParserGrammar.DeduplicationContext ctx)
     {
-        return null;
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.deduplicationNone() != null)
+        {
+            return visitNoDeduplication(ctx.deduplicationNone());
+        }
+        else if (ctx.deduplicationAny() != null)
+        {
+            return visitAnyDeduplication(ctx.deduplicationAny());
+        }
+        else if (ctx.deduplicationMax() != null)
+        {
+            return visitMaxDeduplication(ctx.deduplicationMax());
+        }
+        throw new EngineException("Unrecognized deduplication", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoDeduplication visitNoDeduplication(PersistenceParserGrammar.DeduplicationNoneContext ctx)
+    {
+        NoDeduplication deduplication = new NoDeduplication();
+        deduplication.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return deduplication;
+    }
+
+    private AnyVersion visitAnyDeduplication(PersistenceParserGrammar.DeduplicationAnyContext ctx)
+    {
+        AnyVersion deduplication = new AnyVersion();
+        deduplication.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return deduplication;
+    }
+
+    private MaxVersion visitMaxDeduplication(PersistenceParserGrammar.DeduplicationMaxContext ctx)
+    {
+        MaxVersion deduplication = new MaxVersion();
+        deduplication.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // version field
+        PersistenceParserGrammar.DeduplicationMaxVersionFieldContext versionFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deduplicationMaxVersionField(), "versionField", deduplication.sourceInformation);
+        deduplication.versionField = PureGrammarParserUtility.fromIdentifier(versionFieldContext.identifier());
+
+        return deduplication;
     }
 
     private DatasetType visitDatasetType(PersistenceParserGrammar.DatasetTypeContext ctx)
     {
-        return null;
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.datasetSnapshot() != null)
+        {
+            return visitSnapshot(ctx.datasetSnapshot());
+        }
+        else if (ctx.datasetDelta() != null)
+        {
+            return visitDelta(ctx.datasetDelta());
+        }
+        throw new EngineException("Unrecognized dataset type", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private Snapshot visitSnapshot(PersistenceParserGrammar.DatasetSnapshotContext ctx)
+    {
+        Snapshot datasetType = new Snapshot();
+        datasetType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // partitioning
+        PersistenceParserGrammar.PartitioningContext partitioningContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitioning(), "partitioning", datasetType.sourceInformation);
+        datasetType.partitioning = partitioningContext == null ? new NoPartitioning() : visitPartitioning(partitioningContext);
+
+        return datasetType;
+    }
+
+    private Partitioning visitPartitioning(PersistenceParserGrammar.PartitioningContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.partitioningNone() != null)
+        {
+            return visitNoPartitioning(ctx.partitioningNone());
+        }
+        else if (ctx.partitioningFieldBased() != null)
+        {
+            return visitFieldBasedPartitioning(ctx.partitioningFieldBased());
+        }
+        throw new EngineException("Unrecognized partitioning", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoPartitioning visitNoPartitioning(PersistenceParserGrammar.PartitioningNoneContext ctx)
+    {
+        NoPartitioning partitioning = new NoPartitioning();
+        partitioning.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // empty dataset handling (optional)
+        PersistenceParserGrammar.EmptyDatasetHandlingContext emptyDatasetHandlingContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.emptyDatasetHandling(), "emptyDatasetHandling", partitioning.sourceInformation);
+        partitioning.emptyDatasetHandling = emptyDatasetHandlingContext == null ? new NoOp() : visitEmptyDatasetHandling(emptyDatasetHandlingContext);
+
+        return partitioning;
+    }
+
+    private EmptyDatasetHandling visitEmptyDatasetHandling(PersistenceParserGrammar.EmptyDatasetHandlingContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.emptyDatasetHandlingNoOp() != null)
+        {
+            return visitNoOp(ctx.emptyDatasetHandlingNoOp());
+        }
+        else if (ctx.emptyDatasetHandlingDeleteTargetData() != null)
+        {
+            return visitDeleteTargetDataset(ctx.emptyDatasetHandlingDeleteTargetData());
+        }
+        throw new EngineException("Unrecognized empty dataset handling", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoOp visitNoOp(PersistenceParserGrammar.EmptyDatasetHandlingNoOpContext ctx)
+    {
+        NoOp emptyDatasetHandling = new NoOp();
+        emptyDatasetHandling.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return emptyDatasetHandling;
+    }
+
+    private DeleteTargetDataset visitDeleteTargetDataset(PersistenceParserGrammar.EmptyDatasetHandlingDeleteTargetDataContext ctx)
+    {
+        DeleteTargetDataset emptyDatasetHandling = new DeleteTargetDataset();
+        emptyDatasetHandling.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return emptyDatasetHandling;
+    }
+
+    private FieldBased visitFieldBasedPartitioning(PersistenceParserGrammar.PartitioningFieldBasedContext ctx)
+    {
+        FieldBased partitioning = new FieldBased();
+        partitioning.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // keys
+        PersistenceParserGrammar.PartitionFieldsContext partitionFieldsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.partitionFields(), "partitionFields", partitioning.sourceInformation);
+        partitioning.partitionFields = visitPartitionFields(partitionFieldsContext);
+
+        return partitioning;
+    }
+
+    private List<String> visitPartitionFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
+    {
+        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
+        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
+    }
+
+    private Delta visitDelta(PersistenceParserGrammar.DatasetDeltaContext ctx)
+    {
+        Delta datasetType = new Delta();
+        datasetType.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // action indicator (optional)
+        PersistenceParserGrammar.ActionIndicatorContext actionIndicatorContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.actionIndicator(), "actionIndicator", datasetType.sourceInformation);
+        datasetType.actionIndicator = actionIndicatorContext == null ? new NoActionIndicator() : visitActionIndicator(actionIndicatorContext);
+
+        return datasetType;
+    }
+
+    private ActionIndicatorFields visitActionIndicator(PersistenceParserGrammar.ActionIndicatorContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.noActionIndicator() != null)
+        {
+            return visitNoActionIndicator(ctx.noActionIndicator());
+        }
+        else if (ctx.deleteIndicator() != null)
+        {
+            return visitDeleteIndicator(ctx.deleteIndicator());
+        }
+        throw new EngineException("Unrecognized action indicator", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoActionIndicator visitNoActionIndicator(PersistenceParserGrammar.NoActionIndicatorContext ctx)
+    {
+        NoActionIndicator actionIndicator = new NoActionIndicator();
+        actionIndicator.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return actionIndicator;
+    }
+
+    private DeleteIndicator visitDeleteIndicator(PersistenceParserGrammar.DeleteIndicatorContext ctx)
+    {
+        DeleteIndicator actionIndicator = new DeleteIndicator();
+        actionIndicator.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // delete field
+        PersistenceParserGrammar.DeleteIndicatorFieldContext deleteIndicatorFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deleteIndicatorField(), "deleteField", actionIndicator.sourceInformation);
+        actionIndicator.deleteField = PureGrammarParserUtility.fromIdentifier(deleteIndicatorFieldContext.identifier());
+
+        // delete values
+        PersistenceParserGrammar.DeleteIndicatorValuesContext deleteIndicatorValuesContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.deleteIndicatorValues(), "deleteValues", actionIndicator.sourceInformation);
+        actionIndicator.deleteValues = visitDeleteValues(deleteIndicatorValuesContext);
+
+        return actionIndicator;
+    }
+
+    private List<String> visitDeleteValues(PersistenceParserGrammar.DeleteIndicatorValuesContext ctx)
+    {
+        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
+        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
     }
 
     /**********
@@ -728,12 +931,6 @@ public class PersistenceParseTreeWalker
     private String visitTargetName(PersistenceParserGrammar.TargetNameContext ctx)
     {
         return ctx != null ? PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), true) : null;
-    }
-
-    private List<String> visitPartitionFields(PersistenceParserGrammar.PartitionFieldsContext ctx)
-    {
-        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
-        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
     }
 
     private String visitModelClass(PersistenceParserGrammar.TargetModelClassContext ctx)
