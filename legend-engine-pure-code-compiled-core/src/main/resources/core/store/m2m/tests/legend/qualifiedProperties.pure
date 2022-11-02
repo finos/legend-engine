@@ -292,7 +292,31 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAGraphFe
    '    "source":{"number":1, "record":"{\\"title\\":\\"The Annotated Turing\\",\\"author\\":\\"Charles Petzold\\",\\"identifiers\\":[{\\"type\\":\\"ISBN_10\\",\\"id\\":\\"0470229055\\"},{\\"type\\":\\"ISBN_13\\",\\"id\\":\\"978-0470229057\\"}]}"}'+
    '  }'+
    '}';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  doc.doc='Given: a mapping that takes in a match function for properties.',
+   doc.doc='Given: a match function expression where different conditions may return zero, one, or many values',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping succeeds and the serialization works'
+}
+meta::pure::mapping::modelToModel::test::alloy::match::checkMatchReturnMultiplicity() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::shared::src::VehicleInventory{series, type}}#;
+   let func = {|meta::pure::mapping::modelToModel::test::shared::src::VehicleInventory.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = meta::pure::mapping::modelToModel::test::alloy::match::vehicleDetails;
+   let runtime = testJsonRuntime(meta::pure::mapping::modelToModel::test::shared::src::_Vehicle, '[{"roadVehicle":{"@type":"_Motorcycle","series":"MT-01","type":"Standard"}},{"roadVehicle":{"@type":"_Motorcycle"}},{"roadVehicle":{"@type":"_Bicycle","roadster":false,"series":"X11","type":"Folding"}},{"roadVehicle":{"@type":"_Bicycle","roadster":true,"type":"Offroad"}},{"roadVehicle":{"@type":"_Car","engine":"ICE","series":"E350"}},{"roadVehicle":{"@type":"_Car","engine":"ECE","series":"A7","type":"Coupe"}},{"roadVehicle":{"@type":"_Car","engine":"ICE","series":"G30","type":["Convertible","Coupe","SUV"]}}]');
+
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
+   let json = $result.values->toOne();
+   let expected = '[{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\",\\"series\\":\\"MT-01\\",\\"type\\":\\"Standard\\"}}"},"value":{"roadVehicle":{"series":"MT-01"}}},"value":{"series":"MT-01","type":[]}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\"}}"},"value":{"roadVehicle":{"series":null}}},"value":{"series":null,"type":[]}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":3,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Bicycle\\",\\"roadster\\":false,\\"series\\":\\"X11\\",\\"type\\":\\"Folding\\"}}"},"value":{"roadVehicle":{"type":"Folding"}}},"value":{"series":null,"type":["Folding"]}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":4,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Bicycle\\",\\"roadster\\":true,\\"type\\":\\"Offroad\\"}}"},"value":{"roadVehicle":{"type":"Offroad"}}},"value":{"series":null,"type":["Offroad"]}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":5,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Car\\",\\"engine\\":\\"ICE\\",\\"series\\":\\"E350\\"}}"},"value":{"roadVehicle":{"series":"E350","type":[]}}},"value":{"series":"E350","type":[]}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":6,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Car\\",\\"engine\\":\\"ECE\\",\\"series\\":\\"A7\\",\\"type\\":\\"Coupe\\"}}"},"value":{"roadVehicle":{"series":"A7","type":["Coupe"]}}},"value":{"series":"A7","type":["Coupe"]}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":7,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Car\\",\\"engine\\":\\"ICE\\",\\"series\\":\\"G30\\",\\"type\\":[\\"Convertible\\",\\"Coupe\\",\\"SUV\\"]}}"},"value":{"roadVehicle":{"series":"G30","type":["Convertible","Coupe","SUV"]}}},"value":{"series":"G30","type":["Convertible","Coupe","SUV"]}}]';
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
@@ -384,8 +408,36 @@ Association meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties:
    identifiers : BookDataIdentifier[*];
 }
 
+function meta::pure::mapping::modelToModel::test::alloy::match::getSeries(v: meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle[1]): String[0..1]
+{
+   $v->match([
+              {car: meta::pure::mapping::modelToModel::test::shared::src::_Car[1]| $car.series}, 
+              {motorcycle: meta::pure::mapping::modelToModel::test::shared::src::_Motorcycle[1]| $motorcycle.series}, 
+              default: Any[1]|[]])
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::match::getType(v: meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle[1]): String[*]
+{
+   $v->match([
+              {car: meta::pure::mapping::modelToModel::test::shared::src::_Car[1]| $car.type}, 
+              {bicycle: meta::pure::mapping::modelToModel::test::shared::src::_Bicycle[1]| $bicycle.type}, 
+              default: Any[1]|[]])
+}
+
 ###Mapping
 import meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::*;
+import meta::pure::mapping::modelToModel::test::alloy::match::*;
+import meta::pure::mapping::modelToModel::test::shared::src::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::match::vehicleDetails
+(
+  VehicleInventory: Pure
+  {
+    ~src _Vehicle
+    series: $src.roadVehicle->getSeries(),
+    type: $src.roadVehicle->getType()
+  }
+)
 
 Mapping meta::pure::mapping::modelToModel::test::alloy::qualifiedProperties::simplifyBook
 (

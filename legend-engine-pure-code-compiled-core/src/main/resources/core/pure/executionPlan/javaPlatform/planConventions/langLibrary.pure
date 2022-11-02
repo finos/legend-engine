@@ -140,7 +140,11 @@ function meta::pure::executionPlan::engine::java::adaptLambdas(ctx:FuncCoderCont
                                                                              | j_lambda($o,$o->j_cast($type)));                          
                                                                        )->j_cast(javaFunction(javaObject(), $type));
    
-                                                   let main = $v->cast(@LambdaFunction<Any>)->processLambda($ctx.conventions, noDebug()); 
+                                                   let mainTemp = $v->cast(@LambdaFunction<Any>)->processLambda($ctx.conventions, noDebug()); 
+                                                   let main = if($v->cast(@LambdaFunction<Any>).expressionSequence->last()->toOne()->isNil(),
+                                                              | let params = $mainTemp->cast(@Lambda).parameters;
+                                                                j_lambda($params, j_null()->j_cast($ctx.returnType), javaFunctionType($params.type, $ctx.returnType));,
+                                                              | $mainTemp); 
 
                                                    let mainReturnType = $main.type->cast(@meta::external::language::java::metamodel::FunctionType).returnType;
                                                  

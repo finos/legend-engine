@@ -1183,6 +1183,10 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       meta::pure::graphFetch::RootGraphFetchTree
    ];
 
+   let excludeTestPackages = [
+     'meta::pure::mapping::modelToModel::test'
+   ];
+
    {conventions:Conventions[1],func:Function<Any>[1]|
       $func->match([
          {nf:NativeFunction<Any>[1]     | $func->in($functionsBlacklist);},
@@ -1192,7 +1196,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
                {|
                   let funcType = $func->evaluateAndDeactivate()->functionType();
                   let types    = $funcType.returnType.rawType->concatenate($funcType.parameters.genericType.rawType);
-                  let usesPkgs = $types->filter(t| !$t->in($manipulatesTypesWhitelist) && $t->instanceOf(PackageableElement))->cast(@PackageableElement).package;
+                  let usesPkgs = $types->filter(t| !$t->in($manipulatesTypesWhitelist) && $t->instanceOf(PackageableElement))->cast(@PackageableElement).package->filter(p | !$excludeTestPackages->exists(b|$p->elementToPath()->startsWith($b)));
                   $usesPkgs->exists({p|
                      let name = $p->elementToPath();
                      $manipulatesPackagesBlacklist->exists(b|$name->startsWith($b));
