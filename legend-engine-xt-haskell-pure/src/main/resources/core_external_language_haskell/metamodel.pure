@@ -14,11 +14,6 @@
 
 import meta::external::language::haskell::metamodel::*;
 
-Class meta::external::language::haskell::metamodel::HaskellSchema extends meta::external::shared::format::metamodel::SchemaDetail
-{
-  module : meta::external::language::haskell::metamodel::HaskellModule[1];
-}
-
 Class meta::external::language::haskell::metamodel::HaskellModule
 {
     id: String[1];

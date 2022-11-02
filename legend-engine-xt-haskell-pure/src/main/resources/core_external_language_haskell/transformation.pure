@@ -3,8 +3,13 @@ import meta::external::shared::format::*;
 import meta::external::shared::format::metamodel::*;
 import meta::pure::model::unit::*;
 import meta::external::language::haskell::transformation::fromPure::*;
+import meta::external::language::haskell::format::*;
 import meta::external::shared::format::transformation::fromPure::*;
-import meta::external::language::haskell::metamodel::*;
+
+Class meta::external::language::haskell::format::HaskellSchema extends meta::external::shared::format::metamodel::SchemaDetail
+{
+  module : meta::external::language::haskell::metamodel::HaskellModule[1];
+}
 
 function meta::external::language::haskell::transformation::fromPure::haskellFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToHaskellConfiguration>[1]
 {

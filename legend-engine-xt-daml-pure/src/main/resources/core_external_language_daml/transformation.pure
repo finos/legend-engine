@@ -4,7 +4,7 @@ import meta::external::shared::format::metamodel::*;
 import meta::pure::model::unit::*;
 import meta::external::language::daml::transformation::fromPure::*;
 import meta::external::shared::format::transformation::fromPure::*;
-import meta::external::language::haskell::metamodel::*;
+import meta::external::language::haskell::format::*;
 
 function meta::external::language::daml::transformation::fromPure::damlFromPureDescriptor(): ExternalFormatFromPureDescriptor<ModelToDamlConfiguration>[1]
 {

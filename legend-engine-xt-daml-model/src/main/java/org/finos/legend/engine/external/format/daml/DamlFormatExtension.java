@@ -23,34 +23,34 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
 import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
 import org.finos.legend.pure.generated.Root_meta_external_language_daml_transformation_fromPure_ModelToDamlConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_metamodel_HaskellSchema;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_metamodel_HaskellSchema_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_format_HaskellSchema;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_format_HaskellSchema_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
 import org.finos.legend.pure.generated.core_external_language_daml_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_language_daml_serialization;
 
-public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_metamodel_HaskellSchema, ModelToDamlConfiguration>
+public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_format_HaskellSchema, ModelToDamlConfiguration>
 {
-    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_metamodel_HaskellSchema> damlContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_metamodel_HaskellSchema>) core_external_language_daml_externalFormatContract.Root_meta_external_language_daml_contract_damlFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
+    private static final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> damlContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema>) core_external_language_daml_externalFormatContract.Root_meta_external_language_daml_contract_damlFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
     public static final String TYPE = damlContract._id();
 
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_metamodel_HaskellSchema> getExternalFormatContract()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> getExternalFormatContract()
     {
         return damlContract;
     }
 
     @Override
-    public Root_meta_external_language_haskell_metamodel_HaskellSchema compileSchema(ExternalSchemaCompileContext context)
+    public Root_meta_external_language_haskell_format_HaskellSchema compileSchema(ExternalSchemaCompileContext context)
     {
         try
         {
             HaskellModule module = DamlGrammarParser.newInstance().parseModule(context.getContent());
 
-            Root_meta_external_language_haskell_metamodel_HaskellSchema schema = new Root_meta_external_language_haskell_metamodel_HaskellSchema_Impl("")
+            Root_meta_external_language_haskell_format_HaskellSchema schema = new Root_meta_external_language_haskell_format_HaskellSchema_Impl("")
                     ._module(
                             new Translator().translate(
                                     module,
@@ -67,7 +67,7 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_language_haskell_metamodel_HaskellSchema schemaDetail, PureModel pureModel)
+    public String metamodelToText(Root_meta_external_language_haskell_format_HaskellSchema schemaDetail, PureModel pureModel)
     {
         //todo: use the Java version instead, but needs a transformer to be generated
         return core_external_language_daml_serialization.Root_meta_external_language_daml_format_toString_HaskellModule_1__String_1_(schemaDetail._module(), pureModel.getExecutionSupport());

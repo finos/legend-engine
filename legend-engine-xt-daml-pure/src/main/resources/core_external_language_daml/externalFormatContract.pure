@@ -1,5 +1,5 @@
 import meta::external::shared::format::*;
-import meta::external::language::haskell::metamodel::*;
+import meta::external::language::haskell::format::*;
 import meta::external::language::daml::transformation::fromPure::*;
 
 
