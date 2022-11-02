@@ -396,12 +396,12 @@ function meta::relational::functions::sqlQueryToString::default::getDDLCommandsT
               );
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
 {
    'Create Schema ' + $createSchemaSQL.schema.name + ';';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
 {
    'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' cascade;';
 }
@@ -425,7 +425,7 @@ function meta::relational::functions::sqlQueryToString::default::translateCreate
       +');';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
    $columnType->match([
       s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
