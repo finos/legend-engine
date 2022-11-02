@@ -22,27 +22,27 @@ import org.finos.legend.engine.external.shared.format.model.transformation.fromM
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.haskell.metamodel.HaskellModule;
 import org.finos.legend.engine.protocol.haskell.metamodel.Translator;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer;
-import org.finos.legend.pure.generated.Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_metamodel_HaskellSchema;
+import org.finos.legend.pure.generated.Root_meta_external_language_haskell_metamodel_HaskellSchema_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_fromPure_ModelToSchemaConfiguration;
 
-public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer, ModelToDamlConfiguration>
+public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_language_haskell_metamodel_HaskellSchema, ModelToDamlConfiguration>
 {
 
 
     @Override
-    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer> getExternalFormatContract()
+    public Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_language_haskell_metamodel_HaskellSchema> getExternalFormatContract()
     {
         return null;
     }
 
     @Override
-    public Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer compileSchema(ExternalSchemaCompileContext context)
+    public Root_meta_external_language_haskell_metamodel_HaskellSchema compileSchema(ExternalSchemaCompileContext context)
     {
         try
         {
-            return new Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer_Impl("")
+            return new Root_meta_external_language_haskell_metamodel_HaskellSchema_Impl("")
                     ._module(
                             new Translator().translate(
                                     new ObjectMapper().readValue(context.getContent(), HaskellModule.class),
@@ -57,7 +57,7 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
     }
 
     @Override
-    public String metamodelToText(Root_meta_external_language_haskell_binding_toPure_HaskellModuleContainer schemaDetail, PureModel pureModel)
+    public String metamodelToText(Root_meta_external_language_haskell_metamodel_HaskellSchema schemaDetail, PureModel pureModel)
     {
         return null;
     }
