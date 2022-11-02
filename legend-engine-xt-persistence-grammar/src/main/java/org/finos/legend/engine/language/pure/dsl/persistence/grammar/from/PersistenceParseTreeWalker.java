@@ -29,10 +29,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeFields;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeStart;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeStartAndEnd;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.NoEventTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.TdsServiceOutput;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
@@ -153,9 +164,15 @@ public class PersistenceParseTreeWalker
         PersistenceParserGrammar.ServiceContext serviceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.service(), "service", persistence.sourceInformation);
         persistence.service = PureGrammarParserUtility.fromQualifiedName(serviceContext.qualifiedName().packagePath() == null ? Collections.emptyList() : serviceContext.qualifiedName().packagePath().identifier(), serviceContext.qualifiedName().identifier());
 
+        // service output targets (optional)
+        PersistenceParserGrammar.ServiceOutputTargetsContext serviceOutputTargetsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOutputTargets(), "serviceOutputTargets", persistence.sourceInformation);
+        persistence.serviceOutputTargets = serviceOutputTargetsContext == null ? Collections.emptyList() : ListIterate.collect(serviceOutputTargetsContext.serviceOutputTarget(), this::visitServiceOutputTarget);
+
+        //TODO: ledav -- remove once v2 is rolled out | START
         // persister
         PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistence.sourceInformation);
         persistence.persister = visitPersister(persisterContext);
+        //TODO: ledav -- remove once v2 is rolled out | END
 
         // notifier
         PersistenceParserGrammar.NotifierContext notifierContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.notifier(), "notifier", persistence.sourceInformation);
@@ -205,53 +222,160 @@ public class PersistenceParseTreeWalker
     }
 
     /**********
-     * persister
+     * service output targets
      **********/
 
-    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
+    private ServiceOutputTarget visitServiceOutputTarget(PersistenceParserGrammar.ServiceOutputTargetContext ctx)
+    {
+        ServiceOutputTarget serviceOutputTarget = new ServiceOutputTarget();
+        serviceOutputTarget.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // service output
+        PersistenceParserGrammar.ServiceOutputContext serviceOutputContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceOutput()), "serviceOutput", serviceOutputTarget.sourceInformation);
+        serviceOutputTarget.serviceOutput = visitServiceOutput(serviceOutputContext);
+
+        // persistence target
+        //TODO: ledav -- delegate to extension
+        serviceOutputTarget.persistenceTarget = null;
+
+        return serviceOutputTarget;
+    }
+
+    /**********
+     * service output
+     **********/
+
+    private ServiceOutput visitServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        if (ctx.streamingPersister() != null)
-        {
-            return visitStreamingPersister(ctx.streamingPersister());
-        }
-        else if (ctx.batchPersister() != null)
-        {
-            return visitBatchPersister(ctx.batchPersister());
-        }
-        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
+
+        ServiceOutput serviceOutput = createServiceOutput(ctx, sourceInformation);
+        serviceOutput.sourceInformation = sourceInformation;
+
+        // event time (optional)
+        PersistenceParserGrammar.EventTimeContext eventTimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.eventTime(), "eventTime", sourceInformation);
+        serviceOutput.eventTimeFields = eventTimeContext == null ? new NoEventTime() : visitEventTime(eventTimeContext);
+
+        // deduplication (optional)
+        PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
+        serviceOutput.deduplication = deduplicationContext == null ? new NoDeduplication() : visitDeduplication(deduplicationContext);
+
+        // dataset type
+        PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
+        serviceOutput.datasetType = visitDatasetType(datasetTypeContext);
+
+        return serviceOutput;
     }
 
-    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
+    private ServiceOutput createServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx, SourceInformation sourceInformation)
     {
-        StreamingPersister persister = new StreamingPersister();
-        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // sink
-        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
-        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
-
-        return persister;
+        if (ctx.SERVICE_OUTPUT_ROOT() != null)
+        {
+            return visitTdsServiceOutput(ctx, sourceInformation);
+        }
+        else if (ctx.STRING() != null)
+        {
+            return visitGraphFetchServiceOutput(ctx, sourceInformation);
+        }
+        throw new EngineException("Ambiguous service output: expected reference to service output root or a graph fetch path", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
+    private TdsServiceOutput visitTdsServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx, SourceInformation sourceInformation)
     {
-        BatchPersister persister = new BatchPersister();
-        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        TdsServiceOutput serviceOutput = new TdsServiceOutput();
+        serviceOutput.sourceInformation = sourceInformation;
 
-        // sink
-        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
-        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+        // keys
+        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
+        serviceOutput.keys = visitDatasetKeys(datasetKeysContext);
 
-        // target shape
-        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", persister.sourceInformation);
-        persister.targetShape = visitTargetShape(targetShapeContext);
+        return serviceOutput;
+    }
 
-        // ingest mode
-        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ingestMode(), "ingestMode", persister.sourceInformation);
-        persister.ingestMode = visitIngestMode(ingestModeContext);
+    private GraphFetchServiceOutput visitGraphFetchServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx, SourceInformation sourceInformation)
+    {
+        GraphFetchServiceOutput serviceOutput = new GraphFetchServiceOutput();
+        serviceOutput.sourceInformation = sourceInformation;
 
-        return persister;
+        // path
+        String pathString = PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), false);
+        //TODO: ledav -- handle path
+
+        // keys
+        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
+        serviceOutput.keys = null; //TODO: ledav -- handle path
+
+        return serviceOutput;
+    }
+
+    private List<String> visitDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
+    {
+        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
+        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
+    }
+
+    private EventTimeFields visitEventTime(PersistenceParserGrammar.EventTimeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        if (ctx.eventTimeNone() != null)
+        {
+            return visitNoEventTime(ctx.eventTimeNone());
+        }
+        else if (ctx.eventTimeStart() != null)
+        {
+            return visitEventTimeStart(ctx.eventTimeStart());
+        }
+        else if (ctx.eventTimeStartAndEnd() != null)
+        {
+            return visitEventTimeStartAndEnd(ctx.eventTimeStartAndEnd());
+        }
+        throw new EngineException("Unrecognized event time", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private NoEventTime visitNoEventTime(PersistenceParserGrammar.EventTimeNoneContext ctx)
+    {
+        NoEventTime eventTime = new NoEventTime();
+        eventTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return eventTime;
+    }
+
+    private EventTimeStart visitEventTimeStart(PersistenceParserGrammar.EventTimeStartContext ctx)
+    {
+        EventTimeStart eventTime = new EventTimeStart();
+        eventTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // start field
+        PersistenceParserGrammar.EventTimeStartFieldContext startFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.eventTimeStartField(), "startField", eventTime.sourceInformation);
+        eventTime.startField = PureGrammarParserUtility.fromIdentifier(startFieldContext.identifier());
+
+        return eventTime;
+    }
+
+    private EventTimeStartAndEnd visitEventTimeStartAndEnd(PersistenceParserGrammar.EventTimeStartAndEndContext ctx)
+    {
+        EventTimeStartAndEnd eventTime = new EventTimeStartAndEnd();
+        eventTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // start field
+        PersistenceParserGrammar.EventTimeStartFieldContext startFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.eventTimeStartField(), "startField", eventTime.sourceInformation);
+        eventTime.startField = PureGrammarParserUtility.fromIdentifier(startFieldContext.identifier());
+
+        // end field
+        PersistenceParserGrammar.EventTimeEndFieldContext endFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.eventTimeEndField(), "endField", eventTime.sourceInformation);
+        eventTime.endField = PureGrammarParserUtility.fromIdentifier(endFieldContext.identifier());
+
+        return eventTime;
+    }
+
+    private Deduplication visitDeduplication(PersistenceParserGrammar.DeduplicationContext ctx)
+    {
+        return null;
+    }
+
+    private DatasetType visitDatasetType(PersistenceParserGrammar.DatasetTypeContext ctx)
+    {
+        return null;
     }
 
     /**********
@@ -402,6 +526,58 @@ public class PersistenceParseTreeWalker
         testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
         return testAssertion;
+    }
+
+    //TODO: ledav -- remove once v2 is rolled out | START
+
+    /**********
+     * persister
+     **********/
+
+    private Persister visitPersister(PersistenceParserGrammar.PersisterContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.streamingPersister() != null)
+        {
+            return visitStreamingPersister(ctx.streamingPersister());
+        }
+        else if (ctx.batchPersister() != null)
+        {
+            return visitBatchPersister(ctx.batchPersister());
+        }
+        throw new EngineException("Unrecognized persister", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private StreamingPersister visitStreamingPersister(PersistenceParserGrammar.StreamingPersisterContext ctx)
+    {
+        StreamingPersister persister = new StreamingPersister();
+        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // sink
+        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
+        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+
+        return persister;
+    }
+
+    private BatchPersister visitBatchPersister(PersistenceParserGrammar.BatchPersisterContext ctx)
+    {
+        BatchPersister persister = new BatchPersister();
+        persister.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+        // sink
+        PersistenceParserGrammar.PersisterSinkContext persisterSinkContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persisterSink(), "sink", persister.sourceInformation);
+        persister.sink = visitSink(persisterSinkContext, persister.sourceInformation);
+
+        // target shape
+        PersistenceParserGrammar.TargetShapeContext targetShapeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.targetShape(), "targetShape", persister.sourceInformation);
+        persister.targetShape = visitTargetShape(targetShapeContext);
+
+        // ingest mode
+        PersistenceParserGrammar.IngestModeContext ingestModeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.ingestMode(), "ingestMode", persister.sourceInformation);
+        persister.ingestMode = visitIngestMode(ingestModeContext);
+
+        return persister;
     }
 
     /**********
@@ -1078,4 +1254,6 @@ public class PersistenceParseTreeWalker
 
         return validityDerivation;
     }
+
+    //TODO: ledav -- remove once v2 is rolled out | END
 }

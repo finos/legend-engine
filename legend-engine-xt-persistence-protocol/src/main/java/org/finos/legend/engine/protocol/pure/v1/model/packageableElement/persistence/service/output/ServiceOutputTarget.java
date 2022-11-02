@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output;
 
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 
 public class ServiceOutputTarget
 {
     public ServiceOutput serviceOutput;
     public PersistenceTarget persistenceTarget;
+    public SourceInformation sourceInformation;
 }

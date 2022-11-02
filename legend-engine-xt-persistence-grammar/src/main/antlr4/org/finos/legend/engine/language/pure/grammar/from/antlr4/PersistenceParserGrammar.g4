@@ -150,11 +150,12 @@ service:                                    PERSISTENCE_SERVICE COLON qualifiedN
 
 serviceOutputTargets:                       PERSISTENCE_SERVICE_OUTPUT_TARGETS COLON
                                                 BRACKET_OPEN
-                                                    serviceOutput ARROW target (COMMA serviceOutput ARROW target)*
+                                                     serviceOutputTarget (COMMA serviceOutputTarget)*
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
-
+serviceOutputTarget:                        serviceOutput ARROW target
+;
 // -------------------------------------- NOTIFIER --------------------------------------
 
 notifier:                                   PERSISTENCE_NOTIFIER COLON
@@ -191,8 +192,8 @@ serviceOutput:                              SERVICE_OUTPUT_ROOT | STRING
                                                 BRACE_OPEN
                                                     (
                                                         datasetKeys
-                                                        | datasetEventTime
-                                                        | datasetDeduplication
+                                                        | eventTime
+                                                        | deduplication
                                                         | datasetType
                                                     )*
                                                 BRACE_CLOSE
@@ -200,11 +201,23 @@ serviceOutput:                              SERVICE_OUTPUT_ROOT | STRING
 target:                                     BRACE_OPEN
                                             BRACE_CLOSE
 ;
-datasetKeys:                                DATASET_KEYS COLON STRING SEMI_COLON
+datasetKeys:                                DATASET_KEYS COLON
+                                                BRACKET_OPEN
+                                                    (identifier (COMMA identifier)*)?
+                                                BRACKET_CLOSE
 ;
-datasetEventTime:                           DATASET_EVENT_TIME COLON eventTime
+eventTime:                                  DATASET_EVENT_TIME COLON
+                                                (
+                                                    eventTimeNone
+                                                    | eventTimeStart
+                                                    | eventTimeStartAndEnd
+                                                )
 ;
-eventTime:                                  (eventTimeStart | eventTimeStartAndEnd)
+eventTimeNone:                              NONE
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
 ;
 eventTimeStart:                             EVENT_TIME_START
                                                 BRACE_OPEN
@@ -223,7 +236,7 @@ eventTimeStartField:                        EVENT_TIME_START_FIELD COLON identif
 ;
 eventTimeEndField:                          EVENT_TIME_END_FIELD COLON identifier SEMI_COLON
 ;
-datasetDeduplication:                       DATASET_DEDUPLICATION COLON
+deduplication:                              DATASET_DEDUPLICATION COLON
                                                 (
                                                     deduplicationNone
                                                     | deduplicationAny

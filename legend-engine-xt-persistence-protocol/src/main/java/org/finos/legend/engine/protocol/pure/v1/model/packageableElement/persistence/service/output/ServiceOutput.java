@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output;
 
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeFields;
@@ -23,4 +24,7 @@ public abstract class ServiceOutput
     public EventTimeFields eventTimeFields;
     public DatasetType datasetType;
     public Deduplication deduplication;
+    public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(ServiceOutputVisitor<T> visitor);
 }

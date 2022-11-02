@@ -14,11 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
-public abstract class PersistenceTarget
+public interface PersistenceTargetVisitor<T>
 {
-    public SourceInformation sourceInformation;
-
-    public abstract <T> T accept(PersistenceTargetVisitor<T> visitor);
+    T visit(PersistenceTarget val);
 }

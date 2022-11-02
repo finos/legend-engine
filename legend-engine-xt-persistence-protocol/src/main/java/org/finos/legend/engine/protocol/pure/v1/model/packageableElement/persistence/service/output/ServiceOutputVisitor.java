@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
-public abstract class PersistenceTarget
+public interface ServiceOutputVisitor<T>
 {
-    public SourceInformation sourceInformation;
+    T visitTdsServiceOutput(TdsServiceOutput val);
 
-    public abstract <T> T accept(PersistenceTargetVisitor<T> visitor);
+    T visitGraphFetchServiceOutput(GraphFetchServiceOutput val);
 }

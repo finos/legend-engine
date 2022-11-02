@@ -19,4 +19,10 @@ import java.util.List;
 public class TdsServiceOutput extends ServiceOutput
 {
     public List<String> keys;
+
+    @Override
+    public <T> T accept(ServiceOutputVisitor<T> visitor)
+    {
+        return visitor.visitTdsServiceOutput(this);
+    }
 }

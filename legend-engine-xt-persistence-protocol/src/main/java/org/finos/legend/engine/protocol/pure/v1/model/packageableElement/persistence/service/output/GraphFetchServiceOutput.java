@@ -22,4 +22,10 @@ public class GraphFetchServiceOutput extends ServiceOutput
 {
     public Path path;
     public List<Path> keys;
+
+    @Override
+    public <T> T accept(ServiceOutputVisitor<T> visitor)
+    {
+        return visitor.visitGraphFetchServiceOutput(this);
+    }
 }
