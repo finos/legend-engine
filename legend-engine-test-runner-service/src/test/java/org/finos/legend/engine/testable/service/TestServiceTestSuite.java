@@ -2360,12 +2360,7 @@ public class TestServiceTestSuite
     public void testFailingRelationalServiceSuite()
     {
         // setup
-        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
-        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-simple-fail.pure");
-        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
-        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::SimpleRelationalPassFailing");
-        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        List<TestResult> relationalTestResult = executeServiceTest("legend-testable-relational-service-simple-fail.pure", "service::SimpleRelationalPassFailing");
         // Assertions
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
@@ -2418,17 +2413,11 @@ public class TestServiceTestSuite
         MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
     }
 
-
     @Test
     public void testPassingRelationalWithParams()
     {
         // setup
-        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
-        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-parameters.pure");
-        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
-        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::RelationalServiceWithParams");
-        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        List<TestResult> relationalTestResult = executeServiceTest( "legend-testable-relational-service-parameters.pure", "service::RelationalServiceWithParams");
         // Assertions
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
@@ -2441,16 +2430,22 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testPassingRelationalWithEnumParams()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("legend-testable-relational-service-enum-parameters.pure", "service::RelationalServiceWithEnumParams");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithEnumParams");
+        Assert.assertTrue(testResult instanceof TestPassed);
+    }
+
+    @Test
     public void testPassingRelationalWithSpecialEmbeddedData()
     {
         // setup
-        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
-        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", "legend-testable-relational-service-embeddedData.pure");
-
-        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
-        Root_meta_legend_service_metamodel_Service serviceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("service::SimpleRelationalPassWithSpecialEmbeddedData");
-        List<TestResult> relationalTestResult = serviceTestableRunnerExtension.executeAllTest(serviceWithTestFailing, pureModel, pureModelContextData);
+        List<TestResult> relationalTestResult = executeServiceTest("legend-testable-relational-service-embeddedData.pure", "service::SimpleRelationalPassWithSpecialEmbeddedData");
         // Assertions
         Assert.assertEquals(relationalTestResult.size(), 1);
         TestResult testResult = relationalTestResult.get(0);
@@ -2469,6 +2464,16 @@ public class TestServiceTestSuite
         AtomicTestId atomicTestId = passed.atomicTestId;
         Assert.assertEquals(atomicTestId.atomicTestId, "test1");
         Assert.assertEquals(atomicTestId.testSuiteId, "testSuite1");
+    }
+
+    private List<TestResult> executeServiceTest(String service, String fullPath)
+    {
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String pureModelString = getFullPureModelGrammar("testable/relational/", "legend-testable-relational-model.pure", service);
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        Root_meta_legend_service_metamodel_Service serviceWithTest = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement(fullPath);
+        return serviceTestableRunnerExtension.executeAllTest(serviceWithTest, pureModel, pureModelContextData);
     }
 
     private String getResourceAsString(String path)
