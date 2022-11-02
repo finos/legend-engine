@@ -27,5 +27,5 @@ public abstract class Notifyee
 {
     public SourceInformation sourceInformation;
 
-    public abstract <T> T acceptVisitor(NotifyeeVisitor<T> visitor);
+    public abstract <T> T accept(NotifyeeVisitor<T> visitor);
 }

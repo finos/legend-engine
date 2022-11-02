@@ -201,7 +201,7 @@ public class HelperPersistenceBuilder
     public static Root_meta_pure_persistence_metamodel_notifier_Notifier buildNotifier(Notifier notifier, CompileContext context)
     {
         return new Root_meta_pure_persistence_metamodel_notifier_Notifier_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::notifier::Notifier"))
-                ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.acceptVisitor(new NotifyeeBuilder(context))));
+                ._notifyees(ListIterate.collect(notifier.notifyees, n -> n.accept(new NotifyeeBuilder(context))));
     }
 
     public static Root_meta_pure_persistence_metamodel_persister_sink_Sink buildSink(Sink sink, CompileContext context)

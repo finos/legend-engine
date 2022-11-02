@@ -15,8 +15,11 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
@@ -26,9 +29,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.NotifyeeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.PersisterVisitor;
@@ -81,7 +81,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.TdsServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 
 import java.util.List;
 
@@ -102,7 +112,10 @@ public class HelperPersistenceComposer
                 renderDocumentation(persistence.documentation, indentLevel) +
                 renderTrigger(persistence.trigger, indentLevel, context) +
                 renderService(persistence.service, indentLevel) +
+                renderServiceOutputTargets(persistence.serviceOutputTargets, indentLevel) +
+                //TODO: ledav -- remove once v2 is rolled out | START
                 renderPersister(persistence.persister, indentLevel, context) +
+                //TODO: ledav -- remove once v2 is rolled out | END
                 renderNotifier(persistence.notifier, indentLevel) +
                 renderPersistenceTests(persistence.tests, indentLevel, context) +
                 "}";
@@ -126,9 +139,34 @@ public class HelperPersistenceComposer
         return getTabString(indentLevel) + "service: " + service + ";\n";
     }
 
-    private static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
+    private static String renderServiceOutputTargets(List<ServiceOutputTarget> serviceOutputTargets, int indentLevel)
     {
-        return persister.accept(new PersisterComposer(indentLevel, context));
+        if (serviceOutputTargets.isEmpty())
+        {
+            return "";
+        }
+        return getTabString(indentLevel) + "serviceOutputTargets:\n" +
+                getTabString(indentLevel) + "[\n" +
+                ListIterate.collect(serviceOutputTargets, s -> renderServiceOutputTarget(s, indentLevel + 1)).makeString(",\n") + "\n" +
+                getTabString(indentLevel) + "];\n";
+    }
+
+    private static String renderServiceOutputTarget(ServiceOutputTarget serviceOutputTarget, int indentLevel)
+    {
+        return renderServiceOutput(serviceOutputTarget.serviceOutput, indentLevel) +
+                getTabString(indentLevel) + "->\n" +
+                renderPersistenceTarget(serviceOutputTarget.persistenceTarget, indentLevel);
+    }
+
+    private static String renderServiceOutput(ServiceOutput serviceOutput, int indentLevel)
+    {
+        return serviceOutput.accept(new ServiceOutputComposer(indentLevel));
+    }
+
+    private static String renderPersistenceTarget(PersistenceTarget persistenceTarget, int indentLevel)
+    {
+        return getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel) + "}";
     }
 
     private static String renderNotifier(Notifier notifier, int indentLevel)
@@ -148,7 +186,7 @@ public class HelperPersistenceComposer
         NotifyeeComposer visitor = new NotifyeeComposer(indentLevel + 1);
         return getTabString(indentLevel) + "notifyees:\n" +
                 getTabString(indentLevel) + "[\n" +
-                ListIterate.collect(notifyees, n -> n.acceptVisitor(visitor)).makeString(",\n") + "\n" +
+                ListIterate.collect(notifyees, n -> n.accept(visitor)).makeString(",\n") + "\n" +
                 getTabString(indentLevel) + "];\n";
     }
 
@@ -252,6 +290,38 @@ public class HelperPersistenceComposer
 
     // helper visitors for class hierarchies
 
+    private static class ServiceOutputComposer implements ServiceOutputVisitor<String>
+    {
+        private final int indentLevel;
+
+        private ServiceOutputComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitTdsServiceOutput(TdsServiceOutput val)
+        {
+            return getTabString(indentLevel) + "ROOT\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visitGraphFetchServiceOutput(GraphFetchServiceOutput val)
+        {
+            Path path = val.path;
+            return getTabString(indentLevel) + renderPath(path) + "\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderPath(Path path)
+        {
+            return "#/" + path.startType + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
+        }
+    }
+
     private static class NotifyeeComposer implements NotifyeeVisitor<String>
     {
         private final int indentLevel;
@@ -278,6 +348,13 @@ public class HelperPersistenceComposer
                     getTabString(indentLevel + 1) + "url: '" + val.url + "';\n" +
                     getTabString(indentLevel) + "}";
         }
+    }
+
+    //TODO: ledav -- remove once v2 is rolled out | START
+
+    private static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
+    {
+        return persister.accept(new PersisterComposer(indentLevel, context));
     }
 
     private static class PersisterComposer implements PersisterVisitor<String>
@@ -773,4 +850,5 @@ public class HelperPersistenceComposer
             return builder.toString();
         }
     }
+    //TODO: ledav -- remove once v2 is rolled out | END
 }

@@ -22,7 +22,6 @@ import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
 import java.util.List;
 
 public class TestPersistenceV2GrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
-
 {
     @Override
     public Vocabulary getParserGrammarVocabulary()
