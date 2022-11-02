@@ -188,7 +188,7 @@ pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING
 
 // -------------------------------------- DATASET --------------------------------------
 
-serviceOutput:                              SERVICE_OUTPUT_ROOT | STRING
+serviceOutput:                              (SERVICE_OUTPUT_ROOT | STRING)
                                                 BRACE_OPEN
                                                     (
                                                         datasetKeys
@@ -319,7 +319,11 @@ datasetDelta:                               DATASET_DELTA
                                                     (actionIndicator)*
                                                 BRACE_CLOSE
 ;
-actionIndicator:                            (noActionIndicator | deleteIndicator)
+actionIndicator:                            DATASET_DELTA_ACTION_INDICATOR COLON
+                                                (
+                                                    noActionIndicator
+                                                    | deleteIndicator
+                                                )
 ;
 noActionIndicator:                          NONE
                                                 (
@@ -341,6 +345,7 @@ deleteIndicatorValues:                      ACTION_INDICATOR_DELETE_INDICATOR_VA
                                                 BRACKET_OPEN
                                                     (identifier (COMMA identifier)*)?
                                                 BRACKET_CLOSE
+                                            SEMI_COLON
 ;
 
 // ---------------------------------- TESTS ----------------------------------

@@ -183,8 +183,8 @@ public class PersistenceParseTreeWalker
 
         //TODO: ledav -- remove once v2 is rolled out | START
         // persister
-        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.persister(), "persister", persistence.sourceInformation);
-        persistence.persister = visitPersister(persisterContext);
+        PersistenceParserGrammar.PersisterContext persisterContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persister(), "persister", persistence.sourceInformation);
+        persistence.persister = persisterContext == null ? null : visitPersister(persisterContext);
         //TODO: ledav -- remove once v2 is rolled out | END
 
         // notifier
