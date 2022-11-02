@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.server.test.shared;
 
-import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -77,21 +76,9 @@ public class ExecuteInRelationalDb
 
                 for (String sql : input.sqls)
                 {
-                    try
-                    {
-                        stmt.execute(sql);
-                    }
-                    catch (SQLException e)
-                    {
-                        LOGGER.warn("Exception during sql execution", e);
-                        // skipping failed "drop table ..." statement cause some dbs doesn't have "if exists", 
-                        // for example Spanner
-                        if (!sql.toLowerCase(Locale.ROOT).contains("drop table"))
-                        {
-                            throw e;
-                        }
-                    }
+                    stmt.execute(sql);
                 }
+
                 return Response.ok().build();
             }
             catch (SQLException e)
