@@ -33,3 +33,13 @@ function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekForNumbe
     assertEq(DayOfWeek.Saturday, 6->dayOfWeek());
     assertEq(DayOfWeek.Sunday, 7->dayOfWeek());
 }
+
+function <<test.Test>> meta::pure::functions::date::tests::testDayOfWeekNumberForDayOfWeekWithNewDay():Boolean[1]
+{
+    assertEq(1,   dayOfWeekNumber(%2022-09-11, DayOfWeek.Sunday));
+    assertEq(2,   dayOfWeekNumber(%2022-09-12, DayOfWeek.Sunday));
+    assertEq(5,   dayOfWeekNumber(%2022-09-01, DayOfWeek.Sunday));
+    assertEq(4,   dayOfWeekNumber(%2022-09-01, DayOfWeek.Monday));
+    assertEq(6,   dayOfWeekNumber(%2022-09-10, DayOfWeek.Monday));
+    assertEq(7,   dayOfWeekNumber(%2022-09-11, DayOfWeek.Monday));
+}

@@ -56,7 +56,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
-    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAY_OF_WEEK(%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'DAY_OF_WEEK('+$p->at(0)+')',|$p->dayOfWeekNumberH2());})),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
@@ -100,7 +100,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date()')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)'))
   ];
 }
 
@@ -186,4 +187,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::f
    let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
    let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
    [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::dayOfWeekNumberH2(dayOfWeek: String[*]):String[1]
+{
+   assert(or($dayOfWeek->at(1)=='Sunday',$dayOfWeek->at(1)=='Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   if($dayOfWeek->at(1)=='Sunday',|'DAY_OF_WEEK('+$dayOfWeek->at(0)+')',|'ISO_DAY_OF_WEEK('+$dayOfWeek->at(0)+')');
 }
