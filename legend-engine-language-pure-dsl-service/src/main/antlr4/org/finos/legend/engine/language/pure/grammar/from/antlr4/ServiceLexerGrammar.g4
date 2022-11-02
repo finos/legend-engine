@@ -33,7 +33,7 @@ SERVICE_TEST_TESTS:                 'tests';
 SERVICE_TEST_ASSERTS:               'asserts';
 SERVICE_TEST_SERIALIZATION_FORMAT:  'serializationFormat';
 SERVICE_TEST_PARAMETERS:            'parameters';
-ASSERT_FOR_KEYS:                    'assertForKeys';
+
 PARAM_GROUP:                        'list';
 
 // -------------------------------------- LEGACY --------------------------------------

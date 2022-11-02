@@ -526,3 +526,36 @@ function <<test.Test>> meta::relational::tests::query::function::testWrapReserve
    let s = toSQLString($fn, simpleRelationalMappingPersonForMemSQL, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select `personTable_d#2_d_m1`.`key` as `KEY` from personTable as `root` left outer join personTable as `personTable_d#2_d_m1` on (`root`.`key` = `personTable_d#2_d_m1`.`key`)',$s);
 }
+
+function <<test.Test>> meta::relational::tests::query::function::dates::testDayOfWeekNumberWithFirstDaySybase():Boolean[1]
+{
+  let fn = {|  Trade.all()->project([p | $p.date->dayOfWeekNumber(DayOfWeek.Monday)],['Day Of Week Number'])};
+  let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+  assertEquals('select mod (datepart(weekday,"root".tradeDate)+5,7)+1 as "Day Of Week Number" from tradeTable as "root"',$s);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::dates::testDayOfWeekSybase():Boolean[1]
+{
+  let fn = {|  Trade.all()->project([p | $p.date->dayOfWeek()],['WeekDay Name'])};
+  let s = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+  assertEquals('select datename(WEEKDAY,"root".tradeDate) as "WeekDay Name" from tradeTable as "root"',$s);
+}
+
+function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekFunction():Boolean[1]
+{
+  let result = execute(|Trade.all()->filter([t | $t.date->dayOfWeek()!='Monday'])
+                                   ->project([t | $t.date->dayOfWeek()],['Day Of Week Name']),
+                                   simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+  assertEquals('Day Of Week Name\n'+'Tuesday\n'+'Tuesday\n'+'Wednesday\n'+'Wednesday\n'+'Thursday\n'+'Thursday\n'+'Thursday\n'+'Friday\n',$result.values->meta::relational::tests::csv::toCSV());
+  assertEquals('select dayname("root".tradeDate) as "Day Of Week Name" from tradeTable as "root" where (dayname("root".tradeDate) <> \'Monday\' OR dayname("root".tradeDate) is null)', $result->sqlRemoveFormatting(0));
+}
+
+function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNumberFunction():Boolean[1]
+{
+  let result = execute(|Trade.all()->filter([t | $t.date->dayOfWeekNumber(DayOfWeek.Monday) != '2'])
+                                   ->project([t | $t.date->dayOfWeekNumber(DayOfWeek.Sunday)],['Day Of Week Number']),
+                                   simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+  assertEquals('Day Of Week Number\n'+'2\n'+ '2\n'+'2\n'+'4\n'+'4\n'+'5\n'+'5\n'+'5\n'+'6\n',$result.values->meta::relational::tests::csv::toCSV());
+  assertEquals('select DAY_OF_WEEK("root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where (ISO_DAY_OF_WEEK("root".tradeDate) <> \'2\' OR ISO_DAY_OF_WEEK("root".tradeDate) is null)', $result->sqlRemoveFormatting(0));
+}
+
