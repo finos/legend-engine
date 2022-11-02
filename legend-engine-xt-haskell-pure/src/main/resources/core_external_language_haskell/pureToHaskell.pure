@@ -61,6 +61,7 @@ function meta::external::language::haskell::transformation::fromPure::buildDefau
       [
          pair(Integer, ^meta::external::language::haskell::metamodel::Int()),
          pair(Float, ^meta::external::language::haskell::metamodel::Double()),
+         pair(Decimal, ^meta::external::language::haskell::metamodel::Decimal()),
          pair(String, ^meta::external::language::haskell::metamodel::Text()),
          pair(Boolean, ^meta::external::language::haskell::metamodel::Bool()),
          pair(DateTime , ^meta::external::language::haskell::metamodel::DateTime()),
@@ -95,7 +96,7 @@ function meta::external::language::haskell::transformation::fromPure::classToDat
     name=$c.name->toOne(),
     constructors=^RecordTypeConstructor(name=$c.name->toOne(),
                                         fields=$c->allProperties()->map( p |  let type = $typesMap->get($p.genericType.rawType->toOne());
-                                                                              if($type->isEmpty(), | println('Failed to map type:' + $p.genericType.rawType.name->toOne()), |'');
+                                                                              assert( !$type->isEmpty(), | 'Failed to map type:' + $p.genericType.rawType.name->toOne());
                                                                               let typeWithMul = if(!$p.multiplicity->hasUpperBound() || ($p.multiplicity.upperBound->toOne().value > 1),
                                                                                                    | ^ListType(type=$type->toOne()),
                                                                                                    | $type->toOne());
