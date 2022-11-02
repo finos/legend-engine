@@ -28,15 +28,14 @@ PERSISTENCE:                                'Persistence';
 PERSISTENCE_DOC:                            'doc';
 PERSISTENCE_TRIGGER:                        'trigger';
 PERSISTENCE_SERVICE:                        'service';
+PERSISTENCE_SERVICE_OUTPUT_TARGETS:         'serviceOutputTargets';
 PERSISTENCE_PERSISTER:                      'persister';
 PERSISTENCE_NOTIFIER:                       'notifier';
+PERSISTENCE_TESTS:                          'tests';
 
-// PERSISTER
-PERSISTER_STREAMING:                        'Streaming';
-PERSISTER_BATCH:                            'Batch';
-PERSISTER_SINK:                             'sink';
-PERSISTER_TARGET_SHAPE:                     'targetShape';
-PERSISTER_INGEST_MODE:                      'ingestMode';
+// SERVICE OUTPUT TARGET
+SERVICE_OUTPUT_TARGET_SERVICE_OUTPUT:       'serviceOutput';
+SERVICE_OUTPUT_TARGET_TARGET:               'target';
 
 // NOTIFIER
 NOTIFIER:                                   'Notifier';
@@ -45,6 +44,65 @@ NOTIFYEE_EMAIL:                             'Email';
 NOTIFYEE_EMAIL_ADDRESS:                     'address';
 NOTIFYEE_PAGER_DUTY:                        'PagerDuty';
 NOTIFYEE_PAGER_DUTY_URL:                    'url';
+
+// TEST
+//TODO: ledav -- reorganize these
+PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT:  'isTestDataFromServiceOutput';
+PERSISTENCE_TEST_BATCHES:                   'testBatches';
+PERSISTENCE_TEST_DATA:                      'data';
+PERSISTENCE_TEST_CONNECTION_DATA:           'connection';
+PERSISTENCE_TEST_ASSERTS:                   'asserts';
+
+//**********
+// SERVICE OUTPUT
+//**********
+
+// DATASET
+SERVICE_OUTPUT_ROOT:                        'ROOT';
+DATASET_KEYS:                               'keys';
+DATASET_EVENT_TIME:                         'eventTime';
+DATASET_DEDUPLICATION:                      'deduplication';
+DATASET_TYPE:                               'datasetType';
+
+// EVENT TIME
+EVENT_TIME_START:                           'Start';
+EVENT_TIME_START_AND_END:                   'StartAndEnd';
+EVENT_TIME_START_FIELD:                     'startField';
+EVENT_TIME_END_FIELD:                       'endField';
+
+// DEDUPLICATION
+DEDUPLICATION_ANY:                          'AnyVersion';
+DEDUPLICATION_MAX:                          'MaxVersion';
+DEDUPLICATION_MAX_VERSION_FIELD:            'versionField';
+
+// DATASET TYPE
+DATASET_SNAPSHOT:                           'Snapshot';
+DATASET_SNAPSHOT_PARTITIONING:              'partitioning';
+DATASET_DELTA:                              'Delta';
+DATASET_DELTA_ACTION_INDICATOR:             'actionIndicator';
+
+// PARTITIONING
+PARTITIONING_FIELD_BASED:                   'FieldBased';
+PARTITIONING_FIELD_BASED_FIELDS:            'partitionFields';
+PARTITIONING_NONE_EMPTY_DATASET_HANDLING:   'emptyDatasetHandling';
+
+// EMPTY DATASET HANDLING
+EMPTY_DATASET_HANDLING_NOOP:                'NoOp';
+EMPTY_DATASET_HANDLING_DELETE_TARGET_DATA:  'DeleteTargetData';
+
+// ACTION INDICATOR
+ACTION_INDICATOR_DELETE_INDICATOR:          'DeleteIndicator';
+ACTION_INDICATOR_DELETE_INDICATOR_FIELD:    'deleteField';
+ACTION_INDICATOR_DELETE_INDICATOR_VALUES:   'deleteValues';
+
+//TODO: ledav -- remove once v2 is rolled out | START
+
+// PERSISTER
+PERSISTER_STREAMING:                        'Streaming';
+PERSISTER_BATCH:                            'Batch';
+PERSISTER_SINK:                             'sink';
+PERSISTER_TARGET_SHAPE:                     'targetShape';
+PERSISTER_INGEST_MODE:                      'ingestMode';
 
 //**********
 // SINK
@@ -61,7 +119,6 @@ SINK_BINDING:                               'binding';
 
 TARGET_SHAPE_MODEL_CLASS:                   'modelClass';
 TARGET_SHAPE_NAME:                          'targetName';
-TARGET_SHAPE_PARTITION_FIELDS:              'partitionFields';
 TARGET_SHAPE_DEDUPLICATION:                 'deduplicationStrategy';
 
 // FLAT
@@ -78,9 +135,6 @@ TXN_SCOPE_SINGLE:                           'SINGLE_TARGET';
 TXN_SCOPE_ALL:                              'ALL_TARGETS';
 
 // DEDUPLICATION VALUES
-DEDUPLICATION_ANY_VERSION:                  'AnyVersion';
-DEDUPLICATION_MAX_VERSION:                  'MaxVersion';
-DEDUPLICATION_MAX_VERSION_FIELD:            'versionField';
 DEDUPLICATION_DUPLICATE_COUNT:              'DuplicateCount';
 DEDUPLICATION_DUPLICATE_COUNT_NAME:         'duplicateCountName';
 
@@ -131,13 +185,5 @@ SOURCE_DATE_TIME_THRU_FIELD:                'sourceDateTimeThruField';
 
 MERGE_STRATEGY:                             'mergeStrategy';
 MERGE_STRATEGY_NO_DELETES:                  'NoDeletes';
-MERGE_STRATEGY_DELETE_INDICATOR:            'DeleteIndicator';
-MERGE_STRATEGY_DELETE_INDICATOR_FIELD:      'deleteField';
-MERGE_STRATEGY_DELETE_INDICATOR_VALUES:     'deleteValues';
 
-PERSISTENCE_TESTS:                          'tests';
-PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT:  'isTestDataFromServiceOutput';
-PERSISTENCE_TEST_BATCHES:                   'testBatches';
-PERSISTENCE_TEST_DATA:                      'data';
-PERSISTENCE_TEST_CONNECTION_DATA:           'connection';
-PERSISTENCE_TEST_ASSERTS:                   'asserts';
+//TODO: ledav -- remove once v2 is rolled out | END

@@ -14,14 +14,24 @@ identifier:                                 VALID_STRING | STRING
                                             | BYTE_STREAM_FUNCTION      // from M3Parser
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
                                             | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_PLATFORM | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
-                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
-                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
+                                            | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_SERVICE_OUTPUT_TARGETS | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER
                                             | PERSISTER_STREAMING | PERSISTER_BATCH | PERSISTER_SINK | PERSISTER_TARGET_SHAPE | PERSISTER_INGEST_MODE
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
+                                            | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
+                                            | SERVICE_OUTPUT_TARGET_SERVICE_OUTPUT | SERVICE_OUTPUT_TARGET_TARGET
+                                            | SERVICE_OUTPUT_ROOT | DATASET_KEYS | DATASET_EVENT_TIME | DATASET_DEDUPLICATION | DATASET_TYPE
+                                            | EVENT_TIME_START | EVENT_TIME_START_AND_END | EVENT_TIME_START_FIELD | EVENT_TIME_END_FIELD
+                                            | DEDUPLICATION_ANY | DEDUPLICATION_MAX | DEDUPLICATION_MAX_VERSION_FIELD
+                                            | DATASET_SNAPSHOT | DATASET_SNAPSHOT_PARTITIONING | DATASET_DELTA | DATASET_DELTA_ACTION_INDICATOR
+                                            | PARTITIONING_FIELD_BASED | PARTITIONING_FIELD_BASED_FIELDS | PARTITIONING_NONE_EMPTY_DATASET_HANDLING
+                                            | EMPTY_DATASET_HANDLING_NOOP | EMPTY_DATASET_HANDLING_DELETE_TARGET_DATA
+                                            | ACTION_INDICATOR_DELETE_INDICATOR | ACTION_INDICATOR_DELETE_INDICATOR_FIELD | ACTION_INDICATOR_DELETE_INDICATOR_VALUES
+
+                                            //TODO: ledav -- remove once v2 is rolled out | START
                                             | SINK_RELATIONAL | SINK_OBJECT_STORAGE | SINK_DATABASE | SINK_BINDING
-                                            | TARGET_SHAPE_MODEL_CLASS | TARGET_SHAPE_NAME | TARGET_SHAPE_PARTITION_FIELDS | TARGET_SHAPE_DEDUPLICATION
+                                            | TARGET_SHAPE_MODEL_CLASS | TARGET_SHAPE_NAME | TARGET_SHAPE_DEDUPLICATION
                                             | TARGET_SHAPE_FLAT | TARGET_SHAPE_MULTI | TARGET_SHAPE_MULTI_TXN_SCOPE | TARGET_SHAPE_MULTI_PARTS | TARGET_PART_MODEL_PROPERTY | TXN_SCOPE_SINGLE | TXN_SCOPE_ALL
-                                            | DEDUPLICATION_ANY_VERSION | DEDUPLICATION_MAX_VERSION | DEDUPLICATION_MAX_VERSION_FIELD | DEDUPLICATION_DUPLICATE_COUNT | DEDUPLICATION_DUPLICATE_COUNT_NAME
+                                            | DEDUPLICATION_DUPLICATE_COUNT | DEDUPLICATION_DUPLICATE_COUNT_NAME
                                             | INGEST_MODE_NONTEMPORAL_SNAPSHOT | INGEST_MODE_UNITEMPORAL_SNAPSHOT | INGEST_MODE_BITEMPORAL_SNAPSHOT | INGEST_MODE_NONTEMPORAL_DELTA | INGEST_MODE_UNITEMPORAL_DELTA | INGEST_MODE_BITEMPORAL_DELTA | INGEST_MODE_APPEND_ONLY
                                             | FILTER_DUPLICATES
                                             | AUDITING | AUDITING_DATE_TIME_NAME
@@ -29,7 +39,8 @@ identifier:                                 VALID_STRING | STRING
                                             | TRANSACTION_DERIVATION_SOURCE_IN | TRANSACTION_DERIVATION_SOURCE_IN_OUT | SOURCE_DATE_TIME_IN_FIELD | SOURCE_DATE_TIME_OUT_FIELD
                                             | VALIDITY_MILESTONING | DATE_TIME_FROM_NAME | DATE_TIME_THRU_NAME
                                             | VALIDITY_DERIVATION_SOURCE_FROM | VALIDITY_DERIVATION_SOURCE_FROM_THRU | SOURCE_DATE_TIME_FROM_FIELD | SOURCE_DATE_TIME_THRU_FIELD
-                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES | MERGE_STRATEGY_DELETE_INDICATOR | MERGE_STRATEGY_DELETE_INDICATOR_FIELD | MERGE_STRATEGY_DELETE_INDICATOR_VALUES
+                                            | MERGE_STRATEGY | MERGE_STRATEGY_NO_DELETES
+                                            //TODO: ledav -- remove once v2 is rolled out | END
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
@@ -107,6 +118,7 @@ persistence:                                PERSISTENCE qualifiedName
                                                         documentation
                                                         | trigger
                                                         | service
+                                                        | serviceOutputTargets
                                                         | persister
                                                         | notifier
                                                         | tests
@@ -134,29 +146,13 @@ triggerValueContent:                        ISLAND_BRACE_OPEN | ISLAND_CONTENT |
 service:                                    PERSISTENCE_SERVICE COLON qualifiedName SEMI_COLON
 ;
 
-// -------------------------------------- PERSISTER --------------------------------------
+// -------------------------------------- SERVICE OUTPUT TARGET --------------------------------------
 
-persister:                                  PERSISTENCE_PERSISTER COLON
-                                                (
-                                                    streamingPersister
-                                                    | batchPersister
-                                                )
-;
-streamingPersister:                         PERSISTER_STREAMING
-                                                BRACE_OPEN
-                                                    (
-                                                        persisterSink
-                                                    )*
-                                                BRACE_CLOSE
-;
-batchPersister:                             PERSISTER_BATCH
-                                                BRACE_OPEN
-                                                    (
-                                                        persisterSink
-                                                        | targetShape
-                                                        | ingestMode
-                                                    )*
-                                                BRACE_CLOSE
+serviceOutputTargets:                       PERSISTENCE_SERVICE_OUTPUT_TARGETS COLON
+                                                BRACKET_OPEN
+                                                    serviceOutput ARROW target (COMMA serviceOutput ARROW target)*
+                                                BRACKET_CLOSE
+                                            SEMI_COLON
 ;
 
 // -------------------------------------- NOTIFIER --------------------------------------
@@ -187,6 +183,205 @@ pagerDutyNotifyee:                          NOTIFYEE_PAGER_DUTY
                                                 BRACE_CLOSE
 ;
 pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING SEMI_COLON
+;
+
+// -------------------------------------- DATASET --------------------------------------
+
+serviceOutput:                              SERVICE_OUTPUT_ROOT | STRING
+                                                BRACE_OPEN
+                                                    (
+                                                        datasetKeys
+                                                        | datasetEventTime
+                                                        | datasetDeduplication
+                                                        | datasetType
+                                                    )*
+                                                BRACE_CLOSE
+;
+target:                                     BRACE_OPEN
+                                            BRACE_CLOSE
+;
+datasetKeys:                                DATASET_KEYS COLON STRING SEMI_COLON
+;
+datasetEventTime:                           DATASET_EVENT_TIME COLON eventTime
+;
+eventTime:                                  (eventTimeStart | eventTimeStartAndEnd)
+;
+eventTimeStart:                             EVENT_TIME_START
+                                                BRACE_OPEN
+                                                    (eventTimeStartField)*
+                                                BRACE_CLOSE
+;
+eventTimeStartAndEnd:                       EVENT_TIME_START_AND_END
+                                                BRACE_OPEN
+                                                    (
+                                                        eventTimeStartField
+                                                        | eventTimeEndField
+                                                    )*
+                                                BRACE_CLOSE
+;
+eventTimeStartField:                        EVENT_TIME_START_FIELD COLON identifier SEMI_COLON
+;
+eventTimeEndField:                          EVENT_TIME_END_FIELD COLON identifier SEMI_COLON
+;
+datasetDeduplication:                       DATASET_DEDUPLICATION COLON
+                                                (
+                                                    deduplicationNone
+                                                    | deduplicationAny
+                                                    | deduplicationMax
+                                                )
+;
+deduplicationNone:                          NONE
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+deduplicationAny:                           DEDUPLICATION_ANY
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+
+;
+deduplicationMax:                           DEDUPLICATION_MAX
+                                                BRACE_OPEN
+                                                    (deduplicationMaxVersionField)*
+                                                BRACE_CLOSE
+;
+deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLON identifier SEMI_COLON
+;
+datasetType:                                DATASET_TYPE COLON dataset
+;
+dataset:                                    (datasetSnapshot | datasetDelta)
+;
+datasetSnapshot:                            DATASET_SNAPSHOT
+                                                BRACE_OPEN
+                                                    (partitioning)*
+                                                BRACE_CLOSE
+;
+partitioning:                               DATASET_SNAPSHOT_PARTITIONING COLON
+                                                (
+                                                    partitioningNone
+                                                    | partitioningFieldBased
+                                                )
+;
+partitioningNone:                           NONE
+                                                BRACE_OPEN
+                                                    (emptyDatasetHandling)*
+                                                BRACE_CLOSE
+;
+emptyDatasetHandling:                       PARTITIONING_NONE_EMPTY_DATASET_HANDLING COLON
+                                                (
+                                                    emptyDatasetHandlingNoOp
+                                                    | emptyDatasetHandlingDeleteTargetData
+                                                )
+;
+emptyDatasetHandlingNoOp:                   EMPTY_DATASET_HANDLING_NOOP
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+emptyDatasetHandlingDeleteTargetData:       EMPTY_DATASET_HANDLING_DELETE_TARGET_DATA
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+partitioningFieldBased:                     PARTITIONING_FIELD_BASED
+                                                BRACE_OPEN
+                                                    (partitionFields)*
+                                                BRACE_CLOSE
+;
+partitionFields:                            PARTITIONING_FIELD_BASED_FIELDS COLON
+                                                BRACKET_OPEN
+                                                    (identifier (COMMA identifier)*)?
+                                                BRACKET_CLOSE
+                                            SEMI_COLON
+;
+datasetDelta:                               DATASET_DELTA
+                                                BRACE_OPEN
+                                                    (actionIndicator)*
+                                                BRACE_CLOSE
+;
+actionIndicator:                            (noActionIndicator | deleteIndicator)
+;
+noActionIndicator:                          NONE
+                                                (
+                                                    SEMI_COLON
+                                                    | (BRACE_OPEN BRACE_CLOSE)
+                                                )
+;
+deleteIndicator:                            ACTION_INDICATOR_DELETE_INDICATOR
+                                                BRACE_OPEN
+                                                    (
+                                                        deleteIndicatorField
+                                                        | deleteIndicatorValues
+                                                    )*
+                                                BRACE_CLOSE
+;
+deleteIndicatorField:                       ACTION_INDICATOR_DELETE_INDICATOR_FIELD COLON identifier SEMI_COLON
+;
+deleteIndicatorValues:                      ACTION_INDICATOR_DELETE_INDICATOR_VALUES COLON
+                                                BRACKET_OPEN
+                                                    (identifier (COMMA identifier)*)?
+                                                BRACKET_CLOSE
+;
+
+// ---------------------------------- TESTS ----------------------------------
+
+tests:                                  PERSISTENCE_TESTS COLON BRACKET_OPEN ( test ( COMMA test )* )? BRACKET_CLOSE
+;
+test:                                   identifier COLON BRACE_OPEN ( persistenceTestBatches ( isTestDataFromServiceOutput )? )* BRACE_CLOSE
+;
+isTestDataFromServiceOutput:            PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT COLON identifier SEMI_COLON
+;
+persistenceTestBatches:                 PERSISTENCE_TEST_BATCHES COLON BRACKET_OPEN ( persistenceTestBatch ( COMMA persistenceTestBatch )* )? BRACKET_CLOSE
+;
+persistenceTestBatch:                   identifier COLON BRACE_OPEN ( persistenceTestData | persistenceTestBatchAssert )* BRACE_CLOSE
+;
+persistenceTestData:                    PERSISTENCE_TEST_DATA COLON BRACE_OPEN persistenceTestConnectionData BRACE_CLOSE
+;
+persistenceTestConnectionData:          PERSISTENCE_TEST_CONNECTION_DATA COLON BRACE_OPEN embeddedData BRACE_CLOSE
+;
+embeddedData:                           identifier ISLAND_OPEN ( embeddedDataContent )*
+;
+embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERTS COLON BRACKET_OPEN ( persistenceTestAssert ( COMMA persistenceTestAssert)* )? BRACKET_CLOSE
+;
+persistenceTestAssert:                  identifier COLON testAssertion
+;
+testAssertion:                          identifier ISLAND_OPEN ( testAssertionContent )*
+;
+testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+
+//TODO: ledav -- remove once v2 is rolled out | START
+
+// -------------------------------------- PERSISTER --------------------------------------
+
+persister:                                  PERSISTENCE_PERSISTER COLON
+                                                (
+                                                    streamingPersister
+                                                    | batchPersister
+                                                )
+;
+streamingPersister:                         PERSISTER_STREAMING
+                                                BRACE_OPEN
+                                                    (
+                                                        persisterSink
+                                                    )*
+                                                BRACE_CLOSE
+;
+batchPersister:                             PERSISTER_BATCH
+                                                BRACE_OPEN
+                                                    (
+                                                        persisterSink
+                                                        | targetShape
+                                                        | ingestMode
+                                                    )*
+                                                BRACE_CLOSE
 ;
 
 // -------------------------------------- SINK --------------------------------------
@@ -267,12 +462,6 @@ targetModelProperty:                        TARGET_PART_MODEL_PROPERTY COLON ide
 ;
 targetName:                                 TARGET_SHAPE_NAME COLON STRING SEMI_COLON
 ;
-partitionFields:                            TARGET_SHAPE_PARTITION_FIELDS COLON
-                                                BRACKET_OPEN
-                                                    (identifier (COMMA identifier)*)?
-                                                BRACKET_CLOSE
-                                            SEMI_COLON
-;
 deduplicationStrategy:                      TARGET_SHAPE_DEDUPLICATION COLON
                                                 (
                                                     noDeduplicationStrategy
@@ -283,16 +472,14 @@ deduplicationStrategy:                      TARGET_SHAPE_DEDUPLICATION COLON
 ;
 noDeduplicationStrategy:                    NONE SEMI_COLON
 ;
-anyVersionDeduplicationStrategy:            DEDUPLICATION_ANY_VERSION SEMI_COLON
+anyVersionDeduplicationStrategy:            DEDUPLICATION_ANY SEMI_COLON
 ;
-maxVersionDeduplicationStrategy:            DEDUPLICATION_MAX_VERSION
+maxVersionDeduplicationStrategy:            DEDUPLICATION_MAX
                                                 BRACE_OPEN
                                                     (
                                                         deduplicationMaxVersionField
                                                     )*
                                                 BRACE_CLOSE
-;
-deduplicationMaxVersionField:               DEDUPLICATION_MAX_VERSION_FIELD COLON identifier SEMI_COLON
 ;
 duplicateCountDeduplicationStrategy:        DEDUPLICATION_DUPLICATE_COUNT
                                                 BRACE_OPEN
@@ -510,7 +697,7 @@ mergeStrategy:                              MERGE_STRATEGY COLON
 ;
 noDeletesMergeStrategy:                     MERGE_STRATEGY_NO_DELETES SEMI_COLON
 ;
-deleteIndicatorMergeStrategy:               MERGE_STRATEGY_DELETE_INDICATOR
+deleteIndicatorMergeStrategy:               ACTION_INDICATOR_DELETE_INDICATOR
                                                 BRACE_OPEN
                                                     (
                                                         mergeStrategyDeleteField
@@ -518,40 +705,13 @@ deleteIndicatorMergeStrategy:               MERGE_STRATEGY_DELETE_INDICATOR
                                                     )*
                                                 BRACE_CLOSE
 ;
-mergeStrategyDeleteField:                   MERGE_STRATEGY_DELETE_INDICATOR_FIELD COLON identifier SEMI_COLON
+mergeStrategyDeleteField:                   ACTION_INDICATOR_DELETE_INDICATOR_FIELD COLON identifier SEMI_COLON
 ;
-mergeStrategyDeleteValues:                  MERGE_STRATEGY_DELETE_INDICATOR_VALUES COLON
+mergeStrategyDeleteValues:                  ACTION_INDICATOR_DELETE_INDICATOR_VALUES COLON
                                                 BRACKET_OPEN
                                                     STRING (COMMA STRING)*
                                                 BRACKET_CLOSE
                                             SEMI_COLON
 ;
 
-// ---------------------------------- PERSISTENCE TESTS ----------------------------------
-
-tests:                                  PERSISTENCE_TESTS COLON BRACKET_OPEN ( test ( COMMA test )* )? BRACKET_CLOSE
-;
-test:                                   identifier COLON BRACE_OPEN ( persistenceTestBatches ( isTestDataFromServiceOutput )? )* BRACE_CLOSE
-;
-isTestDataFromServiceOutput:            PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT COLON identifier SEMI_COLON
-;
-persistenceTestBatches:                 PERSISTENCE_TEST_BATCHES COLON BRACKET_OPEN ( persistenceTestBatch ( COMMA persistenceTestBatch )* )? BRACKET_CLOSE
-;
-persistenceTestBatch:                   identifier COLON BRACE_OPEN ( persistenceTestData | persistenceTestBatchAssert )* BRACE_CLOSE
-;
-persistenceTestData:                    PERSISTENCE_TEST_DATA COLON BRACE_OPEN persistenceTestConnectionData BRACE_CLOSE
-;
-persistenceTestConnectionData:          PERSISTENCE_TEST_CONNECTION_DATA COLON BRACE_OPEN embeddedData BRACE_CLOSE
-;
-embeddedData:                           identifier ISLAND_OPEN ( embeddedDataContent )*
-;
-embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
-;
-persistenceTestBatchAssert:             PERSISTENCE_TEST_ASSERTS COLON BRACKET_OPEN ( persistenceTestAssert ( COMMA persistenceTestAssert)* )? BRACKET_CLOSE
-;
-persistenceTestAssert:                  identifier COLON testAssertion
-;
-testAssertion:                          identifier ISLAND_OPEN ( testAssertionContent )*
-;
-testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
-;
+//TODO: ledav -- remove once v2 is rolled out | END
