@@ -25,6 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-haskell-pure</artifactId>
+    <packaging>jar</packaging>
     <name>Legend Engine - XT - Haskell - PAR/JAVA</name>
 
     <build>
