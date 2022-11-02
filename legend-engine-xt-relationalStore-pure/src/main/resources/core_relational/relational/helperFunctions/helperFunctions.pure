@@ -130,7 +130,7 @@ function <<access.private>> meta::alloy::service::execution::replaceWithEmptyVal
 function <<access.private>> meta::alloy::service::execution::schemaAndTableSetup(db:Database[1], dbConfig:DbConfig[1]):String[*]
 {
    let allSchemas = $db->allSchemas();
-
+   
    let schemaSetup = $allSchemas->map({schema |
       meta::relational::functions::toDDL::dropSchemaStatement($schema.name, $dbConfig)->concatenate(
           meta::relational::functions::toDDL::createSchemaStatement($schema.name, $dbConfig))
