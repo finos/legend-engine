@@ -35,7 +35,7 @@ public class DamlGrammarParser extends HaskellGrammarParser
         //Remove the syntactic sugar and make it look like regular haskell
         // DAML grammar is like Haskell except for a few syntax changes
         // See https://medium.com/daml-driven/four-tweaks-to-improve-haskell-b1de9c87f816
-        code = code.replace(":", "::");
+        code = code.replaceAll("(?<!:):(?!:)", "::");
         StringBuilder builder = new StringBuilder();
         boolean insideRecord = false;
         String previousLine = "";
