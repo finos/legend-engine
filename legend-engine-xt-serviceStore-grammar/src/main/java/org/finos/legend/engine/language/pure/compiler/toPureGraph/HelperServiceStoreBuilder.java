@@ -214,7 +214,7 @@ public class HelperServiceStoreBuilder
                return Tuples.pair(securitySchemeId,
                        new Root_meta_external_store_service_metamodel_runtime_OauthTokenGenerationSpecification_Impl("")
                           //._grantType(context.pureModel.getEnumValue("meta::external::store::service::metamodel::runtime::OauthGrantType", oAuthAuthentication.grantType.toString()))
-                               // ._grantType(oAuthAuthentication.grantType)
+                                ._grantType(oAuthAuthentication.grantType)
                           ._clientId(oAuthAuthentication.clientId)
                           ._clientSecretVaultReference(oAuthAuthentication.clientSecretVaultReference)
                           ._authServerUrl(oAuthAuthentication.authServerUrl));
