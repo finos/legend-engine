@@ -1,0 +1,84 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::persistence::validation::*;
+
+Class meta::pure::persistence::validation::ValidationRuleSet<T>
+{
+  name: String[1];
+  rules: LambdaFunction<{T[1]->ValidationResult[1]}>[1..*];
+}
+
+Class
+<<typemodifiers.abstract>>
+meta::pure::persistence::validation::ValidationResult
+{
+  valid()
+  {
+    $this->match([s: Success[1] | true, f: Failure[1] | false])
+  }: Boolean[1];
+
+  invalid()
+  {
+    !$this.valid();
+  }: Boolean[1];
+
+  reasons()
+  {
+    $this->match([s: Success[1] | 'Success', f: Failure[1] | $f.errors])
+  }: String[1..*];
+}
+
+Class
+<<access.private>>
+meta::pure::persistence::validation::Success extends ValidationResult
+{
+}
+
+Class
+<<access.private>>
+meta::pure::persistence::validation::Failure extends ValidationResult
+{
+  errors: String[1..*];
+}
+
+function meta::pure::persistence::validation::success(): ValidationResult[1]
+{
+  ^Success();
+}
+
+function meta::pure::persistence::validation::failure(error: String[1]): ValidationResult[1]
+{
+  ^Failure(errors = [$error]);
+}
+
+function meta::pure::persistence::validation::failures(errors: String[1..*]): ValidationResult[1]
+{
+  ^Failure(errors = $errors);
+}
+
+function meta::pure::persistence::validation::combine(v1: ValidationResult[1], v2: ValidationResult[1]): ValidationResult[1]
+{
+  $v1->match(
+    [
+      s: Success[1] | $v2->match([s2: Success[1] | $s, f: Failure[1] | $f]),
+      f: Failure[1] | $v2->match([s: Success[1] | $f, f2: Failure[1] | ^$f(errors = $f.errors->concatenate($f2.errors)->toOneMany())])
+    ]
+  );
+}
+
+function meta::pure::persistence::validation::validate<T>(object: T[1], ruleset: ValidationRuleSet<T>[1]): ValidationResult[1]
+{
+  $ruleset.rules->fold({rule, result | $result->combine($rule->eval($object))}, success());
+}

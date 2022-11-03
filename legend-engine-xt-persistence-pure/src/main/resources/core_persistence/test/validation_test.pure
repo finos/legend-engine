@@ -1,0 +1,59 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::persistence::validation::*;
+
+function <<test.Test>> meta::pure::persistence::validation::tests::successValid(): Boolean[1]
+{
+  assert(success().valid());
+}
+
+function <<test.Test>> meta::pure::persistence::validation::tests::failureValid(): Boolean[1]
+{
+  assert(!failure('Invalid syntax').valid());
+}
+
+function <<test.Test>> meta::pure::persistence::validation::tests::successReasons(): Boolean[1]
+{
+  assertEquals(1, success().reasons()->size());
+  assertEquals('Success', success().reasons()->first());
+}
+
+function <<test.Test>> meta::pure::persistence::validation::tests::failureReasons(): Boolean[1]
+{
+  let failures = failures(['Invalid syntax', 'Semantic error']);
+  assertEquals(2, $failures.reasons()->size());
+  assertEquals(['Invalid syntax', 'Semantic error'], $failures.reasons());
+}
+
+function <<test.Test>> meta::pure::persistence::validation::tests::combine(): Boolean[1]
+{
+  let combineSuccessSuccess = success()->combine(success());
+  assert($combineSuccessSuccess.valid());
+
+  let combineSuccessFailure = success()->combine(failure('Invalid syntax'));
+  assert(!$combineSuccessFailure.valid());
+  assertEquals(1, $combineSuccessFailure.reasons()->size());
+  assertEquals('Invalid syntax', $combineSuccessFailure.reasons()->first());
+
+  let combineFailureSuccess = failure('Invalid syntax')->combine(success());
+  assert(!$combineFailureSuccess.valid());
+  assertEquals(1, $combineFailureSuccess.reasons()->size());
+  assertEquals('Invalid syntax', $combineFailureSuccess.reasons()->first());
+
+  let combineFailureFailure = failure('Invalid syntax')->combine(failure('Semantic error'));
+  assert(!$combineFailureFailure.valid());
+  assertEquals(2, $combineFailureFailure.reasons()->size());
+  assertEquals(['Invalid syntax', 'Semantic error'], $combineFailureFailure.reasons());
+}

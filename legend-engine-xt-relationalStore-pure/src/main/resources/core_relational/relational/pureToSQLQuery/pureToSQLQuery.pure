@@ -1500,7 +1500,7 @@ function meta::relational::functions::pureToSqlQuery::addMissingColumn(nested:Bo
                                                      | let setImpl = $union.setImplementations->at($i);
                                                      let allSourceSetImplementationIds = $setImpl->cast(@PropertyMappingsImplementation).allPropertyMappings().sourceSetImplementationId->distinct();
                                                      let filteredRelationalPropertyMappings = if ($setImpl->instanceOf(EmbeddedRelationalInstanceSetImplementation),
-                                                                                                  | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation).allPropertyMappings()->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
+                                                                                                  | $setImpl->cast(@EmbeddedRelationalInstanceSetImplementation).propertyMappingsByPropertyName($property.name->toOne())->filter(r|$r->instanceOf(RelationalPropertyMapping))->cast(@RelationalPropertyMapping),
                                                                                                   | $relationalPropertyMappings->filter(r|$state.mapping.classMappingById($r.sourceSetImplementationId)->match([r:RootRelationalInstanceSetImplementation[1]|$r,e:EmbeddedRelationalInstanceSetImplementation[1]|$e.setMappingOwner])->cast(@InstanceSetImplementation).id->in($allSourceSetImplementationIds))
                                                                                               );
 
@@ -1617,16 +1617,53 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     ,
                                     c:Class<Any>[1] |let srcOperation = $oldSrcOperation;
 
-                                                     let isUnionSubType = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne()->instanceOf(Union) && $relationalPropertyMappings->size() == 1;
-                                                     let updatedRelationalPropertyMappings = if ($isUnionSubType ,| let union = $oldSrcOperation.currentTreeNode.alias.relationalElement->toOne()->cast(@Union);
-                                                                                                                    let subTypeRpm = $relationalPropertyMappings->at(0);
-                                                                                                                    let nullAlias = ^Alias(name=$subTypeRpm.property.name->toOne(), relationalElement = ^Literal(value=^SQLNull()));
-                                                                                                                    let join = $subTypeRpm.relationalOperationElement->cast(@RelationalOperationElementWithJoin);
-                                                                                                                    let emptyJoin = ^$join(relationalOperationElement=$nullAlias, joinTreeNode=[]);
-                                                                                                                    $union.setImplementations->map(s| let sourceIds = $state.mapping.allSuperSetImplementationIds($s.id);
-                                                                                                                                                      print(if($context.debug,|$context.space+'Looking up propertyMapping from "'+$sourceIds->joinStrings('[', ',', ']')+'" for "'+$subTypeRpm.sourceSetImplementationId+'"\n',|''));
-                                                                                                                                                      if($sourceIds->contains($subTypeRpm.sourceSetImplementationId), |$subTypeRpm ,| ^RelationalPropertyMapping(owner=$s->cast(@PropertyMappingsImplementation ), property=$subTypeRpm.property, relationalOperationElement=$emptyJoin, sourceSetImplementationId=$s.id, targetSetImplementationId=$subTypeRpm.targetSetImplementationId )););
-                                                                                                                 ,| $relationalPropertyMappings);
+                                                      let currentTreeNodeElement = $srcOperation.currentTreeNode.alias.relationalElement->toOne();
+                                                      let extractParentMappingId = {rpm: RelationalPropertyMapping[1] |
+                                                         $state.mapping.classMappingById($rpm.sourceSetImplementationId)->match([
+                                                            r:RootRelationalInstanceSetImplementation[1]     | $r.id,
+                                                            e:EmbeddedRelationalInstanceSetImplementation[1] | $e.setMappingOwner.id
+                                                         ])
+                                                      };
+
+                                                      let shouldUpdatePropertyMappings = if ($currentTreeNodeElement->isUnionOrNestedUnion(),
+                                                                                             | let allSourceSetIdsForUnionSets = $currentTreeNodeElement->resolveUnion().setImplementations->map(s | $state.mapping.allSuperSetImplementationIds($s.id));
+                                                                                               !$relationalPropertyMappings->exists({rpm |
+                                                                                                  !$extractParentMappingId->eval($rpm)->in($allSourceSetIdsForUnionSets)
+                                                                                               });,
+                                                                                             | false
+                                                                                         );
+                                                      let updatedRelationalPropertyMappings = if ($shouldUpdatePropertyMappings,
+                                                         {|
+                                                            let union = $currentTreeNodeElement->resolveUnion();
+                                                            let nullAlias = ^Alias(name = $property.name->toOne(), relationalElement = ^Literal(value = ^SQLNull()));
+                                                            $union.setImplementations->map({currentSet |
+                                                               let superSetIds = $state.mapping.allSuperSetImplementationIds($currentSet.id);
+                                                               let filteredRpms = $relationalPropertyMappings->filter(rpm | $extractParentMappingId->eval($rpm)->in($superSetIds));
+                                                               let newRpms = if ($filteredRpms->isNotEmpty(),
+                                                                   | $filteredRpms,
+                                                                   | $relationalPropertyMappings->map({rpm |
+                                                                        print(if($context.debug,|$context.space+'- Creating null join from "' + $currentSet.id + '" -> "' + $rpm.targetSetImplementationId + '"\n',|''));
+                                                                        let join = $rpm.relationalOperationElement->cast(@RelationalOperationElementWithJoin);
+                                                                        let nullJoin = ^$join(relationalOperationElement = $nullAlias, joinTreeNode = []);
+                                                                        ^RelationalPropertyMapping
+                                                                        (
+                                                                           owner                      = $currentSet->cast(@PropertyMappingsImplementation),
+                                                                           property                   = $property->cast(@Property<Nil,Any|*>),
+                                                                           relationalOperationElement = $nullJoin,
+                                                                           sourceSetImplementationId  = $currentSet.id,
+                                                                           targetSetImplementationId  = $rpm.targetSetImplementationId
+                                                                        );                                          
+                                                                     })
+                                                               );
+                                                               $newRpms
+                                                                  ->removeDuplicates({a,b | ($a.sourceSetImplementationId == $b.sourceSetImplementationId) && ($a.targetSetImplementationId == $b.targetSetImplementationId)})
+                                                                  ->map(rpm | ^$rpm(sourceSetImplementationId = $currentSet.id));
+                                                            });
+                                                         },
+                                                         {|
+                                                            $relationalPropertyMappings
+                                                         }
+                                                      );
 
                                                       let res = if ($updatedRelationalPropertyMappings->size() > 1,
                                                          |
@@ -2426,7 +2463,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsOlapOperation(o:
    $o->extractOperation().expressionSequence->at(0)->processAggFn(
       $o->match([
       t: TdsOlapAggregation<Any>[1]| let col = findAliasOrFail($t.colName->toString(), $operation.select).relationalElement;
-                                     assert($col->instanceOf(TableAliasColumn)|| $col->instanceOf(DynaFunction),'Window Function does not refer to a column or an aggregate function');
+                                     assert($col->instanceOf(ColumnName) || $col->instanceOf(TableAliasColumn) || $col->instanceOf(DynaFunction),'Window Function does not refer to a column or an aggregate function');
                                      $col;,
       r:TdsOlapRank<Any>[1]|[]
       ] )
@@ -7174,7 +7211,9 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::not_Boolean_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processNot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::datePart_Date_1__Date_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::weekOfYear_Date_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::dayOfWeek_Date_1__DayOfWeek_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::dayOfWeekNumber_Date_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::dayOfWeekNumber_Date_1__DayOfWeek_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::year_Date_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::hour_Date_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::date::minute_Date_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

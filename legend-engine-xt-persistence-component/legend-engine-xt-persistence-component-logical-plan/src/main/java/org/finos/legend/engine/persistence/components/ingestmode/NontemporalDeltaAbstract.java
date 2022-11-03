@@ -18,6 +18,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 
+import java.util.Optional;
+
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -35,6 +37,8 @@ public interface NontemporalDeltaAbstract extends IngestMode
     String digestField();
 
     Auditing auditing();
+
+    Optional<String> dataSplitField();
 
     @Default
     default MergeStrategy mergeStrategy()

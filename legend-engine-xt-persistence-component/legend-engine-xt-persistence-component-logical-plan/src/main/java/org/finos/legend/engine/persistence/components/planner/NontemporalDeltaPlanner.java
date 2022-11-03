@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
@@ -42,17 +41,12 @@ import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
 
 class NontemporalDeltaPlanner extends Planner
 {
@@ -61,6 +55,8 @@ class NontemporalDeltaPlanner extends Planner
     private final List<Object> deleteIndicatorValues;
 
     private BatchStartTimestamp batchStartTimestamp;
+
+    private final Optional<Condition> dataSplitInRangeCondition;
 
     NontemporalDeltaPlanner(Datasets datasets, NontemporalDelta ingestMode, PlannerOptions plannerOptions)
     {
@@ -73,6 +69,7 @@ class NontemporalDeltaPlanner extends Planner
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
 
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
+        this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
     }
 
     @Override
@@ -125,9 +122,19 @@ class NontemporalDeltaPlanner extends Planner
                 FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(field.fieldName()).build()))
             .collect(Collectors.toList());
 
+        Dataset stagingDataset = stagingDataset();
+
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
+            List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+            LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
+            stagingDataset = Selection.builder().source(stagingDataset()).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).alias(stagingDataset().datasetReference().alias()).build();
+        }
+
         Merge merge = Merge.builder()
             .dataset(mainDataset())
-            .usingDataset(stagingDataset())
+            .usingDataset(stagingDataset)
             .addAllMatchedKeyValuePairs(keyValuePairs)
             .addAllUnmatchedKeyValuePairs(keyValuePairs)
             .onCondition(pkMatchCondition)
@@ -151,25 +158,28 @@ class NontemporalDeltaPlanner extends Planner
     sink.COL2 = (SELECT stage.COL2 FROM staging as stage WHERE (PKs match) AND (DIGEST does not match)),
     ..
     WHERE EXISTS
-    (SELECT * FROM staging_table WHERE (PKs match) AND (DIGEST does not match))
+    (SELECT * FROM staging_table WHERE (PKs match) AND (DIGEST does not match) AND DATA_SPLIT_CONDITION)
      */
     private Update getUpdateOperation(Condition pkMatchCondition, Condition digestDoesNotMatchCondition)
     {
+        Dataset stagingDataset = stagingDataset();
         Condition joinCondition = And.builder().addConditions(pkMatchCondition, digestDoesNotMatchCondition).build();
-
         List<Pair<FieldValue, Value>> keyValuePairs = stagingDataset().schemaReference().fieldValues().stream().map(
             field -> Pair.<FieldValue, Value>of(
                 FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(field.fieldName()).build(),
                 FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(field.fieldName()).build())).collect(Collectors.toList());
 
-        Update update = UpdateAbstract.of(mainDataset(), stagingDataset(), keyValuePairs, joinCondition);
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-
             keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
-            update = update.withKeyValuePairs(keyValuePairs);
         }
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            keyValuePairs.removeIf(field -> field.key().fieldName().equals(ingestMode().dataSplitField().get()));
+            stagingDataset = Selection.builder().source(stagingDataset()).condition(dataSplitInRangeCondition).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(stagingDataset().datasetReference().alias()).build();
+        }
+        Update update = UpdateAbstract.of(mainDataset(), stagingDataset, keyValuePairs, joinCondition);
         return update;
     }
 
@@ -182,7 +192,8 @@ class NontemporalDeltaPlanner extends Planner
     private Insert getInsertOperation(Condition pkMatchCondition, Condition digestMatchCondition)
     {
 
-        List<Value> stagingFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         Condition notExistInSinkCondition = Not.of(Exists.of(
             Selection.builder()
@@ -192,19 +203,26 @@ class NontemporalDeltaPlanner extends Planner
                 .build())
         );
 
-        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        Condition selectCondition = notExistInSinkCondition;
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            LogicalPlanUtils.removeField(fieldsToSelect, ingestMode().dataSplitField().get());
+            LogicalPlanUtils.removeField(fieldsToInsert, ingestMode().dataSplitField().get());
+            selectCondition = And.builder().addConditions(dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
+        }
+
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            stagingFields.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
+            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
             fieldsToSelect.add(batchStartTimestamp);
         }
-        else
+        else if (!ingestMode().dataSplitField().isPresent())
         {
             fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
         }
-        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notExistInSinkCondition).addAllFields(fieldsToSelect).build();
-        return Insert.of(mainDataset(), selectStage, stagingFields);
+        Dataset selectStage = Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(fieldsToSelect).build();
+        return Insert.of(mainDataset(), selectStage, fieldsToInsert);
     }
 
     @Override
@@ -213,39 +231,32 @@ class NontemporalDeltaPlanner extends Planner
         return LogicalPlan.builder().addOps(Create.of(true, mainDataset())).build();
     }
 
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
+    public Optional<Condition> getDataSplitInRangeCondition()
     {
-        return Collections.emptyMap();
+        return dataSplitInRangeCondition;
     }
 
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
+    // stats related
+    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
-        if (options().collectStatistics())
+        // Not supported at the moment
+    }
+
+    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // Not supported at the moment
+    }
+
+    protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        if (!deleteIndicatorField.isPresent())
         {
-            //Incoming dataset record count
-            postRunStatisticsResult.put(
-                INCOMING_RECORD_COUNT,
-                LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get())).build());
-
-            if (ingestMode().auditing().accept(AUDIT_ENABLED))
-            {
-                //Rows terminated = Rows invalidated in Sink - Rows updated
-                postRunStatisticsResult.put(
-                    ROWS_TERMINATED,
-                    LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L));
-
-                //Rows inserted (no previous active row with same primary key) = Rows added in sink - rows updated
-                //todo :no way to differentiate b/w updated and inserted row
-                //Rows updated (when it is invalidated and a new row for same primary keys is added)
-                //Rows Deleted = rows removed(hard-deleted) from sink table
-                postRunStatisticsResult.put(
-                    ROWS_DELETED,
-                    LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L));
-            }
+            super.addPostRunStatsForRowsDeleted(postRunStatisticsResult);
         }
-        return postRunStatisticsResult;
+        else
+        {
+            // Not supported at the moment
+        }
     }
+
 }

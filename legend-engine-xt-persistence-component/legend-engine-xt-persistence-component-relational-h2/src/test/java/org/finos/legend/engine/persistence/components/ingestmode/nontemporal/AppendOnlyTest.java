@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
+import org.finos.legend.engine.persistence.components.IncrementalClock;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -25,10 +26,13 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.F
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
+import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,16 +44,29 @@ import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 
 class AppendOnlyTest extends BaseTest
 {
     private final String basePath = "src/test/resources/data/incremental-append-milestoning/";
+    /*
+    Scenarios:
+    1. FilterDuplicates and No Auditing
+    2. Staging data is imported along with Digest field population
+    3. Staging has lesser columns than main dataset
+    4. Staging data cleanup
+    5. FilterDuplicates and Auditing enabled
+    6. Add column schema evolution
+    7. implicit data type change schema evolution
+    8. Filter Duplicates and Data Splits enabled
+    */
+
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenario: Test Append Only Logic with FilterDuplicates and No Auditing
     */
     @Test
-    void testIncrementalAppendMilestoningLogic() throws Exception
+    void testAppendOnlyWithFilterDuplicatesAndNoAuditing() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -77,6 +94,9 @@ class AppendOnlyTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -92,10 +112,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table pre populated
+    Scenario: test AppendOnly when staging data is imported along with Digest field population
     */
     @Test
-    void testIncrementalAppendWithStagingDataImportedWithPopulateDigest() throws Exception
+    void testAppendOnlyWithStagingDataImportedWithPopulateDigest() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = "src/test/resources/data/import-data/data_pass1.json";
@@ -118,6 +138,10 @@ class AppendOnlyTest extends BaseTest
         // Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
@@ -130,10 +154,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV and has less columns than main dataset
+    Scenario: Test AppendOnly when staging has lesser columns than main
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithLessColumnsInStaging() throws Exception
+    void testAppendOnlyWithLessColumnsInStaging() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         String dataPass1 = basePath + "input/less_columns_in_staging/data_pass1.csv";
@@ -156,6 +180,10 @@ class AppendOnlyTest extends BaseTest
         // Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
@@ -167,11 +195,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    staging table is cleaned up in the end
+    Scenario: Test AppendOnly when staging table is cleaned up in the end
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithCleanStagingData() throws Exception
+    void testAppendOnlyWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -199,6 +226,10 @@ class AppendOnlyTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -206,11 +237,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging data comes from CSV
-    and isUpdateBatchTimeEnabled is enabled
+    Scenario: Test AppendOnly with FilterDuplicates and Auditing enabled
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithUpdateTimestampField() throws Exception
+    void testAppendOnlyWithFilterDuplicatesAndAuditingEnabled() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
@@ -236,11 +266,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning logic when staging table is pre populated and
-    Staging table has extra column which should be handled invoke schema evolution
+    Scenario: Test Append Only when Staging table has extra column which should be handled invoke schema evolution
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithAddColumnEvolution() throws Exception
+    void testAppendOnlyWithAddColumnEvolution() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getSchemaEvolMainTableWithMissingColumn();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
@@ -268,6 +297,9 @@ class AppendOnlyTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -283,11 +315,10 @@ class AppendOnlyTest extends BaseTest
     }
 
     /*
-    Scenario: Test milestoning Logic when staging table is pre populated and
-    Test implicit data change schema evolution
+    Scenario: Test AppendOnly with implicit data type change schema evolution
     */
     @Test
-    void testIncrementalAppendMilestoningLogicWithImplicitDataTypeChange() throws Exception
+    void testAppendOnlyWithImplicitDataTypeChange() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTable();
         DatasetDefinition stagingTable = TestUtils.getStagingTableForImplicitSchemaEvolution();
@@ -315,6 +346,10 @@ class AppendOnlyTest extends BaseTest
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -328,4 +363,46 @@ class AppendOnlyTest extends BaseTest
         // 2. Execute plans and verify results
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
+
+
+    /*
+    Scenario: Test AppendOnly with Filter Duplicates and Data Splits enabled
+    */
+    @Test
+    void testAppendOnlyWithFilterDuplicatesAuditEnabledWithDataSplits() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
+        String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
+        Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
+        IncrementalClock incrementalClock = new IncrementalClock(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC, 1000);
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+                .digestField(digestName)
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+                .dataSplitField(dataSplitName)
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{batchUpdateTimeName, idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (append) milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePath + "expected/with_data_splits/expected_pass1.csv";
+        // Execute plans and verify results
+        List<DataSplitRange> dataSplitRanges = new ArrayList<>();
+        dataSplitRanges.add(DataSplitRange.of(1, 1));
+        dataSplitRanges.add(DataSplitRange.of(2, 2));
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1 = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats2 = createExpectedStatsMap(2, 0, 2, 0, 0);
+
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+
+        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges, incrementalClock);
+    }
+
 }

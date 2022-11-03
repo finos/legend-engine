@@ -134,12 +134,12 @@ function meta::external::language::java::transform::setterName(conventions: Conv
 
 function meta::external::language::java::transform::getProvidedType(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
-   $conventions.providedTypes->filter(pt| $pt.type == $type).providedAs->toOne();
+   $conventions.providedTypes->filter(pt| $pt.type->elementToPath() == $type->elementToPath()).providedAs->toOne();
 }
 
 function meta::external::language::java::transform::isProvidedType(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): Boolean[1]
 {
-   $conventions.providedTypes->filter(pt| $pt.type == $type)->isNotEmpty();
+   $conventions.providedTypes->filter(pt| $pt.type->elementToPath() == $type->elementToPath())->isNotEmpty();
 }
 
 function meta::external::language::java::transform::getProvidedVariable(conventions: Conventions[1], name:String[1]): Code[1]
@@ -1183,6 +1183,10 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       meta::pure::graphFetch::RootGraphFetchTree
    ];
 
+   let excludeTestPackages = [
+     'meta::pure::mapping::modelToModel::test'
+   ];
+
    {conventions:Conventions[1],func:Function<Any>[1]|
       $func->match([
          {nf:NativeFunction<Any>[1]     | $func->in($functionsBlacklist);},
@@ -1192,7 +1196,7 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
                {|
                   let funcType = $func->evaluateAndDeactivate()->functionType();
                   let types    = $funcType.returnType.rawType->concatenate($funcType.parameters.genericType.rawType);
-                  let usesPkgs = $types->filter(t| !$t->in($manipulatesTypesWhitelist) && $t->instanceOf(PackageableElement))->cast(@PackageableElement).package;
+                  let usesPkgs = $types->filter(t| !$t->in($manipulatesTypesWhitelist) && $t->instanceOf(PackageableElement))->cast(@PackageableElement).package->filter(p | !$excludeTestPackages->exists(b|$p->elementToPath()->startsWith($b)));
                   $usesPkgs->exists({p|
                      let name = $p->elementToPath();
                      $manipulatesPackagesBlacklist->exists(b|$name->startsWith($b));

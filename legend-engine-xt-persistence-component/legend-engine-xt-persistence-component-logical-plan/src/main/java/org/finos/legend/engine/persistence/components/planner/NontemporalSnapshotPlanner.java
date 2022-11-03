@@ -20,12 +20,18 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -37,12 +43,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.ALL_COLUMNS;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.getPrimaryKeyMatchCondition;
 
 class NontemporalSnapshotPlanner extends Planner
 {
@@ -60,28 +69,56 @@ class NontemporalSnapshotPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
     {
-        Selection selectStaging = Selection.builder()
-            .source(stagingDataset())
-            .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
-            .build();
+        Dataset stagingDataset = stagingDataset();
+        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        Optional<Condition> selectCondition = Optional.empty();
 
-        List<Value> stagingFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-
+        // If data splits is enabled, add the condition to pick only the latest data split
+        if (ingestMode().dataSplitField().isPresent())
+        {
+            String dataSplitField = ingestMode().dataSplitField().get();
+            LogicalPlanUtils.removeField(fieldsToSelect, dataSplitField);
+            LogicalPlanUtils.removeField(fieldsToInsert, dataSplitField);
+            DatasetReference stagingRight = stagingDataset.datasetReference().withAlias("stage_right");
+            FieldValue dataSplitLeft = FieldValue.builder()
+                .fieldName(dataSplitField)
+                .datasetRef(stagingDataset.datasetReference())
+                .build();
+            FieldValue dataSplitRight = dataSplitLeft.withDatasetRef(stagingRight.datasetReference());
+            selectCondition = Optional.of(Not.of(Exists.of(Selection.builder()
+                    .source(stagingRight)
+                    .condition(And.builder()
+                            .addConditions(
+                                    LessThan.of(dataSplitLeft, dataSplitRight),
+                                    getPrimaryKeyMatchCondition(stagingDataset, stagingRight, primaryKeys.toArray(new String[0])))
+                            .build())
+                    .addAllFields(ALL_COLUMNS())
+                    .build())));
+        }
+        // If audit is enabled, add audit column to select and insert fields
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
-            List<Value> selectFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-            selectFields.add(BatchStartTimestamp.INSTANCE);
-            selectStaging = selectStaging.withFields(selectFields);
-
+            fieldsToSelect.add(BatchStartTimestamp.INSTANCE);
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            stagingFields.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
+            fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         }
+        else if (!ingestMode().dataSplitField().isPresent())
+        {
+            fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
+        }
+
+        Selection selectStaging = Selection.builder()
+                .source(stagingDataset)
+                .addAllFields(fieldsToSelect)
+                .condition(selectCondition)
+                .build();
 
         List<Operation> operations = new ArrayList<>();
         // Step 1: Delete all rows from existing table
         operations.add(Delete.builder().dataset(mainDataset()).build());
         // Step 2: Insert new dataset
-        operations.add(Insert.of(mainDataset(), selectStaging, stagingFields));
+        operations.add(Insert.of(mainDataset(), selectStaging, fieldsToInsert));
 
         return LogicalPlan.of(operations);
     }
@@ -105,34 +142,14 @@ class NontemporalSnapshotPlanner extends Planner
         return preRunStatisticsResult;
     }
 
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
+    protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
-
-        if (options().collectStatistics())
-        {
-            //Incoming dataset record count
-            postRunStatisticsResult.put(
-                INCOMING_RECORD_COUNT,
-                LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get())).build());
-
-            //Rows terminated = Rows invalidated in Sink - Rows updated
-            postRunStatisticsResult.put(
-                ROWS_TERMINATED,
-                LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L));
-
-            //Rows inserted (no previous active row with same primary key) = Rows added in sink - rows updated
-            postRunStatisticsResult.put(
-                ROWS_INSERTED,
-                LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(mainDataset(), ROWS_INSERTED.get())).build());
-
-            //Rows updated (when it is invalidated and a new row for same primary keys is added)
-            postRunStatisticsResult.put(
-                ROWS_UPDATED,
-                LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_UPDATED.get(), 0L));
-        }
-
-        return postRunStatisticsResult;
     }
+
+    @Override
+    public boolean dataSplitExecutionSupported()
+    {
+        return false;
+    }
+
 }

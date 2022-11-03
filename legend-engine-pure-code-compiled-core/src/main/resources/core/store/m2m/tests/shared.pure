@@ -84,6 +84,11 @@ Class meta::pure::mapping::modelToModel::test::shared::dest::Vehicle
    roadster : Boolean[1];
 }
 
+Class meta::pure::mapping::modelToModel::test::shared::src::_Vehicle
+{
+   roadVehicle: meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle[1];
+}
+
 Class meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle
 {
    wheelCount : Integer[1];
@@ -92,11 +97,27 @@ Class meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle
 Class meta::pure::mapping::modelToModel::test::shared::src::_Car extends _RoadVehicle
 {
    engine : Boolean[1];
+   series : String[1];
+   type : String[*];
 }
 
 Class meta::pure::mapping::modelToModel::test::shared::src::_Bicycle extends _RoadVehicle
 {
    roadster : Boolean[1];
+   series : String[0..1];
+   type : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::_Motorcycle extends _RoadVehicle
+{
+   series : String[0..1];
+   type : String[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::shared::src::VehicleInventory
+{
+   series : String[0..1];
+   type : String[*];
 }
 
 Class meta::pure::mapping::modelToModel::test::shared::src::_Firm

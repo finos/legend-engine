@@ -18,18 +18,21 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
@@ -41,18 +44,13 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.ALL_COLUMNS;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.getDigestMatchCondition;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.getPrimaryKeyMatchCondition;
@@ -67,6 +65,11 @@ class AppendOnlyPlanner extends Planner
 
         // validate
         ingestMode.deduplicationStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysIsEmpty, this::validatePrimaryKeysNotEmpty));
+        // if data splits are present, then audit Column must be a PK
+        if (ingestMode.dataSplitField().isPresent())
+        {
+            ingestMode.auditing().accept(ValidateAuditingForDataSplits);
+        }
 
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
     }
@@ -114,29 +117,39 @@ class AppendOnlyPlanner extends Planner
         return LogicalPlan.builder().addOps(Create.of(true, mainDataset())).build();
     }
 
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPreRunStatistics(Resources resources)
+    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        return Collections.emptyMap();
+        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeCondition() : Optional.empty();
+        ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult, dataSplitInRangeCondition));
     }
 
-    @Override
-    public Map<StatisticName, LogicalPlan> buildLogicalPlanForPostRunStatistics(Resources resources)
+    public Optional<Condition> getDataSplitInRangeCondition()
     {
-        Map<StatisticName, LogicalPlan> postRunStatisticsResult = new HashMap<>();
+        return dataSplitInRangeCondition;
+    }
 
-        if (options().collectStatistics())
+    private AuditingVisitor<Void> ValidateAuditingForDataSplits = new AuditingVisitor<Void>()
+    {
+        @Override
+        public Void visitNoAuditing(NoAuditingAbstract noAuditing)
         {
-            //Incoming dataset record count
-            postRunStatisticsResult.put(
-                INCOMING_RECORD_COUNT,
-                LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get())).build());
-
-            ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult));
+            throw new IllegalStateException("DataSplits not supported for NoAuditing mode");
         }
 
-        return postRunStatisticsResult;
-    }
+        @Override
+        public Void visitDateTimeAuditing(DateTimeAuditingAbstract dateTimeAuditing)
+        {
+            // For Data splits, audit column must be a PK
+            Field dateTimeAuditingField = mainDataset().schema().fields().stream()
+                    .filter(field -> field.name().equalsIgnoreCase(dateTimeAuditing.dateTimeField()))
+                    .findFirst().orElseThrow(() -> new IllegalStateException("dateTimeField is mandatory Field for dateTimeAuditing mode"));
+            if (!dateTimeAuditingField.primaryKey())
+            {
+                throw new IllegalStateException("dateTimeField must be a Primary Key for Data Splits");
+            }
+            return null;
+        }
+    };
 
     static class ValidatePrimaryKeys implements DeduplicationStrategyVisitor<Void>
     {
@@ -233,7 +246,7 @@ class AppendOnlyPlanner extends Planner
 
         private Dataset selectStageDatasetWithoutDuplicateFiltering()
         {
-            if (ingestMode.dataSplitField().isPresent())
+            if (ingestMode.dataSplitField().isPresent() && !primaryKeys.isEmpty())
             {
                 return Selection.builder().source(stagingDataset).condition(dataSplitInRangeCondition).addAllFields(fieldsToSelect).build();
             }
@@ -250,65 +263,60 @@ class AppendOnlyPlanner extends Planner
         final Dataset mainDataset;
         final Dataset stagingDataset;
         final Map<StatisticName, LogicalPlan> postRunStatisticsResult;
+        Optional<Condition> dataSplitInRangeCondition;
 
-        PopulatePostRunStatisticsBreakdown(AppendOnly ingestMode, Dataset mainDataset, Dataset stagingDataset, Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+        PopulatePostRunStatisticsBreakdown(AppendOnly ingestMode, Dataset mainDataset, Dataset stagingDataset, Map<StatisticName, LogicalPlan> postRunStatisticsResult, Optional<Condition> dataSplitInRangeCondition)
         {
             this.ingestMode = ingestMode;
             this.mainDataset = mainDataset;
             this.stagingDataset = stagingDataset;
             this.postRunStatisticsResult = postRunStatisticsResult;
+            this.dataSplitInRangeCondition = dataSplitInRangeCondition;
         }
 
         @Override
         public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
         {
-            postRunStatisticsResult.put(
-                ROWS_INSERTED,
-                LogicalPlan.builder().addOps(LogicalPlanUtils.getRecordCount(stagingDataset, ROWS_INSERTED.get())).build());
-            return null;
-        }
-
-        @Override
-        public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            return populatePostRunStatisticsBreakdownWithNoDuplicatesAllowed();
+            return populateInsertedRecordsCountUsingStagingDataset();
         }
 
         @Override
         public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
         {
-            return populatePostRunStatisticsBreakdownWithNoDuplicatesAllowed();
+            return populateInsertedRecordsCountUsingStagingDataset();
         }
 
-        private Void populatePostRunStatisticsBreakdownWithNoDuplicatesAllowed()
+        @Override
+        public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
         {
             if (ingestMode.auditing().accept(AUDIT_ENABLED))
             {
-                //Rows terminated = Rows invalidated in Sink - Rows updated
-                postRunStatisticsResult.put(
-                    ROWS_TERMINATED,
-                    LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L));
-
-                //Rows inserted (no previous active row with same primary key) = Rows added in sink - rows updated
+                // Rows inserted = rows in main with audit column equals latest timestamp
                 String auditField = ingestMode.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-                postRunStatisticsResult.put(
-                    ROWS_INSERTED,
-                    LogicalPlan.builder()
+                postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
                         .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset, auditField, ROWS_INSERTED.get()))
                         .build());
-
-                //Rows updated (when it is invalidated and a new row for same primary keys is added)
-                postRunStatisticsResult.put(
-                    ROWS_UPDATED,
-                    LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_UPDATED.get(), 0L));
-
-                //Rows Deleted = rows removed (hard-deleted) from sink table
-                postRunStatisticsResult.put(
-                    ROWS_DELETED,
-                    LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_DELETED.get(), 0L));
             }
-
+            else
+            {
+                // Not supported at the moment
+            }
             return null;
         }
+
+        private Void populateInsertedRecordsCountUsingStagingDataset()
+        {
+            LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
+                    .addOps(LogicalPlanUtils.getRecordCount(stagingDataset, ROWS_INSERTED.get(), dataSplitInRangeCondition))
+                    .build();
+            postRunStatisticsResult.put(ROWS_INSERTED, incomingRecordCountPlan);
+            return null;
+        }
+    }
+
+    @Override
+    public boolean dataSplitExecutionSupported()
+    {
+        return !primaryKeys.isEmpty();
     }
 }

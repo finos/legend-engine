@@ -832,6 +832,101 @@ public class TestCompatibilityAndMigration
 
     }
 
+
+    @Test
+    public void checkEmptyStringBugFix() throws Exception
+    {
+        check("{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ \n" +
+                        "{\n" +
+                        "  \"_type\": \"lambda\",\n" +
+                        "  \"body\": [\n" +
+                        "    {\n" +
+                        "      \"_type\": \"func\",\n" +
+                        "      \"function\": \"new\",\n" +
+                        "      \"parameters\": [\n" +
+                        "        {\n" +
+                        "          \"_type\": \"packageableElementPtr\",\n" +
+                        "          \"fullPath\": \"A\"\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "          \"_type\": \"string\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 1,\n" +
+                        "            \"upperBound\": 1\n" +
+                        "          },\n" +
+                        "          \"values\": []\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "          \"_type\": \"collection\",\n" +
+                        "          \"multiplicity\": {\n" +
+                        "            \"lowerBound\": 0,\n" +
+                        "            \"upperBound\": 0\n" +
+                        "          },\n" +
+                        "          \"values\": []\n" +
+                        "        }\n" +
+                        "      ]\n" +
+                        "    }\n" +
+                        "  ],\n" +
+                        "  \"parameters\": [],\n" +
+                        "  \"sourceInformation\": {\n" +
+                        "    \"endColumn\": 5,\n" +
+                        "    \"endLine\": 1,\n" +
+                        "    \"sourceId\": \"\",\n" +
+                        "    \"startColumn\": 1,\n" +
+                        "    \"startLine\": 1\n" +
+                        "  }\n" +
+                        "}" + "    ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}",
+                "{\n" +
+                        "  \"_type\" : \"data\",\n" +
+                        "  \"elements\" : [ {\n" +
+                        "    \"_type\" : \"function\",\n" +
+                        "    \"name\" : \"a\",\n" +
+                        "    \"returnType\" : \"String\",\n" +
+                        "    \"returnMultiplicity\" : {\n" +
+                        "      \"lowerBound\" : 0\n" +
+                        "    },\n" +
+                        "    \"body\" : [ {\n" +
+                        "      \"_type\" : \"lambda\",\n" +
+                        "      \"sourceInformation\" : {\n" +
+                        "        \"startLine\" : 1,\n" +
+                        "        \"startColumn\" : 1,\n" +
+                        "        \"endLine\" : 1,\n" +
+                        "        \"endColumn\" : 5\n" +
+                        "      },\n" +
+                        "      \"body\" : [ {\n" +
+                        "        \"_type\" : \"func\",\n" +
+                        "        \"function\" : \"new\",\n" +
+                        "        \"parameters\" : [ {\n" +
+                        "          \"_type\" : \"packageableElementPtr\",\n" +
+                        "          \"fullPath\" : \"A\"\n" +
+                        "        }, {\n" +
+                        "          \"_type\" : \"string\"\n" +
+                        "        }, {\n" +
+                        "          \"_type\" : \"collection\",\n" +
+                        "          \"multiplicity\" : {\n" +
+                        "            \"lowerBound\" : 0,\n" +
+                        "            \"upperBound\" : 0\n" +
+                        "          }\n" +
+                        "        } ]\n" +
+                        "      } ]\n" +
+                        "    } ],\n" +
+                        "    \"package\" : \"a\"\n" +
+                        "  } ]\n" +
+                        "}");
+    }
+
     private void check(String input, String output) throws Exception
     {
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);
