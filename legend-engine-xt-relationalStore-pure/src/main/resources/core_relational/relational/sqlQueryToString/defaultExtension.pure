@@ -152,6 +152,11 @@ function meta::relational::functions::sqlQueryToString::default::processJoinStri
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
+function  meta::relational::functions::sqlQueryToString::stringToPlaceHolder(s:String[1]):String[1]
+{
+   ^VarPlaceHolder(name= $s, type = $s->type())->processPlaceHolder(String,'','',[]);
+}
+
 function meta::relational::functions::sqlQueryToString::default::getDynaFunctionToSqlDefault(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
@@ -619,4 +624,109 @@ function meta::relational::functions::sqlQueryToString::default::escapeLikeExprD
    $query
       ->replace('_', '\\_')
       ->replace('%', '\\%');
+}
+
+function meta::relational::functions::sqlQueryToString::default::sqlStringToUpdateNode(sql: String[*]): meta::relational::executionPlan::UpdateSqlExecutionNode[1]
+{
+  ^meta::relational::executionPlan::UpdateSqlExecutionNode(sqlCommands = $sql, resultType = ^meta::pure::executionPlan::ResultType(type = Void));
+}
+
+function meta::relational::functions::sqlQueryToString::default::updateNodeToFinallyNode(updateNodes: meta::relational::executionPlan::UpdateSqlExecutionNode[*]): meta::relational::executionPlan::FinallyExecutionNode[1]
+{
+  ^meta::relational::executionPlan::FinallyExecutionNode(executionNodes= $updateNodes, resultType = ^meta::pure::executionPlan::ResultType(type = Void));
+}
+
+function meta::relational::functions::sqlQueryToString::default::generateUpdateNode(s: meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], r: meta::relational::commands::UpdateSQLQueryCommands[1], dbExtensions: DbExtension[1], dbConfig: DbConfig[1]) : meta::relational::executionPlan::UpdateSqlExecutionNode[*]
+{
+  assert($s->isNotEmpty(), 'You must specify an isolation strategy in datasourceSpecification');
+  $s->toOne()->match([
+    authId: meta::pure::alloy::connections::alloy::isolation::IsolateByAuthId[1] | $authId.updateNodes($r,$dbExtensions, $dbConfig),
+    default: meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy[1] | $default.updateNodes($r,$dbExtensions, $dbConfig)
+  ]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::generateFinallyNode(s: meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], r: meta::relational::commands::UpdateSQLQueryCommands[1], dbExtensions: DbExtension[1]) : meta::relational::executionPlan::FinallyExecutionNode[1]
+{
+  assert($s->isNotEmpty(), 'You must specify an isolation strategy in datasourceSpecification');
+  $s->toOne()->match([
+    authId: meta::pure::alloy::connections::alloy::isolation::IsolateByAuthId[1] | $authId.finallyNode($r,$dbExtensions),
+    default: meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy[1] | $default.finallyNode($r,$dbExtensions)
+  ]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::gernerateTablePath(s: meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], t: Table[1]) : String[1]
+{
+  assert($s->isNotEmpty(), 'You must specify an isolation strategy in datasourceSpecification');
+  $s->toOne()->match([
+    authId: meta::pure::alloy::connections::alloy::isolation::IsolateByAuthId[1] | $authId.generateTempTablePath($t),
+    default: meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy[1] | $default.generateTempTablePath($t)
+  ]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::generateTable(s: meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], tempTableName: String[1], tempTableColumnName: String[1], tempTableColumnType: meta::relational::metamodel::datatype::DataType[1], addSuffix: Boolean[1], isTestRun: Boolean[1]): Table[1]
+{
+  assert($s->isNotEmpty(), 'You must specify an isolation strategy in datasourceSpecification');
+  let testRequestId = '1234';
+  let requestIdVarPlaceHolder = if($isTestRun,| $testRequestId ,| meta::relational::functions::sqlQueryToString::stringToPlaceHolder('request_id'));
+  let schema = $s->toOne()->match([
+                                    authId: meta::pure::alloy::connections::alloy::isolation::IsolateByAuthId[1] | $authId.createSchema($requestIdVarPlaceHolder),
+                                    default: meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy[1] | $default.createSchema()
+                                  ]);
+
+  ^Table(name = $tempTableName + if($addSuffix ,| '_' + $requestIdVarPlaceHolder ,| ''),
+          columns = ^Column(name = $tempTableColumnName , type = $tempTableColumnType),
+          schema = $schema,
+          temporaryTable = true);
+}
+
+function meta::relational::functions::sqlQueryToString::default::generateUpdateSQLNodeforCreateTempTable(): GenerateUpdateSQLNodesForCreateTempTable[1]
+{
+  ^GenerateUpdateSQLNodesForCreateTempTable(
+    finallyNodeGenerator = generateFinallyNode_TempTableIsolationStrategy_$0_1$__UpdateSQLQueryCommands_1__DbExtension_1__FinallyExecutionNode_1_,
+    updateNodeGenerator = generateUpdateNode_TempTableIsolationStrategy_$0_1$__UpdateSQLQueryCommands_1__DbExtension_1__DbConfig_1__UpdateSqlExecutionNode_MANY_,
+    generateTable = generateTable_TempTableIsolationStrategy_$0_1$__String_1__String_1__DataType_1__Boolean_1__Boolean_1__Table_1_,
+    generateFullyQualifiedTempTableName = gernerateTablePath_TempTableIsolationStrategy_$0_1$__Table_1__String_1_
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::default::generateUpdateSQLQueryCommands(tempTable: Table[1], dbConnection: DatabaseConnection[1]): meta::relational::commands::UpdateSQLQueryCommands[1]
+{
+  ^meta::relational::commands::UpdateSQLQueryCommands(
+    createTempTable = getCreateTempTableSQLQuery($tempTable),
+    dropTable = getDropTableSQLQuery($tempTable),
+    loadTable = getLoadTableSQLQuery($tempTable),
+    createSchema = getCreateSchemaSQLQuery($tempTable.schema),
+    dropSchema = getDropSchemaSQLQuery($tempTable.schema),
+    useDb =  getUseDbSQLQuery($dbConnection)
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::default::getCreateTempTableSQLQuery(tempTable: Table[1]): CreateTableSQL[1]
+{
+   ^CreateTableSQL(table = $tempTable, isTempTable = true);
+}
+
+function meta::relational::functions::sqlQueryToString::default::getDropTableSQLQuery(table: Table[1]): DropTableSQL[1]
+{
+   ^DropTableSQL(table = $table);
+}
+
+function meta::relational::functions::sqlQueryToString::default::getLoadTableSQLQuery(table: Table[1]): LoadTableSQL[1]
+{
+   ^LoadTableSQL(table = $table, csvFileLocationVarPlaceHolder = stringToPlaceHolder('csv_file_location'));
+}
+
+function meta::relational::functions::sqlQueryToString::default::getCreateSchemaSQLQuery(schema: Schema[1]): CreateSchemaSQL[1]
+{
+   ^CreateSchemaSQL(schema = $schema);
+}
+
+function meta::relational::functions::sqlQueryToString::default::getDropSchemaSQLQuery(schema: Schema[1]): DropSchemaSQL[1]
+{
+   ^DropSchemaSQL(schema = $schema);
+}
+
+function meta::relational::functions::sqlQueryToString::default::getUseDbSQLQuery(dbConnection: DatabaseConnection[1]): UseDbSQL[1]
+{
+   ^UseDbSQL(dbOnConnection = $dbConnection);
 }

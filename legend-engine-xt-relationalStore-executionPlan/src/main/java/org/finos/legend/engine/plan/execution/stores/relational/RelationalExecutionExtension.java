@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.UpdateSqlExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.FinallyExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalGraphFetchExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -41,6 +43,8 @@ public class RelationalExecutionExtension implements ExecutionExtension
         {
             if (executionNode instanceof RelationalBlockExecutionNode
                     || executionNode instanceof CreateAndPopulateTempTableExecutionNode
+                    || executionNode instanceof UpdateSqlExecutionNode
+                    || executionNode instanceof FinallyExecutionNode
                     || executionNode instanceof SQLExecutionNode
                     || executionNode instanceof RelationalExecutionNode
                     || executionNode instanceof RelationalInstantiationExecutionNode

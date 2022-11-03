@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.RequestIdGenerator;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
@@ -152,9 +153,22 @@ public abstract class AlloyTestServer
         return executePlan(singleExecutionPlan, Collections.emptyMap());
     }
 
+    protected String executePlan(SingleExecutionPlan singleExecutionPlan, RequestIdGenerator requestIdGenerator)
+    {
+        testRelationalExecutor.setUseRequestIdGeneratorForTest(requestIdGenerator);
+        return executePlan(singleExecutionPlan, Collections.emptyMap());
+    }
+
     protected String executePlan(SingleExecutionPlan plan,String user)
     {
         RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user, null);
+        return result.flush(new RelationalResultToJsonDefaultSerializer(result));
+    }
+
+    protected String executePlan(SingleExecutionPlan plan, Map<String, ?> params, RequestIdGenerator requestIdGenerator)
+    {
+        testRelationalExecutor.setUseRequestIdGeneratorForTest(requestIdGenerator);
+        RelationalResult result = (RelationalResult) planExecutor.execute(plan, params, null);
         return result.flush(new RelationalResultToJsonDefaultSerializer(result));
     }
 

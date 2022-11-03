@@ -16,10 +16,12 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.RequestIdGeneratorImpl;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
@@ -98,4 +100,12 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     {
         this.blockConnectionContext = blockConnectionContext;
     }
+
+    public void prepareExecutionStateForTempTableExecution(ExecutionState state, String requestId, String tempFilePath)
+    {
+        state.addResult("auth_id", new ConstantResult(state.authId));
+        state.addResult("request_id", new ConstantResult(requestId));
+        state.addResult("csv_file_location", new ConstantResult(tempFilePath));
+    }
+
 }

@@ -50,9 +50,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.Relationa
 import org.finos.legend.engine.plan.execution.stores.relational.result.ResultInterpreterExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.result.SQLExecutionResult;
 import org.finos.legend.engine.plan.execution.stores.relational.result.VoidRelationalResult;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.UpdateSqlExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -80,6 +80,7 @@ public class RelationalExecutor
     private final ConnectionManagerSelector connectionManager;
     private final RelationalExecutionConfiguration relationalExecutionConfiguration;
     private MutableList<Function2<ExecutionState, List<Map<String, Object>>, Result>> resultInterpreterExtensions;
+    private RequestIdGenerator requestIdGenerator = new RequestIdGeneratorImpl();
 
     private static final MutableMap<String, String> DATA_TYPE_RELATIONAL_TYPE_MAP = Maps.mutable.empty();
 
@@ -135,7 +136,7 @@ public class RelationalExecutor
             span.log("Connection acquired");
         }
 
-        this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, profiles, executionState);
+        this.prepareForSQLExecution(node.sqlQuery, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, profiles, executionState);
 
         if (executionState.inAllocation)
         {
@@ -222,6 +223,28 @@ public class RelationalExecutor
         return null;
     }
 
+    public void execute(UpdateSqlExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        String databaseTimeZone = executionState.inScopeDatabaseConnection.timeZone == null ? DEFAULT_DB_TIME_ZONE : executionState.inScopeDatabaseConnection.timeZone;
+        String databaseType = executionState.inScopeDatabaseConnection.type.name();
+        List<String> tempTableList = FastList.newList();
+
+        node.sqlCommands.forEach(sqlQuery ->
+        {
+            Connection connectionManagerConnection = executionState.inScopeConnection;
+
+            Span span = GlobalTracer.get().activeSpan();
+            if (span != null)
+            {
+                span.log("Connection acquired");
+            }
+
+            this.prepareForSQLExecution(sqlQuery, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
+            new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+            span.setTag("executedSql", sqlQuery);
+        });
+    }
+
     public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
@@ -230,13 +253,12 @@ public class RelationalExecutor
         List<String> tempTableList = FastList.newList();
 
         Span span = GlobalTracer.get().activeSpan();
-        connectionManagerConnection = getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        connectionManagerConnection = executionState.inScopeConnection != null ? executionState.inScopeConnection : getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
         }
-
-        this.prepareForSQLExecution(node, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
+        this.prepareForSQLExecution(node.sqlQuery, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState);
 
         if (node.isResultVoid())
         {
@@ -246,12 +268,8 @@ public class RelationalExecutor
         return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan);
     }
 
-    private void prepareForSQLExecution(ExecutionNode node, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private void prepareForSQLExecution(String sqlQuery, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
-        String sqlQuery;
-
-        sqlQuery = node instanceof RelationalExecutionNode ? ((RelationalExecutionNode) node).sqlQuery() : ((SQLExecutionNode) node).sqlQuery();
-
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         for (Map.Entry<String, Result> var : executionState.getResults().entrySet())
         {
@@ -387,5 +405,15 @@ public class RelationalExecutor
     public static String getRelationalTypeFromDataType(String dataType)
     {
         return DATA_TYPE_RELATIONAL_TYPE_MAP.get(dataType);
+    }
+
+    public RequestIdGenerator getRequestIdGenerator()
+    {
+        return this.requestIdGenerator;
+    }
+
+    public void setUseRequestIdGeneratorForTest(RequestIdGenerator requestIdGenerator)
+    {
+        this.requestIdGenerator = requestIdGenerator;
     }
 }

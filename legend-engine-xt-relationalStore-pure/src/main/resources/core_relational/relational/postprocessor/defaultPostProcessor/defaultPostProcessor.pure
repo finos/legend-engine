@@ -27,7 +27,7 @@ function meta::relational::mapping::defaultPlanPostProcessors(query: SQLQuery[1]
 {
    let postProcessors = postProcessorList();
    let result = $postProcessors->fold({pp,queryHolder| let result = $pp->eval($queryHolder.query,$runtime->toOne(),$store,$exeCtx,$extensions);
-                                                                         ^$queryHolder(query = $result.query,resultPostProcessor =$result.resultPostProcessor , executionNodes += $result.executionNodes, postExecutionNodes +=$result.postExecutionNodes, templateFunctions +=$result.templateFunctions);},
+                                                                         ^$queryHolder(query = $result.query,resultPostProcessor =$result.resultPostProcessor , executionNodes += $result.executionNodes, postExecutionNodes +=$result.postExecutionNodes, templateFunctions +=$result.templateFunctions, finallyExecutionNode += if($result.finallyExecutionNode->isNotEmpty() ,| combineFinallyNode($result.finallyExecutionNode) ,|[]));},
                                                        ^PostProcessorResult(query =$query,resultPostProcessor = { result:Result<Any|*>[1] | $result},executionNodes = [])
                                     );
 
@@ -62,11 +62,11 @@ function meta::relational::mapping::sqlQueryDefaultPostProcessors():meta::pure::
    ]
 }
 
-function meta::relational::postProcessor::generateTempTableSelectSQLQuery(tempTableSchemaName:String[1], tempTableName:String[1], tempTableColumnName: String[1], tempTableColumnType:meta::relational::metamodel::datatype::DataType[1]):SelectSQLQuery[1]
+function meta::relational::postProcessor::generateTempTableSelectSQLQuery(tempTableSchemaName:String[1], tempTablePath:String[1], tempTableColumnName: String[1], tempTableColumnType:meta::relational::metamodel::datatype::DataType[1]):SelectSQLQuery[1]
 {
    let tempTableColumn            = ^Column(name = $tempTableColumnName, type = $tempTableColumnType);
-   let tempTableAlias             = ^TableAlias(name = $tempTableName,
-                                                relationalElement = ^Table(name = $tempTableName,
+   let tempTableAlias             = ^TableAlias(name = $tempTablePath,
+                                                relationalElement = ^Table(name = $tempTablePath,
                                                                            schema = ^Schema(name = $tempTableSchemaName, database = ^Database(name='TempTableDb')),
                                                                            temporaryTable = true
                                                                      )
@@ -77,4 +77,11 @@ function meta::relational::postProcessor::generateTempTableSelectSQLQuery(tempTa
       columns = ^Alias(name = $tempTableAliasColumn.column.name, relationalElement = $tempTableAliasColumn),
       data    = ^RootJoinTreeNode(alias = $tempTableAlias)
    );
+}
+
+function meta::relational::mapping::combineFinallyNode(finallyNodes: meta::relational::executionPlan::FinallyExecutionNode[*]): meta::relational::executionPlan::FinallyExecutionNode[*]
+{
+  let result = $finallyNodes -> fold({current, prev | ^$prev(resultType = $prev.resultType, executionNodes+= $current.executionNodes); },
+                                                      ^meta::relational::executionPlan::FinallyExecutionNode(resultType = ^meta::pure::executionPlan::ResultType(type = Void), executionNodes = [])
+                              );
 }

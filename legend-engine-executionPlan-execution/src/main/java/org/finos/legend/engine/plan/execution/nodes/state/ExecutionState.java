@@ -30,9 +30,11 @@ import org.finos.legend.engine.plan.execution.result.graphFetch.GraphObjectsBatc
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
@@ -62,6 +64,8 @@ public class ExecutionState
 
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
     public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
+    public Connection inScopeConnection;
+    public DatabaseConnection inScopeDatabaseConnection;
 
     public ExecutionState(ExecutionState state)
     {
@@ -84,6 +88,8 @@ public class ExecutionState
         List<ExecutionExtension> extensions = ExecutionExtensionLoader.extensions();
         this.extraNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraNodeExecutors);
         this.extraSequenceNodeExecutors = ListIterate.flatCollect(extensions, ExecutionExtension::getExtraSequenceNodeExecutors);
+        this.inScopeConnection = state.inScopeConnection;
+        this.inScopeDatabaseConnection = state.inScopeDatabaseConnection;
     }
 
     public ExecutionState(Map<String, Result> res, List<? extends String> templateFunctions, Iterable<? extends StoreExecutionState> extraStates, boolean isJavaCompilationAllowed, long graphFetchBatchMemoryLimit)

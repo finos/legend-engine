@@ -42,31 +42,52 @@ Class meta::relational::metamodel::DataRow
    values : Any[*];
 }
 
-Class meta::relational::metamodel::CreateSchemaSQL extends SQLQuery
+Class meta::relational::metamodel::UpdateSQLQuery 
+{
+  
+}
+
+Class meta::relational::metamodel::CreateSchemaSQL extends UpdateSQLQuery
 {
     schema: Schema[1];
 }
 
-Class meta::relational::metamodel::DropSchemaSQL extends SQLQuery
+Class meta::relational::metamodel::DropSchemaSQL extends UpdateSQLQuery
 {
     schema: Schema[1];
 }
 
-Class meta::relational::metamodel::CreateTableSQL extends SQLQuery
+Class meta::relational::metamodel::CreateTableSQL extends UpdateSQLQuery
 {
     table: Table[1];
     applyConstraints :Boolean[0..1];
     isTempTable : Boolean[0..1];
 }
 
-Class meta::relational::metamodel::DropTableSQL extends SQLQuery
+Class meta::relational::metamodel::DropTableSQL extends UpdateSQLQuery
 {
     table: Table[1];
 }
 
-Class meta::relational::metamodel::LoadTableSQL extends SQLQuery
+Class meta::relational::metamodel::LoadTableSQL extends UpdateSQLQuery
 {
     table: Table[1];
     columnsToLoad : Column[*];
     parsedData : List<List<String>>[0..1];
+    csvFileLocationVarPlaceHolder: String[0..1];
+}
+
+Class meta::relational::metamodel::UseDbSQL extends UpdateSQLQuery
+{
+  dbOnConnection: meta::relational::runtime::DatabaseConnection[0..1];
+}
+
+Class meta::relational::commands::UpdateSQLQueryCommands
+{
+  createTempTable: CreateTableSQL[1]; 
+  dropTable: DropTableSQL[1];
+  loadTable: LoadTableSQL[1];
+  createSchema: CreateSchemaSQL[1];
+  dropSchema: DropSchemaSQL[1];
+  useDb: UseDbSQL[0..1];
 }

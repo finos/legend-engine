@@ -260,7 +260,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 3);
    assertSameElements(['Smith', 'Johnson', 'Hill'], $result.values->cast(@TabularDataSet).rows.getString('lastName')->sort());
-   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+   assertEquals('select "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME in (select "temptableforin_4_1234_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_1234 as "temptableforin_4_1234_0")', $result->sqlRemoveFormatting(2));
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForNumbers():Boolean[1]
@@ -270,7 +270,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 12);
    assertSameElements(['Anthony Allen', 'David Harris', 'Don New York', 'Elena Firm B', 'Fabrice Roberts', 'John Johnson', 'John Hill', 'New York', 'No address Smith', 'No firm no Firm', 'Oliver Hill', 'Peter Smith'], $result.values->cast(@TabularDataSet).rows.getString('fullName')->sort());
-   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "fullName" from personTable as "root" where "root".AGE in (select "temptableforin_8_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_8 as "temptableforin_8_0")', $result->sqlRemoveFormatting());
+   assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "fullName" from personTable as "root" where "root".AGE in (select "temptableforin_8_1234_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_8_1234 as "temptableforin_8_1234_0")', $result->sqlRemoveFormatting(2));
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDates():Boolean[1]
@@ -280,7 +280,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
-   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".tradeDate in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".tradeDate in (select "temptableforin_4_1234_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_1234 as "temptableforin_4_1234_0")', $result->sqlRemoveFormatting(2));
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimes():Boolean[1]
@@ -290,7 +290,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
-   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_1234_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_1234 as "temptableforin_4_1234_0")', $result->sqlRemoveFormatting(2));
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::relational::tests::query::filter::in::tempTable::testInExecutionWithTempTableForDateTimesWithTz():Boolean[1]
@@ -300,5 +300,5 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start = 'v1_13_0'} meta::r
                         simpleRelationalMapping, testRuntime('US/Arizona'), meta::relational::extension::relationalExtensions());
    assertSize($result.values->cast(@TabularDataSet).rows, 5);
    assertSameElements([1, 2, 3, 4, 5], $result.values->cast(@TabularDataSet).rows.getNumber('TradeId')->sort());
-   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4 as "temptableforin_4_0")', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "TradeId" from tradeTable as "root" where "root".settlementDateTime in (select "temptableforin_4_1234_0".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_4_1234 as "temptableforin_4_1234_0")', $result->sqlRemoveFormatting(2));
 }

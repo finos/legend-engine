@@ -186,6 +186,21 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    identifierProcessor: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[1];
    dynaFuncDispatch: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> DynaFunctionToSql[1]}>[1];
    ddlCommandsTranslator : RelationalDDLCommandsTranslator[0..1];
+   createTableSQLQueryProcessor : meta::pure::metamodel::function::Function<{CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
+   dropTableSQLQueryProcessor : meta::pure::metamodel::function::Function<{DropTableSQL[1]->String[*]}>[0..1];
+   loadTableSQLQueryProcessor : meta::pure::metamodel::function::Function<{LoadTableSQL[1], DbConfig[1]->String[*]}>[0..1];
+   createSchemaSQLQueryProcessor : meta::pure::metamodel::function::Function<{CreateSchemaSQL[1]->String[*]}>[0..1];
+   dropSchemaSQLQueryProcessor : meta::pure::metamodel::function::Function<{DropSchemaSQL[1] -> String[*]}>[0..1];
+   useDbSQLQueryProcessor : meta::pure::metamodel::function::Function<{UseDbSQL[1] -> String[*]}>[0..1];
+   getDefaultTempTableIsolationStrategy : meta::pure::metamodel::function::Function<{ -> meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]}>[0..1];
+}
+
+Class  meta::relational::functions::sqlQueryToString::GenerateUpdateSQLNodesForCreateTempTable
+{
+  finallyNodeGenerator: meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], meta::relational::commands::UpdateSQLQueryCommands[1], DbExtension[1]-> meta::relational::executionPlan::FinallyExecutionNode[1]}>[1];
+  updateNodeGenerator: meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], meta::relational::commands::UpdateSQLQueryCommands[1], DbExtension[1], DbConfig[1]-> meta::relational::executionPlan::UpdateSqlExecutionNode[*]}>[1];
+  generateTable : meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], String[1], String[1], meta::relational::metamodel::datatype::DataType[1], Boolean[1], Boolean[1]-> Table[1]}>[1];
+  generateFullyQualifiedTempTableName: meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[0..1], Table[1]-> String[1]}>[1];
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
@@ -195,6 +210,7 @@ Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTransl
   dropTable : meta::pure::metamodel::function::Function<{DropTableSQL[1] -> String[*]}>[0..1];
   createTable : meta::pure::metamodel::function::Function<{CreateTableSQL[1], DbConfig[1] -> String[*]}>[0..1];
   loadTable: meta::pure::metamodel::function::Function<{LoadTableSQL[1], DbConfig[1] ->  String[*]}>[0..1];
+  useDb: meta::pure::metamodel::function::Function<{UseDbSQL[1]->  String[*]}>[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::DbExtensionLoader
