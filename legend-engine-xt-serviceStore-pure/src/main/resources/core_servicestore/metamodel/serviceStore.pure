@@ -144,7 +144,7 @@ Class meta::external::store::service::metamodel::ApiKeySecurityScheme extends me
 
 Class meta::external::store::service::metamodel::OauthSecurityScheme extends meta::external::store::service::metamodel::SecurityScheme
 {
-   scope : String[*];
+   scopes : String[*];
 }
 
 

@@ -178,7 +178,7 @@ public class HelperServiceStoreBuilder
                 OauthSecurityScheme oauthSecurityScheme = (OauthSecurityScheme) scheme;
                 return Tuples.pair(oauthSecurityScheme.id,
                         new Root_meta_external_store_service_metamodel_OauthSecurityScheme_Impl(oauthSecurityScheme.id, null, context.pureModel.getClass("meta::external::store::service::metamodel::OauthSecurityScheme"))
-                           ._scopeAddAll(Lists.mutable.withAll(oauthSecurityScheme.scopes))
+                           ._scopesAddAll(Lists.mutable.withAll(oauthSecurityScheme.scopes))
                            ._id(oauthSecurityScheme.id));
             }
             else
@@ -419,6 +419,6 @@ public class HelperServiceStoreBuilder
                .collect(processors,processor -> processor.value(securityScheme,context,owner))
                .select(Objects::nonNull)
                .getFirstOptional()
-               .orElseThrow(() -> new EngineException("Can't find security scheme : " + securityScheme.id,info,EngineErrorType.COMPILATION));
+               .orElseThrow(() -> new EngineException("Can't find security scheme : " + ((IdentifiedSecurityScheme)securityScheme).id,info,EngineErrorType.COMPILATION));
     }
 }

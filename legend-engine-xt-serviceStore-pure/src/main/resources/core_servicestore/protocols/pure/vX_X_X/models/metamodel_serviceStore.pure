@@ -108,7 +108,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::service::ApiKeySecuritySc
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::OauthSecurityScheme extends meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme
 {
-   scope : String[*];
+   scopes : String[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::service::ServiceGroupPtr

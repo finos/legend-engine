@@ -10,6 +10,5 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
     })
 public class AuthenticationSpecification {
 
-    public IdentifiedSecurityScheme securityScheme;
     public SourceInformation sourceInformation;
 }

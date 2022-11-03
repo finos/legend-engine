@@ -99,7 +99,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::se
         ^meta::protocols::pure::vX_X_X::metamodel::store::service::OauthSecurityScheme(
             _type = 'oauth',
             id = $o.id,
-            scope = $o.scope
+            scopes = $o.scopes
         ),
       other: meta::external::store::service::metamodel::SecurityScheme[1] |
          ^meta::protocols::pure::vX_X_X::metamodel::store::service::SecurityScheme(

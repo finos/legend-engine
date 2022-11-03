@@ -52,6 +52,7 @@ public class SecuritySchemeProcessor
                 OAuthAuthentication spec = (OAuthAuthentication) this.authSpecification;
                 String oauthToken = getOAuthToken(spec.grantType,spec.clientId,spec.clientSecretVaultReference,spec.authServerUrl);
                 requestBuilder.addHeader("Authorization", "Bearer " + oauthToken);
+                return true;
             }
         }
         catch (Exception e)
