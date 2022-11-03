@@ -216,22 +216,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 function meta::relational::functions::sqlQueryToString::spanner::getSpannerDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
 {
   ^RelationalDDLCommandsTranslator(
-                createSchema = translateCreateSchemaStatementSpanner_CreateSchemaSQL_1__String_1_,
-                dropSchema =  translateDropSchemaStatementSpanner_DropSchemaSQL_1__String_1_,
+                createSchema = translateCreateSchemaStatementSpanner_CreateSchemaSQL_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementSpanner_DropSchemaSQL_1__String_MANY_,
                 createTable =  translateCreateTableStatementSpanner_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementSpanner_DropTableSQL_1__String_1_,
                 loadTable =  loadValuesToDbTableForSpanner_LoadTableSQL_1__DbConfig_1__String_MANY_
               );
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateCreateSchemaStatementSpanner(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
+function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateCreateSchemaStatementSpanner(createSchemaSQL:CreateSchemaSQL[1]) : String[*]
 {
-   '';
+   [];
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateDropSchemaStatementSpanner(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
+function <<access.private>>  meta::relational::functions::sqlQueryToString::spanner::translateDropSchemaStatementSpanner(dropSchemaSQL:DropSchemaSQL[1]) : String[*]
 {
-   '';
+   [];
 }
 
 function meta::relational::functions::sqlQueryToString::spanner::translateDropTableStatementSpanner(dropTableSQL:DropTableSQL[1]) : String[1]
@@ -247,7 +247,6 @@ function meta::relational::functions::sqlQueryToString::spanner::translateDropTa
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::schemaNameToIdentifierForSpanner(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
 {
-  // println($schemaName);
    'default';
 }
 

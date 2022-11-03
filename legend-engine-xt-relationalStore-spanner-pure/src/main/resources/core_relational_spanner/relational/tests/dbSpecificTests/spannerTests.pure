@@ -50,8 +50,7 @@ function meta::relational::tests::dbSpecificTests::spanner::testsFilter(f:Functi
   let ignoredNamingTests = $namingTestsPackageName->pathToElement()->cast(@Package)->collectTests();
 
   let unsupportedAggregateFunctions = ['stdDevPopulation', 'stdDevSample'];
-  let failingSupportedAggregateTests = ['groupBy'];
-  let ignoredAggregatedTests = $unsupportedAggregateFunctions->concatenate($failingSupportedAggregateTests)->map(funcName |
+  let ignoredAggregatedTests = $unsupportedAggregateFunctions->map(funcName |
               let funcNamePackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $funcName;
               $funcNamePackageName->pathToElement()->cast(@Package)->collectTests(););
 
