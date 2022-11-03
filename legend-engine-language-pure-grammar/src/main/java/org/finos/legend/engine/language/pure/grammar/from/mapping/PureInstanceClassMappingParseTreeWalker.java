@@ -81,7 +81,7 @@ public class PureInstanceClassMappingParseTreeWalker
         }
 
         purePropertyMapping.property = new PropertyPointer();
-        purePropertyMapping.property._class = ctx.PLUS() != null ? null : PureGrammarParserUtility.fromQualifiedName(classMappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : classMappingContext.qualifiedName().packagePath().identifier(), classMappingContext.qualifiedName().identifier());
+        purePropertyMapping.property.propertyOwner = ctx.PLUS() != null ? null : PureGrammarParserUtility.fromQualifiedName(classMappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : classMappingContext.qualifiedName().packagePath().identifier(), classMappingContext.qualifiedName().identifier());
         purePropertyMapping.property.property = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         purePropertyMapping.source = classMappingContext.mappingElementId() == null ? "" : classMappingContext.mappingElementId().getText();
         // This might looks strange but the parser rule looks like: sourceAndTargetMappingId: BRACKET_OPEN sourceId (COMMA targetId)? BRACKET_CLOSE

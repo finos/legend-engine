@@ -21,7 +21,7 @@
               "_type": "purePropertyMapping",
               "explodeProperty": false,
               "property": {
-                "class": "model::TargetClass",
+                "propertyOwner": "model::TargetClass",
                 "property": "name",
                 "sourceInformation": {
                   "endColumn": 8,

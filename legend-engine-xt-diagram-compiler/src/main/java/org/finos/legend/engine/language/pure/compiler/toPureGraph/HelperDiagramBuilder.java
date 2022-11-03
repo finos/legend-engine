@@ -31,6 +31,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Property
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_PropertyView_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_Rectangle_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
 
 import java.util.Objects;
 
@@ -72,9 +73,10 @@ public class HelperDiagramBuilder
         Assert.assertTrue(from != null, () -> "Can't find source class view '" + propertyView.sourceView + "'", propertyView.sourceViewSourceInformation, EngineErrorType.COMPILATION);
         Root_meta_pure_metamodel_diagram_ClassView to = diagram._classViews().select(view -> view._id().equals(propertyView.targetView)).getAny();
         Assert.assertTrue(to != null, () -> "Can't find target class view '" + propertyView.targetView + "'", propertyView.targetViewSourceInformation, EngineErrorType.COMPILATION);
+        PropertyOwner propertyOwner = context.resolvePropertyOwner(propertyView.property.propertyOwner, propertyView.property.sourceInformation);
         return new Root_meta_pure_metamodel_diagram_PropertyView_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::PropertyView"))
                 // Property Views can hold either class properties or qualified property views
-                ._property(HelperModelBuilder.getOwnedAppliedProperty(context.resolveClass(propertyView.property._class, propertyView.property.sourceInformation), propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport()))
+                ._property(HelperModelBuilder.getAllOwnedAppliedProperty(propertyOwner, propertyView.property.property, propertyView.property.sourceInformation, context.pureModel.getExecutionSupport()))
                 ._from(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::RelationshipViewEnd"))._classView(from))
                 ._to(new Root_meta_pure_metamodel_diagram_RelationshipViewEnd_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::RelationshipViewEnd"))._classView(to))._path(ListIterate.collect(propertyView.line.points, point -> new Root_meta_pure_metamodel_diagram_Point_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::diagram::Point"))._x(point.x)._y(point.y)));
     }

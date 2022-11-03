@@ -14,13 +14,40 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
+import java.io.IOException;
+
+@JsonDeserialize(using = PropertyPointer.PropertyPointerDeserializer.class)
 public class PropertyPointer
 {
-    @JsonProperty(value = "class")
-    public String _class;
+    public String propertyOwner;
     public String property;
     public SourceInformation sourceInformation;
+
+    public static class PropertyPointerDeserializer extends JsonDeserializer<PropertyPointer>
+    {
+        @Override
+        public PropertyPointer deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException
+        {
+            ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
+            JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+            JsonNode _class = node.get("class");
+            JsonNode property = node.get("property");
+            JsonNode sourceInformation = node.get("sourceInformation");
+            JsonNode propertyOwner = node.get("propertyOwner");
+            PropertyPointer propertyPointer = new PropertyPointer();
+            propertyPointer.propertyOwner = _class != null ? _class.asText() : propertyOwner != null ? propertyOwner.asText() : null;
+            propertyPointer.property = property.asText();
+            propertyPointer.sourceInformation = om.treeToValue(sourceInformation, SourceInformation.class);
+            return propertyPointer;
+        }
+    }
 }
