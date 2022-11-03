@@ -115,6 +115,8 @@ Database meta::relational::tests::dbSpecificTests::db
     Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))
     Table orderTable(ID INT PRIMARY KEY, prodId INT, accountID INT, quantity INT, orderDate DATE, settlementDateTime TIMESTAMP)
     Table orderPnlTable( ORDER_ID INT PRIMARY KEY, pnl FLOAT,from_z DATE,thru_z DATE )
+    Table accountTable(ID INT PRIMARY KEY, name VARCHAR(200), createDate DATE)
+    Table salesPersonTable(PERSON_ID INT PRIMARY KEY, ACCOUNT_ID INT PRIMARY KEY, NAME VARCHAR(200), from_z DATE, thru_z DATE)
 
     Schema productSchema
     (
