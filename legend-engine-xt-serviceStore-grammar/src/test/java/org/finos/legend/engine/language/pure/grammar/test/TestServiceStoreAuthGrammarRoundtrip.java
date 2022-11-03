@@ -94,6 +94,10 @@ public class TestServiceStoreAuthGrammarRoundtrip extends TestGrammarRoundtrip.T
                 "    {\n" +
                 "      username : 'username';\n" +
                 "      password : 'password';\n" +
+                "    },\n" +
+                "    api : ApiKeyAuthentication\n" +
+                "    {\n" +
+                "      value : 'value1';\n" +
                 "    }\n" +
                 "  ];\n" +
                 "}\n");

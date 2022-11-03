@@ -27,7 +27,7 @@ import java.util.ListIterator;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = SimpleHttpSecurityScheme.class, name = "http"),
-        @JsonSubTypes.Type(value = ApiKeySecurityScheme.class, name = "api"),
+        @JsonSubTypes.Type(value = ApiKeySecurityScheme.class, name = "apiKey"),
         @JsonSubTypes.Type(value = OauthSecurityScheme.class, name = "oauth")
 
 })

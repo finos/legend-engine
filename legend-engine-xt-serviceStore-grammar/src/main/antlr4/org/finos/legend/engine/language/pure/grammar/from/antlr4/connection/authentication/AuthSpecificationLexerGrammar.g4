@@ -12,5 +12,8 @@ BASIC_AUTHENTICATION:                                       'UsernamePasswordAut
 USERNAME:                                                   'username';
 PASSWORD:                                                   'password';
 
+API_KEY_AUTHENTICATION:                                     'ApiKeyAuthentication';
+VALUE:                                                      'value';
+
 BRACKET_OPEN:                                               '[';
 BRACKET_CLOSE:                                              ']';

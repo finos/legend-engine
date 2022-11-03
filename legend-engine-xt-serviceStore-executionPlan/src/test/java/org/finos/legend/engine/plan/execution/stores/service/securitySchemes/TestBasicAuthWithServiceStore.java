@@ -38,6 +38,10 @@ public class TestBasicAuthWithServiceStore extends ServiceStoreTestSuite
                         "             {\n" +
                         "                   username : 'username';\n" +
                         "                   password : 'password';\n" +
+                        "             },\n" +
+                        "       api : ApiKeyAuthentication\n" +
+                        "             {\n" +
+                        "                   value : 'value1';\n" +
                         "             }\n" +
                         "    ];\n" +
                         "}";

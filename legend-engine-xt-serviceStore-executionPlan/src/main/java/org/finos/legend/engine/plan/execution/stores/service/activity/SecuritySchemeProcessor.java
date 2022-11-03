@@ -50,9 +50,31 @@ public class SecuritySchemeProcessor
             else if (securityScheme instanceof OauthSecurityScheme)
             {
                 OAuthAuthentication spec = (OAuthAuthentication) this.authSpecification;
+                //TODO: get token of valid scopes
                 String oauthToken = getOAuthToken(spec.grantType,spec.clientId,spec.clientSecretVaultReference,spec.authServerUrl);
                 requestBuilder.addHeader("Authorization", "Bearer " + oauthToken);
                 return true;
+            }
+            else if (securityScheme instanceof ApiKeySecurityScheme)
+            {
+                ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) securityScheme;
+                ApiKeyAuthentication spec = (ApiKeyAuthentication) this.authSpecification;
+                String value = spec.value;
+                if (scheme.location.equals("Header"))
+                {
+                    //TODO
+                }
+                else if (scheme.location.equals("Cookie"))
+                {
+                    //TODO
+                }
+                else if (scheme.location.equals("QueryParam"))
+                {
+                    //TODO: does this conflict with service parameters ?
+                    URI updatedUri = new URI(requestBuilder.getUri()+"?"+scheme.keyName+"="+spec.value);
+                    requestBuilder.setUri(updatedUri);
+                }
+                throw new RuntimeException(String.format("ApiKey location %s not supported",scheme.location));
             }
         }
         catch (Exception e)

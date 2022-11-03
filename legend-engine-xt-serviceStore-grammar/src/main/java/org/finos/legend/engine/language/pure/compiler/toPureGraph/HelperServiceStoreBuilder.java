@@ -219,6 +219,14 @@ public class HelperServiceStoreBuilder
                           ._clientSecretVaultReference(oAuthAuthentication.clientSecretVaultReference)
                           ._authServerUrl(oAuthAuthentication.authServerUrl));
            }
+           else if (authSpec instanceof ApiKeyAuthentication)
+            {
+                ApiKeyAuthentication apiKeyAuthentication = (ApiKeyAuthentication) authSpec;
+                return Tuples.pair(securitySchemeId,
+                        new Root_meta_external_store_service_metamodel_runtime_ApiKeySpecification_Impl("")
+                                ._value(apiKeyAuthentication.value));
+                               
+            }
            else
            {
                throw new EngineException("Unsupported Auth Generation Specification Type : " + authSpec.getClass().getSimpleName(), null, EngineErrorType.COMPILATION);
@@ -238,18 +246,21 @@ public class HelperServiceStoreBuilder
         {
             if (!(authSpec instanceof UsernamePasswordAuthentication))
             {
-                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, VaultSpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
+                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, ApiKeySpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
             }
         }
         else if (securityScheme instanceof Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl)
         {
-                //TODO
+            if (!(authSpec instanceof ApiKeyAuthentication))
+            {
+                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, ApiKeySpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
+            }
         }
         else if (securityScheme instanceof Root_meta_external_store_service_metamodel_OauthSecurityScheme_Impl)
         {
             if (!(authSpec instanceof OAuthAuthentication))
             {
-                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, VaultSpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
+                throw new EngineException("securityScheme-Authentication combination is not supported. Only supported combinations are \n [Http, UsernamePasswordAuthentication], [ApiKey, ApiKeySpecification], [Oauth, OauthAuthentication]",sourceInformation,EngineErrorType.COMPILATION);
             }
         }
         else

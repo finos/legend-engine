@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.connection.authentica
 
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.AuthSpecificationParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeyAuthentication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OAuthAuthentication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordAuthentication;
 
@@ -32,6 +33,17 @@ public class AuthenticationSpecificationParseTreeWalker
 
         AuthSpecificationParserGrammar.PasswordContext passwordContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.password(), "password", u.sourceInformation);
         u.password = PureGrammarParserUtility.fromGrammarString(passwordContext.STRING().getText(), true);
+
+        return u;
+    }
+
+    public ApiKeyAuthentication visitApiKeyAuthentication(AuthenticationSpecificationSourceCode code, AuthSpecificationParserGrammar.ApiKeyAuthenticationContext ctx)
+    {
+        ApiKeyAuthentication u = new ApiKeyAuthentication();
+        u.sourceInformation = code.getSourceInformation();
+
+        AuthSpecificationParserGrammar.ValueContext valueContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.value(),"value", u.sourceInformation);
+        u.value = PureGrammarParserUtility.fromGrammarString(valueContext.STRING().getText(), true);
 
         return u;
     }

@@ -38,3 +38,8 @@ Class meta::protocols::pure::vX_X_X::metamodel::connection::store::service::User
    username: String[1];
    password: String[1];
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ApiKeySpecification extends meta::protocols::pure::vX_X_X::metamodel::connection::store::service::AuthenticationTokenGenerationSpecification
+{
+   value: String[1];
+}

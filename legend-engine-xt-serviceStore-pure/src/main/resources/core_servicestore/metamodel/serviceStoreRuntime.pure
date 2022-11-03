@@ -45,6 +45,11 @@ Class meta::external::store::service::metamodel::runtime::UsernamePasswordGenera
    password: String[1];
 }
 
+Class meta::external::store::service::metamodel::runtime::ApiKeySpecification extends meta::external::store::service::metamodel::runtime::AuthenticationTokenGenerationSpecification
+{
+   value: String[1];
+}
+
 //Enum meta::external::store::service::metamodel::runtime::OauthGrantType
 //{
 //   ClientCredentials

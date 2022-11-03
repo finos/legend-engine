@@ -7,6 +7,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 @JsonSubTypes({
             @JsonSubTypes.Type(value = OAuthAuthentication.class, name = "oauth"),
             @JsonSubTypes.Type(value = UsernamePasswordAuthentication.class, name = "basic" ),
+            @JsonSubTypes.Type(value = ApiKeyAuthentication.class, name = "apiKey")
     })
 public class AuthenticationSpecification {
 

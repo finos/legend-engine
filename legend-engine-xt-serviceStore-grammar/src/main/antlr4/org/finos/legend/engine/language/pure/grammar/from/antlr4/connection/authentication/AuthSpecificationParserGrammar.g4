@@ -48,3 +48,14 @@ username:                                  USERNAME COLON STRING SEMI_COLON
 
 password:                                  PASSWORD COLON STRING SEMI_COLON
 ;
+
+apiKeyAuthentication:                      API_KEY_AUTHENTICATION
+                                           BRACE_OPEN
+                                           (
+                                               value
+                                           )*
+                                           BRACE_CLOSE
+;
+
+value:                                     VALUE COLON STRING SEMI_COLON
+;

@@ -141,6 +141,8 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
             AuthenticationSpecificationParseTreeWalker walker = new AuthenticationSpecificationParseTreeWalker();
             switch (code.getType())
             {
+                case "ApiKeyAuthentication":
+                    return parseAuthTokenGenerationSpecification(code, p -> walker.visitApiKeyAuthentication(code,p.apiKeyAuthentication()));
                 case "UsernamePasswordAuthentication":
                     return parseAuthTokenGenerationSpecification(code, p -> walker.visitUsernamePasswordAuthentication(code, p.basicAuthentication()));
                 case "OauthAuthentication":

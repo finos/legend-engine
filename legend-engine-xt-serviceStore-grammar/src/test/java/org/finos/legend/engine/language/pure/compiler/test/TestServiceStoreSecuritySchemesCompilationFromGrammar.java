@@ -90,7 +90,7 @@ public class TestServiceStoreSecuritySchemesCompilationFromGrammar  extends Test
                 "       }\n" +
                 "    ];\n" +
                 ")\n", "COMPILATION error at [2:1-14:1]: securityScheme-Authentication combination is not supported. Only supported combinations are \n" +
-                " [Http, UsernamePasswordAuthentication], [ApiKey, VaultSpecification], [Oauth, OauthAuthentication]");
+                " [Http, UsernamePasswordAuthentication], [ApiKey, ApiKeySpecification], [Oauth, OauthAuthentication]");
     }
 
 }

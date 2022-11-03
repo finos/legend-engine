@@ -47,6 +47,12 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
                     username = $u.username,
                     password = $u.password
                 ),
+      a:meta::external::store::service::metamodel::runtime::ApiKeySpecification [1] |
+                          ^meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ApiKeySpecification(
+                              _type = 'apiKey',
+                              //associatedSecurityScheme = $u.associatedSecurityScheme,
+                              value = $a.value
+                          ),
       other: meta::external::store::service::metamodel::runtime::AuthenticationTokenGenerationSpecification[1] |
          ^meta::protocols::pure::vX_X_X::metamodel::connection::store::service::AuthenticationTokenGenerationSpecification(
             //associatedSecurityScheme = 'unknown',

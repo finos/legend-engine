@@ -28,24 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParameterBuildInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.ServiceRequestParametersBuildInfo;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.FloatTypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IdentifiedSecurityScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IntegerTypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.OAuthAuthentication;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Service;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroup;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroupPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.UsernamePasswordAuthentication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
@@ -384,6 +367,15 @@ public class HelperServiceStoreGrammarComposer
                     getTabString(baseIndentation) + "{\n" +
                     getTabString(baseIndentation + 1) + "username : " + convertString(spec.username.toString(), true) + ";\n" +
                     getTabString(baseIndentation + 1) + "password : " + convertString(spec.password.toString(), true) + ";\n" +
+                    getTabString(baseIndentation) + "}";
+        }
+        else if (a instanceof ApiKeyAuthentication)
+        {
+            ApiKeyAuthentication spec = (ApiKeyAuthentication) a;
+            return  getTabString(baseIndentation) + securityScheme +
+                    " : ApiKeyAuthentication\n" +
+                    getTabString(baseIndentation) + "{\n" +
+                    getTabString(baseIndentation + 1) + "value : " + convertString(spec.value.toString(), true) + ";\n" +
                     getTabString(baseIndentation) + "}";
         }
         return null;
