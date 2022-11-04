@@ -127,7 +127,7 @@ function <<access.private>> meta::alloy::service::execution::replaceWithEmptyVal
    if ($replaced->contains(',,'), | meta::alloy::service::execution::replaceWithEmptyValue($replaced, $delimForEmptyCsvField), | $replaced);
 }
 
-function <<access.private>> meta::alloy::service::execution::schemaAndTableSetup(db:Database[1], dbConfig: DbConfig[1]):String[*]
+function <<access.private>> meta::alloy::service::execution::schemaAndTableSetup(db:Database[1], dbConfig:DbConfig[1]):String[*]
 {
    let allSchemas = $db->allSchemas();
    
@@ -153,7 +153,6 @@ function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(data:
 
 function meta::alloy::service::execution::setUpDataSQLs(data:String[1], db:Database[1], dbConfig:DbConfig[1]) : String[*]
 {
-
    let schemaAndTableSetup = $db->meta::alloy::service::execution::schemaAndTableSetup($dbConfig);
 
    let formattedData = $data->split('\n')
@@ -171,7 +170,7 @@ function <<doc.deprecated>> meta::alloy::service::execution::setUpDataSQLs(recor
 function meta::alloy::service::execution::setUpDataSQLs(records:List<String>[*], db:Database[1], dbConfig:DbConfig[1]) : String[*]
 {
    let schemaAndTableSetup = $db->meta::alloy::service::execution::schemaAndTableSetup($dbConfig);
-   $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($records, $db, t:Table[1]|$t));
+   $schemaAndTableSetup->concatenate(loadCsvDataToDbTable($records, $db, $dbConfig, t:Table[1]|$t));
 }
 
 function {service.contentType='text/csv', service.contentDisposition='attachment;filename=result.csv'} meta::relational::tests::csv::toCSV(t:TabularDataSet[1]):String[1]
