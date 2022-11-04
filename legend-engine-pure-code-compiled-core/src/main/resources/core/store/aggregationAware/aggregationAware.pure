@@ -20,7 +20,8 @@ import meta::pure::router::printer::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
-
+import meta::pure::router::metamodel::*;
+import meta::pure::router::metamodel::clustering::*;
 
 Class meta::pure::mapping::aggregationAware::AggregationAwareStore extends meta::pure::store::Store
 {
