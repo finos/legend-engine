@@ -84,7 +84,7 @@ meta::relational::functions::database::loadCsvDataToDbTable(csvData:List<String>
    loadCsvDataToDbTable($csvData, $db, $dbConfig, $tablePostProcessor)->map(sql|executeInDb($sql, $databaseConnection));
 }
 
-Class <<access.private>> meta::relational::functions::database::Res
+Class meta::relational::functions::database::Res
 {
    p : List<List<String>>[1];
    s : String[*];
