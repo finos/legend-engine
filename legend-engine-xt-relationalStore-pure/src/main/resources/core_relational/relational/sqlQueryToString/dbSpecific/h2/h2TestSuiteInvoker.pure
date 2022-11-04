@@ -49,7 +49,7 @@ function meta::relational::tests::dbSpecificTests::H2::testsFilter(f:FunctionDef
   let failingSupportedDynaFunctions = [];
 
   let ignoredAggregateFunctionsTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
-              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $dynaFuncName->cast(@String);
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::' + $dynaFuncName->cast(@String);
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
  
   let ignoredNamingTests = [];

@@ -19,14 +19,14 @@ import meta::pure::runtime::*;
 import meta::pure::test::*;
 import meta::pure::alloy::connections::*;
 
-function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::setUp(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::setUp(config:DbTestConfig[1]):Boolean[1]
 {
-  meta::relational::tests::dbSpecificTests::createTableAndFillDb($config);
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::createTableAndFillDb($config);
   println('setup done');
   true;
 }
 
-function meta::relational::tests::dbSpecificTests::createTableAndFillDb(config:DbTestConfig[1]):Boolean[1]
+function meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::createTableAndFillDb(config:DbTestConfig[1]):Boolean[1]
 {
   let records ='default\n'+
                 'personTable\n'+
@@ -101,13 +101,13 @@ function meta::relational::tests::dbSpecificTests::createTableAndFillDb(config:D
                 '3,Firm C\n'+
                 '4,Firm D\n';
 
-  meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbSpecificTests::db,
+  meta::relational::dbTestRunner::doSetupOnConnection($records, meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::db,
                                                      $config, meta::relational::extension::relationalExtensions());
   true;
 }
 
 ###Relational
-Database meta::relational::tests::dbSpecificTests::db
+Database meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::db
 (
     Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
     Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, CEOID INT)

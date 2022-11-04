@@ -25,7 +25,7 @@ import meta::pure::alloy::connections::*;
 import  meta::relational::metamodel::relation::*;
 
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowAvg(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::windowAvg(config:DbTestConfig[1]):Boolean[1]
 { 
   let func ={|meta::relational::tests::model::simple::Person.all()
     ->project([
@@ -40,7 +40,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithSortSingle(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::testWindowWithSortSingle(config:DbTestConfig[1]):Boolean[1]
 {
   let func = {|meta::relational::tests::model::simple::Person.all()
     ->project([
@@ -55,7 +55,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowWithSortMultiple(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::windowWithSortMultiple(config:DbTestConfig[1]):Boolean[1]
 {
   let func ={|meta::relational::tests::model::simple::Person.all()
     ->project([
@@ -72,7 +72,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   );
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithoutSortMultiple(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::testWindowWithoutSortMultiple(config:DbTestConfig[1]):Boolean[1]
 {
   let func ={|meta::relational::tests::model::simple::Person.all()
     ->project([

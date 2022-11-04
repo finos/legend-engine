@@ -26,7 +26,7 @@ import meta::relational::runtime::*;
 import meta::pure::alloy::connections::*;
 import  meta::relational::metamodel::relation::*;
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::count::testOnAllRows(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::count::testOnAllRows(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'count' , parameters=[]);
 
@@ -40,7 +40,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 // size and count are functionally same
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::size::testSize(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::size::testSize(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'size' , parameters=[]);
 
@@ -53,7 +53,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runSqlQueryTest($sqlQuery, $expected,[], $config);
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::average::testAverage(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::average::testAverage(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'average' , parameters=[^ColumnName(name='AGE')]);
 
@@ -67,7 +67,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::sum::testSum(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::sum::testSum(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'sum' , parameters=[^ColumnName(name='AGE')]);
 
@@ -80,7 +80,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runSqlQueryTest($sqlQuery, $expected,[], $config);
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::max::testMax(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::max::testMax(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'max' , parameters=[^ColumnName(name='AGE')]);
 
@@ -94,7 +94,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::min::testMin(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::min::testMin(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'min' , parameters=[^ColumnName(name='AGE')]);
 
@@ -107,7 +107,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runSqlQueryTest($sqlQuery, $expected,[], $config);
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::stdDevSample::testStdDevSample(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::stdDevSample::testStdDevSample(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'stdDevSample' , parameters=[^ColumnName(name='AGE')]);
 
@@ -121,7 +121,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::stdDevPopulation::testStdDevPopulation(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::stdDevPopulation::testStdDevPopulation(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name= 'stdDevPopulation' , parameters=[^ColumnName(name='AGE')]);
 
@@ -136,7 +136,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 //Tests on groups
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::groupBy::simpleGroupByCount(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::groupBy::simpleGroupByCount(config:DbTestConfig[1]):Boolean[1]
 {
    let result = executeViaPlan(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
