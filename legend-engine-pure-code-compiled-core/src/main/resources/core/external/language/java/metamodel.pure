@@ -1021,6 +1021,10 @@ function meta::external::language::java::metamodel::variableName(c:Code[1]):Stri
    $c->cast(@Variable).name;
 }
 
+function meta::external::language::java::metamodel::isNil(i:ValueSpecification[1]) : Boolean[1]
+{
+  $i->cast(@ValueSpecification).genericType.rawType == Nil;
+}
 
 function meta::external::language::java::metamodel::isJavaArray(type: meta::external::language::java::metamodel::Type[1]):Boolean[1]
 {
