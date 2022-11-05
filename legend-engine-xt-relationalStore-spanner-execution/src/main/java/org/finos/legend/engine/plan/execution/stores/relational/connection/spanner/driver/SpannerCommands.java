@@ -25,7 +25,7 @@ public class SpannerCommands extends RelationalDatabaseCommands
     @Override
     public String dropTempTable(String tableName)
     {
-        return "Drop table if exists " + tableName;
+        throw new UnsupportedOperationException("not yet implemented");
     }
 
     @Override
