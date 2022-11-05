@@ -861,6 +861,46 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
     }
 
     @Test
+    public void serviceStoreExampleWithUserFunctionInParamGenLogic()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {name:String[1]|meta::external::store::service::showcase::domain::S_Product.all()\n" +
+                "       ->filter(s | $s.s_productName == $name)" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Product {\n" +
+                "               s_productId,\n" +
+                "               s_productName,\n" +
+                "               s_description,\n" +
+                "               s_synonyms {\n" +
+                "                   s_name,\n" +
+                "                   s_type\n" +
+                "               }\n" +
+                "           }\n" +
+                "         }#)\n" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::S_Product {\n" +
+                "               s_productId,\n" +
+                "               s_productName,\n" +
+                "               s_description,\n" +
+                "               s_synonyms {\n" +
+                "                   s_name,\n" +
+                "                   s_type\n" +
+                "               }\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query, "meta::external::store::service::showcase::mapping::ServiceStoreMapping3", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime");
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":{\"s_productId\":\"30\",\"s_productName\":\"Product 30\",\"s_description\":\"Product 30 description\",\"s_synonyms\":[{\"s_name\":\"product 30 synonym 1\",\"s_type\":\"isin\"},{\"s_name\":\"product 30 synonym 2\",\"s_type\":\"cusip\"}]}}";
+
+        Assert.assertEquals(expectedRes, executePlan(plan, Maps.mutable.with("name", "product 30")));
+        Assert.assertEquals(expectedRes, executePlan(plan, Maps.mutable.with("name", "product 30_clutter")));
+    }
+
+    @Test
     public void serviceStoreExampleWithTakeAndCrossStore()
     {
         String query = "###Pure\n" +
