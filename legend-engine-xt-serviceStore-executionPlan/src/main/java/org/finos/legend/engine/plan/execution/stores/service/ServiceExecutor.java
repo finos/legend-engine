@@ -63,7 +63,7 @@ import java.util.Objects;
 
 public class ServiceExecutor
 {
-    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
+    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, List<String> mappedParameters, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -72,8 +72,8 @@ public class ServiceExecutor
         List<ServiceParameter> headerParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.HEADER);
 
         String urlProcessedWithPathParams = processUrlWithPathParams(url, pathParams, state);
-        String urlProcessedWithQueryParams = processUrlWithQueryParams(urlProcessedWithPathParams, queryParams, state);
-        List<Header> headers = processHeaderParams(headerParams, state);
+        String urlProcessedWithQueryParams = processUrlWithQueryParams(urlProcessedWithPathParams, queryParams, mappedParameters, state);
+        List<Header> headers = processHeaderParams(headerParams, mappedParameters, state);
 
         if (span != null)
         {
@@ -199,22 +199,22 @@ public class ServiceExecutor
         return FreeMarkerExecutor.processRecursively(url, pathVarValueMap, "");
     }
 
-    private static String processUrlWithQueryParams(String url, List<ServiceParameter> queryParams, ExecutionState state)
+    private static String processUrlWithQueryParams(String url, List<ServiceParameter> queryParams, List<String> mappedParameters, ExecutionState state)
     {
         if (queryParams == null || queryParams.isEmpty())
         {
             return url;
         }
-        return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
+        return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (mappedParameters.contains(param.name) && state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
-    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, ExecutionState state)
+    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, List<String> mappedParameters, ExecutionState state)
     {
         if (headerParams == null || headerParams.isEmpty())
         {
             return Collections.emptyList();
         }
-        return ListIterate.collectIf(headerParams, param -> (state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
+        return ListIterate.collectIf(headerParams, param -> (mappedParameters.contains(param.name) && state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
     private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)
