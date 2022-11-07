@@ -252,6 +252,17 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
             )
          )
      )
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] PersonServices.PersonsByFirstAndMiddleName
+     (
+         ~request
+         (
+            parameters
+            (
+                firstName = $this.firstName
+            )
+         )
+     )
   }
 
   meta::external::store::service::showcase::domain::Trade[trade_set]: Pure

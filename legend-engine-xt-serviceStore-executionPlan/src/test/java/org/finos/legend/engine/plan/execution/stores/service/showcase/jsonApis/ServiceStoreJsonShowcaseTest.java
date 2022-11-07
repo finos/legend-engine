@@ -685,6 +685,37 @@ public class ServiceStoreJsonShowcaseTest extends ServiceStoreTestSuite
     }
 
     @Test
+    public void serviceStoreQueryWithLambdaAndServiceParamSharingSameName()
+    {
+        String query = "###Pure\n" +
+                "function showcase::query(): Any[1]\n" +
+                "{\n" +
+                "   {firstName:String[1], middleName:String[0..1]|meta::external::store::service::showcase::domain::Person.all()\n" +
+                "       ->filter(p | $p.firstName == $firstName)\n" +
+                "       ->graphFetch(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               middleName,\n" +
+                "               lastName\n" +
+                "           }\n" +
+                "         }#)" +
+                "       ->serialize(#{\n" +
+                "           meta::external::store::service::showcase::domain::Person {\n" +
+                "               firstName,\n" +
+                "               middleName,\n" +
+                "               lastName\n" +
+                "           }\n" +
+                "        }#)};\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query);
+
+        String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"Steve\",\"middleName\":\"Patricio\",\"lastName\":\"Smith\"},{\"firstName\":\"Steve\",\"middleName\":null,\"lastName\":\"Smith2\"},{\"firstName\":\"Steve\",\"middleName\":null,\"lastName\":\"Smith3\"}]}";
+        Assert.assertEquals(expectedRes, executePlan(plan, Maps.immutable.with("firstName", "Steve", "middleName", "Patricio").toMap()));
+        Assert.assertEquals(expectedRes, executePlan(plan, Maps.immutable.with("firstName", "Steve").toMap()));
+    }
+
+    @Test
     public void serviceStoreQueryWithOptionalParameter()
     {
         String query = "###Pure\n" +
