@@ -178,6 +178,12 @@ public class HelperServiceGrammarComposer
             str.append(getTabString(baseIndentation + 1)).append("]\n");
         }
 
+        // AssertForKeys
+        if (!test.assertForKeys.isEmpty() && test.assertForKeys != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("assertForKeys:\n").append(getTabString(baseIndentation + 1)).append("[\n").append(getTabString(baseIndentation + 2)).append(LazyIterate.collect(test.assertForKeys, k -> convertString(k, true)).makeString(",\n")).append("\n").append(getTabString(baseIndentation + 1)).append("];\n");
+        }
+
         // Asserts
         if (test.assertions != null)
         {

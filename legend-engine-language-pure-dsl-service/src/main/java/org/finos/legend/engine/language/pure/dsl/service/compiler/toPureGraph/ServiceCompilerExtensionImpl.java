@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
@@ -51,6 +52,8 @@ import java.util.stream.Collectors;
 
 public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 {
+    public Root_meta_legend_service_metamodel_Service execution;
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
@@ -69,7 +72,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                     Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) context.pureModel.getOrCreatePackage(service._package)._children().detect(c -> service.name.equals(c._name()));
 
                     pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));
-
+                    execution = pureService._execution(HelperServiceBuilder.processServiceExecution(service.execution, context));
                     // Legacy flow
                     if (service.test != null)
                     {
@@ -150,6 +153,11 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 {
                     pureServiceTest._serializationFormat(serviceTest.serializationFormat);
                 }
+                if (execution instanceof PureSingleExecution && serviceTest.assertForKeys != null)
+                {
+                    throw new EngineException("Service Test cannot have assertForKeys for SingleExecution Tests", serviceTest.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                pureServiceTest._assertForKeysAddAll(Lists.mutable.withAll(serviceTest.assertForKeys));
                 if (serviceTest.assertions == null || serviceTest.assertions.isEmpty())
                 {
                     throw new EngineException("Service Tests should have atleast 1 assert", serviceTest.sourceInformation, EngineErrorType.COMPILATION);

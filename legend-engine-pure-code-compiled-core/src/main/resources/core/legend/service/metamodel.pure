@@ -95,6 +95,7 @@ Class meta::legend::service::metamodel::ServiceTest extends meta::pure::test::At
 {
   serializationFormat: String[0..1];
   parameters : ParameterValue[*];
+  assertForKeys: String[*];
 }
 
 Class meta::legend::service::metamodel::ParameterValue

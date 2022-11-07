@@ -124,13 +124,17 @@ public class ServiceTestRunner implements TestRunner
 
         Service service = ListIterate.detect(data.getElementsOfType(Service.class), ele -> ele.getPath().equals(getElementFullPath(pureService, pureModel.getExecutionSupport())));
         ServiceTestSuite suite = ListIterate.detect(service.testSuites, ts -> ts.id.equals(testSuite._id()));
-        List<String> testIds = ListIterate.collect(atomicTestIds, testId -> testId.atomicTestId);
 
         if (service.execution instanceof PureMultiExecution)
         {
             Map<String, MultiExecutionServiceTestResult> testResultsByTestId = Maps.mutable.empty();
             for (AtomicTest test : suite.tests)
             {
+                List<String> testIds = Lists.mutable.empty();
+                List<String> allAssertForKeys = Lists.mutable.empty();
+                List<KeyedExecutionParameter> allValidKeys = Lists.mutable.empty();
+                testIds.add(test.id);
+
                 MultiExecutionServiceTestResult multiExecutionServiceTestResult = new MultiExecutionServiceTestResult();
                 multiExecutionServiceTestResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
                 multiExecutionServiceTestResult.atomicTestId = new AtomicTestId();
@@ -138,26 +142,35 @@ public class ServiceTestRunner implements TestRunner
                 multiExecutionServiceTestResult.atomicTestId.testSuiteId = suite.id;
 
                 testResultsByTestId.put(test.id, multiExecutionServiceTestResult);
+
+                allAssertForKeys.addAll(((ServiceTest)test).assertForKeys);
+
+                if (allAssertForKeys.isEmpty())
+                {
+                    allValidKeys.addAll(((PureMultiExecution) service.execution).executionParameters);
+                }
+                else
+                {
+                    allValidKeys = ((PureMultiExecution) service.execution).executionParameters.stream().filter(s -> allAssertForKeys.contains(s.key)).collect(Collectors.toList());
+                }
+                for (KeyedExecutionParameter param : allValidKeys)
+                {
+                    PureSingleExecution pureSingleExecution = new PureSingleExecution();
+                    pureSingleExecution.func = ((PureMultiExecution) service.execution).func;
+                    pureSingleExecution.mapping = param.mapping;
+                    pureSingleExecution.runtime = param.runtime;
+                    pureSingleExecution.executionOptions = param.executionOptions;
+
+                    List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, testIds, pureModel, data, routerExtensions, planTransformers);
+                    Map<String, TestResult> testResultsForKeyById = Iterate.groupByUniqueKey(testResultsForKey, e -> e.atomicTestId.atomicTestId);
+                    testResultsForKeyById.forEach((key, value) -> testResultsByTestId.get(key).addTestResult(param.key, value));
+                }
             }
-
-            for (KeyedExecutionParameter param : ((PureMultiExecution) service.execution).executionParameters)
-            {
-                PureSingleExecution pureSingleExecution = new PureSingleExecution();
-                pureSingleExecution.func = ((PureMultiExecution) service.execution).func;
-                pureSingleExecution.mapping = param.mapping;
-                pureSingleExecution.runtime = param.runtime;
-                pureSingleExecution.executionOptions = param.executionOptions;
-
-                List<TestResult> testResultsForKey = executeSingleExecutionTestSuite(pureSingleExecution, suite, testIds, pureModel, data, routerExtensions, planTransformers);
-                Map<String, TestResult> testResultsForKeyById = Iterate.groupByUniqueKey(testResultsForKey, e -> e.atomicTestId.atomicTestId);
-
-                testResultsForKeyById.forEach((key, value) -> testResultsByTestId.get(key).addTestResult(param.key, value));
-            }
-
             return new ArrayList<>(testResultsByTestId.values());
         }
         else if (service.execution instanceof PureSingleExecution)
         {
+            List<String> testIds = ListIterate.collect(atomicTestIds, testId -> testId.atomicTestId);
             return executeSingleExecutionTestSuite((PureSingleExecution) service.execution, suite, testIds, pureModel, data, routerExtensions, planTransformers);
         }
         else

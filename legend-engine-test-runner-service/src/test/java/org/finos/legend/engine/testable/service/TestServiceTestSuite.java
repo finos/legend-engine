@@ -39,6 +39,7 @@ import org.junit.Test;
 
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 public class TestServiceTestSuite
 {
@@ -1982,7 +1983,7 @@ public class TestServiceTestSuite
                 "  ];\n" +
                 "}\n";
 
-        // Service With All Env Test Passing        
+        // Service With All Env Test Passing
         String serviceGrammarWithAllTestPassing = "###Service\n" +
                 "Service testModelStoreTestSuites::service::DocM2MService\n" +
                 "{\n" +
@@ -2074,7 +2075,7 @@ public class TestServiceTestSuite
         Assert.assertEquals("testSuite1", qaTestResult.atomicTestId.testSuiteId);
         Assert.assertEquals("test1", qaTestResult.atomicTestId.atomicTestId);
 
-        // Multi execution Service with different connections 
+        // Multi execution Service with different connections
         String serviceGrammarWithDifferentConnections = "###Service\n" +
                 "Service testModelStoreTestSuites::service::DocM2MService\n" +
                 "{\n" +
@@ -2357,6 +2358,315 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testServiceWithMultipleTestKeys()
+    {
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String grammar = "###Data\n" +
+                "Data testServiceStoreTestSuites::TestData\n" +
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "       contentType: 'application/json';\n" +
+                "       data: '{\\n  \"sFirm_tbl\": {\\n    \"legalName\": \"legalName 18\",\\n    \"firmId\": 22,\\n    \"ceoId\": 49,\\n    \"addressId\": 88,\\n    \"employees\": {\\n      \"firstName\": \"firstName 69\",\\n      \"lastName\": \"lastName 2\",\\n      \"age\": 14,\\n      \"id\": 52,\\n      \"addressId\": 83,\\n      \"firmId\": 73\\n    }\\n  },\\n  \"sPerson_tbl\": {\\n    \"firstName\": \"firstName 69\",\\n    \"lastName\": \"lastName 4\",\\n    \"age\": 98,\\n    \"id\": 87,\\n    \"addressId\": 46,\\n    \"firmId\": 26\\n  }\\n}';\n" +
+                "   }#\n" +
+                "}\n" +
+                "Data testServiceStoreTestSuites::TestData2\n" +
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "       contentType: 'application/json';\n" +
+                "       data: '{\\n  \"sFirm_tbl\": {\\n    \"legalName\": \"legalName 18\",\\n    \"firmId\": 22,\\n    \"ceoId\": 49,\\n    \"addressId\": 88,\\n    \"employees\": {\\n      \"firstName\": \"firstName 69\",\\n      \"lastName\": \"lastName 2\",\\n      \"age\": 14,\\n      \"id\": 52,\\n      \"addressId\": 83,\\n      \"firmId\": 73\\n    }\\n  },\\n  \"sPerson_tbl\": {\\n    \"firstName\": \"firstName 69\",\\n    \"lastName\": \"lastName 4\",\\n    \"age\": 98,\\n    \"id\": 87,\\n    \"addressId\": 46,\\n    \"firmId\": 26\\n  }\\n}';\n" +
+                "   }#\n" +
+                "}\n" +
+                "Data testServiceStoreTestSuites::TestData3\n" +
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "       contentType: 'application/json';\n" +
+                "       data: '{\\n  \"sFirm_tbl\": {\\n    \"legalName\": \"legalName 19\",\\n    \"firmId\": 22,\\n    \"ceoId\": 49,\\n    \"addressId\": 88,\\n    \"employees\": {\\n      \"firstName\": \"firstName 69\",\\n      \"lastName\": \"lastName 2\",\\n      \"age\": 14,\\n      \"id\": 52,\\n      \"addressId\": 83,\\n      \"firmId\": 73\\n    }\\n  },\\n  \"sPerson_tbl\": {\\n    \"firstName\": \"firstName 69\",\\n    \"lastName\": \"lastName 4\",\\n    \"age\": 98,\\n    \"id\": 87,\\n    \"addressId\": 46,\\n    \"firmId\": 26\\n  }\\n}';\n" +
+                "   }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class testModelStoreTestSuites::model::Doc\n" +
+                "{\n" +
+                "  firm_tbl: testModelStoreTestSuites::model::Firm_TBL[1];\n" +
+                "  person_tbl: testModelStoreTestSuites::model::Person_TBL[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::Firm_TBL\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  <<equality.Key>> firmId: Integer[1];\n" +
+                "  ceoId: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::Person_TBL\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  <<equality.Key>> id: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::sDoc\n" +
+                "{\n" +
+                "  sFirm_tbl: testModelStoreTestSuites::model::sFirm_TBL[1];\n" +
+                "  sPerson_tbl: testModelStoreTestSuites::model::sPerson_TBL[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::sFirm_TBL\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "  ceoId: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "  employees: testModelStoreTestSuites::model::sPerson_TBL[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::sPerson_TBL\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  id: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "(\n" +
+                "  *testModelStoreTestSuites::model::Doc: Pure\n" +
+                "  {\n" +
+                "    ~src testModelStoreTestSuites::model::sDoc\n" +
+                "    firm_tbl: $src.sFirm_tbl,\n" +
+                "    person_tbl: $src.sPerson_tbl\n" +
+                "  }\n" +
+                "  *testModelStoreTestSuites::model::Firm_TBL: Pure\n" +
+                "  {\n" +
+                "    ~src testModelStoreTestSuites::model::sFirm_TBL\n" +
+                "    legalName: $src.legalName,\n" +
+                "    firmId: $src.firmId,\n" +
+                "    ceoId: $src.ceoId,\n" +
+                "    addressId: $src.addressId\n" +
+                "  }\n" +
+                "  *testModelStoreTestSuites::model::Person_TBL: Pure\n" +
+                "  {\n" +
+                "    ~src testModelStoreTestSuites::model::sPerson_TBL\n" +
+                "    firstName: $src.firstName,\n" +
+                "    lastName: $src.lastName,\n" +
+                "    age: $src.age,\n" +
+                "    id: $src.id,\n" +
+                "    addressId: $src.addressId,\n" +
+                "    firmId: $src.firmId\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime testModelStoreTestSuites::runtime::DocM2MRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: testModelStoreTestSuites::model::sDoc;\n" +
+                "          url: 'executor:default';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Runtime testModelStoreTestSuites::runtime::DocM2MRuntime2\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: testModelStoreTestSuites::model::sDoc;\n" +
+                "          url: 'executor:default';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Runtime testModelStoreTestSuites::runtime::DocM2MRuntime3\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_2:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: testModelStoreTestSuites::model::sDoc;\n" +
+                "          url: 'executor:default';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n";
+
+        String serviceGrammarWithOneKeyTestAssert = "###Service\n" +
+                "Service testModelStoreTestSuites::service::DocM2MService\n" +
+                "{\n" +
+                "  pattern: '/testModelStoreTestSuites/service';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'dummy',\n" +
+                "    'dummy1'\n" +
+                "  ];\n" +
+                "  documentation: 'Service to test refiner flow';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: |testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#);\n" +
+                "    key: 'env';\n" +
+                "    executions['QA']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;\n" +
+                "    }\n" +
+                "    executions['UAT']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime3;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection_1:\n" +
+                "            Reference \n" +
+                "            #{ \n" +
+                "              testServiceStoreTestSuites::TestData \n" +
+                "            }#,\n" +
+                "          connection_2:\n" +
+                "            Reference \n" +
+                "            #{ \n" +
+                "              testServiceStoreTestSuites::TestData2 \n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          serializationFormat: PURE;\n" +
+                "           assertForKeys:\n" +
+                "           [\n" +
+                "               'QA'\n" +
+                "           ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\\\"sFirm_tbl\\\\\":{\\\\\"legalName\\\\\":\\\\\"legalName 18\\\\\",\\\\\"firmId\\\\\":22,\\\\\"ceoId\\\\\":49,\\\\\"addressId\\\\\":88,\\\\\"employees\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 2\\\\\",\\\\\"age\\\\\":14,\\\\\"id\\\\\":52,\\\\\"addressId\\\\\":83,\\\\\"firmId\\\\\":73}},\\\\\"sPerson_tbl\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 4\\\\\",\\\\\"age\\\\\":98,\\\\\"id\\\\\":87,\\\\\"addressId\\\\\":46,\\\\\"firmId\\\\\":26}}\"},\"value\":{\"sFirm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"sPerson_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}},\"value\":{\"firm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"person_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        },\n" +
+                "        test2:\n" +
+                "        {\n" +
+                "          serializationFormat: PURE;\n" +
+                "           assertForKeys:\n" +
+                "           [\n" +
+                "               'UAT'\n" +
+                "           ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\\\"sFirm_tbl\\\\\":{\\\\\"legalName\\\\\":\\\\\"legalName 18\\\\\",\\\\\"firmId\\\\\":22,\\\\\"ceoId\\\\\":49,\\\\\"addressId\\\\\":88,\\\\\"employees\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 2\\\\\",\\\\\"age\\\\\":14,\\\\\"id\\\\\":52,\\\\\"addressId\\\\\":83,\\\\\"firmId\\\\\":73}},\\\\\"sPerson_tbl\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 4\\\\\",\\\\\"age\\\\\":98,\\\\\"id\\\\\":87,\\\\\"addressId\\\\\":46,\\\\\"firmId\\\\\":26}}\"},\"value\":{\"sFirm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"sPerson_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}},\"value\":{\"firm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"person_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n" +
+                "\n" +
+                "\n";
+        PureModelContextData modelDataWithOneKeyTestAssert = PureGrammarParser.newInstance().parseModel(serviceGrammarWithOneKeyTestAssert + grammar);
+        PureModel pureModelWithOneKeyTestAssert = Compiler.compile(modelDataWithOneKeyTestAssert, DeploymentMode.TEST, null);
+
+        Root_meta_legend_service_metamodel_Service serviceWithOneKeyTestAssert = (Root_meta_legend_service_metamodel_Service) pureModelWithOneKeyTestAssert.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
+        List<TestResult> serviceStoreTestResultsWithOneKeyTestAssert = serviceTestableRunnerExtension.executeAllTest(serviceWithOneKeyTestAssert, pureModelWithOneKeyTestAssert, modelDataWithOneKeyTestAssert);
+
+        Assert.assertEquals(2, serviceStoreTestResultsWithOneKeyTestAssert.size());
+        Assert.assertTrue(serviceStoreTestResultsWithOneKeyTestAssert.get(0) instanceof MultiExecutionServiceTestResult);
+        Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", serviceStoreTestResultsWithOneKeyTestAssert.get(0).testable);
+        Assert.assertEquals("testSuite1", serviceStoreTestResultsWithOneKeyTestAssert.get(0).atomicTestId.testSuiteId);
+        Assert.assertEquals("test1", serviceStoreTestResultsWithOneKeyTestAssert.get(0).atomicTestId.atomicTestId);
+
+        Map<String, TestResult> KeysInScopeTestResults = ((MultiExecutionServiceTestResult) serviceStoreTestResultsWithOneKeyTestAssert.get(0)).getKeyIndexedTestResults();
+        KeysInScopeTestResults.forEach((key, value) ->
+        {
+            Assert.assertTrue(value instanceof TestPassed);
+            Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", value.testable);
+            Assert.assertEquals("testSuite1", value.atomicTestId.testSuiteId);
+            Assert.assertEquals("test1", value.atomicTestId.atomicTestId);
+
+        });
+
+        Map<String, TestResult> KeysInScopeTestResults2 = ((MultiExecutionServiceTestResult) serviceStoreTestResultsWithOneKeyTestAssert.get(1)).getKeyIndexedTestResults();
+        KeysInScopeTestResults2.forEach((key, value) ->
+        {
+            Assert.assertTrue(value instanceof TestPassed);
+            Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", value.testable);
+            Assert.assertEquals("testSuite1", value.atomicTestId.testSuiteId);
+            Assert.assertEquals("test2", value.atomicTestId.atomicTestId);
+
+        });
+    }
+
+
+    @Test
     public void testFailingRelationalServiceSuite()
     {
         // setup
@@ -2476,7 +2786,318 @@ public class TestServiceTestSuite
         return serviceTestableRunnerExtension.executeAllTest(serviceWithTest, pureModel, pureModelContextData);
     }
 
-    private String getResourceAsString(String path)
+    @Test
+    public void testMultiExecutionForMultipleKeysForAssert()
+    {
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+        String grammar = "###Data\n" +
+                "Data testServiceStoreTestSuites::TestData\n" +
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "       contentType: 'application/json';\n" +
+                "       data: '{\\n  \"sFirm_tbl\": {\\n    \"legalName\": \"legalName 18\",\\n    \"firmId\": 22,\\n    \"ceoId\": 49,\\n    \"addressId\": 88,\\n    \"employees\": {\\n      \"firstName\": \"firstName 69\",\\n      \"lastName\": \"lastName 2\",\\n      \"age\": 14,\\n      \"id\": 52,\\n      \"addressId\": 83,\\n      \"firmId\": 73\\n    }\\n  },\\n  \"sPerson_tbl\": {\\n    \"firstName\": \"firstName 69\",\\n    \"lastName\": \"lastName 4\",\\n    \"age\": 98,\\n    \"id\": 87,\\n    \"addressId\": 46,\\n    \"firmId\": 26\\n  }\\n}';\n" +
+                "   }#\n" +
+                "}\n" +
+                "Data testServiceStoreTestSuites::TestData2\n" +
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "       contentType: 'application/json';\n" +
+                "       data: '{\\n  \"sFirm_tbl\": {\\n    \"legalName\": \"legalName 18\",\\n    \"firmId\": 22,\\n    \"ceoId\": 49,\\n    \"addressId\": 88,\\n    \"employees\": {\\n      \"firstName\": \"firstName 69\",\\n      \"lastName\": \"lastName 2\",\\n      \"age\": 14,\\n      \"id\": 52,\\n      \"addressId\": 83,\\n      \"firmId\": 73\\n    }\\n  },\\n  \"sPerson_tbl\": {\\n    \"firstName\": \"firstName 69\",\\n    \"lastName\": \"lastName 4\",\\n    \"age\": 98,\\n    \"id\": 87,\\n    \"addressId\": 46,\\n    \"firmId\": 26\\n  }\\n}';\n" +
+                "   }#\n" +
+                "}\n" +
+                "Data testServiceStoreTestSuites::TestData3\n" +
+                "{\n" +
+                "   ExternalFormat\n" +
+                "   #{\n" +
+                "       contentType: 'application/json';\n" +
+                "       data: '{\\n  \"sFirm_tbl\": {\\n    \"legalName\": \"legalName 19\",\\n    \"firmId\": 22,\\n    \"ceoId\": 49,\\n    \"addressId\": 88,\\n    \"employees\": {\\n      \"firstName\": \"firstName 69\",\\n      \"lastName\": \"lastName 2\",\\n      \"age\": 14,\\n      \"id\": 52,\\n      \"addressId\": 83,\\n      \"firmId\": 73\\n    }\\n  },\\n  \"sPerson_tbl\": {\\n    \"firstName\": \"firstName 69\",\\n    \"lastName\": \"lastName 4\",\\n    \"age\": 98,\\n    \"id\": 87,\\n    \"addressId\": 46,\\n    \"firmId\": 26\\n  }\\n}';\n" +
+                "   }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class testModelStoreTestSuites::model::Doc\n" +
+                "{\n" +
+                "  firm_tbl: testModelStoreTestSuites::model::Firm_TBL[1];\n" +
+                "  person_tbl: testModelStoreTestSuites::model::Person_TBL[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::Firm_TBL\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  <<equality.Key>> firmId: Integer[1];\n" +
+                "  ceoId: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::Person_TBL\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  <<equality.Key>> id: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::sDoc\n" +
+                "{\n" +
+                "  sFirm_tbl: testModelStoreTestSuites::model::sFirm_TBL[1];\n" +
+                "  sPerson_tbl: testModelStoreTestSuites::model::sPerson_TBL[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::sFirm_TBL\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "  ceoId: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "  employees: testModelStoreTestSuites::model::sPerson_TBL[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class testModelStoreTestSuites::model::sPerson_TBL\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  age: Integer[1];\n" +
+                "  id: Integer[1];\n" +
+                "  addressId: Integer[1];\n" +
+                "  firmId: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "(\n" +
+                "  *testModelStoreTestSuites::model::Doc: Pure\n" +
+                "  {\n" +
+                "    ~src testModelStoreTestSuites::model::sDoc\n" +
+                "    firm_tbl: $src.sFirm_tbl,\n" +
+                "    person_tbl: $src.sPerson_tbl\n" +
+                "  }\n" +
+                "  *testModelStoreTestSuites::model::Firm_TBL: Pure\n" +
+                "  {\n" +
+                "    ~src testModelStoreTestSuites::model::sFirm_TBL\n" +
+                "    legalName: $src.legalName,\n" +
+                "    firmId: $src.firmId,\n" +
+                "    ceoId: $src.ceoId,\n" +
+                "    addressId: $src.addressId\n" +
+                "  }\n" +
+                "  *testModelStoreTestSuites::model::Person_TBL: Pure\n" +
+                "  {\n" +
+                "    ~src testModelStoreTestSuites::model::sPerson_TBL\n" +
+                "    firstName: $src.firstName,\n" +
+                "    lastName: $src.lastName,\n" +
+                "    age: $src.age,\n" +
+                "    id: $src.id,\n" +
+                "    addressId: $src.addressId,\n" +
+                "    firmId: $src.firmId\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime testModelStoreTestSuites::runtime::DocM2MRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: testModelStoreTestSuites::model::sDoc;\n" +
+                "          url: 'executor:default';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Runtime testModelStoreTestSuites::runtime::DocM2MRuntime2\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_1:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: testModelStoreTestSuites::model::sDoc;\n" +
+                "          url: 'executor:default';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "Runtime testModelStoreTestSuites::runtime::DocM2MRuntime3\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    testModelStoreTestSuites::mapping::DocM2MMapping\n" +
+                "  ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      connection_2:\n" +
+                "      #{\n" +
+                "        JsonModelConnection\n" +
+                "        {\n" +
+                "          class: testModelStoreTestSuites::model::sDoc;\n" +
+                "          url: 'executor:default';\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n";
+        String serviceGrammarWithOneKeyTestAssert = "###Service\n" +
+                "Service testModelStoreTestSuites::service::DocM2MService\n" +
+                "{\n" +
+                "  pattern: '/testModelStoreTestSuites/service';\n" +
+                "  owners:\n" +
+                "  [\n" +
+                "    'dummy',\n" +
+                "    'dummy1'\n" +
+                "  ];\n" +
+                "  documentation: 'Service to test refiner flow';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: |testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#);\n" +
+                "    key: 'env';\n" +
+                "    executions['QA1']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;\n" +
+                "    }\n" +
+                "    executions['QA2']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime2;\n" +
+                "    }\n" +
+                "    executions['QA3']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;\n" +
+                "    }\n" +
+                "    executions['QA4']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime2;\n" +
+                "    }\n" +
+                "    executions['UAT']:\n" +
+                "    {\n" +
+                "      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;\n" +
+                "      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      data:\n" +
+                "      [\n" +
+                "        connections:\n" +
+                "        [\n" +
+                "          connection_1:\n" +
+                "            Reference \n" +
+                "            #{ \n" +
+                "              testServiceStoreTestSuites::TestData \n" +
+                "            }#,\n" +
+                "          connection_2:\n" +
+                "            Reference \n" +
+                "            #{ \n" +
+                "              testServiceStoreTestSuites::TestData2 \n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      ]\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          serializationFormat: PURE;\n" +
+                "           assertForKeys:\n" +
+                "            [\n" +
+                "             'QA1','QA3'\n" +
+                "            ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\\\"sFirm_tbl\\\\\":{\\\\\"legalName\\\\\":\\\\\"legalName 18\\\\\",\\\\\"firmId\\\\\":22,\\\\\"ceoId\\\\\":49,\\\\\"addressId\\\\\":88,\\\\\"employees\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 2\\\\\",\\\\\"age\\\\\":14,\\\\\"id\\\\\":52,\\\\\"addressId\\\\\":83,\\\\\"firmId\\\\\":73}},\\\\\"sPerson_tbl\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 4\\\\\",\\\\\"age\\\\\":98,\\\\\"id\\\\\":87,\\\\\"addressId\\\\\":46,\\\\\"firmId\\\\\":26}}\"},\"value\":{\"sFirm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"sPerson_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}},\"value\":{\"firm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"person_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert2:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\\\"sFirm_tbl\\\\\":{\\\\\"legalName\\\\\":\\\\\"legalName 18\\\\\",\\\\\"firmId\\\\\":22,\\\\\"ceoId\\\\\":49,\\\\\"addressId\\\\\":88,\\\\\"employees\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 2\\\\\",\\\\\"age\\\\\":14,\\\\\"id\\\\\":52,\\\\\"addressId\\\\\":83,\\\\\"firmId\\\\\":73}},\\\\\"sPerson_tbl\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 4\\\\\",\\\\\"age\\\\\":98,\\\\\"id\\\\\":87,\\\\\"addressId\\\\\":46,\\\\\"firmId\\\\\":26}}\"},\"value\":{\"sFirm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"sPerson_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}},\"value\":{\"firm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"person_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}}';\n" +
+                "                  }#;\n" +
+                "              }#,\n" +
+                "            assert3:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"defects\":[],\"source\":{\"defects\":[],\"source\":{\"number\":1,\"record\":\"{\\\\\"sFirm_tbl\\\\\":{\\\\\"legalName\\\\\":\\\\\"legalName 18\\\\\",\\\\\"firmId\\\\\":22,\\\\\"ceoId\\\\\":49,\\\\\"addressId\\\\\":88,\\\\\"employees\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 2\\\\\",\\\\\"age\\\\\":14,\\\\\"id\\\\\":52,\\\\\"addressId\\\\\":83,\\\\\"firmId\\\\\":73}},\\\\\"sPerson_tbl\\\\\":{\\\\\"firstName\\\\\":\\\\\"firstName 69\\\\\",\\\\\"lastName\\\\\":\\\\\"lastName 4\\\\\",\\\\\"age\\\\\":98,\\\\\"id\\\\\":87,\\\\\"addressId\\\\\":46,\\\\\"firmId\\\\\":26}}\"},\"value\":{\"sFirm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"sPerson_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}},\"value\":{\"firm_tbl\":{\"addressId\":88,\"firmId\":22,\"legalName\":\"legalName 18\",\"ceoId\":49},\"person_tbl\":{\"addressId\":46,\"age\":98,\"firmId\":26,\"firstName\":\"firstName 69\",\"id\":87,\"lastName\":\"lastName 4\"}}}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n" +
+                "\n" +
+                "\n";
+        PureModelContextData modelDataWithTestPassing = PureGrammarParser.newInstance().parseModel(serviceGrammarWithOneKeyTestAssert + grammar);
+        PureModel pureModelWithTestPassing = Compiler.compile(modelDataWithTestPassing, DeploymentMode.TEST, null);
+        Root_meta_legend_service_metamodel_Service serviceWithAllTestPassing = (Root_meta_legend_service_metamodel_Service) pureModelWithTestPassing.getPackageableElement("testModelStoreTestSuites::service::DocM2MService");
+        List<TestResult> serviceStoreTestResults = serviceTestableRunnerExtension.executeAllTest(serviceWithAllTestPassing, pureModelWithTestPassing, modelDataWithTestPassing);
+        Assert.assertEquals(serviceStoreTestResults.size(), 1);
+        Assert.assertTrue(serviceStoreTestResults.get(0) instanceof MultiExecutionServiceTestResult);
+        Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", serviceStoreTestResults.get(0).testable);
+        Assert.assertEquals("testSuite1", serviceStoreTestResults.get(0).atomicTestId.testSuiteId);
+        Assert.assertEquals("test1", serviceStoreTestResults.get(0).atomicTestId.atomicTestId);
+
+        Map<String, TestResult> KeysInScopeTestResults = ((MultiExecutionServiceTestResult) serviceStoreTestResults.get(0)).getKeyIndexedTestResults();
+        Assert.assertEquals("test1", serviceStoreTestResults.get(0).atomicTestId.atomicTestId);
+        Assert.assertEquals(KeysInScopeTestResults.size(),2);
+        KeysInScopeTestResults.forEach((key, value) ->
+        {
+            Assert.assertTrue(value instanceof TestPassed);
+            Assert.assertEquals("testModelStoreTestSuites::service::DocM2MService", value.testable);
+            Assert.assertEquals("testSuite1", value.atomicTestId.testSuiteId);
+            Assert.assertEquals("test1", value.atomicTestId.atomicTestId);
+        });
+
+    }
+
+        private String getResourceAsString(String path)
     {
         try
         {

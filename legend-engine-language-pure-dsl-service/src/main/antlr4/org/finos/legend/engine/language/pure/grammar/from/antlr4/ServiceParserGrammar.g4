@@ -18,7 +18,7 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
-                                        | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP
+                                        | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS
 ;
 
 
@@ -133,7 +133,7 @@ embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAN
 ;
 serviceTestSuiteTests:                  SERVICE_TEST_TESTS COLON BRACKET_OPEN ( serviceTestBlock ( COMMA serviceTestBlock )* )? BRACKET_CLOSE
 ;
-serviceTestBlock:                       identifier COLON BRACE_OPEN ( serviceTestParameters | serviceTestSerialization | serviceTestAsserts )* BRACE_CLOSE
+serviceTestBlock:                       identifier COLON BRACE_OPEN ( serviceTestParameters | serviceTestSerialization | assertForKeys | serviceTestAsserts )* BRACE_CLOSE
 ;
 serviceTestParameters:                  SERVICE_TEST_PARAMETERS COLON BRACKET_OPEN ( serviceTestParameter ( COMMA serviceTestParameter )* )? BRACKET_CLOSE
 ;
@@ -144,6 +144,12 @@ serviceTestParameter:                   identifier EQUAL primitiveValue
 serviceTestAsserts:                     SERVICE_TEST_ASSERTS COLON BRACKET_OPEN ( serviceTestAssert ( COMMA serviceTestAssert )* )? BRACKET_CLOSE
 ;
 serviceTestAssert:                      identifier COLON testAssertion
+;
+assertForKeys:                          ASSERT_FOR_KEYS COLON
+                                                 BRACKET_OPEN
+                                                            (STRING (COMMA STRING)*)
+                                                 BRACKET_CLOSE
+                                        SEMI_COLON
 ;
 testAssertion:                          identifier ISLAND_OPEN (testAssertionContent)*
 ;
