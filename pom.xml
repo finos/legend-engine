@@ -271,7 +271,7 @@
         <dropwizard.version>1.3.29</dropwizard.version>
         <dropwizard-swagger.version>1.3.17-1</dropwizard-swagger.version>
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
-        <guava.version>31.1-jre</guava.version>
+        <guava.version>30.0-jre</guava.version>
         <jsonunit.version>2.17.0</jsonunit.version>
         <janino.version>3.1.0</janino.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
@@ -1977,12 +1977,6 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>com.google.errorprone</groupId>
-                        <artifactId>error_prone_annotations</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.codehaus.janino</groupId>
@@ -2115,6 +2109,10 @@
                     <exclusion>
                         <groupId>org.checkerframework</groupId>
                         <artifactId>checker-qual</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.errorprone</groupId>
+                        <artifactId>error_prone_annotations</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
