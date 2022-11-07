@@ -308,6 +308,17 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping2
   *meta::external::store::service::showcase::domain::S_Product[s_prod_set]: ServiceStore
   {
      ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.GetAllProductsService
+
+     ~service [meta::external::store::service::showcase::store::ShowcaseServiceStore] ProductServices.ProductByNameService
+     (
+       ~request
+       (
+         parameters
+         (
+           name = if($this.s_productName->length() > 10, | $this.s_productName->substring(0, 10), | $this.s_productName)
+         )
+       )
+     )
   }
 )
 
