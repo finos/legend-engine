@@ -90,20 +90,18 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (sink.\"batch_id_out\" = 999999999) AND " +
             "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_reference\" = stage.\"validity_from_reference\")) " +
+            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_target\" = stage.\"validity_from_reference\")) " +
             "AND (sink.\"digest\" <> stage.\"digest\")))";
 
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"validity_through_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(\"id\", \"name\", \"amount\", \"validity_from_target\", \"validity_through_target\", \"digest\", \"batch_id_in\", \"batch_id_out\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"validity_through_reference\",stage.\"digest\"," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')," +
-            "999999999," +
-            "stage.\"validity_from_reference\"," +
-            "stage.\"validity_through_reference\" " +
+            "999999999 " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
             "WHERE (sink.\"batch_id_out\" = 999999999) " +
-            "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_reference\" = stage.\"validity_from_reference\")))))";
+            "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_target\" = stage.\"validity_from_reference\")))))";
 
         Assertions.assertEquals(expectedBitemporalMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -160,20 +158,18 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (sink.\"batch_id_out\" = 999999999) AND " +
             "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_reference\" = stage.\"validity_from_reference\")) " +
+            "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_target\" = stage.\"validity_from_reference\")) " +
             "AND ((sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" IN ('yes','1','true')))))";
 
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
-            "(\"id\", \"name\", \"amount\", \"validity_from_reference\", \"validity_through_reference\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
+            "(\"id\", \"name\", \"amount\", \"validity_from_target\", \"validity_through_target\", \"digest\", \"batch_id_in\", \"batch_id_out\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"validity_through_reference\",stage.\"digest\"," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')," +
-            "999999999," +
-            "stage.\"validity_from_reference\"," +
-            "stage.\"validity_through_reference\" " +
+            "999999999 " +
             "FROM \"mydb\".\"staging\" as stage " +
             "WHERE (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
             "WHERE (sink.\"batch_id_out\" = 999999999) " +
-            "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_reference\" = stage.\"validity_from_reference\"))))) " +
+            "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") AND (sink.\"validity_from_target\" = stage.\"validity_from_reference\"))))) " +
             "AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
         Assertions.assertEquals(expectedBitemporalMainTableCreateQuery, preActionsSql.get(0));
@@ -221,23 +217,23 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
             "SET sink.\"BATCH_ID_OUT\" = (SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 " +
             "FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main')-1 " +
             "WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (EXISTS (SELECT * FROM \"MYDB\".\"STAGING\" as stage " +
-            "WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\") " +
-            "AND (sink.\"VALIDITY_FROM_REFERENCE\" = stage.\"VALIDITY_FROM_REFERENCE\")) " +
+            "WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) " +
+            "AND (sink.\"VALIDITY_FROM_TARGET\" = stage.\"VALIDITY_FROM_REFERENCE\") " +
             "AND (sink.\"DIGEST\" <> stage.\"DIGEST\")))";
 
         String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" " +
-            "(\"ID\", \"NAME\", \"AMOUNT\", \"VALIDITY_FROM_REFERENCE\", \"VALIDITY_THROUGH_REFERENCE\", \"DIGEST\", \"BATCH_ID_IN\", " +
-            "\"BATCH_ID_OUT\", \"VALIDITY_FROM_TARGET\", \"VALIDITY_THROUGH_TARGET\") " +
-            "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"VALIDITY_FROM_REFERENCE\",stage.\"VALIDITY_THROUGH_REFERENCE\"," +
-            "stage.\"DIGEST\",(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main')" +
-            ",999999999,stage.\"VALIDITY_FROM_REFERENCE\",stage.\"VALIDITY_THROUGH_REFERENCE\" " +
-            "FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS " +
-            "(SELECT * FROM \"MYDB\".\"MAIN\" as sink " +
-            "WHERE (sink.\"BATCH_ID_OUT\" = 999999999) " +
-            "AND (sink.\"DIGEST\" = stage.\"DIGEST\") " +
-            "AND ((sink.\"ID\" = stage.\"ID\") " +
-            "AND (sink.\"NAME\" = stage.\"NAME\") " +
-            "AND (sink.\"VALIDITY_FROM_REFERENCE\" = stage.\"VALIDITY_FROM_REFERENCE\")))))";
+                "(\"ID\", \"NAME\", \"AMOUNT\", \"VALIDITY_FROM_TARGET\", \"VALIDITY_THROUGH_TARGET\", \"DIGEST\", \"BATCH_ID_IN\", " +
+                "\"BATCH_ID_OUT\") " +
+                "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"VALIDITY_FROM_REFERENCE\",stage.\"VALIDITY_THROUGH_REFERENCE\"," +
+                "stage.\"DIGEST\",(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main')" +
+                ",999999999 " +
+                "FROM \"MYDB\".\"STAGING\" as stage WHERE NOT (EXISTS " +
+                "(SELECT * FROM \"MYDB\".\"MAIN\" as sink " +
+                "WHERE (sink.\"BATCH_ID_OUT\" = 999999999) " +
+                "AND (sink.\"DIGEST\" = stage.\"DIGEST\") " +
+                "AND ((sink.\"ID\" = stage.\"ID\") " +
+                "AND (sink.\"NAME\" = stage.\"NAME\")) " +
+                "AND (sink.\"VALIDITY_FROM_TARGET\" = stage.\"VALIDITY_FROM_REFERENCE\"))))";
 
         Assertions.assertEquals(expectedBitemporalMainTableCreateQueryUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));

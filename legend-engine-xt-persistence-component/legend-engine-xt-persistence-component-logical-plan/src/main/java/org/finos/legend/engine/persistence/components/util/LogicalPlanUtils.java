@@ -33,15 +33,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -216,6 +213,20 @@ public class LogicalPlanUtils
         fieldsList.removeIf(field ->
             field instanceof FieldValue && ((FieldValue) field).fieldName().equalsIgnoreCase(fieldName)
         );
+    }
+
+    public static void replaceField(List<Value> fieldsList, String oldFieldName, String newFieldName)
+    {
+        fieldsList.forEach(field ->
+        {
+            if (field instanceof FieldValue && ((FieldValue) field).fieldName().equalsIgnoreCase(oldFieldName))
+            {
+                if (((FieldValue) field).fieldName().equalsIgnoreCase(oldFieldName))
+                {
+                    fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
+                }
+            }
+        });
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)
