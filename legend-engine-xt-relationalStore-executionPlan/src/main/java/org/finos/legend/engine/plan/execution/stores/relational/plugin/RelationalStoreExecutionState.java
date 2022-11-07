@@ -16,13 +16,17 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.blockConnection.BlockConnectionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.pac4j.core.profile.CommonProfile;
+
+import java.sql.Connection;
 
 public class RelationalStoreExecutionState implements StoreExecutionState
 {
@@ -30,18 +34,22 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     private boolean retainConnection;
     private BlockConnectionContext blockConnectionContext;
     private RuntimeContext runtimeContext;
+    public Connection inScopeConnection;
+    public DatabaseConnection inScopeDatabaseConnection;
 
-    private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext)
+    private RelationalStoreExecutionState(RelationalStoreState storeState, boolean retainConnection, BlockConnectionContext blockConnectionContext, RuntimeContext runtimeContext, Connection inScopeConnection, DatabaseConnection inScopeDatabaseConnection)
     {
         this.state = storeState;
         this.retainConnection = retainConnection;
         this.blockConnectionContext = blockConnectionContext;
         this.runtimeContext = runtimeContext;
+        this.inScopeConnection = inScopeConnection;
+        this.inScopeDatabaseConnection = inScopeDatabaseConnection;
     }
 
     public RelationalStoreExecutionState(RelationalStoreState storeState)
     {
-        this(storeState, false, new BlockConnectionContext(), StoreExecutionState.emptyRuntimeContext());
+        this(storeState, false, new BlockConnectionContext(), StoreExecutionState.emptyRuntimeContext(), null, null);
     }
 
     @Override
@@ -59,7 +67,7 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new RelationalStoreExecutionState(this.state, this.retainConnection, this.retainConnection ? this.blockConnectionContext : this.blockConnectionContext.copy(), this.runtimeContext);
+        return new RelationalStoreExecutionState(this.state, this.retainConnection, this.retainConnection ? this.blockConnectionContext : this.blockConnectionContext.copy(), this.runtimeContext, this.inScopeConnection, this.inScopeDatabaseConnection);
     }
 
     @Override
@@ -97,5 +105,12 @@ public class RelationalStoreExecutionState implements StoreExecutionState
     public void setBlockConnectionContext(BlockConnectionContext blockConnectionContext)
     {
         this.blockConnectionContext = blockConnectionContext;
+    }
+
+    public void prepareExecutionStateForTempTableExecution(ExecutionState state, String requestId, String tempFilePath)
+    {
+        state.addResult("auth_id", new ConstantResult(state.authId));
+        state.addResult("request_id", new ConstantResult(requestId));
+        state.addResult("csv_file_location", new ConstantResult(tempFilePath));
     }
 }

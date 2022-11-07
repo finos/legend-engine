@@ -29,7 +29,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::c
       selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
+      ddlCommandsTranslator = getDDLCommandsTranslatorDefault(),
+      createTableSQLQueryProcessor = processCreateTempTable_CreateTableSQL_1__DbConfig_1__String_MANY_,
+      dropTableSQLQueryProcessor = processDropTable_DropTableSQL_1__String_MANY_,
+      loadTableSQLQueryProcessor = processLoadTable_LoadTableSQL_1__DbConfig_1__String_MANY_,
+      getDefaultTempTableIsolationStrategy = getDefaultTempTableIsolationStrategy__TempTableIsolationStrategy_1_
    );
 }
 
@@ -187,6 +191,26 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::f
    let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
    let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
    [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function meta::relational::functions::sqlQueryToString::h2::getDefaultTempTableIsolationStrategy(): meta::pure::alloy::connections::alloy::isolation::TempTableIsolationStrategy[1]
+{
+  ^meta::pure::alloy::connections::alloy::isolation::DefaultIsolationStrategy();
+}
+
+function meta::relational::functions::sqlQueryToString::h2::processCreateTempTable(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  'CREATE LOCAL TEMPORARY TABLE ' + $c.table->toOne().name + '('+ $c.table.columns->cast(@Column).name->toOne() + ' ' + $c.table.columns->cast(@Column).type->toOne()->meta::relational::metamodel::datatype::dataTypeToSqlText() + ');';
+}
+
+function meta::relational::functions::sqlQueryToString::h2::processDropTable(d:DropTableSQL[1]): String[*]
+{
+  'Drop table if exists ' + $d.table->toOne().name + ';';
+}
+
+function meta::relational::functions::sqlQueryToString::h2::processLoadTable(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
+{
+  'INSERT INTO ' + $l.table->toOne().name + ' SELECT * FROM CSVREAD(\''+$l.csvFileLocationVarPlaceHolder->toOne() + '\');';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::dayOfWeekNumberH2(dayOfWeek: String[*]):String[1]

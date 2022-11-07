@@ -46,6 +46,13 @@ public class TemporaryFile implements Closeable
         this.path = Paths.get(this.getTemporaryPathForFile());
     }
 
+    public TemporaryFile(String tempPath, String requestId)
+    {
+        this.tempPath = tempPath;
+        this.fileName = requestId + ".txt";
+        this.path = Paths.get(this.getTemporaryPathForFile());
+    }
+
     public String getTemporaryPathForFile()
     {
         Path parentPath = Paths.get(SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_UNIX ? this.tempPath : localDevTempPath);
@@ -64,7 +71,7 @@ public class TemporaryFile implements Closeable
         }
     }
 
-    private String randomString(int len)
+    public static String randomString(int len)
     {
         final String AB = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         StringBuilder sb = new StringBuilder(len);

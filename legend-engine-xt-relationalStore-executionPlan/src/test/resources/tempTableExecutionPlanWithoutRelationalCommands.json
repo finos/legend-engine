@@ -1,0 +1,658 @@
+{
+  "_type": "simple",
+  "authDependent": false,
+  "globalImplementationSupport": {
+    "_type": "java",
+    "classes": [
+      {
+        "name": "CreateAndPopulateTempTable",
+        "package": "_pure.plan.root.n2",
+        "source": "package _pure.plan.root.n2;\n\nimport java.util.Arrays;\nimport java.util.List;\nimport java.util.Optional;\nimport java.util.stream.Collector;\nimport java.util.stream.Collectors;\nimport java.util.stream.Stream;\nimport org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;\nimport org.finos.legend.engine.plan.dependencies.util.Library;\n\npublic class CreateAndPopulateTempTable implements IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics\n{\n    public String getGetterNameForProperty(String p)\n    {\n        return p == null ? null\n                         : Arrays.asList(\"get\",\n                                         Library.toOne(Optional.ofNullable(p)\n                                                               .map(Stream::of)\n                                                               .orElseGet(Stream::empty)\n                                                               .map(Library::toUpperFirstCharacter)\n                                                               .collect(Collectors.toList())))\n                                 .stream()\n                                 .collect(Collectors.joining(\"\"));\n    }\n}"
+      }
+    ]
+  },
+  "rootExecutionNode": {
+    "_type": "relationalBlock",
+    "executionNodes": [
+      {
+        "_type": "allocation",
+        "executionNodes": [
+          {
+            "_type": "constant",
+            "executionNodes": [],
+            "resultType": {
+              "_type": "dataType",
+              "dataType": "meta::pure::functions::collection::List"
+            },
+            "values": {
+              "_type": "listInstance",
+              "values": [
+                {
+                  "_type": "listInstance",
+                  "values": [
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        1
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        2
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        3
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        4
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        5
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        6
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        7
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        8
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        9
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        10
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        11
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        12
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        13
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        14
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        15
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        16
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        17
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        18
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        19
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        20
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        21
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        22
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        23
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        24
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        25
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        26
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        27
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        28
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        29
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        30
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        31
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        32
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        33
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        34
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        35
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        36
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        37
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        38
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        39
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        40
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        41
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        42
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        43
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        44
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        45
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        46
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        47
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        48
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        49
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        50
+                      ]
+                    },
+                    {
+                      "_type": "integer",
+                      "multiplicity": {
+                        "lowerBound": 1,
+                        "upperBound": 1
+                      },
+                      "values": [
+                        51
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "meta::pure::functions::collection::List"
+        },
+        "varName": "tempVarForIn_8"
+      },
+      {
+        "_type": "createAndPopulateTempTable",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          },
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "element": "meta::relational::tests::db",
+          "postProcessorWithParameter": [],
+          "postProcessors": [],
+          "timeZone": "GMT",
+          "type": "H2"
+        },
+        "executionNodes": [],
+        "implementation": {
+          "_type": "java",
+          "executionClassFullName": "_pure.plan.root.n2.CreateAndPopulateTempTable"
+        },
+        "inputVarNames": [
+          "tempVarForIn_8"
+        ],
+        "resultType": {
+          "_type": "void"
+        },
+        "tempTableColumnMetaData": [
+          {
+            "column": {
+              "dataType": "INTEGER",
+              "label": "ColumnForStoringInCollection"
+            }
+          }
+        ],
+        "tempTableName": "tempTableForIn_8"
+      },
+      {
+        "_type": "relationalTdsInstantiation",
+        "executionNodes": [
+          {
+            "_type": "sql",
+            "connection": {
+              "_type": "RelationalDatabaseConnection",
+              "authenticationStrategy": {
+                "_type": "h2Default"
+              },
+              "datasourceSpecification": {
+                "_type": "h2Local"
+              },
+              "element": "meta::relational::tests::db",
+              "postProcessorWithParameter": [],
+              "postProcessors": [],
+              "timeZone": "GMT",
+              "type": "H2"
+            },
+            "executionNodes": [],
+            "resultColumns": [
+              {
+                "dataType": "",
+                "label": "\"fullName\""
+              }
+            ],
+            "resultType": {
+              "_type": "dataType",
+              "dataType": "meta::pure::metamodel::type::Any"
+            },
+            "sqlQuery": "select concat(\"root\".FIRSTNAME, ' ', \"root\".LASTNAME) as \"fullName\" from personTable as \"root\" where \"root\".AGE in (select \"temptableforin_8_0\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_8 as \"temptableforin_8_0\")"
+          }
+        ],
+        "resultType": {
+          "_type": "tds",
+          "tdsColumns": [
+            {
+              "enumMapping": {},
+              "name": "fullName",
+              "type": "String"
+            }
+          ]
+        }
+      }
+    ],
+    "resultType": {
+      "_type": "tds",
+      "tdsColumns": [
+        {
+          "enumMapping": {},
+          "name": "fullName",
+          "type": "String"
+        }
+      ]
+    }
+  },
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": [
+    "<#function renderCollection collection separator prefix suffix defaultValue><#if collection?size == 0><#return defaultValue></#if><#return prefix + collection?join(suffix + separator + prefix) + suffix></#function>",
+    "<#function collectionSize collection> <#return collection?size?c> </#function>",
+    "<#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause></#if></#function>",
+    "<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#return prefix + optionalParameter + suffix></#if></#function>"
+  ]
+}

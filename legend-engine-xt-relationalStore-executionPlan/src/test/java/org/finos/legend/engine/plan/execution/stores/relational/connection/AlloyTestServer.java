@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
@@ -146,6 +147,12 @@ public abstract class AlloyTestServer
     }
 
     protected abstract void insertTestData(Statement statement) throws SQLException;
+
+    protected String executePlan(SingleExecutionPlan singleExecutionPlan, ExecutionState state)
+    {
+        RelationalResult result = (RelationalResult) planExecutor.execute(singleExecutionPlan, state, null, null);
+        return result.flush(new RelationalResultToJsonDefaultSerializer(result));
+    }
 
     protected String executePlan(SingleExecutionPlan singleExecutionPlan)
     {

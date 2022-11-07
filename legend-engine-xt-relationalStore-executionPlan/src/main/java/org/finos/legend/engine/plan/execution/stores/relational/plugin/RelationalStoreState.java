@@ -18,9 +18,11 @@ import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlo
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.RequestIdGenerator;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.RelationalExecutorInfo;
+import org.finos.legend.engine.plan.execution.stores.relational.test.RequestIdGeneratorImplForTest;
 
 import java.util.Optional;
 
@@ -34,9 +36,14 @@ public class RelationalStoreState implements StoreState
         this.relationalExecutor = new RelationalExecutor(temporarytestdb, relationalExecutionConfiguration);
     }
 
+    public RelationalStoreState(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, RequestIdGenerator requestIdGenerator)
+    {
+        this.relationalExecutor = new RelationalExecutor(temporarytestdb, relationalExecutionConfiguration, requestIdGenerator);
+    }
+
     public RelationalStoreState(int port)
     {
-        this(new TemporaryTestDbConfiguration(port), new RelationalExecutionConfiguration("/tmp/"));
+        this(new TemporaryTestDbConfiguration(port), new RelationalExecutionConfiguration("/tmp/"), new RequestIdGeneratorImplForTest());
     }
 
     public RelationalStoreState(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)

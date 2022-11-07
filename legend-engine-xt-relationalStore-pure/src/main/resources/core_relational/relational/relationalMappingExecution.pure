@@ -51,7 +51,7 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
    let nodes = $postProcessorResult.executionNodes->concatenate($relationalNode)->concatenate($postProcessorResult.postExecutionNodes);
    if($nodes->size()>1,
       | if($nodes->map(node | $node->allNodes($extensions))->exists(node | $node->instanceOf(CreateAndPopulateTempTableExecutionNode)),
-           |^RelationalBlockExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange),
+           |^RelationalBlockExecutionNode(connection = $runtime->toOne()->connectionByElement($store)->cast(@DatabaseConnection), resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange, finallyExecutionNode = $postProcessorResult.finallyExecutionNode),
            |^SequenceExecutionNode(resultType = $relationalNode.resultType, executionNodes = $nodes, supportFunctions = $postProcessorResult.templateFunctions, resultSizeRange = $relationalNode.resultSizeRange)),
       | $relationalNode
    );
