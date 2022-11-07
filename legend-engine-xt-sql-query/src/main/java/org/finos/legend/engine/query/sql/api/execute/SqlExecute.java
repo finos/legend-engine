@@ -31,8 +31,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -40,16 +38,12 @@ import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.engine.plan.execution.service.ServiceModeling;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
-import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.Translator;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -60,13 +54,11 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Identifier;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Node;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_metamodel_Table;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -87,6 +79,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import static org.finos.legend.engine.plan.execution.api.result.ResultManager.manageResult;
+import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
 
 @Api(tags = "SQL - Execution")
 @Path("sql/v1/execution")
@@ -99,52 +92,26 @@ public class SqlExecute
     private final PlanExecutor planExecutor;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions;
     private final MutableList<PlanTransformer> transformers;
-    private final MetaDataServerConfiguration metadataserver;
-    private final DeploymentMode deploymentMode;
+    private final MetaDataServerConfiguration metadataServer;
+    private final ServiceModeling serviceModeling;
 
 
     public SqlExecute(ModelManager modelManager, PlanExecutor planExecutor,
                       Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensions,
-                      MutableList<PlanTransformer> transformers, MetaDataServerConfiguration metadataserver,
+                      MutableList<PlanTransformer> transformers, MetaDataServerConfiguration metadataServer,
                       DeploymentMode deploymentMode)
     {
         this.modelManager = modelManager;
         this.planExecutor = planExecutor;
         this.extensions = extensions;
         this.transformers = transformers;
-        this.metadataserver = metadataserver;
-        this.deploymentMode = deploymentMode;
+        this.metadataServer = metadataServer;
+        this.serviceModeling = new ServiceModeling(modelManager, deploymentMode);
     }
 
     @POST
     @ApiOperation(value = "Generate plans from a GraphQL query in the context of a Mapping and a Runtime.")
-    @Path("test2/{projectId}")
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Response executeService(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String serviceId, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
-    {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = loadModelContextData(profiles, request, projectId);
-        Service service = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
-                .collect(e -> (Service) e)
-                .detect(s -> s.pattern.equals(serviceId));
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, PureClientVersions.production, profiles, "");
-        PureSingleExecution singleExecution = (PureSingleExecution) service.execution;
-        Mapping mapping = pureModel.getMapping(singleExecution.mapping);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(singleExecution.runtime, pureModel.getContext());
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(singleExecution.func.body, singleExecution.func.parameters, pureModel.getContext());
-        String clientVersion = PureClientVersions.production;
-        ExecutionContext context = new BaseExecutionContext();
-        SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlanWithTrace(lambda, mapping, runtime,
-                HelperValueSpecificationBuilder.processExecutionContext(context, pureModel.getContext()),
-                pureModel, clientVersion, PlanPlatform.JAVA, profiles,
-                extensions.apply(pureModel), transformers);
-        long start = System.currentTimeMillis();
-        return this.execImpl(planExecutor, profiles, request.getRemoteUser(), SerializationFormat.defaultFormat, start, singleExecutionPlan);
-    }
-
-    @POST
-    @ApiOperation(value = "Generate plans from a GraphQL query in the context of a Mapping and a Runtime.")
-    @Path("test3/{projectId}")
+    @Path("test/{projectId}")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response executeSql(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
@@ -153,34 +120,18 @@ public class SqlExecute
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(sql);
 
-        PureModel emptyPureModel = new PureModel(PureModelContextData.newBuilder().build(), profiles, deploymentMode);
-        Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(node, emptyPureModel);
-
-        RichIterable<? extends Root_meta_external_query_sql_metamodel_Table> tables = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getTables_Node_1__Table_MANY_(query, emptyPureModel.getExecutionSupport());
-        Root_meta_external_query_sql_metamodel_Identifier serviceId = tables.collect(Root_meta_external_query_sql_metamodel_Table::_name)
-                .collect(RichIterable::getLast)
-                .getOnly();
-
         PureModelContextData pureModelContextData = loadModelContextData(profiles, request, projectId);
-        Service service = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
-                .collect(e -> (Service) e)
-                .detect(s -> s.pattern.equals(serviceId._value()));
-
         String clientVersion = PureClientVersions.production;
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, clientVersion, profiles, "");
+        Root_meta_external_query_sql_metamodel_Node query = new Translator().translate(node, pureModel);
 
-        PureSingleExecution singleExecution = (PureSingleExecution) service.execution;
-        Mapping mapping = pureModel.getMapping(singleExecution.mapping);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(singleExecution.runtime, pureModel.getContext());
-        LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(singleExecution.func.body, singleExecution.func.parameters, pureModel.getContext());
+        MutableList<Root_meta_legend_service_metamodel_Service> services = LazyIterate.select(pureModelContextData.getElements(), e -> e instanceof Service)
+                .collect(e -> (Service) e)
+                .collect(e -> serviceModeling.compileService(e, pureModel.getContext(e)))
+                .toList();
 
-        ExecutionContext context = new BaseExecutionContext();
-        core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_FunctionDefinition_1__Mapping_1__Runtime_1__Node_1__Extension_MANY__ExecutionPlan_1_(lambda, mapping, runtime, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
-
-        SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlanWithTrace(lambda, mapping, runtime,
-                HelperValueSpecificationBuilder.processExecutionContext(context, pureModel.getContext()),
-                pureModel, clientVersion, PlanPlatform.JAVA, profiles,
-                extensions.apply(pureModel), transformers);
+        Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_Service_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(services, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
+        SingleExecutionPlan singleExecutionPlan = transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions.apply(pureModel), transformers);
         long start = System.currentTimeMillis();
         return this.execImpl(planExecutor, profiles, request.getRemoteUser(), SerializationFormat.defaultFormat, start, singleExecutionPlan);
     }
@@ -201,11 +152,11 @@ public class SqlExecute
 
         try (CloseableHttpClient client = (CloseableHttpClient) HttpClientBuilder.getHttpClient(cookieStore))
         {
-            if (metadataserver == null || metadataserver.getSdlc() == null)
+            if (metadataServer == null || metadataServer.getSdlc() == null)
             {
-                throw new EngineException("Please specify the metadataserver.sdlc information in the server configuration");
+                throw new EngineException("Please specify the metadataServer.sdlc information in the server configuration");
             }
-            HttpGet req = new HttpGet("http://" + metadataserver.getSdlc().host + ":" + metadataserver.getSdlc().port + "/api/projects/" + project + "/pureModelContextData");
+            HttpGet req = new HttpGet("http://" + metadataServer.getSdlc().host + ":" + metadataServer.getSdlc().port + "/api/projects/" + project + "/pureModelContextData");
             try (CloseableHttpResponse res = client.execute(req))
             {
                 ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();

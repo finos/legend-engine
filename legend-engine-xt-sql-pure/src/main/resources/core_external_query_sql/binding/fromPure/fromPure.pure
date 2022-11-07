@@ -1,26 +1,29 @@
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::executionPlan::*;
 
 function meta::external::query::sql::transformation::queryToPure::getPlansFromSQL(
-                                                                          lambda: meta::pure::metamodel::function::FunctionDefinition<Any>[1],
-                                                                          mapping: meta::pure::mapping::Mapping[1],
-                                                                          runtime: meta::pure::runtime::Runtime[1],
+                                                                          services: meta::legend::service::metamodel::Service[*],
                                                                           query: meta::external::query::sql::metamodel::Node[1],
                                                                           extensions: meta::pure::extension::Extension[*]
                                                                       ):meta::pure::executionPlan::ExecutionPlan[1]
 {
-  let node = ^meta::pure::executionPlan::ExecutionNode(resultType = ^meta::pure::executionPlan::ResultType(type=String));
-  let x = ^meta::pure::executionPlan::ExecutionPlan
-   (
-      func              = $lambda,
-      mapping           = $mapping,
-      runtime           = $runtime,
-      rootExecutionNode = $node,
-      authDependent     = false
-   );
-  $x;
+  let sqlTransformContext = $query->processQuery($services);
+  let executionOptionContext = ^ExecutionOptionContext(executionOptions = $sqlTransformContext.singleExecution.executionOptions);
+  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda->toOne(), $sqlTransformContext.singleExecution->toOne().mapping, $sqlTransformContext.singleExecution->toOne().runtime, $executionOptionContext, $extensions);
 }
 
+function meta::external::query::sql::transformation::queryToPure::findService(services: Service[*], serviceId: String[1]): Service[1] {
+  // $services->println();
+  let servicesFound = $services->filter(x | $x.pattern == $serviceId);
+  let servicesFoundSize = $servicesFound->size();
+  
+  assertNotEquals(0, $servicesFoundSize, 'No service found with pattern ' + $serviceId);
+  assertFalse($servicesFoundSize > 1, 'Multiple services found with pattern ' + $serviceId);
+  
+  $servicesFound->toOne();
+}
 
 function meta::external::query::sql::transformation::queryToPure::getTables(node: Node[1]):Table[*]{
   $node->match([
@@ -28,4 +31,87 @@ function meta::external::query::sql::transformation::queryToPure::getTables(node
     querySpec: QuerySpecification[1]  | $querySpec.from->map(v | $v->getTables()),
     table: Table[1]                   | $table
   ])
+}
+
+
+function meta::external::query::sql::transformation::queryToPure::processQuery(node: Node[1], services: Service[*]): SqlTransformContext[1]
+{
+  let context = ^SqlTransformContext(services = $services);
+  $node->match([
+    query: Query[1]                   | $query.queryBody->processQuery($services),
+    querySpec: QuerySpecification[1]  | $querySpec->processQuerySpec($context)
+  ]);
+}
+
+function meta::external::query::sql::transformation::queryToPure::processQuerySpec(querySpec: QuerySpecification[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  // TODO: fix logic for multiple tables in from
+  let newContextAfterFrom = $querySpec.from->toOne()->match([
+    table: Table[1] | $table->processTable($context)
+  ]);
+
+  let newContextAfterSelect = $querySpec.select->processSelect($newContextAfterFrom);
+
+  $newContextAfterSelect;
+}
+
+
+function meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  assertEquals(2, $table.name->size(), 'Expected table name to contain two parts <schema>.<name>, but got ' + $table.name.value->joinStrings('.'));
+  
+  let schema = $table.name->at(0).value;
+  assertEquals('service', $schema, 'Only \'service\' schema is supported. ' + $schema + ' is not supported');
+
+  let serviceId = $table.name->at(1).value;
+  let service = $context.services->findService($serviceId);
+  let singleExecution = $service.execution->cast(@PureSingleExecution); // TODO: handle multi executions
+  
+  ^$context(singleExecution = $singleExecution, lambda = $singleExecution.func);
+}
+
+function meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let newLambda = if($select.distinct, 
+    |createFunction($context.lambda->toOne(), distinct_TabularDataSet_1__TabularDataSet_1_), 
+    |$context.lambda);
+  ^$context(lambda = $newLambda);
+}
+
+function meta::external::query::sql::transformation::queryToPure::createFunction(func: FunctionDefinition<Any>[1], execFunc: meta::pure::metamodel::function::Function<Any>[1]): LambdaFunction<{->TabularDataSet[1]}>[1]
+{
+  ^LambdaFunction<{->TabularDataSet[1]}>(
+    expressionSequence = ^SimpleFunctionExpression(
+      func = $execFunc,
+      genericType = ^GenericType(
+        rawType = TabularDataSet
+      ),
+      importGroup = system::imports::coreImport,
+      multiplicity = PureOne,
+      parametersValues = ^InstanceValue(
+        genericType = ^GenericType(
+          rawType = TabularDataSet
+        ),
+        multiplicity = PureOne,
+        values = ^SimpleFunctionExpression(
+          func = eval_Function_1__V_m_,
+          genericType = $func->functionReturnType(),
+          multiplicity = $func->functionReturnMultiplicity(),
+          importGroup = system::imports::coreImport,
+          parametersValues = ^InstanceValue(
+            genericType = $func->genericType(),
+            multiplicity = PureOne,
+            values = $func
+          )
+        )
+      )
+    )
+  );
+}
+
+Class <<access.private>> meta::external::query::sql::transformation::queryToPure::SqlTransformContext
+{
+  services: Service[*];
+  singleExecution: PureSingleExecution[0..1];
+  lambda: FunctionDefinition<Any>[0..1];
 }
