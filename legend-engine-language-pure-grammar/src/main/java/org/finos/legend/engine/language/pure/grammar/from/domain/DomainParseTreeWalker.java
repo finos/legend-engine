@@ -347,6 +347,10 @@ public class DomainParseTreeWalker
             {
                 property.aggregation = AggregationKind.NONE;
             }
+            else
+            {
+                throw new EngineException("Unknown aggregation kind '" + ctx.aggregation().getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.aggregation()), EngineErrorType.PARSER);
+            }
         }
         return property;
     }

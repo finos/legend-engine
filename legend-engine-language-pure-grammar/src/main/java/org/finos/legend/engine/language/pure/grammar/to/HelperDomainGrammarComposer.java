@@ -102,7 +102,7 @@ public class HelperDomainGrammarComposer
             }
             default:
             {
-                throw new EngineException("Unsupported aggregation kind '" + aggregationKind + "'", EngineErrorType.COMPOSER);
+                throw new EngineException("Unknown aggregation kind '" + aggregationKind + "'", EngineErrorType.COMPOSER);
             }
         }
     }
