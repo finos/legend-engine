@@ -20,7 +20,6 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
@@ -79,16 +78,36 @@ public class HelperModelBuilder
                     ._multiplicity(context.pureModel.getMultiplicity(property.multiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                     ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
-                    ._aggregation(AggregationKind.COMPOSITE.equals(property.aggregation)
-                            ? context.pureModel.getEnumValue(M3Paths.AggregationKind, "Composite")
-                            : AggregationKind.SHARED.equals(property.aggregation)
-                            ? context.pureModel.getEnumValue(M3Paths.AggregationKind, "Shared")
-                            : AggregationKind.NONE.equals(property.aggregation)
-                            ? context.pureModel.getEnumValue(M3Paths.AggregationKind, "None")
-                            : null
-                    )
+                    ._aggregation(getPropertyAggregationKindEnum(property, context))
                     ._owner(owner);
         };
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum getPropertyAggregationKindEnum(Property property, CompileContext context)
+    {
+        if (property.aggregation == null)
+        {
+            return null;
+        }
+        switch (property.aggregation)
+        {
+            case NONE:
+            {
+                return context.pureModel.getEnumValue(M3Paths.AggregationKind, "None");
+            }
+            case SHARED:
+            {
+                return context.pureModel.getEnumValue(M3Paths.AggregationKind, "Shared");
+            }
+            case COMPOSITE:
+            {
+                return context.pureModel.getEnumValue(M3Paths.AggregationKind, "Composite");
+            }
+            default:
+            {
+                throw new EngineException("Unsupported aggregation kind '" + property.aggregation + "'", property.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createThisVariableForClass(CompileContext context, String classPackageString)
@@ -275,7 +294,7 @@ public class HelperModelBuilder
 
     private static String terseSignatureSuffix(Function function)
     {
-        String functionSignature =  LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;

@@ -80,13 +80,29 @@ public class HelperDomainGrammarComposer
 
     private static String renderAggregation(AggregationKind aggregationKind)
     {
-        return AggregationKind.NONE.equals(aggregationKind)
-                ? "(none) "
-                : AggregationKind.SHARED.equals(aggregationKind)
-                    ? "(shared) "
-                    : AggregationKind.COMPOSITE.equals(aggregationKind)
-                        ? "(composite) "
-                        : "";
+        if (aggregationKind == null)
+        {
+            return "";
+        }
+        switch (aggregationKind)
+        {
+            case NONE:
+            {
+                return "(none) ";
+            }
+            case SHARED:
+            {
+                return "(shared) ";
+            }
+            case COMPOSITE:
+            {
+                return "(composite) ";
+            }
+            default:
+            {
+                return "/* Unsupported aggregation kind '" + aggregationKind + "' */ ";
+            }
+        }
     }
 
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)

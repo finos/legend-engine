@@ -333,15 +333,19 @@ public class DomainParseTreeWalker
         property.defaultValue = ctx.defaultValue() == null ? null : this.visitDefaultValue(ctx.defaultValue().defaultValueExpression());
         property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         property.propertyTypeSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.propertyReturnType().type());
-        property.aggregation = ctx.aggregation() != null
-                ? ctx.aggregation().aggregationType().AGGREGATION_TYPE_COMPOSITE() != null
-                    ?  AggregationKind.COMPOSITE
-                    : ctx.aggregation().aggregationType().AGGREGATION_TYPE_SHARED() != null
-                        ? AggregationKind.SHARED
-                        : ctx.aggregation().aggregationType().AGGREGATION_TYPE_NONE() != null
-                            ? AggregationKind.NONE
-                            : null
-                : null;
+        if (ctx.aggregation() != null)
+        {
+            if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_COMPOSITE() != null)
+            {
+                property.aggregation = AggregationKind.COMPOSITE;
+            } else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_SHARED() != null)
+            {
+                property.aggregation = AggregationKind.SHARED;
+            } else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_NONE() != null)
+            {
+                property.aggregation = AggregationKind.NONE;
+            }
+        }
         return property;
     }
 
