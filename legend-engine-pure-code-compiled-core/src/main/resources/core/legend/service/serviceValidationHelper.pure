@@ -35,7 +35,7 @@ function meta::legend::service::getRuntimeFromFunctionExpression(func: FunctionD
 {
   let fromExprList = $func.expressionSequence->filter(x| $x->instanceOf(FunctionExpression))->map(seq| $seq->cast(@FunctionExpression)->meta::legend::service::findFromFunctionExpression());
   let fromFuncExpr = $fromExprList->at(0);
-  let resolvedParams = $fromFuncExpr.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([i:InstanceValue[1]|$i.values,
+  let resolvedParams = $fromFuncExpr->evaluateAndDeactivate().parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([i:InstanceValue[1]|$i.values,
                                                                                                           a: Any[1]| []]));
   $resolvedParams->at(1)->cast(@meta::pure::runtime::Runtime);
 }
