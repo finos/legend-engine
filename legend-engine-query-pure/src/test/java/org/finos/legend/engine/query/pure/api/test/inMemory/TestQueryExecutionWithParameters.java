@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.util.Objects;
 
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 import static org.junit.Assert.assertEquals;
 
 public class TestQueryExecutionWithParameters
@@ -64,7 +64,7 @@ public class TestQueryExecutionWithParameters
         RelationalStoreExecutor relationalStoreExecutor = new RelationalStoreExecutorBuilder().build();
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(relationalStoreExecutor);
         HttpServletRequest request = (HttpServletRequest) Proxy.newProxyInstance(getClass().getClassLoader(), new java.lang.Class<?>[] {HttpServletRequest.class}, new TestExecutionUtility.ReflectiveInvocationHandler(new TestExecutionUtility.Request()));
-        Response result = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
+        Response result = new Execute(modelManager, planExecutor, (PureModel pureModel) -> Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers).execute(request, input, SerializationFormat.defaultFormat, null, null);
         Assert.assertEquals(200, result.getStatus());
         return result;
     }

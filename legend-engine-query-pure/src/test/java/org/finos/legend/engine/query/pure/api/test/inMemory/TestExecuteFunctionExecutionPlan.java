@@ -28,7 +28,7 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.core_pure_extensions_functions;
+import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
@@ -48,7 +48,7 @@ public class TestExecuteFunctionExecutionPlan
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(functionGrammar);
         PureModel pureModelForFunction = Compiler.compile(pmcd, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, null);
         ConcreteFunctionDefinition<?> concreteFxn = pureModelForFunction.getConcreteFunctionDefinition_safe(funcName);
-        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(pureModelForFunction.getExecutionSupport());
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModelForFunction.getExecutionSupport());
         Root_meta_pure_executionPlan_ExecutionPlan executionPlanInPure = core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__ExecutionPlan_1_(concreteFxn, new Root_meta_pure_mapping_Mapping_Impl(""), new Root_meta_pure_runtime_Runtime_Impl(""), extensions, pureModelForFunction.getExecutionSupport());
         PlanPlatform platform = PlanPlatform.JAVA;
         executionPlanInPure = platform.bindPlan(executionPlanInPure, null, pureModelForFunction, extensions);

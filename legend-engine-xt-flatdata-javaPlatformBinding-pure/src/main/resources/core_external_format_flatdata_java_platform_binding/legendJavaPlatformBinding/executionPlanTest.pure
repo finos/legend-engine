@@ -1,0 +1,122 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::flatdata::executionPlan::test::*;
+import meta::external::format::flatdata::executionPlan::engine::java::test::*;
+import meta::external::format::flatdata::metamodel::*;
+import meta::external::shared::format::binding::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::executionPlan::tests::*;
+import meta::external::shared::format::functions::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::shared::functions::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::model::unit::*;
+import meta::pure::runtime::*;
+
+function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::test::getExtensions(): meta::pure::extension::Extension[*]
+{
+   [
+      meta::external::shared::format::externalFormatExtension(),
+      meta::external::format::flatdata::extension::flatDataFormatExtension(),
+      meta::pure::executionPlan::platformBinding::platformBindingExtension([
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+            meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+            meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+               meta::external::format::flatdata::executionPlan::engine::java::flatDataJavaBindingDescriptor()
+            ])
+         ])
+      ])
+   ]
+}
+
+function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::test::buildPlanWithJava(query:FunctionDefinition<Any>[1]): ExecutionPlan[1]
+{
+   let plan = meta::external::shared::format::executionPlan::tests::buildPlan($query, getExtensions());
+   $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), getExtensions());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::engine::java::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
+{
+   let extensions = [meta::external::shared::format::externalFormatExtension(), meta::external::format::flatdata::extension::flatDataFormatExtension()];
+   let binding = getTestBinding();
+
+   let plan = meta::external::format::flatdata::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'stringConstant')});
+   let planString = $plan->planToString(false, getExtensions());
+  
+   let expectedPlan = 
+        'ExternalFormat_Internalize\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  binding = meta::external::format::flatdata::executionPlan::test::TestBinding[application/x.flatdata]\n' +
+        '  enableConstraints = true\n' +
+        '  checked = false\n' +
+        '\n' +
+        '  (\n' +
+        '    Sequence\n' +
+        '    (\n' +
+        '      type = String\n' +
+        '      resultSizeRange = 1\n' +
+        '      (\n' +
+        '        Allocation\n' +
+        '        (\n' +
+        '          type = meta::pure::router::Void\n' +
+        '          name = internalizeVar$\n' +
+        '          value = \n' +
+        '            (\n' +
+        '              Constant\n' +
+        '              (\n' +
+        '                type = String\n' +
+        '                values=[stringConstant]\n' +
+        '              )\n' +
+        '            )\n' +
+        '        )\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = String\n' +
+        '          resultSizeRange = 1\n' +
+        '          varName = internalizeVar$\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        '  implementation\n' +
+        '  (\n' +
+        '    calls = _pure.plan.root.FlatDataDeserializeSpecifics\n' +
+        '  )\n' +
+        ')\n';
+
+   assertEquals($expectedPlan, $planString);
+
+   let impl = $plan.globalImplementationSupport->toOne()->cast(@JavaPlatformImplementation);
+
+   let allConstraintsSource = $impl.classes->filter(c| $c.name == 'meta_external_format_flatdata_executionPlan_test_Person_Impl').source->toOne();
+   let expectedAllConstraintsMethod = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        if (!context.visited.contains(this))\n' +
+                '        {\n' +
+                '            context.visited.add(this);\n' +
+                '            this.constraint_0().ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+
+   assert($allConstraintsSource->contains($expectedAllConstraintsMethod));
+}

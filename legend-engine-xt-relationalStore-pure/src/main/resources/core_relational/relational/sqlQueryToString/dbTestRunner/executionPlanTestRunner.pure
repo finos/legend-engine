@@ -97,19 +97,19 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
        let pureRuntime = ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));
 
+       // Not binding plan to platform as expectation is only to build SQL
        let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-       []; ,               
+       []; ,
      | 
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
        let connWithDb= ^$conn(element=$db);
        let pureRuntime = ^Runtime(connections=$connWithDb);
 
        let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-                             
+       let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($basicPlan, $extensions);
+
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
        let values = $res.values->cast(@T);
        ^Result<T|m>(values = $values, activities= $res.activities);
-  );  
+  );
 }
