@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.value.Value;
 import org.h2.value.ValueBoolean;
 import org.h2.value.ValueDouble;
@@ -35,7 +36,7 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class LegendH2Extensions
 {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
 
     public static Value legend_h2_extension_json_navigate(Value json, Value property, Value arrayIndex) throws Exception
     {
