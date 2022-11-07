@@ -255,9 +255,9 @@ function meta::external::store::service::executionPlan::generation::getServiceMa
    let propToServiceMappingMap = $serviceSetImpl.servicesMapping->map(sm | let reqPropPaths = $sm.requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList
                                                                                                                    ->map(pb | $pb.transform.expressionSequence->toOne()->findAndReplacePropertyPathsInValueSpecification([]).second.values)
                                                                                                                    ->concatenate($sm.requestBuildInfo.requestBodyBuildInfo.transform.expressionSequence->map(x | $x->findAndReplacePropertyPathsInValueSpecification([]).second.values));
-                                                                           let propPaths    = if($reqPropPaths->isEmpty(), |'', |$reqPropPaths);
+                                                                           let propPaths    = if($reqPropPaths->isEmpty(), |'', |$reqPropPaths)->removeDuplicates();
                                                                            pair($propPaths->sort()->joinStrings(','), $sm);)->newMap();
-   
+
    let reqServiceMapping       = $propToServiceMappingMap->get($availablePropPaths->sort()->joinStrings(','));
    assert($reqServiceMapping->isNotEmpty(), |'No service mapping found for available parameters. Available params - ' + $availablePropPaths->sort()->joinStrings('[', ', ', ']') + '. Available paths - ' +  $propToServiceMappingMap->keys()->joinStrings('[', ', ', ']'));
 

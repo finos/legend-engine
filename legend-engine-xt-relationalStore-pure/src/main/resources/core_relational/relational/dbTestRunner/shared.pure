@@ -62,7 +62,7 @@ function meta::relational::dbTestRunner::doSetupOnConnection(records:String[1], 
         println('**** Warning **** : No connection available for given dbtype, Skipping execution of setup sqls');
         false;,
     |   
-        let setupSqls = meta::alloy::service::execution::setUpDataSQLs($records, $db);
+        let setupSqls = meta::alloy::service::execution::setUpDataSQLs($records, $db, meta::relational::functions::sqlQueryToString::createDbConfig($config.dbType));
 
         let con = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
         let connWithDb= ^$con(element= $db);
