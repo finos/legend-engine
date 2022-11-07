@@ -20,7 +20,7 @@ env:
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  MAVEN_OPTS: -Xmx4g
+  MAVEN_OPTS: -Xms10g -Xmx10g
 
 on:
   workflow_dispatch:
@@ -31,7 +31,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -64,7 +64,7 @@ jobs:
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
 
       - name: Prepare release
-        run: mvn -B -DpreparationGoals=clean release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
+        run: mvn -B -e release:prepare -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B release:perform -P release,docker
+        run: mvn -B -e -T 4 release:perform -DargLine="-Xms12g -Xmx12g" -P release,docker
