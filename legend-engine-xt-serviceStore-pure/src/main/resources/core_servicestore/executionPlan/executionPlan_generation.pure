@@ -165,14 +165,14 @@ function meta::external::store::service::executionPlan::generation::processServi
    let serviceStoreQuery = $sq.fe->toServiceStoreQuery($sq.inScopeVars, $debug);
    let paramValues       = $serviceStoreQuery.processedParamValueMap->keyValues();
 
-   let literalParams     = $paramValues->filter(p | $p.second->instanceOf(meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue));
-   let varParams         = $paramValues->filter(p | $p.second->instanceOf(meta::external::store::service::functions::pureToServiceStoreQuery::VariableValue));
+   let literalParams     = $paramValues->filter(p | $p.second->instanceOf(LiteralValue));
+   let varParams         = $paramValues->filter(p | $p.second->instanceOf(VariableValue));
 
    let allocationNodes   = $literalParams->map(param | ^AllocationExecutionNode(varName        = $param.first,
                                                                                 executionNodes = ^ConstantExecutionNode(
                                                                                                      //TODO: This is valid now because we don't support in for service store but would need to be fixed when in is supported.
                                                                                                      //When value is a list it get translated to CList with CString values which cause issues in parsing at execution time.
-                                                                                                     values     = $param.second->cast(@meta::external::store::service::functions::pureToServiceStoreQuery::LiteralValue).value->toOne(),
+                                                                                                     values     = $param.second->cast(@LiteralValue).value->toOne(),
                                                                                                      resultType = ^ResultType(type = Any)
                                                                                                   ),
                                                                                 resultType     = ^ResultType(type = Any)
@@ -212,15 +212,17 @@ function meta::external::store::service::executionPlan::generation::nodeFromServ
   let requestBodyDescription     = if($serviceBodyResolutionNode->isEmpty(),
                                       | [],
                                       |^RequestBodyDescription(mimeType = $serviceMapping.service.requestBody->cast(@ComplexTypeReference).binding.contentType->toOne(),
-                                                                resultKey = $serviceBodyResolutionNode->toOne()->cast(@AllocationExecutionNode).varName));
+                                                               resultKey = $serviceBodyResolutionNode->toOne()->cast(@AllocationExecutionNode).varName));
 
+  let mappedParameters           = $serviceMapping.requestBuildInfo.requestParametersBuildInfo.parameterBuildInfoList.serviceParameter;
   let serviceStoreNode           = ^RestServiceExecutionNode(url             = $s.baseUrl + $serviceMapping.service.resolveFullPathRecursively(),
-                                                              method          = $serviceMapping.service.method,
-                                                              mimeType        = $serviceMapping.service.response.binding.contentType,
-                                                              params          = $serviceMapping.service.parameters,
-                                                              securitySchemes = $serviceMapping.service.security,
-                                                              requestBodyDescription = $requestBodyDescription,
-                                                              resultType      = ^DataTypeResultType(type = String));
+                                                             method          = $serviceMapping.service.method,
+                                                             mimeType        = $serviceMapping.service.response.binding.contentType,
+                                                             params          = $serviceMapping.service.parameters,
+                                                             securitySchemes = $serviceMapping.service.security,
+                                                             requestBodyDescription = $requestBodyDescription,
+                                                             requiredVariableInputs = $mappedParameters.name->concatenate($requestBodyDescription.resultKey)->map(v | ^VariableInput(name = $v, type = Any, multiplicity = ZeroMany)),
+                                                             resultType      = ^DataTypeResultType(type = String));
 
   let allNodes = $serviceStoreQueryProcessedState.executionNodes->concatenate($serviceParamResolutionNode)
                                                                 ->concatenate($serviceBodyResolutionNode)
@@ -271,12 +273,12 @@ function meta::external::store::service::executionPlan::generation::getServicePa
       |[],
       |let updatedMappingAndSources = $parameterBuildInfoList->map(pb | let transform                = $pb.transform;
                                                                         let updatedTransformAndPaths = $transform.expressionSequence->toOne()->findAndReplacePropertyPathsInValueSpecification([], $paramMap)->toOne();
-                                                                        let requiredVariableInputs  = $updatedTransformAndPaths.second.values->map(path | ^VariableInput(name = $paramMap->get(pathAsString($path))->toOne(),
-                                                                                                                                                                           type = $path.path->at(0)->cast(@PropertyPathElement).property->functionReturnType().rawType->toOne(),
-                                                                                                                                                                           multiplicity = $path.path->at(0)->cast(@PropertyPathElement).property->functionReturnMultiplicity()));
+                                                                        let requiredVariableInputs   = $updatedTransformAndPaths.second.values->map(path | ^VariableInput(name = $paramMap->get(pathAsString($path))->toOne(),
+                                                                                                                                                                          type = $path.path->at(0)->cast(@PropertyPathElement).property->functionReturnType().rawType->toOne(),
+                                                                                                                                                                          multiplicity = $path.path->at(0)->cast(@PropertyPathElement).property->functionReturnMultiplicity()));
                                                                         pair(^$pb(transform = ^$transform(expressionSequence = $updatedTransformAndPaths.first->cast(@ValueSpecification))), ^List<VariableInput>(values = $requiredVariableInputs)););
    
-       ^ServiceParametersResolutionExecutionNode(requiredVariableInputs    = $updatedMappingAndSources.second.values,
+       ^ServiceParametersResolutionExecutionNode(requiredVariableInputs     = $updatedMappingAndSources.second.values,
                                                  requestParametersBuildInfo = ^ServiceRequestParametersBuildInfo(parameterBuildInfoList = $updatedMappingAndSources.first),
                                                  resultType                 = ^DataTypeResultType(type = Map)););
 }
