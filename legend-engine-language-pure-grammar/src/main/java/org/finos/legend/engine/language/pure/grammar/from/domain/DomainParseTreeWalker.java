@@ -338,10 +338,12 @@ public class DomainParseTreeWalker
             if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_COMPOSITE() != null)
             {
                 property.aggregation = AggregationKind.COMPOSITE;
-            } else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_SHARED() != null)
+            }
+            else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_SHARED() != null)
             {
                 property.aggregation = AggregationKind.SHARED;
-            } else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_NONE() != null)
+            }
+            else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_NONE() != null)
             {
                 property.aggregation = AggregationKind.NONE;
             }

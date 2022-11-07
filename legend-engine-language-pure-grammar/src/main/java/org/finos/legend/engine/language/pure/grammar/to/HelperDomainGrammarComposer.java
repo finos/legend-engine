@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
@@ -25,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
@@ -100,7 +102,7 @@ public class HelperDomainGrammarComposer
             }
             default:
             {
-                return "/* Unsupported aggregation kind '" + aggregationKind + "' */ ";
+                throw new EngineException("Unsupported aggregation kind '" + aggregationKind + "'", EngineErrorType.COMPOSER);
             }
         }
     }
