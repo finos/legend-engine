@@ -14,13 +14,18 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.util.Optional;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
@@ -122,5 +127,21 @@ public class H2Sink extends AnsiSqlSink
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) -> sink.doesTableExist(dataset),
             (executor, sink, dataset) -> sink.validateDatasetSchema(dataset, new H2DataTypeMapping()));
+    }
+
+    @Override
+    public Optional<Optimizer> optimizerForCaseConversion(CaseConversion caseConversion)
+    {
+        switch (caseConversion)
+        {
+            case TO_LOWER:
+                return Optional.of(new LowerCaseOptimizer());
+            case TO_UPPER:
+                return Optional.of(new UpperCaseOptimizer());
+            case NONE:
+                return Optional.empty();
+            default:
+                throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
+        }
     }
 }

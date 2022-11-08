@@ -170,7 +170,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getMainTableWithbatchUpdateTimeField()
+    public static DatasetDefinition getMainTableWithBatchUpdateTimeField()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
