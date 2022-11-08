@@ -86,6 +86,14 @@
         <module>legend-engine-xt-json-protocol</module>
         <module>legend-engine-xt-json-pure</module>
 
+        <module>legend-engine-xt-haskell-grammar</module>
+        <module>legend-engine-xt-haskell-pure</module>
+        <module>legend-engine-xt-haskell-protocol</module>
+
+        <module>legend-engine-xt-daml-grammar</module>
+        <module>legend-engine-xt-daml-pure</module>
+        <module>legend-engine-xt-daml-model</module>
+
         <module>legend-engine-xt-relationalStore-executionPlan</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-tests</module>
@@ -978,6 +986,22 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-rosetta</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1090,6 +1114,21 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
