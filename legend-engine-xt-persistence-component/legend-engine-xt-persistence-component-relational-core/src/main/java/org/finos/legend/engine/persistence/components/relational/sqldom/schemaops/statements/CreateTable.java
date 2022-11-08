@@ -57,6 +57,14 @@ public class CreateTable implements DDLStatement
         this.types = types;
     }
 
+    public CreateTable(List<TableType> types)
+    {
+        this.modifiers = new ArrayList<>();
+        this.columns = new ArrayList<>();
+        this.tableConstraints = new ArrayList<>();
+        this.types = types;
+    }
+
     /*
      CREATE GENERIC PLAN:
      CREATE [TABLE TYPE] TABLE [IF NOT EXISTS] {FULLY_QUALIFIED_TABLE_NAME}( {COLUMNS}{CONSTRAINTS} )
