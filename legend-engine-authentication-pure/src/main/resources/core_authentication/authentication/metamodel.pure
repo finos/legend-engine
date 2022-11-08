@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::authentication::*;
+import meta::pure::authentication::oauth::*;
 import meta::pure::credential::*;
 
 Class <<typemodifiers.abstract>> meta::pure::credential::Credential
@@ -28,10 +29,6 @@ Class meta::pure::credential::PrivateKeyCredential extends Credential
 {
 }
 
-Class meta::pure::credential::JsonWebTokenCredential extends Credential
-{
-}
-
 Class <<typemodifiers.abstract>> meta::pure::credential::CredentialProvider
 {
 }
@@ -39,16 +36,6 @@ Class <<typemodifiers.abstract>> meta::pure::credential::CredentialProvider
 Class meta::pure::credential::VaultCredentialProvider extends CredentialProvider
 {
   vaultReference: String[1];
-}
-
-Class meta::pure::credential::OidcCredentialProvider extends CredentialProvider
-{
-  discoveryUrl: String[1];
-}
-
-Class meta::pure::credential::OAuthTokenProvider extends CredentialProvider
-{
-  url: String[1];
 }
 
 Class <<typemodifiers.abstract>> meta::pure::authentication::Authentication
@@ -70,8 +57,24 @@ Class meta::pure::authentication::KeyPairAuthentication extends Authentication
 
 Class meta::pure::authentication::OAuthAuthentication extends Authentication
 {
-  token: JsonWebTokenCredential[1];
-  secret: PlainTextCredential[1];
+  scopes: String[1..*];
+  identityProvider: IdentityProvider[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+meta::pure::authentication::oauth::IdentityProvider
+{
+}
+
+Class meta::pure::authentication::oauth::OidcIdentityProvider extends IdentityProvider
+{
+  discoveryUrl: String[1];
+}
+
+Class meta::pure::authentication::oauth::NonOidcIdentityProvider extends IdentityProvider
+{
+  url: String[1];
 }
 
 Class meta::pure::authentication::ApiKeyAuthentication extends Authentication
