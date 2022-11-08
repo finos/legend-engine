@@ -96,6 +96,11 @@
             <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-changetoken-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- Access to Legend Compiler in IDE Light -->
     </dependencies>
 </project>
