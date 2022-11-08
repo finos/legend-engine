@@ -151,6 +151,10 @@
 
         <module>legend-engine-pure-code-compiled-core</module>
 
+        <module>legend-engine-pure-changetoken</module>
+        <module>legend-engine-pure-changetoken-test</module>
+        <module>legend-engine-pure-changetoken-compile</module>
+
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-runtime-compiler</module>
@@ -1468,6 +1472,25 @@
                 <artifactId>legend-engine-pure-code-compiled-core-configuration</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-changetoken</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-changetoken-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-changetoken-compile</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <!-- ENGINE -->
 
             <!-- PURE -->

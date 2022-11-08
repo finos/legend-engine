@@ -14,6 +14,9 @@
 
 import meta::pure::changetoken::*;
 import meta::pure::constraints::functions::*;
+import meta::pure::changetoken::cast_generation::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
 
 function <<test.Test>> meta::pure::changetoken::tests::testToString():Boolean[1]
 {
@@ -30,4 +33,44 @@ function <<test.Test>> meta::pure::changetoken::tests::testConstraint():Boolean[
 {
   assertValidConstraint(Versions, [^KeyValue(key='versions', value=[^Version(version='1'), ^Version(version='2', prevVersion='1')])], 'linearVersions');
   assertInvalidConstraint(Versions, [^KeyValue(key='versions', value=[^Version(version='1'), ^Version(version='2')])], 'linearVersions');
+}
+
+Class meta::pure::changetoken::tests::SampleClass
+{
+  abc : Integer[1];  
+}
+
+// This is test Versions
+function meta::pure::changetoken::tests::getVersions():Versions[1]
+{
+  ^Versions(
+    versions=[
+      ^Version( // base version
+        version='ftdm:abcdefg123'
+      ),
+      ^Version(
+        version='ftdm:abcdefg456',
+        prevVersion='ftdm:abcdefg123',
+        changeTokens=[
+          ^AddField(
+            class='meta::pure::changetoken::tests::SampleClass',
+            fieldName='abc',
+            fieldType='Integer[1]',
+            safeCast=true,
+            defaultValue=^ConstValue(value=100)
+          )
+        ]
+      )
+    ]
+  ); 
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolean[1]
+{
+  let project=generateCast('meta::pure::changetoken:tests::getVersions', 'TestCastFunction');
+  let class=$project.root.subdirectories->at(0).subdirectories->at(0).subdirectories->at(0).subdirectories->at(0).subdirectories->at(0)
+    .subdirectories->at(0).subdirectories->at(0).subdirectories->at(0).subdirectories->at(0).subdirectories->at(0).subdirectories->at(0)
+    .subdirectories->at(0).classes->at(0);
+  print(newStringifier($project)->ofClass($class));
+  assertInstanceOf($project, Project);
 }
