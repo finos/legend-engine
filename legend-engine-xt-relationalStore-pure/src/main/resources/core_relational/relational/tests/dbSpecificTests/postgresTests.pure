@@ -35,7 +35,7 @@ function meta::relational::tests::dbSpecificTests::postgres::testsFilter(f:Funct
   let unsupportedDynaFunctions = ['concat' , 'dayOfMonth', 'dayOfWeekNumber', 'firstDayOfMonth', 'firstDayOfQuarter',
                                   'firstDayOfThisMonth', 'firstDayOfThisQuarter', 'firstDayOfThisYear','firstDayOfWeek', 'firstDayOfYear',
                                   'indexOf', 'left' , 'ltrim', 'minute', 'month', 'monthNumber', 'mostRecentDayOfWeek',
-                                  'previousDayOfWeek', 'right', 'rtrim', 'weekOfYear', 'year'];
+                                  'previousDayOfWeek', 'right', 'rtrim', 'toTimestamp', 'weekOfYear', 'year'];
   
   //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
   let failingSupportedDynaFunctions = ['dateDiff', 'quarterNumber' , 'quarter', 'second'];

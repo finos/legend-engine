@@ -34,7 +34,7 @@ function meta::relational::tests::dbSpecificTests::bigQuery::testsFilter(f:Funct
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
   let unsupportedDynaFunctions = ['dateDiff','datePart','dayOfMonth','dayOfWeekNumber','firstDayOfMonth','firstDayOfQuarter',
                                   'firstDayOfThisMonth','firstDayOfThisQuarter','firstDayOfThisYear','firstDayOfWeek','firstDayOfYear',
-                                  'indexOf','left','length','ltrim','mostRecentDayOfWeek','previousDayOfWeek','year'];
+                                  'indexOf','left','length','ltrim','mostRecentDayOfWeek','previousDayOfWeek','toTimestamp', 'year'];
   //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
   // joinStrings fail on bigquery end as query constructed is wrong
   // adjust, weekOfYear fails on assertion

@@ -110,6 +110,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='curdate()')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as char)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})), 
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }
@@ -120,6 +121,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
    assert($params->size()==1 || dateFormatsMemSQL()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
    let dateFormat = if( $params->size() == 1,|'\'YYYY-MM-DD\'' ,| $params->at(1););
    'cast( to_date('+$params->at(0)+','+$dateFormat +') as date)';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::transformToTimestampMemSQL(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = $params->at(1);   
+   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';   
 }
 
 function  <<access.private>> meta::relational::functions::sqlQueryToString::memSql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]

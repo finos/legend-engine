@@ -274,6 +274,14 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
 }       
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::toTimestamp::testToTimestamp(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='toTimestamp', parameters=[^Literal(value='2016-06-23 13:20:10'), ^Literal(value='YYYY-MM-DD HH24:MI:SS')]);
+  let expected = ^Literal(value=parseDate(%2016-06-23T13:20:10->toString()));
+  let equalityComparator = timestampEqualityComparatorGenerator([0] ,DurationUnit.SECONDS);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $equalityComparator, $config);
+}  
+
 function meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::convertToDateTime(d:Date[1]): DateTime[1]
 {
   $d->match([
