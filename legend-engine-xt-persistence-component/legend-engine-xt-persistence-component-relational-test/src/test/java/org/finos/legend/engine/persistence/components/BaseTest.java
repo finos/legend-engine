@@ -479,6 +479,11 @@ public class BaseTest
             .schema(baseTableSchemaWithDigest)
             .build();
 
+    protected Dataset stagingTableWithBaseSchemaAndDigestAndDeleteIndicator = DatasetDefinition.builder()
+            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+            .schema(stagingTableSchemaWithDeleteIndicator)
+            .build();
+
     protected Dataset mainTableWithBaseSchemaHavingDigestAndAuditField = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
             .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)

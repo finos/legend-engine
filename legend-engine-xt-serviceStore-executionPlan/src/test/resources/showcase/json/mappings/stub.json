@@ -328,6 +328,38 @@
           }
         ]
       }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/persons/getPersonsByFirstAndMiddleName",
+        "queryParameters": {
+          "firstName": {
+            "equalTo": "Steve"
+          },
+          "middleName": {
+            "absent": true
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "jsonBody": [
+          {
+            "firstName": "Steve",
+            "middleName": "Patricio",
+            "lastName": "Smith"
+          },
+          {
+            "firstName": "Steve",
+            "lastName": "Smith2"
+          },
+          {
+            "firstName": "Steve",
+            "lastName": "Smith3"
+          }
+        ]
+      }
     }
   ]
 }

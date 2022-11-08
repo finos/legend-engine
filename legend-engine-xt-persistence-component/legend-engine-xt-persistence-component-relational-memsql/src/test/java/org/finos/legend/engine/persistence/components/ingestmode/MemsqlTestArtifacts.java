@@ -16,21 +16,21 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 
 public class MemsqlTestArtifacts
 {
-    public static String expectedBaseTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+    public static String expectedBaseTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER," +
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "PRIMARY KEY (`id`, `name`))";
 
-    public static String expectedBaseTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+    public static String expectedBaseTableCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER," +
             "`NAME` VARCHAR(256)," +
             "`AMOUNT` DOUBLE," +
             "`BIZ_DATE` DATE," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
-    public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+    public static String expectedBaseTablePlusDigestCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER," +
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
@@ -38,7 +38,7 @@ public class MemsqlTestArtifacts
             "`digest` VARCHAR(256)," +
             "PRIMARY KEY (`id`, `name`))";
 
-    public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
+    public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
             "`ID` INTEGER," +
             "`NAME` VARCHAR(256)," +
             "`AMOUNT` DOUBLE," +
@@ -46,17 +46,17 @@ public class MemsqlTestArtifacts
             "`DIGEST` VARCHAR(256)," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
-    public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+    public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER," +
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`digest` VARCHAR(256))";
 
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`batch_update_time` DATETIME)";
 
-    public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER," +
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +

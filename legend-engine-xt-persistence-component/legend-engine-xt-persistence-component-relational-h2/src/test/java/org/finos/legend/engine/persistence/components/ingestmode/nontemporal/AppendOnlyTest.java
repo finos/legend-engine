@@ -242,7 +242,7 @@ class AppendOnlyTest extends BaseTest
     @Test
     void testAppendOnlyWithFilterDuplicatesAndAuditingEnabled() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTable(dataPass1);
 
@@ -371,7 +371,7 @@ class AppendOnlyTest extends BaseTest
     @Test
     void testAppendOnlyWithFilterDuplicatesAuditEnabledWithDataSplits() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
         IncrementalClock incrementalClock = new IncrementalClock(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC, 1000);
