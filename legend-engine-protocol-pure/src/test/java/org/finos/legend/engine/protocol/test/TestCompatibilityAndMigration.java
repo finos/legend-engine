@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.test;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
@@ -932,7 +933,7 @@ public class TestCompatibilityAndMigration
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
-        Assert.assertEquals(output, json);
+        JsonAssert.assertJsonEquals(output, json);
     }
 
 }

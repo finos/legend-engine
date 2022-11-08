@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.result.test.json;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.io.JsonEOFException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
@@ -26,6 +28,7 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
@@ -46,19 +49,29 @@ public class TestJsonStreamingResult
 
     private void doesNotAutocloseJsonArrays(SerializationFormat format) throws Exception
     {
-        JsonStreamingResult result = new JsonStreamingResult(x ->
+        JsonStreamingResult result = new JsonStreamingResult(new JsonStreamingResult.JsonStreamHandler()
         {
-            try
+            @Override
+            public void writeTo(JsonGenerator x)
             {
-                x.writeStartArray();
-                // throw before closing array to mimic streaming error
-                throw new TestException();
+                try
+                {
+                    x.writeStartArray();
+                    // throw before closing array to mimic streaming error
+                    throw new TestException();
+                }
+                catch (IOException e)
+                {
+                    throw new UncheckedIOException(e);
+                }
             }
-            catch (IOException e)
+
+            @Override
+            public Stream<ObjectNode> toStream()
             {
-                throw new UncheckedIOException(e);
+                return null;
             }
-        }, null);
+        });
 
         Serializer serializer = result.getSerializer(format);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -72,7 +85,7 @@ public class TestJsonStreamingResult
             try
             {
                 new ObjectMapper().readTree(outputStream.toByteArray());
-                Assert.fail("Serialized bytes should not contians valid JSON.  Is Jackson autoclosing arrays and objects?");
+                Assert.fail("Serialized bytes should not contains valid JSON.  Is Jackson autoclosing arrays and objects?");
             }
             catch (JsonEOFException eofException)
             {

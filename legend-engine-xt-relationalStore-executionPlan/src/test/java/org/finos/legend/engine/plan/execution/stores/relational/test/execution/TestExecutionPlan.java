@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.execution;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
@@ -508,6 +509,19 @@ public class TestExecutionPlan extends AlloyTestServer
     @Test
     public void testRelationalBlockExecutionNode() throws Exception
     {
+        RelationalResult result = getRelationalResult();
+        Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"pk_0\",\"type\":\"VARCHAR(200)\"},{\"name\":\"firmName\",\"type\":\"VARCHAR(200)\"},{\"name\":\"employee_name\",\"type\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"Create LOCAL TEMPORARY TABLE Firm_temp_123 (name VARCHAR(200));\"},{\"_type\":\"relational\",\"sql\":\"Create LOCAL TEMPORARY TABLE Person_temp_123 (fullname VARCHAR(1000), firmName VARCHAR(1000));\"},{\"_type\":\"relational\",\"sql\":\"insert into Firm_temp_123(name) values ('FA'), ('FirmA')\"},{\"_type\":\"relational\",\"sql\":\"insert into Person_temp_123 (fullname, firmName) values ('abc', 'FA'), ('xyz', 'FA')\"},{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"pk_0\\\", \\\"root\\\".name as \\\"firmName\\\", \\\"personTable\\\".fullname as \\\"employee_name\\\" from Person_temp_123 as \\\"personTable\\\" left outer join Firm_temp_123 as \\\"root\\\" on (\\\"root\\\".name = \\\"personTable\\\".firmName)\"}], \"result\" : {\"columns\" : [\"pk_0\",\"firmName\",\"employee_name\"], \"rows\" : [{\"values\": [\"FA\",\"FA\",\"abc\"]},{\"values\": [\"FA\",\"FA\",\"xyz\"]}]}}", result.flush(new RelationalResultToJsonDefaultSerializer(result)));
+    }
+
+    @Test
+    public void testRelationalResultAsStream() throws JsonProcessingException
+    {
+        String json = objectMapper.writeValueAsString(getRelationalResult().toStream().iterator());
+        Assert.assertEquals("[{\"firmName\":\"FA\",\"pk_0\":\"FA\",\"employee_name\":\"abc\"},{\"firmName\":\"FA\",\"pk_0\":\"FA\",\"employee_name\":\"xyz\"}]", json);
+    }
+
+    private RelationalResult getRelationalResult() throws com.fasterxml.jackson.core.JsonProcessingException
+    {
         String plan = "{\n" +
                 "  \"rootExecutionNode\": {\n" +
                 "    \"executionNodes\": [\n" +
@@ -659,13 +673,11 @@ public class TestExecutionPlan extends AlloyTestServer
                 "  }\n" +
                 "}";
         SingleExecutionPlan executionPlan = objectMapper.readValue(plan, SingleExecutionPlan.class);
-        RelationalResult result = (RelationalResult) executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
-
-        Assert.assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"pk_0\",\"type\":\"VARCHAR(200)\"},{\"name\":\"firmName\",\"type\":\"VARCHAR(200)\"},{\"name\":\"employee_name\",\"type\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"Create LOCAL TEMPORARY TABLE Firm_temp_123 (name VARCHAR(200));\"},{\"_type\":\"relational\",\"sql\":\"Create LOCAL TEMPORARY TABLE Person_temp_123 (fullname VARCHAR(1000), firmName VARCHAR(1000));\"},{\"_type\":\"relational\",\"sql\":\"insert into Firm_temp_123(name) values ('FA'), ('FirmA')\"},{\"_type\":\"relational\",\"sql\":\"insert into Person_temp_123 (fullname, firmName) values ('abc', 'FA'), ('xyz', 'FA')\"},{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".name as \\\"pk_0\\\", \\\"root\\\".name as \\\"firmName\\\", \\\"personTable\\\".fullname as \\\"employee_name\\\" from Person_temp_123 as \\\"personTable\\\" left outer join Firm_temp_123 as \\\"root\\\" on (\\\"root\\\".name = \\\"personTable\\\".firmName)\"}], \"result\" : {\"columns\" : [\"pk_0\",\"firmName\",\"employee_name\"], \"rows\" : [{\"values\": [\"FA\",\"FA\",\"abc\"]},{\"values\": [\"FA\",\"FA\",\"xyz\"]}]}}", result.flush(new RelationalResultToJsonDefaultSerializer(result)));
+        return (RelationalResult) executionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(null, new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))))));
     }
 
     @Test
-    public void testFreeMarkerConditionalExecutionNode() throws Exception
+    public void testFreeMarkerConditionalExecutionNode()
     {
         String plan = "{\n" +
                 "  \"serializer\": {\n" +
