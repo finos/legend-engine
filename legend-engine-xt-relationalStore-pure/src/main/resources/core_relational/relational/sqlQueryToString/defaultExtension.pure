@@ -396,23 +396,23 @@ function meta::relational::functions::sqlQueryToString::default::getDDLCommandsT
               );
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
 {
    'Create Schema ' + $createSchemaSQL.schema.name + ';';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
 {
    'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' cascade;';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1]) : String[1]
 {
   let t= $dropTableSQL.table;
   'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
 {
   let t= $createTableSQL.table;
   let applyConstraints = $createTableSQL.applyConstraints;
@@ -425,7 +425,7 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::defa
       +');';
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
    $columnType->match([
       s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
@@ -433,7 +433,7 @@ function <<access.private>>  meta::relational::functions::sqlQueryToString::defa
    ])
 }
 
-function <<access.private>>  meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
 {
 
     $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
@@ -583,7 +583,7 @@ function meta::relational::functions::sqlQueryToString::default::processLiteralV
    processLiteralValue($a, $dbConfig);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::default::processLiteralValue(a:Any[1], dbTimeZone: String[0..1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::processLiteralValue(a:Any[1], dbTimeZone: String[0..1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
 {
    let processor = $literalProcessor->eval($a->type());
    $processor.formatValue($a, $dbTimeZone);

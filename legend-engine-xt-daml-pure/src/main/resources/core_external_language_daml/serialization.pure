@@ -1,0 +1,38 @@
+import meta::external::language::haskell::metamodel::*;
+
+function meta::external::language::daml::format::toString(module:HaskellModule[1]):String[1]
+{
+  'module ' + $module.id + ' where\n\n' +
+  $module.elements->map(e | $e->meta::external::language::daml::format::toString())->makeString('','\n','')
+}
+
+function meta::external::language::daml::format::toString(element:meta::external::language::haskell::metamodel::ModuleElement[1]):String[1]
+{
+  $element->cast(@meta::external::language::haskell::metamodel::AnnotatedElement)->meta::external::language::haskell::format::toString() + 
+  $element->match([
+    d:meta::external::language::haskell::metamodel::DataType[1] | $d->meta::external::language::daml::format::toString()
+  ])
+}
+
+function meta::external::language::daml::format::toString(dataType:meta::external::language::haskell::metamodel::DataType[1]):String[1]
+{
+  'data ' + $dataType.name + 
+  if($dataType.constructors->size() > 1, | '\n  = ', | ' = ') +
+  $dataType.constructors->map(c | 
+          $c->meta::external::language::daml::format::toString())->makeString('','\n  | ','\n') +
+  $dataType.deriving->map(d | '    ' + $d->meta::external::language::haskell::format::toString())->makeString('','','\n')
+}
+
+function meta::external::language::daml::format::toString(c:NamedConstructor[1]):String[1]
+{
+  $c->match([
+    r:RecordTypeConstructor[1] | $c.name + $r.fields->map(f | $f->meta::external::language::daml::format::toString())->makeString(' with\n','\n',''),
+    n:NamedConstructor[1] | $c.name
+  ]) + 
+  $c->cast(@meta::external::language::haskell::metamodel::AnnotatedElement)->meta::external::language::haskell::format::toString(true, '\n  ') 
+}
+
+function meta::external::language::daml::format::toString(f:Field[1]):String[1]
+{
+  '  ' + $f.name + ' : ' + $f.type->map(t | $t->meta::external::language::haskell::format::toString())->makeString('',' ', '')
+}

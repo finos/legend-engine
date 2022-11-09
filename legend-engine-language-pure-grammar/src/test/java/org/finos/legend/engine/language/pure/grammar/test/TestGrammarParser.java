@@ -145,6 +145,22 @@ public class TestGrammarParser
                 "}\n", "PARSER error at [1:7-10]: Unexpected token 'true'");
     }
 
+    @Test
+    public void testInvalidPropertyAggregationKind()
+    {
+        test("Class my::Class\n" +
+                "{\n" +
+                "  (tunnel) prop1: String[1];\n" +
+                "  (none) prop2: String[1];\n" +
+                "  prop4: String[1];\n" +
+                "}\n", "PARSER error at [3:4-9]: Unexpected token 'tunnel'");
+        test("Association my::Assoc\n" +
+                "{\n" +
+                "  (shared) prop1: String[1];\n" +
+                "  (entrance) prop2: String[1];\n" +
+                "}\n", "PARSER error at [4:4-11]: Unexpected token 'entrance'");
+    }
+
     public static void testFromJson(Class<?> _class, String path, String code)
     {
         PureModelContextData modelData = null;

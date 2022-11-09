@@ -1,0 +1,71 @@
+{
+  "logging": {
+    "level": "error",
+    "appenders": [
+      {
+        "type": "console",
+        "logFormat": "%msg\r\n"
+      }
+    ]
+  },
+  "pac4j": {
+    "bypassPaths": [
+      "/api/server/v1/info"
+    ],
+    "clients": [
+      {
+        "org.pac4j.core.client.direct.AnonymousClient": {
+        }
+      }
+    ],
+    "mongoSession": {
+      "enabled": false
+    }
+  },
+  "server": {
+    "type": "simple",
+    "applicationContextPath": "/",
+    "adminContextPath": "/admin",
+    "connector": {
+      "maxRequestHeaderSize": "32KiB",
+      "type": "http",
+      "port": 6300
+    },
+    "requestLog": {
+      "appenders": [
+      ]
+    }
+  },
+  "relationalexecution": {
+    "tempPath": "/tmp/",
+    "temporarytestdb": {
+      "port": 9099
+    },
+    "flowProviderClass": "org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProvider",
+    "flowProviderConfiguration": {
+      "_type": "spannerTest"
+    }
+  },
+  "testConnectionsToEnable": [
+    "Spanner"
+  ],
+  "staticTestConnections": {
+    "Spanner": {
+      "_type": "RelationalDatabaseConnection",
+      "datasourceSpecification": {
+        "_type": "spanner",
+        "projectId": "legend-integration-testing",
+        "instanceId": "test-instance",
+        "databaseId": "test-db"
+      },
+      "authenticationStrategy": {
+        "_type": "gcpApplicationDefaultCredentials"
+      },
+      "type": "Spanner",
+      "element": "",
+      "databaseType": "Spanner",
+      "postProcessors": [],
+      "postProcessorWithParameter": []
+    }
+  }
+}

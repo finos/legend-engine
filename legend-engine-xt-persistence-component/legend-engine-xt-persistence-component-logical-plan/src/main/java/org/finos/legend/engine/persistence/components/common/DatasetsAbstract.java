@@ -43,4 +43,6 @@ public interface DatasetsAbstract
     Optional<Dataset> tempDataset();
 
     Optional<Dataset> tempDatasetWithDeleteIndicator();
+
+    Optional<Dataset> stagingDatasetWithoutDuplicates();
 }

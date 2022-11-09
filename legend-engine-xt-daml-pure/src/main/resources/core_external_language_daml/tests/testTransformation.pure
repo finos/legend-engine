@@ -1,0 +1,33 @@
+import meta::external::language::daml::transformation::fromPure::*;
+import meta::external::language::daml::transformation::fromPure::tests::*;
+
+Class meta::external::language::daml::transformation::fromPure::tests::Person
+{
+  name:String[1];
+  age:Integer[1];
+  addresses:Address[*];
+}
+
+Class meta::external::language::daml::transformation::fromPure::tests::Address
+{
+  street:String[1];
+}
+
+function <<test.Test>> meta::external::language::daml::transformation::fromPure::tests::testGenerateDamlFromPure():Boolean[1]
+{
+  let config = ^ModelToDamlConfiguration(format = 'DAML',
+                               targetSchemaSet='res::ResSchemaSet');
+  let out = meta::external::language::daml::transformation::fromPure::generateDamlFromPure([Person],$config);
+  assertEquals('module Meta.External.Language.Daml.Transformation.FromPure.Tests where\n' +
+  '\n' +
+'data Person = Person with\n' +
+'  name : Text\n' +
+'  age : Int\n' +
+'  addresses : Optional [Address]\n' +
+'    deriving (Eq, Ord, Show)\n' +
+'\n'+
+'data Address = Address with\n' +
+'  street : Text\n' +
+'    deriving (Eq, Ord, Show)\n'
+,$out.module->map(m | $m->meta::external::language::daml::format::toString()));
+}

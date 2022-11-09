@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.h2.value.Value;
 import org.h2.value.ValueBoolean;
 import org.h2.value.ValueDouble;
@@ -34,6 +36,8 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class LegendH2Extensions
 {
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapper();
+
     public static Value legend_h2_extension_json_navigate(Value json, Value property, Value arrayIndex) throws Exception
     {
         if (json == ValueNull.INSTANCE)
@@ -41,16 +45,14 @@ public class LegendH2Extensions
             return ValueNull.INSTANCE;
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-
         Object res;
         if (arrayIndex == ValueNull.INSTANCE)
         {
-            res = mapper.readValue(json.getString(), HashMap.class).get(property.getString());
+            res = OBJECT_MAPPER.readValue(json.getString(), HashMap.class).get(property.getString());
         }
         else
         {
-            ArrayList<?> list = mapper.readValue(json.getString(), ArrayList.class);
+            ArrayList<?> list = OBJECT_MAPPER.readValue(json.getString(), ArrayList.class);
             res = arrayIndex.getInt() < list.size() ? list.get(arrayIndex.getInt()) : null;
         }
 
@@ -60,7 +62,7 @@ public class LegendH2Extensions
         }
         else if (res instanceof Map || res instanceof List)
         {
-            return ValueString.get(mapper.writeValueAsString(res));
+            return ValueString.get(OBJECT_MAPPER.writeValueAsString(res));
         }
         else if (res instanceof String)
         {
@@ -89,6 +91,27 @@ public class LegendH2Extensions
 
         throw new RuntimeException("Unsupported value in H2 extension function");
 
+    }
+
+    public static Value legend_h2_extension_json_parse(Value json) throws Exception
+    {
+        if (json == ValueNull.INSTANCE)
+        {
+            return ValueNull.INSTANCE;
+        }
+
+        // Ensure validity of JSON
+        Object res;
+        try
+        {
+            res = OBJECT_MAPPER.readValue(json.getString(), HashMap.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException("Unable to parse json as a Map. Content: '" + json.getString() + "'. Error: '" + e.getMessage() + "'");
+        }
+
+        return ValueString.get(OBJECT_MAPPER.writeValueAsString(res));
     }
 
     public static String legend_h2_extension_base64_decode(String string)

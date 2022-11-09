@@ -16,6 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.apache.http.Header;
+import org.apache.http.entity.StringEntity;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
@@ -52,6 +54,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.pac4j.core.profile.CommonProfile;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +79,21 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 scope.span().setTag("raw url", ((RestServiceExecutionNode) executionNode).url);
                 scope.span().setTag("method", ((RestServiceExecutionNode) executionNode).method.toString());
                 RestServiceExecutionNode node = (RestServiceExecutionNode) executionNode;
-                return ServiceExecutor.executeHttpService(node.url, node.params, node.requestBodyDescription, node.method, node.mimeType, node.securitySchemes, this.executionState, this.profiles);
+
+                List<String> mappedParameters;
+                if (node.requiredVariableInputs == null)
+                {
+                    mappedParameters = Collections.emptyList();
+                }
+                else
+                {
+                    mappedParameters = ListIterate.collect(node.requiredVariableInputs, v -> v.name);
+                }
+
+                String processedUrl = ServiceExecutor.getProcessedUrl(node.url, node.params, mappedParameters, this.executionState);
+                List<Header> headers = ServiceExecutor.getProcessedHeaders(node.params, mappedParameters, this.executionState);
+                StringEntity requestBodyEntity = ServiceExecutor.getRequestBodyEntity(node.requestBodyDescription, this.executionState);
+                return ServiceExecutor.executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes, this.profiles);
             }
         }
         else if (executionNode instanceof ServiceParametersResolutionExecutionNode)
