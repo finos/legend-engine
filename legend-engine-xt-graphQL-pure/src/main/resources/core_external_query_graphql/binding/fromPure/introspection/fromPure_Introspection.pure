@@ -39,13 +39,12 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
       )
     )
   )->concatenate(
-    pair(
-      'String',
-      ^__Type(
-        kind = __TypeKind.SCALAR,
-        name = 'String'
-      )
-    )
+    [
+      pair('String',^__Type(kind = __TypeKind.SCALAR,name = 'String')),
+      pair('Float',^__Type(kind = __TypeKind.SCALAR,name = 'Float')),
+      pair('Integer',^__Type(kind = __TypeKind.SCALAR,name = 'Int')),
+      pair('Boolean',^__Type(kind = __TypeKind.SCALAR,name = 'Boolean'))
+    ]
   )->newMap();
 
   // PASS 2
