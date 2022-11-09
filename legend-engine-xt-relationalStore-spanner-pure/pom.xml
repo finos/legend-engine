@@ -22,6 +22,7 @@
                     <repositories>
                         <repository>platform</repository>
                         <repository>core</repository>
+                        <repository>core_authentication</repository>
                         <repository>core_relational</repository>
                         <repository>core_relational_spanner</repository>
                     </repositories>
@@ -42,6 +43,11 @@
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-code-compiled-platform-par</artifactId>
                         <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-authentication-pure</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
