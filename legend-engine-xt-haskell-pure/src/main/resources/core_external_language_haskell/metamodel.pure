@@ -1,0 +1,127 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::haskell::metamodel::*;
+
+Class meta::external::language::haskell::metamodel::HaskellModule
+{
+    id: String[1];
+    exports: String[*];
+    imports: meta::external::language::haskell::metamodel::Import[*];
+    elements: ModuleElement[*];
+}
+
+Class meta::external::language::haskell::metamodel::Import
+{
+    name: String[1];
+}
+
+Class meta::external::language::haskell::metamodel::AnnotatedElement
+{
+   documentation: String[0..1];
+}
+
+Class meta::external::language::haskell::metamodel::ModuleElement extends meta::external::language::haskell::metamodel::AnnotatedElement
+{
+}
+
+Class meta::external::language::haskell::metamodel::DataType extends ModuleElement
+{
+    name: String[1];
+    constructors: NamedConstructor[*];
+    deriving:Deriving[*];
+}
+
+Class meta::external::language::haskell::metamodel::Deriving
+{
+    types:HaskellType[*];
+}
+
+Class meta::external::language::haskell::metamodel::NamedConstructor extends meta::external::language::haskell::metamodel::AnnotatedElement
+{
+    name: String[1];
+}
+
+Class meta::external::language::haskell::metamodel::DataTypeConstructor extends NamedConstructor
+{
+    types: HaskellType[*];
+}
+
+Class meta::external::language::haskell::metamodel::RecordTypeConstructor extends NamedConstructor
+{
+    fields: Field[*];
+}
+
+Class meta::external::language::haskell::metamodel::Field extends meta::external::language::haskell::metamodel::AnnotatedElement
+{
+    name: String[1];
+    type: HaskellType[1..*];
+}
+
+Class meta::external::language::haskell::metamodel::HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Int extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Integer extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Float extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Double extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Decimal extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Text extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Bool extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::DateTime extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::Num extends HaskellType
+{
+}
+
+Class meta::external::language::haskell::metamodel::ListType extends HaskellType
+{
+    type:HaskellType[1..*];
+}
+
+Class meta::external::language::haskell::metamodel::TupleType extends HaskellType
+{
+    first:HaskellType[1];
+    second:HaskellType[1];
+}
+
+Class meta::external::language::haskell::metamodel::NamedTypeRef extends HaskellType
+{
+  module:String[0..1];
+  name:String[1];
+}

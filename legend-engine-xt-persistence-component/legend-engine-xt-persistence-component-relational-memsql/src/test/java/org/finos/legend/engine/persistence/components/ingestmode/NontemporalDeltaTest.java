@@ -164,6 +164,44 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
+    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String updateSql = "UPDATE `mydb`.`main` as sink " +
+                "INNER JOIN `mydb`.`staging` as stage " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
+                "SET sink.`id` = stage.`id`" +
+                ",sink.`name` = stage.`name`," +
+                "sink.`amount` = stage.`amount`," +
+                "sink.`biz_date` = stage.`biz_date`," +
+                "sink.`digest` = stage.`digest`";
+
+        String insertSql = "INSERT INTO `mydb`.`main` " +
+                "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
+                "(SELECT * FROM `mydb`.`staging` as stage " +
+                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
+                "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
+                "(sink.`digest` = stage.`digest`))))";
+
+        String deleteSql = "DELETE FROM `mydb`.`main` as sink " +
+                "WHERE EXISTS (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` " +
+                "FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) " +
+                "AND (sink.`digest` = stage.`digest`) AND (stage.`delete_indicator` IN ('yes','1','true')))";
+
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
+        Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(deleteSql, milestoningSqlList.get(2));
+
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(null, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
     public void verifyNontemporalDeltaWithUpperCaseOptimizer(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
