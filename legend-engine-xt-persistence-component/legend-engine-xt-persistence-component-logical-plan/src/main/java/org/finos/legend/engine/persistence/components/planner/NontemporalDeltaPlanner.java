@@ -107,7 +107,7 @@ class NontemporalDeltaPlanner extends Planner
         MERGE INTO main_table
         USING (staging_columns)
         ON pks_match AND
-        WHEN MATCHED AND disgest_not_match THEN
+        WHEN MATCHED AND digest_not_match THEN
         UPDATE SET column_assignment
         WHEN NOT MATCHED THEN
         INSERT (staging_columns)

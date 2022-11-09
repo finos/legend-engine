@@ -8,6 +8,7 @@ Class test::ServiceResult
 {
    ID: String[1];
    NAME: String[1];
+   DELETED: String[1];
 }
 
 ###Mapping
@@ -19,7 +20,7 @@ Database test::TestDatabase
   Table personTable
   (
     ID INTEGER PRIMARY KEY,
-    NAME VARCHAR(100),
+    NAME VARCHAR(100)
   )
 )
 ###Service
@@ -102,7 +103,7 @@ Persistence test::TestPersistence
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"ID":1, "NAME":"ANDY", "DELETED":"1"},{"ID":2, "NAME":"BRAD", "DELETED":"1"},{"ID":3, "NAME":"DAVID", "DELETED":"1"}]';
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"DAVID"}]';
                   }#;
               }#
           ]
@@ -129,7 +130,7 @@ Persistence test::TestPersistence
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"ID":1, "NAME":"ANDY", "DELETED":"1"},{"ID":2, "NAME":"BRADLEY", "DELETED":"1"},{"ID":3, "NAME":"CATHY", "DELETED":"1"},{"ID":4, "NAME":"DAVID", "DELETED":"2"}]';
+                    data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRADLEY"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"DAVID"}]';
                   }#;
               }#
           ]

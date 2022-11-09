@@ -147,7 +147,7 @@ public class PersistenceTestRunner implements TestRunner
     private IngestorResult invokePersistence(Dataset targetDataset, Persistence persistence, String testData,
                                              Connection connection) throws Exception
     {
-        Datasets enrichedDatasets = IngestModeMapper.enrichAndDeriveDatasets(persistence, targetDataset, testData);
+        Datasets enrichedDatasets = DatasetMapper.enrichAndDeriveDatasets(persistence, targetDataset, testData);
         IngestMode ingestMode = IngestModeMapper.from(persistence);
 
         RelationalIngestor ingestor = RelationalIngestor.builder()

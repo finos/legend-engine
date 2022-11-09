@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.testable.persistence.ingestmode.delta.unitemporal;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.persistence.ingestmode.TestPersistenceBase;

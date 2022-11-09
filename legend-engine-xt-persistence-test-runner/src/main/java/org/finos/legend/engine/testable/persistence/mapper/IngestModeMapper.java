@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
-import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
@@ -65,32 +64,6 @@ public class IngestModeMapper
         }
     }
 
-    public static Datasets enrichAndDeriveDatasets(Persistence persistence, Dataset mainDataSet, String testData) throws Exception
-    {
-        IngestMode ingestMode = getIngestMode(persistence);
-        IngestModeType mode = getIngestModeName(ingestMode);
-
-        switch (mode)
-        {
-            case NontemporalSnapshot:
-                return NontemporalSnapshotMapper.enrichAndDeriveDatasets((NontemporalSnapshot) ingestMode, mainDataSet, testData);
-            case AppendOnly:
-                return AppendOnlyMapper.enrichAndDeriveDatasets((AppendOnly) ingestMode, mainDataSet, testData);
-            case NontemporalDelta:
-                return NontemporalDeltaMapper.enrichAndDeriveDatasets((NontemporalDelta) ingestMode, mainDataSet, testData);
-            case UnitemporalSnapshot:
-                return UnitemporalSnapshotMapper.enrichAndDeriveDatasets((UnitemporalSnapshot) ingestMode, mainDataSet, testData);
-            case UnitemporalDelta:
-                return UnitemporalDeltaMapper.enrichAndDeriveDatasets((UnitemporalDelta) ingestMode, mainDataSet, testData);
-            case BitemporalSnapshot:
-                return BitemporalSnapshotMapper.enrichAndDeriveDatasets((BitemporalSnapshot) ingestMode, mainDataSet, testData);
-            case BitemporalDelta:
-                return BitemporalDeltaMapper.enrichAndDeriveDatasets((BitemporalDelta) ingestMode, mainDataSet, testData);
-            default:
-                throw new Exception("Unsupported Ingest mode");
-        }
-    }
-
     public static Set<String> getFieldsToIgnore(Persistence persistence) throws Exception
     {
         IngestMode ingestMode = getIngestMode(persistence);
@@ -103,7 +76,7 @@ public class IngestModeMapper
         return ingestMode.accept(IngestModeVisitors.EXTRACT_TRANSACTION_MILESTONING_TIME_BASED);
     }
 
-    private static IngestMode getIngestMode(Persistence persistence) throws Exception
+    public static IngestMode getIngestMode(Persistence persistence) throws Exception
     {
         Persister persister = persistence.persister;
         if (persister instanceof BatchPersister)
@@ -114,7 +87,7 @@ public class IngestModeMapper
         throw new Exception("Only BatchPersister has Ingest Mode");
     }
 
-    private static IngestModeType getIngestModeName(IngestMode ingestMode)
+    public static IngestModeType getIngestModeName(IngestMode ingestMode)
     {
         String clazz = ingestMode.getClass().getSimpleName();
         IngestModeType ingestModeType = IngestModeType.valueOf(clazz);

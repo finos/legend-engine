@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_Sink;
@@ -33,6 +36,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.SchemaAcc
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
 import org.finos.legend.pure.generated.platform_relational_relational;
+import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.getIngestMode;
 
 public class DatasetMapper
 {
@@ -68,6 +72,12 @@ public class DatasetMapper
                 .build();
 
         return datasetDefinition;
+    }
+
+    public static Datasets enrichAndDeriveDatasets(Persistence persistence, Dataset mainDataset, String testData) throws Exception
+    {
+        IngestMode ingestMode = getIngestMode(persistence);
+        return ingestMode.accept(new DeriveDatasets(persistence, mainDataset, testData));
     }
 
     private static Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget getTarget(Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister)
