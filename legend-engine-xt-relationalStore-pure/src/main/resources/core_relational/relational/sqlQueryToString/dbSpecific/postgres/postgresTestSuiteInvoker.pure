@@ -45,10 +45,10 @@ function meta::relational::tests::dbSpecificTests::postgres::testsFilter(f:Funct
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
   
   //window column not supported for postgres
-  let ignoredWindowColumnTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowAvg_DbTestConfig_1__Boolean_1_,
-                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithSortSingle_DbTestConfig_1__Boolean_1_,
-                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::windowWithSortMultiple_DbTestConfig_1__Boolean_1_,
-                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::windowColumn::testWindowWithoutSortMultiple_DbTestConfig_1__Boolean_1_];
+  let ignoredWindowColumnTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::windowAvg_DbTestConfig_1__Boolean_1_,
+                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::testWindowWithSortSingle_DbTestConfig_1__Boolean_1_,
+                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::windowWithSortMultiple_DbTestConfig_1__Boolean_1_,
+                                 meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::testWindowWithoutSortMultiple_DbTestConfig_1__Boolean_1_];
     
   !$ignoredTests->concatenate($ignoredWindowColumnTests)->contains($f);
 }

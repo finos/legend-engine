@@ -55,7 +55,7 @@ function meta::relational::tests::dbSpecificTests::snowflake::testsFilter(f:Func
   let failingSupportedAggregateFunctions = ['average','count', 'drop','limit','max', 'min','size' , 'slice','stdDevPopulation', 'stdDevSample','sum', 'take'];
 
   let ignoredAggregateFunctionTests= $unsupportedAggregateFunctions->concatenate($failingSupportedAggregateFunctions)->map(dynaFuncName |
-              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::' + $dynaFuncName;
+              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::' + $dynaFuncName;
               $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););      
 
   let ignoredNamingTests= [meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames_DbTestConfig_1__Boolean_1_,
