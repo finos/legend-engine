@@ -1,0 +1,5 @@
+{
+  "name" : "core_external_language_haskell",
+  "pattern" : "(meta::external::language::haskell)(::.*)?",
+  "dependencies" : ["platform", "core"]
+}

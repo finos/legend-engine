@@ -1,0 +1,25 @@
+import meta::external::language::haskell::metamodel::*;
+import meta::external::language::haskell::transformation::fromPure::*;
+import meta::external::language::daml::transformation::fromPure::*;
+
+function meta::external::language::daml::transformation::fromPure::damlFromPureElements(elements:PackageableElement[1..*]):HaskellModule[*]
+{
+  //DAML is based on Haskell but defines some of it's own primitive data types
+  $elements->haskellFromPureElements(buildDamlPrimitiveTypesMap());
+}
+
+function meta::external::language::daml::transformation::fromPure::buildDamlPrimitiveTypesMap():Map<Type,HaskellType>[1]
+{
+  newMap(
+      [
+         pair(Integer, ^meta::external::language::haskell::metamodel::Int()),
+         //DAML uses Decimal, this might be problematic for type conversions
+         pair(Float, ^meta::external::language::haskell::metamodel::Decimal()),
+         pair(Decimal, ^meta::external::language::haskell::metamodel::Decimal()),
+         pair(String, ^meta::external::language::haskell::metamodel::Text()),
+         pair(Boolean, ^meta::external::language::haskell::metamodel::Bool()),
+         pair(DateTime , ^meta::external::language::haskell::metamodel::NamedTypeRef(module='DA',name='Time')),
+         pair(StrictDate , ^meta::external::language::haskell::metamodel::NamedTypeRef(module='DA',name='Date')),
+         pair(Number , ^meta::external::language::haskell::metamodel::Num())
+      ])
+}
