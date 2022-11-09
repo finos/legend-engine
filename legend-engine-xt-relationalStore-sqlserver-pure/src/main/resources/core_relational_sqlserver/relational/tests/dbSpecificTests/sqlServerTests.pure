@@ -34,7 +34,7 @@ function meta::relational::tests::dbSpecificTests::sqlServer::testsFilter(f:Func
   // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
    let unsupportedDynaFunctions = [
      'adjust', 'dateDiff', 'dayOfMonth', 'firstDayOfWeek', 'indexOf', 'joinStrings', 'mod',
-     'mostRecentDayOfWeek', 'previousDayOfWeek', 'rem'
+     'mostRecentDayOfWeek', 'previousDayOfWeek', 'rem', 'toTimestamp'
     ];
 
   //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures

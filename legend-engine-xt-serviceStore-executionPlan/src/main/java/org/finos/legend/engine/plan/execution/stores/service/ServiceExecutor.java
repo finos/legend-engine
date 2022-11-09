@@ -63,55 +63,22 @@ import java.util.Objects;
 
 public class ServiceExecutor
 {
-    public static InputStreamResult executeHttpService(String url, List<ServiceParameter> params, RequestBodyDescription requestBodyDescription, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, ExecutionState state, MutableList<CommonProfile> profiles)
+    public static InputStreamResult executeHttpService(String url, List<Header> headers, StringEntity requestBodyEntity, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
     {
-        Span span = GlobalTracer.get().activeSpan();
-
-        List<ServiceParameter> pathParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.PATH);
-        List<ServiceParameter> queryParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.QUERY);
-        List<ServiceParameter> headerParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.HEADER);
-
-        String urlProcessedWithPathParams = processUrlWithPathParams(url, pathParams, state);
-        String urlProcessedWithQueryParams = processUrlWithQueryParams(urlProcessedWithPathParams, queryParams, state);
-        List<Header> headers = processHeaderParams(headerParams, state);
-
-        if (span != null)
-        {
-            span.setTag("processed url", urlProcessedWithQueryParams);
-        }
-
         URI uri;
         try
         {
-            URIBuilder uriBuilder = new URIBuilder(urlProcessedWithQueryParams);
+            URIBuilder uriBuilder = new URIBuilder(url);
             uri = uriBuilder.build();
         }
         catch (URISyntaxException e)
         {
-            String errMsg = String.format("Cannot build URI from url (%s)", urlProcessedWithQueryParams);
+            String errMsg = String.format("Cannot build URI from url (%s)", url);
             throw new RuntimeException(errMsg, e);
         }
 
-        StringEntity requestBodyEntity = null;
-        if (requestBodyDescription != null)
-        {
-            String requestBody;
-            try
-            {
-                StreamingResult streamingResult = (StreamingResult) state.getResult(requestBodyDescription.resultKey);
-                requestBody = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW));
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Error serializing requestBody value.\n" + e);
-            }
-            ContentType contentType = ContentType.create(requestBodyDescription.mimeType, StandardCharsets.UTF_8);
-            requestBodyEntity = new StringEntity(requestBody, contentType);
-        }
-
-
         InputStream response = executeRequest(httpMethod, uri, headers, requestBodyEntity, mimeType, securitySchemes, profiles);
-        return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(urlProcessedWithQueryParams)));
+        return new InputStreamResult(response, org.eclipse.collections.api.factory.Lists.mutable.with(new ServiceStoreExecutionActivity(url)));
     }
 
     public static InputStream executeRequest(HttpMethod httpMethod, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, MutableList<CommonProfile> profiles)
@@ -176,6 +143,52 @@ public class ServiceExecutor
         }
     }
 
+    public static String getProcessedUrl(String url, List<ServiceParameter> params, List<String> mappedParameters, ExecutionState state)
+    {
+        Span span = GlobalTracer.get().activeSpan();
+
+        List<ServiceParameter> pathParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.PATH);
+        List<ServiceParameter> queryParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.QUERY);
+
+        String urlProcessedWithPathParams = processUrlWithPathParams(url, pathParams, state);
+        String urlProcessedWithQueryParams = processUrlWithQueryParams(urlProcessedWithPathParams, queryParams, mappedParameters, state);
+
+        if (span != null)
+        {
+            span.setTag("processed url", urlProcessedWithQueryParams);
+        }
+
+        return urlProcessedWithQueryParams;
+    }
+
+    public static List<Header> getProcessedHeaders(List<ServiceParameter> params, List<String> mappedParameters, ExecutionState state)
+    {
+        List<ServiceParameter> headerParams = params == null ? Lists.mutable.empty() : ListIterate.select(params, param -> param.location == Location.HEADER);
+        return processHeaderParams(headerParams, mappedParameters, state);
+    }
+
+    public static StringEntity getRequestBodyEntity(RequestBodyDescription requestBodyDescription, ExecutionState state)
+    {
+        StringEntity requestBodyEntity = null;
+        if (requestBodyDescription != null)
+        {
+            String requestBody;
+            try
+            {
+                StreamingResult streamingResult = (StreamingResult) state.getResult(requestBodyDescription.resultKey);
+                requestBody = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Error serializing requestBody value.\n" + e);
+            }
+            ContentType contentType = ContentType.create(requestBodyDescription.mimeType, StandardCharsets.UTF_8);
+            requestBodyEntity = new StringEntity(requestBody, contentType);
+        }
+        return requestBodyEntity;
+    }
+
+
     private static String processUrlWithPathParams(String url, List<ServiceParameter> pathParams, ExecutionState state)
     {
         Map<String, String> pathVarValueMap = Maps.mutable.empty();
@@ -199,22 +212,22 @@ public class ServiceExecutor
         return FreeMarkerExecutor.processRecursively(url, pathVarValueMap, "");
     }
 
-    private static String processUrlWithQueryParams(String url, List<ServiceParameter> queryParams, ExecutionState state)
+    private static String processUrlWithQueryParams(String url, List<ServiceParameter> queryParams, List<String> mappedParameters, ExecutionState state)
     {
         if (queryParams == null || queryParams.isEmpty())
         {
             return url;
         }
-        return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
+        return url + "?" + String.join("&", ListIterate.collectIf(queryParams, param -> (mappedParameters.contains(param.name) && state.getResult(param.name) != null), param -> serializeQueryParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
-    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, ExecutionState state)
+    private static List<Header> processHeaderParams(List<ServiceParameter> headerParams, List<String> mappedParameters, ExecutionState state)
     {
         if (headerParams == null || headerParams.isEmpty())
         {
             return Collections.emptyList();
         }
-        return ListIterate.collectIf(headerParams, param -> (state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
+        return ListIterate.collectIf(headerParams, param -> (mappedParameters.contains(param.name) && state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
 
     private static void processSecurityScheme(HttpClientBuilder httpClientBuilder, MutableList<CommonProfile> profiles, SecurityScheme securityScheme)

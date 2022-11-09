@@ -140,17 +140,15 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
    let result = executeViaPlan(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
-                         ->groupBy('prodName', agg('cnt', x|$x, y| $y->count()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
+                         ->groupBy('prodName', agg('cnt', x|$x, y| $y->count())),
+                         simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
    
   if($result->isEmpty(), | true,
   |let tds = $result.values->at(0);
    assertEquals([String, Integer], $result.values.columns.type);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 2], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 5], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 3], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 1], $tds.rows->at(3).values);
+   let resultStrs = $tds.rows->map(r| if($r.values->at(0) == ^TDSNull(), |'Null', |$r.values->at(0)->cast(@String)) + ', ' + $r.values->at(1)->toString())->sort();
+   assertEquals(['Firm A, 3', 'Firm C, 5', 'Firm X, 2', 'Null, 1'], $resultStrs);
   );
 }
 

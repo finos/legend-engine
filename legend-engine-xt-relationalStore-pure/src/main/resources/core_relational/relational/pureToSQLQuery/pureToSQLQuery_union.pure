@@ -105,15 +105,30 @@ function meta::relational::functions::pureToSqlQuery::union::addMissingColumnToU
    $res;
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::resolveUnion(relationalOperationElement:RelationalOperationElement[1]):Union[1]
+function meta::relational::functions::pureToSqlQuery::union::resolveUnion(relationalOperationElement:RelationalOperationElement[1]):Union[1]
 {
    $relationalOperationElement->match([u:Union[1]          | $u,
                                        s:SelectSQLQuery[1] | $s.data.alias.relationalElement->cast(@Union)->toOne()]);
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::union::isNestedUnion(relationalOperationElement:RelationalOperationElement[1]):Boolean[1]
+function meta::relational::functions::pureToSqlQuery::union::isNestedUnion(relationalOperationElement:RelationalOperationElement[1]):Boolean[1]
 {
    $relationalOperationElement->instanceOf(SelectSQLQuery) && $relationalOperationElement->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->instanceOf(Union);
+}
+
+function meta::relational::functions::pureToSqlQuery::union::isUnionOrNestedUnion(relationalOperationElement:RelationalOperationElement[1]):Boolean[1]
+{
+   $relationalOperationElement->instanceOf(Union) || $relationalOperationElement->isNestedUnion();
+}
+
+function meta::relational::functions::pureToSqlQuery::union::isNullJoinPropertyMapping(rpm:RelationalPropertyMapping[1]):Boolean[1]
+{
+   let rop = $rpm.relationalOperationElement;
+   $rop->instanceOf(RelationalOperationElementWithJoin) &&
+   $rop->cast(@RelationalOperationElementWithJoin).joinTreeNode->isEmpty() &&
+   $rop->cast(@RelationalOperationElementWithJoin).relationalOperationElement->isNotEmpty() &&
+   $rop->cast(@RelationalOperationElementWithJoin).relationalOperationElement->toOne()->instanceOf(Alias) &&
+   $rop->cast(@RelationalOperationElementWithJoin).relationalOperationElement->toOne()->cast(@Alias).relationalElement == ^Literal(value = ^SQLNull());
 }
 
 function meta::relational::functions::pureToSqlQuery::union::managePrimaryKeys(allQueries: SelectSQLQuery[*], setImpls:RootRelationalInstanceSetImplementation[*], state: State[1]): SelectSQLQuery[*]
@@ -183,7 +198,8 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
    // We compute the FK in two use cases:
    //    1. buildUnion is called as part of building the target of an association (in which case the 'source' flag is false)
    //    2. Used in the 'importDataFlow' use case on the source (getAll on the type itself)
-   let targetCols = findFkListForEachSet($propertyMappingsInScope, $state.importDataFlow==true, $state.mapping);
+   let avoidModeledProperties = $relationalPropertyMappings->exists(rpm | $rpm->isNullJoinPropertyMapping());
+   let targetCols = findFkListForEachSet($propertyMappingsInScope, $state.importDataFlow==true, $state.mapping, $avoidModeledProperties);
    let missingFks = $targetCols->map(c|list($c.second.values->map(z|pair($z.name+'_'+$targetCols->indexOf($c)->toString(), $z))));
    let mappedFkPropertyNames = $targetCols.first.values.first->removeDuplicates();
 
@@ -299,6 +315,11 @@ Class meta::relational::functions::pureToSqlQuery::union::FKListModeledAndNonMod
 
 function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSet(relationalPropertyMappings:RelationalPropertyMapping[*], source:Boolean[1], mapping:Mapping[1]):FKListModeledAndNonModeled[*]
 {
+   findFkListForEachSet($relationalPropertyMappings, $source, $mapping, false)
+}
+
+function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSet(relationalPropertyMappings:RelationalPropertyMapping[*], source:Boolean[1], mapping:Mapping[1], avoidModeledProperties: Boolean[1]):FKListModeledAndNonModeled[*]
+{
    let setImplementationId = if($source, |$relationalPropertyMappings.sourceSetImplementationId, |$relationalPropertyMappings.targetSetImplementationId)->removeDuplicates();
    let propertyMappingBySetIds = $relationalPropertyMappings->groupBy(r|if($source, |$r.sourceSetImplementationId, |$r.targetSetImplementationId));
 
@@ -313,7 +334,7 @@ function meta::relational::functions::pureToSqlQuery::union::findFkListForEachSe
                                                                                              ->filter(pm|let roe = $pm->cast(@RelationalPropertyMapping).relationalOperationElement;
                                                                                                          $roe->instanceOf(TableAliasColumn) && $roe->cast(@TableAliasColumn).column == $c;
                                                                                                      );
-                                                                if($rpm->isEmpty(),
+                                                                if($avoidModeledProperties || $rpm->isEmpty(),
                                                                    |$c,
                                                                    |pair($rpm->at(0).property.name->toOne(), $rpm->at(0)->cast(@RelationalPropertyMapping).relationalOperationElement->cast(@TableAliasColumn).column)
                                                                   );
@@ -337,9 +358,10 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 {
    print(if(!$context.debug, |'', | $context.space+'*>Build SQL query out many set implementations (and join) (propertyMappings:'+$relationalPropertyMappings->size()->toString()+'):\n'));
 
-   let sourceCols = findFkListForEachSet($relationalPropertyMappings, true, $state.mapping);
+   let avoidModeledProperties = $relationalPropertyMappings->exists(rpm | $rpm->isNullJoinPropertyMapping());
+   let sourceCols = findFkListForEachSet($relationalPropertyMappings, true, $state.mapping, $avoidModeledProperties);
    let srcMap = $sourceCols->buildColumnToNameMapForMappedFks();
-   let targetCols = findFkListForEachSet($relationalPropertyMappings, false, $state.mapping);
+   let targetCols = findFkListForEachSet($relationalPropertyMappings, false, $state.mapping, $avoidModeledProperties);
    let targetMap = $targetCols->buildColumnToNameMapForMappedFks();
 
    let sourceAlias = $srcOperation.currentTreeNode.alias;

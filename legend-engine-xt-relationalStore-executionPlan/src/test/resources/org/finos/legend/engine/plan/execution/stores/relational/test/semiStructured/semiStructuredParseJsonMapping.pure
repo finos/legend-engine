@@ -103,6 +103,43 @@ Runtime parseJson::runtime::SnowflakeRuntime
     ];
 }
 
+###Runtime
+Runtime parseJson::runtime::H2Runtime
+{
+    mappings :
+    [
+        parseJson::mapping::SnowflakeMapping
+    ];
+    connections :
+    [
+        parseJson::store::SnowflakeDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: parseJson::store::SnowflakeDB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP SCHEMA IF EXISTS PERSON_SCHEMA CASCADE;',
+                            'CREATE SCHEMA PERSON_SCHEMA;',
+                            'CREATE TABLE PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID INT PRIMARY KEY, FIRSTNAME VARCHAR(100), LASTNAME VARCHAR(100), FIRM_DETAILS VARCHAR(1000), MANAGERID INT);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (1,\'Peter\',\'Smith\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (2,\'John\',\'Johnson\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',4);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (3,\'John\',\'Hill\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',2);',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (4,\'Anthony\',\'Allen\',\'{"legalName": "Firm X", "address": {"name": "A1", "lines": [{"lineno": 1, "street": "s1"}, {"lineno": 2, "city": "c1"}, {"lineno": 3, "state": "s1"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (5,\'Fabrice\',\'Roberts\',\'{"legalName": "Firm A", "address": {"name": "A2", "lines": [{"lineno": 1, "street": "s2"}, {"lineno": 2, "city": "c2"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (6,\'Oliver\',\'Hill\',\'{"legalName": "Firm B", "address": {"name": "A3", "lines": [{"lineno": 1, "street": "s3"}]}}\',7)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (7,\'David\',\'Harris\',\'{"legalName": "Firm B", "address": {"name": "A3", "lines": [{"lineno": 1, "street": "s3"}]}}\',null)',
+                            'INSERT INTO PERSON_SCHEMA.PERSON_TABLE_VARCHAR(ID,FIRSTNAME,LASTNAME,FIRM_DETAILS,MANAGERID) VALUES (8,\'UNKNOWN\',\'UNKNOWN\',null,null)'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
 ###Pure
 function parseJson::parseJsonInMapping(): TabularDataSet[1]
 {

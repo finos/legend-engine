@@ -14,7 +14,8 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -26,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.21.1-SNAPSHOT</version>
+    <version>3.21.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -85,6 +86,14 @@
         <module>legend-engine-external-format-jsonSchema</module>
         <module>legend-engine-xt-json-protocol</module>
         <module>legend-engine-xt-json-pure</module>
+
+        <module>legend-engine-xt-haskell-grammar</module>
+        <module>legend-engine-xt-haskell-pure</module>
+        <module>legend-engine-xt-haskell-protocol</module>
+
+        <module>legend-engine-xt-daml-grammar</module>
+        <module>legend-engine-xt-daml-pure</module>
+        <module>legend-engine-xt-daml-model</module>
 
         <module>legend-engine-xt-relationalStore-executionPlan</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
@@ -184,13 +193,18 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
+        <module>legend-engine-xt-relationalStore-spanner-execution</module>
+        <module>legend-engine-xt-relationalStore-spanner-pure</module>
+        <module>legend-engine-xt-relationalStore-spanner-grammar</module>
+        <module>legend-engine-xt-relationalStore-spanner-protocol</module>
+        <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.7.1</legend.pure.version>
+        <legend.pure.version>3.7.2</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -223,6 +237,7 @@
         <databricks.version>2.6.25</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
+        <google-cloud-spanner-jdbc.version>2.7.3</google-cloud-spanner-jdbc.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -726,6 +741,26 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-sqlserver-execution-tests</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -978,6 +1013,22 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-haskell-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-rosetta</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1090,6 +1141,21 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-daml-model</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1967,7 +2033,6 @@
                 <version>${github.classgraph.version}</version>
             </dependency>
 
-
             <!-- Jetty -->
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
@@ -2033,7 +2098,6 @@
                 <artifactId>HikariCP</artifactId>
                 <version>${hikaricp.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
@@ -2061,12 +2125,35 @@
                 <scope>runtime</scope>
                 <version>${redshiftJDBC.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgres.version}</version>
                 <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-spanner-jdbc</artifactId>
+                <version>${google-cloud-spanner-jdbc.version}</version>
+                <scope>runtime</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.annotation</groupId>
+                        <artifactId>javax.annotation-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.checkerframework</groupId>
+                        <artifactId>checker-qual</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.google.errorprone</groupId>
+                        <artifactId>error_prone_annotations</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Database -->

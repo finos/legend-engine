@@ -18,7 +18,14 @@ public enum Clause
 {
 
     MODIFY("MODIFY"),
-    CHANGE("CHANGE");
+    CHANGE("CHANGE"),
+    KEY("KEY"),
+    SHARD("SHARD"),
+    UNENFORCED("unenforced"),
+    UNIQUE("unique"),
+    USING("using"),
+    CLUSTERED("clustered"),
+    COLUMNSTORE("columnstore");
 
     private final String clause;
 

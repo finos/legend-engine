@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.service.utils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -87,7 +88,7 @@ public class ServiceStoreTestUtils
         extensions.add(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
         extensions.add(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
 
-        Function queryFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
+        Function queryFunctionExpressions = ListIterate.detect(contextData.getElementsOfType(Function.class), f -> "query__Any_1_".equals(f.name));
 
         return PlanGenerator.generateExecutionPlan(
                 HelperValueSpecificationBuilder.buildLambda(((Lambda) queryFunctionExpressions.body.get(0)).body, ((Lambda) queryFunctionExpressions.body.get(0)).parameters, pureModel.getContext()),
