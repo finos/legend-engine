@@ -45,7 +45,7 @@ Class <<typemodifiers.abstract>> meta::pure::authentication::Authentication
 Class meta::pure::authentication::UsernamePasswordAuthentication extends Authentication
 {
   username: String[1];
-  password: PlainTextCredential[0..1];
+  password: PlainTextCredential[1];
 }
 
 Class meta::pure::authentication::KeyPairAuthentication extends Authentication
