@@ -41,6 +41,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPure
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
@@ -332,6 +333,25 @@ public class DomainParseTreeWalker
         property.defaultValue = ctx.defaultValue() == null ? null : this.visitDefaultValue(ctx.defaultValue().defaultValueExpression());
         property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         property.propertyTypeSourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.propertyReturnType().type());
+        if (ctx.aggregation() != null)
+        {
+            if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_COMPOSITE() != null)
+            {
+                property.aggregation = AggregationKind.COMPOSITE;
+            }
+            else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_SHARED() != null)
+            {
+                property.aggregation = AggregationKind.SHARED;
+            }
+            else if (ctx.aggregation().aggregationType().AGGREGATION_TYPE_NONE() != null)
+            {
+                property.aggregation = AggregationKind.NONE;
+            }
+            else
+            {
+                throw new EngineException("Unknown aggregation kind '" + ctx.aggregation().getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.aggregation()), EngineErrorType.PARSER);
+            }
+        }
         return property;
     }
 
