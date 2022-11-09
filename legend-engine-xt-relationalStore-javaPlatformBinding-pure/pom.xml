@@ -49,7 +49,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>compile</phase>
+                        <phase>generate-sources</phase>
                         <goals>
                             <goal>build-pure-jar</goal>
                         </goals>
