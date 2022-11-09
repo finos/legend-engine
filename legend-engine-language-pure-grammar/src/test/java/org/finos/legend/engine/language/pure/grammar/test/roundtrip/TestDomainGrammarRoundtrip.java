@@ -20,6 +20,28 @@ import org.junit.Test;
 public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void testClassPropertiesWithAggregationType()
+    {
+        test("Class my::Class\n" +
+                "{\n" +
+                "  (shared) prop1: String[1];\n" +
+                "  (none) prop2: String[1];\n" +
+                "  (composite) prop3: String[1];\n" +
+                "  prop4: String[1];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testAssociationPropertiesWithAggregationType()
+    {
+        test("Association my::Assoc\n" +
+                "{\n" +
+                "  (shared) prop1: String[1];\n" +
+                "  (none) prop2: String[1];\n" +
+                "}\n");
+    }
+
+    @Test
     public void testAppliedFunctionAsParameters()
     {
         test("Class my::TestClass extends meta::pure::metamodel::type::Any\n" +

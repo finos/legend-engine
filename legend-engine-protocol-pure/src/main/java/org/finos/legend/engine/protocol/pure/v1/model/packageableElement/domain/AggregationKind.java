@@ -14,20 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain;
 
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-
-import java.util.Collections;
-import java.util.List;
-
-public class Property
+public enum AggregationKind
 {
-    public String name;
-    public String type;
-    public Multiplicity multiplicity;
-    public DefaultValue defaultValue;
-    public List<StereotypePtr> stereotypes = Collections.emptyList();
-    public List<TaggedValue> taggedValues = Collections.emptyList();
-    public SourceInformation sourceInformation;
-    public SourceInformation propertyTypeSourceInformation;
-    public AggregationKind aggregation;
+    NONE,
+    SHARED,
+    COMPOSITE
 }
