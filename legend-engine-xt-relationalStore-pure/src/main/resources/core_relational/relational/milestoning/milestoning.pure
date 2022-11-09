@@ -487,13 +487,14 @@ function meta::relational::milestoning::manageMilestoningContextPropogationForPr
    if(!$milestoningContext->isEmpty() && !$milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty(),|^$swc(milestoningContext=[]),|$swc);
 }
 
-function meta::relational::milestoning::updateMilestoningContextProcessingStateForProperties(swc: SelectWithCursor[1], milestoningProcessingState: MilestoningProcessingState[0..1]): SelectWithCursor[1]{
+function meta::relational::milestoning::updateMilestoningContextProcessingStateForProperties(swc: SelectWithCursor[1], milestoningProcessingState: MilestoningProcessingState[0..1]): SelectWithCursor[1]
+{
     let milestoningContext=$swc.milestoningContext;
-    if(!$milestoningContext->isEmpty() && !$milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty(),|
-                                             let milestoningContextToOne = $milestoningContext->toOne();
-                                             let milestoningContextUpdated=^$milestoningContextToOne(currentProcessingState=$milestoningProcessingState);
-                                             ^$swc(milestoningContext=$milestoningContextUpdated);
-                                       ,| $swc);
+    if(!$milestoningContext->isEmpty() && !$milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty() && !$milestoningContext->toOne().isAllVersions(),
+       | let milestoningContextToOne = $milestoningContext->toOne();
+         let milestoningContextUpdated=^$milestoningContextToOne(currentProcessingState=$milestoningProcessingState);
+         ^$swc(milestoningContext=$milestoningContextUpdated);,
+       | $swc);
 }
 
 function meta::relational::milestoning::unknownDefaultBusinessDate():Date[1]{
