@@ -18,6 +18,8 @@ import meta::pure::graphFetch::execution::*;
 import meta::json::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::router::clustering::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::metamodel::clustering::*;
 import meta::pure::graphFetch::*;
 import meta::pure::metamodel::path::*;
 

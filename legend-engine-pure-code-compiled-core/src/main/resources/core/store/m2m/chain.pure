@@ -16,6 +16,7 @@ import meta::pure::milestoning::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::clustering::*;
+import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::modelToModel::chain::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
@@ -24,8 +25,10 @@ import meta::pure::mapping::modelToModel::chain::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::router::printer::*;
+import meta::pure::router::store::metamodel::clustering::*;
+import meta::pure::router::utils::*;
 
-function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1], e:ExtendedRoutedValueSpecification[0..1], mapping:Mapping[1], mcc:ModelChainConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mcc:ModelChainConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let returnType = $f.fe.genericType.rawType->toOne();
    print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
@@ -97,7 +100,7 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
    ^Result<Any|*>(activities=$results.activities, values=$res);
 }
 
-function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQuery[1], e:ExtendedRoutedValueSpecification[0..1], mapping:Mapping[0..1], mcc:ModelChainConnection[1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[0..1], mcc:ModelChainConnection[1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let returnType = $sq.fe.genericType.rawType->toOne();
    assert($returnType->_subTypeOf(TabularDataSet), 'Non TDS return type not supported for Model Connections');
@@ -110,8 +113,8 @@ function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQu
    let m = $mcc.mappings->last()->toOne();
    
    let routed = $f->routeFunction($m, $runtime->toOne(), $exeCtx, $extensions, $debug);
-   let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
-   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
+   let routedFunction = $routed->evaluateAndDeactivate()->toOne();
+   let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification);
 
    let inScopeVars = $sq.inScopeVars;
 
@@ -138,19 +141,19 @@ function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQu
 Class meta::pure::mapping::modelToModel::chain::Container
 {
    res : FunctionExpression[1];
-   ex : ExtendedRoutedValueSpecification[*];
+   ex : StoreMappingRoutedValueSpecification[*];
 }
 
-function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpression[1], r:ExtendedRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Container[1]
+function meta::pure::mapping::modelToModel::chain::allReprocess(f:FunctionExpression[1], r:StoreMappingRoutedValueSpecification[0..1], mappings:Mapping[*], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Container[1]
 {
    $mappings->fold(
                      {a,b|
                         print(if(!$debug.debug, |'', | $debug.space+'  Mapping: '+$a.name->toOne()+'\n'));
                         let rez = ^LambdaFunction<{->Any[*]}>(expressionSequence = $b.res->cast(@FunctionExpression))->routeFunction($a, ^Runtime(), $extensions, $debug);
-                        print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez.functions->at(0)->asString()+'\n'));
-                        let res = $rez.functions.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification).val->match(
+                        print(if(!$debug.debug, |'', | $debug.space+'  Routed: '+$rez->at(0)->asString()+'\n'));
+                        let res = $rez.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification).val->match(
                            [
-                              e:ExtendedRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, []).newExpression);,
+                              e:StoreMappingRoutedValueSpecification[1]|pair(list($e), $e.value->cast(@FunctionExpression)->toOne()->reprocess($e, $a, $mappings, []).newExpression);,
                               f:FunctionExpression[1]|pair(list($r), $f->reprocess($r, $a, $mappings, []).newExpression);
                            ]
                         );
@@ -167,12 +170,12 @@ Class meta::pure::mapping::modelToModel::chain::Res
    vars : Map<String, GenericType>[0..1];
 }
 
-function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:ExtendedRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1]):Res[1]
+function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1]):Res[1]
 {
    $vs->match(
       [ fe:FunctionExpression[1]|let results = $fe.parametersValues->evaluateAndDeactivate()->map(p|$p->reprocess($e, $mapping, $mappings, []));
                                   let newFunc = if ($fe.func->instanceOf(Property),
-                                                   |let setImpl = $fe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
+                                                   |let setImpl = $fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation);
                                                     let pm = if ($fe.func->functionReturnType().rawType->toOne()->instanceOf(DataType),
                                                                  |$setImpl.propertyMappingsByPropertyName($fe.func.name->toOne())->cast(@PurePropertyMapping)->toOne(),
                                                                  |$setImpl.propertyMappingByPropertyNameAndTargetId($fe.func.name->toOne(), $e.sets.id->toOne())->cast(@PurePropertyMapping)->toOne()
@@ -187,16 +190,14 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                         | createEvalFunctionExpression($modelTransformerLambda->toOne(), $modelTransformLambdaEvalExpression, $fe)
                                                     );,
                                                   |
-                                                         let newTypeParams =  $fe.genericType.typeArguments->map(t|  let typeParam = $t.rawType->toOne();
-                                                                                                          if( $typeParam->instanceOf(DataType), 
-                                                                                                             | if($typeParam->instanceOf(Enumeration),
-                                                                                                                | ^GenericType(rawType=String),| $t),
-                                                                                                             | 
-                                                                                                             ^GenericType(rawType=sourceClassFromFunction($fe).srcClass);
-                                                                                                            );
+                                                    let newTypeParams =  $fe.genericType.typeArguments->map(t| let typeParam = $t.rawType->toOne();
+                                                                                                               if($typeParam->instanceOf(DataType), 
+                                                                                                                  | if($typeParam->instanceOf(Enumeration),| ^GenericType(rawType=String),| $t),
+                                                                                                                  | ^GenericType(rawType=sourceClassFromFunction($fe).srcClass);
+                                                                                                                );
                                                                                                           );
-                                                     let type = $fe.genericType.rawType->toOne();
-                                                    ^$fe(genericType=if($e->isEmpty() || $type->instanceOf(DataType), 
+                                                    let type = $fe.genericType.rawType->toOne();
+                                                    ^$fe(genericType=if($e.sets->isEmpty() || $type->instanceOf(DataType), 
                                                                         | if($type->instanceOf(Enumeration),
                                                                             | ^GenericType(rawType=String),
                                                                             | if($fe.genericType.typeArguments->isNotEmpty(),| ^GenericType(rawType=$fe.genericType.rawType,typeArguments = $newTypeParams),|$fe.genericType);
@@ -219,7 +220,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
 
                                   );,
          r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r);,
-         e:ExtendedRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, []);,
+         e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, []);,
          v:VariableExpression[1]|     let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
                                           ^Res(
                                        newExpression = ^$v(genericType=$newGenericType),
@@ -240,7 +241,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                            let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())));
                                                                                                            let fType = $f->functionType();
                                                                                                            
-                                                                                                           let fInputType = ^GenericType(rawType=$agg.mapFn.expressionSequence->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
+                                                                                                           let fInputType = ^GenericType(rawType=$agg.mapFn.expressionSequence->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
                                                                                                            let dummyLambda = {x:Any[1]| $x};
                                                                                                            let gen = ^GenericType
                                                                                                                      (
@@ -318,7 +319,7 @@ function  meta::pure::mapping::modelToModel::chain::sourceClassFromFunction(fe:F
 {
    if($fe.parametersValues->at(0)->instanceOf(FunctionExpression),
               |meta::pure::mapping::modelToModel::chain::sourceClassFromFunction($fe.parametersValues->at(0)->cast(@FunctionExpression)),
-              |$fe.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation););
+              |$fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation););
 }
 
 function meta::pure::mapping::modelToModel::chain::identifyTDSColumns(originalStoreQueryExpression:FunctionExpression[1], extensions:meta::pure::extension::Extension[*]):TDSColumn[*]
@@ -400,7 +401,7 @@ function meta::pure::mapping::modelToModel::chain::buildLambdaType(lambda:Lambda
 {
    let fType = $lambda->toOne()->genericType().typeArguments.rawType->cast(@FunctionType)->toOne();
    let ret = $lambda.expressionSequence->last().genericType.rawType->toOne();
-   let returnType = if ($ret->instanceOf(DataType), |$ret, |$lambda.expressionSequence->last()->cast(@ExtendedRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass->toOne());
+   let returnType = if ($ret->instanceOf(DataType), |$ret, |$lambda.expressionSequence->last()->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass->toOne());
    ^GenericType
    (
       rawType = LambdaFunction,
