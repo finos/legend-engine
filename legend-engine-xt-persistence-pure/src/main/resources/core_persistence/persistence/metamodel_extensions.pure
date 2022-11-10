@@ -248,15 +248,3 @@ Class
 meta::pure::persistence::metamodel::target::PersistenceTarget
 {
 }
-
-Class
-{doc.doc = 'TODO: move into relational'}
-meta::pure::persistence::metamodel::target::relational::RelationalPersistenceTarget extends PersistenceTarget
-{
-}
-
-Class
-{doc.doc = 'TODO: move into mongodb'}
-meta::pure::persistence::metamodel::target::mongodb::MongoDbPersistenceTarget extends PersistenceTarget
-{
-}

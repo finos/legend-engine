@@ -51,30 +51,6 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_31(
-        type=meta::pure::persistence::metamodel::target::relational::RelationalPersistenceTarget,
-        position=(545.07828, 437.34387),
-        width=212.87891,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_32(
-        type=meta::pure::persistence::metamodel::target::mongodb::MongoDbPersistenceTarget,
-        position=(773.07828, 437.34387),
-        width=214.22070,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_39(
         type=meta::pure::persistence::metamodel::dataset::DatasetType,
         position=(737.22302, 552.34387),
@@ -352,24 +328,6 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=1.0)
 
     GeneralizationView gview_0(
-        source=cview_31,
-        target=cview_26,
-        points=[(651.51773,459.34387),(762.56496,354.33669)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_1(
-        source=cview_32,
-        target=cview_26,
-        points=[(880.18862,459.34387),(762.56496,354.33669)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_2(
         source=cview_35,
         target=cview_2,
         points=[(502.97867,903.34387),(386.36175,666.74067)],
@@ -378,7 +336,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_3(
+    GeneralizationView gview_1(
         source=cview_36,
         target=cview_2,
         points=[(270.97867,903.41261),(386.36175,666.74067)],
@@ -387,7 +345,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_4(
+    GeneralizationView gview_2(
         source=cview_40,
         target=cview_39,
         points=[(757.96702,749.66261),(847.78161,601.84387)],
@@ -396,7 +354,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_5(
+    GeneralizationView gview_3(
         source=cview_41,
         target=cview_39,
         points=[(954.22302,747.84387),(847.78161,601.84387)],
@@ -405,7 +363,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_6(
+    GeneralizationView gview_4(
         source=cview_43,
         target=cview_42,
         points=[(-5.54456,706.34387),(-6.20472,536.34387)],
@@ -414,7 +372,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_7(
+    GeneralizationView gview_5(
         source=cview_44,
         target=cview_42,
         points=[(74.86877,627.34387),(-6.20472,536.34387)],
@@ -423,7 +381,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_8(
+    GeneralizationView gview_6(
         source=cview_45,
         target=cview_42,
         points=[(-104.87757,633.34387),(-6.20472,536.34387)],
@@ -432,7 +390,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_9(
+    GeneralizationView gview_7(
         source=cview_47,
         target=cview_46,
         points=[(44.23473,880.34387),(-16.10902,788.34387)],
@@ -441,7 +399,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_10(
+    GeneralizationView gview_8(
         source=cview_48,
         target=cview_46,
         points=[(-103.48817,886.34387),(-16.10902,788.34387)],
@@ -450,7 +408,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_11(
+    GeneralizationView gview_9(
         source=cview_49,
         target=cview_46,
         points=[(-16.11097,949.34387),(-16.10902,788.34387)],
@@ -459,7 +417,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_12(
+    GeneralizationView gview_10(
         source=cview_51,
         target=cview_50,
         points=[(1257.55212,856.34387),(1174.91540,748.34387)],
@@ -468,7 +426,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_13(
+    GeneralizationView gview_11(
         source=cview_52,
         target=cview_50,
         points=[(1107.20031,864.34387),(1174.91540,748.34387)],
@@ -477,7 +435,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_14(
+    GeneralizationView gview_12(
         source=cview_54,
         target=cview_53,
         points=[(1314.07654,1078.34387),(1257.90075,987.34387)],
@@ -486,7 +444,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_15(
+    GeneralizationView gview_13(
         source=cview_55,
         target=cview_53,
         points=[(1207.12829,1079.34387),(1257.90075,987.34387)],
@@ -495,7 +453,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_16(
+    GeneralizationView gview_14(
         source=cview_57,
         target=cview_56,
         points=[(851.12288,970.98135),(759.04989,873.98135)],
@@ -504,7 +462,7 @@ Diagram meta::pure::persistence::Persistence_Extensions_Diagram(width=0.0, heigh
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_17(
+    GeneralizationView gview_15(
         source=cview_58,
         target=cview_56,
         points=[(700.71004,956.98135),(759.04989,873.98135)],

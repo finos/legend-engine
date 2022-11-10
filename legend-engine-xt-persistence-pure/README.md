@@ -19,10 +19,10 @@ pipeline-ing platform, it also may be handled by Engine itself or be pushed all 
 Or it might specify a dependency on completion of an upstream `Persistence` specification (process dependency) or population of one or more upstream datasets (data dependency).
 As a final example, a `Trigger` might specify continuous execution with infinite data as input, e.g. as part of a Change Data Capture (CDC) flow.
 * A `Service` that defines how to extract data from source and--optionally--transform it. The `Service` may be parameterized with open variables, but the `Persistence` specification doesn't provide concrete values for those parameters.
-* One or more `ServiceDatasetMapping`s that each consist of two parts
+* One or more `ServiceDatasetMappings` that each consist of two parts
   * A `ServiceDataset` that describes a section (or possibly all) of the data output by the service, e.g.
     * Does the data represent a full snapshot of the target dataset or only deltas? If snapshot, is there partitioning?
-    * Are some parts of the data actually metadata (e.g. event time, version information, or action directives)?
+    * Which values in the data should be treated as metadata (e.g. event time, version information, or action directives)?
   * A `Target` that describes the physical sink to which the `ServiceDataset` will be written
     * What is the type of the sink, e.g. a relational database, MongoDB, S3, etc?
     * What is the specific target within the sink, e.g. the database table, or MongoDB collection

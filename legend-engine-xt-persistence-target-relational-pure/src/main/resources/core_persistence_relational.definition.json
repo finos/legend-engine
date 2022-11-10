@@ -1,0 +1,5 @@
+{
+  "name" : "core_persistence_relational",
+  "pattern" : "(meta::pure::persistence::relational)(::.*)?",
+  "dependencies" : ["platform", "core", "core_persistence", "core_relational"]
+}

@@ -67,6 +67,8 @@
         <module>legend-engine-xt-persistence-cloud-protocol</module>
         <module>legend-engine-xt-persistence-cloud-pure</module>
 
+        <module>legend-engine-xt-persistence-target-relational-pure</module>
+
         <module>legend-engine-xt-mastery-grammar</module>
         <module>legend-engine-xt-mastery-protocol</module>
         <module>legend-engine-xt-mastery-pure</module>
