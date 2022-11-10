@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components;
 
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -21,7 +22,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+import org.junit.jupiter.api.Assertions;
 
 import java.time.Clock;
 import java.time.ZoneOffset;
@@ -42,6 +45,8 @@ public class BaseTest
 {
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
+
+    protected String schema = "my_schema";
 
     protected String mainDbName = "mydb";
     protected String mainTableName = "main";
@@ -179,7 +184,7 @@ public class BaseTest
         .addFields(bizDate)
         .build();
 
-    protected SchemaDefinition mainTableSchema = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithBatchIdAndTime = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
@@ -493,4 +498,110 @@ public class BaseTest
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithDataSplit)
             .build();
+
+    protected Dataset mainTableWithBatchIdBasedSchema = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableBatchIdBasedSchema)
+            .build();
+
+    protected Dataset stagingTableWithDeleteIndicator = DatasetDefinition.builder()
+            .database(stagingDbName)
+            .name(stagingTableName)
+            .alias(stagingTableAlias)
+            .schema(stagingTableSchemaWithDeleteIndicator)
+            .build();
+
+    protected Dataset stagingTableWithBooleanDeleteIndicator = DatasetDefinition.builder()
+            .database(stagingDbName)
+            .name(stagingTableName)
+            .alias(stagingTableAlias)
+            .schema(stagingTableSchemaWithBooleanDeleteIndicator)
+            .build();
+
+    protected Dataset stagingTableWithDeleteIndicatorWithDataSplit = DatasetDefinition.builder()
+            .database(stagingDbName)
+            .name(stagingTableName)
+            .alias(stagingTableAlias)
+            .schema(stagingTableSchemaWithDeleteIndicatorWithDataSplit)
+            .build();
+
+    protected Dataset mainTableWithBatchIdAndTime = DatasetDefinition.builder()
+        .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableSchemaWithBatchIdAndTime)
+            .build();
+
+    protected Dataset mainTableWithDateTime = DatasetDefinition.builder()
+            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+            .schema(mainTableTimeBasedSchema)
+            .build();
+
+    protected void verifyStats(GeneratorResult operations, String incomingRecordCount, String rowsUpdated, String rowsDeleted, String rowsInserted, String rowsTerminated)
+    {
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsUpdated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+        Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
+
+    protected Dataset getMainDatasetWithDbAndSchemaBothSet(SchemaDefinition schemaDefinition)
+    {
+        return  DatasetDefinition.builder()
+                .database(mainDbName)
+                .group(schema)
+                .name(mainTableName)
+                .alias(mainTableAlias)
+                .schema(schemaDefinition)
+                .build();
+    }
+
+    protected Dataset getStagingDatasetWithDbAndSchemaBothSet(SchemaDefinition schemaDefinition)
+    {
+        return  DatasetDefinition.builder()
+                .database(mainDbName)
+                .group(schema)
+                .name(stagingTableName)
+                .alias(stagingTableAlias)
+                .schema(schemaDefinition)
+                .build();
+    }
+
+    protected Dataset getMainDatasetWithDbAndSchemaBothNotSet(SchemaDefinition schemaDefinition)
+    {
+        return  DatasetDefinition.builder()
+                .name(mainTableName)
+                .alias(mainTableAlias)
+                .schema(schemaDefinition)
+                .build();
+    }
+
+    protected Dataset getStagingDatasetWithDbAndSchemaBothNotSet(SchemaDefinition schemaDefinition)
+    {
+        return  DatasetDefinition.builder()
+                .name(stagingTableName)
+                .alias(stagingTableAlias)
+                .schema(schemaDefinition)
+                .build();
+    }
+
+    protected Dataset getMainDatasetWithOnlySchemaSet(SchemaDefinition schemaDefinition)
+    {
+        return  DatasetDefinition.builder()
+                .group(schema)
+                .name(mainTableName)
+                .alias(mainTableAlias)
+                .schema(schemaDefinition)
+                .build();
+    }
+
+    protected Dataset getStagingDatasetWithOnlySchemaSet(SchemaDefinition schemaDefinition)
+    {
+        return  DatasetDefinition.builder()
+                .group(schema)
+                .name(stagingTableName)
+                .alias(stagingTableAlias)
+                .schema(schemaDefinition)
+                .build();
+    }
+
 }
