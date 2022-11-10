@@ -72,6 +72,7 @@ public class PureIDELight extends PureIDEServer
                     .with(this.buildCore("legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                     .with(this.buildCore("legend-engine-pure-code-compiled-core", ""))
                     .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
+                    .with(this.buildCore("legend-engine-xt-analytics-lineage-pure", "analytics-lineage"))
                     .with(this.buildCore("legend-engine-xt-javaGeneration-pure", "external-language-java"))
                     .with(this.buildCore("legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
                     .with(this.buildCore("legend-engine-xt-flatdata-javaPlatformBinding-pure", "external-format-flatdata-java-platform-binding"))
