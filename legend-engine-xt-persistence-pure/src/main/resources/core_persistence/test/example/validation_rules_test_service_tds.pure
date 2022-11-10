@@ -139,10 +139,6 @@ function meta::pure::persistence::test::example::TdsServiceWithMultiFlatPersiste
   );
 }
 
-Class meta::pure::persistence::test::example::TestTarget extends meta::pure::persistence::metamodel::target::PersistenceTarget
-{
-}
-
 function meta::pure::persistence::test::example::TdsServiceWithTdsRootServiceOutput(): Persistence[1]
 {
   ^Persistence(

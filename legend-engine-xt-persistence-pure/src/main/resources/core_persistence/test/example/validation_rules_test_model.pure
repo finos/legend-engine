@@ -12,7 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::test::example::*;
+
+/**********
+ * stub target for testing
+ **********/
+
+Class meta::pure::persistence::test::example::TestTarget extends meta::pure::persistence::metamodel::target::PersistenceTarget
+{
+}
 
 /**********
  * classes

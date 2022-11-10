@@ -13,9 +13,82 @@
 // limitations under the License.
 
 import meta::pure::persistence::metamodel::target::*;
+import meta::pure::persistence::relational::metamodel::*;
 
 Class
 {doc.doc = ''}
 meta::pure::persistence::relational::metamodel::RelationalTarget extends PersistenceTarget
 {
+  table: meta::relational::metamodel::relation::Table[1];
+  milestoning: Milestoning[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::Milestoning
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::UnitemporalMilestoning extends Milestoning
+{
+  processingDimension: ProcessingDimension[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::BitemporalMilestoning extends Milestoning
+{
+  processingDimension: ProcessingDimension[1];
+  sourceDimension: SourceDimension[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::ProcessingDimension
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::BatchIdProcessingDimension extends ProcessingDimension
+{
+  batchIdIn: meta::relational::metamodel::Column[1];
+  batchIdOut: meta::relational::metamodel::Column[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::TimeProcessingDimension extends ProcessingDimension
+{
+  timeIn: meta::relational::metamodel::Column[1];
+  timeOut: meta::relational::metamodel::Column[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::BatchIdAndTimeProcessingDimension extends ProcessingDimension
+{
+  batchIdIn: meta::relational::metamodel::Column[1];
+  batchIdOut: meta::relational::metamodel::Column[1];
+  timeIn: meta::relational::metamodel::Column[1];
+  timeOut: meta::relational::metamodel::Column[1];
+}
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceDimension
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::TimeSourceDimension extends SourceDimension
+{
+  timeStart: meta::relational::metamodel::Column[1];
+  timeEnd: meta::relational::metamodel::Column[1];
 }
