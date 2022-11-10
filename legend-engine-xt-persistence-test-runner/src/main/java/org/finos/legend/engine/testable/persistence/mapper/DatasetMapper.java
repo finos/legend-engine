@@ -40,6 +40,7 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class DatasetMapper
 {
+    public static String STAGING_SUFFIX = "_staging";
     private static String DEFAULT_SCHEMA = "default";
     private static String H2_PUBLIC_SCHEMA = "PUBLIC";
 
@@ -130,5 +131,10 @@ public class DatasetMapper
             throw new UnsupportedOperationException("write-component-test only supports BatchPersister");
         }
         return (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
+    }
+
+    static boolean isFieldNamePresent(SchemaDefinition schema, String fieldName)
+    {
+        return schema.fields().stream().anyMatch(field -> field.name().equals(fieldName));
     }
 }

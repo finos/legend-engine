@@ -33,8 +33,6 @@ public class IngestModeMapper
 {
     public static final String DIGEST_FIELD_DEFAULT = "DIGEST";
 
-    public static String STAGING_SUFFIX = "_staging";
-
     /*
     Mapper from Persistence model to IngestMode object
      */
@@ -93,10 +91,4 @@ public class IngestModeMapper
         IngestModeType ingestModeType = IngestModeType.valueOf(clazz);
         return ingestModeType;
     }
-
-    static boolean isFieldNamePresent(Dataset dataset, String fieldName)
-    {
-        return dataset.schema().fields().stream().anyMatch(field -> field.name().equals(fieldName));
-    }
-
 }

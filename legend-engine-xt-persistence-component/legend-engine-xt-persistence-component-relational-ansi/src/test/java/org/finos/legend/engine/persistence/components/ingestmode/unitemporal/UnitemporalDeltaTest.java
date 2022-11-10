@@ -346,7 +346,7 @@ public class UnitemporalDeltaTest extends IngestModeTest
     }
 
     @Test
-    void testUnitemporalMilestoningWithBooleanDeleteIndicators()
+    void testUnitemporalMilestoningWithStringDeleteIndicators()
     {
         Dataset stagingTable = DatasetDefinition.builder()
                 .database(stagingDbName)

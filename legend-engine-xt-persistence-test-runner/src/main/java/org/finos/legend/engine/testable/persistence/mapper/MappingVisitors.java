@@ -45,7 +45,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
-import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.isFieldNamePresent;
+import static org.finos.legend.engine.testable.persistence.mapper.DatasetMapper.isFieldNamePresent;
 
 public class MappingVisitors
 {
@@ -155,9 +155,12 @@ public class MappingVisitors
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
+        private SchemaDefinition baseSchema;
+
         public EnrichSchemaWithAuditing(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = mainDataset.schema();
             this.mainDataset = mainDataset;
         }
 
@@ -171,13 +174,13 @@ public class MappingVisitors
         public SchemaDefinition.Builder visit(DateTimeAuditing auditing)
         {
             // if DateTimeAuditing -> user provided BATCH_TIME_IN field addition
-            if (!isFieldNamePresent(mainDataset, auditing.dateTimeName))
+            if (!isFieldNamePresent(baseSchema, auditing.dateTimeName))
             {
-                Field batchTimeIn = Field.builder()
+                Field auditDateTime = Field.builder()
                         .name(auditing.dateTimeName)
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .build();
-                schemaDefinitionBuilder.addFields(batchTimeIn);
+                schemaDefinitionBuilder.addFields(auditDateTime);
             }
             return schemaDefinitionBuilder;
         }
@@ -187,9 +190,12 @@ public class MappingVisitors
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
+        private SchemaDefinition baseSchema;
+
         public EnrichSchemaWithMergyStrategy(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = mainDataset.schema();
             this.mainDataset = mainDataset;
         }
 
@@ -203,12 +209,11 @@ public class MappingVisitors
         public SchemaDefinition.Builder visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy mergeStrategy)
         {
             // if DeleteIndicatorMergeStrategy -> user provided DELETED field addition
-            if (!isFieldNamePresent(mainDataset, mergeStrategy.deleteField))
+            if (!isFieldNamePresent(baseSchema, mergeStrategy.deleteField))
             {
                 Field deleted = Field.builder()
                         .name(mergeStrategy.deleteField)
                         .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
-                        .defaultValue(mergeStrategy.deleteValues)
                         .build();
                 schemaDefinitionBuilder.addFields(deleted);
             }
@@ -220,10 +225,12 @@ public class MappingVisitors
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
+        private SchemaDefinition baseSchema;
 
         public EnrichSchemaWithTransactionMilestoning(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = mainDataset.schema();
             this.mainDataset = mainDataset;
         }
 
@@ -231,7 +238,7 @@ public class MappingVisitors
         public SchemaDefinition.Builder visit(BatchIdTransactionMilestoning transactionMilestoning)
         {
             // if BatchId based transactionMilestoning -> user provided BATCH_IN BATCH_OUT fields addition
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.batchIdInName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdInName))
             {
                 Field batchIdIn = Field.builder()
                         .name(transactionMilestoning.batchIdInName)
@@ -240,7 +247,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(batchIdIn);
             }
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.batchIdOutName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdOutName))
             {
                 Field batchIdOut = Field.builder()
                         .name(transactionMilestoning.batchIdOutName)
@@ -256,7 +263,7 @@ public class MappingVisitors
         public SchemaDefinition.Builder visit(DateTimeTransactionMilestoning transactionMilestoning)
         {
             // if TransactionDateTime based transactionMilestoning -> user provided IN_Z OUT_Z fields addition
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.dateTimeInName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeInName))
             {
                 Field dateTimeIn = Field.builder()
                         .name(transactionMilestoning.dateTimeInName)
@@ -265,7 +272,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(dateTimeIn);
             }
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.dateTimeOutName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeOutName))
             {
                 Field dateTimeOut = Field.builder()
                         .name(transactionMilestoning.dateTimeOutName)
@@ -281,7 +288,7 @@ public class MappingVisitors
         public SchemaDefinition.Builder visit(BatchIdAndDateTimeTransactionMilestoning transactionMilestoning)
         {
             // if TransactionDateTime based transactionMilestoning -> user provided IN_Z OUT_Z fields addition
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.batchIdInName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdInName))
             {
                 Field batchIdIn = Field.builder()
                         .name(transactionMilestoning.batchIdInName)
@@ -290,7 +297,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(batchIdIn);
             }
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.batchIdOutName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdOutName))
             {
                 Field batchIdOut = Field.builder()
                         .name(transactionMilestoning.batchIdOutName)
@@ -299,7 +306,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(batchIdOut);
             }
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.dateTimeInName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeInName))
             {
                 Field dateTimeIn = Field.builder()
                         .name(transactionMilestoning.dateTimeInName)
@@ -308,7 +315,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(dateTimeIn);
             }
-            if (!isFieldNamePresent(mainDataset, transactionMilestoning.dateTimeOutName))
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeOutName))
             {
                 Field dateTimeOut = Field.builder()
                         .name(transactionMilestoning.dateTimeOutName)
@@ -325,10 +332,12 @@ public class MappingVisitors
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
+        private SchemaDefinition baseSchema;
 
         public EnrichSchemaWithValidityMilestoning(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = mainDataset.schema();
             this.mainDataset = mainDataset;
         }
 
@@ -336,7 +345,7 @@ public class MappingVisitors
         public SchemaDefinition.Builder visit(DateTimeValidityMilestoning validDateTime)
         {
             // if ValidDateTime based validityMilestoning -> user provided FROM_Z THRU_Z fields addition
-            if (!isFieldNamePresent(mainDataset, validDateTime.dateTimeFromName))
+            if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeFromName))
             {
                 Field dateTimeFrom = Field.builder()
                         .name(validDateTime.dateTimeFromName)
@@ -345,7 +354,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(dateTimeFrom);
             }
-            if (!isFieldNamePresent(mainDataset, validDateTime.dateTimeThruName))
+            if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeThruName))
             {
                 Field dateTimeThru = Field.builder()
                         .name(validDateTime.dateTimeThruName)
@@ -359,13 +368,16 @@ public class MappingVisitors
     }
 
 
-    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor<SchemaDefinition.Builder> {
+    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor<SchemaDefinition.Builder>
+    {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
+        private SchemaDefinition baseSchema;
 
         public EnrichSchemaWithValidityMilestoningDerivation(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = mainDataset.schema();
             this.mainDataset = mainDataset;
         }
 
@@ -373,7 +385,7 @@ public class MappingVisitors
         public SchemaDefinition.Builder visitSourceSpecifiesFromDateTime(SourceSpecifiesFromDateTimeAbstract validityMilestoningDerivation)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM field addition
-            if (!isFieldNamePresent(mainDataset, validityMilestoningDerivation.sourceDateTimeFromField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField()))
             {
                 Field sourceDateTimeFrom = Field.builder()
                         .name(validityMilestoningDerivation.sourceDateTimeFromField())
@@ -389,7 +401,7 @@ public class MappingVisitors
         public SchemaDefinition.Builder visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract validityMilestoningDerication)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM SOURCE_THRU fields addition
-            if (!isFieldNamePresent(mainDataset, validityMilestoningDerication.sourceDateTimeFromField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerication.sourceDateTimeFromField()))
             {
                 Field sourceDateTimeFrom = Field.builder()
                         .name(validityMilestoningDerication.sourceDateTimeFromField())
@@ -398,7 +410,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(sourceDateTimeFrom);
             }
-            if (!isFieldNamePresent(mainDataset, validityMilestoningDerication.sourceDateTimeThruField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerication.sourceDateTimeThruField()))
             {
                 Field sourceDateTimeThru = Field.builder()
                         .name(validityMilestoningDerication.sourceDateTimeThruField())
