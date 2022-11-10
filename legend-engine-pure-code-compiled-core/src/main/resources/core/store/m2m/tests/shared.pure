@@ -87,6 +87,9 @@ Class meta::pure::mapping::modelToModel::test::shared::dest::Vehicle
 Class meta::pure::mapping::modelToModel::test::shared::src::_Vehicle
 {
    roadVehicle: meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle[1];
+   licenseNumber: String[0..1];
+   registrationNumber: String[0..1];
+   isElectric: Boolean[0..1];
 }
 
 Class meta::pure::mapping::modelToModel::test::shared::src::_RoadVehicle
@@ -118,6 +121,9 @@ Class meta::pure::mapping::modelToModel::test::shared::src::VehicleInventory
 {
    series : String[0..1];
    type : String[*];
+   LDDeriv: String[1];
+   isValidRegistration: Boolean[1];
+   isElectric: Boolean[1];
 }
 
 Class meta::pure::mapping::modelToModel::test::shared::src::_Firm

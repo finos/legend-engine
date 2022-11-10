@@ -296,7 +296,8 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::canEvaluateAGraphFe
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
-{  doc.doc='Given: a mapping that takes in a match function for properties.',
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that takes in a match function for properties.',
    doc.doc='Given: a match function expression where different conditions may return zero, one, or many values',
    doc.doc='When:  a mapping is executed using graphFetchChecked.',
    doc.doc='Then:  the mapping succeeds and the serialization works'
@@ -317,6 +318,34 @@ meta::pure::mapping::modelToModel::test::alloy::match::checkMatchReturnMultiplic
                    '{"defects":[],"source":{"defects":[],"source":{"number":5,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Car\\",\\"engine\\":\\"ICE\\",\\"series\\":\\"E350\\"}}"},"value":{"roadVehicle":{"series":"E350","type":[]}}},"value":{"series":"E350","type":[]}},'+
                    '{"defects":[],"source":{"defects":[],"source":{"number":6,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Car\\",\\"engine\\":\\"ECE\\",\\"series\\":\\"A7\\",\\"type\\":\\"Coupe\\"}}"},"value":{"roadVehicle":{"series":"A7","type":["Coupe"]}}},"value":{"series":"A7","type":["Coupe"]}},'+
                    '{"defects":[],"source":{"defects":[],"source":{"number":7,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Car\\",\\"engine\\":\\"ICE\\",\\"series\\":\\"G30\\",\\"type\\":[\\"Convertible\\",\\"Coupe\\",\\"SUV\\"]}}"},"value":{"roadVehicle":{"series":"G30","type":["Convertible","Coupe","SUV"]}}},"value":{"series":"G30","type":["Convertible","Coupe","SUV"]}}]';
+   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a mapping that does an equals operation on the value of a property that is null',
+   doc.doc='When:  a mapping is executed using graphFetchChecked.',
+   doc.doc='Then:  the mapping produces the expected result'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::checkEqualsOnPropertyReturningNull() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::shared::src::VehicleInventory{LDDeriv, isValidRegistration, isElectric}}#;
+   let func = {|meta::pure::mapping::modelToModel::test::shared::src::VehicleInventory.all()->graphFetchChecked($tree)->serialize($tree)};
+   let mapping = meta::pure::mapping::modelToModel::test::alloy::match::vehicleDetails;
+   let runtime = testJsonRuntime(meta::pure::mapping::modelToModel::test::shared::src::_Vehicle, 
+                                 '[{"roadVehicle":{"@type":"_Motorcycle"},"licenseNumber":"LD","registrationNumber":"LD101","isElectric":true},'+
+                                  '{"roadVehicle":{"@type":"_Motorcycle"},"licenseNumber":"LD101","registrationNumber":"LD101"},'+
+                                  '{"roadVehicle":{"@type":"_Motorcycle"},"licenseNumber":"LD"},'+
+                                  '{"roadVehicle":{"@type":"_Motorcycle"},"registrationNumber":"LD"},'+
+                                  '{"roadVehicle":{"@type":"_Motorcycle"}}]');
+
+   let result = execute($func, $mapping, $runtime, meta::pure::extension::defaultExtensions());
+   let json = $result.values->toOne();
+   let expected = '[{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\"},\\"licenseNumber\\":\\"LD\\",\\"registrationNumber\\":\\"LD101\\",\\"isElectric\\":true}"},"value":{"isElectric":true,"registrationNumber":"LD101","licenseNumber":"LD"}},"value":{"isElectric":true,"LDDeriv":"This is a LD deriv","isValidRegistration":false}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":2,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\"},\\"licenseNumber\\":\\"LD101\\",\\"registrationNumber\\":\\"LD101\\"}"},"value":{"isElectric":null,"registrationNumber":"LD101","licenseNumber":"LD101"}},"value":{"isElectric":false,"LDDeriv":"This is not a LD deriv","isValidRegistration":true}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":3,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\"},\\"licenseNumber\\":\\"LD\\"}"},"value":{"isElectric":null,"registrationNumber":null,"licenseNumber":"LD"}},"value":{"isElectric":false,"LDDeriv":"This is a LD deriv","isValidRegistration":false}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":4,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\"},\\"registrationNumber\\":\\"LD\\"}"},"value":{"isElectric":null,"registrationNumber":"LD","licenseNumber":null}},"value":{"isElectric":false,"LDDeriv":"This is not a LD deriv","isValidRegistration":false}},'+
+                   '{"defects":[],"source":{"defects":[],"source":{"number":5,"record":"{\\"roadVehicle\\":{\\"@type\\":\\"_Motorcycle\\"}}"},"value":{"isElectric":null,"registrationNumber":null,"licenseNumber":null}},"value":{"isElectric":false,"LDDeriv":"This is not a LD deriv","isValidRegistration":false}}]';
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
@@ -435,7 +464,10 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::match::vehicleDetails
   {
     ~src _Vehicle
     series: $src.roadVehicle->getSeries(),
-    type: $src.roadVehicle->getType()
+    type: $src.roadVehicle->getType(),
+    LDDeriv: if($src.licenseNumber == 'LD', |'This is a LD deriv', |'This is not a LD deriv'),
+    isValidRegistration: if($src.licenseNumber == $src.registrationNumber, |true, |false),
+    isElectric: $src.isElectric == true
   }
 )
 
