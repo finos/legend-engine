@@ -18,6 +18,7 @@ import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::lineage::scanProperties::*;
 import meta::pure::graphFetch::*;
+import meta::pure::router::metamodel::*;
 
 
 Class meta::pure::lineage::scanProperties::PropertyPathNode

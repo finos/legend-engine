@@ -284,14 +284,14 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
-   '      resultSizeRange = 1\n'+
+   '      resultSizeRange = 1\n' +
    '      name = x\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
-   '            resultSizeRange = 1\n'+
+   '            resultSizeRange = 1\n' +
    '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
    '            implementation\n' +
    '            (\n' +
@@ -362,14 +362,14 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    Allocation\n' +
    '    (\n' +
    '      type = Date\n' +
-   '      resultSizeRange = 1\n'+
+   '      resultSizeRange = 1\n' +
    '      name = asOf\n' +
    '      value = \n' +
    '        (\n' +
    '          PureExp\n' +
    '          (\n' +
    '            type = Date\n' +
-   '            resultSizeRange = 1\n'+
+   '            resultSizeRange = 1\n' +
    '            requires = [businessDate(StrictDate[0..1])]\n' +
    '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
    '            implementation\n' +

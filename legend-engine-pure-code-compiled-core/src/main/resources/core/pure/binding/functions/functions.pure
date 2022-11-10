@@ -77,8 +77,3 @@ function meta::external::shared::format::functions::externalizeFunctions():Funct
       externalize_Checked_MANY__Binding_1__String_1_
    ]
 }
-
-function meta::external::shared::format::functions::bindingRouterFunctions():Function<Any>[*]
-{
-  internalizeFunctions()->concatenate(externalizeFunctions());
-}

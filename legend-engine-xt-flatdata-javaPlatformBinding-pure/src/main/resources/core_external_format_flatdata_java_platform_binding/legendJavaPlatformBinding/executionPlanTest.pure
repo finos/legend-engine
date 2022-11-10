@@ -57,8 +57,8 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::e
 
    let plan = meta::external::format::flatdata::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'stringConstant')});
    let planString = $plan->planToString(false, getExtensions());
-  
-   let expectedPlan = 
+
+   let expectedPlan =
         'ExternalFormat_Internalize\n' +
         '(\n' +
         '  type = Class[impls=]\n' +
@@ -75,7 +75,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::e
         '      (\n' +
         '        Allocation\n' +
         '        (\n' +
-        '          type = meta::pure::router::Void\n' +
+        '          type = Void\n' +
         '          name = internalizeVar$\n' +
         '          value = \n' +
         '            (\n' +
