@@ -198,6 +198,7 @@
         <module>legend-engine-xt-relationalStore-spanner-grammar</module>
         <module>legend-engine-xt-relationalStore-spanner-protocol</module>
         <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
     </modules>
@@ -237,7 +238,6 @@
         <databricks.version>2.6.25</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
-        <google-cloud-spanner-jdbc.version>2.7.3</google-cloud-spanner-jdbc.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -757,6 +757,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-spanner-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2131,31 +2136,6 @@
                 <version>${postgres.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-spanner-jdbc</artifactId>
-                <version>${google-cloud-spanner-jdbc.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.checkerframework</groupId>
-                        <artifactId>checker-qual</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.errorprone</groupId>
-                        <artifactId>error_prone_annotations</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <!-- Database -->
 
             <!-- Test Containers -->
