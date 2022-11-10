@@ -1,0 +1,379 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::builder::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::store::metamodel::*;
+import meta::pure::router::store::routing::*;
+import meta::pure::router::operations::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::routing::*;
+import meta::pure::runtime::*;
+
+// =========================================================================================
+// Store Mapping Routing Strategy Builder Helper
+// =========================================================================================
+
+function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
+{
+  ^StoreMappingRoutingStrategy(mapping = $mapping, 
+                               runtime = $runtime, 
+                               setsByDepth = ^Map<String, PermutationSet>(), 
+                               classMappingsByClass = $mapping->buildClassMappingsByClassMap(),
+                               processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
+                               processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
+                               wrapValueSpec = wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
+                               toString = {strategy:RoutingStrategy[1] | $strategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()});
+}
+
+function <<access.private>> meta::pure::router::store::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], s:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
+{
+   let strategy     = $s.routingStrategy->cast(@StoreMappingRoutingStrategy);
+   let mapping      = $strategy.mapping;
+   let runtime      = $strategy.runtime;
+   
+   let state        = ^$s(depth = $s.depth + $c->varToString());
+   let classMapping = if($strategy.toChooseSet->isEmpty(), |$mapping.rootClassMappingByClass($c)->potentiallyResolveOperation($mapping), |$strategy.toChooseSet);
+   // Possible when the mapping is 'embedded'
+   if ($classMapping->isEmpty(),
+      | print(if($debug.debug,|$debug.space+'~>C) ('+$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$state.value->toOne()->toString()+'\n',|''));
+        $state;,
+      | let existingSet = $state->findExistingPemutationSet($debug);
+        let existingSetCanBeUsed = $existingSet->permutationSetOnlyHasImplementation($classMapping);
+        let newID = if($existingSetCanBeUsed,
+                      | $existingSet->toOne().id->cast(@Integer),
+                      | $state.counter+1
+                    )->toString();
+        let newSet = if (!$existingSetCanBeUsed,|^PermutationSet(id = $state.counter+1, sets = $classMapping),|[]);
+        let currentRoutingStrategy = $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne();
+        let updatedRoutingStrategy = ^$currentRoutingStrategy(setsByDepth = if (!$existingSetCanBeUsed,
+                                                                                    |let setByD = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).setsByDepth;  
+                                                                                     $setByD->put(getSetPath($state), $newSet->toOne());,
+                                                                                    |$state.routingStrategy->cast(@StoreMappingRoutingStrategy).setsByDepth 
+                                                                                ),
+                                                                  sets = if (!$existingSetCanBeUsed,|$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->add($newSet->toOne()),|$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets));
+        let routed = ^StoreMappingRoutedValueSpecification(genericType = $i.genericType,
+                                                           multiplicity = $i.multiplicity,
+                                                           id = $newID,
+                                                           sets = $classMapping,
+                                                           runtime = $runtime,
+                                                           mapping = $mapping,
+                                                           executionContext = $executionContext,
+                                                           value = $i,
+                                                           routingStrategy = $updatedRoutingStrategy);
+        let res = ^$state(
+                       counter = if (!$existingSetCanBeUsed,|$state.counter+1,|$state.counter),
+                       routingStrategy = $updatedRoutingStrategy,
+                       value = $routed
+                  );
+        print(if($debug.debug,|$debug.space+'~>C) ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
+        $res;
+    );
+}
+
+function <<access.private>> meta::pure::router::store::routing::routeFunctionExpressionProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], v:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+{
+   let mapping = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
+   let runtime = $v.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
+
+   let results = $v->processCollection($fe.parametersValues->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
+   let newPV   = $results.value->cast(@ValueSpecification)->toOneMany();
+   let preLast = $results->last()->toOne();
+
+   let res = if($results.value->size() == 1 && $results.value->toOne()->instanceOf(InstanceValue),
+                | let val  = $results.value->toOne()->cast(@InstanceValue).values->map(v | $p->eval($v));
+                  let iv   = ^InstanceValue(genericType = $p->functionReturnType(),multiplicity = $p.multiplicity, values = $val);
+                  let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
+                  ^$last(value = $iv);,
+                | if (!$v.shouldBeRouted,
+                      | ^$preLast(value=^NoSetRoutedValueSpecification(genericType = $fe.genericType, multiplicity = $fe.multiplicity, value=^$fe(parametersValues = $results.value->cast(@ValueSpecification)->toOneMany())))->evaluateAndDeactivate();,
+                      | let last = ^$preLast(depth = $preLast.depth + $p.name->toOne());
+
+                        print(if($debug.debug,|$debug.space+$fe->asString()+'\n',|''));
+                        let targetType = $p.classifierGenericType.typeArguments->at(1).rawType->toOne();
+                        if($targetType->instanceOf(DataType),
+                           |let sourceClass = $fe.parametersValues->at(0).genericType.rawType->toOne();
+
+                            let subTypes = $sourceClass->cast(@Class<Any>)->getMappedLeafClasses($mapping, $v);
+                            let classes = if ($subTypes->isEmpty(), | $sourceClass, | $subTypes);
+
+                            let classMappings = $classes->map( c | $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($c->cast(@Class<Any>)));
+
+                            let classMapping = if ($classMappings->isEmpty() && !$subTypes->isEmpty(),
+                                                      | //look for direct mapping of base class, as none of the sub types have mappings
+                                                        //Ideally (per Pierre) these mappings should not be allowed
+                                                          $v.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($sourceClass->cast(@Class<Any>)),
+                                                      | $classMappings);
+
+                            let resolvedClassMappings = if($classMapping->isNotEmpty(),
+                                                            | $classMapping,
+                                                            | $subTypes->map(s|$s->cast(@Class<Any>)->getClassMappings($v))->removeDuplicates());
+                            assert($resolvedClassMappings != [], | 'The class \''+$sourceClass.name->toOne()+'\' can\'t be found in the mapping \''+$mapping.name->toOne()+'\'');
+                            if ($resolvedClassMappings->isEmpty(),
+                                |^$last(value=^$fe(parametersValues = $newPV));,
+                                | let r = ^StoreMappingRoutedValueSpecification(
+                                              genericType = $fe.genericType,
+                                              multiplicity = $fe.multiplicity,
+                                              id = $last.counter->toString(),
+                                              sets = $resolvedClassMappings,
+                                              runtime = $runtime,
+                                              mapping = $mapping,
+                                              executionContext = $executionContext,
+                                              value = ^$fe(parametersValues = $newPV),
+                                              routingStrategy = $last.routingStrategy
+                                          );
+                                  ^$last(value= $r);
+                            );,
+                          | let propId = $v.lambdaContext->toOne()+$fe->propToString($vars, $inScopeVars);
+                            let found = $v.propertyMap.v->filter(p|$p.first == $propId);
+                            if (!$found->isEmpty(),
+                                | let routed = $found.second->toOne();
+                                  ^$last(
+                                    value= $routed
+                                  );,
+                                | let foundSets = $p->findMappingsFromProperty($mapping, $last.value->match([v:StoreMappingRoutedValueSpecification[1]|$v.sets, a:Any[1]|[]->cast(@SetImplementation)]), $v, $extensions);//is this for embedded?
+                                  if ($foundSets->isEmpty(),
+                                    |^$last(value=^$fe(parametersValues = $newPV)),
+                                    | // Can't assert because of embedded
+                                      //assert(!$foundSets->isEmpty(), $targetType.name+' :(');
+                                      
+                                      let existingSet = $last->findExistingPemutationSet($debug);
+                                      let existingSetCanBeUsed  = $existingSet->permutationSetOnlyHasImplementation($foundSets);
+                                      let newID = if($existingSetCanBeUsed,
+                                                  |$existingSet->toOne().id,
+                                                  |$last.counter+1
+                                                  )->toString();
+    
+                                      let oldPropertyMap = $last.propertyMap->toOne();
+                                      let newSet = if (!$existingSetCanBeUsed,|^PermutationSet(id = $last.counter+1, sets = $foundSets),|[]);
+
+                                      let currentRoutingStrategy = $last.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne();
+                                      let updatedRoutingStrategy = ^$currentRoutingStrategy(setsByDepth = if (!$existingSetCanBeUsed,|let setByD = $last.routingStrategy->cast(@StoreMappingRoutingStrategy).setsByDepth;$setByD->put(getSetPath($last), $newSet->toOne());,|$last.routingStrategy->cast(@StoreMappingRoutingStrategy).setsByDepth),
+                                                                                            sets        = if (!$existingSetCanBeUsed,|$last.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->add($newSet->toOne()),|$last.routingStrategy->cast(@StoreMappingRoutingStrategy).sets));
+
+                                      let added = ^StoreMappingRoutedValueSpecification(
+                                                        genericType = $fe.genericType,
+                                                        multiplicity = $fe.multiplicity,
+                                                        id = $newID,
+                                                        sets = $foundSets,
+                                                        runtime = $runtime,
+                                                        mapping = $mapping,
+                                                        executionContext = $executionContext,
+                                                        value = ^$fe(parametersValues = $newPV),
+                                                        routingStrategy = $updatedRoutingStrategy
+                                                    );
+                                      ^$last(
+                                          counter = if (!$existingSetCanBeUsed,|$last.counter+1,|$last.counter),
+                                          routingStrategy = $updatedRoutingStrategy, 
+                                          propertyMap = ^$oldPropertyMap(v += pair($propId, $added->cast(@Any))),  
+                                          value= $added
+                                      );
+                                  );
+                            );
+                        );
+                   ));
+   print(if($debug.debug,|$debug.space+'~>FEP) ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$res.value->toOne()->cast(@ValueSpecification)->asString()+'\n',|''));
+   $res;
+}
+
+function <<access.private>> meta::pure::router::store::routing::wrapValueSpecification(value:ValueSpecification[1], routingStrategy:RoutingStrategy[1], id:String[1], executionContext:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[1]
+{
+   let strategy = $routingStrategy->cast(@StoreMappingRoutingStrategy);
+
+   ^StoreMappingRoutedValueSpecification
+   (
+      genericType = $value.genericType,
+      multiplicity = $value.multiplicity,
+      id = $id,
+      runtime = $strategy.runtime,
+      mapping = $strategy.mapping,
+      executionContext = $executionContext,
+      value = $value,
+      routingStrategy = $strategy
+   );
+}
+
+
+// ===================================================================================
+// Special Functions
+// ===================================================================================
+
+function  meta::pure::router::store::routing::specializedFunctionExpressionRouterProcessorForStore(extensions:meta::pure::extension::Extension[*]):Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+{
+  [
+    pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_]),
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                let resolvedParameters = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
+                                                                                                                 f:FunctionExpression[1] |let r = $f->reprocessRuntimeWithVariablePlaceHolder($inScopeVars).value->cast(@ValueSpecification);
+                                                                                                                                          $r->reactivate($inScopeVars);,
+                                                                                                                 i:InstanceValue[1]      |$i.values]));
+                let fromMapping            = $resolvedParameters->at(0)->cast(@Mapping);
+                let fromRuntime            = $resolvedParameters->at(1)->cast(@Runtime);
+                let fromExecutionContext   = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@ExecutionContext), | $executionContext);
+
+                let currentRoutingStrategy = $state.routingStrategy;
+                let newRoutingStrategy     = if($currentRoutingStrategy->instanceOf(StoreMappingRoutingStrategy),
+                                               | let storeMapStrategy = $currentRoutingStrategy->cast(@StoreMappingRoutingStrategy);
+                                                 ^$storeMapStrategy(mapping = $fromMapping, runtime = $fromRuntime, classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());,
+                                               | getRoutingStrategyFromMappingAndRuntime($fromMapping, $fromRuntime));
+                let newState               = ^$state(routingStrategy = $newRoutingStrategy);
+
+                let processedFunction      = routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
+                let valueSpec              = $processedFunction.value;
+                let wrappedValueSpec       = $valueSpec->evaluateAndDeactivate()->match([
+                                                          evs: ExtendedRoutedValueSpecification[1] | $evs,
+                                                          vs: ValueSpecification[1]                | $processedFunction.routingStrategy.wrapValueSpec($vs, 'from wrapper', $executionContext, $extensions, $debug)
+                                                        ]);
+                ^$processedFunction(value = $wrappedValueSpec);
+        }
+    )
+  ]
+}
+
+Class <<access.private>> meta::pure::router::store::routing::RuntimeProcessingState
+{
+   value:Any[1];
+   vState:RuntimeProcessingVariableState[*];
+}
+
+Class <<access.private>> meta::pure::router::store::routing::RuntimeProcessingVariableState
+{
+   v:VariableExpression[1];
+   shouldReplace : Boolean[1];
+   sourceType : Type[0..1];
+}
+
+function <<access.private>> meta::pure::router::store::routing::rebuildGenericType(g:GenericType[1], vState:RuntimeProcessingVariableState[*]):GenericType[1]
+{
+   let l = {t:Type[1]| if($vState.sourceType->contains($t),|RoutedVariablePlaceHolder,|$t)};
+
+   ^$g(rawType=$l->eval($g.rawType), typeArguments=$g.typeArguments->map(a|$a->rebuildGenericType($vState)));
+}
+
+function <<access.private>> meta::pure::router::store::routing::replaceTypesWithVariablePlaceHolder(ve:VariableExpression[1], inScopeVars:Map<String, List<Any>>[1]):RuntimeProcessingState[1]
+{
+   let genericType = $ve.genericType;
+   let shouldReplace = $inScopeVars->get($ve.name)->isNotEmpty() && $inScopeVars->get($ve.name).values->at(0)->instanceOf(RoutedVariablePlaceHolder);
+   let updatedVe = if($shouldReplace,|^$ve(genericType=^$genericType(rawType=RoutedVariablePlaceHolder)),|$ve);
+   ^RuntimeProcessingState(value=$updatedVe, vState=^RuntimeProcessingVariableState(v=$ve, shouldReplace=$shouldReplace, sourceType=$ve.genericType.rawType));
+}
+
+function <<access.private>> meta::pure::router::store::routing::replaceTypesWithVariablePlaceHolder(fe:FunctionExpression[1], reprocessedParameters:RuntimeProcessingState[*]):FunctionExpression[1]
+{
+   let updatedGenericType = $fe.genericType->toOne()->rebuildGenericType($reprocessedParameters.vState);
+   let resolvedTypeParameters = range(0, $fe.resolvedTypeParameters->size())->zip($fe.resolvedTypeParameters);
+   let updateResolvedTypeParameters = $resolvedTypeParameters->map(rtp| $rtp.second->rebuildGenericType($reprocessedParameters->at($rtp.first).vState));
+   ^$fe(genericType=$updatedGenericType, resolvedTypeParameters=$updateResolvedTypeParameters);
+}
+
+function <<access.private>> meta::pure::router::store::routing::reprocessRuntimeWithVariablePlaceHolder(vs:ValueSpecification[1], inScopeVars:Map<String, List<Any>>[1]):RuntimeProcessingState[1]
+{
+   $vs->match([   fe:FunctionExpression[1] | let params = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->reprocessRuntimeWithVariablePlaceHolder($inScopeVars));
+                                             let updatedFe = ^$fe(parametersValues= $params.value->cast(@ValueSpecification))->replaceTypesWithVariablePlaceHolder($params);
+                                             ^RuntimeProcessingState(value=$updatedFe, vState=$params.vState);,
+                        i:InstanceValue[1] | let values = $i.values->evaluateAndDeactivate()->map(v|$v->match([ e:ValueSpecification[1]| $e->reprocessRuntimeWithVariablePlaceHolder($inScopeVars),
+                                                                                                           f:FunctionDefinition<Any>[1]| let expressions = $f.expressionSequence->map(e|$e->reprocessRuntimeWithVariablePlaceHolder($inScopeVars));
+                                                                                                                                         ^RuntimeProcessingState(value= ^$f(expressionSequence = $expressions.value->cast(@ValueSpecification)), vState=$expressions.vState );,
+                                                                                                                    k: KeyExpression[1]| let key = $k.key->reprocessRuntimeWithVariablePlaceHolder($inScopeVars)->cast(@RuntimeProcessingState).value->cast(@InstanceValue);
+                                                                                                                                         let expression = $k.expression->reprocessRuntimeWithVariablePlaceHolder($inScopeVars);
+                                                                                                                                         let nk = ^$k(key=$key, expression= $expression.value->cast(@ValueSpecification));
+                                                                                                                                         ^RuntimeProcessingState(value=$nk, vState=$expression.vState );,
+                                                                                                             a:Any[1]| ^RuntimeProcessingState(value=$a)]));
+                                             ^RuntimeProcessingState(value=^$i(values = $values.value), vState=$values.vState);,
+                   v:VariableExpression[1] | $v->replaceTypesWithVariablePlaceHolder($inScopeVars),
+                 val:ValueSpecification[1] | ^RuntimeProcessingState(value=$val)
+             ]);
+}
+
+// ===================================================================================
+// Helper Functions
+// ===================================================================================
+
+function meta::pure::router::store::routing::processProperty(p:AbstractProperty<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+{
+   let mapping = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).mapping;
+   let runtime = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).runtime;
+
+   let s             = $state.propertyMap.v->filter(p|$p.first == '__propertyOwner').second->evaluateAndDeactivate();
+   let permSets      = if($s == 0,|[]->cast(@SetImplementation), |$s->cast(@StoreMappingRoutedValueSpecification).sets);
+   let foundMappings = $p->findMappingsFromProperty($mapping, $permSets, $state, $extensions);
+
+   if($foundMappings->isEmpty(),
+      | let found = $state.propertyMap.v->filter(p|$p.first == '__propertyOwner').second->evaluateAndDeactivate();
+        if($found == 0,
+           | ^$state(value=$i),
+           | let res = $found->toOne()->cast(@StoreMappingRoutedValueSpecification);
+             print(if($debug.debug,|$debug.space+'~>P '+$p.name->toOne()+') ('+$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$res->evaluateAndDeactivate()->asString()+'\n',|''));
+             ^$state(value=^$res(value = $i));
+        );,
+      | let existingSet = $state->findExistingSet($debug);
+
+        let newSet = if ($existingSet->isEmpty(),|^PermutationSet(id = $state.counter+1, sets = $foundMappings),|[]);
+
+        let currentRoutingStrategy = $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne();
+        let updatedRoutingStrategy = ^$currentRoutingStrategy(setsByDepth = if($existingSet->isEmpty(),
+                                                                              | let setByD = $state.routingStrategy->cast(@StoreMappingRoutingStrategy).setsByDepth;    
+                                                                                $setByD->put(getSetPath($state), $newSet->toOne());,
+                                                                              | $state.routingStrategy->cast(@StoreMappingRoutingStrategy)->toOne().setsByDepth
+                                                                            ),
+                                                              sets = if ($existingSet->isEmpty(),|$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->add($newSet->toOne()),|$state.routingStrategy->cast(@StoreMappingRoutingStrategy).sets));
+        
+        let routed = ^StoreMappingRoutedValueSpecification(
+                                genericType = $i.genericType,
+                                multiplicity = $i.multiplicity,
+                                id = if ($existingSet->isEmpty(),|$state.counter+1, |$existingSet->toOne())->toString(),
+                                sets = $foundMappings,
+                                runtime = $runtime,
+                                mapping = $mapping,
+                                executionContext = $executionContext,
+                                value = $i,
+                                routingStrategy = $updatedRoutingStrategy
+                    );
+
+        let res= ^$state(
+              counter = if ($existingSet->isEmpty(),|$state.counter+1, |$state.counter),
+              routingStrategy = $updatedRoutingStrategy,
+              value = $routed
+          );
+        print(if($debug.debug,|$debug.space+'~>P '+$p.name->toOne()+') ('+$res.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()+') '+$routed->evaluateAndDeactivate()->asString()+'\n',|''));
+        $res;
+   );
+}
+
+function meta::pure::router::routing::getClassMappings(c:Class<Any>[1], r:RoutingState[1]):SetImplementation[*]
+{
+   let classMappings = $r.routingStrategy->cast(@StoreMappingRoutingStrategy).classMappingsForClass($c)->concatenate($c.generalizations.general.rawType->cast(@Class<Any>)->map(g|$g->getClassMappings($r)));                                              
+   assert($classMappings.class->removeDuplicates()->size() <= 1, 'Expected class mapping for only 1 class [Class: ' + $c.name->toOne() + ']');
+   $classMappings;
+}
+
+function meta::pure::router::routing::propogateSubType(vs:ValueSpecification[1], subTypeId:String[1], subTypeSets:SetImplementation[*], extensions:meta::pure::extension::Extension[*]): ValueSpecification[1]
+{
+    $vs->evaluateAndDeactivate()->match([e: StoreMappingRoutedValueSpecification[1] | let castClass   = $subTypeSets->at(0).class;
+                                                                                      let routedClass = $e.genericType.rawType->toOne();
+                                                                                      if($castClass->_subTypeOf($routedClass),| ^$e(sets=$subTypeSets, id=$subTypeId, value=$e.value->evaluateAndDeactivate()->propogateSubType($subTypeId, $subTypeSets, $extensions));,|$e);,
+                                         f: SimpleFunctionExpression[1] |if(shouldStop($f.func, $extensions),
+                                                                            |$f,
+                                                                            |let func = $f.func;
+                                                                             let newFunc = if($func->instanceOf(FunctionDefinition),
+                                                                                              |let fd=$func->cast(@FunctionDefinition<Any>);
+                                                                                               let newEs=$fd.expressionSequence->map(e|$e->propogateSubType($subTypeId,$subTypeSets, $extensions));
+                                                                                               ^$fd(expressionSequence=$newEs);,
+                                                                                              |$func
+                                                                                            );
+                                                                             ^$f(func=$newFunc, parametersValues=$f.parametersValues->map(p|$p->propogateSubType($subTypeId,$subTypeSets, $extensions))););,
+                                         vs: ValueSpecification[1] | $vs
+                                       ])->cast(@ValueSpecification);
+}

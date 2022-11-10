@@ -22,7 +22,7 @@ Execution engine for Legend. It provides:
 If you're making changes to the `Pure` codebase, it's highly recommended that you also spin up our `Pure IDE` application:
 
 - In order to start the server, please use the `Main` class `org.finos.legend.engine.ide.PureIDELight` with the parameters: `server legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json`.
-- You can now access the IDE at http://127.0.0.1:9100/ide in a web browser.
+- You can now access the IDE at http://127.0.0.1:9200/ide in a web browser.
 
 ## Roadmap
 

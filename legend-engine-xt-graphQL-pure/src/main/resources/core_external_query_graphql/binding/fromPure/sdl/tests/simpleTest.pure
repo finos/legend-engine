@@ -1,0 +1,55 @@
+import meta::external::query::graphQL::binding::fromPure::sdl::tests::model::*;
+import meta::external::query::graphQL::binding::*;
+
+Enum meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType
+{
+  LLC, CORP
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Firm
+{
+  legalName : String[1];
+  employees : Person[*];
+  incType : meta::external::query::graphQL::binding::fromPure::sdl::tests::model::IncType[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
+{
+  firstName : String[0..1];
+  lastName : String[1];
+  age : Integer[1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Query
+{
+  firmByName(n:String[1]){Firm.all()->filter(z|$z.legalName == $n)->first()}:Firm[0..1];
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testTransform():Boolean[1]
+{
+  let res = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([Query])
+            ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+            ->joinStrings('\n\n');
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n\n' +
+    'type Query {\n' +
+    '  firmByName(n: String!): Firm\n' +
+    '}\n\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '}', $res);
+}

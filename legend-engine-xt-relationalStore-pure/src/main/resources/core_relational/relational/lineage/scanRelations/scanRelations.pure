@@ -26,6 +26,8 @@ import meta::pure::functions::io::http::*;
 import meta::pure::milestoning::*;
 import meta::relational::metamodel::*;
 import meta::pure::router::routing::*;
+import meta::pure::router::store::metamodel::clustering::*;
+import meta::pure::router::utils::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::mapping::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
@@ -359,10 +361,10 @@ function meta::pure::lineage::scanRelations::scanRelations(f:FunctionDefinition<
 function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery(f:FunctionDefinition<Any>[1], m:Mapping[1], r:Runtime[1], vars:Pair<String, List<Any>>[*], extensions:Extension[*]):SQLQuery[1]
 {
    let routed         = $f->routeFunction($m, $r, $extensions, noDebug());
-   let routedFunction = $routed.functions->evaluateAndDeactivate()->toOne();
+   let routedFunction = $routed->evaluateAndDeactivate()->toOne();
 
    let inScopeVars    = $f.expressionSequence->evaluateAndDeactivate()->fold({vs, a | if ($vs->isLetFunction(),
-                                                                                           |  let varName = $vs->meta::pure::router::extractLetVariableName();
+                                                                                           |  let varName = $vs->meta::pure::router::utils::extractLetVariableName();
                                                                                               let varExprs = $vs->findVariableExpressionsInValueSpecification();
 
                                                                                               let inScopeVars = $a->keyValues();
@@ -376,12 +378,10 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery
                                                                                         );
                                                                               }, $f->openVariableValues()->putAll($vars));
 
-   let clusters       = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification)->filter(cvs | $cvs.store->instanceOf(Database));
+   let clusters       = $routedFunction.expressionSequence->evaluateAndDeactivate()->filter(c | $c->instanceOf(StoreMappingClusteredValueSpecification))->cast(@StoreMappingClusteredValueSpecification)->filter(cvs | $cvs.store->instanceOf(Database));
    assert($clusters->size() == 1, | 'Scan Relations currently supports 1 cluster, Found - ' + $clusters->size()->toString());
 
-   let fe             = $clusters->toOne().val->match([r:ExtendedRoutedValueSpecification[1]|$r.value,
-                                                       t:TDSRoutedValueSpecification[1] | $t.value,
-                                                       a:Any[1]|$a])->cast(@FunctionExpression);
+   let fe             = $clusters->toOne().val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
 
    let sqlQuery       = $fe->toSQLQuery($m, $inScopeVars, ^RelationalExecutionContext(), noDebug(), $extensions);
 }

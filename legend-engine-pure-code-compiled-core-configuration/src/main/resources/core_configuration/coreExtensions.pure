@@ -1,0 +1,116 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::pure::extension::configuration::*;
+
+function meta::pure::extension::configuration::coreExtensions(): Extension[*]
+{
+   [
+      meta::pure::extension::defaultExtensions()->toOne(),
+      meta::relational::extension::relationalExtension('relational'),
+      meta::external::store::service::extension::serviceStoreExtensions(),
+      meta::external::shared::format::externalFormatExtension(),
+      meta::external::format::flatdata::extension::flatDataFormatExtension(),
+      meta::external::format::json::extension::jsonSchemaFormatExtension(),
+      meta::external::format::xml::extension::xsdFormatExtension(),
+
+      meta::pure::executionPlan::platformBinding::platformBindingExtension([
+         coreLegendJavaPlatformBinding() // LegendJava
+      ])
+   ]
+}
+
+
+// Legend Java ---------------------------------------------------------------
+
+###Pure
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+
+function meta::pure::extension::configuration::coreLegendJavaPlatformBinding(): PlatformBinding[1]
+{
+   legendJavaPlatformBinding([
+
+      // Stores
+      meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
+      meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension(),
+      meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreLegendJavaPlatformBindingExtension(),
+
+      // Bindings
+      meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
+         meta::external::format::flatdata::executionPlan::engine::java::flatDataJavaBindingDescriptor(),
+         meta::external::format::json::executionPlan::engine::java::jsonSchemaJavaBindingDescriptor(),
+         meta::external::format::xml::executionPlan::engine::java::xsdJavaBindingDescriptor()
+      ])
+
+   ])
+}
+
+// --------------------------------------------------------------- Legend Java
+
+
+
+// Local Binding -------------------------------------------------------------
+
+###Pure
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::config::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::localBinding::*;
+import meta::pure::extension::*;
+import meta::pure::extension::configuration::*;
+import meta::relational::tests::model::simple::*;
+import meta::pure::graphFetch::execution::*;
+
+function <<LocalPlatformBinding.TestPlanBinder>> meta::pure::extension::configuration::localPlatformBinding::bindTestPlanToPlatform(): LocalPlatformBinder[1]
+{
+   ^LocalPlatformBinder
+   (
+      overrides = [
+         meta::relational::executionPlan::platformBinding::legendJava::bindRelationalTestPlanToPlatform__LocalPlatformBinder_1_
+      ],
+      
+      bindingFunction = {plan: ExecutionPlan[1], extensions: Extension[*] |
+         
+         let extensionsWithPlatformBindings = $extensions->concatenate(platformBindingExtension([coreLegendJavaPlatformBinding()]));
+
+         // Using LegendJava as the default for local platform binding
+         generatePlatformCode($plan, legendJavaPlatformBindingId(), ^LegendJavaPlatformBindingConfig(), $extensionsWithPlatformBindings);
+      
+      }
+   ) 
+}
+
+// ------------------------------------------------------------- Local Binding
+
+function <<test.Test>> meta::pure::extension::configuration::localPlatformBinding::testLocalBindingOfPlanToPlatform(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::simpleRelationalMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let extensions = meta::relational::extension::relationalExtensions();
+   let basicPlan = executionPlan($query, $mapping, $runtime, $extensions);
+   let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($basicPlan, $extensions);
+   
+   assert($boundPlan.globalImplementationSupport->isNotEmpty());
+}

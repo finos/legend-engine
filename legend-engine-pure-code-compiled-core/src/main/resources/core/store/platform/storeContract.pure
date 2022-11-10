@@ -41,8 +41,7 @@ function meta::pure::store::platform::contract::platformStoreContract():StoreCon
 // Platform Store Execution
 function meta::pure::store::platform::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
-  let newOne = ^Container(value = $sq.fe)->resolve($sq.inScopeVars, $extensions, $debug);
-  ^Result<Any|*>(activities = $newOne.activities, values=$newOne.value->reactivate($sq.inScopeVars));
+   meta::pure::router::platform::execution::execute($sq.fe, $sq.inScopeVars, $extensions, $debug);
 }
 
 // Platform Store Execution Plan Generation Flow

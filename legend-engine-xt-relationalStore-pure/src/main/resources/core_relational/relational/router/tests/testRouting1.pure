@@ -18,6 +18,8 @@ import meta::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::relational::tests::query::routing::*;
+import meta::pure::router::store::metamodel::*;
+import meta::pure::router::utils::*;
 
 function meta::relational::tests::query::routing::mapNestedInUserFunction(value:Person[*], func:Function<{Person[1]->String[1]}>[1]):String[*]
 {
@@ -181,7 +183,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
    let f = {|Firm.all()->project([f | $f.nameAndAddress()],'nameAndAddress')};
    let routed = $f->routeFunction(simpleRelationalMapping, testRuntime(), ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
   
-   let wrappedFunc = $routed.functions.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::clustering::ClusteredValueSpecification).val->cast(@SimpleFunctionExpression)->toOne();
+   let wrappedFunc = $routed.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::metamodel::clustering::ClusteredValueSpecification).val->toOne()->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression);
    let lambda = $wrappedFunc.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
    let nameAndAddressQp = $lambda.expressionSequence->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>);
    let plusFunc = $nameAndAddressQp.expressionSequence->cast(@FunctionExpression);
@@ -189,9 +191,9 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
    let lhsRouted=$routedParams->at(0)->evaluateAndDeactivate();
    let rhsRouted=$routedParams->at(2)->evaluateAndDeactivate();
    
-   assert($lhsRouted->instanceOf(ExtendedRoutedValueSpecification));
-   assert($lhsRouted->cast(@ExtendedRoutedValueSpecification).sets.class.name == 'Firm');
-   assert($lhsRouted->cast(@ExtendedRoutedValueSpecification).value->instanceOf(SimpleFunctionExpression));
+   assert($lhsRouted->instanceOf(StoreMappingRoutedValueSpecification));
+   assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).sets.class.name == 'Firm');
+   assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(SimpleFunctionExpression));
 }
 
 
@@ -218,8 +220,8 @@ function <<test.Test>> meta::relational::tests::query::routing::multipleexpressi
             };
    
    let routingResult = routeFunction($f, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
-   assertEquals(1, $routingResult.functions->size());
-   assertEquals(' | {Platform> let firstFirmLegalName = [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)].legalName};\n   {Platform> let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus()};', $routingResult.functions->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
+   assertEquals(1, $routingResult->size());
+   assertEquals(' | {Platform> [strategy_wrapper /let firstFirmLegalName = {Platform> {Platform> [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)]}.legalName}]};\n   {Platform> [strategy_wrapper /let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus()]};', $routingResult->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));
 }
 
 function meta::relational::tests::query::routing::doSomething(a:Integer[1]):String[1]
