@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+    <name>Legend Engine - XT - Relational Store - Spanner - Execution</name>
 
     <properties>
         <maven-shade-plugin.shadedPattern>org.finos.legend.engine.spanner.jdbc.shaded</maven-shade-plugin.shadedPattern>
@@ -38,6 +39,11 @@
                     <filters>
                         <filter>
                             <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
                         </filter>
                     </filters>
                     <shadeSourcesContent>true</shadeSourcesContent>
