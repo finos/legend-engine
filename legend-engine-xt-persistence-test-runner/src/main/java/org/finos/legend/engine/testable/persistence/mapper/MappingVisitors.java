@@ -149,7 +149,7 @@ public class MappingVisitors
         }
     };
 
-    public static class EnrichSchemaWithAuditing implements AuditingVisitor<SchemaDefinition.Builder>
+    public static class EnrichSchemaWithAuditing implements AuditingVisitor
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;

@@ -16,9 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface TransactionMilestoningVisitor<T>
 {
-    Void visit(BatchIdTransactionMilestoning val);
+    T visit(BatchIdTransactionMilestoning val);
 
-    Void visit(DateTimeTransactionMilestoning val);
+    T visit(DateTimeTransactionMilestoning val);
 
-    Void visit(BatchIdAndDateTimeTransactionMilestoning val);
+    T visit(BatchIdAndDateTimeTransactionMilestoning val);
 }
