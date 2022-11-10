@@ -15,6 +15,8 @@
 package org.finos.legend.engine.testable.persistence.mapper;
 
 import java.util.Optional;
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
@@ -23,10 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoning;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTimeAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -45,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.ValidityMilestoningVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
 import static org.finos.legend.engine.testable.persistence.mapper.DatasetMapper.isFieldNamePresent;
 
 public class MappingVisitors
@@ -328,21 +328,25 @@ public class MappingVisitors
         }
     }
 
-    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor<SchemaDefinition.Builder>
+    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor<Pair<SchemaDefinition.Builder, SchemaDefinition.Builder>>
     {
-        private SchemaDefinition.Builder schemaDefinitionBuilder;
+        private SchemaDefinition.Builder mainSchemaDefinitionBuilder;
+        private SchemaDefinition.Builder stagingSchemaDefinitionBuilder;
         private Dataset mainDataset;
         private SchemaDefinition baseSchema;
 
-        public EnrichSchemaWithValidityMilestoning(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
+        public EnrichSchemaWithValidityMilestoning(SchemaDefinition.Builder mainSchemaDefinitionBuilder,
+                                                   SchemaDefinition.Builder stagingSchemaDefinitionBuilder,
+                                                   Dataset mainDataset)
         {
-            this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.mainSchemaDefinitionBuilder = mainSchemaDefinitionBuilder;
+            this.stagingSchemaDefinitionBuilder = stagingSchemaDefinitionBuilder;
             this.baseSchema = mainDataset.schema();
             this.mainDataset = mainDataset;
         }
 
         @Override
-        public SchemaDefinition.Builder visit(DateTimeValidityMilestoning validDateTime)
+        public Pair<SchemaDefinition.Builder, SchemaDefinition.Builder> visit(DateTimeValidityMilestoning validDateTime)
         {
             // if ValidDateTime based validityMilestoning -> user provided FROM_Z THRU_Z fields addition
             if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeFromName))
@@ -352,7 +356,7 @@ public class MappingVisitors
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(true)
                         .build();
-                schemaDefinitionBuilder.addFields(dateTimeFrom);
+                mainSchemaDefinitionBuilder.addFields(dateTimeFrom);
             }
             if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeThruName))
             {
@@ -361,12 +365,15 @@ public class MappingVisitors
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(false)
                         .build();
-                schemaDefinitionBuilder.addFields(dateTimeThru);
+                mainSchemaDefinitionBuilder.addFields(dateTimeThru);
             }
-            return schemaDefinitionBuilder;
+
+            mainSchemaDefinitionBuilder = validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, mainDataset));
+            stagingSchemaDefinitionBuilder = validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, mainDataset));
+
+            return Tuples.pair(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder);
         }
     }
-
 
     public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor<SchemaDefinition.Builder>
     {
@@ -382,13 +389,13 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visitSourceSpecifiesFromDateTime(SourceSpecifiesFromDateTimeAbstract validityMilestoningDerivation)
+        public SchemaDefinition.Builder visit(SourceSpecifiesFromDateTime validityMilestoningDerivation)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM field addition
-            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField))
             {
                 Field sourceDateTimeFrom = Field.builder()
-                        .name(validityMilestoningDerivation.sourceDateTimeFromField())
+                        .name(validityMilestoningDerivation.sourceDateTimeFromField)
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(true)
                         .build();
@@ -398,22 +405,22 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract validityMilestoningDerivation)
+        public SchemaDefinition.Builder visit(SourceSpecifiesFromAndThruDateTime validityMilestoningDerivation)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM SOURCE_THRU fields addition
-            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField))
             {
                 Field sourceDateTimeFrom = Field.builder()
-                        .name(validityMilestoningDerivation.sourceDateTimeFromField())
+                        .name(validityMilestoningDerivation.sourceDateTimeFromField)
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(true)
                         .build();
                 schemaDefinitionBuilder.addFields(sourceDateTimeFrom);
             }
-            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeThruField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeThruField))
             {
                 Field sourceDateTimeThru = Field.builder()
-                        .name(validityMilestoningDerivation.sourceDateTimeThruField())
+                        .name(validityMilestoningDerivation.sourceDateTimeThruField)
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(false)
                         .build();

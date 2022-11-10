@@ -15,8 +15,8 @@
 package org.finos.legend.engine.testable.persistence.mapper;
 
 import java.util.Optional;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -99,16 +99,13 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     @Override
     public Datasets visit(BitemporalDelta bitemporalDelta)
     {
-        ValidityDerivation validityDerivation = bitemporalDelta.validityMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_VALIDITY_MILESTONING).validityDerivation();
-
-        stagingSchemaDefinitionBuilder = validityDerivation.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, mainDataset));
-        stagingSchemaDefinitionBuilder = bitemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, mainDataset));
+        Pair<SchemaDefinition.Builder, SchemaDefinition.Builder> schemas = bitemporalDelta.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder, mainDataset));
+        stagingSchemaDefinitionBuilder = bitemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(schemas.getTwo(), mainDataset));
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
+        mainSchemaDefinitionBuilder = schemas.getOne();
         mainSchemaDefinitionBuilder = enrichMainSchemaWithDigest();
-        mainSchemaDefinitionBuilder = validityDerivation.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, mainDataset));
         mainSchemaDefinitionBuilder = bitemporalDelta.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, mainDataset));
-        mainSchemaDefinitionBuilder = bitemporalDelta.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, mainDataset));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -117,14 +114,13 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     @Override
     public Datasets visit(BitemporalSnapshot bitemporalSnapshot)
     {
-        ValidityDerivation validityDerivation = bitemporalSnapshot.validityMilestoning.accept(MappingVisitors.MAP_TO_COMPONENT_VALIDITY_MILESTONING).validityDerivation();
+        Pair<SchemaDefinition.Builder, SchemaDefinition.Builder> schemas = bitemporalSnapshot.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder, mainDataset));
+        Dataset stagingDataset = stagingDatasetBuilder.schema(schemas.getTwo().build()).build();
 
-        stagingSchemaDefinitionBuilder = validityDerivation.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, mainDataset));
-        Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
-
+        mainSchemaDefinitionBuilder = schemas.getOne();
         mainSchemaDefinitionBuilder = enrichMainSchemaWithDigest();
         mainSchemaDefinitionBuilder = bitemporalSnapshot.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, mainDataset));
-        mainSchemaDefinitionBuilder = bitemporalSnapshot.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, mainDataset));
+
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
