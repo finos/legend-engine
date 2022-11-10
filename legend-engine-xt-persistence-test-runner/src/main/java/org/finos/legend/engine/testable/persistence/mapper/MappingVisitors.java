@@ -398,22 +398,22 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract validityMilestoningDerication)
+        public SchemaDefinition.Builder visitSourceSpecifiesFromAndThruDateTime(SourceSpecifiesFromAndThruDateTimeAbstract validityMilestoningDerivation)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM SOURCE_THRU fields addition
-            if (!isFieldNamePresent(baseSchema, validityMilestoningDerication.sourceDateTimeFromField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField()))
             {
                 Field sourceDateTimeFrom = Field.builder()
-                        .name(validityMilestoningDerication.sourceDateTimeFromField())
+                        .name(validityMilestoningDerivation.sourceDateTimeFromField())
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(true)
                         .build();
                 schemaDefinitionBuilder.addFields(sourceDateTimeFrom);
             }
-            if (!isFieldNamePresent(baseSchema, validityMilestoningDerication.sourceDateTimeThruField()))
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeThruField()))
             {
                 Field sourceDateTimeThru = Field.builder()
-                        .name(validityMilestoningDerication.sourceDateTimeThruField())
+                        .name(validityMilestoningDerivation.sourceDateTimeThruField())
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
                         .primaryKey(false)
                         .build();
