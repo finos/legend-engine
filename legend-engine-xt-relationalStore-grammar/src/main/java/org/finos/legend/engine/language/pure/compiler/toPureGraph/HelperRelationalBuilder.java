@@ -1077,9 +1077,9 @@ public class HelperRelationalBuilder
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class getPropertyOwnerForRelationalPropertyMapping(CompileContext context, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
     {
-        if (propertyMapping.property.propertyOwner != null)
+        if (propertyMapping.property.owner != null)
         {
-            return context.resolveClass(propertyMapping.property.propertyOwner, propertyMapping.property.sourceInformation);
+            return context.resolveClass(propertyMapping.property.owner, propertyMapping.property.sourceInformation);
         }
         else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation)
         {
@@ -1093,9 +1093,9 @@ public class HelperRelationalBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class extractPropertyOwner(CompileContext context, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping propertyMapping, PropertyMappingsImplementation immediateParent)
     {
-        if (propertyMapping.property.propertyOwner != null)
+        if (propertyMapping.property.owner != null)
         {
-            return context.resolveClass(propertyMapping.property.propertyOwner, propertyMapping.property.sourceInformation);
+            return context.resolveClass(propertyMapping.property.owner, propertyMapping.property.sourceInformation);
         }
         else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalInstanceSetImplementation)
         {
@@ -1167,7 +1167,7 @@ public class HelperRelationalBuilder
             return ((InstanceSetImplementation) immediateParent)._mappingClass()._properties().detect(p -> p._name().equals(propertyName));
         }
         // case were class is not defined and the parent is an association mapping. search for property inside the asssociation
-        else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation && propertyMapping.property.propertyOwner == null)
+        else if (immediateParent instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation && propertyMapping.property.owner == null)
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association = ((AssociationImplementation) immediateParent)._association();
             Property property = association._properties().detect(p -> (propertyName.equals(p.getName())) || (isTypeTemporalMilestoned.apply(p._genericType()._rawType()) && edgePointPropertyName.equals(p.getName())));

@@ -113,7 +113,7 @@ public class DiagramGrammarComposerExtension implements PureGrammarComposerExten
     {
         return getTabString() + "propertyView" + "\n" +
                 getTabString() + "{\n" +
-                getTabString(2) + "property: " + PureGrammarComposerUtility.convertPath(propertyView.property.propertyOwner) + "." + PureGrammarComposerUtility.convertIdentifier(propertyView.property.property) + ";\n" +
+                getTabString(2) + "property: " + PureGrammarComposerUtility.convertPath(propertyView.property.owner) + "." + PureGrammarComposerUtility.convertIdentifier(propertyView.property.property) + ";\n" +
                 getTabString(2) + "source: " + propertyView.sourceView + ";\n" +
                 getTabString(2) + "target: " + propertyView.targetView + ";\n" +
                 getTabString(2) + "points: " + renderLine(propertyView.line) + ";\n" +

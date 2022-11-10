@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.PropertyView;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,5 +34,16 @@ public class TestDiagramProtocol
         PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("modelWithDiagram.json")), PureModelContextData.class);
         Assert.assertEquals(1, context.getElementsOfType(Diagram.class).size());
         Assert.assertEquals(1, context.getElements().size());
+    }
+
+    @Test
+    public void testOldPropertyPointerProtocol() throws Exception
+    {
+        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("modelWithDiagram.json")), PureModelContextData.class);
+        Assert.assertEquals(1, context.getElementsOfType(Diagram.class).size());
+        Diagram diagram = (Diagram) context.getElementsOfType(Diagram.class).get(0);
+        Assert.assertEquals(2, diagram.propertyViews.size());
+        PropertyView propertyView = diagram.propertyViews.get(0);
+        Assert.assertNotNull(propertyView.property.owner);
     }
 }

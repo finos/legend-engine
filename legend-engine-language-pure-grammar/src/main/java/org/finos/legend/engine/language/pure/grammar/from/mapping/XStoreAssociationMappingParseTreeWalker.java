@@ -53,7 +53,7 @@ public class XStoreAssociationMappingParseTreeWalker
         XStorePropertyMapping xStorePropertyMapping = new XStorePropertyMapping();
 
         xStorePropertyMapping.property = new PropertyPointer();
-        xStorePropertyMapping.property.propertyOwner = association;
+        xStorePropertyMapping.property.owner = association;
         xStorePropertyMapping.property.property = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         xStorePropertyMapping.property.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
 

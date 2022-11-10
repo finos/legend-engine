@@ -105,7 +105,7 @@ public class DiagramParseTreeWalker
         // Property
         PropertyPointer propertyPointer = new PropertyPointer();
         DiagramParserGrammar.PropertyHolderViewPropertyPropContext propertyPropContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.propertyHolderViewPropertyProp(), "property", propertyView.sourceInformation);
-        propertyPointer.propertyOwner = PureGrammarParserUtility.fromQualifiedName(propertyPropContext.qualifiedName().packagePath() == null ? Collections.emptyList() : propertyPropContext.qualifiedName().packagePath().identifier(), propertyPropContext.qualifiedName().identifier());
+        propertyPointer.owner = PureGrammarParserUtility.fromQualifiedName(propertyPropContext.qualifiedName().packagePath() == null ? Collections.emptyList() : propertyPropContext.qualifiedName().packagePath().identifier(), propertyPropContext.qualifiedName().identifier());
         propertyPointer.property = PureGrammarParserUtility.fromIdentifier(propertyPropContext.identifier());
         propertyPointer.sourceInformation = walkerSourceInformation.getSourceInformation(propertyPropContext.qualifiedName());
         propertyView.property = propertyPointer;
