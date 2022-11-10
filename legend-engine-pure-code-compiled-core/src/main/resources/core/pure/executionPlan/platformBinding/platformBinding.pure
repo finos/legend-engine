@@ -73,3 +73,45 @@ function meta::pure::executionPlan::platformBinding::extractPlatformBindingByIdO
        | []
    )
 }
+
+function meta::pure::executionPlan::platformBinding::platformBindingExtension(platformBindings: PlatformBinding[*]): Extension[1]
+{
+   ^meta::pure::extension::Extension
+   (
+      type = 'PlatformBindingExtension',
+      availablePlatformBindings = $platformBindings
+   )
+}
+
+
+// Local Binding ----------------------------------------------------------------------
+
+###Pure
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::localBinding::*;
+import meta::pure::extension::*;
+
+Profile meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinding
+{
+   stereotypes : [
+      TestPlanBinder
+   ]; 
+}
+
+Class meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinder
+{
+   overrides       : ConcreteFunctionDefinition<{->LocalPlatformBinder[1]}>[*];
+   bindingFunction : Function<{ExecutionPlan[1], Extension[*] -> ExecutionPlan[1]}>[1];
+}
+
+function meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally(plan: ExecutionPlan[1], extensions: Extension[*]): ExecutionPlan[1]
+{
+   let localPlatformBinderFunctions = LocalPlatformBinding->stereotype('TestPlanBinder').modelElements->cast(@ConcreteFunctionDefinition<{->LocalPlatformBinder[1]}>);
+   let filtered = $localPlatformBinderFunctions->filter(f | $f->eval().overrides->containsAll($localPlatformBinderFunctions->remove($f)));
+   assert($filtered->size() == 1, 'Did not find a local platform binder which overrides all other platform binders in: ' + $localPlatformBinderFunctions->map(x | $x->elementToPath())->joinStrings('[', ', ', ']'));
+
+   $filtered->toOne()->eval().bindingFunction->eval($plan, $extensions);
+}
+
+// --------------------------------------------------------------------- Local Binding
