@@ -15,8 +15,6 @@
 package org.finos.legend.engine.testable.persistence.mapper;
 
 import java.util.Optional;
-import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
@@ -165,13 +163,13 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visit(NoAuditing auditing)
+        public Void visit(NoAuditing auditing)
         {
-            return this.schemaDefinitionBuilder;
+            return null;
         }
 
         @Override
-        public SchemaDefinition.Builder visit(DateTimeAuditing auditing)
+        public Void visit(DateTimeAuditing auditing)
         {
             // if DateTimeAuditing -> user provided BATCH_TIME_IN field addition
             if (!isFieldNamePresent(baseSchema, auditing.dateTimeName))
@@ -182,11 +180,11 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(auditDateTime);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
     }
 
-    public static class EnrichSchemaWithMergyStrategy implements MergeStrategyVisitor<SchemaDefinition.Builder>
+    public static class EnrichSchemaWithMergyStrategy implements MergeStrategyVisitor
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
@@ -200,13 +198,13 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visit(NoDeletesMergeStrategy mergeStrategy)
+        public Void visit(NoDeletesMergeStrategy mergeStrategy)
         {
-            return this.schemaDefinitionBuilder;
+            return null;
         }
 
         @Override
-        public SchemaDefinition.Builder visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy mergeStrategy)
+        public Void visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy mergeStrategy)
         {
             // if DeleteIndicatorMergeStrategy -> user provided DELETED field addition
             if (!isFieldNamePresent(baseSchema, mergeStrategy.deleteField))
@@ -217,11 +215,11 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(deleted);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
     }
 
-    public static class EnrichSchemaWithTransactionMilestoning implements TransactionMilestoningVisitor<SchemaDefinition.Builder>
+    public static class EnrichSchemaWithTransactionMilestoning implements TransactionMilestoningVisitor
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
@@ -235,7 +233,7 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visit(BatchIdTransactionMilestoning transactionMilestoning)
+        public Void visit(BatchIdTransactionMilestoning transactionMilestoning)
         {
             // if BatchId based transactionMilestoning -> user provided BATCH_IN BATCH_OUT fields addition
             if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdInName))
@@ -256,11 +254,11 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(batchIdOut);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
 
         @Override
-        public SchemaDefinition.Builder visit(DateTimeTransactionMilestoning transactionMilestoning)
+        public Void visit(DateTimeTransactionMilestoning transactionMilestoning)
         {
             // if TransactionDateTime based transactionMilestoning -> user provided IN_Z OUT_Z fields addition
             if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeInName))
@@ -281,11 +279,11 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(dateTimeOut);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
 
         @Override
-        public SchemaDefinition.Builder visit(BatchIdAndDateTimeTransactionMilestoning transactionMilestoning)
+        public Void visit(BatchIdAndDateTimeTransactionMilestoning transactionMilestoning)
         {
             // if TransactionDateTime based transactionMilestoning -> user provided IN_Z OUT_Z fields addition
             if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdInName))
@@ -324,11 +322,11 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(dateTimeOut);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
     }
 
-    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor<Pair<SchemaDefinition.Builder, SchemaDefinition.Builder>>
+    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor
     {
         private SchemaDefinition.Builder mainSchemaDefinitionBuilder;
         private SchemaDefinition.Builder stagingSchemaDefinitionBuilder;
@@ -346,7 +344,7 @@ public class MappingVisitors
         }
 
         @Override
-        public Pair<SchemaDefinition.Builder, SchemaDefinition.Builder> visit(DateTimeValidityMilestoning validDateTime)
+        public Void visit(DateTimeValidityMilestoning validDateTime)
         {
             // if ValidDateTime based validityMilestoning -> user provided FROM_Z THRU_Z fields addition
             if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeFromName))
@@ -368,14 +366,13 @@ public class MappingVisitors
                 mainSchemaDefinitionBuilder.addFields(dateTimeThru);
             }
 
-            mainSchemaDefinitionBuilder = validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, mainDataset));
-            stagingSchemaDefinitionBuilder = validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, mainDataset));
-
-            return Tuples.pair(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder);
+            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, mainDataset));
+            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, mainDataset));
+            return null;
         }
     }
 
-    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor<SchemaDefinition.Builder>
+    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private Dataset mainDataset;
@@ -389,7 +386,7 @@ public class MappingVisitors
         }
 
         @Override
-        public SchemaDefinition.Builder visit(SourceSpecifiesFromDateTime validityMilestoningDerivation)
+        public Void visit(SourceSpecifiesFromDateTime validityMilestoningDerivation)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM field addition
             if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField))
@@ -401,11 +398,11 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(sourceDateTimeFrom);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
 
         @Override
-        public SchemaDefinition.Builder visit(SourceSpecifiesFromAndThruDateTime validityMilestoningDerivation)
+        public Void visit(SourceSpecifiesFromAndThruDateTime validityMilestoningDerivation)
         {
             // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM SOURCE_THRU fields addition
             if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField))
@@ -426,7 +423,7 @@ public class MappingVisitors
                         .build();
                 schemaDefinitionBuilder.addFields(sourceDateTimeThru);
             }
-            return schemaDefinitionBuilder;
+            return null;
         }
     }
 }

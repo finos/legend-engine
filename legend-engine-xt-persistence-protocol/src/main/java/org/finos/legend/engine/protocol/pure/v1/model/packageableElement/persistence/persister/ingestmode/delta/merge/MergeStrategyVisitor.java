@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface MergeStrategyVisitor<T>
 {
-    T visit(NoDeletesMergeStrategy val);
+    Void visit(NoDeletesMergeStrategy val);
 
-    T visit(DeleteIndicatorMergeStrategy val);
+    Void visit(DeleteIndicatorMergeStrategy val);
 }

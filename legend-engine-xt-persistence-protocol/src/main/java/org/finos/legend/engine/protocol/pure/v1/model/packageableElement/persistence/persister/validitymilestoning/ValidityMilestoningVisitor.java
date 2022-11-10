@@ -16,5 +16,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persis
 
 public interface ValidityMilestoningVisitor<T>
 {
-    T visit(DateTimeValidityMilestoning val);
+    Void visit(DateTimeValidityMilestoning val);
 }

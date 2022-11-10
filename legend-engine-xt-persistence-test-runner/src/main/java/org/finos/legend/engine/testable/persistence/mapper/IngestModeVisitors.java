@@ -164,13 +164,13 @@ public class IngestModeVisitors
     public static final AuditingVisitor<Optional<String>> EXTRACT_AUDIT_FIELD = new AuditingVisitor<Optional<String>>()
     {
         @Override
-        public Optional<String> visit(NoAuditing val)
+        public Void visit(NoAuditing val)
         {
             return Optional.empty();
         }
 
         @Override
-        public Optional<String> visit(DateTimeAuditing val)
+        public Void visit(DateTimeAuditing val)
         {
             return Optional.of(val.dateTimeName);
         }
@@ -179,19 +179,19 @@ public class IngestModeVisitors
     public static final TransactionMilestoningVisitor<Set<String>> EXTRACT_TX_DATE_TIME_FIELDS = new TransactionMilestoningVisitor<Set<String>>()
     {
         @Override
-        public Set<String> visit(BatchIdTransactionMilestoning val)
+        public Void visit(BatchIdTransactionMilestoning val)
         {
             return new HashSet();
         }
 
         @Override
-        public Set<String> visit(DateTimeTransactionMilestoning val)
+        public Void visit(DateTimeTransactionMilestoning val)
         {
             return new HashSet(Arrays.asList(val.dateTimeInName, val.dateTimeOutName));
         }
 
         @Override
-        public Set<String> visit(BatchIdAndDateTimeTransactionMilestoning val)
+        public Void visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
             return new HashSet(Arrays.asList(val.dateTimeInName, val.dateTimeOutName));
         }
@@ -201,19 +201,19 @@ public class IngestModeVisitors
     {
 
         @Override
-        public Boolean visit(BatchIdTransactionMilestoning val)
+        public Void visit(BatchIdTransactionMilestoning val)
         {
             return false;
         }
 
         @Override
-        public Boolean visit(DateTimeTransactionMilestoning val)
+        public Void visit(DateTimeTransactionMilestoning val)
         {
             return true;
         }
 
         @Override
-        public Boolean visit(BatchIdAndDateTimeTransactionMilestoning val)
+        public Void visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
             return false;
         }
