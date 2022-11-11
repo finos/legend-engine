@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Literal;
 import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
+import org.finos.legend.engine.protocol.sql.metamodel.OrderBy;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Relation;
 import org.finos.legend.engine.protocol.sql.metamodel.Select;
 import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
 import org.finos.legend.engine.protocol.sql.metamodel.SingleColumn;
+import org.finos.legend.engine.protocol.sql.metamodel.SortItem;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 
@@ -78,7 +80,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Limit val)
             {
-                return "limit " + val.rowCount.accept(this);
+                return " limit " + val.rowCount.accept(this);
             }
 
             @Override
@@ -94,9 +96,16 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(OrderBy val)
+            {
+                return val.sortItems.isEmpty() ? "" : " order by " + visit(val.sortItems, ", ");
+            }
+
+            @Override
             public String visit(Query val)
             {
                 return val.queryBody.accept(this)
+                        + val.orderBy.accept(this)
                         + val.limit.accept(this);
             }
 
@@ -109,7 +118,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(QuerySpecification val)
             {
-                return val.select.accept(this) + " from " + visit(val.from, " ");
+                return val.select.accept(this) + " from " + visit(val.from, "");
             }
 
             @Override
@@ -143,6 +152,32 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(SortItem val)
+            {
+                String sortItem = "";
+                sortItem += val.sortKey.accept(this);
+                switch (val.ordering)
+                {
+                    case ASCENDING:
+                        sortItem += " ASC";
+                        break;
+                    case DESCENDING:
+                        sortItem += " DESC";
+                        break;
+                }
+                switch (val.nullOrdering)
+                {
+                    case FIRST:
+                        sortItem += " NULLS FIRST";
+                        break;
+                    case LAST:
+                        sortItem += " NULLS LAST";
+                        break;
+                }
+                return sortItem;
+            }
+
+            @Override
             public String visit(Statement val)
             {
                 return null;
@@ -151,7 +186,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(Table val)
             {
-                return visit(val.name, ".") + " ";
+                return visit(val.name, ".");
             }
 
             private String visit(List<? extends Node> nodes, String delimiter)

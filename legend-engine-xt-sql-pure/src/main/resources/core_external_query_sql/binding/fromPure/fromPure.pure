@@ -25,25 +25,18 @@ function meta::external::query::sql::transformation::queryToPure::findService(se
   $servicesFound->toOne();
 }
 
-function meta::external::query::sql::transformation::queryToPure::getTables(node: Node[1]):Table[*]{
-  $node->match([
-    query: Query[1]                   | $query.queryBody->getTables(),
-    querySpec: QuerySpecification[1]  | $querySpec.from->map(v | $v->getTables()),
-    table: Table[1]                   | $table
-  ])
-}
-
-
 function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   let queryContext = $query.queryBody->processNode($context);
-  if($query.limit->isEmpty(), |$queryContext, |$query.limit->toOne()->processNode($queryContext));
+  let orderByContext = if($query.orderBy->isEmpty(), |$queryContext, |$query.orderBy->toOne()->processNode($queryContext));
+  if($query.limit->isEmpty(), |$orderByContext, |$query.limit->toOne()->processNode($orderByContext));
 }
 
 function meta::external::query::sql::transformation::queryToPure::processNode(node: Node[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   $node->match([
     limit: Limit[1]                   | $limit->processLimit($context),
+    orderBy: OrderBy[*]               | $orderBy->processOrderBy($context),
     querySpec: QuerySpecification[1]  | $querySpec->processQuerySpec($context)
   ]);
 }
@@ -60,6 +53,22 @@ function meta::external::query::sql::transformation::queryToPure::processQuerySp
   let newContextAfterSelect = $querySpec.select->processSelect($newContextAfterFrom);
 
   $newContextAfterSelect;
+}
+
+function meta::external::query::sql::transformation::queryToPure::processOrderBy(orderBy: meta::external::query::sql::metamodel::OrderBy[*], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let sortInformation = $orderBy.sortItems->fold({k,a| 
+    let column = $k.sortKey->cast(@Identifier)->at(0).value;
+    let direction = if($k.ordering == SortItemOrdering.ASCENDING, |SortDirection.ASC, |SortDirection.DESC);
+    $a->add(
+      ^SortInformation(column=$column, direction=$direction)
+    );
+  }, []);
+  let newExp = if($sortInformation->isEmpty(),
+    | $context.exp1->toOne(),
+    | appendTdsFunc($context.exp1->toOne(), sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, ^List<Any>(values=$sortInformation))
+  );
+  ^$context(exp1 = $newExp);
 }
 
 function meta::external::query::sql::transformation::queryToPure::processLimit(limit: meta::external::query::sql::metamodel::Limit[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -91,7 +100,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     s: AllColumns[1]    | $columns->fold({
       ck,ca | $ca->concatenate($ck.name);
     }, $a),
-    c: SingleColumn[1]  | $c.expression->cast(@Identifier)->at(0).value
+    c: SingleColumn[1]  | $a->concatenate($c.expression->cast(@Identifier)->at(0).value)
   ])
   }, [])->cast(@String);
   $newCols;
@@ -102,7 +111,7 @@ function meta::external::query::sql::transformation::queryToPure::processSelect(
   let columnTypes = $context.columns()
     ->map(x|^Pair<String,DataType>(first = $x.name, second = $x.type->toOne()))
     ->newMap();
-  
+
   let newColumnsToProject = $select.selectItems->getColumns($context.columns());
   let args = ^List<String>(values=$newColumnsToProject);
   

@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.sql.grammar.from;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseBaseVisitor;
+import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
@@ -23,6 +25,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
 import org.finos.legend.engine.protocol.sql.metamodel.Limit;
 import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
+import org.finos.legend.engine.protocol.sql.metamodel.OrderBy;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
@@ -30,6 +33,9 @@ import org.finos.legend.engine.protocol.sql.metamodel.Relation;
 import org.finos.legend.engine.protocol.sql.metamodel.Select;
 import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
 import org.finos.legend.engine.protocol.sql.metamodel.SingleColumn;
+import org.finos.legend.engine.protocol.sql.metamodel.SortItem;
+import org.finos.legend.engine.protocol.sql.metamodel.SortItemNullOrdering;
+import org.finos.legend.engine.protocol.sql.metamodel.SortItemOrdering;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 
 import java.util.List;
@@ -54,10 +60,16 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     public Node visitQueryNoWith(SqlBaseParser.QueryNoWithContext ctx)
     {
         QueryBody term = (QueryBody) ctx.queryTerm().accept(this);
+
         Limit limit = visitIfPresent(ctx.limitClause(), Limit.class);
+
+        OrderBy orderBy = new OrderBy();
+        orderBy.sortItems = visit(ctx.sortItem(), SortItem.class);
+
         Query query = new Query();
         query.queryBody = term;
         query.limit = limit;
+        query.orderBy = orderBy;
         return query;
     }
 
@@ -149,6 +161,50 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
         LongLiteral limitLongLiteral = new LongLiteral();
         limitLongLiteral.value = limit;
         return limitLongLiteral;
+    }
+
+    @Override
+    public Node visitSortItem(SqlBaseParser.SortItemContext ctx)
+    {
+        SortItem sortItem = new SortItem();
+        sortItem.sortKey = (Expression) ctx.expr().accept(this);
+        sortItem.ordering = getOrdering(ctx.ordering);
+        sortItem.nullOrdering = getNullOrdering(ctx.nullOrdering);
+        return sortItem;
+    }
+
+    private SortItemNullOrdering getNullOrdering(Token token)
+    {
+        if (token != null)
+        {
+            switch (token.getType())
+            {
+                case SqlBaseLexer.FIRST:
+                    return SortItemNullOrdering.FIRST;
+                case SqlBaseLexer.LAST:
+                    return SortItemNullOrdering.LAST;
+                default:
+                    throw new IllegalArgumentException("Unknown null ordering: " + token.getText());
+            }
+        }
+        return SortItemNullOrdering.UNDEFINED;
+    }
+
+    private SortItemOrdering getOrdering(Token token)
+    {
+        if (token != null)
+        {
+            switch (token.getType())
+            {
+                case SqlBaseParser.ASC:
+                    return SortItemOrdering.ASCENDING;
+                case SqlBaseLexer.DESC:
+                    return SortItemOrdering.DESCENDING;
+                default:
+                    throw new IllegalArgumentException("Unknown ordering: " + token.getText());
+            }
+        }
+        return SortItemOrdering.ASCENDING;
     }
 
     private <T> T visitIfPresent(ParserRuleContext context, Class<T> clazz)

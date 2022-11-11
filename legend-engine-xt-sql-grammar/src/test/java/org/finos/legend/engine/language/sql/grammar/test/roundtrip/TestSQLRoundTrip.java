@@ -28,7 +28,7 @@ public class TestSQLRoundTrip
     @Test
     public void testSelectAllRoundTrip()
     {
-        check("SELECT DISTINCT * FROM alloy.\"table\" LIMIT 1");
+        check("SELECT DISTINCT * FROM alloy.\"table\" ORDER BY firstName ASC, lastName DESC NULLS FIRST LIMIT 1");
     }
 
     @Test
