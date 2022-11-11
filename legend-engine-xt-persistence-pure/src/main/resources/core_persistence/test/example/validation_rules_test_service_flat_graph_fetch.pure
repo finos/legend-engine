@@ -46,7 +46,6 @@ import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::dataset::*;
 import meta::pure::persistence::metamodel::dataset::deduplication::*;
 import meta::pure::persistence::metamodel::dataset::emptyhandling::*;
-import meta::pure::persistence::metamodel::dataset::eventtime::*;
 import meta::pure::persistence::metamodel::dataset::partitioning::*;
 import meta::pure::persistence::metamodel::notifier::*;
 import meta::pure::persistence::metamodel::persister::*;
@@ -193,7 +192,6 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithTdsRootServic
     serviceOutputTargets = [^ServiceOutputTarget(
       serviceOutput = ^TdsServiceOutput(
         keys = ['integerID'],
-        eventTime = ^NoEventTime(),
         datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
         deduplication = ^NoDeduplication()),
       target = ^TestTarget())],
@@ -210,7 +208,6 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithGraphFetchRoo
     serviceOutputTargets = [^ServiceOutputTarget(
       serviceOutput = ^GraphFetchServiceOutput(
         keys = [#/meta::pure::persistence::test::example::FlatOutput/idOut#],
-        eventTime = ^NoEventTime(),
         datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
         deduplication = ^NoDeduplication()),
       target = ^TestTarget())],
@@ -228,7 +225,6 @@ function meta::pure::persistence::test::example::FlatM2mServiceWithGraphFetchPat
       serviceOutput = ^GraphFetchServiceOutput(
         path = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1#],
         keys = [#/meta::pure::persistence::test::example::WrapperOutput/flatOutput1/idOut#],
-        eventTime = ^NoEventTime(),
         datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
         deduplication = ^NoDeduplication()),
       target = ^TestTarget())],

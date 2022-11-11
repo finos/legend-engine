@@ -15,6 +15,10 @@
 import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::relational::metamodel::*;
 
+/**********
+ * persistence target
+ **********/
+
 Class
 {doc.doc = ''}
 meta::pure::persistence::relational::metamodel::RelationalTarget extends PersistenceTarget
@@ -22,6 +26,10 @@ meta::pure::persistence::relational::metamodel::RelationalTarget extends Persist
   table: meta::relational::metamodel::relation::Table[1];
   milestoning: Milestoning[1];
 }
+
+/**********
+ * milestoning
+ **********/
 
 Class
 <<typemodifiers.abstract>>
@@ -42,8 +50,14 @@ Class
 meta::pure::persistence::relational::metamodel::BitemporalMilestoning extends Milestoning
 {
   processingDimension: ProcessingDimension[1];
-  sourceDimension: SourceDimension[1];
+  sourceDerivedDimension: SourceDerivedDimension[1];
 }
+
+/**********
+ * dimensions
+ **********/
+
+// processing dimension
 
 Class
 <<typemodifiers.abstract>>
@@ -54,7 +68,7 @@ meta::pure::persistence::relational::metamodel::ProcessingDimension
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::BatchIdProcessingDimension extends ProcessingDimension
+meta::pure::persistence::relational::metamodel::BatchId extends ProcessingDimension
 {
   batchIdIn: meta::relational::metamodel::Column[1];
   batchIdOut: meta::relational::metamodel::Column[1];
@@ -62,7 +76,7 @@ meta::pure::persistence::relational::metamodel::BatchIdProcessingDimension exten
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::TimeProcessingDimension extends ProcessingDimension
+meta::pure::persistence::relational::metamodel::ProcessingTime extends ProcessingDimension
 {
   timeIn: meta::relational::metamodel::Column[1];
   timeOut: meta::relational::metamodel::Column[1];
@@ -70,25 +84,50 @@ meta::pure::persistence::relational::metamodel::TimeProcessingDimension extends 
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::BatchIdAndTimeProcessingDimension extends ProcessingDimension
+meta::pure::persistence::relational::metamodel::BatchIdAndTime extends ProcessingDimension
 {
   batchIdIn: meta::relational::metamodel::Column[1];
   batchIdOut: meta::relational::metamodel::Column[1];
   timeIn: meta::relational::metamodel::Column[1];
   timeOut: meta::relational::metamodel::Column[1];
+}
+
+// source-derived dimension
+
+Class
+<<typemodifiers.abstract>>
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceDerivedDimension
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceDerivedTime extends SourceDerivedDimension
+{
+  timeStart: meta::relational::metamodel::Column[1];
+  timeEnd: meta::relational::metamodel::Column[1];
+  sourceTimeFields: SourceTimeFields[1];
 }
 
 Class
 <<typemodifiers.abstract>>
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::SourceDimension
+meta::pure::persistence::relational::metamodel::SourceTimeFields
 {
 }
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::TimeSourceDimension extends SourceDimension
+meta::pure::persistence::relational::metamodel::SourceTimeStart extends SourceTimeFields
 {
-  timeStart: meta::relational::metamodel::Column[1];
-  timeEnd: meta::relational::metamodel::Column[1];
+  startField: String[1];
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::SourceTimeStartAndEnd extends SourceTimeFields
+{
+  startField: String[1];
+  endField: String[1];
 }

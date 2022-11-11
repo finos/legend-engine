@@ -17,7 +17,6 @@ import meta::pure::metamodel::path::*;
 import meta::pure::persistence::metamodel::dataset::*;
 import meta::pure::persistence::metamodel::dataset::deduplication::*;
 import meta::pure::persistence::metamodel::dataset::emptyhandling::*;
-import meta::pure::persistence::metamodel::dataset::eventtime::*;
 import meta::pure::persistence::metamodel::dataset::partitioning::*;
 import meta::pure::persistence::metamodel::service::*;
 import meta::pure::persistence::metamodel::service::output::*;
@@ -67,7 +66,6 @@ function meta::pure::persistence::test::example::TdsRoot(): TdsServiceOutput[1]
 {
   ^TdsServiceOutput(
     keys = ['id1', 'id2'],
-    eventTime = ^NoEventTime(),
     datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
     deduplication = ^NoDeduplication()
   );
@@ -77,7 +75,6 @@ function meta::pure::persistence::test::example::GraphFetchRoot(): GraphFetchSer
 {
   ^GraphFetchServiceOutput(
     keys = [#/TestResult/id#],
-    eventTime = ^NoEventTime(),
     datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
     deduplication = ^NoDeduplication()
   );
@@ -88,7 +85,6 @@ function meta::pure::persistence::test::example::GraphFetchPath(): GraphFetchSer
   ^GraphFetchServiceOutput(
     path = #/TestResult/part1#,
     keys = [#/TestResult/part1/value#],
-    eventTime = ^NoEventTime(),
     datasetType = ^Snapshot(partitioning = ^NoPartitioning(emptyDatasetHandling = ^NoOp())),
     deduplication = ^NoDeduplication()
   );
