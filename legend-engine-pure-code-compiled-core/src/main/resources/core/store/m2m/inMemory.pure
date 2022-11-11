@@ -15,6 +15,7 @@
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::routing::*;
+import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
@@ -24,7 +25,7 @@ Class meta::pure::mapping::modelToModel::inMemory::ModelPayload extends MappingI
    src : Any[1];
 }
 
-function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpecification[1], e:ExtendedRoutedValueSpecification[0..1], mapping: Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let res = $v->match([
                f:FunctionExpression[1]|if($f.func.name == 'getAll_Class_1__T_MANY_' || $f.func.name == 'getAllVersions_Class_1__T_MANY_' || $f.func.name == 'getAll_Class_1__Date_1__T_MANY_',
@@ -33,14 +34,14 @@ function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpe
                                           |$f.func->evaluate($f.parametersValues->map(p|list($p->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values)))
                                        ),
                r:FunctionRoutedValueSpecification[1]|$r.value->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>)->routeGettersInCode($e),
-               e:ExtendedRoutedValueSpecification[1]|$e.value->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values;,
+               e:StoreMappingRoutedValueSpecification[1]|$e.value->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values;,
                i:InstanceValue[1]|$i.values->map(v|$v->match([vs:ValueSpecification[1]|$vs->executeInMemory($e, $mapping, $mc, $runtime, $exeCtx, $extensions, $debug).values,a:Any[1]|$a]))
              ]);
    ^Result<Any|*>(values=$res);
 }
 
 
-function <<access.private>> meta::pure::mapping::modelToModel::inMemory::setOperation(sets:Any[*],e:ExtendedRoutedValueSpecification[0..1]):Any[*]
+function <<access.private>> meta::pure::mapping::modelToModel::inMemory::setOperation(sets:Any[*],e:StoreMappingRoutedValueSpecification[0..1]):Any[*]
 {
   let operationFunctions = newMap(pair(meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_, meta::pure::mapping::modelToModel::inMemory::mergeResult_Any_MANY__Any_$0_1$_));
    if($e->isEmpty(),
@@ -61,12 +62,12 @@ function <<access.private>> meta::pure::mapping::modelToModel::inMemory::setOper
 
 
 
-function <<access.private>> meta::pure::mapping::modelToModel::inMemory::routeGettersInCode(f:LambdaFunction<Any>[1], e:ExtendedRoutedValueSpecification[0..1]):LambdaFunction<Any>[1]
+function <<access.private>> meta::pure::mapping::modelToModel::inMemory::routeGettersInCode(f:LambdaFunction<Any>[1], e:StoreMappingRoutedValueSpecification[0..1]):LambdaFunction<Any>[1]
 {
    ^$f(expressionSequence = $f.expressionSequence->map(v|$v->routeGettersInCodeVS($e)->cast(@ValueSpecification)));
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::inMemory::routeGettersInCodeVS(v:Any[1], e:ExtendedRoutedValueSpecification[0..1]):Any[1]
+function <<access.private>> meta::pure::mapping::modelToModel::inMemory::routeGettersInCodeVS(v:Any[1], e:StoreMappingRoutedValueSpecification[0..1]):Any[1]
 {
    $v->match([
                f:FunctionExpression[1]|if($f.func->instanceOf(Property) && !$f.func->functionReturnType().rawType->toOne()->instanceOf(DataType),
@@ -82,13 +83,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::inMemory::routeGe
                                        ),
                r:FunctionRoutedValueSpecification[1]|let i = $r.value->cast(@InstanceValue);
                                                      ^$i(values = $i.values->at(0)->cast(@LambdaFunction<Any>)->routeGettersInCode($e));,
-               e:ExtendedRoutedValueSpecification[1]|$e.value->routeGettersInCodeVS($e);,
+               e:StoreMappingRoutedValueSpecification[1]|$e.value->routeGettersInCodeVS($e);,
                i:InstanceValue[1]|^$i(values=$i.values->map(v|$v->match([vs:ValueSpecification[1]|$vs->routeGettersInCodeVS($e),a:Any[1]|$a]))),
                v:VariableExpression[1]|$v
              ]);
 }
 
-function meta::pure::mapping::modelToModel::inMemory::inMemoryGetAll(impl:PureInstanceSetImplementation[1], e:ExtendedRoutedValueSpecification[1], mapping:Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
+function meta::pure::mapping::modelToModel::inMemory::inMemoryGetAll(impl:PureInstanceSetImplementation[1], e:StoreMappingRoutedValueSpecification[1], mapping:Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
    let srcClass = $impl.srcClass->toOne();
    let list = $mc.instances->get($srcClass);
@@ -201,7 +202,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
 
 
 
-function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:Any[1], impl:PureInstanceSetImplementation[1],  e:ExtendedRoutedValueSpecification[0..1], static:StaticMappingInstanceData[1]):Any[*]
+function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:Any[1], impl:PureInstanceSetImplementation[1],  e:StoreMappingRoutedValueSpecification[0..1], static:StaticMappingInstanceData[1]):Any[*]
 {
    let sval = if($impl.srcClass->isEmpty(), |[], |list($src));
    let targetClass = $impl.class;
@@ -285,7 +286,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
      );
 }
 
-function meta::pure::mapping::modelToModel::inMemory::setIsPartOfMerge(id:String[1], ev:ExtendedRoutedValueSpecification[0..1]):Boolean[1]
+function meta::pure::mapping::modelToModel::inMemory::setIsPartOfMerge(id:String[1], ev:StoreMappingRoutedValueSpecification[0..1]):Boolean[1]
 {
  
 
@@ -340,7 +341,7 @@ function meta::pure::mapping::modelToModel::inMemory::getter(o:Any[1], property:
    $o->internal_getter($property, []);
 }
 
-function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:meta::pure::mapping::StoreQuery[1], e:ExtendedRoutedValueSpecification[0..1], mapping: Mapping[0..1], mc:ModelConnection[1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:meta::pure::mapping::StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[0..1], mc:ModelConnection[1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let jsonFeWithPpt = if($sq.fe.func.name == 'toJSON_T_MANY__LambdaFunction_MANY__String_1_',
                           | let inputFeToJson = $sq.fe.parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
@@ -385,7 +386,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::inMemory::zipHori
                         ));
        let result = $newFirst->concatenate($inputLists->map(l|list($l.values->drop(1)))->zipHorizontally()););
 }
-function <<access.private>> meta::pure::mapping::modelToModel::inMemory::isMerge(ev:ExtendedRoutedValueSpecification[0..1]):Boolean[1]
+function <<access.private>> meta::pure::mapping::modelToModel::inMemory::isMerge(ev:StoreMappingRoutedValueSpecification[0..1]):Boolean[1]
 {
 if($ev->isNotEmpty(),
    |   $ev->toOne().sets->filter(s| $s->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation)->filter(o |$o.operation == meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_ )->isNotEmpty();,

@@ -1,0 +1,78 @@
+###Diagram
+Diagram meta::pure::Pure_GraphFetch(width=0.0, height=0.0)
+{
+    TypeView cview_7(
+        type=meta::pure::metamodel::PackageableElement,
+        position=(325.71094, -24.50000),
+        width=215.04590,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::graphFetch::GraphFetchTree,
+        position=(447.00000, 54.00000),
+        width=255.71094,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::graphFetch::PropertyGraphFetchTree,
+        position=(509.00000, 137.00000),
+        width=196.68213,
+        height=114.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::graphFetch::RootGraphFetchTree,
+        position=(363.00000, 138.00000),
+        width=139.34961,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_4,
+        target=cview_3,
+        points=[(607.34106,194.00000),(606.71094,91.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_5,
+        target=cview_3,
+        points=[(477.71094,145.50000),(477.71094,95.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_7,
+        points=[(432.67480,160.00000),(433.23389,4.50000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+}
