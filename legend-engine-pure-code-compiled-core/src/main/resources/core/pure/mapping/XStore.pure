@@ -19,8 +19,6 @@ import meta::pure::mapping::xStore::projection::arguments::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::printer::*;
-import meta::pure::router::store::metamodel::*;
-import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::store::*;
 import meta::pure::runtime::*;
 
@@ -75,7 +73,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
    let sourceType = ^GenericType(rawType=if($sourceSetImpl.mappingClass->isEmpty(),|$sourceSetImpl.class, |$sourceSetImpl.mappingClass->toOne()));
    let returnType = ^GenericType(rawType=if($targetSetImpl.mappingClass->isEmpty(),|$targetSetImpl.class, |$targetSetImpl.mappingClass->toOne()));
    let returnMultiplicity = $p.property.classifierGenericType.multiplicityArguments->at(0);
-   let newExpr = ^StoreMappingRoutedValueSpecification
+   let newExpr = ^ExtendedRoutedValueSpecification
    (
       genericType = $returnType,
       multiplicity = $returnMultiplicity,
@@ -92,7 +90,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                  genericType = $returnType,
                  multiplicity = ZeroMany, 
                  parametersValues = [
-                                       ^StoreMappingRoutedValueSpecification
+                                       ^ExtendedRoutedValueSpecification
                                        (
                                           genericType= $returnType,
                                           id = '1',
@@ -108,7 +106,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                      importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
                                                      genericType = $returnType,
                                                      multiplicity = ZeroMany,
-                                                     parametersValues = ^StoreMappingRoutedValueSpecification
+                                                     parametersValues = ^ExtendedRoutedValueSpecification
                                                                         (
                                                                            genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),
                                                                            id = '1',
@@ -122,11 +120,9 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                                                        genericType = ^GenericType(rawType=Class, typeArguments=$sourceType),
                                                                                        multiplicity = PureOne,
                                                                                        values = $returnType.rawType
-                                                                                   ),
-                                                                           routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
+                                                                                   )
                                                                         )
-                                                  ),
-                                          routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
+                                                  )
                                        ),
                                        ^FunctionRoutedValueSpecification
                                        (
@@ -141,8 +137,8 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                 )
                                        )
                                     ]
-              ),
-      routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
+              )
+      
    )->evaluateAndDeactivate();
    
    print(if(!$debug.debug, |'',
@@ -158,7 +154,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
    print(if(!$debug.debug, |'',
             | $debug.space+'  New routed query clustered: '+$clustered->at(0)->asString()+'\n'));
 
-   let cluster = $clustered->at(0).expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification);
+   let cluster = $clustered->at(0).expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
    
    let res = $cluster->executeExpression($cluster.openVars->toOne(), [], $objectInfo.static.exeCtx, $extensions, $debug);
 

@@ -53,21 +53,3 @@ Measure meta::pure::unit::Mass  // Mass instance of Measure
    Pound: x -> $x * 453.59;     // Pound instance of Unit, subtype of Mass
 }
 
-// TODO: Below functions are moved from unitLibrary in Java platform binding where they are defined with incorrect package names (need to be changed)
-function meta::pure::executionPlan::engine::java::unitType(unit:Any[1]):String[1]
-{
-   fail('Not implemented yet');
-   '';
-}
-
-function meta::pure::executionPlan::engine::java::unitValue(unit:Any[1]):Number[1]
-{
-   fail('Not implemented yet');
-   0;
-}
-
-function meta::pure::executionPlan::engine::java::convert(unit:Any[1], targetUnit:Unit[1]):Any[1]
-{
-   fail('Not implemented yet');
-   '';
-}

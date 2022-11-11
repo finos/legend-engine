@@ -20,7 +20,7 @@ env:
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  MAVEN_OPTS: -Xmx3g
+  MAVEN_OPTS: -Xmx4g
 
 on:
   workflow_dispatch:
@@ -42,6 +42,7 @@ jobs:
         run: |
           git config --global user.email "37706051+finos-admin@users.noreply.github.com"
           git config --global user.name "FINOS Administrator"
+
       - name: Set up Maven Central
         uses: actions/setup-java@v2
         with:
@@ -61,8 +62,9 @@ jobs:
           nextPatch=$((${a[2]} + 1))
           developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
+
       - name: Prepare release
         run: mvn -B -DpreparationGoals=clean release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B release:perform -DargLine="-Xmx2g" -P release,docker
+        run: mvn -B release:perform -P release,docker

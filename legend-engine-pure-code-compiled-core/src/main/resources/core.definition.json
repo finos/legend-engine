@@ -1,5 +1,5 @@
 {
     "name" : "core",
-    "pattern" : "(meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::format::yaml|meta::legend)(::.*)?",
+    "pattern" : "(meta::json|meta::protocols|meta::external::shared::format|meta::pure|meta::alloy|meta::external::format::yaml|meta::legend|meta::external::language::java)(::.*)?",
     "dependencies" : ["platform"]
 }

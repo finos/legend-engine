@@ -32,6 +32,7 @@ public class Test_Pure_Core
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::legend", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::external::shared::format", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::external::format::yaml", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::external::language::java", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 

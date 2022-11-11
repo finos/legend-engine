@@ -19,7 +19,6 @@ import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::mapping::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::routing::*;
-import meta::pure::router::store::metamodel::*;
 import meta::pure::store::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::*;
@@ -27,9 +26,6 @@ import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::functions::collection::*;
 import meta::pure::extension::*;
-import meta::pure::router::store::metamodel::clustering::*;
-import meta::pure::router::utils::*;
-import meta::pure::router::printer::*;
 
 Class <<access.private>> meta::pure::graphFetch::routing::PropertyMappingInfo
 {
@@ -43,22 +39,20 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
    let func = $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).func;
    if($func == concatenate_T_MANY__T_MANY__T_MANY_ || $func == union_T_MANY__T_MANY__T_MANY_ ,| let wrappedMaps = $routedProperty->byPassRouterInfo()->cast(@SimpleFunctionExpression).parametersValues->map(pv|$pv->byPassRouterInfo()->cast(@SimpleFunctionExpression));
                                                                                                 let property = $wrappedMaps->map(m|$m->deepByPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->byPassRouterInfo()->cast(@FunctionExpression).func->cast(@AbstractProperty<Any>))->distinct()->toOne();
-                                                                                                let propertyMappings = $wrappedMaps->map(m|$m->deepByPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->cast(@StoreMappingRoutedValueSpecification).propertyMapping);
-                                                                                                ^PropertyMappingInfo(property=$property, propertyMappings=$propertyMappings, sets=$routedProperty->byPassRouterInfo()->cast(@SimpleFunctionExpression).parametersValues->cast(@StoreMappingRoutedValueSpecification).sets);
+                                                                                                let propertyMappings = $wrappedMaps->map(m|$m->deepByPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->cast(@ExtendedRoutedValueSpecification).propertyMapping);
+                                                                                                ^PropertyMappingInfo(property=$property, propertyMappings=$propertyMappings, sets=$routedProperty->byPassRouterInfo()->cast(@SimpleFunctionExpression).parametersValues->cast(@ExtendedRoutedValueSpecification).sets);
                                                                                              ,| let property = if($prop.subType->isEmpty(), | $routedProperty->deepByPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->byPassRouterInfo()->cast(@FunctionExpression).func->cast(@AbstractProperty<Any>),
                                                                                                                                             | $routedProperty->deepByPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->toOne()->byPassRouterInfo()->cast(@FunctionExpression).func->cast(@AbstractProperty<Any>));
-                                                                                                let propertyMappings = if($routedProperty->instanceOf(StoreMappingRoutedValueSpecification), 
-                                                                                                                          |if($prop.subType->isEmpty(), 
-                                                                                                                              | $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->filter(e | $e->instanceOf(StoreMappingRoutedValueSpecification))->cast(@StoreMappingRoutedValueSpecification).propertyMapping,
-                                                                                                                              | let subTypeSetIDs = $routedProperty->cast(@StoreMappingRoutedValueSpecification).sets->meta::pure::router::routing::resolveOperation($mapping).id;
-                                                                                                                                $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->filter(x| $x->instanceOf(StoreMappingRoutedValueSpecification))->cast(@StoreMappingRoutedValueSpecification).propertyMapping->filter(x | $x.targetSetImplementationId->in($subTypeSetIDs));)
-                                                                                                                        , |[]);
-                                                                                                let sets = if($propertyMappings->isNotEmpty(),|$propertyMappings->map(pm | $mapping.classMappingById($pm.targetSetImplementationId)),|if($routedProperty->instanceOf(StoreMappingRoutedValueSpecification),|$routedProperty->cast(@StoreMappingRoutedValueSpecification).sets->resolveOperation($mapping),|[]))->removeDuplicates();
+                                                                                                let propertyMappings = if($routedProperty->instanceOf(ExtendedRoutedValueSpecification), |if($prop.subType->isEmpty(), | $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->cast(@ExtendedRoutedValueSpecification).propertyMapping
+                                                                                                                                                                                                                     , | let subTypeSetIDs = $routedProperty->cast(@ExtendedRoutedValueSpecification).sets->meta::pure::router::routing::resolveOperation($mapping).id;
+                                                                                                                                                                                                                         $routedProperty->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression).parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@FunctionDefinition<Any>).expressionSequence->filter(x| $x->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification).propertyMapping->filter(x | $x.targetSetImplementationId->in($subTypeSetIDs));)
+                                                                                                                                                                                       , |[]);
+                                                                                                let sets = if($propertyMappings->isNotEmpty(),|$propertyMappings->map(pm | $mapping.classMappingById($pm.targetSetImplementationId)),|if($routedProperty->instanceOf(ExtendedRoutedValueSpecification),|$routedProperty->cast(@ExtendedRoutedValueSpecification).sets->resolveOperation($mapping),|[]))->removeDuplicates();
                                                                                                 let resolvedPropertyMappings = if ($property->instanceOf(Property) && $sets->isNotEmpty() && $propertyMappings->isEmpty(),
                                                                                                                                    | // Property mapping could not be resolved correctly (union or special union)
-                                                                                                                                     let targetSets = $routedProperty->cast(@StoreMappingRoutedValueSpecification).sets;
+                                                                                                                                     let targetSets = $routedProperty->cast(@ExtendedRoutedValueSpecification).sets;
                                                                                                                                      let fe = $routedProperty->byPassRouterInfo()->cast(@FunctionExpression);
-                                                                                                                                     let sourceSets = if($prop.subType->isEmpty(), | $fe, | $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression)).parametersValues->evaluateAndDeactivate()->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->resolveOperation($mapping)->cast(@InstanceSetImplementation);
+                                                                                                                                     let sourceSets = if($prop.subType->isEmpty(), | $fe, | $fe.parametersValues->evaluateAndDeactivate()->at(0)->byPassRouterInfo()->cast(@FunctionExpression)).parametersValues->evaluateAndDeactivate()->at(0)->cast(@ExtendedRoutedValueSpecification).sets->resolveOperation($mapping)->cast(@InstanceSetImplementation);
                                                                                                                                      $sourceSets->map({ss |
                                                                                                                                         let propMaps = $ss.propertyMappingsByPropertyName($property.name->toOne())->filter(x | $x.targetSetImplementationId->in($targetSets.id));
                                                                                                                                         $propMaps->map(pm | $mapping.classMappingById($pm.targetSetImplementationId)->resolveOperation($mapping)->map(ts | ^$pm(targetSetImplementationId = $ts.id)));
@@ -200,8 +194,8 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
    let rootGetAllExpression = createGetAllApplicationForRootGraphFetchTree($root, $set);
    
    let dummyLambda = {|'ok'};
-   let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug())->evaluateAndDeactivate()->toOne();
-   let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->cast(@StoreMappingRoutedValueSpecification);
+   let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction($mapping, ^Runtime(), ^ExecutionContext(), $extensions, noDebug()).functions->evaluateAndDeactivate()->toOne();
+   let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ClusteredValueSpecification).val->cast(@ExtendedRoutedValueSpecification);
 
    let extended = if($exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne(),
                      | $root->ensureConstraintsRequirementsForMappedProperties($mapping),
@@ -312,11 +306,11 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
    let dummyLambda = {|'ok'};
    let cls = $functionExpression.genericType.rawType->toOne()->cast(@Class<Any>);
    // TODO Only allow no mapping routing for expanded (sub)trees
-   let routedFunctions  = ^$dummyLambda(expressionSequence = $propertyApplicationExporession)->routeFunction($mapping, ^Runtime(), $extensions, noDebug())->evaluateAndDeactivate();
+   let routedFunctions  = ^$dummyLambda(expressionSequence = $propertyApplicationExporession)->routeFunction($mapping, ^Runtime(), $extensions, noDebug()).functions->evaluateAndDeactivate();
 
    if($routedFunctions->isNotEmpty(),
       |  let routedFunction = $routedFunctions->toOne();
-         let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->evaluateAndDeactivate();
+         let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@ClusteredValueSpecification).val->evaluateAndDeactivate();
          let propertyMappingInfo = $prop->meta::pure::graphFetch::routing::propertyMappingInfo($ext, $mapping);
          ^RoutedPropertyGraphFetchTree
           (
@@ -349,35 +343,9 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
           ););
 }
 
-function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], multiLine: Boolean[1]):String[1]
-{
-   meta::pure::graphFetch::routing::asString($r, '', $multiLine);
-}
 
-function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceString: String[1], multiLine: Boolean[1]):String[1]
-{
-   let space = if($multiLine, | $spaceString, | '');
-   let newLine = if($multiLine, | '\n', | '');
-   $r->match([
-      c: ClusteredGraphFetchTree[1] |
-         let start = '{'+if($c.store->instanceOf(meta::pure::store::platform::metamodel::PlatformStore),|'Platform', |$c.store->toOne()->elementToPath())+'> ';
-         $space+$start+$c.tree->asString($space, $multiLine)+'}';,
 
-      rr: RoutedRootGraphFetchTree<Any>[1] |
-         $space + $rr.sets.id->joinStrings('[', ', ', ' / ' + $rr.class->elementToPath() + ']') +
-         if($rr.subTrees->isEmpty(), | '', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
 
-      rr: RootGraphFetchTree<Any>[1] |
-         $space + '#{'+$rr.class->elementToPath() +
-         if($rr.subTrees->isEmpty(), | '}#', | $rr.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}}#')),
 
-      rp: RoutedPropertyGraphFetchTree[1] |
-         $space + if($rp.propertyMapping->isEmpty(), | '', | $rp.propertyMapping->map(p | '(' + $p.sourceSetImplementationId + '->' + $p.targetSetImplementationId + ')')->joinStrings('@', ', ', '@ ')) + $rp.sets.id->joinStrings('[', ', ', ' / ' + $rp.property.name->toOne() + ']') +
-         if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}')),
 
-      rp: PropertyGraphFetchTree[1] |
-         $space +  $rp.property.name->toOne() + if($rp.property->instanceOf(QualifiedProperty), |'('+$rp.parameters->evaluateAndDeactivate()->map(p|$p->asString())->joinStrings(', ')+')', |'') +
-         if($rp.subTrees->isEmpty(), | '', | $rp.subTrees->map(x | $x->asString($space + '    ', $multiLine))->joinStrings(' {'+$newLine, ', '+$newLine, $newLine + $space + '}'));
- ]); 
-}
 
