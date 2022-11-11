@@ -1,0 +1,336 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::pure::persistence::relational::Persistence_Relational_Diagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::pure::persistence::metamodel::target::PersistenceTarget,
+        position=(763.00000, 376.00000),
+        width=229.12109,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::pure::persistence::relational::metamodel::RelationalTarget,
+        position=(795.00000, 496.00000),
+        width=164.83691,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::pure::persistence::relational::metamodel::Milestoning,
+        position=(1142.00000, 504.00000),
+        width=97.38477,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::persistence::relational::metamodel::UnitemporalMilestoning,
+        position=(1034.00000, 626.00000),
+        width=156.66992,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::pure::persistence::relational::metamodel::BitemporalMilestoning,
+        position=(1199.00000, 626.00000),
+        width=149.33984,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::pure::persistence::relational::metamodel::ProcessingDimension,
+        position=(1040.00000, 765.00000),
+        width=146.03516,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::pure::persistence::relational::metamodel::SourceDerivedDimension,
+        position=(1526.00000, 620.00000),
+        width=166.04492,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::pure::persistence::relational::metamodel::SourceDerivedTime,
+        position=(1495.00000, 753.00000),
+        width=229.89160,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::pure::persistence::relational::metamodel::SourceTimeFields,
+        position=(1838.00000, 768.00000),
+        width=123.14844,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::pure::persistence::relational::metamodel::BatchIdAndTime,
+        position=(1045.00000, 943.00000),
+        width=140.99463,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::pure::persistence::relational::metamodel::BatchId,
+        position=(961.00000, 856.00000),
+        width=140.99463,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::pure::persistence::relational::metamodel::ProcessingTime,
+        position=(1127.00000, 856.00000),
+        width=124.50000,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::pure::persistence::relational::metamodel::SourceTimeStart,
+        position=(1787.00000, 878.00000),
+        width=123.29150,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::pure::persistence::relational::metamodel::SourceTimeStartAndEnd,
+        position=(1917.00000, 878.00000),
+        width=161.80273,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_2,
+        target=cview_1,
+        points=[(877.41846,532.00000),(877.56055,405.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_3,
+        points=[(1112.33496,648.00000),(1190.69238,533.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_7,
+        target=cview_3,
+        points=[(1273.66992,648.00000),(1190.69238,533.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_8,
+        target=cview_6,
+        points=[(1609.94580,796.00000),(1609.02246,649.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_10,
+        target=cview_5,
+        points=[(1189.25000,892.00000),(1113.01758,794.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_11,
+        target=cview_5,
+        points=[(1115.49731,993.00000),(1113.01758,794.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_12,
+        target=cview_5,
+        points=[(1031.49731,892.00000),(1113.01758,794.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_13,
+        target=cview_9,
+        points=[(1848.64575,907.00000),(1899.57422,797.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_14,
+        target=cview_9,
+        points=[(1997.90137,914.00000),(1899.57422,797.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::pure::persistence::relational::metamodel::RelationalTarget.milestoning,
+        source=cview_2,
+        target=cview_3
+,        points=[(877.41846,532.00000),(1190.69238,533.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::pure::persistence::relational::metamodel::UnitemporalMilestoning.processingDimension,
+        source=cview_4,
+        target=cview_5
+,        points=[(1112.33496,648.00000),(1113.01758,794.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::pure::persistence::relational::metamodel::BitemporalMilestoning.processingDimension,
+        source=cview_7,
+        target=cview_5
+,        points=[(1273.66992,648.00000),(1274.00000,793.00000),(1113.01758,794.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::pure::persistence::relational::metamodel::BitemporalMilestoning.sourceDerivedDimension,
+        source=cview_7,
+        target=cview_6
+,        points=[(1273.66992,648.00000),(1609.02246,649.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::pure::persistence::relational::metamodel::SourceDerivedTime.sourceTimeFields,
+        source=cview_8,
+        target=cview_9
+,        points=[(1609.94580,796.00000),(1899.57422,797.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}
