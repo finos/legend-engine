@@ -30,6 +30,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class GenerateModelInput
 {
@@ -63,7 +64,7 @@ public class GenerateModelInput
             }
             String format = tree.get("format").textValue();
 
-            if (!ExternalFormats.extensions.containsKey(format))
+             if (!ExternalFormats.extensions.containsKey(format))
             {
                 throw new IOException("Unknown external format: " + format);
             }

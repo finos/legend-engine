@@ -22,7 +22,7 @@ import meta::pure::test::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::slice::testSlice(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::slice::testSlice(config:DbTestConfig[1]):Boolean[1]
 {
   let runtime = ^Runtime(connections=$config.connection);
 
@@ -33,7 +33,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   if($result2->isEmpty(), |true, | assertSize($result2.values, 1););
 }
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::slice::testSliceWithRestrict(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::slice::testSliceWithRestrict(config:DbTestConfig[1]):Boolean[1]
 {              
   let runtime = ^Runtime(connections=$config.connection);
 
@@ -46,7 +46,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
    if($result2->isEmpty(), |true, | assertSize($result2.values.rows,7););
 }
 
-function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::limit::testSimpleLimit(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::limit::testSimpleLimit(config:DbTestConfig[1]):Boolean[1]
 {
   let runtime = ^Runtime(connections=$config.connection);
 
@@ -57,7 +57,7 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
     if($result2->isEmpty(), |true, | assertSize($result2.values, 1 ););
 }
 
-function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::take::testSimpleTake(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::take::testSimpleTake(config:DbTestConfig[1]):Boolean[1]
 {
   let runtime = ^Runtime(connections=$config.connection);
 
@@ -68,7 +68,7 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
     if($result2->isEmpty(), |true, | assertSize($result2.values, 1 ));
 }
 
-function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::drop::testSimpleDrop(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::drop::testSimpleDrop(config:DbTestConfig[1]):Boolean[1]
 {
    let runtime = ^Runtime(connections=$config.connection);
 
@@ -79,7 +79,7 @@ function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryT
    if($result2->isEmpty(), |true, |  assertSize($result2.values, 6););
 }
 
-function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::aggregateFunctions::drop::testDropLimitByVendor(config:DbTestConfig[1]):Boolean[1]
+function <<paramTest.Test>>  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::drop::testDropLimitByVendor(config:DbTestConfig[1]):Boolean[1]
 {
   let runtime = ^Runtime(connections=$config.connection);
   let result = executeViaPlan(|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->drop(10)->limit(100);, meta::relational::tests::simpleRelationalMapping,  meta::relational::tests::dbInc, $config, meta::relational::extension::relationalExtensions());
