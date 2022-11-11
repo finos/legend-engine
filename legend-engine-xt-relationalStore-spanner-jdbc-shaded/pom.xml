@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
-    <name>Legend Engine - XT - Relational Store - Spanner - Execution</name>
+    <name>Legend Engine - XT - Relational Store - Spanner - JDBC Driver - Shaded</name>
 
     <properties>
         <maven-shade-plugin.shadedPattern>org.finos.legend.engine.spanner.jdbc.shaded</maven-shade-plugin.shadedPattern>
