@@ -57,6 +57,12 @@ Class meta::external::query::sql::metamodel::AllColumns extends meta::external::
   prefix: String[0..1];
 }
 
+Class meta::external::query::sql::metamodel::SingleColumn extends meta::external::query::sql::metamodel::SelectItem
+{
+  prefix: meta::external::query::sql::metamodel::Identifier[0..1];
+  expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
 Class meta::external::query::sql::metamodel::Table extends meta::external::query::sql::metamodel::QueryBody
 {
   name: meta::external::query::sql::metamodel::Identifier[1..*];

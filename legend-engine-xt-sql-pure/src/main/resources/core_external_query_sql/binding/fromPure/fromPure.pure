@@ -38,7 +38,6 @@ function meta::external::query::sql::transformation::queryToPure::processQuery(q
 {
   let queryContext = $query.queryBody->processNode($context);
   if($query.limit->isEmpty(), |$queryContext, |$query.limit->toOne()->processNode($queryContext));
-  
 }
 
 function meta::external::query::sql::transformation::queryToPure::processNode(node: Node[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -89,9 +88,10 @@ function meta::external::query::sql::transformation::queryToPure::processTable(t
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getColumns(selectItems: SelectItem[*], columns: TDSColumn[*]): String[*]
 {
   let newCols = $selectItems->fold({k:SelectItem[1],a:String[*]|$k->match([
-    s:AllColumns[1] | $columns->fold({
+    s: AllColumns[1]    | $columns->fold({
       ck,ca | $ca->concatenate($ck.name);
-    }, $a)
+    }, $a),
+    c: SingleColumn[1]  | $c.expression->cast(@Identifier)->at(0).value
   ])
   }, [])->cast(@String);
   $newCols;
