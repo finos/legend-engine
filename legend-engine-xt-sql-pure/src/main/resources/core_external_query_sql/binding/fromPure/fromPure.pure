@@ -7,15 +7,14 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
                                                                           services: meta::legend::service::metamodel::Service[*],
                                                                           query: meta::external::query::sql::metamodel::Node[1],
                                                                           extensions: meta::pure::extension::Extension[*]
-                                                                      ):meta::pure::executionPlan::ExecutionPlan[1]
+                                                                      ): meta::pure::executionPlan::ExecutionPlan[1]
 {
   let sqlTransformContext = $query->processQuery($services);
   let executionOptionContext = ^ExecutionOptionContext(executionOptions = $sqlTransformContext.singleExecution.executionOptions);
-  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda->toOne(), $sqlTransformContext.singleExecution->toOne().mapping, $sqlTransformContext.singleExecution->toOne().runtime, $executionOptionContext, $extensions);
+  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $sqlTransformContext.singleExecution->toOne().mapping, $sqlTransformContext.singleExecution->toOne().runtime, $executionOptionContext, $extensions);
 }
 
 function meta::external::query::sql::transformation::queryToPure::findService(services: Service[*], serviceId: String[1]): Service[1] {
-  // $services->println();
   let servicesFound = $services->filter(x | $x.pattern == $serviceId);
   let servicesFoundSize = $servicesFound->size();
   
@@ -49,12 +48,13 @@ function meta::external::query::sql::transformation::queryToPure::processQuerySp
   let newContextAfterFrom = $querySpec.from->toOne()->match([
     table: Table[1] | $table->processTable($context)
   ]);
+  // group by goes here
+  // filter goes here
 
   let newContextAfterSelect = $querySpec.select->processSelect($newContextAfterFrom);
 
   $newContextAfterSelect;
 }
-
 
 function meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
@@ -66,46 +66,70 @@ function meta::external::query::sql::transformation::queryToPure::processTable(t
   let serviceId = $table.name->at(1).value;
   let service = $context.services->findService($serviceId);
   let singleExecution = $service.execution->cast(@PureSingleExecution); // TODO: handle multi executions
+
+  let expression = $singleExecution.func->cast(@FunctionDefinition<{->TabularDataSet[1]}>)->evaluateAndDeactivate().expressionSequence->cast(@FunctionExpression)->toOne();
+  ^$context(singleExecution = $singleExecution, exp1 = $expression);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::getColumns(selectItems: SelectItem[*], columns: TDSColumn[*]): String[*]
+{
+  let newCols = $selectItems->fold({k,a|$k->match([
+    s:AllColumns[1] | $columns->fold({
+      ck,ca | $ca->concatenate($ck.name);
+    }, [])
+  ])->fold({nck,nca|$nca->concatenate($nck)},$a);
   
-  ^$context(singleExecution = $singleExecution, lambda = $singleExecution.func);
+  }, [])->cast(@String);
+  $newCols;
 }
 
 function meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
-  let newLambda = if($select.distinct, 
-    |createFunction($context.lambda->toOne(), distinct_TabularDataSet_1__TabularDataSet_1_), 
-    |$context.lambda);
-  ^$context(lambda = $newLambda);
+  let columnTypes = $context.columns()
+    ->map(x|^Pair<String,DataType>(first = $x.name, second = $x.type->toOne()))
+    ->newMap();
+  
+  let newColumnsToProject = $select.selectItems->getColumns($context.columns());
+  let args = ^List<String>(values=$newColumnsToProject);
+  
+  let restrictExp = appendTdsFunc($context.exp1->toOne(), restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, $args);
+  
+  // figure out the right place to do sort, limit, and distinct
+
+  let newExp = if($select.distinct, 
+    | appendTdsFunc($restrictExp, distinct_TabularDataSet_1__TabularDataSet_1_, []), 
+    | $restrictExp);
+  ^$context(exp1 = $newExp);
 }
 
-function meta::external::query::sql::transformation::queryToPure::createFunction(func: FunctionDefinition<Any>[1], execFunc: meta::pure::metamodel::function::Function<Any>[1]): LambdaFunction<{->TabularDataSet[1]}>[1]
+function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(func: FunctionExpression[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): FunctionExpression[1]
 {
-  ^LambdaFunction<{->TabularDataSet[1]}>(
-    expressionSequence = ^SimpleFunctionExpression(
-      func = $execFunc,
-      genericType = ^GenericType(
-        rawType = TabularDataSet
-      ),
-      importGroup = system::imports::coreImport,
-      multiplicity = PureOne,
-      parametersValues = ^InstanceValue(
-        genericType = ^GenericType(
-          rawType = TabularDataSet
-        ),
-        multiplicity = PureOne,
-        values = ^SimpleFunctionExpression(
-          func = eval_Function_1__V_m_,
-          genericType = $func->functionReturnType(),
-          multiplicity = $func->functionReturnMultiplicity(),
-          importGroup = system::imports::coreImport,
-          parametersValues = ^InstanceValue(
-            genericType = $func->genericType(),
-            multiplicity = PureOne,
-            values = $func
-          )
-        )
-      )
-    )
+  let pvs = $args->fold(
+    { k,a | $a->concatenate($k.values->wrapAsInstanceValue()) }, 
+    [ $func ]
+  );
+  ^SimpleFunctionExpression(
+    func = $execFunc,
+    genericType = $execFunc->functionReturnType(),
+    importGroup = system::imports::coreImport,
+    multiplicity = $execFunc->functionReturnMultiplicity(),
+    parametersValues = $pvs
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::wrapAsInstanceValue(res: Any[*]): InstanceValue[1]
+{
+  // check preeval for mult func, move to metaextension if required
+  if($res->isEmpty(),
+    |let multVal = ^MultiplicityValue(value=0);
+      ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=[]);,
+    |let size = $res->size();
+      let mult = if($size == 1,
+                  |PureOne,
+                  |let multVal = ^MultiplicityValue(value=$size);
+                    ^Multiplicity(lowerBound=$multVal, upperBound=$multVal);
+                );
+      ^InstanceValue(multiplicity=$mult, genericType=$res->genericType(), values=$res);
   );
 }
 
@@ -113,5 +137,8 @@ Class <<access.private>> meta::external::query::sql::transformation::queryToPure
 {
   services: Service[*];
   singleExecution: PureSingleExecution[0..1];
-  lambda: FunctionDefinition<Any>[0..1];
+  exp1: FunctionExpression[0..1];
+  columns(){ meta::pure::tds::schema::resolveSchema($this.lambda(), meta::relational::extension::relationalExtensions()) }: TDSColumn[*];
+  columnByName(s:String[1]){$this.columns()->filter(c|$c.name == $s)->first() }: TDSColumn[0..1];
+  lambda(){ ^LambdaFunction<{->TabularDataSet[1]}>(expressionSequence = $this.exp1->toOne()) }: LambdaFunction<{->TabularDataSet[1]}>[1];
 }
