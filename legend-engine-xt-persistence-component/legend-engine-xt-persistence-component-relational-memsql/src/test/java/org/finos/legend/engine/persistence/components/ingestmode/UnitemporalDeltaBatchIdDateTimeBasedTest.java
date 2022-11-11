@@ -317,7 +317,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS `my_schema`.`main`" +
+        String expectedCreateMainTableQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `my_schema`.`main`" +
                 "(`id` INTEGER," +
                 "`name` VARCHAR(256)," +
                 "`amount` DOUBLE," +
@@ -362,7 +362,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`my_schema`.`main`" +
+        String expectedCreateMainTableQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`my_schema`.`main`" +
                 "(`id` INTEGER," +
                 "`name` VARCHAR(256)," +
                 "`amount` DOUBLE," +
@@ -407,7 +407,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedCreateMainTableQuery = "CREATE TABLE IF NOT EXISTS main" +
+        String expectedCreateMainTableQuery = "CREATE REFERENCE TABLE IF NOT EXISTS main" +
                 "(`id` INTEGER," +
                 "`name` VARCHAR(256)," +
                 "`amount` DOUBLE," +
