@@ -15,8 +15,12 @@
 package org.finos.legend.engine.language.sql.grammar.to;
 
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
+import org.finos.legend.engine.protocol.sql.metamodel.AllRows;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
+import org.finos.legend.engine.protocol.sql.metamodel.Limit;
+import org.finos.legend.engine.protocol.sql.metamodel.Literal;
+import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
@@ -53,6 +57,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(AllRows val)
+            {
+                return null;
+            }
+
+            @Override
             public String visit(Expression val)
             {
                 return val.accept(this);
@@ -65,9 +75,28 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(Limit val)
+            {
+                return "limit " + val.rowCount.accept(this);
+            }
+
+            @Override
+            public String visit(Literal val)
+            {
+                return val.accept(this);
+            }
+
+            @Override
+            public String visit(LongLiteral val)
+            {
+                return Long.toString(val.value);
+            }
+
+            @Override
             public String visit(Query val)
             {
-                return val.queryBody.accept(this);
+                return val.queryBody.accept(this)
+                        + val.limit.accept(this);
             }
 
             @Override

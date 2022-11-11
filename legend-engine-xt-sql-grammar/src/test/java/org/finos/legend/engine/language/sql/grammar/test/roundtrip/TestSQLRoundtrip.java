@@ -28,7 +28,7 @@ public class TestSQLRoundtrip
     @Test
     public void testSelectAllRoundTrip()
     {
-        check("SELECT * FROM alloy.\"table\"");
+        check("SELECT * FROM alloy.\"table\" LIMIT 1");
     }
 
     @Test

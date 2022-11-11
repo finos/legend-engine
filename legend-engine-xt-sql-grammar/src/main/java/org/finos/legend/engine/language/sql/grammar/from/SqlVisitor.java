@@ -18,7 +18,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseBaseVisitor;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
+import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
+import org.finos.legend.engine.protocol.sql.metamodel.Limit;
+import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
@@ -50,8 +53,10 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     public Node visitQueryNoWith(SqlBaseParser.QueryNoWithContext ctx)
     {
         QueryBody term = (QueryBody) ctx.queryTerm().accept(this);
+        Limit limit = visitIfPresent(ctx.limitClause(), Limit.class);
         Query query = new Query();
         query.queryBody = term;
+        query.limit = limit;
         return query;
     }
 
@@ -108,6 +113,42 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
         identifier.value = text.substring(1, text.length() - 1)
                 .replace("\"\"", "\"");
         return identifier;
+    }
+
+    @Override
+    public Node visitLimitClause(SqlBaseParser.LimitClauseContext ctx)
+    {
+        if (ctx.limit != null)
+        {
+            Expression expression = (Expression) ctx.limit.accept(this);
+            Limit limit = new Limit();
+            limit.rowCount = expression;
+            return limit;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    @Override
+    public Node visitIntegerLiteral(SqlBaseParser.IntegerLiteralContext ctx)
+    {
+        String text = ctx.getText();
+        long limit = Long.parseLong(text);
+        LongLiteral limitLongLiteral = new LongLiteral();
+        limitLongLiteral.value = limit;
+        return limitLongLiteral;
+    }
+
+    private <T> T visitIfPresent(ParserRuleContext context, Class<T> clazz)
+    {
+        if (context == null)
+        {
+            return null;
+        }
+        Node node = context.accept(this);
+        return clazz.cast(node);
     }
 
     private <T> List<T> visit(List<? extends ParserRuleContext> contexts, Class<T> clazz)

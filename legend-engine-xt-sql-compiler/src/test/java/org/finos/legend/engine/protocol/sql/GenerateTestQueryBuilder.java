@@ -27,7 +27,7 @@ public class GenerateTestQueryBuilder
     public static void main(String[] args)
     {
         PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
-        String query = "SELECT * FROM alloy.\"/alloy/bi/getTableauUsage\"";
+        String query = "SELECT * FROM alloy.\"/alloy/bi/getTableauUsage\" LIMIT 1";
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(query);
         String res = org.finos.legend.pure.generated.core_pure_protocol_generation_builder_generation.Root_meta_protocols_generation_builder_builderGeneration_Any_1__String_1_(new Translator().translate(node, pureModel), pureModel.getExecutionSupport());
