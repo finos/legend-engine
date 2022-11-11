@@ -345,6 +345,7 @@ public class UnitemporalDeltaTest extends IngestModeTest
         Assertions.assertEquals(expectedMetadataTableIngestQuery, metadataIngestSql.get(0));
     }
 
+
     @Test
     void testUnitemporalIncrementalWithLessColumnsInStaging()
     {
