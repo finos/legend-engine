@@ -48,6 +48,9 @@ function meta::external::format::flatdata::extension::flatDataFormatExtension():
    ^Extension
    (
       type                     = 'External Format - FlatData',
-      availableExternalFormats = flatDataFormatContract()
+      availableExternalFormats = flatDataFormatContract(),
+
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = externalFormatLegendJavaPlatformBinding(flatDataJavaBindingDescriptor())
    )
 }

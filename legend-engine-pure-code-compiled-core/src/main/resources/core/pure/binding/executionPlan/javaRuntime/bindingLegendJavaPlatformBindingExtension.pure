@@ -1,0 +1,114 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::transform::*;
+import meta::external::shared::format::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
+import meta::external::shared::format::utils::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::platformBinding::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::engine::java::*;
+
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
+{
+   ^LegendJavaPlatformBindingExtension
+   (
+      platformId = legendJavaPlatformBindingId(),
+
+      id = 'BindingLegendJavaPlatformBindingExtension',
+
+      // Node based extensions ------------------------------------------------------
+
+      supportedExecutionNodes = [
+         ExternalFormatInternalizeExecutionNode,
+         ExternalFormatExternalizeExecutionNode
+      ],
+
+      updateGenerationContextForNode = {node: ExecutionNode[1], context: GenerationContext[1], path: String[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            {node:ExternalFormatInternalizeExecutionNode[1] |
+               let externalFormatContract = $extensions.availableExternalFormats->getExternalFormatContractForContentType($node.binding.contentType);
+               prepareExternalFormatInternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
+            },
+            {node:ExternalFormatExternalizeExecutionNode[1] | 
+               let externalFormatContract = $extensions.availableExternalFormats->getExternalFormatContractForContentType($node.binding.contentType);
+               prepareExternalFormatExternalizeExecutionNode($node, $path, $context, $externalFormatContract, $extensions, $debug);
+            },
+            n: ExecutionNode[1] | $context
+         ])
+      },
+
+      generateLegendJavaCodeForNode = {node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
+         $node->match([
+            {node:ExternalFormatInternalizeExecutionNode[1] |
+               let externalFormatJavaBindingDescriptor = $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)->filter(d | $d.externalFormatContract.contentTypes->contains($node.binding.contentType));
+               assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
+               assert($externalFormatJavaBindingDescriptor.internalizeDescriptor->size() == 1, | 'Expected 1 internalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.internalizeDescriptor->size()->toString());
+               $externalFormatJavaBindingDescriptor.internalizeDescriptor->toOne().internalizeGenerator->eval($node, $path, $context, $debug);
+            },
+            {node:ExternalFormatExternalizeExecutionNode[1] | 
+               let externalFormatJavaBindingDescriptor = $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)->filter(d | $d.externalFormatContract.contentTypes->contains($node.binding.contentType));
+               assert($externalFormatJavaBindingDescriptor->isNotEmpty(), | 'Java platform binding not found for - ' + $node.binding.contentType);
+               assert($externalFormatJavaBindingDescriptor.externalizeDescriptor->size() == 1, | 'Expected 1 externalize descriptor for - ' + $node.binding.contentType + '. Found - ' + $externalFormatJavaBindingDescriptor.externalizeDescriptor->size()->toString());
+               $externalFormatJavaBindingDescriptor.externalizeDescriptor->toOne().externalizeGenerator->eval($node, $path, $context, $debug);
+            },
+            n: ExecutionNode[1] | ^GeneratedCode()
+         ])
+      },
+
+      // ------------------------------------------------------ Node based extensions
+
+
+      // Adhoc extensions -----------------------------------------------------------      
+
+      adhocExtensions = [
+         
+         ^LegendJavaPlatformDependencyUpdateExtension
+         (
+            platformDependencyUpdate = {conventions: Conventions[1], extensions: Extension[*] |
+               $extensions->extractLegendJavaAdhocExtensionsOfType(ExternalFormatLegendJavaPlatformBindingDescriptor)
+                  ->fold({e, uc |
+                     $e.enginePlatformDependencies
+                        ->map(e | $e->eval($uc))->first()->orElse($uc)
+                  }, extendJavaEngineDependencies($conventions))
+            }
+         )
+      ]
+
+      // ----------------------------------------------------------- Adhoc extensions
+   )
+}
+
+
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::externalFormatLegendJavaPlatformBinding(externalFormatLegendJavaPlatformBindingDescriptor:ExternalFormatLegendJavaPlatformBindingDescriptor[1]): PlatformBinding[*]
+{
+   let formatSpecificBindingExtension = 
+      ^LegendJavaPlatformBindingExtension
+      (
+        platformId = legendJavaPlatformBindingId(),
+        id = $externalFormatLegendJavaPlatformBindingDescriptor.externalFormatContract.id + ' ExternalFormatLegendJavaPlatformBindingDescriptor',
+        adhocExtensions = $externalFormatLegendJavaPlatformBindingDescriptor
+      );
+
+   meta::pure::extension::defaultExtensions().availablePlatformBindings->concatenate(
+      meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+        meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(),
+        $formatSpecificBindingExtension
+      ])
+   );
+}

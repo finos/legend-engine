@@ -282,9 +282,3 @@ function meta::pure::executionPlan::checkConflictingParameters(planVarPlaceHolde
    assert($removeDuplicatesFromList->size()==$planVarPlaceHolderList->size(), |'Conflicting variable names present in the following list: ' + $planVarPlaceHolderList->map(y|$y.name)->makeString(', '));
    $planVarPlaceHolderList;
 }
-
-
-Profile meta::pure::executionPlan::engine::java::roadmap::feature
-{
-   stereotypes: [ M2MBasics, DataQuality, Enums, Filter, Project, Advanced, XML, Runtime ];
-}

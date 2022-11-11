@@ -68,7 +68,13 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
                                routing_extraIsSerialize = isSerialize_FunctionExpression_1__Boolean_1_,
                                executionPlan_generation_nodeForFunctionExpression = executionPlan_generation_nodeForPlatformFunctionExpression()
                               )
-      ]
+      ],
+      //TODO: Move this out along with Java Binding
+      availablePlatformBindings = meta::pure::extension::defaultExtensions().availablePlatformBindings->concatenate(
+         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+            meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension()
+         ])
+      )
    )
 }
 

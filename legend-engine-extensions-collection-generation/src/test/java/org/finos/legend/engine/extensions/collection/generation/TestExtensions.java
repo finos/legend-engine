@@ -333,14 +333,6 @@ public class TestExtensions
                 .with("core_relational")
                 .with("core_relational_bigquery")
                 .with("core_servicestore")
-                .with("core_text")
-                .with("core_external_language_java")
-                .with("core_java_platform_binding")
-                .with("core_relational_java_platform_binding")
-                .with("core_servicestore_java_platform_binding")
-                .with("core_external_format_flatdata_java_platform_binding")
-                .with("core_external_format_json_java_platform_binding")
-                .with("core_external_format_xml_java_platform_binding")
-                .with("core_configuration");
+                .with("core_text");
     }
 }
