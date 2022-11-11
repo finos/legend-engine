@@ -21,7 +21,7 @@ import meta::pure::persistence::relational::metamodel::*;
 
 Class
 {doc.doc = ''}
-meta::pure::persistence::relational::metamodel::RelationalTarget extends PersistenceTarget
+meta::pure::persistence::relational::metamodel::RelationalPersistenceTarget extends PersistenceTarget
 {
   table: meta::relational::metamodel::relation::Table[1];
   milestoning: Milestoning[1];
@@ -35,6 +35,12 @@ Class
 <<typemodifiers.abstract>>
 {doc.doc = ''}
 meta::pure::persistence::relational::metamodel::Milestoning
+{
+}
+
+Class
+{doc.doc = ''}
+meta::pure::persistence::relational::metamodel::NoMilestoning extends Milestoning
 {
 }
 
