@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,12 +14,9 @@
 
 import meta::pure::metamodel::path::*;
 import meta::pure::mapping::*;
-import meta::pure::router::analytics::*;
-import meta::pure::router::clustering::*;
 import meta::pure::router::routing::*;
-import meta::pure::router::store::metamodel::*;
-
-// TODO: package should be changed to meta::pure::router::store::analytics?
+import meta::pure::router::clustering::*;
+import meta::pure::router::analytics::*;
 
 Class meta::pure::router::analytics::AnalyticsExecutionContext extends meta::pure::runtime::ExtendedExecutionContext
 {
@@ -112,7 +109,7 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
                        | $parameters->map(x | $x->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions))))   
          ]);,
 
-      e: StoreMappingRoutedValueSpecification[1] | if($e.sets->isNotEmpty() && $e.sets->at(0)->instanceOf(CrossSetImplementation), | [], | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=$e.propertyMapping), $extensions)),
+      e: ExtendedRoutedValueSpecification[1] | if($e.sets->at(0)->instanceOf(CrossSetImplementation), | [], | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=$e.propertyMapping), $extensions)),
       
       e : RoutedValueSpecification[1] | $e.value->evaluateAndDeactivate()->scanPropertyAccesses(^$state(propertyMappings=[]), $extensions),
 
@@ -130,7 +127,17 @@ function meta::pure::router::analytics::scanPropertyAccesses(vs:ValueSpecificati
    ]) ->removeDuplicates() 
 }
 
+
+
+
+
 function meta::pure::router::analytics::getStore(setId: String[1], mapping:Mapping[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    $mapping.classMappingById($setId)->toOne()->getStoreFromSet($mapping, $extensions)->elementToPath();
 }
+
+
+
+
+
+

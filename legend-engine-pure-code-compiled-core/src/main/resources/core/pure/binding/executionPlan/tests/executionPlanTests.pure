@@ -172,7 +172,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
         '      (\n' +
         '        Allocation\n' +
         '        (\n' +
-        '          type = Void\n' +
+        '          type = meta::pure::router::Void\n' +
         '          name = internalizeVar$\n' +
         '          value = \n' +
         '            (\n' +

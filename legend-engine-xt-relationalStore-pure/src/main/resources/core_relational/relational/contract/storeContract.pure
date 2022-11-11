@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::router::metamodel::*;
 import meta::pure::router::systemMapping::tests::*;
 import meta::relational::mapping::*;
 import meta::pure::store::*;
@@ -53,23 +52,21 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                          ],
      routeFunctionExpressions = pair(
             fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
-            {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-              let mapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).mapping;
-              let runtime = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).runtime;
-              let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
-              assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
-              let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();
-              ^$state(value = ^TDSRoutedValueSpecification(
-                                  genericType = $fe.genericType,
-                                  multiplicity = $fe.multiplicity,
-                                  id = 'Table TDS',
-                                  store = $store,
-                                  runtime = $runtime,
-                                  mapping = $mapping,
-                                  executionContext = $executionContext,
-                                  value = $fe
-                              )
-              );
+            {fe:FunctionExpression[1], state:RoutingState[1], runtime : Runtime[1], mapping: Mapping[1], executionContext:ExecutionContext[1] |
+                    let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
+                    assert($fe.parametersValues->at(0)->cast(@FunctionExpression).func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_, meta::relational::functions::database::viewReference_Database_1__String_1__String_1__View_1_]), 'Must use meta::pure::tds::tableReference / viewReference function to specify table / view ');
+                    let store = $fe.parametersValues->at(0)->cast(@FunctionExpression).parametersValues->at(0)->cast(@InstanceValue).values->cast(@meta::pure::store::Store)->toOne();
+                    ^$state(value = ^TDSRoutedValueSpecification(
+                                        genericType = $fe.genericType,
+                                        multiplicity = $fe.multiplicity,
+                                        id = 'Table TDS',
+                                        store = $store,
+                                        runtime = $runtime,
+                                        mapping = $mapping,
+                                        executionContext = $executionContext,
+                                        value = $fe
+                                    )
+                    );
             }
       ),
      supportsNativeJoinAmongElements = true,

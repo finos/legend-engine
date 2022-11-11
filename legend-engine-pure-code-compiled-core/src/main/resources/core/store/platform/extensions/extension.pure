@@ -13,11 +13,10 @@
 // limitations under the License.
 
 import meta::pure::extension::*;
-import meta::pure::mapping::*;
-import meta::pure::router::execution::*;
+import meta::pure::store::platform::executionPlan::generation::*;
 
-function meta::pure::router::platform::execution::execute(fe:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+Class meta::pure::store::platform::extension::PlatformStoreExtension extends ModuleExtension
 {
-  let newOne = ^Container(value = $fe)->resolve($inScopeVars, $extensions, $debug);
-  ^Result<Any|*>(activities = $newOne.activities, values=$newOne.value->reactivate($inScopeVars));
+   routing_extraIsSerialize : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
+   executionPlan_generation_nodeForFunctionExpression: PureFunctionToProcessFunctionPair[*];
 }

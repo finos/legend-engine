@@ -82,7 +82,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                       '          (\n' +
                       '            Allocation\n' +
                       '            (\n' +
-                      '              type = Void\n' +
+                      '              type = meta::pure::router::Void\n' +
                       '              name = internalizeVar$\n' +
                       '              value = \n' +
                       '                (\n' +
@@ -146,7 +146,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                       '          (\n' +
                       '            Allocation\n' +
                       '            (\n' +
-                      '              type = Void\n' +
+                      '              type = meta::pure::router::Void\n' +
                       '              name = internalizeVar$\n' +
                       '              value = \n' +
                       '                (\n' +
@@ -204,7 +204,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                       '      (\n' +
                       '        Allocation\n' +
                       '        (\n' +
-                      '          type = Void\n' +
+                      '          type = meta::pure::router::Void\n' +
                       '          name = internalizeVar$\n' +
                       '          value = \n' +
                       '            (\n' +
@@ -287,7 +287,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 ')\n';
 
    assertEquals($expectedPlan, $planString);
-
+   
    let impl = $plan.globalImplementationSupport->toOne()->cast(@JavaPlatformImplementation);
    let allConstraintsSource = $impl.classes->filter(c| $c.name == 'meta_external_format_json_executionPlan_test_Person_Impl').source->toOne();
    let expectedAllConstraintsMethod = '    public List<IDefect> allConstraints(GraphContext context)\n' +
@@ -440,7 +440,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                 ')\n';
 
    assertEquals($expectedPlan, $planString);
-
+    
    let impl = $plan.globalImplementationSupport->toOne()->cast(@JavaPlatformImplementation);
    let source = $impl.classes->filter(c| $c.name == 'meta_external_format_json_executionPlan_test_Person_Impl').source->toOne();
    let expectedMethod = '    public List<IDefect> allConstraints(GraphContext context)\n' +

@@ -23,7 +23,6 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::runtime::*;
-import meta::pure::router::metamodel::*;
 
 function meta::external::language::java::transform::generateJavaMethodBody(vses:ValueSpecification[*], conventions: Conventions[1]):Code[1]
 {
