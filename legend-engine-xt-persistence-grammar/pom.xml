@@ -149,11 +149,14 @@
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
         </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
+        <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
-        <!-- ECLIPSE COLLECTIONS -->
+        <!-- JACKSON -->
 
         <!-- TEST -->
         <dependency>

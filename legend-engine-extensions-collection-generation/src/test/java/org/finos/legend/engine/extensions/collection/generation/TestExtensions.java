@@ -208,6 +208,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceCloudProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.PersistenceRelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)

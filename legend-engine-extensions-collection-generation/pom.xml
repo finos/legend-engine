@@ -196,6 +196,15 @@
             <artifactId>legend-engine-xt-persistence-cloud-protocol</artifactId>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-persistence-target-relational-grammar</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-target-relational-protocol</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-test-runner</artifactId>
