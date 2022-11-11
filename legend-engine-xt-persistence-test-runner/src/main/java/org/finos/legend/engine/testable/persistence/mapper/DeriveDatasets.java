@@ -23,7 +23,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestModeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.appendonly.AppendOnly;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.BitemporalDelta;
@@ -38,22 +37,16 @@ import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapp
 
 public class DeriveDatasets implements IngestModeVisitor<Datasets>
 {
-    private Persistence persistence;
-    private Dataset mainDataset;
     private SchemaDefinition baseSchema;
-    private String testData;
 
     private DatasetDefinition.Builder mainDatasetDefinitionBuilder;
     private SchemaDefinition.Builder mainSchemaDefinitionBuilder;
     private SchemaDefinition.Builder stagingSchemaDefinitionBuilder;
     private JsonExternalDatasetReference.Builder stagingDatasetBuilder;
 
-    public DeriveDatasets(Persistence persistence, Dataset mainDataset, String testData)
+    public DeriveDatasets(Dataset mainDataset, String testData)
     {
-        this.persistence = persistence;
-        this.mainDataset = mainDataset;
         this.baseSchema = mainDataset.schema();
-        this.testData = testData;
 
         this.mainDatasetDefinitionBuilder = DatasetDefinition.builder()
                 .name(mainDataset.datasetReference().name().get())
@@ -89,7 +82,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
         {
             enrichMainSchemaWithDigest();
         }
-        appendOnly.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, mainDataset));
+        appendOnly.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -98,12 +91,12 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     @Override
     public Datasets visit(BitemporalDelta bitemporalDelta)
     {
-        bitemporalDelta.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder, mainDataset));
-        bitemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, mainDataset));
+        bitemporalDelta.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder, baseSchema));
+        bitemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, baseSchema));
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
         enrichMainSchemaWithDigest();
-        bitemporalDelta.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, mainDataset));
+        bitemporalDelta.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, baseSchema));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -112,11 +105,11 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     @Override
     public Datasets visit(BitemporalSnapshot bitemporalSnapshot)
     {
-        bitemporalSnapshot.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder, mainDataset));
+        bitemporalSnapshot.validityMilestoning.accept(new MappingVisitors.EnrichSchemaWithValidityMilestoning(mainSchemaDefinitionBuilder, stagingSchemaDefinitionBuilder, baseSchema));
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
         enrichMainSchemaWithDigest();
-        bitemporalSnapshot.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, mainDataset));
+        bitemporalSnapshot.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, baseSchema));
 
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
@@ -126,11 +119,11 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     @Override
     public Datasets visit(NontemporalDelta nontemporalDelta)
     {
-        nontemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, mainDataset));
+        nontemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, baseSchema));
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
         enrichMainSchemaWithDigest();
-        nontemporalDelta.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, mainDataset));
+        nontemporalDelta.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -141,7 +134,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     {
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
-        nontemporalSnapshot.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, mainDataset));
+        nontemporalSnapshot.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -150,11 +143,11 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     @Override
     public Datasets visit(UnitemporalDelta unitemporalDelta)
     {
-        unitemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, mainDataset));
+        unitemporalDelta.mergeStrategy.accept(new MappingVisitors.EnrichSchemaWithMergyStrategy(stagingSchemaDefinitionBuilder, baseSchema));
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
         enrichMainSchemaWithDigest();
-        unitemporalDelta.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, mainDataset));
+        unitemporalDelta.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, baseSchema));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -166,7 +159,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
         enrichMainSchemaWithDigest();
-        unitemporalSnapshot.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, mainDataset));
+        unitemporalSnapshot.transactionMilestoning.accept(new MappingVisitors.EnrichSchemaWithTransactionMilestoning(mainSchemaDefinitionBuilder, baseSchema));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);

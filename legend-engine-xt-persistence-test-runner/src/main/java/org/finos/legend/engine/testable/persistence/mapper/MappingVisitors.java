@@ -129,7 +129,7 @@ public class MappingVisitors
         }
     };
 
-    public static final org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor<ValidityDerivation> MAP_TO_COMPONENT_VALIDITY_DERIVATION = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor<ValidityDerivation>()
+    public static final ValidityDerivationVisitor<ValidityDerivation> MAP_TO_COMPONENT_VALIDITY_DERIVATION = new ValidityDerivationVisitor<ValidityDerivation>()
     {
         @Override
         public ValidityDerivation visit(SourceSpecifiesFromDateTime val)
@@ -149,17 +149,15 @@ public class MappingVisitors
         }
     };
 
-    public static class EnrichSchemaWithAuditing implements AuditingVisitor
+    public static class EnrichSchemaWithAuditing implements AuditingVisitor<Void>
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
-        private Dataset mainDataset;
         private SchemaDefinition baseSchema;
 
-        public EnrichSchemaWithAuditing(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
+        public EnrichSchemaWithAuditing(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
-            this.baseSchema = mainDataset.schema();
-            this.mainDataset = mainDataset;
+            this.baseSchema = baseSchema;
         }
 
         @Override
@@ -184,17 +182,15 @@ public class MappingVisitors
         }
     }
 
-    public static class EnrichSchemaWithMergyStrategy implements MergeStrategyVisitor
+    public static class EnrichSchemaWithMergyStrategy implements MergeStrategyVisitor<Void>
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
-        private Dataset mainDataset;
         private SchemaDefinition baseSchema;
 
-        public EnrichSchemaWithMergyStrategy(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
+        public EnrichSchemaWithMergyStrategy(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
-            this.baseSchema = mainDataset.schema();
-            this.mainDataset = mainDataset;
+            this.baseSchema = baseSchema;
         }
 
         @Override
@@ -219,17 +215,15 @@ public class MappingVisitors
         }
     }
 
-    public static class EnrichSchemaWithTransactionMilestoning implements TransactionMilestoningVisitor
+    public static class EnrichSchemaWithTransactionMilestoning implements TransactionMilestoningVisitor<Void>
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
-        private Dataset mainDataset;
         private SchemaDefinition baseSchema;
 
-        public EnrichSchemaWithTransactionMilestoning(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
+        public EnrichSchemaWithTransactionMilestoning(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
-            this.baseSchema = mainDataset.schema();
-            this.mainDataset = mainDataset;
+            this.baseSchema = baseSchema;
         }
 
         @Override
@@ -326,21 +320,19 @@ public class MappingVisitors
         }
     }
 
-    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor
+    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor<Void>
     {
         private SchemaDefinition.Builder mainSchemaDefinitionBuilder;
         private SchemaDefinition.Builder stagingSchemaDefinitionBuilder;
-        private Dataset mainDataset;
         private SchemaDefinition baseSchema;
 
         public EnrichSchemaWithValidityMilestoning(SchemaDefinition.Builder mainSchemaDefinitionBuilder,
                                                    SchemaDefinition.Builder stagingSchemaDefinitionBuilder,
-                                                   Dataset mainDataset)
+                                                   SchemaDefinition baseSchema)
         {
             this.mainSchemaDefinitionBuilder = mainSchemaDefinitionBuilder;
             this.stagingSchemaDefinitionBuilder = stagingSchemaDefinitionBuilder;
-            this.baseSchema = mainDataset.schema();
-            this.mainDataset = mainDataset;
+            this.baseSchema = baseSchema;
         }
 
         @Override
@@ -366,23 +358,21 @@ public class MappingVisitors
                 mainSchemaDefinitionBuilder.addFields(dateTimeThru);
             }
 
-            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, mainDataset));
-            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, mainDataset));
+            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, baseSchema));
+            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, baseSchema));
             return null;
         }
     }
 
-    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor
+    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor<Void>
     {
         private SchemaDefinition.Builder schemaDefinitionBuilder;
-        private Dataset mainDataset;
         private SchemaDefinition baseSchema;
 
-        public EnrichSchemaWithValidityMilestoningDerivation(SchemaDefinition.Builder schemaDefinitionBuilder, Dataset mainDataset)
+        public EnrichSchemaWithValidityMilestoningDerivation(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
-            this.baseSchema = mainDataset.schema();
-            this.mainDataset = mainDataset;
+            this.baseSchema = baseSchema;
         }
 
         @Override

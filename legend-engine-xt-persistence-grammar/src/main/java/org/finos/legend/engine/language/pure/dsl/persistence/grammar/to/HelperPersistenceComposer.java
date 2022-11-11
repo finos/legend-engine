@@ -584,13 +584,13 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(NoAuditing val)
+        public String visit(NoAuditing val)
         {
             return getTabString(indentLevel) + "auditing: None;\n";
         }
 
         @Override
-        public Void visit(DateTimeAuditing val)
+        public String visit(DateTimeAuditing val)
         {
             return getTabString(indentLevel) + "auditing: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -609,7 +609,7 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(BatchIdTransactionMilestoning val)
+        public String visit(BatchIdTransactionMilestoning val)
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchId\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -619,7 +619,7 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(DateTimeTransactionMilestoning val)
+        public String visit(DateTimeTransactionMilestoning val)
         {
             return getTabString(indentLevel) + "transactionMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -630,7 +630,7 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(BatchIdAndDateTimeTransactionMilestoning val)
+        public String visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
             return getTabString(indentLevel) + "transactionMilestoning: BatchIdAndDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -687,7 +687,7 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(DateTimeValidityMilestoning val)
+        public String visit(DateTimeValidityMilestoning val)
         {
             return getTabString(indentLevel) + "validityMilestoning: DateTime\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -713,7 +713,7 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(SourceSpecifiesFromDateTime val)
+        public String visit(SourceSpecifiesFromDateTime val)
         {
             return getTabString(indentLevel) + "derivation: SourceSpecifiesFromDateTime\n" +
                     getTabString(indentLevel) + "{\n" +
@@ -722,7 +722,7 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(SourceSpecifiesFromAndThruDateTime val)
+        public String visit(SourceSpecifiesFromAndThruDateTime val)
         {
 
             return getTabString(indentLevel) + "derivation: SourceSpecifiesFromAndThruDateTime\n" +
@@ -743,13 +743,13 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public Void visit(NoDeletesMergeStrategy val)
+        public String visit(NoDeletesMergeStrategy val)
         {
             return getTabString(indentLevel) + "mergeStrategy: NoDeletes;\n";
         }
 
         @Override
-        public Void visit(DeleteIndicatorMergeStrategy val)
+        public String visit(DeleteIndicatorMergeStrategy val)
         {
             return getTabString(indentLevel) + "mergeStrategy: DeleteIndicator\n" +
                     getTabString(indentLevel) + "{\n" +

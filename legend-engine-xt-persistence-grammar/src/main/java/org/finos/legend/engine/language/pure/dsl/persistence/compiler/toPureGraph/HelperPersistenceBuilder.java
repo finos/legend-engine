@@ -648,7 +648,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(DeleteIndicatorMergeStrategy val)
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy visit(DeleteIndicatorMergeStrategy val)
         {
             String deleteProperty = Lists.immutable.ofAll(modelClasses)
                     .collect(c -> validateAndResolvePropertyName(c, val.deleteField, val.sourceInformation, context))
@@ -661,7 +661,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(NoDeletesMergeStrategy val)
+        public Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_MergeStrategy visit(NoDeletesMergeStrategy val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_ingestmode_delta_merge_NoDeletesMergeStrategy_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::ingestmode::delta::merge::NoDeletesMergeStrategy"));
         }
@@ -670,14 +670,14 @@ public class HelperPersistenceBuilder
     private static class AuditingBuilder implements AuditingVisitor<Root_meta_pure_persistence_metamodel_persister_audit_Auditing>
     {
         @Override
-        public Void visit(DateTimeAuditing val)
+        public Root_meta_pure_persistence_metamodel_persister_audit_Auditing visit(DateTimeAuditing val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_audit_DateTimeAuditing_Impl("")
                     ._dateTimeName(val.dateTimeName);
         }
 
         @Override
-        public Void visit(NoAuditing val)
+        public Root_meta_pure_persistence_metamodel_persister_audit_Auditing visit(NoAuditing val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_audit_NoAuditing_Impl("");
         }
@@ -695,7 +695,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(BatchIdAndDateTimeTransactionMilestoning val)
+        public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdAndDateTimeTransactionMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdAndDateTimeTransactionMilestoning"))
                     ._batchIdInName(val.batchIdInName)
@@ -706,7 +706,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(BatchIdTransactionMilestoning val)
+        public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(BatchIdTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_BatchIdTransactionMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::BatchIdTransactionMilestoning"))
                     ._batchIdInName(val.batchIdInName)
@@ -714,7 +714,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(DateTimeTransactionMilestoning val)
+        public Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_TransactionMilestoning visit(DateTimeTransactionMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_transactionmilestoning_DateTimeTransactionMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::transactionmilestoning::DateTimeTransactionMilestoning"))
                     ._dateTimeInName(val.dateTimeInName)
@@ -777,7 +777,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(DateTimeValidityMilestoning val)
+        public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_ValidityMilestoning visit(DateTimeValidityMilestoning val)
         {
             return new Root_meta_pure_persistence_metamodel_persister_validitymilestoning_DateTimeValidityMilestoning_Impl("", null, context.pureModel.getClass("meta::pure::persistence::metamodel::persister::validitymilestoning::DateTimeValidityMilestoning"))
                     ._dateTimeFromName(val.dateTimeFromName)
@@ -798,7 +798,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(SourceSpecifiesFromAndThruDateTime val)
+        public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromAndThruDateTime val)
         {
             String sourceDateTimeFromField = Lists.immutable.ofAll(modelClasses)
                     .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeFromField, val.sourceInformation, context))
@@ -816,7 +816,7 @@ public class HelperPersistenceBuilder
         }
 
         @Override
-        public Void visit(SourceSpecifiesFromDateTime val)
+        public Root_meta_pure_persistence_metamodel_persister_validitymilestoning_derivation_ValidityDerivation visit(SourceSpecifiesFromDateTime val)
         {
             String sourceDateTimeFromField = Lists.immutable.ofAll(modelClasses)
                     .collect(c -> validateAndResolvePropertyName(c, val.sourceDateTimeFromField, val.sourceInformation, context))

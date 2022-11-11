@@ -78,7 +78,7 @@ public class DatasetMapper
     public static Datasets enrichAndDeriveDatasets(Persistence persistence, Dataset mainDataset, String testData) throws Exception
     {
         IngestMode ingestMode = getIngestMode(persistence);
-        return ingestMode.accept(new DeriveDatasets(persistence, mainDataset, testData));
+        return ingestMode.accept(new DeriveDatasets(mainDataset, testData));
     }
 
     private static Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget getTarget(Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister)
