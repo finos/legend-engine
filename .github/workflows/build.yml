@@ -62,18 +62,18 @@ jobs:
           MAVEN_OPTS: -Xmx4g
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc
+        run: mvn install javadoc:javadoc -DargLine="-Xmx2g"
         env:
-          MAVEN_OPTS: -Xmx4g
+          MAVEN_OPTS: -Xmx3g
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: -Xmx4g
+          MAVEN_OPTS: -Xmx3g
         run: |
           mvn install -DskipTests=true
-          mvn javadoc:javadoc deploy -P docker-snapshot
+          mvn javadoc:javadoc deploy -DargLine="-Xmx2g" -P docker-snapshot
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3
@@ -86,3 +86,18 @@ jobs:
         with:
           name: event-file
           path: ${{ github.event_path }}
+Footer
+© 2022 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
+legend-engine/build.yml at 93c7cefee41f2b1a6091d70f55693331061fa871 · gs-ssh16/legend-engine
