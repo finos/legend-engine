@@ -354,6 +354,7 @@
                         <skip>${javadoc.skip}</skip>
                         <source>8</source>
                         <doclint>none</doclint>
+                        <quiet>true</quiet>
                     </configuration>
                 </plugin>
                 <plugin>
