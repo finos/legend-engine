@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
 import org.finos.legend.engine.protocol.sql.metamodel.Relation;
 import org.finos.legend.engine.protocol.sql.metamodel.Select;
 import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
+import org.finos.legend.engine.protocol.sql.metamodel.SingleColumn;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 
@@ -53,7 +54,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(AllColumns val)
             {
-                return "* ";
+                return "*";
             }
 
             @Override
@@ -108,7 +109,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(QuerySpecification val)
             {
-                return val.select.accept(this) + "from " + visit(val.from, " ");
+                return val.select.accept(this) + " from " + visit(val.from, " ");
             }
 
             @Override
@@ -120,13 +121,25 @@ public class SQLGrammarComposer
             @Override
             public String visit(Select val)
             {
-                return "select " + (val.distinct ? "distinct " : "") + visit(val.selectItems, " ");
+                return "select " + (val.distinct ? "distinct " : "") + visit(val.selectItems, ", ");
             }
 
             @Override
             public String visit(SelectItem val)
             {
                 return null;
+            }
+
+            @Override
+            public String visit(SingleColumn val)
+            {
+                String column = "";
+                Identifier prefixIdent = val.prefix;
+                if (prefixIdent != null)
+                {
+                    column += prefixIdent.accept(this) + ".";
+                }
+                return column + val.expression.accept(this);
             }
 
             @Override

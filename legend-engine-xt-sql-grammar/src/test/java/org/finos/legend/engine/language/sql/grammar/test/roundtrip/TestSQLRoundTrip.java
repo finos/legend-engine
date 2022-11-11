@@ -23,12 +23,30 @@ import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestSQLRoundtrip
+public class TestSQLRoundTrip
 {
     @Test
     public void testSelectAllRoundTrip()
     {
-        check("SELECT * FROM alloy.\"table\" LIMIT 1");
+        check("SELECT DISTINCT * FROM alloy.\"table\" LIMIT 1");
+    }
+
+    @Test
+    public void testSelectOneColumnRoundTrip()
+    {
+        check("SELECT DISTINCT id FROM alloy.\"table\" LIMIT 1");
+    }
+
+    @Test
+    public void testSelectOneColumnQuotedRoundTrip()
+    {
+        check("SELECT \"id\" FROM alloy.\"table\" LIMIT 1");
+    }
+
+    @Test
+    public void testSelectManyColumnsRoundTrip()
+    {
+        check("SELECT id1, id2 FROM alloy.\"table\" LIMIT 1");
     }
 
     @Test

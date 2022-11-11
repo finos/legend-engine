@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
 import org.finos.legend.engine.protocol.sql.metamodel.Relation;
 import org.finos.legend.engine.protocol.sql.metamodel.Select;
 import org.finos.legend.engine.protocol.sql.metamodel.SelectItem;
+import org.finos.legend.engine.protocol.sql.metamodel.SingleColumn;
 import org.finos.legend.engine.protocol.sql.metamodel.Table;
 
 import java.util.List;
@@ -78,6 +79,15 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     public Node visitSelectAll(SqlBaseParser.SelectAllContext ctx)
     {
         return new AllColumns();
+    }
+
+    @Override
+    public Node visitSelectSingle(SqlBaseParser.SelectSingleContext ctx)
+    {
+        SingleColumn singleColumn = new SingleColumn();
+        singleColumn.expression = (Expression) ctx.expr().accept(this);
+        singleColumn.prefix = visitIfPresent(ctx.ident(), Identifier.class);
+        return singleColumn;
     }
 
     @Override
