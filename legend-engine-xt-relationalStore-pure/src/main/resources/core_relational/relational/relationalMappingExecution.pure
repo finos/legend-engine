@@ -176,7 +176,7 @@ function <<access.private>> meta::relational::mapping::addEnumMapSupportFunction
    let enumMapTemplateFunctions = if($enumParam->isNotEmpty(),
                                       |$m.enumerationMappings->filter(e | $e.enumeration->in($enumParam))->map(enum | let concatStr = if($enum.enumValueMappings->at(0).sourceValues->type() == String, |'\'', |'');
                                                                                                                       let enumHashMap = $enum.enumValueMappings->map(e | '"'+ $e.enum->cast(@Enum).name +'":"'+ $concatStr + $e.sourceValues->makeString('\', \'') + $concatStr + '"')->makeString(', ');
-                                                                                                                      '<#function enumMap_' + fetchEnumFullPath($enum) + ' inputVal> <#assign enumMap = {'->concatenate($enumHashMap)->concatenate('}> <#return enumMap[inputVal]> </#function>')->makeString(' ');),
+                                                                                                                      '<#function enumMap_' + fetchEnumFullPath($enum) + ' inputVal> <#assign enumMap = {'->concatenate($enumHashMap)->concatenate('}> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>')->makeString(' ');),
                                       |[]);
 }
 

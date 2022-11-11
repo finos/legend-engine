@@ -435,7 +435,9 @@ function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:Var
          |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}',
          |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'),
       |if($v->isOptionalPlaceHolder(),
-          |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}',
+          |if($type->instanceOf(Enumeration),
+              |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"\'\" \"\'\" '+ placeHolderDefaultValue()+')}',
+              |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}'),
           |if($type->instanceOf(Enumeration),
               |$prefix + '\'${'+$possiblyApplyDateTzFunction+'}\'' + $suffix,
               |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix))

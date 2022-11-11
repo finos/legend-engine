@@ -3982,7 +3982,7 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                | assert($collection->instanceOf(Literal), | 'Parameter to IN operation isn\'t a literal!');
                  if($collection->cast(@Literal).value->instanceOf(VarPlaceHolder) && $collection->cast(@Literal).value->cast(@VarPlaceHolder).type->instanceOf(Enumeration),
                     | let enumParamFreeMarker = generateFreeMarkerForEnumParam($processedValueArg, $collection);
-                      let newCollection = generateFreeMarkerOpSelectorForEnumParam($enumParamFreeMarker, $value);,
+                      let newCollection = generateFreeMarkerOpSelectorForEnumParam($enumParamFreeMarker, $value, $collection);,
                     | let literal = $collection->cast(@Literal);
                       let newLiteral = if($literal.value->instanceOf(Enum),
                                             |if($valueArg->instanceOf(VariableExpression),
@@ -5943,9 +5943,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::hasEnum
   $e->instanceOf(Literal) && $e->cast(@Literal).value->instanceOf(VarPlaceHolder) && $e->cast(@Literal).value->cast(@VarPlaceHolder).type->instanceOf(Enumeration)
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::generateFreeMarkerOpSelectorForEnumParam(firstVal:FreeMarkerOperationHolder[1], secondVal:RelationalOperationElement[1]):FreeMarkerOperationHolder[1]
+function <<access.private>> meta::relational::functions::pureToSqlQuery::generateFreeMarkerOpSelectorForEnumParam(firstVal:FreeMarkerOperationHolder[1], secondVal:RelationalOperationElement[1], enumParam:RelationalOperationElement[1]):FreeMarkerOperationHolder[1]
 {
-  ^FreeMarkerOperationHolder(name = 'equalEnumOpSelector', parameters = [$firstVal, ^DynaFunction(name = 'in', parameters = [$secondVal, $firstVal]), ^DynaFunction(name = 'equal', parameters = [$secondVal, $firstVal])])
+  let enumFreeMarker = ^FreeMarkerOperationHolder(name = 'equalEnumOpSelector', parameters = [$firstVal, ^DynaFunction(name = 'in', parameters = [$secondVal, $firstVal]), ^DynaFunction(name = 'equal', parameters = [$secondVal, $firstVal])]);
+  ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$enumParam, $enumFreeMarker, ^DynaFunction(name = 'equal', parameters = [^Literal(value=0), ^Literal(value=1)])]);
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::generateFreeMarkerForEnumParam(propertyMapping:OperationWithParentPropertyMapping[1], enumParam:RelationalOperationElement[1]):FreeMarkerOperationHolder[1]
@@ -5978,7 +5979,7 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
           let hasEnumVarAndEnumVal = $enumVar.first.values->isNotEmpty() && $enumVar.second.values.processedParam->toOne()->hasEnumValue();
           if($hasEnumVarAndEnumProp,
               | let enumParamFreeMarker = generateFreeMarkerForEnumParam($enumVar.second.values.currentPropertyMapping->toOne(), $enumVar.first.values.processedParam->toOne());
-                generateFreeMarkerOpSelectorForEnumParam($enumParamFreeMarker, $enumVar.second.values.processedParam->toOne());,
+                generateFreeMarkerOpSelectorForEnumParam($enumParamFreeMarker, $enumVar.second.values.processedParam->toOne(), $enumVar.first.values.processedParam->toOne());,
               | if($hasEnumVarAndEnumVal,
                     | let literal = $enumVar.first.values.processedParam->cast(@Literal).value->cast(@VarPlaceHolder); 
                       ^DynaFunction(name = 'equal', parameters = [^Literal(value=^VarPlaceHolder(name=$literal.name->toOne(),type = $literal.type->toOne(),multiplicity = $literal.multiplicity->toOne())), ^Literal(value = $enumVar.second.values.processedParam->cast(@Literal).value->toOne()->toString())]);,
