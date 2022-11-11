@@ -26,6 +26,7 @@ Class meta::external::query::sql::metamodel::Query extends meta::external::query
 {
   queryBody: meta::external::query::sql::metamodel::QueryBody[1];
   limit: meta::external::query::sql::metamodel::Limit[0..1];
+  orderBy: meta::external::query::sql::metamodel::OrderBy[0..1];
 }
 
 Class meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
@@ -94,4 +95,29 @@ Class meta::external::query::sql::metamodel::Limit extends meta::external::query
 Class meta::external::query::sql::metamodel::LongLiteral extends meta::external::query::sql::metamodel::Literal
 {
   value: Integer[1];
+}
+
+Class meta::external::query::sql::metamodel::OrderBy extends meta::external::query::sql::metamodel::Node
+{
+  sortItems: meta::external::query::sql::metamodel::SortItem[*];
+}
+
+Class meta::external::query::sql::metamodel::SortItem extends meta::external::query::sql::metamodel::Node
+{
+  sortKey: meta::external::query::sql::metamodel::Expression[1];
+  ordering: meta::external::query::sql::metamodel::SortItemOrdering[1];
+  nullOrdering: meta::external::query::sql::metamodel::SortItemNullOrdering[1];
+}
+
+Enum meta::external::query::sql::metamodel::SortItemOrdering
+{
+  ASCENDING,
+  DESCENDING
+}
+
+Enum meta::external::query::sql::metamodel::SortItemNullOrdering
+{
+  FIRST,
+  LAST,
+  UNDEFINED
 }
