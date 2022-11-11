@@ -9,7 +9,8 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
                                                                           extensions: meta::pure::extension::Extension[*]
                                                                       ): meta::pure::executionPlan::ExecutionPlan[1]
 {
-  let sqlTransformContext = $query->processQuery($services);
+  let context = ^SqlTransformContext(services = $services, extensions = $extensions);
+  let sqlTransformContext = $query->cast(@Query)->processQuery($context);
   let executionOptionContext = ^ExecutionOptionContext(executionOptions = $sqlTransformContext.singleExecution.executionOptions);
   meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $sqlTransformContext.singleExecution->toOne().mapping, $sqlTransformContext.singleExecution->toOne().runtime, $executionOptionContext, $extensions);
 }
@@ -33,11 +34,17 @@ function meta::external::query::sql::transformation::queryToPure::getTables(node
 }
 
 
-function meta::external::query::sql::transformation::queryToPure::processQuery(node: Node[1], services: Service[*]): SqlTransformContext[1]
+function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
-  let context = ^SqlTransformContext(services = $services);
+  let queryContext = $query.queryBody->processNode($context);
+  if($query.limit->isEmpty(), |$queryContext, |$query.limit->toOne()->processNode($queryContext));
+  
+}
+
+function meta::external::query::sql::transformation::queryToPure::processNode(node: Node[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
   $node->match([
-    query: Query[1]                   | $query.queryBody->processQuery($services),
+    limit: Limit[1]                   | $limit->processLimit($context),
     querySpec: QuerySpecification[1]  | $querySpec->processQuerySpec($context)
   ]);
 }
@@ -54,6 +61,14 @@ function meta::external::query::sql::transformation::queryToPure::processQuerySp
   let newContextAfterSelect = $querySpec.select->processSelect($newContextAfterFrom);
 
   $newContextAfterSelect;
+}
+
+function meta::external::query::sql::transformation::queryToPure::processLimit(limit: meta::external::query::sql::metamodel::Limit[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let newExp = $limit.rowCount->match([
+    l: LongLiteral[1] | appendTdsFunc($context.exp1->toOne(), limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, ^List<Any>(values=$l.value))
+  ]);
+  ^$context(exp1 = $newExp);
 }
 
 function meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -73,12 +88,11 @@ function meta::external::query::sql::transformation::queryToPure::processTable(t
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getColumns(selectItems: SelectItem[*], columns: TDSColumn[*]): String[*]
 {
-  let newCols = $selectItems->fold({k,a|$k->match([
+  let newCols = $selectItems->fold({k:SelectItem[1],a:String[*]|$k->match([
     s:AllColumns[1] | $columns->fold({
       ck,ca | $ca->concatenate($ck.name);
-    }, [])
-  ])->fold({nck,nca|$nca->concatenate($nck)},$a);
-  
+    }, $a)
+  ])
   }, [])->cast(@String);
   $newCols;
 }
@@ -105,7 +119,7 @@ function meta::external::query::sql::transformation::queryToPure::processSelect(
 function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(func: FunctionExpression[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): FunctionExpression[1]
 {
   let pvs = $args->fold(
-    { k,a | $a->concatenate($k.values->wrapAsInstanceValue()) }, 
+    { k,a:ValueSpecification[*] | $a->concatenate($k.values->wrapAsInstanceValue()) },
     [ $func ]
   );
   ^SimpleFunctionExpression(
@@ -138,7 +152,8 @@ Class <<access.private>> meta::external::query::sql::transformation::queryToPure
   services: Service[*];
   singleExecution: PureSingleExecution[0..1];
   exp1: FunctionExpression[0..1];
-  columns(){ meta::pure::tds::schema::resolveSchema($this.lambda(), meta::relational::extension::relationalExtensions()) }: TDSColumn[*];
+  extensions: meta::pure::extension::Extension[*];
+  columns(){ meta::pure::tds::schema::resolveSchema($this.lambda(), $this.extensions) }: TDSColumn[*];
   columnByName(s:String[1]){$this.columns()->filter(c|$c.name == $s)->first() }: TDSColumn[0..1];
   lambda(){ ^LambdaFunction<{->TabularDataSet[1]}>(expressionSequence = $this.exp1->toOne()) }: LambdaFunction<{->TabularDataSet[1]}>[1];
 }

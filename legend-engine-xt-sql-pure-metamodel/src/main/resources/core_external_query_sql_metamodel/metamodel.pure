@@ -25,6 +25,7 @@ Class meta::external::query::sql::metamodel::Statement extends meta::external::q
 Class meta::external::query::sql::metamodel::Query extends meta::external::query::sql::metamodel::Statement
 {
   queryBody: meta::external::query::sql::metamodel::QueryBody[1];
+  limit: meta::external::query::sql::metamodel::Limit[0..1];
 }
 
 Class meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
@@ -69,4 +70,22 @@ Class meta::external::query::sql::metamodel::Identifier extends meta::external::
 {
   value: String[1];
   delimited: Boolean[1];
+}
+
+Class meta::external::query::sql::metamodel::Literal extends meta::external::query::sql::metamodel::Expression
+{
+}
+
+Class meta::external::query::sql::metamodel::AllRows extends meta::external::query::sql::metamodel::Expression
+{
+}
+
+Class meta::external::query::sql::metamodel::Limit extends meta::external::query::sql::metamodel::Node
+{
+  rowCount: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::LongLiteral extends meta::external::query::sql::metamodel::Literal
+{
+  value: Integer[1];
 }
