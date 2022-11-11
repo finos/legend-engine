@@ -86,18 +86,3 @@ jobs:
         with:
           name: event-file
           path: ${{ github.event_path }}
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
-Security
-Status
-Docs
-Contact GitHub
-Pricing
-API
-Training
-Blog
-About
-legend-engine/build.yml at 93c7cefee41f2b1a6091d70f55693331061fa871 · gs-ssh16/legend-engine
