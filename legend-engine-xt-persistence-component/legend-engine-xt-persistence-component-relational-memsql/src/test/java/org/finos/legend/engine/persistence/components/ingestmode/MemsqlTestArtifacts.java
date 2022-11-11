@@ -72,25 +72,25 @@ public class MemsqlTestArtifacts
     public static String cleanUpMainTableSql = "DELETE FROM `mydb`.`main` as sink";
     public static String cleanupMainTableSqlUpperCase = "DELETE FROM `MYDB`.`MAIN` as sink";
 
-    public static String expectedMainTableBatchIdBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+    public static String expectedMainTableBatchIdBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256)," +
             "`batch_id_in` INTEGER,`batch_id_out` INTEGER,PRIMARY KEY (`id`, `name`, `batch_id_in`))";
 
-    public static String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
+    public static String expectedMetadataTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS batch_metadata" +
             "(`table_name` VARCHAR(255)," +
             "`batch_start_ts_utc` DATETIME," +
             "`batch_end_ts_utc` DATETIME," +
             "`batch_status` VARCHAR(32)," +
             "`table_batch_id` INTEGER)";
 
-    public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
+    public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(`TABLE_NAME` VARCHAR(255)," +
             "`BATCH_START_TS_UTC` DATETIME," +
             "`BATCH_END_TS_UTC` DATETIME," +
             "`BATCH_STATUS` VARCHAR(32)," +
             "`TABLE_BATCH_ID` INTEGER)";
 
-    public static String expectedMainTableBatchIdBasedCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+    public static String expectedMainTableBatchIdBasedCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER,`NAME` VARCHAR(256),`AMOUNT` DOUBLE,`BIZ_DATE` DATE,`DIGEST` VARCHAR(256)," +
             "`BATCH_ID_IN` INTEGER,`BATCH_ID_OUT` INTEGER,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`))";
 
@@ -103,7 +103,7 @@ public class MemsqlTestArtifacts
     public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) " +
             "(SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 
-    public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedMainTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INTEGER," +
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
@@ -115,7 +115,7 @@ public class MemsqlTestArtifacts
             "`batch_time_out` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`))";
 
-    public static String expectedMainTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+    public static String expectedMainTableCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER," +
             "`NAME` VARCHAR(256)," +
             "`AMOUNT` DOUBLE," +
@@ -127,11 +127,11 @@ public class MemsqlTestArtifacts
             "`BATCH_TIME_OUT` DATETIME," +
             "PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`, `BATCH_TIME_IN`))";
 
-    public static String expectedMainTableTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+    public static String expectedMainTableTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256)," +
             "`batch_time_in` DATETIME,`batch_time_out` DATETIME,PRIMARY KEY (`id`, `name`, `batch_time_in`))";
 
-    public static String expectedMainTableTimeBasedCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+    public static String expectedMainTableTimeBasedCreateQueryWithUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
             "(`ID` INTEGER,`NAME` VARCHAR(256),`AMOUNT` DOUBLE,`BIZ_DATE` DATE,`DIGEST` VARCHAR(256)," +
             "`BATCH_TIME_IN` DATETIME,`BATCH_TIME_OUT` DATETIME,PRIMARY KEY (`ID`, `NAME`, `BATCH_TIME_IN`))";
 
