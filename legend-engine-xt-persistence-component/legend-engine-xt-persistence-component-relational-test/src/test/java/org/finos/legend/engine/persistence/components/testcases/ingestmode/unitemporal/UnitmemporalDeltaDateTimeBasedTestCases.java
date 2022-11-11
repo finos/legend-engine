@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
@@ -97,6 +98,39 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     }
 
     public abstract void verifyUnitemporalDeltaWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
+
+    @Test
+    void testUnitemporalDeltaWithUpperCaseOptimizer()
+    {
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .caseConversion(CaseConversion.TO_UPPER)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalDeltaWithUpperCaseOptimizer(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithUpperCaseOptimizer(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalDeltaWithCleanStagingData()
+    {
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .cleanupStagingData(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalDeltaWithCleanStagingData(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithCleanStagingData(GeneratorResult operations);
 
     @Test
     void testUnitemporalDeltaValidationBatchTimeInMissing()

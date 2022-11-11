@@ -102,6 +102,22 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
     public abstract void verifyUnitemporalDeltaWithDeleteIndNoDataSplits(GeneratorResult operations);
 
     @Test
+    void testUnitemporalDeltaWithDeleteIndWithDataSplits()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__WITH_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .collectStatistics(true)
+                .build();
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyUnitemporalDeltaWithDeleteIndWithDataSplits(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
+
+    @Test
     void testUnitemporalDeltaWithUpperCaseOptimizer()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DATA_SPLITS();
