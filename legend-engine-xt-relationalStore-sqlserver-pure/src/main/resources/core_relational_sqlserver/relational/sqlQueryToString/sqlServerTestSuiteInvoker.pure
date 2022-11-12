@@ -35,7 +35,7 @@ function <<access.private>> meta::relational::tests::sqlQueryToString::sqlServer
 {
   let expectedSql = [
     // You can optionally provide a list of pair of (test fn reference, sql string to be asserted as part of test)
-  ]->cast(@Pair<FunctionDefinition<Any>, String>)->filter(p| $p.first == $f)->toOne().second;
+  ]->cast(@Pair<FunctionDefinition<Any>, String>)->newMap()->get($f);
 
   let deviatesFromStandard = $f->in([
     // List of test fn or packages, where the db extension deviates from behaviour described in test.
