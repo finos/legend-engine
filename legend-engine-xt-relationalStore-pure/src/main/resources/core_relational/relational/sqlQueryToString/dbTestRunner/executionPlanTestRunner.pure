@@ -111,10 +111,8 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
                              
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
        if($config.deviatesFromStandard == true,
-        |println('**** Warning **** : The db is configured as deviating from standard for this case, hence no data assertions will be run');
-         [];,
-        |let values = $res.values->cast(@T);
-         ^Result<T|m>(values = $values, activities= $res.activities);
-       );
+        |println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results would be ignored'), |[]);
+       let values = $res.values->cast(@T);
+       ^Result<T|m>(values = $values, activities= $res.activities);
   );  
 }

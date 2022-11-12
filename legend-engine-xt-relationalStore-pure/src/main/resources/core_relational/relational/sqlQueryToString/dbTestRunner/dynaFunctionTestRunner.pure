@@ -48,7 +48,7 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
       | true
     );
   
-if($testConfig.connection->isEmpty(),
+  if($testConfig.connection->isEmpty(),
     |   true ,                                                     // test Connection not available ,do nothing further,
     |     let conn1= $testConfig.connection->toOne();
           let conn = ^$conn1(element= ^Database(name='dummyDB'));                      // overwite given connection db 
@@ -58,18 +58,20 @@ if($testConfig.connection->isEmpty(),
           
           let res = executePlan($plan,relationalExtensions());
           let deviatesFromStandard = $testConfig.deviatesFromStandard == true;
-          if($deviatesFromStandard, |println('**** Warning **** : The db is configured as deviating from standard for this case, hence no data assertions will be run'), |[]);
-          if($res->isEmpty() || $deviatesFromStandard,
+          if($deviatesFromStandard, |println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results would be ignored'), |[]);
+          if($res->isEmpty(),
               | true ,                                   
               | let areEqual = if($equalityComparator->isNotEmpty(),
                                   | $equalityComparator->toOne()->eval($res.values->toOneMany(), $newExpectedResult.value->toOneMany());, // expected values are wrapped in Literals currently
                                   | defaultEqualityComparator($res.values->toOneMany(), $newExpectedResult.value->toOneMany());
                                  );
+                  assert(!$deviatesFromStandard || !$areEqual, '**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');
+
                   let expectedStr = $newExpectedResult.value->map(v|$v->toString())->makeString('[',', ',']');
                   let resStr = $res.values->map(v|$v->toString())->makeString('[',', ',']');
-                  let errMsg=    'Result assert failed ,expected Values : '+ $expectedStr  +', actual Values : ' + $resStr;
+                  let errMsg = 'Result assert failed, expected Values : '+ $expectedStr  +', actual Values : ' + $resStr;
                   
-                  assert($areEqual , $errMsg);
+                  if($deviatesFromStandard, |true, |assert($areEqual , $errMsg));
               );
      );
 }
