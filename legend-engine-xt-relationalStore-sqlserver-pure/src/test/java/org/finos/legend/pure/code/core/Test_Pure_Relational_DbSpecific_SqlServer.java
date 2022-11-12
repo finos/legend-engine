@@ -15,17 +15,19 @@
 package org.finos.legend.pure.code.core;
 
 import junit.framework.TestSuite;
+import org.finos.legend.pure.code.core.compiled.test.IgnoreUnsupportedApiPureTestSuiteRunner;
 import org.finos.legend.pure.code.core.compiled.test.PureTestBuilderHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
+import org.junit.runner.RunWith;
 
+@RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
 public class Test_Pure_Relational_DbSpecific_SqlServer
 {
     public static TestSuite suite()
     {
+        String testPackage = "meta::relational::tests::sqlQueryToString::sqlServer";
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
-        TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::relational::tests::dbSpecificTests::sqlServer", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-        return suite;
+        return PureTestBuilderHelper.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
     }
 }

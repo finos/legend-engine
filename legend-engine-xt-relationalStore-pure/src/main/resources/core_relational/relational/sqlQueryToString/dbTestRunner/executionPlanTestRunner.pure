@@ -23,6 +23,7 @@ Class meta::relational::dbTestRunner::DbTestConfig
    dbType: DatabaseType[1];
    connection: RelationalDatabaseConnection[0..1];
    expectedSql: String[0..1];
+   deviatesFromStandard: Boolean[0..1];
 }
 
 function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1], extensions:meta::pure::extension::Extension[*]):RelationalDatabaseConnection[0..1]
@@ -46,11 +47,11 @@ function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1
      );
 }
 
-function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Function<{DbTestConfig[1] -> Boolean[1]}>[*]
+function meta::relational::dbTestRunner::findParameterizedTests(packOrFn: Any[*]): Function<{DbTestConfig[1] -> Boolean[1]}>[*]
 {
-   $pack.children->map(c| $c->match([
+   $packOrFn->map(pof| $pof->match([
       f:Function<Any>[1]| if($f.stereotypes->contains(meta::pure::test::paramTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> Boolean[1]}>), |[]),
-      p:Package[1]| collectTests($p),
+      p:Package[1]| $p.children->findParameterizedTests(),
       x:Any[1]| []
    ]));
 }
@@ -109,7 +110,11 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
        let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
                              
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
-       let values = $res.values->cast(@T);
-       ^Result<T|m>(values = $values, activities= $res.activities);
+       if($config.deviatesFromStandard == true,
+        |println('**** Warning **** : The db is configured as deviating from standard for this case, hence no data assertions will be run');
+         [];,
+        |let values = $res.values->cast(@T);
+         ^Result<T|m>(values = $values, activities= $res.activities);
+       );
   );  
 }

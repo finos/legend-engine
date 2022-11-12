@@ -1,0 +1,10 @@
+
+function <<test.Test>> meta::relational::tests::testSuite::ensureEveryDynaFnIsTested(): Boolean[1]
+{
+  let dynaFnNames = meta::relational::functions::sqlQueryToString::DynaFunctionRegistry->enumValues().name;
+  let testPackageNames = meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions.children
+    ->filter(c| $c->instanceOf(Package)).name;
+  let testingIgnoredDynaFnNames = ['add', 'average', 'averageRank', 'case', 'convertDate', 'convertDateTime', 'convertVarchar128', 'count', 'dayOfWeek', 'decodeBase64', 'denseRank', 'distinct', 'divide', 'encodeBase64', 'exists', 'group', 'if', 'isAlphaNumeric', 'isDistinct', 'isNumeric', 'matches', 'max', 'min', 'minus', 'not', 'objectReferenceIn', 'parseDate', 'parseDecimal', 'parseFloat', 'parseInteger', 'parseJson', 'percentile', 'plus', 'rank', 'rowNumber', 'size', 'stdDevPopulation', 'stdDevSample', 'sub', 'sum', 'times', 'toOne', 'toString'];
+  let untestedDynaFnNames = $dynaFnNames->filter(d| !$d->in($testPackageNames) && !$d->in($testingIgnoredDynaFnNames));
+  assert($untestedDynaFnNames->isEmpty(), |'dyna fns ' + $untestedDynaFnNames->makeString('[', ', ', ']') + ' are missing tests in sqlQueryToString/testSuite');
+}

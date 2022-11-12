@@ -16,32 +16,26 @@ import meta::pure::test::*;
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 
-function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::snowflake::testSuiteInvoker(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::spanner::testSuiteInvoker(): PureTestCollection[1]
 {
-  let connection = getTestConnection(DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-  
+  let connection = getTestConnection(DatabaseType.Spanner, meta::relational::extension::relationalExtensions());
+
   // If a feature described in extension APIs / test suite is not supported,
   // then throw an exception with message that starts with '[unsupported-api]'
   // Tests which raise such exception will be reported as ignored by the runner
   
-  meta::relational::tests::dbSpecificTests->collectParameterizedTests('Snowflake',
-                ^DbTestConfig(dbType=DatabaseType.Snowflake, connection=$connection),
-                meta::relational::tests::sqlQueryToString::snowflake::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+  meta::relational::tests::dbSpecificTests->collectParameterizedTests('Spanner',
+                ^DbTestConfig(dbType=DatabaseType.Spanner, connection=$connection),
+                meta::relational::tests::sqlQueryToString::spanner::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
                 []
             );
 }
 
-function <<access.private>> meta::relational::tests::sqlQueryToString::snowflake::testParamCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+function <<access.private>> meta::relational::tests::sqlQueryToString::spanner::testParamCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
 {
   let expectedSql = [
     // You can optionally provide a list of pair of (test fn reference, sql string to be asserted as part of test)
   ]->cast(@Pair<FunctionDefinition<Any>, String>)->filter(p| $p.first == $f)->toOne().second;
 
-  let deviatesFromStandard = $f->in([
-    // List of test fn or packages, where the db extension deviates from behaviour described in test.
-    // This is to preserve older (incorrect) behaviour for backward compatibility reasons.
-    // Use this feature carefully and sparingly
-  ]->findParameterizedTests());
-
-  ^$dbTestConfig(expectedSql = $expectedSql, deviatesFromStandard = $deviatesFromStandard);
+  ^$dbTestConfig(expectedSql = $expectedSql);
 }

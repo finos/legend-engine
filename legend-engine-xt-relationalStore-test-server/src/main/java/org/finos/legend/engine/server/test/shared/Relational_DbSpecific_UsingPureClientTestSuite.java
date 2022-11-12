@@ -34,8 +34,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
         RelationalTestServer server = PureWithEngineHelper.initEngineServer(testServerConfigFilePath, () -> new RelationalTestServer(extraConfigTypes));
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
 
-        TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        TestSuite suite = PureTestBuilderHelper.buildSuite(TestCollection.collectTests(pureTestCollectionPath, executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
 
         return new TestSetup(suite)
         {

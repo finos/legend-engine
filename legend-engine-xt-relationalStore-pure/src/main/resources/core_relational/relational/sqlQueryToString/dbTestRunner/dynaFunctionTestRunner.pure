@@ -57,8 +57,10 @@ if($testConfig.connection->isEmpty(),
           let plan = wrapSQLStringInExecutionPlan($sqlString, $newExpectedResultTypes, $testConfig.dbType,$conn) ;
           
           let res = executePlan($plan,relationalExtensions());
-          if($res->isEmpty(),
-              | true ,                                  //legend engine not available 
+          let deviatesFromStandard = $testConfig.deviatesFromStandard == true;
+          if($deviatesFromStandard, |println('**** Warning **** : The db is configured as deviating from standard for this case, hence no data assertions will be run'), |[]);
+          if($res->isEmpty() || $deviatesFromStandard,
+              | true ,                                   
               | let areEqual = if($equalityComparator->isNotEmpty(),
                                   | $equalityComparator->toOne()->eval($res.values->toOneMany(), $newExpectedResult.value->toOneMany());, // expected values are wrapped in Literals currently
                                   | defaultEqualityComparator($res.values->toOneMany(), $newExpectedResult.value->toOneMany());
