@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::runtime::*;
+import meta::relational::mapping::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::mapping::*;
@@ -93,29 +94,27 @@ function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], c
 
 function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[0..1]
 {
-  if($config.connection->isEmpty(),
+  let pureRuntime = if($config.connection->isEmpty(),
      | 
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
-       let pureRuntime = ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));
-
-       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-       []; ,               
-     | 
+       ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));,
+     |
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
        let connWithDb= ^$conn(element=$db);
-       let pureRuntime = ^Runtime(connections=$connWithDb);
+       ^Runtime(connections=$connWithDb);
+  );
 
-       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-                             
+  let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+  let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
+  
+  if($config.expectedSql->isEmpty(), |true,
+    |assertEquals($config.expectedSql->toOne(), $boundPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
+
+  if($config.connection->isEmpty(), |[],             
+     | 
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
-       
        let values = $res.values->cast(@T);
-       let result = ^Result<T|m>(values = $values, activities= $res.activities);
-
-       if($config.expectedSql->isNotEmpty(), |meta::relational::functions::asserts::assertSameSQL($config.expectedSql->toOne(), $result), |true);
-       $result;
+       ^Result<T|m>(values = $values, activities= $res.activities);
   );  
 }
 
