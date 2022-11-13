@@ -110,9 +110,24 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
        let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
                              
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
-       if($config.deviatesFromStandard == true,
-        |println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results would be ignored'), |[]);
+       
        let values = $res.values->cast(@T);
-       ^Result<T|m>(values = $values, activities= $res.activities);
+       let result = ^Result<T|m>(values = $values, activities= $res.activities);
+
+       if($config.expectedSql->isNotEmpty(), |meta::relational::functions::asserts::assertSameSQL($config.expectedSql->toOne(), $result), |true);
+       $result;
   );  
+}
+
+function meta::relational::dbTestRunner::runDataAssertion<T|m>(result:Result<T|m>[0..1], config:DbTestConfig[1], assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
+{
+  if($result->isEmpty(), |true,
+    |if($config.deviatesFromStandard == true, |$assertion->runDataAssertionWhichDeviatesFromStandard(), |$assertion->eval()));
+}
+
+function meta::relational::dbTestRunner::runDataAssertionWhichDeviatesFromStandard(assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
+{
+  println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results are expected to fail');
+  $assertion->eval();
+  fail('**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');
 }

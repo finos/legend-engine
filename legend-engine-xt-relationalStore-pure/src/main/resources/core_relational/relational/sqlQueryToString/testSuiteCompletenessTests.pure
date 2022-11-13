@@ -2,9 +2,12 @@
 function <<test.Test>> meta::relational::tests::testSuite::ensureEveryDynaFnIsTested(): Boolean[1]
 {
   let dynaFnNames = meta::relational::functions::sqlQueryToString::DynaFunctionRegistry->enumValues().name;
-  let testedDynaFnNames = meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions.children
-    ->filter(c| $c->instanceOf(Package)).name;
-  let testingIgnoredDynaFnNames = ['add', 'average', 'averageRank', 'case', 'convertDate', 'convertDateTime', 'convertVarchar128', 'count', 'dayOfWeek', 'decodeBase64', 'denseRank', 'distinct', 'divide', 'encodeBase64', 'exists', 'group', 'if', 'isAlphaNumeric', 'isDistinct', 'isNumeric', 'matches', 'max', 'min', 'minus', 'not', 'objectReferenceIn', 'parseDate', 'parseDecimal', 'parseFloat', 'parseInteger', 'parseJson', 'percentile', 'plus', 'rank', 'rowNumber', 'size', 'stdDevPopulation', 'stdDevSample', 'sub', 'sum', 'times', 'toOne', 'toString'];
+  let packagesContainingDynaFnTests = [
+    meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions,
+    meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns
+  ];
+  let testedDynaFnNames = $packagesContainingDynaFnTests.children->filter(c| $c->instanceOf(Package)).name;
+  let testingIgnoredDynaFnNames = ['add', 'averageRank', 'case', 'convertDate', 'convertDateTime', 'convertVarchar128', 'dayOfWeek', 'decodeBase64', 'denseRank', 'distinct', 'divide', 'encodeBase64', 'exists', 'group', 'if', 'isAlphaNumeric', 'isDistinct', 'isNumeric', 'matches', 'minus', 'not', 'objectReferenceIn', 'parseDate', 'parseDecimal', 'parseFloat', 'parseInteger', 'parseJson', 'percentile', 'plus', 'rank', 'rowNumber', 'sub', 'times', 'toOne', 'toString'];
   let incorrectlyMarkedDynaFnNames = $testingIgnoredDynaFnNames->filter(n| $n->in($testedDynaFnNames));
   assert($incorrectlyMarkedDynaFnNames->isEmpty(), |'dyna fns ' + $incorrectlyMarkedDynaFnNames->makeString('[', ', ', ']') + ' are incorrectly marked as ignored even though they are tested in sqlQueryToString/testSuite');
   let untestedDynaFnNames = $dynaFnNames->filter(d| !$d->in($testedDynaFnNames) && !$d->in($testingIgnoredDynaFnNames));

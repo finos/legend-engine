@@ -57,21 +57,18 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
           let plan = wrapSQLStringInExecutionPlan($sqlString, $newExpectedResultTypes, $testConfig.dbType,$conn) ;
           
           let res = executePlan($plan,relationalExtensions());
-          let deviatesFromStandard = $testConfig.deviatesFromStandard == true;
-          if($deviatesFromStandard, |println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results would be ignored'), |[]);
-          if($res->isEmpty(),
-              | true ,                                   
-              | let areEqual = if($equalityComparator->isNotEmpty(),
+
+          runDataAssertion($res, $testConfig,                                  
+                | let areEqual = if($equalityComparator->isNotEmpty(),
                                   | $equalityComparator->toOne()->eval($res.values->toOneMany(), $newExpectedResult.value->toOneMany());, // expected values are wrapped in Literals currently
                                   | defaultEqualityComparator($res.values->toOneMany(), $newExpectedResult.value->toOneMany());
                                  );
-                  assert(!$deviatesFromStandard || !$areEqual, '**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');
 
                   let expectedStr = $newExpectedResult.value->map(v|$v->toString())->makeString('[',', ',']');
                   let resStr = $res.values->map(v|$v->toString())->makeString('[',', ',']');
                   let errMsg = 'Result assert failed, expected Values : '+ $expectedStr  +', actual Values : ' + $resStr;
                   
-                  if($deviatesFromStandard, |true, |assert($areEqual , $errMsg));
+                  assert($areEqual , $errMsg);
               );
      );
 }

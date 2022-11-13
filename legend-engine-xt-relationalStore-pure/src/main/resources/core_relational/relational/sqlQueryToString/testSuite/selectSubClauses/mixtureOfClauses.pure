@@ -30,7 +30,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->restrict(['personName', 'personAge', 'faID'])
                         ->filter(p | $p.getInteger('personAge') > 30), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
                     
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertSize($result.values.rows, 3 );
     assertSameElements(['Roberts,34,9', 'Hill,32,10', 'Harris,35,11'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -44,7 +44,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->restrict(['personName', 'personAge', 'faID'])
                         ->filter(p | $p.getInteger('personAge') > 30), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertSize($result.values.rows, 3 );
     assertSameElements(['Roberts,34,9', 'Hill,32,10', 'Harris,35,11'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -58,7 +58,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->restrict(['personName', 'personAge', 'faID'])
                         ->groupBy('faID', agg('cnt', x|$x, y| $y->count())), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertSize($result.values.rows, 4);
     assertSameElements(['8,4', '9,1', '11,1', '10,1'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -72,7 +72,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->restrict(['personName', 'personAge', 'faID'])
                         ->groupBy('faID', agg('cnt', x|$x, y| $y->count())), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertSize($result.values.rows, 4);
     assertSameElements(['8,4', '9,1', '11,1', '10,1'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -89,7 +89,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                          ->distinct()
                          ->groupBy('legalName', agg('lastNamesCount', x|$x.getString('lastName'), y|$y->distinct()->count())), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
    
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | let tds = $result.values->at(0);
     assertEquals(4, $tds.rows->size());
     assertEquals(4, $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getInteger('lastNamesCount')->sort());
