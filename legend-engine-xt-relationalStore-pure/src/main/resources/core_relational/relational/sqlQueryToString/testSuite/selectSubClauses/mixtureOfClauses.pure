@@ -31,8 +31,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->filter(p | $p.getInteger('personAge') > 30), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
                     
   runDataAssertion($result, $config,
-  | assertSize($result.values.rows, 3 );
-    assertSameElements(['Roberts,34,9', 'Hill,32,10', 'Harris,35,11'], $result.values.rows->map(r|$r.values->makeString(',')));
+  | assertSameElements(['Roberts,34,9', 'Hill,32,10', 'Harris,35,11'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
 
@@ -45,8 +44,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->filter(p | $p.getInteger('personAge') > 30), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values.rows, 3 );
-    assertSameElements(['Roberts,34,9', 'Hill,32,10', 'Harris,35,11'], $result.values.rows->map(r|$r.values->makeString(',')));
+  | assertSameElements(['Roberts,34,9', 'Hill,32,10', 'Harris,35,11'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
 
@@ -59,8 +57,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->groupBy('faID', agg('cnt', x|$x, y| $y->count())), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values.rows, 4);
-    assertSameElements(['8,4', '9,1', '11,1', '10,1'], $result.values.rows->map(r|$r.values->makeString(',')));
+  | assertSameElements(['8,4', '9,1', '11,1', '10,1'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
 
@@ -73,8 +70,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                         ->groupBy('faID', agg('cnt', x|$x, y| $y->count())), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values.rows, 4);
-    assertSameElements(['8,4', '9,1', '11,1', '10,1'], $result.values.rows->map(r|$r.values->makeString(',')));
+  | assertSameElements(['8,4', '9,1', '11,1', '10,1'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
 

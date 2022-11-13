@@ -25,8 +25,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|Person.all()->filter(p|$p.firstName == 'John'), simpleRelationalMapping, meta::relational::tests::db, $config,meta::relational::extension::relationalExtensions());
    
   runDataAssertion($result, $config,
-  | assertSize($result.values, 2);
-    assertSameElements(['Johnson', 'Hill'], $result.values->map(p|$p.lastName));
+  | assertSameElements(['Johnson', 'Hill'], $result.values->map(p|$p.lastName));
   ); 
 }
 
@@ -35,8 +34,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|Person.all()->filter(p|$p.firstName <= 'John'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
   
   runDataAssertion($result, $config,
-  | assertSize($result.values, 5);
-    assertSameElements(['Johnson', 'Hill', 'Allen', 'Roberts', 'Harris'], $result.values->map(p|$p.lastName));
+  | assertSameElements(['Johnson', 'Hill', 'Allen', 'Roberts', 'Harris'], $result.values->map(p|$p.lastName));
   );
 }
 
@@ -45,8 +43,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|Person.all()->filter(p|$p.firstName >= 'John'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values, 4);
-    assertSameElements(['Smith', 'Johnson', 'Hill', 'Hill'], $result.values->map(p|$p.lastName));
+  | assertSameElements(['Smith', 'Johnson', 'Hill', 'Hill'], $result.values->map(p|$p.lastName));
   );
 }
 
@@ -55,8 +52,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|Person.all()->filter(p | $p.firstName != 'John'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values, 5);
-    assertSameElements(['Smith', 'Allen', 'Roberts', 'Hill', 'Harris'], $result.values->map(p|$p.lastName));
+  | assertSameElements(['Smith', 'Allen', 'Roberts', 'Hill', 'Harris'], $result.values->map(p|$p.lastName));
   );
 }
 
@@ -65,8 +61,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|Person.all()->groupBy([p|$p.age], agg(x|$x.address.name,y|$y->joinStrings(',')),['age', 'addresses'])->filter({r|$r.getString('addresses')->contains('Hoboken')}), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values.rows, 1);
-    assertEquals(['23,Hoboken'],$result.values.rows->map(r|$r.values->makeString(',')));
+  | assertEquals(['23,Hoboken'],$result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
 
@@ -81,8 +76,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
     }), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
   runDataAssertion($result, $config,
-  | assertSize($result.values.rows, 1);
-    assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
+  | assertEquals(['John','Johnson'], $result.values.rows->map(r|$r.values));
   );
 }
 

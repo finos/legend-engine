@@ -119,15 +119,17 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
   );  
 }
 
-function meta::relational::dbTestRunner::runDataAssertion<T|m>(result:Result<T|m>[0..1], config:DbTestConfig[1], assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
+function meta::relational::dbTestRunner::runDataAssertion(result:Any[0..1], config:DbTestConfig[1], assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
 {
   if($result->isEmpty(), |true,
-    |if($config.deviatesFromStandard == true, |$assertion->runDataAssertionWhichDeviatesFromStandard(), |$assertion->eval()));
+    |if($config.deviatesFromStandard == true,
+        | $assertion->runDataAssertionWhichDeviatesFromStandard();
+          fail('**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');,
+        | $assertion->eval()));
 }
 
 function meta::relational::dbTestRunner::runDataAssertionWhichDeviatesFromStandard(assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
 {
   println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results are expected to fail');
   $assertion->eval();
-  fail('**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');
 }
