@@ -25,7 +25,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $servicesFound->toOne();
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   let queryContext = $query.queryBody->processNode($context);
   let orderByContext = if($query.orderBy->isEmpty(), |$queryContext, |$query.orderBy->toOne()->processNode($queryContext));
@@ -157,7 +157,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
-Class <<access.private>> meta::external::query::sql::transformation::queryToPure::SqlTransformContext
+Class meta::external::query::sql::transformation::queryToPure::SqlTransformContext
 {
   services: Service[*];
   singleExecution: PureSingleExecution[0..1];

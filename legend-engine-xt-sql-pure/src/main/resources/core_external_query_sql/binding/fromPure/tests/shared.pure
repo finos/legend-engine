@@ -1,0 +1,77 @@
+###Pure
+Class meta::external::query::sql::transformation::queryToPure::tests::FlatInput
+{
+  idIn: Integer[1];
+  booleanIn: Boolean[1];
+  integerIn: Integer[1];
+  floatIn: Float[1];
+  decimalIn: Decimal[1];
+  strictDateIn: StrictDate[1];
+  dateTimeIn: DateTime[1];
+  stringIn: String[1];
+}
+
+###Mapping
+Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMapping
+(
+)
+
+###Pure
+import meta::pure::alloy::connections::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::runtime::*;
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::mapping::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::transformation::queryToPure::tests::*;
+import meta::external::query::sql::metamodel::*;
+
+function meta::external::query::sql::transformation::queryToPure::tests::dummyConnection(): Connection[1]
+{
+  ^Connection(
+    element = 'dummy'
+  )
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dummyRuntime(): Runtime[1]
+{
+  ^EngineRuntime(
+    mappings = dummyMapping,
+    connections = dummyConnection()
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::assertEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
+{
+  assertEquals($expected->printFunctionDefinition(''), $actual->printFunctionDefinition(''));
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::TdsService(): Service[1]
+{
+  ^Service
+  (
+    pattern = '/service/testTdsService',
+    owners = ['dummy'],
+    documentation = '',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+    (
+      func = | FlatInput.all()->project(
+        [
+          x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn
+        ],
+        [
+          'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'
+        ]
+      ),
+      mapping = dummyMapping,
+      runtime = dummyRuntime()
+    ),
+    test = ^SingleExecutionTest(
+      data = '',
+      asserts = ^TestContainer(assert = x:Result<Any|m>[1] | true))
+  );
+}
+
