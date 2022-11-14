@@ -461,5 +461,4 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
     }
-
 }
