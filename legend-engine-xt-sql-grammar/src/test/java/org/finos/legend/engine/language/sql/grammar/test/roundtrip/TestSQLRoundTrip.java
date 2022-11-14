@@ -32,6 +32,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testLimitAllExpressionRoundTrip()
+    {
+        check("SELECT * FROM alloy.\"table\" LIMIT ALL");
+    }
+
+    @Test
     public void testSelectOneColumnRoundTrip()
     {
         check("SELECT DISTINCT id FROM alloy.\"table\" LIMIT 1");

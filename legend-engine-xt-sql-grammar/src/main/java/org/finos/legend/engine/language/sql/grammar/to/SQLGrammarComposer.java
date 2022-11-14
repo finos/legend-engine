@@ -62,7 +62,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(AllRows val)
             {
-                return null;
+                return "ALL";
             }
 
             @Override
