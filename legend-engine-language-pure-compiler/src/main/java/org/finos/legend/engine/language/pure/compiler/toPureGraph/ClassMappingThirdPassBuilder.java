@@ -28,7 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.EnumValue;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.core_pure_router_operations_router_operations;
+import org.finos.legend.pure.generated.core_pure_router_router_routing;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EnumerationMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -95,7 +95,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                     Assert.assertTrue(setImplementation != null, () -> "Can't find class mapping for '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "'", pSourceInformation, EngineErrorType.COMPILATION);
                 }
 
-                List<? extends InstanceSetImplementation> setImpls = core_pure_router_operations_router_operations.Root_meta_pure_router_routing_resolveOperation_SetImplementation_MANY__Mapping_1__InstanceSetImplementation_MANY_(Lists.immutable.of(setImplementation), parentMapping, this.context.pureModel.getExecutionSupport()).toList();
+                List<? extends InstanceSetImplementation> setImpls = core_pure_router_router_routing.Root_meta_pure_router_routing_resolveOperation_SetImplementation_MANY__Mapping_1__InstanceSetImplementation_MANY_(Lists.immutable.of(setImplementation), parentMapping, this.context.pureModel.getExecutionSupport()).toList();
                 typesToCheck = setImpls.stream().map(setImpl -> ((PureInstanceSetImplementation) setImpl)._srcClass()).collect(Collectors.toList());
             }
             else if (((org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping) p)._transformer() != null)

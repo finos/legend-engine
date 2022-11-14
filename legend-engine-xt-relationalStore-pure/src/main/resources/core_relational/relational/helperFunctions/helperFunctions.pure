@@ -26,7 +26,6 @@ import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::functions::sqlQueryToString::*;
-import meta::pure::router::metamodel::*;
 
 function meta::relational::mapping::sql(result:Result<Any|*>[1]):String[1]
 {

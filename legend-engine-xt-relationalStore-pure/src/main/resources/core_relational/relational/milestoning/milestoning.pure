@@ -28,7 +28,7 @@ import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::milestoning::*;
-import meta::pure::router::metamodel::*;
+
 
 Enum meta::relational::milestoning::MilestoningProcessingState{
    MILESTONED_ALL_FUNC,

@@ -94,7 +94,7 @@ function meta::relational::postProcessor::processObjectReferenceInOperation(quer
                                                                                                                                   dataType = pureTypeToDataType(String, $translationContext)->toOne())
                                                                                                      ),
                                                                           connection              = $connection,
-                                                                          resultType              = ^VoidResultType(type=meta::pure::router::store::routing::Void)
+                                                                          resultType              = ^VoidResultType(type=Void)
                                                                        );
 
                            let executionNodesToBeAdded              = $allocationNodeForPkValues->concatenate($createAndPopulateTempTableNode);

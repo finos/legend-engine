@@ -710,7 +710,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
 
    let expectedTree = 'root\n'+
                       '  ------> (t) personTable [ADDRESSID, AGE, FIRMID, FIRSTNAME, ID, LASTNAME, MANAGERID]\n';
-   assertEquals($expectedTree, $relationTree->relationTreeAsString());
+   assertEquals($expectedTree, $relationTree-> relationTreeAsString());
 }
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations::test::testTableToTdsWithProject():Boolean[1]

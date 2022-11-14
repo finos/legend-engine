@@ -1,5 +1,0 @@
-{
-    "name" : "core_external_format_flatdata_java_platform_binding",
-    "pattern" : "(meta::external::format::flatdata::executionPlan::engine::java)(::.*)?",
-    "dependencies" : ["platform", "core", "core_external_format_flatdata", "core_external_language_java", "core_java_platform_binding"]
-}

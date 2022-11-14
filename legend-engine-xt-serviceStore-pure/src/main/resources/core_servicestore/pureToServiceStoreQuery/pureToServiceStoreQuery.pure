@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::pure::mapping::*;
-import meta::pure::router::metamodel::*;
 import meta::pure::router::printer::*;
 
 import meta::external::store::service::functions::pureToServiceStoreQuery::*;
