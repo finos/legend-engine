@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import java.util.Optional;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
@@ -23,6 +24,11 @@ import org.finos.legend.engine.persistence.components.ingestmode.transactionmile
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidityMilestoning;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.AuditingVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.DateTimeAuditing;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.auditing.NoAuditing;
@@ -37,6 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivationVisitor;
+import static org.finos.legend.engine.testable.persistence.mapper.DatasetMapper.isFieldNamePresent;
 
 public class MappingVisitors
 {
@@ -141,4 +148,272 @@ public class MappingVisitors
                     .build();
         }
     };
+
+    public static class EnrichSchemaWithAuditing implements AuditingVisitor<Void>
+    {
+        private SchemaDefinition.Builder schemaDefinitionBuilder;
+        private SchemaDefinition baseSchema;
+
+        public EnrichSchemaWithAuditing(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
+        {
+            this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = baseSchema;
+        }
+
+        @Override
+        public Void visit(NoAuditing auditing)
+        {
+            return null;
+        }
+
+        @Override
+        public Void visit(DateTimeAuditing auditing)
+        {
+            // if DateTimeAuditing -> user provided BATCH_TIME_IN field addition
+            if (!isFieldNamePresent(baseSchema, auditing.dateTimeName))
+            {
+                Field auditDateTime = Field.builder()
+                        .name(auditing.dateTimeName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .build();
+                schemaDefinitionBuilder.addFields(auditDateTime);
+            }
+            return null;
+        }
+    }
+
+    public static class EnrichSchemaWithMergyStrategy implements MergeStrategyVisitor<Void>
+    {
+        private SchemaDefinition.Builder schemaDefinitionBuilder;
+        private SchemaDefinition baseSchema;
+
+        public EnrichSchemaWithMergyStrategy(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
+        {
+            this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = baseSchema;
+        }
+
+        @Override
+        public Void visit(NoDeletesMergeStrategy mergeStrategy)
+        {
+            return null;
+        }
+
+        @Override
+        public Void visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.merge.DeleteIndicatorMergeStrategy mergeStrategy)
+        {
+            // if DeleteIndicatorMergeStrategy -> user provided DELETED field addition
+            if (!isFieldNamePresent(baseSchema, mergeStrategy.deleteField))
+            {
+                Field deleted = Field.builder()
+                        .name(mergeStrategy.deleteField)
+                        .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
+                        .build();
+                schemaDefinitionBuilder.addFields(deleted);
+            }
+            return null;
+        }
+    }
+
+    public static class EnrichSchemaWithTransactionMilestoning implements TransactionMilestoningVisitor<Void>
+    {
+        private SchemaDefinition.Builder schemaDefinitionBuilder;
+        private SchemaDefinition baseSchema;
+
+        public EnrichSchemaWithTransactionMilestoning(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
+        {
+            this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = baseSchema;
+        }
+
+        @Override
+        public Void visit(BatchIdTransactionMilestoning transactionMilestoning)
+        {
+            // if BatchId based transactionMilestoning -> user provided BATCH_IN BATCH_OUT fields addition
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdInName))
+            {
+                Field batchIdIn = Field.builder()
+                        .name(transactionMilestoning.batchIdInName)
+                        .type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty()))
+                        .primaryKey(true)
+                        .build();
+                schemaDefinitionBuilder.addFields(batchIdIn);
+            }
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdOutName))
+            {
+                Field batchIdOut = Field.builder()
+                        .name(transactionMilestoning.batchIdOutName)
+                        .type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                schemaDefinitionBuilder.addFields(batchIdOut);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(DateTimeTransactionMilestoning transactionMilestoning)
+        {
+            // if TransactionDateTime based transactionMilestoning -> user provided IN_Z OUT_Z fields addition
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeInName))
+            {
+                Field dateTimeIn = Field.builder()
+                        .name(transactionMilestoning.dateTimeInName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(true)
+                        .build();
+                schemaDefinitionBuilder.addFields(dateTimeIn);
+            }
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeOutName))
+            {
+                Field dateTimeOut = Field.builder()
+                        .name(transactionMilestoning.dateTimeOutName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                schemaDefinitionBuilder.addFields(dateTimeOut);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(BatchIdAndDateTimeTransactionMilestoning transactionMilestoning)
+        {
+            // if TransactionDateTime based transactionMilestoning -> user provided IN_Z OUT_Z fields addition
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdInName))
+            {
+                Field batchIdIn = Field.builder()
+                        .name(transactionMilestoning.batchIdInName)
+                        .type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty()))
+                        .primaryKey(true)
+                        .build();
+                schemaDefinitionBuilder.addFields(batchIdIn);
+            }
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.batchIdOutName))
+            {
+                Field batchIdOut = Field.builder()
+                        .name(transactionMilestoning.batchIdOutName)
+                        .type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                schemaDefinitionBuilder.addFields(batchIdOut);
+            }
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeInName))
+            {
+                Field dateTimeIn = Field.builder()
+                        .name(transactionMilestoning.dateTimeInName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                schemaDefinitionBuilder.addFields(dateTimeIn);
+            }
+            if (!isFieldNamePresent(baseSchema, transactionMilestoning.dateTimeOutName))
+            {
+                Field dateTimeOut = Field.builder()
+                        .name(transactionMilestoning.dateTimeOutName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                schemaDefinitionBuilder.addFields(dateTimeOut);
+            }
+            return null;
+        }
+    }
+
+    public static class EnrichSchemaWithValidityMilestoning implements ValidityMilestoningVisitor<Void>
+    {
+        private SchemaDefinition.Builder mainSchemaDefinitionBuilder;
+        private SchemaDefinition.Builder stagingSchemaDefinitionBuilder;
+        private SchemaDefinition baseSchema;
+
+        public EnrichSchemaWithValidityMilestoning(SchemaDefinition.Builder mainSchemaDefinitionBuilder,
+                                                   SchemaDefinition.Builder stagingSchemaDefinitionBuilder,
+                                                   SchemaDefinition baseSchema)
+        {
+            this.mainSchemaDefinitionBuilder = mainSchemaDefinitionBuilder;
+            this.stagingSchemaDefinitionBuilder = stagingSchemaDefinitionBuilder;
+            this.baseSchema = baseSchema;
+        }
+
+        @Override
+        public Void visit(DateTimeValidityMilestoning validDateTime)
+        {
+            // if ValidDateTime based validityMilestoning -> user provided FROM_Z THRU_Z fields addition
+            if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeFromName))
+            {
+                Field dateTimeFrom = Field.builder()
+                        .name(validDateTime.dateTimeFromName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(true)
+                        .build();
+                mainSchemaDefinitionBuilder.addFields(dateTimeFrom);
+            }
+            if (!isFieldNamePresent(baseSchema, validDateTime.dateTimeThruName))
+            {
+                Field dateTimeThru = Field.builder()
+                        .name(validDateTime.dateTimeThruName)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                mainSchemaDefinitionBuilder.addFields(dateTimeThru);
+            }
+
+            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, baseSchema));
+            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, baseSchema));
+            return null;
+        }
+    }
+
+    public static class EnrichSchemaWithValidityMilestoningDerivation implements ValidityDerivationVisitor<Void>
+    {
+        private SchemaDefinition.Builder schemaDefinitionBuilder;
+        private SchemaDefinition baseSchema;
+
+        public EnrichSchemaWithValidityMilestoningDerivation(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
+        {
+            this.schemaDefinitionBuilder = schemaDefinitionBuilder;
+            this.baseSchema = baseSchema;
+        }
+
+        @Override
+        public Void visit(SourceSpecifiesFromDateTime validityMilestoningDerivation)
+        {
+            // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM field addition
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField))
+            {
+                Field sourceDateTimeFrom = Field.builder()
+                        .name(validityMilestoningDerivation.sourceDateTimeFromField)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(true)
+                        .build();
+                schemaDefinitionBuilder.addFields(sourceDateTimeFrom);
+            }
+            return null;
+        }
+
+        @Override
+        public Void visit(SourceSpecifiesFromAndThruDateTime validityMilestoningDerivation)
+        {
+            // if SourceSpecifiesFromDateTime based validityMilestoningDerivation -> user provided SOURCE_FROM SOURCE_THRU fields addition
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeFromField))
+            {
+                Field sourceDateTimeFrom = Field.builder()
+                        .name(validityMilestoningDerivation.sourceDateTimeFromField)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(true)
+                        .build();
+                schemaDefinitionBuilder.addFields(sourceDateTimeFrom);
+            }
+            if (!isFieldNamePresent(baseSchema, validityMilestoningDerivation.sourceDateTimeThruField))
+            {
+                Field sourceDateTimeThru = Field.builder()
+                        .name(validityMilestoningDerivation.sourceDateTimeThruField)
+                        .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(false)
+                        .build();
+                schemaDefinitionBuilder.addFields(sourceDateTimeThru);
+            }
+            return null;
+        }
+    }
 }

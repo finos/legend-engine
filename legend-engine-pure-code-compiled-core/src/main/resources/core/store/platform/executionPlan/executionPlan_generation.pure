@@ -19,15 +19,21 @@ import meta::pure::router::clustering::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::store::platform::executionPlan::generation::*;
-import meta::pure::router::platform::metamodel::clustering::*;
 import meta::pure::store::platform::metamodel::*;
-import meta::pure::router::metamodel::*;
-import meta::pure::router::metamodel::clustering::*;
 
 Class meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState
 {
    inScopeVars     : Map<String, List<Any>>[1];
    exeCtx          : ExecutionContext[1];
+
+   checked         : Boolean[0..1];
+   graphContext    : GraphFetchContext[0..1];
+}
+
+Class meta::pure::store::platform::executionPlan::generation::GraphFetchContext
+{
+   graphFetchTree  : RootGraphFetchTree<Any>[1];
+   batchSize       : Integer[0..1];
 }
 
 Class meta::pure::store::platform::executionPlan::generation::PureFunctionToProcessFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>>
@@ -47,7 +53,7 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
 
 function <<access.private>> meta::pure::store::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::router::clustering::recursivelyFetchClusteredValueSpecification(false))->map(v|$v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug));
+   let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification())->map(v|$v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug));
    let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
    let varInputs = $funcParams->filter(x| $state.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
 
@@ -60,6 +66,34 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
       executionNodes = $children,
       fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $state.inScopeVars)
    );
+}
+
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::checkedFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   $fe.parametersValues->at(0)->meta::pure::store::platform::executionPlan::generation::processValueSpecification(^$state(checked = true), $extensions, $debug)->toOne();
+}
+
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::graphFetchFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   // TODO: This should not be needed here once routing is uplifted to handle externalFormats, store & platform correctly
+   let updatedState = if($fe.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,   
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_,
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
+                          |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
+                          | ^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
+                          | fail('Unknown graphFetch function - ' + $fe.func.name->orElse('')); $state;
+                      )))));
+
+   $fe.parametersValues->at(0)->meta::pure::store::platform::executionPlan::generation::processValueSpecification($updatedState, $extensions, $debug)->toOne();
 }
 
 function <<access.private>> meta::pure::store::platform::executionPlan::generation::serializeFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
@@ -118,10 +152,12 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):PlatformClusteredValueSpecification[1]
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):ClusteredValueSpecification[1]
 {
-   ^PlatformClusteredValueSpecification(
-      val = $fe,
+   ^ClusteredValueSpecification(
+      val = $fe, 
+      store = ^PlatformStore(package=::), 
+      s = meta::pure::store::platform::contract::platformStoreContract(),
       executable=true, 
       multiplicity = $fe.multiplicity, 
       genericType  = $fe.genericType, 
@@ -129,18 +165,43 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification(vs:ValueSpecification[1]):ClusteredValueSpecification[*]
+{
+   $vs->match([
+      f:SimpleFunctionExpression[1]|$f.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()),
+      c:ClusteredValueSpecification[*]|$c,
+      i:InstanceValue[1]|[],
+      v:VariableExpression[1]|[],
+      fvs:FunctionRoutedValueSpecification[1]|$fvs.value->meta::pure::store::platform::executionPlan::generation::recursivelyFetchClusteredValueSpecification()
+   ]);
+}
+
+function <<access.private>> meta::pure::store::platform::executionPlan::generation::getFunctionParameterValue(fe:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], index: Integer[1]):Any[*]
+{
+   $fe.parametersValues->evaluateAndDeactivate()->at($index)->match([
+      i:InstanceValue[1]| $i.values,
+      v:VariableExpression[1]|  $inScopeVars->get($v.name->toOne()).values
+    ]);
+}
+
 function <<access.private>> meta::pure::store::platform::executionPlan::generation::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
 {
    let specificProcessorsForFunctions = 
-      newMap([
+      newMap($extensions.moduleExtension('platform')->cast(@meta::pure::store::platform::extension::PlatformStoreExtension).executionPlan_generation_nodeForFunctionExpression->concatenate([
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::dataQuality::checked_T_MANY__Checked_MANY_, second = checkedFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_, second = unionFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::lang::letFunction_String_1__T_m__T_m_, second = letFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::serialize_Checked_MANY__RootGraphFetchTree_1__AlloySerializationConfig_1__String_1_, second = serializeFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_, second = unionFunctionProcessor_FunctionExpression_1__PlatformPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)         
-      ]);
+      ]));
    
    if($specificProcessorsForFunctions->get($f.func)->isNotEmpty(),
       |$specificProcessorsForFunctions->get($f.func)->toOne(),

@@ -14,9 +14,6 @@
 
 import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
-import meta::pure::router::metamodel::*;
-import meta::pure::router::metamodel::clustering::*;
-
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
     if($path == '::',
@@ -377,25 +374,21 @@ function meta::pure::functions::meta::findPropertiesInValueSpecification(vs:Valu
 
 }
 
-function meta::pure::functions::meta::findVariableExpressionsInValueSpecification(vs:ValueSpecification[1], includeLocalVariables:Boolean[1]):VariableExpression[*]
-{
-   $vs->match([fe:FunctionExpression[1] | let res = $fe.parametersValues->map(v | $v->findVariableExpressionsInValueSpecification($includeLocalVariables)),
-               i:InstanceValue[1] | $i.values->map( v |$v->match([a: ValueSpecification[1] | $a->findVariableExpressionsInValueSpecification($includeLocalVariables);,
-                                                                  k : KeyExpression[1] | $k.expression->findVariableExpressionsInValueSpecification($includeLocalVariables);,
-                                                                  l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findVariableExpressionsInValueSpecification($includeLocalVariables))->filter(var | $includeLocalVariables || !$var.name->in($l.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters.name)),
-                                                                  t : Type[1] | [];,
-                                                                  a:Any[1] | [];]););,
-               ve:VariableExpression[1] | $ve,
-               r:RoutedValueSpecification[1]| $r.value->findVariableExpressionsInValueSpecification($includeLocalVariables),
-               c:ClusteredValueSpecification[1] | $c.val->findVariableExpressionsInValueSpecification($includeLocalVariables),
-               e:ExtendedRoutedValueSpecification[1] | $e.value->findVariableExpressionsInValueSpecification($includeLocalVariables)
-             ]
-          );
-}
-
 function meta::pure::functions::meta::findVariableExpressionsInValueSpecification(vs:ValueSpecification[1]):VariableExpression[*]
 {
-   findVariableExpressionsInValueSpecification($vs, true);
+   $vs->match([fe:FunctionExpression[1] | let res = $fe.parametersValues->map(v | $v->findVariableExpressionsInValueSpecification()),
+               i:InstanceValue[1] | $i.values->map( v |
+                                                         $v->match([a: ValueSpecification[1] | $a->findVariableExpressionsInValueSpecification();,
+                                                         k : KeyExpression[1] | $k.expression->findVariableExpressionsInValueSpecification();,
+                                                         l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findVariableExpressionsInValueSpecification());,
+                                                         t : Type[1] | [];,
+                                                         a:Any[1] | [];]););,
+               ve:VariableExpression[1] | $ve,
+               r:meta::pure::router::RoutedValueSpecification[1]| $r.value->findVariableExpressionsInValueSpecification(),
+               c: ClusteredValueSpecification[1] | $c.val->findVariableExpressionsInValueSpecification(),
+               e: ExtendedRoutedValueSpecification[1] | $e.value->findVariableExpressionsInValueSpecification()
+             ]
+          );
 }
 
 function meta::pure::functions::meta::findPropertyPathsInFunctionDefinition(func:FunctionDefinition<Any>[1]):Path<Nil,Any|*>[*]

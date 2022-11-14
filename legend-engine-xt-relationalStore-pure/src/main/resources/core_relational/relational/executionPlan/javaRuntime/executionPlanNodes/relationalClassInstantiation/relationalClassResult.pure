@@ -1,0 +1,1088 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::pure::mapping::*;
+import meta::relational::mapping::*;
+
+function meta::pure::executionPlan::engine::java::databaseConnectionPropertyName():String[1]
+{
+   'databaseConnection$'
+}
+
+function meta::pure::executionPlan::engine::java::generateImplementionForRelationalClassResult(node: RelationalClassInstantiationExecutionNode[1], path: String[1], context:GenerationContext[1], debug: DebugContext[1]):GeneratedCode[1]
+{
+   let classResultType = $node.resultType->cast(@ClassResultType);
+   let resultClass = $classResultType.type->cast(@Class<Any>);
+   let setImpls = $classResultType.setImplementations;
+   
+   $setImpls->match([
+      
+      {relationalSets: RelationalInstanceSetImplementation[*] | 
+         /* Relational */
+         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs.allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))))));
+         generateImplementionForRelationalSetImpls($relationalSets, $setToPropertyMappingsMap, $path, $resultClass, $context, $debug);
+      },
+
+      {sets: SetImplementation[*] |
+         /* Unknown - Fallback to no code generation to avoid failures */
+         ^GeneratedCode
+          (
+          )
+      }
+
+   ]);
+}
+
+function meta::pure::executionPlan::engine::java::generateImplementionForRelationalPartialClassResult(node: RelationalClassInstantiationExecutionNode[1], path: String[1], properties: AbstractProperty<Any>[*], context:GenerationContext[1], debug: DebugContext[1]):GeneratedCode[1]
+{
+   let classResultType = $node.resultType->cast(@ClassResultType);
+   let resultClass = $classResultType.type->cast(@Class<Any>);
+   let setImpls = $classResultType.setImplementations;
+
+   $setImpls->match([
+
+      {relationalSets: RelationalInstanceSetImplementation[*] |
+         /* Relational */
+         let setToPropertyMappingsMap = newMap($relationalSets->map(rs | pair($rs, list($rs.allPropertyMappings()->filter(pm | $pm.property->instanceOf(Property) && $pm.property->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType))->filter(x | $x.property->in($properties))))));
+         generateImplementionForRelationalSetImpls($relationalSets, $setToPropertyMappingsMap, $path, $resultClass, $context, $debug);
+      },
+      
+      {sets: SetImplementation[*] |
+         /* Unknown - Fallback to no code generation to avoid failures */
+         ^GeneratedCode
+          (
+          )
+      }
+      
+   ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForRelationalSetImpls(relationalSets: RelationalInstanceSetImplementation[*], setToPropertyMappingsMap: Map<RelationalInstanceSetImplementation, List<PropertyMapping>>[1], path: String[1], resultClass: Class<Any>[1], context:GenerationContext[1], debug: DebugContext[1]):GeneratedCode[1]
+{
+   let globalProject = generateInterfacesAndEnums($context, $debug->indent());
+   
+   let baseImplClass = generateRelationalMappingClassResultBaseImplementation($relationalSets, $resultClass, $path, $context, $debug->indent());
+   let setImplClasses = generateRelationalMappingClassResultImplementations($relationalSets, $setToPropertyMappingsMap, $resultClass, $baseImplClass, $path, $context, $debug->indent());
+   
+   let helperClass = createRelationalObjectQueryHelperClass($path, $relationalSets, $setToPropertyMappingsMap, $resultClass, $context, $debug);
+   let executeClass = createRelationalObjectQueryExecuteClass($helperClass, $path, $context.conventions);
+   
+   generatedCode($globalProject->addClasses($setImplClasses)->addClasses([$baseImplClass, $helperClass, $executeClass]), $executeClass);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateRelationalMappingClassResultBaseImplementation(sets: RelationalInstanceSetImplementation[*], resultClass: Class<Any>[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let typeInfo = $context.typeInfos->forClass($resultClass);
+   let conventions = $context.conventions;
+   let interface = $conventions->className($resultClass);
+
+   let implPkgAndName = $conventions->baseImplementationName($sets, $resultClass, $path)->implements($interface);
+   let implementationClass = ^$implPkgAndName(
+      modifiers = javaModifiers(['public'])
+   )
+   ->imports(javaPackage('java.util'))
+   ->imports(javaClass('com.fasterxml.jackson.annotation.JsonProperty'))
+   ->imports(javaClass('com.fasterxml.jackson.annotation.JsonIgnore'));
+
+   let keyMap = $sets->map(set | pair($set, $set->resolvePrimaryKey()->list()))->newMap();
+   let propertyTypeAndFieldNameMap = newMap($context.typeInfos->allProperties($typeInfo)->map(p | pair($p, pair($conventions->pureTypeToJavaType($p), $conventions->fieldName($p)))));
+
+   let classWithProps = $context.typeInfos->allProperties($typeInfo)->fold({p, cl |
+      let typeAndNameInfo = $propertyTypeAndFieldNameMap->get($p)->toOne();
+      let fieldType = $typeAndNameInfo.first;
+      let fieldName = $typeAndNameInfo.second;
+      $cl
+      ->addField(javaField(['private'], $fieldType, $fieldName))
+      ->addMethod(javaMethod(['public'], $fieldType, $conventions->getterName($p), [], 'return this.' + $fieldName + ';')->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonProperty(value = $fieldName)))
+      ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName($p), [javaParam($fieldType, $fieldName)], 'this.' +  $fieldName + ' = ' + $fieldName + ';'));
+   }, $implementationClass);
+
+   let classWithQualifiedProps = $context.typeInfos->allQualifiedProperties($typeInfo)->fold({q, cl | 
+      let fieldName = $conventions->fieldName($q);
+      let retType = $conventions->pureTypeToJavaType($q);
+      $cl
+      ->addMethod(javaMethod(['public'], $retType, $conventions->getterName($q), [$q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))],  'throw new UnsupportedOperationException("Not supported!");'));
+   }, $classWithProps);
+
+   let classWithSetId = 
+      $classWithQualifiedProps
+      ->addField(javaField(['private'], javaString(), $conventions->fieldName(setIdPropertyName())))
+      ->addMethod(javaMethod(['public'], javaString(), $conventions->getterName(setIdPropertyName()), [], 'return this.' + $conventions->fieldName(setIdPropertyName()) + ';')->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonIgnore()))
+      ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName(setIdPropertyName()), [javaParam(javaString(), 'setId')], 'this.' + $conventions->fieldName(setIdPropertyName()) + ' = setId;'));
+
+   let classWithDBConnection = 
+      $classWithSetId
+      ->addField(javaField(['public', 'static'], javaString(), $conventions->fieldName(databaseConnectionPropertyName())));
+
+   let classWithReference = 
+      $classWithDBConnection
+      ->addObjectMapperField($conventions)
+      ->addField(javaField(['private'], javaString(), $conventions->fieldName($conventions->storeObjectReferenceIdentifier())))
+      ->addMethod(relationalReferenceIdentifierGetterMethodForImplementation($sets, $classWithDBConnection, $conventions)->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonProperty(value = $conventions->fieldName($conventions->storeObjectReferenceIdentifier()))));
+
+   let classWithKeys = $sets->fold({set, cl |
+      let setIdx = $sets->indexOf($set);
+      let pks = $keyMap->get($set).values;
+      $pks->fold({pk, clWithKeys |
+         let pkIdx = $pks->indexOf($pk);
+         let pkString = 'pk$_' + $pkIdx->toString() + if($sets->size() == 1, | '', | '_' + $setIdx->toString());
+         let pkFieldName = $conventions->fieldName($pkString);
+         $clWithKeys
+         ->addField(javaField(['private'], javaObject(), $pkFieldName))
+         ->addMethod(javaMethod(['public'], javaObject(), $conventions->getterName($pkString), [], 'return this.' + $pkFieldName + ';')->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonIgnore()))
+         ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName($pkString), [javaParam(javaObject(), $pkFieldName)], 'this.' + $pkFieldName + ' = ' + $pkFieldName + ';'));
+      }, $cl);
+   }, $classWithReference);
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::generateRelationalMappingClassResultImplementations(sets: RelationalInstanceSetImplementation[*], setToPropertyMappingsMap: Map<RelationalInstanceSetImplementation, List<PropertyMapping>>[1], resultClass: Class<Any>[1], baseImpl: meta::external::language::java::metamodel::Class[1], path: String[1], context:GenerationContext[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[*]
+{
+   print(if($debug.debug,|$debug.space+'generateMappingImplementations\n', |''));
+
+   let baseProperties = $context.typeInfos->allProperties($resultClass);
+   let conventions = $context.conventions;
+
+   $sets->map({set |
+
+      let type = if($set.mappingClass->isNotEmpty(), | $set.mappingClass->toOne(), | $set.class);
+      let typeInfo = $context.typeInfos->forClass($type);
+      let interface = $conventions->className($type);
+
+      let implPkgAndName = $conventions->implementationName($set, $path)->jextends($baseImpl)->implements($conventions->className($type));
+      let implementationClass = ^$implPkgAndName(
+         modifiers = javaModifiers(['public'])
+      )
+      ->imports(javaPackage('java.util'))
+      ->imports(javaClass('com.fasterxml.jackson.annotation.JsonProperty'))
+      ->imports(javaClass('com.fasterxml.jackson.annotation.JsonIgnore'))
+      ->addConstructor(javaConstructor(['public'], [], 'this.' + $conventions->setterName(setIdPropertyName()) + '("' + $set.id + '");'));
+
+      let inScopeProperties = $context.typeInfos->allProperties($typeInfo)->filter(x | !$baseProperties->contains($x));
+      let propertyTypeAndFieldNameMap = newMap($inScopeProperties->map(p | pair($p, pair($conventions->pureTypeToJavaType($p), $conventions->fieldName($p)))));
+
+      let classWithProps = $inScopeProperties->fold({p, cl |
+         let typeAndNameInfo = $propertyTypeAndFieldNameMap->get($p)->toOne();
+         let fieldType = $typeAndNameInfo.first;
+         let fieldName = $typeAndNameInfo.second;
+         $cl
+         ->addField(javaField(['private'], $fieldType, $fieldName))
+         ->addMethod(javaMethod(['public'], $fieldType, $conventions->getterName($p), [], 'return this.' + $fieldName + ';')->addAnnotation(^meta::external::language::java::metamodel::annotations::json::JsonProperty(value = $fieldName)))
+         ->addMethod(javaMethod(['public'], javaVoid(), $conventions->setterName($p), [javaParam($fieldType, $fieldName)], 'this.' +  $fieldName + ' = ' + $fieldName + ';'));
+      }, $implementationClass);
+   
+      let classWithQualifiedProps = $context.typeInfos->allQualifiedProperties($typeInfo)->fold({q, cl | 
+         let fieldName = $conventions->fieldName($q);
+         let retType = $conventions->pureTypeToJavaType($q);
+         $cl
+         ->addMethod(javaMethod(['public'], $retType, $conventions->getterName($q), [$q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))],  'throw new UnsupportedOperationException("Not supported!");'));
+      }, $classWithProps);
+   });
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::createRelationalObjectQueryHelperClass(path: String[1], sets: RelationalInstanceSetImplementation[*], setToPropertyMappingsMap: Map<RelationalInstanceSetImplementation, List<PropertyMapping>>[1], resultClass: Class<Any>[1], context: GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+{
+   let conventions = $context.conventions;
+   let className   = $conventions->className($resultClass);
+   let helperClass = $conventions->planNodeClass('public', $path, 'Helper')
+              ->imports(javaPackage('java.util'))
+              ->imports(javaPackage('java.util.function'))
+              ->imports(javaPackage('java.util.stream'))
+              ->imports(javaClass('java.sql.ResultSet'))
+              ->imports(javaClass('java.sql.ResultSetMetaData'))
+              ->imports(javaClass('java.sql.Types'))
+              ->imports($conventions->className(PureDate));
+
+   $helperClass
+   ->addFields([
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRING_TYPES', 'Arrays.asList(Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR, Types.NCHAR, Types.NVARCHAR, Types.LONGNVARCHAR, Types.OTHER, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'INT_TYPES', 'Arrays.asList(Types.TINYINT, Types.SMALLINT, Types.INTEGER, Types.BIGINT, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'FLOAT_TYPES', 'Arrays.asList(Types.REAL, Types.FLOAT, Types.DOUBLE, Types.DECIMAL, Types.NUMERIC, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DECIMAL_TYPES', 'Arrays.asList(Types.DECIMAL, Types.NUMERIC, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'BOOL_TYPES', 'Arrays.asList(Types.BIT, Types.BOOLEAN, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRICT_DATE_TYPES', 'Arrays.asList(Types.DATE, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP, Types.NULL)'),
+      javaField(['private'], javaList(javaClass('java.lang.Integer')), 'columnTypes'),
+      javaField(['private'], javaList(javaList(javaClass('java.lang.Integer'))), 'propertyIndices'),
+      javaField(['private'], javaList(javaList(javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]))), 'propertyGetters'),
+      javaField(['private'], javaClass('java.util.Calendar'), 'calendar')
+   ])
+   ->addMethods([
+      getResultSetPropertyGetterForStringPropertyMethod(),
+      getResultSetPropertyGetterForIntegerPropertyMethod(),
+      getResultSetPropertyGetterForFloatPropertyMethod(),
+      getResultSetPropertyGetterForDecimalPropertyMethod(),
+      getResultSetPropertyGetterForBooleanPropertyMethod(),
+      getResultSetPropertyGetterForStrictDatePropertyMethod(),
+      getResultSetPropertyGetterForDateTimePropertyMethod(),
+      getResultSetPropertyGetterForDatePropertyMethod()
+   ])
+   ->addMethods([
+      getAlloyNativeValueFromResultSetMethod(),
+      encodeHexMethod()
+   ])
+   ->addMethod(
+      javaMethod(
+         ['public'], javaObject(), 'getObjectFromResultSet', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaString(), 'databaseTimeZone'), javaParam(javaString(), 'databaseConnection')],
+         'if (this.propertyIndices == null)\n'+
+         '{\n'+
+         '    this.doSetup(resultSet, databaseTimeZone, databaseConnection);\n'+    
+         '}\n'+
+         if($sets->size() == 1,
+            | 
+              let addMilestoningProps = meta::pure::milestoning::getTemporalMilestoningStrategy($sets->at(0).class)->isNotEmpty() && 
+                                        meta::pure::milestoning::getTemporalMilestoningStrategy($sets->at(0).class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($sets->at(0)->resolveMainTable()));
+
+              let allProperties = $setToPropertyMappingsMap->get($sets->at(0)).values.property->concatenate($addMilestoningProps->if(|$sets->at(0).class.properties->filter(p| $p->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType) && $p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()), |[])->sortBy(x | $x.name->toOne()));
+
+              $conventions->implementationName($sets->at(0), $path)->objectCreation($sets->at(0), $sets, $allProperties, 0, $context.conventions) + 'return object;\n';,
+            | $sets->size()->range()->map({s | 
+                 let addMilestoningProps = meta::pure::milestoning::getTemporalMilestoningStrategy($sets->at($s).class)->isNotEmpty() && 
+                                           meta::pure::milestoning::getTemporalMilestoningStrategy($sets->at($s).class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(k| $k->meta::relational::milestoning::relationalElementCanSupportStrategy($sets->at($s)->resolveMainTable()));
+
+                 let allProperties = $setToPropertyMappingsMap->get($sets->at($s)).values.property->concatenate($addMilestoningProps->if(|$sets->at($s).class.properties->filter(p| $p->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType) && $p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()), |[])->sortBy(x | $x.name->toOne()));
+              
+                 let objectCreation = $conventions->implementationName($sets->at($s), $path)->objectCreation($sets->at($s), $sets, $allProperties, $s, $context.conventions);
+                 'try\n'+
+                 '{\n'+
+                 '    if (resultSet.getInt(1) == ' + $s->toString() + ')\n'+
+                 '    {\n' +
+                         $objectCreation->split('\n')->map(x | '        ' + $x)->joinStrings('\n') + '\n' + '        return object;\n' +
+                 '    }\n'+
+                 '}\n'+
+                 'catch (RuntimeException e)\n'+
+                 '{\n'+
+                 '    throw e;\n'+
+                 '}\n'+
+                 'catch (Exception e)\n'+
+                 '{\n'+
+                 '    throw new RuntimeException(e);\n'+
+                 '}';
+              })->joinStrings('\n') + '\n' + 'return null;'
+         )
+      )
+   )
+   ->addMethod(
+      javaMethod(
+         ['private'], javaVoid(), 'doSetup', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaString(), 'databaseTimeZone'), javaParam(javaString(), 'databaseConnection')],
+         'try\n'+
+         '{\n'+
+         '    this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));\n'+
+         '    ' + $conventions->baseImplementationName($sets, $resultClass, $path)->typeToString() + '.' + $conventions->fieldName(databaseConnectionPropertyName()) + ' = databaseConnection;\n'+
+         '    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();\n'+
+         '    int columnCount = resultSetMetaData.getColumnCount();\n'+
+         '    this.columnTypes = new ArrayList<>();\n'+
+         '    List<String> columnNames = new ArrayList<>();\n'+
+         '    for (int i = 1; i <= columnCount; i++)\n'+
+         '    {\n'+
+         '        String columnLabel = resultSetMetaData.getColumnLabel(i);\n'+
+         '        columnNames.add(columnLabel.startsWith("\\"") && columnLabel.endsWith("\\"") ? columnLabel.substring(1, columnLabel.length() - 1).toUpperCase() : columnLabel.toUpperCase());\n'+
+         '        this.columnTypes.add(resultSetMetaData.getColumnType(i));\n'+
+         '    }\n\n'+
+
+         '    this.propertyIndices = new ArrayList<>();\n'+
+         $sets->size()->range()->map({s | 
+            let currentSet = $sets->at($s);
+            let addMilestoningProps = meta::pure::milestoning::getTemporalMilestoningStrategy($currentSet.class)->isNotEmpty() && 
+                                      meta::pure::milestoning::getTemporalMilestoningStrategy($currentSet.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($currentSet->resolveMainTable()));
+
+            let currentSetPks = if (!$currentSet->instanceOf(RootRelationalInstanceSetImplementation) || ($currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty() && ($currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->isEmpty() || $currentSet->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->toOne() == false)),
+                                    | $currentSet->resolvePrimaryKey(),
+                                    | []);
+            '    List<Integer> index_' + $s->toString() + ' = new ArrayList<>();\n' +
+            $setToPropertyMappingsMap->get($currentSet).values
+               ->map(pm | '    index_' + $s->toString() + '.add(columnNames.indexOf("' + $pm.property.name->toOne()->toUpper() + '") + 1);')
+               ->concatenate(
+                  if($addMilestoningProps,
+                     | let temporalColumnLabels = meta::pure::milestoning::getTemporalMilestoningStrategy($sets->at($s).class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->map(s| $s->meta::relational::milestoning::temporalColumnAliasProperties()).second->sort();
+                       $temporalColumnLabels->map(l | '    index_' + $s->toString() + '.add(columnNames.indexOf("' + $l->toUpper() + '") + 1);');,
+                     | [])
+               )
+               ->concatenate(
+                  $currentSetPks->size()->range()->map(pkIdx | '    index_' + $s->toString() + '.add(columnNames.indexOf("' + 'PK_' + $pkIdx->toString() + if($sets->size() == 1, | '', | '_' + $s->toString()) + '") + 1);')
+               )->joinStrings('\n') + '\n' +
+            '    this.propertyIndices.add(index_' + $s->toString() + ');';
+         })->joinStrings('\n\n')+'\n\n'+
+
+         '    this.propertyGetters = new ArrayList<>();\n'+
+         '    int propertyIndex;\n'+
+         '    Supplier<Object> propertyGetter = null;\n\n'+
+
+         $sets->size()->range()->map({s | 
+            let currentSet = $sets->at($s);
+            let addMilestoningProps = meta::pure::milestoning::getTemporalMilestoningStrategy($currentSet.class)->isNotEmpty() && 
+                                      meta::pure::milestoning::getTemporalMilestoningStrategy($currentSet.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($currentSet->resolveMainTable()));
+
+            let allProperties = $setToPropertyMappingsMap->get($currentSet).values.property
+               ->concatenate($addMilestoningProps->if(|$currentSet.class.properties->filter(p| $p->genericType().typeArguments->at(1).rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType) && $p->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()), |[])->sortBy(x | $x.name->toOne()));
+            '    List<Supplier<Object>> propertyGetter_' + $s->toString() + ' = new ArrayList<>();\n\n' +
+            $allProperties->size()->range()
+               ->map({propIndex |
+                  let prop = $allProperties->at($propIndex);
+                  let propertyName = $prop.name->toOne();
+                  let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne();
+                  let propertyMultiplicity = $prop.multiplicity;
+                  '    propertyIndex = this.propertyIndices.get(' + $s->toString() + ').get(' + $propIndex->toString() + ');\n'+
+                  if ($propertyType == String,     | '    propertyGetter = this.getResultSetPropertyGetterForStringProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == Integer,    | '    propertyGetter = this.getResultSetPropertyGetterForIntegerProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == Float,      | '    propertyGetter = this.getResultSetPropertyGetterForFloatProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == Decimal,    | '    propertyGetter = this.getResultSetPropertyGetterForDecimalProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == Boolean,    | '    propertyGetter = this.getResultSetPropertyGetterForBooleanProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == StrictDate, | '    propertyGetter = this.getResultSetPropertyGetterForStrictDateProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == DateTime,   | '    propertyGetter = this.getResultSetPropertyGetterForDateTimeProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType == Date,       | '    propertyGetter = this.getResultSetPropertyGetterForDateProperty(resultSet, propertyIndex, resultSetMetaData.getColumnType(propertyIndex), "' + $propertyName + '");\n',
+                  |
+                  if ($propertyType->instanceOf(Enumeration),
+                  |   let javaEnumeration =  $conventions->className($propertyType);
+                      let allPropertyMappings = $setToPropertyMappingsMap->get($currentSet).values;
+                      let currentPropertyMapping = $allPropertyMappings->filter(x | $x.property == $prop)->toOne()->cast(@RelationalPropertyMapping);
+                      let enumValueMappings = $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).enumValueMappings;
+                      '    {\n'+
+                      '        final int finalPropertyIndex = propertyIndex;\n'+
+                      '        final Map<Object, String> enumReverseMap = new HashMap<>();\n' +
+                      $enumValueMappings->map(ev | $ev.sourceValues->map(x | '        enumReverseMap.put(' + $x->match([s:String[1]|'"' + $s + '"', n:Integer[1]|'Long.valueOf('+$n->toString()+')', f:Float[1]|'Double.valueOf('+$f->toString()+')']) + ', "' + $ev.enum.name + '");'))->joinStrings('\n')+'\n'+ 
+                      '        propertyGetter = () -> {\n'+
+                      '            try\n'+
+                      '            {\n'+
+                      '                ' + $javaEnumeration->typeToString() + ' res = null;\n'+
+                      '                Object r = this.getAlloyNativeValueFromResultSet(resultSet, finalPropertyIndex, this.columnTypes.get(finalPropertyIndex - 1));\n'+
+                      '                if (r != null)\n'+
+                      '                {\n'+
+                      '                    String transformedR = enumReverseMap.get(r);\n'+
+                      '                    if (transformedR == null)\n'+
+                      '                    {\n'+
+                      '                        throw new RuntimeException("Enumeration mapping failure. Cannot find transformation for source value \'" + r + "\' for enumeration property \'' + $propertyName + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).name->toOne() + '.");\n'+
+                      '                    }\n'+
+                      '                    res = Enum.valueOf(' + $javaEnumeration->typeToString() + '.class, transformedR);\n'+
+                      '                }\n'+
+                      '                return res;\n'+
+                      '            }\n'+
+                      '            catch (Exception e)\n'+
+                      '            {\n'+
+                      '                throw new RuntimeException(e);\n'+
+                      '            }\n'+
+                      '        };\n'+
+                      '    }\n';
+                      ,
+                  |   '    throw new RuntimeException("Type : \'' + $propertyType->elementToPath() + '\' not supported yet!");'
+                  ))))))))) +
+                  '    propertyGetter_' + $s->toString() + '.add(propertyGetter);\n';
+               })
+               ->joinStrings('\n')+'\n'+
+               '    this.propertyGetters.add(propertyGetter_' + $s->toString() + ');\n';
+         })->joinStrings('\n\n')+
+         '}\n'+
+         'catch (RuntimeException e)\n'+
+         '{\n'+
+         '    throw e;\n'+
+         '}\n'+
+         'catch (Exception e)\n'+
+         '{\n'+
+         '    throw new RuntimeException(e);\n'+
+         '}'
+      )
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::objectCreation(implClass: meta::external::language::java::metamodel::Class[1], set: RelationalInstanceSetImplementation[1], allSets: RelationalInstanceSetImplementation[*],  properties: Property<Nil,Any|*>[*], index: Integer[1], conventions:Conventions[1]):String[1]
+{
+   let currentSetPks = if (!$set->instanceOf(RootRelationalInstanceSetImplementation) || ($set->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getGroupBy()->isEmpty() && ($set->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->isEmpty() || $set->cast(@RootRelationalInstanceSetImplementation)->meta::relational::functions::pureToSqlQuery::getDistinct()->toOne() == false)),
+                           | $set->resolvePrimaryKey(),
+                           | []);
+   
+   let propertyCount = $properties->size();
+   let pureTypeToJavaTypeStringMap = {x: Type[1] |
+     if ($x == String,                | 'String', |
+     if ($x == Integer,               | 'Long', | 
+     if ($x == Float,                 | 'Double', |
+     if ($x == Decimal,               | 'java.math.BigDecimal', |
+     if ($x == Boolean,               | 'Boolean', |
+     if ($x == StrictDate,            | 'PureDate', |
+     if ($x == DateTime,              | 'PureDate', |
+     if ($x == Date,                  | 'PureDate', |
+     if ($x->instanceOf(Enumeration), |  $conventions->className($x)->typeToString(), |
+     fail('Not supported!');'';)))))))))
+   };
+
+   'final ' + $implClass->typeToString() + ' object = new ' + $implClass->typeToString() + '();\n' +
+   'object.' + $conventions->setterName(setIdPropertyName()) + '("' + $set.id + '");\n' +
+   'int pkColIndex;\n' +
+   $currentSetPks->size()->range()->map({pkIdx | 
+      [
+         ('pkColIndex = this.propertyIndices.get(' + $index->toString() + ').get(' + toString($propertyCount + $pkIdx) + ');'),
+         ('Object pk$_' + $pkIdx->toString() + if($allSets->size() == 1, | '', | '_' + $allSets->indexOf($set)->toString()) + ' = this.getAlloyNativeValueFromResultSet(resultSet, pkColIndex, this.columnTypes.get(pkColIndex - 1));'),
+         ('object.' + $conventions->setterName('pk$_' + $pkIdx->toString() + if($allSets->size() == 1, | '', | '_' + $allSets->indexOf($set)->toString())) + '(pk$_' + $pkIdx->toString() + if($allSets->size() == 1, | '', | '_' + $allSets->indexOf($set)->toString()) + ');')
+      ]
+   })->joinStrings('\n', '\n', '\n\n')+
+   'int propertyIndex;\n'+
+   $propertyCount->range()->map({propIndex |
+      let prop = $properties->at($propIndex);
+      let propertyName = $prop.name->toOne();
+      let propertyType = $prop->genericType().typeArguments->at(1).rawType->toOne();
+      let propertyMultiplicity = $prop.multiplicity;
+      let stringJavaType = $pureTypeToJavaTypeStringMap->eval($propertyType);
+
+      'propertyIndex = this.propertyIndices.get(' + $index->toString() + ').get(' + $propIndex->toString() + ');\n' +
+      '{\n'+
+      '    ' + $stringJavaType + ' res = (' + $stringJavaType + ') this.propertyGetters.get(' + $index->toString() + ').get(' + $propIndex->toString() + ').get();\n'+
+      if (!$propertyMultiplicity->hasUpperBound() || ($propertyMultiplicity->getUpperBound() > 1),
+         | '    object.' + $conventions->setterName($prop) + '(res == null ? new ArrayList<>() : Arrays.asList(res));\n',
+         | if($propertyMultiplicity->getLowerBound() != 1,
+              | '    object.' + $conventions->setterName($prop) + '(res);\n',
+              | '    if (res == null)\n'+
+                '    {\n' +
+                '        throw new RuntimeException("Error reading in property \'' + $propertyName + '\'. Property of multiplicity [1] can not be null' + if($currentSetPks->isEmpty(), |'"', |', PKs: " + ' + $currentSetPks->size()->range()->map({pkIdx | 'pk$_' + $pkIdx->toString() + if($allSets->size() == 1, | '', | '_' + $allSets->indexOf($set)->toString()) + '.toString()'})->joinStrings(' + " " +  ')) + ');\n'+
+                '    }\n'+
+                '    object.' + $conventions->setterName($prop) + '(res);\n'
+           )
+      )+
+      '}\n';
+   })
+   ->joinStrings('\n', '\n', '\n');
+}
+
+function <<access.private>> meta::pure::executionPlan::engine::java::createRelationalObjectQueryExecuteClass(helperClass: meta::external::language::java::metamodel::Class[1], path: String[1], conventions: Conventions[1]):meta::external::language::java::metamodel::Class[1]
+{
+   let relationalClassNodeExecutorInterface = $conventions->className(RelationalClassInstantiationNodeExecutor);
+   $conventions->planNodeClass('public', $path, 'Execute')
+      ->imports(javaClass('java.sql.ResultSet'))
+      ->imports(javaPackage('java.util'))
+      ->imports($helperClass)
+      ->imports($relationalClassNodeExecutorInterface)
+      ->implements($relationalClassNodeExecutorInterface)
+      ->addField(javaField(['private'], $helperClass, 'helper'))
+      ->addConstructor(
+         javaConstructor(
+            ['public'], [],
+            'this.helper = new Helper();'
+         )
+      )
+      ->addMethod(
+         javaMethod(
+            ['public'], javaObject(), 'getObjectFromResultSet', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaString(), 'databaseTimeZone'), javaParam(javaString(), 'databaseConnection')],
+            'return this.helper.getObjectFromResultSet(resultSet, databaseTimeZone, databaseConnection);'
+         )
+      );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForStringPropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForStringProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (STRING_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '   return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            return resultSet.getString(columnIndex);\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'else\n'+
+      '{\n'+
+      '    throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type String from SQL column of type \'" + columnType + "\'.");\n'+
+      '}\n'   
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForIntegerPropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForIntegerProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (INT_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            Long res = null;\n'+
+      '            long r = resultSet.getLong(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = Long.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Integer from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForFloatPropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForFloatProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (FLOAT_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            Double res = null;\n'+
+      '            double r = resultSet.getDouble(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = Double.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (INT_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            Double res = null;\n'+
+      '            long r = resultSet.getLong(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = Double.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Float from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForDecimalPropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForDecimalProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (DECIMAL_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            return resultSet.getBigDecimal(columnIndex);\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (FLOAT_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            java.math.BigDecimal res = null;\n'+
+      '            double r = resultSet.getDouble(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = java.math.BigDecimal.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (INT_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            java.math.BigDecimal res = null;\n'+
+      '            long r = resultSet.getLong(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = java.math.BigDecimal.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Decimal from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForBooleanPropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForBooleanProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (BOOL_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            Boolean res = null;\n'+
+      '            boolean r = resultSet.getBoolean(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = Boolean.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (STRING_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            Boolean res = null;\n'+
+      '            String r = resultSet.getString(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = Boolean.valueOf(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (INT_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            Boolean res = null;\n'+
+      '            long r = resultSet.getLong(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                res = Boolean.valueOf(r == 1);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Boolean from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForStrictDatePropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForStrictDateProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (STRICT_DATE_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            java.sql.Date r = resultSet.getDate(columnIndex);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                res = PureDate.fromSQLDate(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (STRING_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            String r = resultSet.getString(columnIndex);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                try\n'+
+      '                {\n'+
+      '                    res = PureDate.parsePureDate(r);\n'+
+      '                }\n'+
+      '                catch (java.lang.IllegalArgumentException dateTimeParseException)\n'+
+      '                {\n'+
+      '                    res = PureDate.fromSQLDate(java.sql.Date.valueOf(r));\n'+
+      '                }\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type StrictDate from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForDateTimePropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForDateTimeProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'),  javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (DATE_TIME_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            java.sql.Timestamp r = resultSet.getTimestamp(columnIndex, this.calendar);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                res = PureDate.fromSQLTimestamp(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (STRING_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            String r = resultSet.getString(columnIndex);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                try\n'+
+      '                {\n'+
+      '                    res = PureDate.parsePureDate(r);\n'+
+      '                }\n'+
+      '                catch (java.lang.IllegalArgumentException dateTimeParseException)\n'+
+      '                {\n'+
+      '                    res = PureDate.fromSQLTimestamp(java.sql.Timestamp.valueOf(r));\n'+
+      '                }\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type DateTime from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getResultSetPropertyGetterForDatePropertyMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]), 'getResultSetPropertyGetterForDateProperty', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'),  javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType'), javaParam(javaString(), 'propertyName')],
+      'if (STRICT_DATE_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            java.sql.Date r = resultSet.getDate(columnIndex);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                res = PureDate.fromSQLDate(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (DATE_TIME_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            java.sql.Timestamp r = resultSet.getTimestamp(columnIndex, this.calendar);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                res = PureDate.fromSQLTimestamp(r);\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (STRING_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            PureDate res = null;\n'+
+      '            String r = resultSet.getString(columnIndex);\n'+
+      '            if (r != null)\n'+
+      '            {\n'+
+      '                try\n'+
+      '                {\n'+
+      '                    res = PureDate.parsePureDate(r);\n'+
+      '                }\n'+
+      '                catch (java.lang.IllegalArgumentException dateTimeParseException1)\n'+
+      '                {\n'+
+      '                    try\n'+
+      '                    {\n'+
+      '                        res = PureDate.fromSQLTimestamp(java.sql.Timestamp.valueOf(r));\n'+
+      '                    }\n'+
+      '                    catch (java.time.format.DateTimeParseException dateTimeParseException2)\n'+
+      '                    {\n'+
+      '                        res = PureDate.fromSQLDate(java.sql.Date.valueOf(r));\n'+
+      '                    }\n'+
+      '                }\n'+
+      '            }\n'+
+      '            return res;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Date from SQL column of type \'" + columnType + "\'.");\n'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::getAlloyNativeValueFromResultSetMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaObject(), 'getAlloyNativeValueFromResultSet', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex'), javaParam(javaInt(), 'columnType')],
+      'try\n'+
+      '{\n'+
+      '    Object result = null;\n'+
+      '    switch (columnType)\n'+
+      '    {\n'+
+      '        case Types.DATE:\n'+
+      '        {\n'+
+      '            java.sql.Date date = resultSet.getDate(columnIndex);\n'+
+      '            if (date != null)\n'+
+      '            {\n'+
+      '                result = PureDate.fromSQLDate(date);\n'+
+      '            }\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.TIMESTAMP:\n'+
+      '        {\n'+
+      '            java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar);\n'+
+      '            if (timestamp != null)\n'+
+      '            {\n'+
+      '                result = PureDate.fromSQLTimestamp(timestamp);\n'+
+      '            }\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.TINYINT:\n'+
+      '        case Types.SMALLINT:\n'+
+      '        case Types.INTEGER:\n'+
+      '        case Types.BIGINT:\n'+
+      '        {\n'+
+      '            long num = resultSet.getLong(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                result = Long.valueOf(num);\n'+
+      '            }\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.REAL:\n'+
+      '        case Types.FLOAT:\n'+
+      '        case Types.DOUBLE:\n'+
+      '        {\n'+
+      '            double num = resultSet.getDouble(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                result = Double.valueOf(num);\n'+
+      '            }\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.DECIMAL:\n'+
+      '        case Types.NUMERIC:\n'+
+      '        {\n'+
+      '            result = resultSet.getBigDecimal(columnIndex);\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.CHAR:\n'+
+      '        case Types.VARCHAR:\n'+
+      '        case Types.LONGVARCHAR:\n'+
+      '        case Types.NCHAR:\n'+
+      '        case Types.NVARCHAR:\n'+
+      '        case Types.LONGNVARCHAR:\n'+
+      '        case Types.OTHER:\n'+
+      '        {\n'+
+      '            result = resultSet.getString(columnIndex);\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.BIT:\n'+
+      '        case Types.BOOLEAN:\n'+
+      '        {\n'+
+      '            boolean bool = resultSet.getBoolean(columnIndex);\n'+
+      '            if (!resultSet.wasNull())\n'+
+      '            {\n'+
+      '                result = Boolean.valueOf(bool);\n'+
+      '            }\n'+
+      '        }\n'+
+      '        case Types.BINARY:\n'+
+      '        case Types.VARBINARY:\n'+
+      '        case Types.LONGVARBINARY:\n'+
+      '        {\n'+
+      '            byte[] bytes = resultSet.getBytes(columnIndex);\n'+
+      '            if (bytes != null)\n'+
+      '            {\n'+
+      '                result = this.encodeHex(bytes);\n'+
+      '            }\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.NULL:\n'+
+      '        {\n'+
+      '            // do nothing: value is already assigned to null\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        default:\n'+
+      '        {\n'+
+      '            result = resultSet.getObject(columnIndex);\n'+
+      '        }\n'+
+      '    }\n'+
+      '    return result;'+
+      '}\n'+
+      'catch (Exception e)\n'+
+      '{\n'+
+      '    throw new RuntimeException(e);\n'+
+      '}\n'            
+   );
+}
+
+function meta::pure::executionPlan::engine::java::encodeHexMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaString(), 'encodeHex', [javaParam(javaArray(javaByte()), 'data')],
+      'final char[] DIGITS_LOWER = {\'0\', \'1\', \'2\', \'3\', \'4\', \'5\', \'6\', \'7\', \'8\', \'9\', \'a\', \'b\', \'c\', \'d\', \'e\', \'f\'};\n'+
+      'final int l = data.length;\n'+
+      'final char[] out = new char[l << 1];\n'+
+      'for (int i = 0, j = 0; i < l; i++)\n'+
+      '{\n'+
+      '    out[j++] = DIGITS_LOWER[(0xF0 & data[i]) >>> 4];\n'+
+      '    out[j++] = DIGITS_LOWER[0x0F & data[i]];\n'+
+      '}\n'+
+      'return new String(out);\n'      
+   )
+}
+
+function meta::pure::executionPlan::engine::java::relationalReferenceIdentifierGetterMethodForImplementation(sets: RelationalInstanceSetImplementation[*], implClass: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]):meta::external::language::java::metamodel::Method[1]
+{
+   let referenceIdentifier = $conventions->fieldName($conventions->storeObjectReferenceIdentifier());
+   javaMethod(
+      ['public'], javaString(), $conventions->getterName($conventions->storeObjectReferenceIdentifier()), [],
+      'if (this.' + $referenceIdentifier + ' == null)\n'+
+      '{\n'+
+      '    try\n'+
+      '    {\n'+
+      '        StringBuilder referenceBuilder = new StringBuilder();\n'+
+      '        referenceBuilder.append("001:");\n'+
+      '        referenceBuilder.append("010:");\n\n'+
+      '        referenceBuilder.append("' + format('%010d', length('Relational')) + ':");\n'+
+      '        referenceBuilder.append("Relational:");\n\n'+
+      '        referenceBuilder.append("' + format('%010d', length($sets.parent->at(0)->elementToPath())) + ':");\n'+
+      '        referenceBuilder.append("' + $sets.parent->at(0)->elementToPath() + ':");\n\n'+
+      '        referenceBuilder.append("' + format('%010d', length($sets.id->joinStrings(';'))) + ':");\n'+
+      '        referenceBuilder.append("' + $sets.id->joinStrings(';') + ':");\n\n'+
+      '        String setId = this.' + $conventions->getterName(setIdPropertyName()) + '();\n'+
+      '        referenceBuilder.append(String.format("%010d", setId.length()));\n'+
+      '        referenceBuilder.append(":");\n'+
+      '        referenceBuilder.append(setId);\n'+
+      '        referenceBuilder.append(":");\n\n'+
+      '        String databaseConnectionString = ' + $implClass->typeToString() + '.' + $conventions->fieldName(databaseConnectionPropertyName()) + ';\n'+
+      '        referenceBuilder.append(String.format("%010d", databaseConnectionString.length()));\n'+
+      '        referenceBuilder.append(":");\n'+
+      '        referenceBuilder.append(databaseConnectionString);\n'+
+      '        referenceBuilder.append(":");\n\n'+
+      '        Map<String, Object> pkMap = new HashMap<>();\n\n'+
+      $sets->map({set |
+         let setIdx = $sets->indexOf($set);
+         let pks = $set->resolvePrimaryKey();
+         $pks->map({key |
+            let pkIdx = $pks->indexOf($key);
+            let pkString = 'pk$_' + $pkIdx->toString() + if($sets->size() == 1, | '', | '_' + $setIdx->toString());
+            '        pkMap.put("' + $conventions->fieldName($pkString) + '", this.' + $conventions->getterName($pkString)+ '());';
+         });
+      })->joinStrings('\n')+'\n'+
+      '        String pkMapString = objectMapper$.writeValueAsString(pkMap);\n'+
+      '        referenceBuilder.append(String.format("%010d", pkMapString.length()));\n'+
+      '        referenceBuilder.append(":");\n'+
+      '        referenceBuilder.append(pkMapString);\n\n'+
+      '        this.' + $referenceIdentifier + ' = "ASOR:" + org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString(referenceBuilder.toString().getBytes());\n'+
+      '    }\n'+
+      '    catch (Exception e)\n'+
+      '    {\n'+
+      '       throw new RuntimeException(e);\n'+
+      '    }\n'+
+      '}\n\n'+
+      'return this.' + $referenceIdentifier + ';'
+   );
+}
+
+function meta::pure::executionPlan::engine::java::addObjectMapperField(cl: meta::external::language::java::metamodel::Class[1], conventions: Conventions[1]):meta::external::language::java::metamodel::Class[1]
+{
+   $cl
+   ->imports(javaClass('com.fasterxml.jackson.databind.module.SimpleModule'))
+   ->imports(javaClass('com.fasterxml.jackson.databind.ObjectMapper'))
+   ->imports(javaClass('com.fasterxml.jackson.annotation.JsonInclude'))
+   ->imports(javaClass('com.fasterxml.jackson.core.JsonGenerator'))
+   ->imports(javaClass('com.fasterxml.jackson.databind.JsonSerializer'))
+   ->imports(javaClass('com.fasterxml.jackson.databind.SerializerProvider'))
+   ->imports($conventions->className(PureDate))
+   ->imports(javaClass('java.io.IOException'))
+   ->addField(javaField(['private', 'static', 'final'], javaClass('com.fasterxml.jackson.databind.ObjectMapper'), 'objectMapper$', 'new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL).registerModule(new SimpleModule().addSerializer(PureDate.class, new JsonSerializer<PureDate>() { @Override public void serialize(PureDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException { gen.writeRawValue("\\"" + value.toString() + "\\""); } }))'))
+}

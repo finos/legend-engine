@@ -1,0 +1,41 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::transform::*;
+
+import meta::external::store::service::executionPlan::nodes::*;
+
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+
+import meta::pure::graphFetch::execution::*;
+
+// Prepare
+function meta::external::store::service::executionPlan::engine::java::prepareForLimitExecutionNode(l:LimitExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
+{
+  print(if($debug.debug,|$debug.space+'('+$path+') prepareForLimitExecutionNode\n', |''));
+
+  let childNodeInfo = $context->childNodeInfosForPath($path)->toOne();
+  ^$context(nodeInfos = $context.nodeInfos->concatenate(^$childNodeInfo(path = $path)));
+}

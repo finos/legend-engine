@@ -2,8 +2,6 @@
 
 import meta::pure::mapping::*;
 import meta::pure::router::systemMapping::tests::*;
-import meta::pure::router::store::metamodel::*;
-import meta::pure::router::utils::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::store::*;
@@ -47,8 +45,8 @@ function meta::pure::mapping::modelToModel::contract::execution(sq:meta::pure::m
    let connection = $runtime->connectionByElement($sq.store);
    $connection->match(
                         [
-                           mc:ModelConnection[1]| executeInMemory($sq.fe, $ext->cast(@StoreMappingRoutedValueSpecification), $m, $mc, $runtime, $exeCtx, $extensions, $debug),
-                           mcc:ModelChainConnection[1]| executeChain($sq, $ext->cast(@StoreMappingRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug)
+                           mc:ModelConnection[1]| executeInMemory($sq.fe, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mc, $runtime, $exeCtx, $extensions, $debug),
+                           mcc:ModelChainConnection[1]| executeChain($sq, $ext->cast(@ExtendedRoutedValueSpecification), $m, $mcc, $runtime, $exeCtx, $extensions, $debug)
                         ]
                );
 }
@@ -62,7 +60,7 @@ function meta::pure::mapping::modelToModel::contract::supports(f:FunctionExpress
 function meta::pure::mapping::modelToModel::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extension:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let fe = $sq.fe->evaluateAndDeactivate()->cast(@FunctionExpression);
-   if ($fe->meta::pure::router::utils::isUnionOnGraphFetch(true) || $fe.func->in(graphFetchFunctions()) || $fe->meta::pure::router::utils::isMergeOnGraphFetch() ,
+   if ($fe->meta::pure::router::isUnionOnGraphFetch(true) || $fe.func->in(graphFetchFunctions()) || $fe->meta::pure::router::isMergeOnGraphFetch() ,
        | planInMemoryGraphFetchExecution($sq, $ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extension, $debug),
        | planExecutionPure($sq, $ext, $m, $runtime, $exeCtx, $extension, $debug)
    );

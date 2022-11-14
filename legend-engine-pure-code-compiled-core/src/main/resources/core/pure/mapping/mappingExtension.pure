@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::router::metamodel::*;
 import meta::pure::router::operations::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::clustering::*;
@@ -122,24 +121,6 @@ function meta::pure::mapping::propertyMappingsByPropertyName(i:InstanceSetImplem
    $i->match([ e:EmbeddedSetImplementation[1]| $e->propertyMappingsByPropertyName($propertyName),
                a:InstanceSetImplementation[1]| $i.propertyMappingsByPropertyName($propertyName)
              ]);
-}
-
-function meta::pure::mapping::propertyMappingsByPropertyName(i:EmbeddedSetImplementation[1],propertyName:String[1]):PropertyMapping[*]
-{
-   let propertyMapping = $i->match([o:OtherwiseEmbeddedSetImplementation[1]|$o.propertyMappingsByPropertyName($propertyName);,
-                                    a:PropertyMappingsImplementation[1]| $a.propertyMappingsByPropertyName($propertyName);]);
-   if($propertyMapping->isEmpty()
-    ,| $i->match([ i:InlineEmbeddedSetImplementation[1] | $i.inlineEmbeddedProperty($propertyName),
-                   o:OtherwiseEmbeddedSetImplementation[1] | $o.parent._classMappingByIdRecursive($o.otherwisePropertyMapping.targetSetImplementationId)->cast(@InstanceSetImplementation).propertyMappingsByPropertyName($propertyName);,
-                   e:EmbeddedSetImplementation[1] | let mapping = $e.parent;
-                                                    let sourceInfo = $mapping->sourceInformation();
-                                                    if ($sourceInfo->isEmpty(),
-                                                        | fail('Cannot find a mapping for property \'' + $propertyName + '\' in an embedded mapping for class ' + $e.class->elementToPath() + ' in the mapping ' + $mapping->elementToPath()),
-                                                        | let si = $sourceInfo->toOne();
-                                                          fail('Cannot find a mapping for property \'' + $propertyName + '\' in an embedded mapping for class ' + $e.class->elementToPath() + ' in the mapping ' + $mapping->elementToPath() + ' (source:'+ $si.source + ' line:' + $si.line->toString() + ' col:' + $si.column->toString() + ')'););
-                                                    [];])
-    ,| $propertyMapping
-   );
 }
 
 function meta::pure::mapping::propertyMappingByPropertyNameAndTargetIdWithInlineResolution(i:InstanceSetImplementation[1], s:String[1], targetId:String[1]):meta::pure::mapping::PropertyMapping[0..1]
@@ -266,7 +247,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
 
        // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
        if ($classMapping->isEmpty(),
-          |let mappings = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
+          |let mappings = $state.classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
            if ($mappings->isEmpty(),
                |^M2MEmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
                |$mappings
@@ -276,25 +257,11 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
    );
 }
 
-function meta::pure::router::routing::inlineEmbeddedMapping(i:InlineEmbeddedSetImplementation[1], m:Mapping[1]):EmbeddedSetImplementation[1]
-{   
-    let cm = $m.classMappingById($i.inlineSetImplementationId);
-    assertEquals(1, $cm->size(), | 'Found too many or not enough matches ['+$cm.id->makeString(',')+'] for inline implementation Set Id [' + $i.inlineSetImplementationId+']');
-    let pmaps = $cm->cast(@InstanceSetImplementation)->toOne().allPropertyMappings()->map(pm | ^$pm(owner = $i.owner, sourceSetImplementationId = $i.sourceSetImplementationId));
-    ^$i(propertyMappings=$pmaps);
-}
 
-function meta::pure::router::routing::reprocessAggregationAwarePropertyMapping(pm: PropertyMapping[1]):PropertyMapping[1]
-{
-   $pm->match([
-      agg:AggregationAwarePropertyMapping[1]| $agg.owner->cast(@AggregationAwareSetImplementation).mainSetImplementation->toOne().propertyMappingsByPropertyName($agg.property.name->toOne())->filter(p | $p.sourceSetImplementationId == $p.sourceSetImplementationId && $p.targetSetImplementationId == $p.targetSetImplementationId)->toOne(),
-      m:PropertyMapping[1] | $m
-   ])
-}
 
 function meta::pure::router::operations::getMappedLeafClasses(class:Class<Any>[1], mapping:Mapping[1], state: RoutingState[1]):Type[*]
 {
-    let thisMapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).classMappingsForClass($class);
+    let thisMapping = $state.classMappingsForClass($class);
     let subTypes = $class.specializations.specific->cast(@Class<Any>)->map(c | $c->getMappedLeafClasses_recursive([], $mapping, $state));
     if($subTypes->isEmpty(), | if($thisMapping->isEmpty(), | [], |$class), | $subTypes);
 }
@@ -302,7 +269,7 @@ function meta::pure::router::operations::getMappedLeafClasses(class:Class<Any>[1
 function <<access.private>> meta::pure::router::operations::getMappedLeafClasses_recursive(class:Class<Any>[1], leafMostMappedClass:Class<Any>[0..1], mapping:Mapping[1], state: RoutingState[1]):Class<Any>[*]
 {
     let specs = $class.specializations.specific->cast(@Class<Any>);
-    let foundClassMapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).classMappingsForClass($class);
+    let foundClassMapping = $state.classMappingsForClass($class);
     let mappedClass = if($foundClassMapping->isEmpty(), | $leafMostMappedClass, | $class);
     if($specs->isEmpty(), | $mappedClass, | $specs->map(s | $s->getMappedLeafClasses_recursive($mappedClass, $mapping, $state)));
 }

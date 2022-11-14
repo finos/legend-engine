@@ -85,7 +85,13 @@ function meta::pure::extension::defaultExtensions():Extension[*]
                           meta::pure::store::platform::contract::platformStoreContract(),
                           meta::pure::mapping::modelToModel::contract::modelStoreContract(),
                           meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract()
-                      ]
+                      ],
+    //TODO: Move this out along with Java Binding
+    availablePlatformBindings = [
+      meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
+        meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension()
+      ])
+    ]
   )
 }
 
