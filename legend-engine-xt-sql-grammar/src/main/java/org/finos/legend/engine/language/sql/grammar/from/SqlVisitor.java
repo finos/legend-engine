@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseBaseVisit
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
+import org.finos.legend.engine.protocol.sql.metamodel.AllRows;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
 import org.finos.legend.engine.protocol.sql.metamodel.Limit;
@@ -140,17 +141,26 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
     @Override
     public Node visitLimitClause(SqlBaseParser.LimitClauseContext ctx)
     {
-        if (ctx.limit != null)
+        if (ctx.LIMIT() == null)
         {
-            Expression expression = (Expression) ctx.limit.accept(this);
-            Limit limit = new Limit();
-            limit.rowCount = expression;
-            return limit;
+            throw new IllegalArgumentException("LIMIT value missing");
+        }
+        Expression rowCount;
+        if (ctx.ALL() != null)
+        {
+            rowCount = new AllRows();
+        }
+        else if (ctx.limit != null)
+        {
+            rowCount = (Expression) ctx.limit.accept(this);
         }
         else
         {
-            return null;
+            throw new IllegalArgumentException("LIMIT must contain [ALL|integer|param]");
         }
+        Limit limit = new Limit();
+        limit.rowCount = rowCount;
+        return limit;
     }
 
     @Override

@@ -15,7 +15,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlansFromSQ
   meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $sqlTransformContext.singleExecution->toOne().mapping, $sqlTransformContext.singleExecution->toOne().runtime, $executionOptionContext, $extensions);
 }
 
-function meta::external::query::sql::transformation::queryToPure::findService(services: Service[*], serviceId: String[1]): Service[1] {
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::findService(services: Service[*], serviceId: String[1]): Service[1] {
   let servicesFound = $services->filter(x | $x.pattern == $serviceId);
   let servicesFoundSize = $servicesFound->size();
   
@@ -25,14 +25,14 @@ function meta::external::query::sql::transformation::queryToPure::findService(se
   $servicesFound->toOne();
 }
 
-function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   let queryContext = $query.queryBody->processNode($context);
   let orderByContext = if($query.orderBy->isEmpty(), |$queryContext, |$query.orderBy->toOne()->processNode($queryContext));
   if($query.limit->isEmpty(), |$orderByContext, |$query.limit->toOne()->processNode($orderByContext));
 }
 
-function meta::external::query::sql::transformation::queryToPure::processNode(node: Node[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNode(node: Node[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   $node->match([
     limit: Limit[1]                   | $limit->processLimit($context),
@@ -41,7 +41,7 @@ function meta::external::query::sql::transformation::queryToPure::processNode(no
   ]);
 }
 
-function meta::external::query::sql::transformation::queryToPure::processQuerySpec(querySpec: QuerySpecification[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuerySpec(querySpec: QuerySpecification[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   // TODO: fix logic for multiple tables in from
   let newContextAfterFrom = $querySpec.from->toOne()->match([
@@ -55,7 +55,7 @@ function meta::external::query::sql::transformation::queryToPure::processQuerySp
   $newContextAfterSelect;
 }
 
-function meta::external::query::sql::transformation::queryToPure::processOrderBy(orderBy: meta::external::query::sql::metamodel::OrderBy[*], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(orderBy: meta::external::query::sql::metamodel::OrderBy[*], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   let sortInformation = $orderBy.sortItems->fold({k,a| 
     let column = $k.sortKey->cast(@Identifier)->at(0).value;
@@ -71,15 +71,16 @@ function meta::external::query::sql::transformation::queryToPure::processOrderBy
   ^$context(exp1 = $newExp);
 }
 
-function meta::external::query::sql::transformation::queryToPure::processLimit(limit: meta::external::query::sql::metamodel::Limit[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLimit(limit: meta::external::query::sql::metamodel::Limit[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   let newExp = $limit.rowCount->match([
-    l: LongLiteral[1] | appendTdsFunc($context.exp1->toOne(), limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, ^List<Any>(values=$l.value))
+    l: LongLiteral[1] | appendTdsFunc($context.exp1->toOne(), limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, ^List<Any>(values=$l.value)),
+    a: AllRows[1]     | $context.exp1->toOne()
   ]);
   ^$context(exp1 = $newExp);
 }
 
-function meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   assertEquals(2, $table.name->size(), 'Expected table name to contain two parts <schema>.<name>, but got ' + $table.name.value->joinStrings('.'));
   
@@ -106,7 +107,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $newCols;
 }
 
-function meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   let columnTypes = $context.columns()
     ->map(x|^Pair<String,DataType>(first = $x.name, second = $x.type->toOne()))
@@ -125,7 +126,7 @@ function meta::external::query::sql::transformation::queryToPure::processSelect(
   ^$context(exp1 = $newExp);
 }
 
-function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(func: FunctionExpression[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): FunctionExpression[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::appendTdsFunc(func: FunctionExpression[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): FunctionExpression[1]
 {
   let pvs = $args->fold(
     { k,a:ValueSpecification[*] | $a->concatenate($k.values->wrapAsInstanceValue()) },
@@ -140,7 +141,7 @@ function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(
   );
 }
 
-function meta::external::query::sql::transformation::queryToPure::wrapAsInstanceValue(res: Any[*]): InstanceValue[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapAsInstanceValue(res: Any[*]): InstanceValue[1]
 {
   // check preeval for mult func, move to metaextension if required
   if($res->isEmpty(),
