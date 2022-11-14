@@ -50,7 +50,7 @@ public abstract class DbSpecificTests
                     {
                         for (int i1 = 1; i1 < resultSet.getMetaData().getColumnCount() + 1; i1++)
                         {
-                            assert resultSet.getMetaData().getColumnLabel(i1) != null;
+                            resultSet.getMetaData().getColumnLabel(i1);
                             resultSet.getObject(i1);
                         }
                     }
