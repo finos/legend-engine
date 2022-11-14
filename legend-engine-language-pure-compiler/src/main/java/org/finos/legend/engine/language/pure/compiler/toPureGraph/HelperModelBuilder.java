@@ -47,6 +47,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Cons
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
@@ -360,6 +361,39 @@ public class HelperModelBuilder
             prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
         }
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return prop;
+    }
+
+    /**
+     * Find the property (normal and derived) that the a property owner (class or association) owns.
+     */
+    public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    {
+        AbstractProperty<?> prop = null;
+        if (propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) propertyOwner;
+            prop = _class._properties().detect(p -> name.equals(p.getName()));
+            if (prop == null)
+            {
+                prop = _class._propertiesFromAssociations().detect(p -> name.equals(p._name()));
+            }
+            if (prop == null)
+            {
+                prop = _class._qualifiedProperties().detect(p -> name.equals(p._name()));
+            }
+            if (prop == null)
+            {
+                prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+            }
+        }
+        else if (propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association = (Association) propertyOwner;
+            prop = _association._properties().detect(p -> name.equals(p.getName()));
+        }
+        String propertyOwnerType = propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class ? "class" : "association";
+        Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in " + propertyOwnerType + " '" + (getElementFullPath(propertyOwner, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
     }
 
