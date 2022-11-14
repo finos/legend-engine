@@ -2379,4 +2379,57 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   let x = #Test{My random Parser #Test{ OK OK } Yo}#;" +
                 "}\n");
     }
+
+    @Test
+    public void testGraphFetchTreeWithQualifierCompilation()
+    {
+        String code = "Class test::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "  employees: test::Person[*];\n" +
+                "\n" +
+                "  employeeCount() {$this.employees->size()}: Integer[1];\n" +
+                "  employeesByFirstName(firstNames: String[*]) {$this.employees->filter(e | $e.firstName->in($firstNames))}: test::Person[*];\n" +
+                "  employeesByFirstNameAndCity(firstNames: String[*], cities: String[*]) {$this.employees->filter(e | $e.firstName->in($firstNames) && $e.city->in($cities))}: test::Person[*];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  firstName: String[1];\n" +
+                "  lastName: String[1];\n" +
+                "  city: String[1]; \n" +
+                "}\n" +
+                "\n" +
+                "function my::test():Any[*]\n" +
+                "{\n" +
+                "  #{\n" +
+                "    test::Firm {\n" +
+                "      legalName,\n" +
+                "      employeeCount(),\n" +
+                "      employeesByFirstName([]) {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstName('Peter') {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstName(['Peter']) {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstName(['Peter', 'John']) {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstNameAndCity(['Peter', 'John'], ['New York']) {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n" +
+                "}\n";
+
+        test(code);
+    }
 }
