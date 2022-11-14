@@ -29,8 +29,6 @@ import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.NamedInputStream;
 import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
-import org.finos.legend.pure.generated.core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor;
-import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -43,9 +41,7 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     @BeforeClass
     public static void setup()
     {
-        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport();
-        formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(executionSupport));
-        formatDescriptors = Collections.singletonList(core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_json_executionPlan_engine_java_jsonSchemaJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
+        formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
     }
 
     @Test

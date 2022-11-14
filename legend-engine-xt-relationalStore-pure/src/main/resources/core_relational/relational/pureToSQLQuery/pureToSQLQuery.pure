@@ -39,9 +39,6 @@ import meta::pure::router::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::embedded::*;
-import meta::pure::router::store::metamodel::*;
-import meta::pure::router::store::metamodel::clustering::*;
-import meta::pure::router::utils::*;
 import meta::relational::extension::*;
 
 
@@ -221,7 +218,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::manageD
    if ($sql.select.columns->isEmpty() && ($isMap || $isFilter),
        |
 
-        let setImplementation = $functionExpression.parametersValues->at(if($isMap,|1,|0))->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->match([r:RootRelationalInstanceSetImplementation[1]|$r, c:CrossSetImplementation[1]|$c->convertCrossSetImplToRelationalSetImpl()]);
+        let setImplementation = $functionExpression.parametersValues->at(if($isMap,|1,|0))->cast(@ExtendedRoutedValueSpecification).sets->toOne()->match([r:RootRelationalInstanceSetImplementation[1]|$r, c:CrossSetImplementation[1]|$c->convertCrossSetImplToRelationalSetImpl()]);
         let getAllSelectWithCursor = processGetAll($setImplementation, $setImplementation.class, '', true, -1, true, [], $state, $context, $extensions)->toOne();
         let columns = $getAllSelectWithCursor.select.columns->cast(@Alias);
         assertEquals(1, $columns.relationalElement->cast(@TableAliasColumn).alias->removeDuplicates()->size(), 'Types mapped with joins are not supported yet!');
@@ -352,13 +349,13 @@ function meta::relational::functions::pureToSqlQuery::processValueSpecificationR
 {
    let res = $vs->evaluateAndDeactivate()->match(
              [
-                 r:StoreMappingRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping), $joinType, $nodeId, $aggFromMap, $context, $extensions),
+                 r:ExtendedRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(propertyMappingFromRouter = $r.propertyMapping), $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  r:FunctionRoutedValueSpecification[1] | $r.value->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                  f:FunctionExpression[1] | processFunctionExpression($f, $currentPropertyMapping, $operation, $vars, ^$state(functionExpressionStack+=$f), $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions),
                  i:InstanceValue[1] | let elements = processInstanceValue($i, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                       $elements->map(e | ^OperationWithParentPropertyMapping(element=$e));,
                  v:VariableExpression[1] | processVariableExpression($v,$currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
-                 c:StoreMappingClusteredValueSpecification[1]|fail('This query is attempting to join across stores which is not currently supported. If you are reusing other mapping definitions this may indicate that you have not re-aliased the store names when defining includes. \n'+
+                 c:ClusteredValueSpecification[1]|fail('This query is attempting to join across stores which is not currently supported. If you are reusing other mapping definitions this may indicate that you have not re-aliased the store names when defining includes. \n'+
                                                        'For example, the mapping may have\n include mapping::example::ExampleMapping\ninstead of\n include mapping::example::ExampleMapping[OtherStore->MyStore]\n' +
                                                        'Cluster details:\n' + $c->asString());
                                                   ^OperationWithParentPropertyMapping(element=$operation);,
@@ -650,7 +647,7 @@ function  meta::relational::functions::pureToSqlQuery::processObjectGroupBy(f:Fu
 
                              let existingCol = $sqlQuery.columns->at(0)->cast(@Alias);
                              let aggregOp = $a.aggregateFn.expressionSequence->at(0)
-                                            ->match([e:StoreMappingRoutedValueSpecification[1]|$e.value->cast(@FunctionExpression), f:FunctionExpression[1]|$f])
+                                            ->match([e:ExtendedRoutedValueSpecification[1]|$e.value->cast(@FunctionExpression), f:FunctionExpression[1]|$f])
                                             ->evaluateAndDeactivate()->processAggFn($existingCol.relationalElement)->at(0);
                              let newSelect = ^$sqlQuery(columns=^Alias(name=$existingCol.name, relationalElement=$aggregOp)
                                                         );
@@ -1998,7 +1995,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                          ^$p(element = $newSelectWithCursor);
                                    );
 
-   let setImpl = if($isDataType || $targetType ->_subTypeOf(TabularDataSet),|[],|$elements->map(e|$e->cast(@StoreMappingRoutedValueSpecification).sets->toOne())->removeDuplicates());
+   let setImpl = if($isDataType || $targetType ->_subTypeOf(TabularDataSet),|[],|$elements->map(e|$e->cast(@ExtendedRoutedValueSpecification).sets->toOne())->removeDuplicates());
 
    // Fix columns ----------------
    let columns = $processed.element->cast(@SelectWithCursor).select.columns;
@@ -2011,7 +2008,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                                              |^Alias
                                                               (
                                                                  name='u_type',
-                                                                 relationalElement=^Literal(value=$setImpl->indexOf($element->cast(@StoreMappingRoutedValueSpecification).sets->toOne())->toString())
+                                                                 relationalElement=^Literal(value=$setImpl->indexOf($element->cast(@ExtendedRoutedValueSpecification).sets->toOne())->toString())
                                                               )
                                                           );
                                                let newSelect = ^$select(columns = $type->concatenate($select.columns));
@@ -2203,8 +2200,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::canProc
 {
    // Can process 'at' in the context of semi structured set implementations
    let params = $f.parametersValues->evaluateAndDeactivate();
-   if(($params->size() == 2) && ($params->at(0)->instanceOf(StoreMappingRoutedValueSpecification)),
-      | let firstParam = $params->at(0)->cast(@StoreMappingRoutedValueSpecification);
+   if(($params->size() == 2) && ($params->at(0)->instanceOf(ExtendedRoutedValueSpecification)),
+      | let firstParam = $params->at(0)->cast(@ExtendedRoutedValueSpecification);
         ($firstParam.sets->size() == 1) && ($firstParam.sets->at(0)->instanceOf(SemiStructuredRelationalInstanceSetImplementation));,
       | false
    );
@@ -2555,10 +2552,10 @@ function meta::relational::functions::pureToSqlQuery::nestFilters(newQuery:Selec
 function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], existingQuery:SelectWithCursor[1], state:State[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    // Add PK
-   if (!$f.parametersValues->at(0)->instanceOf(StoreMappingRoutedValueSpecification) || !$f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->size() == 1,
+   if (!$f.parametersValues->at(0)->instanceOf(ExtendedRoutedValueSpecification) || !$f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->size() == 1,
          |$existingQuery,
-         |if($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->instanceOf(RootRelationalInstanceSetImplementation),
-             |let rs = $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@RootRelationalInstanceSetImplementation);
+         |if($f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne()->instanceOf(RootRelationalInstanceSetImplementation),
+             |let rs = $f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne()->cast(@RootRelationalInstanceSetImplementation);
               let pk = $rs.resolvePrimaryKey();
               let valid = if ($pk->isEmpty(), |  fail('There is no primary key defined on the table ' + $rs.mainTable->toOne().name + '. A primary key must be defined in the table definition in PURE to use this feature'); false; ,| true);
               let existingSelect = $existingQuery.select;
@@ -2577,8 +2574,8 @@ function meta::relational::functions::pureToSqlQuery::addPkForAggregation(f:Func
                            );
               $result->validate([], $extensions);
               $result;,
-             |if($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->instanceOf(OperationSetImplementation) && ($f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping)->size() > 1) && $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping)->forAll(set | $set->instanceOf(RootRelationalInstanceSetImplementation)) && $existingQuery.currentTreeNode->isNotEmpty() && $existingQuery.currentTreeNode->toOne().alias.relationalElement->instanceOf(Union),
-                 |addPkForAggregationInUnion($existingQuery, $f.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping)->cast(@RootRelationalInstanceSetImplementation), $state, $extensions),
+             |if($f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne()->instanceOf(OperationSetImplementation) && ($f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping)->size() > 1) && $f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping)->forAll(set | $set->instanceOf(RootRelationalInstanceSetImplementation)) && $existingQuery.currentTreeNode->isNotEmpty() && $existingQuery.currentTreeNode->toOne().alias.relationalElement->instanceOf(Union),
+                 |addPkForAggregationInUnion($existingQuery, $f.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne()->cast(@OperationSetImplementation)->resolveOperation($state.mapping)->cast(@RootRelationalInstanceSetImplementation), $state, $extensions),
                  |$existingQuery
               );
           );
@@ -2630,7 +2627,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isAggre
 function <<access.private>> meta::relational::functions::pureToSqlQuery::containsAggregationFunctionInValueSpecification(f:ValueSpecification[1], supported:Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>[1]):Boolean[1]
 {
    $f->match([
-                  e:StoreMappingRoutedValueSpecification[1]|$e.value,
+                  e:ExtendedRoutedValueSpecification[1]|$e.value,
                   a:Any[*]|$a
                 ])
      ->match([
@@ -2665,7 +2662,7 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
    let newCurrentPropertyMapping = if ($res.currentPropertyMapping->isEmpty(), | [], | $res.currentPropertyMapping);
 
    let func = $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
-                  e:StoreMappingRoutedValueSpecification[1]|$e.value->reactivate();,
+                  e:ExtendedRoutedValueSpecification[1]|$e.value->reactivate();,
                   a:Any[*]|$a
                 ]);
 
@@ -2859,7 +2856,7 @@ function meta::relational::functions::pureToSqlQuery::findFunctionSequenceMultip
    $v->match([ fe:FunctionExpression[1]| $fe.func->match([qp:QualifiedProperty<Any>[1]| $qp.expressionSequence->at(0)->findFunctionSequenceMultiplicity()
                                                          ,a:Any[1]|pair($fe, $toMultiplicity->eval($fe))])
                                                   ->concatenate(if($fe.parametersValues->size() > 0,| $fe.parametersValues->at(0)->findFunctionSequenceMultiplicity(),|[]));,
-               e:StoreMappingRoutedValueSpecification[1]|$e->byPassRouterInfo()->findFunctionSequenceMultiplicity(),
+               e:ExtendedRoutedValueSpecification[1]|$e->byPassRouterInfo()->findFunctionSequenceMultiplicity(),
                a:Any[1]|[]
              ]);
 }
@@ -3089,8 +3086,8 @@ function meta::relational::functions::pureToSqlQuery::extractElement(z:Relationa
 
 function meta::relational::functions::pureToSqlQuery::processGetAllForEachDate(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let setImplementation = $expression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
-   let mappingOwner = $expression.parametersValues->at(1)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
+   let setImplementation = $expression.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
+   let mappingOwner = $expression.parametersValues->at(1)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
    let swc1 = processGetAll($expression, $setImplementation, [], $nodeId, $state, $vars, $context, $extensions)->cast(@SelectWithCursor);
    let swc2 = processValueSpecification($expression.parametersValues->at(1), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
    let query1 = $swc1.select->pushExtraFilteringOperation($extensions)->pushSavedFilteringOperation($extensions);
@@ -3137,7 +3134,7 @@ function meta::relational::functions::pureToSqlQuery::processGetAllForEachDate(e
 
 function meta::relational::functions::pureToSqlQuery::processGetAll(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let setImplementation = $expression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
+   let setImplementation = $expression.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
    processGetAll($expression, $setImplementation, $expression.parametersValues, $nodeId, $state, $vars, $context, $extensions);
 }
 
@@ -3171,7 +3168,7 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
 
 function meta::relational::functions::pureToSqlQuery::getAllExpressionSetImplementations(expression:FunctionExpression[1]):RootRelationalInstanceSetImplementation[*]
 {
-   let setImplementation = $expression.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
+   let setImplementation = $expression.parametersValues->at(0)->cast(@ExtendedRoutedValueSpecification).sets->toOne();
    $setImplementation->match(
                            [
                               r:RootRelationalInstanceSetImplementation[1]|$r,
@@ -3522,7 +3519,7 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
                        milestoningContext = $leftSide.milestoningContext
                      );
 
-   let paramValue = $expression.parametersValues->at(1)->match([e:StoreMappingRoutedValueSpecification[1]|$e.value,v:ValueSpecification[1]|$v]);
+   let paramValue = $expression.parametersValues->at(1)->match([e:ExtendedRoutedValueSpecification[1]|$e.value,v:ValueSpecification[1]|$v]);
    let updatedState = $state->updateFunctionParamScope($paramValue.genericType.typeArguments.rawType->toOne()->cast(@FunctionType),$rootSelect);
 
    let filterFunction = $expression->instanceValuesAtParameter(1, $vars, $updatedState.inScopeVars)->at(0)->cast(@FunctionDefinition<Any>);
@@ -3607,7 +3604,7 @@ function meta::relational::functions::pureToSqlQuery::processFilter(expression:F
 
 function meta::relational::functions::pureToSqlQuery::isGetAll(v:ValueSpecification[1]):Boolean[1]
 {
-   let extracted = $v->match([e:StoreMappingRoutedValueSpecification[1]|$e.value, v:ValueSpecification[1]|$v]);
+   let extracted = $v->match([e:ExtendedRoutedValueSpecification[1]|$e.value, v:ValueSpecification[1]|$v]);
    $extracted->instanceOf(FunctionExpression) && $extracted->cast(@FunctionExpression).functionName == 'getAll';
 }
 
@@ -4036,7 +4033,7 @@ function meta::relational::functions::pureToSqlQuery::processObjectReferenceIn(f
    let processedLeftSide      = $leftSide->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
 
    let setImplementation      = $leftSide->match([
-                                   e:StoreMappingRoutedValueSpecification[1] | $e.sets,
+                                   e:ExtendedRoutedValueSpecification[1] | $e.sets,
                                    v:ValueSpecification[1]               | $state.mapping.rootClassMappingByClass($mainClass);
                                 ])->toOne();
 
@@ -4165,7 +4162,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::reproce
 {
    $v->match([
                f:FunctionExpression[1]|^$f(parametersValues=$f.parametersValues->map(v|$v->reprocessVS())),
-               e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocessVS(),
+               e:ExtendedRoutedValueSpecification[1]|$e.value->reprocessVS(),
                e:FunctionRoutedValueSpecification[1]|$e.value->reprocessVS(),
                i:InstanceValue[1]|^$i(values = $i.values->map(v|$v->match([e:ValueSpecification[1]|$e->reprocessVS(),a:Any[1]|$a]))),
                v:ValueSpecification[1]|$v
@@ -5964,7 +5961,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::hasOpti
 function meta::relational::functions::pureToSqlQuery::validateParamHasDataTypeReturnType(vs:ValueSpecification[1]): Boolean[1]
 {
     let type = $vs->match([
-                            e : StoreMappingRoutedValueSpecification[1] | $e.value.genericType.rawType,
+                            e : ExtendedRoutedValueSpecification[1] | $e.value.genericType.rawType,
                             vs:ValueSpecification[1] | $vs.genericType.rawType
                          ]);
 

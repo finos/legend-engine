@@ -19,8 +19,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.D
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.appendonly.AppendOnly;
 
-import java.util.Arrays;
-
 import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class AppendOnlyMapper

@@ -38,7 +38,6 @@ import meta::pure::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::milestoning::*;
 import meta::pure::router::routing::*;
-import meta::pure::router::store::metamodel::*;
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], debug:DebugContext[1], extensions:Extension[*]):ExecutionNode[1]
 {
@@ -104,7 +103,7 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                          type=$class,
                                                          setImplementations = if($ext->isEmpty(),
                                                                                  | $m->toOne().rootClassMappingByClass($c)->toOne(),
-                                                                                 | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
+                                                                                 | $ext->cast(@ExtendedRoutedValueSpecification).sets->at(0)
                                                                               )->resolveOperation($m->toOne())
                                                      )
                                 ]);
@@ -333,7 +332,7 @@ function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0
                                         ),
                  c : Class<Any>[1] | let setImplementation = if($ext->isEmpty(),
                                                                  | $m.rootClassMappingByClass($c)->toOne();,
-                                                                 | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
+                                                                 | $ext->cast(@ExtendedRoutedValueSpecification).sets->at(0)
                                                              );
                                      $setImplementation->match(
                                        [

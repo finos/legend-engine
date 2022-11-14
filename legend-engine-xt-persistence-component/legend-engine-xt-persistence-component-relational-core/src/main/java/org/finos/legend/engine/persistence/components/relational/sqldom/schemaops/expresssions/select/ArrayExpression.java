@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.select;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
@@ -66,6 +67,10 @@ public class ArrayExpression<K extends Value> extends SelectExpression
         if (node instanceof StringValue)
         {
             values.add((StringValue) node);
+        }
+        else if (node instanceof ObjectValue)
+        {
+            values.add(((ObjectValue) node));
         }
     }
 }

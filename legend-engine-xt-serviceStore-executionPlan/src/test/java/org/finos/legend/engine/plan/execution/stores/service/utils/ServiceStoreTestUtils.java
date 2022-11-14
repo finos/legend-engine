@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.service.utils;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
@@ -38,17 +38,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
-import org.finos.legend.pure.generated.core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
-import org.finos.legend.pure.generated.core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
-import org.finos.legend.pure.generated.core_servicestore_java_platform_binding_legendJavaPlatformBinding_serviceStoreLegendJavaPlatformBindingExtension;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -84,16 +82,8 @@ public class ServiceStoreTestUtils
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
         PureModel pureModel = Compiler.compile(contextData, null, null);
 
-        MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
-        extensions.addAllIterable(
-                core_servicestore_java_platform_binding_legendJavaPlatformBinding_serviceStoreLegendJavaPlatformBindingExtension.Root_meta_external_store_service_executionPlan_platformBinding_legendJava_serviceStoreExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(
-                        Lists.mutable.with(
-                                core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_flatdata_executionPlan_engine_java_flatDataJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(pureModel.getExecutionSupport()),
-                                core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_json_executionPlan_engine_java_jsonSchemaJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(pureModel.getExecutionSupport())
-                        ),
-                        pureModel.getExecutionSupport()
-                )
-        );
+        List<Root_meta_pure_extension_Extension> extensions = Lists.mutable.empty();
+        extensions.addAll(Lists.mutable.with(org.finos.legend.pure.generated.core_servicestore_extensions_extension.Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_(pureModel.getExecutionSupport())));
         extensions.add(core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
         extensions.add(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
         extensions.add(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
@@ -109,7 +99,7 @@ public class ServiceStoreTestUtils
                 "vX_X_X",
                 PlanPlatform.JAVA,
                 null,
-                extensions,
+                FastList.newList(extensions),
                 LegendPlanTransformers.transformers
         );
     }

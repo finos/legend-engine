@@ -22,7 +22,6 @@ import meta::pure::extension::*;
 import meta::pure::router::printer::*;
 import meta::pure::runtime::*;
 import meta::pure::router::clustering::*;
-import meta::pure::router::metamodel::clustering::*;
 
 function meta::pure::executionPlan::toString::planToStringWithoutFormatting(e:ExecutionPlan[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
@@ -111,7 +110,6 @@ function <<access.private>> meta::pure::executionPlan::toString::typeToString(e:
       [
          partialClassResultType : PartialClassResultType[1]|'PartialClass[impls=['+$partialClassResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+'], propertiesWithParameters = ['+$partialClassResultType.propertiesWithParameters->map(x | if($x.property->instanceOf(Property), | $x.property.name->toOne(), | $x.parameters->map(x | $x->asString())->joinStrings($x.property.name->toOne() + '(', ', ', ')')))->sort()->joinStrings(', ')+']]',
          classResultType : ClassResultType[1]|'Class[impls='+$classResultType.setImplementations->map(se|'('+$se.class->elementToPath()+' | '+$se.parent.name->toOne()+'.'+$se.id+')')->joinStrings(',')+']'+if($classResultType.genericType->isEmpty(), |'', |'\n'+$space+'         as '+$classResultType.genericType->toOne()->printGenericType()),
-         voidResultType : VoidResultType[1]|'Void',
          e:ResultType[1] | $e.type->elementToPath()
       ])->toOneMany()
    )

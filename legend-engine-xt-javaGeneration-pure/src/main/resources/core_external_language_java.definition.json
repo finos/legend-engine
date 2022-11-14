@@ -1,5 +1,0 @@
-{
-    "name" : "core_external_language_java",
-    "pattern" : "(meta::external::language::java|meta::protocols::generation::java)(::.*)?",
-    "dependencies" : ["platform", "core"]
-}
