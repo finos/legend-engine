@@ -24,7 +24,7 @@ identifier:                                 VALID_STRING | STRING
 definition:                                 (
                                                 table
                                                 | temporality
-                                            )
+                                            )*
                                             EOF
 ;
 table:                                      TARGET_RELATIONAL_TABLE COLON identifier SEMI_COLON
