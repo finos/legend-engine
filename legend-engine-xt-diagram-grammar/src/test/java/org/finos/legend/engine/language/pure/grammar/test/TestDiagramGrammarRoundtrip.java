@@ -172,4 +172,55 @@ public class TestDiagramGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "{\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDiagramWithAssociationProperty()
+    {
+        test("###Diagram\n" +
+                "Diagram model::Diag\n" +
+                "{\n" +
+                "  classView 24ec35ba-8656-4561-93c5-c77a84ba5f4f\n" +
+                "  {\n" +
+                "    class: model::C1;\n" +
+                "    position: (342.0,136.0);\n" +
+                "    rectangle: (68.30224609375,44.0);\n" +
+                "  }\n" +
+                "  classView 8ce9f436-2a96-4015-9572-cc3aeeeec404\n" +
+                "  {\n" +
+                "    class: model::C2;\n" +
+                "    position: (532.0,237.0);\n" +
+                "    rectangle: (35.33984375,30.0);\n" +
+                "  }\n" +
+                "  propertyView\n" +
+                "  {\n" +
+                "    property: model::A.c1;\n" +
+                "    source: 8ce9f436-2a96-4015-9572-cc3aeeeec404;\n" +
+                "    target: 24ec35ba-8656-4561-93c5-c77a84ba5f4f;\n" +
+                "    points: [(549.669921875,252.0),(376.151123046875,158.0)];\n" +
+                "  }\n" +
+                "  propertyView\n" +
+                "  {\n" +
+                "    property: model::A.c2;\n" +
+                "    source: 24ec35ba-8656-4561-93c5-c77a84ba5f4f;\n" +
+                "    target: 8ce9f436-2a96-4015-9572-cc3aeeeec404;\n" +
+                "    points: [(376.151123046875,158.0),(549.669921875,252.0)];\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class model::C1\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "Class model::C2\n" +
+                "{\n" +
+                "}\n" +
+                "\n" +
+                "Association model::A\n" +
+                "{\n" +
+                "  c1: model::C1[1];\n" +
+                "  c2: model::C2[1];\n" +
+                "}\n");
+    }
 }
