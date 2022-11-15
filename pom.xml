@@ -146,6 +146,9 @@
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
+        <module>legend-engine-xt-analytics-lineage-api</module>
+        <module>legend-engine-xt-analytics-lineage-pure</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-pure-ide-light</module>
@@ -1093,6 +1096,17 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
