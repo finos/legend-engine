@@ -464,6 +464,42 @@ meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlSerializeOfObjectW
   assert(jsonEquivalent('{"firstName":"Pierre","lastName":"Doe","alternateName":{"value":"John Doe","lang":"en"}}'->parseJSON(), $actual->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{
+   serverVersion.start='v1_19_0',
+   doc.doc='Parse a XML object with attricute and value without a tag, process it through an M2M mapping and serialize the result as JSON.'   
+} 
+meta::pure::mapping::modelToModel::test::xmlStore::simple::xmlDeserializeValueWithoutTagObject() : Boolean[1]
+{
+   let tree = #{meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade {_id, value__} }#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade.all()->graphFetch($tree)->serialize($tree),
+      complexModelMapping,
+      ^Runtime(connections = ^XmlModelConnection(
+                                element=^ModelStore(), 
+                                class=meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade,
+                                url='data:application/xml,' +                                     
+                                       '<Trades>\n' +
+                                            '<Trade id="1">100</Trade>\n' +  
+                                            '<Trade id="2">200</Trade>' +  
+                                       '</Trades>'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+   println($result.values->toOne());
+   assert(jsonEquivalent('[{"_id":"1","value__":"100"},{"_id":"2","value__":"200"}]'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+
+###Pure
+Class meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade
+{
+  _id: String[1];
+  value__: String[1];
+}
+
 ###Mapping
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
@@ -472,18 +508,24 @@ import meta::pure::mapping::modelToModel::test::*;
 Mapping meta::pure::mapping::modelToModel::test::xmlStore::simple::complexModelMapping
 (
    Person : Pure
-            {
-               ~src _Person
-               firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
-               lastName : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
-               addresses : $src.addresses
-            }
+   {
+       ~src _Person
+       firstName : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+       lastName : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
+       addresses : $src.addresses
+   }
    Address : Pure
-            {
-               ~src Address
-               street : $src.street
-            }
+   {
+       ~src Address
+       street : $src.street
+   }
 
+   meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade : Pure
+   {
+       ~src meta::pure::mapping::modelToModel::test::xmlStore::simple::Trade
+       _id : $src._id,
+       value__ : $src.value__
+   }
 )
 
 
