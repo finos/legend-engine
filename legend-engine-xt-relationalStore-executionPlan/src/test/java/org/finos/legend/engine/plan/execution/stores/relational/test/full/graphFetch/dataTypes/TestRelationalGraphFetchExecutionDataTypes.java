@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test.full.graph
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamToPureFormatSerializer;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
@@ -26,6 +27,7 @@ import org.junit.Test;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.stream.Stream;
 
 public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
 {
@@ -129,6 +131,32 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
     @Test
     public void testGraphFetchDataTypes() throws Exception
     {
+        JsonStreamingResult res = getJsonStreamingResultForAllDataTypes();
+        String stringResult = res.flush(new JsonStreamToPureFormatSerializer(res));
+
+        String expected = "[" +
+                "{\"tinyInt\":1,\"smallInt\":2,\"integer\":3,\"bigInt\":1000,\"varchar\":\"Something\",\"char\":\"c\",\"date\":\"2003-07-19\",\"timestamp\":\"2003-07-19T00:00:00.000000000\",\"float\":1.1,\"double\":2.2,\"decimalAsFloat\":123456789.12345679,\"numericAsFloat\":987654321.0987654,\"bit\":true,\"decimal\":123456789.123456789012345,\"numeric\":987654321.098765432154321,\"floatAsDecimal\":1.1}," +
+                "{\"tinyInt\":null,\"smallInt\":null,\"integer\":null,\"bigInt\":null,\"varchar\":null,\"char\":null,\"date\":null,\"timestamp\":null,\"float\":null,\"double\":null,\"decimalAsFloat\":null,\"numericAsFloat\":null,\"bit\":null,\"decimal\":null,\"numeric\":null,\"floatAsDecimal\":null}" +
+                "]";
+
+        Assert.assertEquals(expected, new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).readTree(stringResult).toString());
+    }
+
+    @Test
+    public void testGraphFetchDataTypesFromJavaStream() throws Exception
+    {
+        Stream<ObjectNode> stream = getJsonStreamingResultForAllDataTypes().toStream();
+
+        String expected = "[" +
+                    "{\"tinyInt\":1,\"smallInt\":2,\"integer\":3,\"bigInt\":1000,\"varchar\":\"Something\",\"char\":\"c\",\"date\":\"2003-07-19\",\"timestamp\":\"2003-07-19T00:00:00.000000000\",\"float\":1.1,\"double\":2.2,\"decimalAsFloat\":1.2345678912345679E8,\"numericAsFloat\":9.876543210987654E8,\"bit\":true,\"decimal\":123456789.123456789012345,\"numeric\":987654321.098765432154321,\"floatAsDecimal\":1.1}," +
+                    "{\"tinyInt\":null,\"smallInt\":null,\"integer\":null,\"bigInt\":null,\"varchar\":null,\"char\":null,\"date\":null,\"timestamp\":null,\"float\":null,\"double\":null,\"decimalAsFloat\":null,\"numericAsFloat\":null,\"bit\":null,\"decimal\":null,\"numeric\":null,\"floatAsDecimal\":null}" +
+                "]";
+
+        Assert.assertEquals(expected, new ObjectMapper().writeValueAsString(stream.iterator()));
+    }
+
+    private JsonStreamingResult getJsonStreamingResultForAllDataTypes()
+    {
         String fetchFunction = "###Pure\n" +
                 "function test::fetch(): Any[*]\n" +
                 "{\n" +
@@ -178,15 +206,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
                 "}";
 
         SingleExecutionPlan plan = buildPlan(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
-        JsonStreamingResult res = (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, null);
-        String stringResult = res.flush(new JsonStreamToPureFormatSerializer(res));
-
-        String expected = "[" +
-                "{\"tinyInt\":1,\"smallInt\":2,\"integer\":3,\"bigInt\":1000,\"varchar\":\"Something\",\"char\":\"c\",\"date\":\"2003-07-19\",\"timestamp\":\"2003-07-19T00:00:00.000000000\",\"float\":1.1,\"double\":2.2,\"decimalAsFloat\":123456789.12345679,\"numericAsFloat\":987654321.0987654,\"bit\":true,\"decimal\":123456789.123456789012345,\"numeric\":987654321.098765432154321,\"floatAsDecimal\":1.1}," +
-                "{\"tinyInt\":null,\"smallInt\":null,\"integer\":null,\"bigInt\":null,\"varchar\":null,\"char\":null,\"date\":null,\"timestamp\":null,\"float\":null,\"double\":null,\"decimalAsFloat\":null,\"numericAsFloat\":null,\"bit\":null,\"decimal\":null,\"numeric\":null,\"floatAsDecimal\":null}" +
-                "]";
-
-        Assert.assertEquals(expected, new ObjectMapper().enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).readTree(stringResult).toString());
+        return (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, null);
     }
 
     @Override
