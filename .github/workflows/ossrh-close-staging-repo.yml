@@ -54,4 +54,4 @@ jobs:
           gpg-passphrase: CI_GPG_PASSPHRASE
 
       - name: Close staging repo
-        run: mvn nexus-staging:close
+        run: mvn nexus-staging:rc-list
