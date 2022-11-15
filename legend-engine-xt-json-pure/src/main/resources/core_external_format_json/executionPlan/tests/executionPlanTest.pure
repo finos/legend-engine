@@ -195,7 +195,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                       '          (\n' +
                       '            Allocation\n' +
                       '            (\n' +
-                      '              type = meta::pure::router::Void\n' +
+                      '              type = Void\n' +
                       '              name = internalizeVar$\n' +
                       '              value = \n' +
                       '                (\n' +
@@ -260,7 +260,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                       '          (\n' +
                       '            Allocation\n' +
                       '            (\n' +
-                      '              type = meta::pure::router::Void\n' +
+                      '              type = Void\n' +
                       '              name = internalizeVar$\n' +
                       '              value = \n' +
                       '                (\n' +
@@ -319,7 +319,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
                       '      (\n' +
                       '        Allocation\n' +
                       '        (\n' +
-                      '          type = meta::pure::router::Void\n' +
+                      '          type = Void\n' +
                       '          name = internalizeVar$\n' +
                       '          value = \n' +
                       '            (\n' +
