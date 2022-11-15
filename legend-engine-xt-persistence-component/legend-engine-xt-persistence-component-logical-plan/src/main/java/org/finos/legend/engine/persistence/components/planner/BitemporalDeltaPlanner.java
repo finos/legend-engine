@@ -295,23 +295,6 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         return LogicalPlan.of(operations);
     }
 
-    @Override
-    public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-
-        // Drop table or clean table based on flags
-        if (resources.externalDatasetImported())
-        {
-            operations.add(Drop.of(true, stagingDataset(), true));
-        }
-        else if (options().cleanupStagingData())
-        {
-            operations.add(Delete.builder().dataset(stagingDataset()).build());
-        }
-        return LogicalPlan.of(operations);
-    }
-
     /*
     ------------------
     Upsert Logic:
