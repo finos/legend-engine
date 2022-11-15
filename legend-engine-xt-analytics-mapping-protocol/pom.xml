@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.22.4-SNAPSHOT</version>
+        <version>3.22.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Legend Engine - XT - Analytics - Mapping - Protocol</name>
