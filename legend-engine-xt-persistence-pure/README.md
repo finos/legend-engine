@@ -4,7 +4,7 @@
 
 The specification can loosely be thought of as a representation of an Extract, Transform, Load (ETL) pipeline.
 In this mental model, `Service` handles the Extract and Transform, while Load details and other concerns that don't
-neatly fit the acronym (e.g. triggering execution) are covered by the rest of the specification.
+neatly fit the acronym (e.g. triggering and notification) are covered by the rest of the specification.
 
 Note: this is only a loose correlation. While execution of a **Persistence** specification may be delegated to a
 pipeline-ing platform, it also may be handled by Engine itself or be pushed all the way down to source
