@@ -212,9 +212,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
     public void verifyUnitemporalDeltaWithCleanStagingData(GeneratorResult operations)
     {
         List<String> postActionsSql = operations.postActionsSql();
-        List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(MemsqlTestArtifacts.expectedStagingCleanupQuery);
-        assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedStagingCleanupQuery, postActionsSql.get(0));
     }
 
     @Override

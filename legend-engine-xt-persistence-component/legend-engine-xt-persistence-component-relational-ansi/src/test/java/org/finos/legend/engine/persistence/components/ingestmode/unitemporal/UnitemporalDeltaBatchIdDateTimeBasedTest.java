@@ -227,9 +227,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     {
         Assertions.assertEquals(0, new ArrayList<>(operations.postIngestStatisticsSql().values()).size());
         List<String> postActionsSql = operations.postActionsSql();
-        List<String> expectedSQL = new ArrayList<>();
-        expectedSQL.add(AnsiTestArtifacts.expectedStagingCleanupQuery);
-        assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
+        Assertions.assertEquals(AnsiTestArtifacts.expectedStagingCleanupQuery, postActionsSql.get(0));
     }
 
     @Override
