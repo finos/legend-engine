@@ -587,8 +587,8 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
           ) x
           ----------------------------------------END OF FIRST JOIN-----------------------------------------------------
        WHERE NOT EXISTS
-       (SELECT gs_loan_number, start_date FROM stage
-       WHERE x.gs_loan_number = y.gs_loan_number AND x.start_date = y.start_date)
+       (SELECT PK_FIELDS, FROM_FIELD FROM stage
+       WHERE PKS_MATCH AND FROM_FIELD_MATCH)
        ) y
        -------------------------------------------END OF SECOND JOIN----------------------------------------------------
     ON PKS_MATCH AND FROM_FIELD_MATCH

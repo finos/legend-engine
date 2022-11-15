@@ -61,14 +61,12 @@ public class TestUtils
     public static String expiryDateName = "expiry_date";
 
     // Sample table 2
-    // Adapted from https://confluence.site.gs.com/display/DIO/Alloy+Streaming+-+Milestoning+Schemes#AlloyStreamingMilestoningSchemes-Withpartitioning
     public static String dateName = "date";
-    public static String tickerName = "ticker";
-    public static String closePriceName = "close_price";
+    public static String entityName = "entity";
+    public static String priceName = "price";
     public static String volumeName = "volume";
 
     // Sample table 3
-    // Adapted from https://confluence.site.gs.com/display/EP/Data+Lake%3A+Ingesting+Data%3A+Milestoning+Examples#DataLake:IngestingData:MilestoningExamples-BITEMPORALINCREMENTAL
     public static String key1Name = "key1";
     public static String key2Name = "key2";
     public static String valueName = "value1";
@@ -76,11 +74,9 @@ public class TestUtils
     public static String dateOutName = "date_out";
 
     // Sample table 4
-    // Adapted from Loans use case
-    public static String loanIdName = "gs_loan_id";
-    public static String loanDateTimeName = "datetime";
-    public static String loanBalanceName = "balance";
-
+    public static String indexName = "index";
+    public static String dateTimeName = "datetime";
+    public static String balanceName = "balance";
 
     // Special columns
     public static String digestName = "digest";
@@ -93,10 +89,10 @@ public class TestUtils
     public static String[] deleteIndicatorValues = new String[]{"yes", "1", "true"};
     public static String[] deleteIndicatorValuesEdgeCase = new String[]{"0"};
     public static String alterColumnName = "alter_column";
-    public static String lakeFromName = "lake_from";
-    public static String lakeThroughName = "lake_through";
-    public static String loanStartDateTimeName = "start_datetime";
-    public static String loanEndDateTimeName = "end_datetime";
+    public static String fromName = "from";
+    public static String throughName = "through";
+    public static String startDateTimeName = "start_datetime";
+    public static String endDateTimeName = "end_datetime";
     public static String dataSplitName = "data_split";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
@@ -112,8 +108,8 @@ public class TestUtils
     public static Field startTime = Field.builder().name(startTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(startTimeName).build();
     public static Field expiryDate = Field.builder().name(expiryDateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).fieldAlias(expiryDateName).build();
     public static Field date = Field.builder().name(dateName).type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dateName).build();
-    public static Field ticker = Field.builder().name(tickerName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(tickerName).build();
-    public static Field closePrice = Field.builder().name(closePriceName).type(FieldType.of(DataType.DECIMAL, 20, 2)).fieldAlias(closePriceName).build();
+    public static Field entity = Field.builder().name(entityName).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(entityName).build();
+    public static Field price = Field.builder().name(priceName).type(FieldType.of(DataType.DECIMAL, 20, 2)).fieldAlias(priceName).build();
     public static Field volume = Field.builder().name(volumeName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(volumeName).build();
     public static Field key1 = Field.builder().name(key1Name).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(key1Name).build();
     public static Field key2 = Field.builder().name(key2Name).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(key2Name).build();
@@ -130,13 +126,13 @@ public class TestUtils
     public static Field booleanDeleteIndicator = Field.builder().name(deleteIndicatorName).type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).fieldAlias(deleteIndicatorName).build();
     public static Field alterColumn = Field.builder().name(alterColumnName).type(FieldType.of(DataType.VARCHAR, 64, null)).fieldAlias(alterColumnName).build();
     public static Field incomeChanged = Field.builder().name(incomeName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(incomeName).build();
-    public static Field lakeFrom = Field.builder().name(lakeFromName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(lakeFromName).primaryKey(true).build();
-    public static Field lakeThrough = Field.builder().name(lakeThroughName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(lakeThroughName).build();
-    public static Field loanId = Field.builder().name(loanIdName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(loanIdName).build();
-    public static Field loanDateTime = Field.builder().name(loanDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(loanDateTimeName).primaryKey(true).build();
-    public static Field loanBalance = Field.builder().name(loanBalanceName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(loanBalanceName).build();
-    public static Field loanStartDateTime = Field.builder().name(loanStartDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(loanStartDateTimeName).primaryKey(true).build();
-    public static Field loanEndDateTime = Field.builder().name(loanEndDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(loanEndDateTimeName).build();
+    public static Field from = Field.builder().name(fromName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(fromName).primaryKey(true).build();
+    public static Field through = Field.builder().name(throughName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(throughName).build();
+    public static Field index = Field.builder().name(indexName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(indexName).build();
+    public static Field dateTime = Field.builder().name(dateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(dateTimeName).primaryKey(true).build();
+    public static Field balance = Field.builder().name(balanceName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).fieldAlias(balanceName).build();
+    public static Field startDateTime = Field.builder().name(startDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(startDateTimeName).primaryKey(true).build();
+    public static Field endDateTime = Field.builder().name(endDateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).fieldAlias(endDateTimeName).build();
     public static Field dataSplit = Field.builder().name(dataSplitName).type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(dataSplitName).build();
 
     public static DatasetDefinition getBasicMainTable()
@@ -461,15 +457,15 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getTickerPriceMainTable()
+    public static DatasetDefinition getEntityPriceMainTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(mainTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(date)
-                .addFields(ticker)
-                .addFields(closePrice)
+                .addFields(entity)
+                .addFields(price)
                 .addFields(volume)
                 .addFields(digest)
                 .addFields(batchIdIn)
@@ -481,14 +477,14 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getTickerPriceIdBasedMainTable()
+    public static DatasetDefinition getEntityPriceIdBasedMainTable()
     {
         DatasetDefinition mainTable = DatasetDefinition.builder()
             .group(testSchemaName).name(mainTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(date)
-                .addFields(ticker)
-                .addFields(closePrice)
+                .addFields(entity)
+                .addFields(price)
                 .addFields(volume)
                 .addFields(digest)
                 .addFields(batchIdIn)
@@ -499,15 +495,15 @@ public class TestUtils
         return mainTable;
     }
 
-    public static DatasetDefinition getTickerPriceTimeBasedMainTable()
+    public static DatasetDefinition getEntityPriceTimeBasedMainTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(mainTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(date)
-                .addFields(ticker)
-                .addFields(closePrice)
+                .addFields(entity)
+                .addFields(price)
                 .addFields(volume)
                 .addFields(digest)
                 .addFields(batchTimeIn)
@@ -517,15 +513,15 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getTickerPriceStagingTable()
+    public static DatasetDefinition getEntityPriceStagingTable()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(SchemaDefinition.builder()
                 .addFields(date)
-                .addFields(ticker)
-                .addFields(closePrice)
+                .addFields(entity)
+                .addFields(price)
                 .addFields(volume)
                 .addFields(digest)
                 .build()
@@ -547,8 +543,8 @@ public class TestUtils
                 .addFields(digest)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
-                .addFields(lakeFrom)
-                .addFields(lakeThrough)
+                .addFields(from)
+                .addFields(through)
                 .build()
             )
             .build();
@@ -567,8 +563,8 @@ public class TestUtils
                 .addFields(digest)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
-                .addFields(lakeFrom)
-                .addFields(lakeThrough)
+                .addFields(from)
+                .addFields(through)
                 .build()
             )
             .build();
@@ -636,17 +632,17 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansMainTableIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyMainTableIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(mainTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(balance)
                 .addFields(digest)
-                .addFields(loanStartDateTime)
-                .addFields(loanEndDateTime)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
                 .build()
@@ -654,17 +650,17 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansTempTableIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyTempTableIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(tempTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(balance)
                 .addFields(digest)
-                .addFields(loanStartDateTime)
-                .addFields(loanEndDateTime)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
                 .build()
@@ -672,17 +668,17 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansTempTableWithDeleteIndicatorIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyTempTableWithDeleteIndicatorIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(tempWithDeleteIndicatorTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(balance)
                 .addFields(digest)
-                .addFields(loanStartDateTime)
-                .addFields(loanEndDateTime)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
                 .addFields(batchIdIn)
                 .addFields(batchIdOut)
                 .addFields(deleteIndicator)
@@ -691,45 +687,45 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansStagingTableIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanDateTime)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
                 .addFields(digest)
                 .build()
             )
             .build();
     }
 
-    public static DatasetDefinition getLoansStagingTableWithoutDuplicatesIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithoutDuplicatesIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableWithoutDuplicatesName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanDateTime)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
                 .addFields(digest)
                 .build()
             )
             .build();
     }
 
-    public static DatasetDefinition getLoansStagingTableWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanDateTime)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
                 .addFields(digest)
                 .addFields(dataSplit)
                 .build()
@@ -737,15 +733,15 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansStagingTableWithDeleteIndicatorIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDeleteIndicatorIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanDateTime)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
                 .addFields(digest)
                 .addFields(deleteIndicator)
                 .build()
@@ -753,15 +749,15 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanDateTime)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
                 .addFields(digest)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)
@@ -770,15 +766,15 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getLoansStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
             .name(stagingTableWithoutDuplicatesName)
             .schema(SchemaDefinition.builder()
-                .addFields(loanId)
-                .addFields(loanDateTime)
-                .addFields(loanBalance)
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
                 .addFields(digest)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)

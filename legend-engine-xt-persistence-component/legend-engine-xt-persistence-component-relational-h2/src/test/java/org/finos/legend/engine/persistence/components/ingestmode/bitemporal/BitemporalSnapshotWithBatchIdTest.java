@@ -40,8 +40,8 @@ import static org.finos.legend.engine.persistence.components.TestUtils.dateOutNa
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.key1Name;
 import static org.finos.legend.engine.persistence.components.TestUtils.key2Name;
-import static org.finos.legend.engine.persistence.components.TestUtils.lakeFromName;
-import static org.finos.legend.engine.persistence.components.TestUtils.lakeThroughName;
+import static org.finos.legend.engine.persistence.components.TestUtils.fromName;
+import static org.finos.legend.engine.persistence.components.TestUtils.throughName;
 import static org.finos.legend.engine.persistence.components.TestUtils.partitionFilter;
 import static org.finos.legend.engine.persistence.components.TestUtils.valueName;
 
@@ -61,7 +61,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
-        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -72,8 +72,8 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -131,7 +131,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalFromTimeOnlyMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalFromTimeOnlyStagingTable();
 
-        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -143,8 +143,8 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -199,7 +199,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
-        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -211,8 +211,8 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -269,7 +269,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "less_columns_in_staging/staging_data_pass1.csv";
         Dataset stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMainForBitemp(dataPass1);
 
-        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         BitemporalSnapshot ingestMode = BitemporalSnapshot.builder()
             .digestField(digestName)
@@ -278,8 +278,8 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -320,7 +320,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
-        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[]{key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -332,8 +332,8 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
