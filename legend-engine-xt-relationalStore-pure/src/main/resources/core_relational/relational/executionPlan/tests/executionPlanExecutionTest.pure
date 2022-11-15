@@ -143,10 +143,10 @@ function <<test.Test>> meta::pure::executionPlan::tests::execution::testPureExec
 
 function <<access.private>> meta::pure::executionPlan::tests::execution::executeServiceTests(service:Service[1], expectedExecutionNodesCount:Integer[1]):String[*]
 {
-   let plan = executionPlan($service.execution->cast(@PureSingleExecution).func, $service.execution->cast(@PureSingleExecution).mapping, $service.execution->cast(@PureSingleExecution).runtime, meta::relational::extension::relationalExtensions());
+   let plan = executionPlan($service.execution->cast(@PureSingleExecution).func, $service.execution->cast(@PureSingleExecution).mapping->toOne(), $service.execution->cast(@PureSingleExecution).runtime->toOne(), meta::relational::extension::relationalExtensions());
    assertEquals($expectedExecutionNodesCount, $plan.rootExecutionNode->meta::pure::executionPlan::allNodes(meta::relational::extension::relationalExtensions())->size());
    let t = $service.test;
-   $t->setUpData($service.execution->cast(@PureSingleExecution).mapping, $service.execution->cast(@PureSingleExecution).runtime);
+   $t->setUpData($service.execution->cast(@PureSingleExecution).mapping->toOne(), $service.execution->cast(@PureSingleExecution).runtime->toOne());
    let results = $t->cast(@SingleExecutionTest).asserts->map(a | pair($t->cast(@SingleExecutionTest).asserts->indexOf($a)+1, $a.assert->evaluate(list($plan->execute($a.parametersValues, meta::relational::extension::relationalExtensions())))->cast(@Boolean)->toOne()));
    $results->map(r|if($r.second,|[],|'Failed test number '+$r.first->toString()+' (counting from 1) for service \''+$service.pattern+'\''));
 }
