@@ -117,6 +117,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='%s', transform=getTransformForSplitPartSybaseIQ())),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
@@ -245,6 +246,80 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 
     assert($s.orderBy->isNotEmpty(), | 'SybaseIQ requires an order by column for meaningful limit/offset');
     '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getTransformForSplitPartSybaseIQ():LambdaFunction<{String[3]->String[1]}>[1]
+{
+    {p:String[3]
+                | let string = $p->at(0);
+                  let separator = $p->at(1);
+                  let position = $p ->at(2) -> meta::pure::functions::string::parseInteger();
+                  assert($position>0, 'SplitPart supports only index values greater than or equal to 1');
+                  assert($separator->replace('\'', '')->length() > 0,'SplitPart does not support empty separators'); '';                                    
+                  if($position == 1,| processSQLwhenPositionOne($string, $separator, 'locate('+ $string+', ' + $separator + ', 0)-1', 'LENGTH('+ $string +')') ,
+                                    | getBeforeAndAfterIndexIQ($string, $separator, $position, 'locate('+ $string+', ' + $separator + ', 0)', '0'));
+    }
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getBeforeAndAfterIndexIQ(string: String[1], separator: String[1], position: Integer[1], current: String[1], prev:String[1]):String[1]
+{
+   if($position == 1, | processSQLwhenPositionOne($string, $separator, $current, $prev),
+                      | getBeforeAndAfterIndexIQ(returnSubstringToTheRightOfSeparator($string, $separator), $separator, $position - 1, locateUpdatedCurrentString($string, $separator, $current), $current))
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::locateFirstOccurenceOfSeparator(string: String[1], separator: String[1]):String[1]
+{
+  'locate(' + $string + ', ' + $separator + ')'
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::locateUpdatedCurrentString(string: String[1], separator: String[1], current:String[1]):String[1]
+{
+  'locate(' + $string + ', ' + $separator +', ' + $current + '+1)'
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::separatorIsPresent(string: String[1], separator: String[1]):String[1]
+{
+  locateFirstOccurenceOfSeparator($string, $separator) + '!=0 '
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::separatorIsNotPresent(string: String[1], separator: String[1]):String[1]
+{
+  locateFirstOccurenceOfSeparator($string, $separator) + '=0 '
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::returnSubstringBeforeSeparator(string: String[1], separator: String[1]):String[1]
+{
+  'substring('+$string+', 0, '+ locateFirstOccurenceOfSeparator($string, $separator) + '-1) '
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::returnOriginalString(string: String[1]):String[1]
+{
+  $string+ ' '
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::returnSubstringToTheRightOfSeparator(string: String[1], separator: String[1]):String[1]
+{
+  'right('+ $string + ', LENGTH('+ $string +')-' + locateFirstOccurenceOfSeparator($string, $separator) +')'
+}
+
+function <<access.private>>meta::relational::functions::sqlQueryToString::sybaseIQ::returnEmptyString(string: String[1]):String[1]
+{
+  'right('+$string+',0) '
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processSQLwhenPositionOne(string: String[1], separator: String[1], current: String[1], prev:String[1]):String[1]
+{
+  'CASE '+
+      'WHEN '+$current +'!='+$prev+' AND '+ separatorIsPresent($string, $separator) +
+        'THEN '+ returnSubstringBeforeSeparator($string, $separator) +
+
+      'WHEN '+$current +'!='+$prev+' AND '+ separatorIsNotPresent($string, $separator) +
+        'THEN '+ returnOriginalString($string) +
+
+      'WHEN '+$prev+'!=0 AND '+ separatorIsNotPresent($string, $separator) +
+        'THEN '+ returnOriginalString($string) +
+      'ELSE '+ returnEmptyString($string) +
+    'END'
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::columnNameToIdentifierForSybaseIQ(columnName: String[1], dbConfig: DbConfig[1]): String[1]
