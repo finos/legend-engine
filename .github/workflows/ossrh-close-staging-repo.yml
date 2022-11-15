@@ -53,5 +53,13 @@ jobs:
           gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
           gpg-passphrase: CI_GPG_PASSPHRASE
 
-      - name: Close staging repo
-        run: mvn nexus-staging:rc-list
+      - name: Get last open nexus repo Id
+        run: |
+          mvn nexus-staging:rc-list > rc-list.log
+          idLine=$(grep 'orgfinoslegend' rc-list.log | tail -1)
+          arrLine=(${idLine// / })
+          repoId=${arrLine[1]}
+          echo "NEXUS_REPO_ID=${repoId}" >> $GITHUB_ENV
+
+      - name: Print repo Id
+        run: echo ${{ env.NEXUS_REPO_ID }}
