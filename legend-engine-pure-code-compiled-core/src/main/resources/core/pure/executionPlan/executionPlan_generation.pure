@@ -165,6 +165,8 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 
 function <<access.private>> meta::pure::executionPlan::addFunctionParametersValidationNode(node:ExecutionNode[1], f:FunctionDefinition<Any>[1], planVarPlaceHolders:PlanVarPlaceHolder[*], routedFunction:FunctionDefinition<Any>[1]):ExecutionNode[1]
 {
+   let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
+   assert($collectionEnumParams->size() == 0, |'Collection of Enums is not supported as service parameter ' + $collectionEnumParams->map(p | $p.name)->makeString('[',', ',']'));
    let enumValidationContext = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration))->map(e | ^meta::pure::executionPlan::EnumValidationContext(varName = $e.name, validEnumValues = $e.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id())));
    let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput(); 
    if($f->instanceOf(LambdaFunction) && $planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));

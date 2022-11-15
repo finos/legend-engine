@@ -797,7 +797,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualAndInWit
                   '    (\n'+
                   '      type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
                   '      resultColumns = [("name", VARCHAR(200)), ("type", VARCHAR(20))]\n'+
-                  '      sql = select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\')}\n'+
+                  '      sql = select "root".name as "name", "root".type as "type" from employeeTable as "root" where (${optionalVarPlaceHolderOperationSelector(eType, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\'), \'0 = 1\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
@@ -828,7 +828,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterNotEqualAndNo
                   '    (\n'+
                   '      type = TDS[(name, String, VARCHAR(200), ""), (type, meta::relational::tests::mapping::enumeration::model::domain::EmployeeType, VARCHAR(20), "", Foo)]\n'+
                   '      resultColumns = [("name", VARCHAR(200)), ("type", VARCHAR(20))]\n'+
-                  '      sql = select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'("root".type not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}) OR "root".type is null)\', \'("root".type <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)} OR "root".type is null)\')}\n'+
+                  '      sql = select "root".name as "name", "root".type as "type" from employeeTable as "root" where not (${optionalVarPlaceHolderOperationSelector(eType, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\'), \'0 = 1\')})\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
@@ -844,20 +844,20 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualAndInWit
 {
    let generatedPlanForEqualAndIn = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type->in($eType))->filter(p|$p.active == $yesOrNo)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
    let resultForEqualAndIn = $generatedPlanForEqualAndIn->planToString(meta::relational::extension::relationalExtensions());
-   assertEquals($resultForEqualAndIn, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\')} and ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\')}'));
-   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']), $generatedPlanForEqualAndIn.processingTemplateFunctions);
+   assertEquals($resultForEqualAndIn, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where (${optionalVarPlaceHolderOperationSelector(eType, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\'), \'0 = 1\')}) and (${optionalVarPlaceHolderOperationSelector(yesOrNo, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\'), \'0 = 1\')})'));
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>']), $generatedPlanForEqualAndIn.processingTemplateFunctions);
 
 
    let generatedPlanForEqualAndNotEqual = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|$p.type == $eType)->filter(p|$p.active != $yesOrNo)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
    let resultForEqualAndNotEqual = $generatedPlanForEqualAndNotEqual->planToString(meta::relational::extension::relationalExtensions());
-   assertEquals($resultForEqualAndNotEqual, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\')} and ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'("root".active not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}) OR "root".active is null)\', \'("root".active <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)} OR "root".active is null)\')}'));
-   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']), $generatedPlanForEqualAndNotEqual.processingTemplateFunctions);
+   assertEquals($resultForEqualAndNotEqual, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where (${optionalVarPlaceHolderOperationSelector(eType, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\'), \'0 = 1\')}) and not (${optionalVarPlaceHolderOperationSelector(yesOrNo, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\'), \'0 = 1\')})'));
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>']), $generatedPlanForEqualAndNotEqual.processingTemplateFunctions);
 
 
    let generatedPlanForNotEqualAndNotIn = executionPlan({eType: meta::relational::tests::mapping::enumeration::model::domain::EmployeeType[1], yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->filter(p|!($p.type->in($eType)))->filter(p|$p.active != $yesOrNo)->project([p|$p.name, p|$p.type], ['name','type'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
    let resultForNotEqualAndNotIn = $generatedPlanForNotEqualAndNotIn->planToString(meta::relational::extension::relationalExtensions());
-   assertEquals($resultForNotEqualAndNotIn, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'("root".type not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}) OR "root".type is null)\', \'("root".type <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)} OR "root".type is null)\')} and ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'("root".active not in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}) OR "root".active is null)\', \'("root".active <> ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)} OR "root".active is null)\')}'));
-   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']), $generatedPlanForNotEqualAndNotIn.processingTemplateFunctions);
+   assertEquals($resultForNotEqualAndNotIn, fetchExecutionPlanStringForEnumParams('select "root".name as "name", "root".type as "type" from employeeTable as "root" where not (${optionalVarPlaceHolderOperationSelector(eType, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType), \'"root".type in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)})\', \'"root".type = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo(eType)}\'), \'0 = 1\')}) and not (${optionalVarPlaceHolderOperationSelector(yesOrNo, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\'), \'0 = 1\')})'));
+   assertSameElements(fetchDynamicTemplateFunctionsForEnumParams()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>']), $generatedPlanForNotEqualAndNotIn.processingTemplateFunctions);
 }
 
 
@@ -884,9 +884,7 @@ function meta::pure::executionPlan::tests::fetchExecutionPlanStringForEnumParams
 
 function meta::pure::executionPlan::tests::fetchDynamicTemplateFunctionsForEnumParams():String[*]
 {
-  //  templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo inputVal> <#assign enumMap = { "CONTRACT":"\'FTC\', \'FTO\'", "FULL_TIME":"\'FTE\'" }> <#return enumMap[inputVal]> </#function>', 
-  //                                        '<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']);
-   templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo inputVal> <#assign enumMap = { "CONTRACT":"\'FTC\', \'FTO\'", "FULL_TIME":"\'FTE\'" }> <#return enumMap[inputVal]> </#function>']);
+  templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Foo inputVal> <#assign enumMap = { "CONTRACT":"\'FTC\', \'FTO\'", "FULL_TIME":"\'FTE\'" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>']);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterInProject():Boolean[1]
@@ -912,7 +910,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterInPr
                   ')\n';
 
    assertEquals($expected, $resultForIf);
-   assertSameElements(templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']),
+   assertSameElements(templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>']),
                       $generatedPlanForIf.processingTemplateFunctions);
 }
 
@@ -932,14 +930,14 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfEnumParameterWith
                   '    (\n'+
                   '      type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
                   '      resultColumns = [("name", ""), ("active", INT)]\n'+
-                  '      sql = select case when ${equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\')} then "root".name else \'InActive User\' end as "name", "root".active as "active" from employeeTable as "root"\n'+
+                  '      sql = select case when (${optionalVarPlaceHolderOperationSelector(yesOrNo, equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo)}\'), \'0 = 1\')}) then "root".name else \'InActive User\' end as "name", "root".active as "active" from employeeTable as "root"\n'+
                   '      connection = TestDatabaseConnection(type = "H2")\n'+
                   '    )\n'+
                   '  )\n'+
                   ')\n';
 
    assertEquals($expected, $resultForIf);
-   assertSameElements(templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#return enumMap[inputVal]> </#function>']),
+   assertSameElements(templateFunctionsList()->concatenate(['<#function enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active inputVal> <#assign enumMap = { "YES":"1", "NO":"0" }> <#if inputVal?has_content> <#return enumMap[inputVal]> <#else> <#return ""> </#if> </#function>']),
                       $generatedPlanForIf.processingTemplateFunctions);
 }
 
@@ -957,6 +955,31 @@ function <<test.Test>> meta::pure::executionPlan::tests::testIfOpFilterEnumValue
 
    assertEquals($expected, $resultForIf);
    assertSameElements(templateFunctionsList(), $generatedPlanForIf.processingTemplateFunctions);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::testOptionalEnumParameterEqualsClassProp():Boolean[1]
+{
+   let generatedPlanForIf = executionPlan({yesOrNo: meta::relational::tests::mapping::enumeration::model::domain::YesNo[0..1] | meta::relational::tests::mapping::enumeration::model::domain::Employee.all()->project([x|if($yesOrNo == $x.active,|'InActive User',|$x.name), x|$x.active], ['name','active'])}, meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMapping, meta::relational::tests::mapping::enumeration::enumTestRuntime(), meta::relational::extension::relationalExtensions());
+   let resultForIf = $generatedPlanForIf->planToString(meta::relational::extension::relationalExtensions());
+   let expected = 'Sequence\n'+
+                  '(\n'+
+                  '  type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '  (\n'+
+                  '    FunctionParametersValidationNode\n'+
+                  '    (\n'+
+                  '      functionParameters = [yesOrNo:meta::relational::tests::mapping::enumeration::model::domain::YesNo[0..1]]\n'+
+                  '    )\n'+
+                  '    Relational\n'+
+                  '    (\n'+
+                  '      type = TDS[(name, String, "", ""), (active, meta::relational::tests::mapping::enumeration::model::domain::YesNo, INT, "", Active)]\n'+
+                  '      resultColumns = [("name", ""), ("active", INT)]\n'+
+                  '      sql = select case when (${optionalVarPlaceHolderOperationSelector(yesOrNo![], equalEnumOperationSelector(enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![]), \'"root".active in (${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![])})\', \'"root".active = ${enumMap_meta_relational_tests_mapping_enumeration_model_mapping_employeeTestMapping_Active(yesOrNo![])}\'), \'0 = 1\')}) then \'InActive User\' else "root".name end as "name", "root".active as "active" from employeeTable as "root"\n'+
+                  '      connection = TestDatabaseConnection(type = "H2")\n'+
+                  '    )\n'+
+                  '  )\n'+
+                  ')\n';
+
+   assertEquals($expected, $resultForIf);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDateTimeConstantParameterNoTimeZone():Boolean[1]

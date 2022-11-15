@@ -56,6 +56,21 @@ function test::EnumParamInOpFilter(eType: test::EmployeeType[1]): meta::pure::td
    test::Employee.all()->filter(x|$x.employeeType->in($eType))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
 }
 
+function test::OptionalEnumParam(yesOrNo: test::YesNo[0..1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->project([x|$x.id, x|if($yesOrNo->isNotEmpty() && ($yesOrNo == test::YesNo.NO),|'InActive User',|'Active User')], ['ID', 'Status'])
+}
+
+function test::OptionalEnumParamClassProp(yesOrNo: test::YesNo[0..1]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->project([x|$x.id, x|if($yesOrNo->isNotEmpty() && ($yesOrNo == $x.active),|'InActive User',|'Active User')], ['ID', 'Status'])
+}
+
+function test::CollectionEnumParam(eType: test::EmployeeType[*]): meta::pure::tds::TabularDataSet[1]
+{
+   test::Employee.all()->filter(x|$x.employeeType->in($eType))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
+}
+
 function test::EnumParamNotEqualOpFilter(eType: test::EmployeeType[1]): meta::pure::tds::TabularDataSet[1]
 {
    test::Employee.all()->filter(x|!($x.employeeType == $eType))->project([x|$x.id, x|$x.name, x|$x.employeeType], ['ID', 'Name', 'Employee Type'])
