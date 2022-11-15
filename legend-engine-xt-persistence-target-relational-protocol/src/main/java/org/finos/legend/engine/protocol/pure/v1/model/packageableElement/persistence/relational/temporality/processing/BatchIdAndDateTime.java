@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.sourcederived;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
-
-public class SourceDerivedTime extends SourceDerivedDimension
+public class BatchIdAndDateTime extends ProcessingDimension
 {
-    public Column timeStart;
-    public Column timeEnd;
-    public SourceTimeFields sourceTimeFields;
+    public String batchIdIn;
+    public String batchIdOut;
+    public String timeIn;
+    public String timeOut;
 
     @Override
-    public <T> T accept(SourceDerivedDimensionVisitor<T> visitor)
+    public <T> T accept(ProcessingDimensionVisitor<T> visitor)
     {
-        return visitor.visitSourceDerivedTime(this);
+        return visitor.visitBatchIdAndDateTime(this);
     }
 }

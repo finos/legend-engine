@@ -12,17 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.sourcederived;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = SourceTimeStart.class, name = "sourceTimeStartAndEnd"),
-        @JsonSubTypes.Type(value = SourceTimeStartAndEnd.class, name = "sourceTimeStart")
+        @JsonSubTypes.Type(value = SourceDerivedTime.class, name = "sourceDerivedTime")
 })
-public abstract class SourceTimeFields
+public abstract class SourceDerivedDimension
 {
-    public abstract <T> T accept(SourceTimeFieldsVisitor<T> visitor);
+    public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(SourceDerivedDimensionVisitor<T> visitor);
 }

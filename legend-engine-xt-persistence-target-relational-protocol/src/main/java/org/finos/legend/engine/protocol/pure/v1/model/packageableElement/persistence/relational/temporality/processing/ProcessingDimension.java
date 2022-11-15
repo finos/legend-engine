@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -20,11 +20,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = NoMilestoning.class, name = "none"),
-        @JsonSubTypes.Type(value = UnitemporalMilestoning.class, name = "unitemporalMilestoning"),
-        @JsonSubTypes.Type(value = BitemporalMilestoning.class, name = "bitemporalMilestoning")
+        @JsonSubTypes.Type(value = BatchId.class, name = "batchId"),
+        @JsonSubTypes.Type(value = ProcessingDateTime.class, name = "processingTime"),
+        @JsonSubTypes.Type(value = BatchIdAndDateTime.class, name = "batchIdAndProcessingTime")
 })
-public abstract class Milestoning
+public abstract class ProcessingDimension
 {
     public SourceInformation sourceInformation;
+
+    public abstract <T> T accept(ProcessingDimensionVisitor<T> visitor);
 }

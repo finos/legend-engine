@@ -12,16 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.sourcederived;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = SourceDerivedTime.class, name = "sourceDerivedTime")
-})
-public abstract class SourceDerivedDimension
+public class BatchId extends ProcessingDimension
 {
-    public abstract <T> T accept(SourceDerivedDimensionVisitor<T> visitor);
+    public String batchIdIn;
+    public String batchIdOut;
+
+    @Override
+    public <T> T accept(ProcessingDimensionVisitor<T> visitor)
+    {
+        return visitor.visitBatchId(this);
+    }
 }

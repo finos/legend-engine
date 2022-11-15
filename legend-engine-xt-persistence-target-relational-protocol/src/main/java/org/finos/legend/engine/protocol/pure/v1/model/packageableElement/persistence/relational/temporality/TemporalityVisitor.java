@@ -12,9 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.sourcederived;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality;
 
-public interface SourceDerivedDimensionVisitor<T>
+public interface TemporalityVisitor<T>
 {
-    T visitSourceDerivedTime(SourceDerivedTime val);
+    T visitNontemporal(Nontemporal val);
+
+    T visitUnitemporal(Unitemporal val);
+
+    T visitBiitemporal(Bitemporal val);
 }

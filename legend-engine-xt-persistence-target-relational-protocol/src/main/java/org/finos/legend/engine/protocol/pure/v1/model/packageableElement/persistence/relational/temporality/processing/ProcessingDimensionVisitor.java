@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.sourcederived;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing;
 
-public interface SourceTimeFieldsVisitor<T>
+public interface ProcessingDimensionVisitor<T>
 {
-    T visit(SourceTimeStart val);
+    T visitBatchId(BatchId val);
 
-    T visit(SourceTimeStartAndEnd val);
+    T visitDateTime(ProcessingDateTime val);
+
+    T visitBatchIdAndDateTime(BatchIdAndDateTime val);
 }

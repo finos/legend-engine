@@ -12,18 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.processing;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
-
-public class ProcessingTime extends ProcessingDimension
+public interface SourceTimeFieldsVisitor<T>
 {
-    public Column timeIn;
-    public Column timeOut;
+    T visit(SourceTimeStart val);
 
-    @Override
-    public <T> T accept(ProcessingDimensionVisitor<T> visitor)
-    {
-        return visitor.visitProcessingTime(this);
-    }
+    T visit(SourceTimeStartAndEnd val);
 }

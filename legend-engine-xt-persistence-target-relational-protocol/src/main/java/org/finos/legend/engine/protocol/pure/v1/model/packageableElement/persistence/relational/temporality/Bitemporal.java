@@ -12,11 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.processing.ProcessingDimension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing.ProcessingDimension;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived.SourceDerivedDimension;
 
-public class UnitemporalMilestoning extends Milestoning
+public class Bitemporal extends Temporality
 {
     public ProcessingDimension processingDimension;
+    public SourceDerivedDimension sourceDerivedDimension;
+
+    @Override
+    public <T> T accept(TemporalityVisitor<T> visitor)
+    {
+        return visitor.visitBiitemporal(this);
+    }
 }

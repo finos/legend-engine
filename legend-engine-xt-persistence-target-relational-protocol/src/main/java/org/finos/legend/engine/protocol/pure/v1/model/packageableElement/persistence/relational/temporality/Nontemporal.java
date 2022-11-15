@@ -12,18 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.processing;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column;
-
-public class BatchId extends ProcessingDimension
+public class Nontemporal extends Temporality
 {
-    public Column batchIdIn;
-    public Column batchIdOut;
-
     @Override
-    public <T> T accept(ProcessingDimensionVisitor<T> visitor)
+    public <T> T accept(TemporalityVisitor<T> visitor)
     {
-        return visitor.visitBatchId(this);
+        return visitor.visitNontemporal(this);
     }
 }

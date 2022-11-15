@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.processing;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.processing;
 
-public interface ProcessingDimensionVisitor<T>
+public class ProcessingDateTime extends ProcessingDimension
 {
-    T visitBatchId(BatchId val);
+    public String timeIn;
+    public String timeOut;
 
-    T visitProcessingTime(ProcessingTime val);
-
-    T visitBatchIdAndProcessingTime(BatchIdAndProcessingTime val);
+    @Override
+    public <T> T accept(ProcessingDimensionVisitor<T> visitor)
+    {
+        return visitor.visitDateTime(this);
+    }
 }

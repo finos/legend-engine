@@ -14,13 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.sink;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Temporality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTargetVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 
 public class RelationalPersistenceTarget extends PersistenceTarget
 {
-    public Table table;
+    public String table;
+    public Temporality temporality;
 
     @Override
     public <T> T accept(PersistenceTargetVisitor<T> visitor)

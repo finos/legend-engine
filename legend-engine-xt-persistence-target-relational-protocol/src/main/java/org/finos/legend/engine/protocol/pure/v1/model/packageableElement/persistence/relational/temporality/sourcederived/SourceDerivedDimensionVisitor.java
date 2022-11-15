@@ -12,15 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.milestoning.sourcederived;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.sourcederived;
 
-public class SourceTimeStart extends SourceTimeFields
+public interface SourceDerivedDimensionVisitor<T>
 {
-    public String startField;
-
-    @Override
-    public <T> T accept(SourceTimeFieldsVisitor<T> visitor)
-    {
-        return visitor.visit(this);
-    }
+    T visitSourceDerivedTime(SourceDerivedTime val);
 }
