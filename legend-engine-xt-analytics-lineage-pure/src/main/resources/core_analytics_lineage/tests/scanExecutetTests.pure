@@ -1,0 +1,108 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::lineage::scanExecutes::*;
+import meta::pure::lineage::scanMapping::*;
+import meta::pure::runtime::*;
+import meta::pure::mapping::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanExecutes::test::testAnalytics():Boolean[1]
+{
+   let exec = meta::pure::lineage::scanExecutes::test::testFunction__Any_1_->scanExecutes()->at(0);
+   assertEquals(meta::pure::lineage::scanExecutes::test::MyMapping, $exec.mappingEntryPoint->scanMapping()->at(0));
+}
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::test::MyClass
+{
+
+}
+
+function meta::pure::lineage::scanExecutes::test::testFunction():Any[1]
+{
+   let z = meta::pure::lineage::scanExecutes::test::MyMapping;
+   execute(|meta::pure::lineage::scanExecutes::test::MyClass.all(), meta::pure::lineage::scanExecutes::test::processMapping($z), ^Runtime(), meta::relational::extension::relationalExtensions());
+
+}
+
+function <<access.private>> meta::pure::lineage::scanExecutes::test::processMapping(m:Mapping[1]):Mapping[1]
+{
+   $m;
+}
+
+###Mapping
+Mapping meta::pure::lineage::scanExecutes::test::MyMapping
+(
+
+)
+
+// Test scanExecute together with scanProperties
+
+###Pure
+import meta::pure::runtime::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanExecutes::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanExecutes::test::testScanExecutes():Boolean[1]
+{
+   let exec = meta::pure::lineage::scanExecutes::test::testFunction2__Any_1_->scanExecutes()->at(0);
+   let p = $exec.funcEntryPoint->scanProperties().result; 
+   
+   assertEquals('ClassA->b\n'+
+                'ClassA->b, ClassB->c', $p->printPropertyNodeLists(''));
+   let tree = $p->buildPropertyTree();
+   assertEquals('root\n'+
+                ' c_ClassA\n'+
+                '  p_ClassA.b\n'+
+                '   p_ClassB.c\n', $tree->printTree(''));
+
+   true;
+
+}
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::test::ClassA
+{
+}
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::test::ClassB
+{
+}
+
+Class <<access.private>> meta::pure::lineage::scanExecutes::test::ClassC
+{
+}
+
+Association meta::pure::lineage::scanExecutes::test::ClassA_ClassB
+{
+   a: meta::pure::lineage::scanExecutes::test::ClassA[1];
+   b: meta::pure::lineage::scanExecutes::test::ClassB[0..1];
+}
+
+Association meta::pure::lineage::scanExecutes::test::ClassB_ClassC
+{
+   b: meta::pure::lineage::scanExecutes::test::ClassB[1];
+   c: meta::pure::lineage::scanExecutes::test::ClassC[0..1];
+}
+
+function meta::pure::lineage::scanExecutes::test::testFunction2():Any[1]
+{
+   execute(|meta::pure::lineage::scanExecutes::test::ClassA.all()
+           ->project(x|$x.b.c, ['c']), meta::pure::lineage::scanExecutes::test::MappingForABC, ^Runtime(), meta::relational::extension::relationalExtensions());
+}
+
+###Mapping
+Mapping meta::pure::lineage::scanExecutes::test::MappingForABC
+(
+
+)

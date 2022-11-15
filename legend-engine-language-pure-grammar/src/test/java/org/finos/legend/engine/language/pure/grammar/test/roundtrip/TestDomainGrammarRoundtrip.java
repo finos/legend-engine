@@ -894,4 +894,38 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}" +
                 "\n");
     }
+
+    @Test
+    public void testGraphFetchTreeWithQualifierGrammarRoundTrip()
+    {
+        String tree = "#{\n" +
+                "    test::Firm{\n" +
+                "      legalName,\n" +
+                "      employeeCount,\n" +
+                "      employeesByFirstName([]){\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstName('Peter'){\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstName(['Peter']){\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstName(['Peter', 'John']){\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      },\n" +
+                "      employeesByFirstNameAndCity(['Peter', 'John'], ['New York']){\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }#\n";
+
+        String code = "function my::test(): Any[*]\n{\n   " + tree.replace("\n", "").replace("  ", "") + "\n}\n";
+        test(code);
+    }
 }

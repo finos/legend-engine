@@ -140,7 +140,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                                                                                   dataType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->toOne()->translateCoreTypeToDbSpecificType($translationContext))
                                                                                                      ),
                                                                           connection              = $connection,
-                                                                          resultType              = ^VoidResultType(type=Void)
+                                                                          resultType              = ^VoidResultType(type=meta::pure::router::store::routing::Void)
                                                                        );
 
                            let executionNodeToBeAdded               = if($collectionValues->size() > $dbThreshold,
