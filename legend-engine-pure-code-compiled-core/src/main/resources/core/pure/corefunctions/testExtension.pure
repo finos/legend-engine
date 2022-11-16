@@ -457,12 +457,12 @@ function meta::pure::functions::test::findTestPackagesFor(elements:PackageableEl
    $elements->findTestsFor($extensions).package->distinct();
 }
 
-function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], extensions:meta::pure::extension::Extension[*]): Function<Any>[*]
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], extensions:meta::pure::extension::Extension[*]): PackageableFunction<Any>[*]
 {
    findTestsFor($elements, 25, 10000, $extensions);
 }
 
-function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], maxDepth:Integer[1], maxVisited:Integer[1], extensions:meta::pure::extension::Extension[*]): Function<Any>[*]
+function meta::pure::functions::test::findTestsFor(elements:PackageableElement[*], maxDepth:Integer[1], maxVisited:Integer[1], extensions:meta::pure::extension::Extension[*]): PackageableFunction<Any>[*]
 {
    $elements->fold({pe, result| let testedByResult = $pe->testedBy($result, $extensions);
                                 assertFalse($testedByResult.maxDepthExceeded(), 'Exceeded maxDepth %d.', $testedByResult.maxDepth);
@@ -508,7 +508,7 @@ function <<access.private>> meta::pure::functions::test::getPackageableElementsS
 
 Class meta::pure::functions::test::TestedByResult
 {
-   results: Function<Any>[*];
+   results: PackageableFunction<Any>[*];
    visited: String[*];
    depth: Integer[1];
    maxDepth: Integer[1];
@@ -527,39 +527,40 @@ Class meta::pure::functions::test::TestedByResult
    }:Boolean[1];
 }
 
-function meta::pure::functions::test::testedBy(pe:PackageableElement[1], soFar:TestedByResult[1], extensions:meta::pure::extension::Extension[*]):TestedByResult[1]
-{
-   let epath = $pe->elementPath();
-   let named = $epath->size() > 0 && ($epath->size() > 1 || $epath->at(0).name->size() == 1);
+function meta::pure::functions::test::testedBy(pe:Any[1], soFar:TestedByResult[1], extensions:meta::pure::extension::Extension[*]):TestedByResult[1]
+{   
+   let named = $pe->match([p:PackageableElement[1]|true, p:Function<Any>[1]|!$p->instanceOf(LambdaFunction), z:Any[1]|false]);
+   //$epath->size() > 0 && ($epath->size() > 1 || $epath->at(0).name->size() == 1);
+   let path = $pe->match([p:PackageableElement[1]|$p->elementToPath(), p:AbstractProperty<Any>[1]|$p.name->toOne(), z:Any[1]|'']);
 
-   if (($named && $soFar.visited->contains($pe->elementToPath()) || $soFar.failed()),
+   if (($named && $soFar.visited->contains($path) || $soFar.failed()),
       | $soFar,
-      | let allReferenceUses = $pe.referenceUsages->evaluateAndDeactivate();
+      | let allReferenceUses = $pe->match([p:PackageableElement[1]|$p.referenceUsages, z:Function<Any>[1]|$z.referenceUsages, k:Any[1]|[]])->evaluateAndDeactivate();
 
-        let visit = {soFarr:TestedByResult[1]|if($named, |$pe->visitPackageableElement($soFarr), |$soFarr)};
-        let thisIsATest = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(Function))->cast(@Function<Any>)->map(f|if($f->isTest() || $f->isBeforePackage(), |$f->addResult($soFarr), |[]))->defaultIfEmpty($soFarr)->toOne()};
+        let visit = {soFarr:TestedByResult[1]|if($named, |$path->visitPackageableElement($soFarr), |$soFarr)};
+        let thisIsATest = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(PackageableFunction))->cast(@PackageableFunction<Any>)->map(f|if($f->isTest() || $f->isBeforePackage(), |$f->addResult($soFarr), |[]))->defaultIfEmpty($soFarr)->toOne()};
         let applications = {soFarr:TestedByResult[1]| $pe->filter(o|$o->instanceOf(Function))->cast(@Function<Any>).applications->evaluateAndDeactivate()->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
         let referenceUsesFromMappingInclude = {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(meta::pure::mapping::MappingInclude))->cast(@meta::pure::mapping::MappingInclude)->fold({mi,tbr|$mi.owner->testedBy($tbr, $extensions)}, $soFarr)};
         let referenceUses = {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(ValueSpecification))->cast(@ValueSpecification)->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
-        let stereotypeUses = {soFarr:TestedByResult[1]| $pe.stereotypes->filter(s|$s.profile != test)->map(s|$s->getPackageableElementsSensitiveToStereotype())->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr)};
+        let stereotypeUses = {soFarr:TestedByResult[1]| if($pe->instanceOf(AnnotatedElement), |$pe->cast(@AnnotatedElement).stereotypes->filter(s|$s.profile != test)->map(s|$s->getPackageableElementsSensitiveToStereotype())->fold({vs,tbr|$vs->testedBy($tbr, $extensions)}, $soFarr), |$soFarr)};
         let resetDepth = {soFarr:TestedByResult[1]|^$soFarr(depth=$soFar.depth)};
 
         [$visit, $thisIsATest, $applications, $referenceUsesFromMappingInclude, $referenceUses, $stereotypeUses, $resetDepth]->concatenate($extensions.testExtension_testedBy->map(e|$e->eval($allReferenceUses, $extensions)))->fold({f,tbr|eval($f, $tbr)}, $soFar);
    );
 }
 
-function <<access.private>> meta::pure::functions::test::visitPackageableElement(pe:PackageableElement[1], soFar:TestedByResult[1]):TestedByResult[1]
+function <<access.private>> meta::pure::functions::test::visitPackageableElement(path:String[1], soFar:TestedByResult[1]):TestedByResult[1]
 {
    ^TestedByResult(
       results=$soFar.results,
-      visited=$soFar.visited->add($pe->elementToPath()),
+      visited=$soFar.visited->add($path),
       depth=$soFar.depth+1,
       maxDepth=$soFar.maxDepth,
       maxVisited=$soFar.maxVisited
    );
 }
 
-function <<access.private>> meta::pure::functions::test::addResult(f:Function<Any>[1], soFar:TestedByResult[1]):TestedByResult[1]
+function <<access.private>> meta::pure::functions::test::addResult(f:PackageableFunction<Any>[1], soFar:TestedByResult[1]):TestedByResult[1]
 {
    ^TestedByResult(
       results=$soFar.results->add($f),
@@ -587,7 +588,7 @@ function {doc.doc = 'Return whether the given function is a test.'} meta::pure::
     $func->hasStereotype('Test', test)
 }
 
-function {doc.doc = 'Return whether the given element is some kind of testing element.  This is true if it has any stereotype from the meta::pure::profiles::test profile.'} meta::pure::functions::test::isTestElement(element:AnnotatedElement[1]):Boolean[1]
+function {doc.doc = 'Return whether the given element is some kind of testing element.  This is true if it has any stereotype from the meta::pure::profiles::test profile.'} meta::pure::functions::test::isTestElement(element:Any[1]):Boolean[1]
 {
-    $element.stereotypes->exists(st | $st.profile == test);
+    $element->instanceOf(AnnotatedElement) && $element->cast(@AnnotatedElement).stereotypes->exists(st | $st.profile == test);
 }

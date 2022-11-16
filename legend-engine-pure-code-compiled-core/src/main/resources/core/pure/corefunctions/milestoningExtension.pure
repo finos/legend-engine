@@ -24,6 +24,11 @@ function meta::pure::milestoning::hasGeneratedMilestoningDatePropertyStereotype(
    $f->hasStereotype('generatedmilestoningdateproperty',meta::pure::profiles::milestoning)
 }
 
+function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:Function<Any>[1]):Boolean[1]
+{
+    $f->cast(@ElementWithStereotypes)->hasGeneratedMilestoningPropertyStereotype();
+}
+
 function meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(f:ElementWithStereotypes[1]):Boolean[1]
 {
    $f->hasStereotype('generatedmilestoningproperty',meta::pure::profiles::milestoning) || $f->hasGeneratedMilestoningDatePropertyStereotype()

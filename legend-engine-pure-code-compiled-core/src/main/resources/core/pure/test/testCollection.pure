@@ -36,7 +36,7 @@ function meta::pure::test::collectParameterizedTests(pkg: Package[1], testParame
           testFilter: Function<{FunctionDefinition<Any>[1] -> Boolean[1]}>[0..1]): PureTestCollection[1]
 {
   let subPkgs = $pkg.children->map(c| $c->match([p:Package[1]| $p, x:Any[1]| []]));
-  let fns = $pkg.children->map(c| $c->match([p:FunctionDefinition<Any>[1]| $p, x:Any[1]| []]));
+  let fns = $pkg.children->map(c| $c->match([p:ConcreteFunctionDefinition<Any>[1]| $p, x:Any[1]| []]));
   
   ^PureTestCollection(
       pkg = $pkg,
