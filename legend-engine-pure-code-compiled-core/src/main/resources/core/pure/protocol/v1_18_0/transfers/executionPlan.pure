@@ -103,17 +103,6 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
               resultType = $exp.resultType->transformResultType($mapping, $extensions),
               functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::v1_18_0::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity())))
            ),
-         g:meta::pure::graphFetch::executionPlan::GraphFetchExecutionNode[1]|
-            ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::graphFetch::GraphFetchExecutionNode
-            (
-               _type = 'graphFetchExecutionNode',
-               resultType = $g.resultType->transformResultType($mapping, $extensions),
-               resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity()),
-               rootExecutionNode = $g.rootExecutionNode->transformNode($mapping, $extensions),
-               graphFetchTree = $g.graphFetchTree->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
-               batchSize = $g.batchSize,
-               globalGraphFetchExecutionNode = $g.globalGraphFetchExecutionNode->transformNode($mapping, $extensions)->cast(@meta::protocols::pure::v1_18_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode)
-            ),
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
             (
