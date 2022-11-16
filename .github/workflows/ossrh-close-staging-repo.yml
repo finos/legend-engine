@@ -23,7 +23,12 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
 
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Version of the release that failed to close it's staging repo"
+        required: true
 
 jobs:
   close-staging-repo:
@@ -55,8 +60,8 @@ jobs:
 
       - name: Get last open nexus repo Id
         run: |
-          mvn nexus-staging:rc-list > rc-list.log
-          idLine=$(grep 'orgfinoslegend' rc-list.log | tail -1)
+          mvn nexus-staging:rc-list | tee rc-list.log
+          idLine=$(grep 'orgfinoslegend' rc-list.log | | grep '${{ github.event.inputs.releaseVersion }}')
           arrLine=(${idLine// / })
           repoId=${arrLine[1]}
           echo "NEXUS_REPO_ID=${repoId}" >> $GITHUB_ENV
