@@ -242,7 +242,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForFromOnly(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnly(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
@@ -251,7 +251,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForFromOnlyWithDeleteInd(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDeleteInd(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator) " +
@@ -260,7 +260,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForFromOnlyWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDataSplit(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
@@ -269,7 +269,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForFromOnlyWithDeleteIndWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
