@@ -16,7 +16,7 @@
 # This action retries closing a staging repository in Nexus (Maven Central)
 # This should only be run if a release fails with the following message:
 # [ERROR] Remote staging finished with a failure: java.net.SocketException: Connection timed out (Read failed)
-name: Close Staging Repository
+name: Close and Release Staging Repository (In case of release failure)
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
