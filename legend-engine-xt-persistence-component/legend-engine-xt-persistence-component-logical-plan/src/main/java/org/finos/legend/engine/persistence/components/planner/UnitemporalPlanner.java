@@ -146,15 +146,30 @@ abstract class UnitemporalPlanner extends Planner
 
     protected Selection getRowsUpdated(String alias)
     {
-        Dataset sink2 = DatasetDefinition.builder()
-            .database(mainDataset().datasetReference().database())
-            .name(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))
-            .alias("sink2")
-            .group(mainDataset().datasetReference().group())
-            .schema(mainDataset().schema())
-            .build();
-
+        Dataset sink2 = getMainDatasetWithDifferentAlias("sink2");
         Condition primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), primaryKeys.toArray(new String[0]));
+        return getRowsUpdated(alias, primaryKeysMatchCondition, sink2);
+    }
+
+    protected Selection getRowsUpdated(String alias, Condition primaryKeysMatchCondition)
+    {
+        Dataset sink2 = getMainDatasetWithDifferentAlias("sink2");
+        return getRowsUpdated(alias, primaryKeysMatchCondition, sink2);
+    }
+
+    protected DatasetDefinition getMainDatasetWithDifferentAlias(String alias)
+    {
+        return DatasetDefinition.builder()
+                .database(mainDataset().datasetReference().database())
+                .name(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))
+                .alias(alias)
+                .group(mainDataset().datasetReference().group())
+                .schema(mainDataset().schema())
+                .build();
+    }
+
+    protected Selection getRowsUpdated(String alias, Condition primaryKeysMatchCondition, Dataset sink2)
+    {
         Condition inCondition = ingestMode().transactionMilestoning().accept(new DetermineRowsAddedInSinkCondition(sink2, mainTableName, metadataUtils, batchStartTimestamp));
         Condition existsCondition = Exists.of(Selection.builder()
             .source(sink2)
@@ -168,7 +183,6 @@ abstract class UnitemporalPlanner extends Planner
         List<Value> fields = Collections.singletonList(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build());
         return Selection.builder().source(mainDataset().datasetReference()).condition(whereCondition).addAllFields(fields).build();
     }
-
 
     protected SelectValue getRowsAddedInSink()
     {
