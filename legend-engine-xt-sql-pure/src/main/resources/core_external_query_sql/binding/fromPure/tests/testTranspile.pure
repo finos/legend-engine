@@ -43,14 +43,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assertEquals($expected, $sqlTransformContext.lambda());
 }
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinct():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctSingleColumn():Boolean[1]
 {
-  let sqlString = 'SELECT DISTINCT * FROM service."/service/testTdsService"';
+  let sqlString = 'SELECT DISTINCT Boolean FROM service."/service/testTdsService"';
   let sqlTransformContext = $sqlString->processQuery();
   let expected = {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-      ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+      ->restrict(['Boolean'])
       ->distinct()
       };
   assertEquals($expected, $sqlTransformContext.lambda());
@@ -77,6 +77,30 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+      };
+  assertEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuotedSingleColumn():Boolean[1]
+{
+  let sqlString = 'SELECT "Boolean", "Integer" FROM service."/service/testTdsService"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      };
+  assertEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnquotedSingleColumn():Boolean[1]
+{
+  let sqlString = 'SELECT Boolean, Integer FROM service."/service/testTdsService"';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
       };
   assertEquals($expected, $sqlTransformContext.lambda());
 }
