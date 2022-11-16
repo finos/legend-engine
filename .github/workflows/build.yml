@@ -19,6 +19,7 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  MAVEN_OPTS: -Xms3500m -Xmx3500m
 
 on: [push, pull_request]
 
@@ -27,9 +28,11 @@ jobs:
     name: Build
     if: "!contains(github.event.head_commit.message, '[maven-release-plugin]')"
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
+
       - name: Cache Maven dependencies
         uses: actions/cache@v2
         env:
@@ -41,6 +44,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
             ${{ runner.os }}-
+
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
@@ -48,38 +52,40 @@ jobs:
           server-id: ossrh
           server-username: CI_DEPLOY_USERNAME
           server-password: CI_DEPLOY_PASSWORD
+
       - name: Check Java version
         run: java -version
+
       - name: Configure git
         run: |
           git config --global committer.email "infra@finos.org"
           git config --global committer.name "FINOS Admin"
           git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
           git config --global author.name "${GITHUB_ACTOR}"
+
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
-        env:
-          MAVEN_OPTS: -Xmx4g
+
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc
-        env:
-          MAVEN_OPTS: -Xmx4g
+        run: mvn install javadoc:javadoc -DargLine="-Xms3g -Xmx3g"
+
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
         env:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-          MAVEN_OPTS: -Xmx4g
         run: |
-          mvn install -DskipTests=true
+          mvn install -DargLine="-Xms3g -Xmx3g" -DskipTests=true
           mvn javadoc:javadoc deploy -P docker-snapshot
+
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: legend-engine-test-reports/surefire-reports-aggregate/*.xml
+
       - name: Upload CI Event
         if: always()
         uses: actions/upload-artifact@v3
