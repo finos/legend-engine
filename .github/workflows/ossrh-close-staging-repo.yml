@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-# This action retries closing the staging repository in Nexus (Maven Central)
+# This action retries closing a staging repository in Nexus (Maven Central)
 # This should only be run if a release fails with the following message:
 # [ERROR] Remote staging finished with a failure: java.net.SocketException: Connection timed out (Read failed)
 name: Close Staging Repository
@@ -58,7 +58,7 @@ jobs:
           gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
           gpg-passphrase: CI_GPG_PASSPHRASE
 
-      - name: Get last open nexus repo Id
+      - name: Get staging repo Id
         run: |
           mvn nexus-staging:rc-list | tee rc-list.log
           idLine=$(grep 'orgfinoslegend' rc-list.log | grep '${{ github.event.inputs.releaseVersion }}')
@@ -66,5 +66,8 @@ jobs:
           repoId=${arrLine[1]}
           echo "NEXUS_REPO_ID=${repoId}" >> $GITHUB_ENV
 
-      - name: Print repo Id
-        run: echo ${{ env.NEXUS_REPO_ID }}
+      - name: Close staging repo
+        run: mvn nexus-staging:rc-close -DstagingRepositoryId=${{ env.NEXUS_REPO_ID }}
+
+      - name: Release staging repo
+        run: mvn nexus-staging:rc-release -DstagingRepositoryId=${{ env.NEXUS_REPO_ID }}
