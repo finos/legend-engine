@@ -1,0 +1,54 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::graphQL::generation::*;
+import meta::pure::generation::metamodel::*;
+
+Class meta::external::query::graphQL::generation::GraphQLConfig extends GenerationConfiguration
+{
+}
+
+function <<access.private, Generation.Configuration>>  meta::external::query::graphQL::generation::describeConfiguration():GenerationParameter[*]
+{
+  meta::pure::generation::describeConfiguration(GraphQLConfig, meta::external::query::graphQL::generation::defaultConfig__GraphQLConfig_1_, []);
+}
+
+function meta::external::query::graphQL::generation::defaultConfig():GraphQLConfig[1]
+{
+    ^GraphQLConfig();
+}
+
+Class meta::external::query::graphQL::generation::GraphQLOutput extends GenerationOutput
+{
+}
+
+function meta::external::query::graphQL::generation::generateGraphQL(config: GraphQLConfig[1]): GraphQLOutput[*]
+{
+   $config.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' GraphQL generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate GraphQL for '+ $e->elementToPath()) ;);
+   let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class))->cast(@Class<Any>);
+   $scopeElements->map(c| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($c));
+}
+
+function meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], class: Class<Any>[1]): GraphQLOutput[*]
+{
+   let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($config.allPackageScopeElements())
+                  ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
+                  ->joinStrings('\n');
+   ^GraphQLOutput
+   (
+        content=$content,
+        fileName='schema.graphQL',
+        format='text'
+   );
+}

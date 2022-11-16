@@ -14,8 +14,7 @@
  limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -27,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.21.2-SNAPSHOT</version>
+    <version>3.23.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -147,6 +146,9 @@
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
+        <module>legend-engine-xt-analytics-lineage-api</module>
+        <module>legend-engine-xt-analytics-lineage-pure</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-pure-ide-light</module>
@@ -204,7 +206,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.7.2</legend.pure.version>
+        <legend.pure.version>3.7.3</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -355,6 +357,7 @@
                         <skip>${javadoc.skip}</skip>
                         <source>8</source>
                         <doclint>none</doclint>
+                        <quiet>true</quiet>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -1093,6 +1096,17 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-diagram-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -378,6 +378,43 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
     }
 
     @Test
+    public void testFaultyServiceWithMissingAttributes()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    mapping: meta::myMapping;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [6:14-10:3]: Field 'runtime' is required");
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  documentation: 'this is just for context';\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts: [];\n" +
+                "  }\n" +
+                "}\n", "PARSER error at [6:14-10:3]: Field 'mapping' is required");
+    }
+
+    @Test
     public void testServiceWithMultiExecution()
     {
         // Missing fields

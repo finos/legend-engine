@@ -22,7 +22,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilderForFuncExpr;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -74,7 +74,7 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
     {
         if (test(handlers.get(0).getFunc(), parameters, compileContext.pureModel, processingContext))
         {
-            List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(compileContext, openVariables, processingContext))).collect(Collectors.toList());
+            List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> processed = parameters.stream().map(p -> p.accept(new ValueSpecificationBuilderForFuncExpr(compileContext, openVariables, processingContext))).collect(Collectors.toList());
             return Tuples.pair(buildFunctionExpressionGraph(processed, openVariables, compileContext, processingContext), processed);
         }
         return Tuples.pair(null, null);

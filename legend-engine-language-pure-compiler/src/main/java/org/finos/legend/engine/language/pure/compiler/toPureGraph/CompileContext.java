@@ -240,6 +240,11 @@ public class CompileContext
         return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getClass(path, sourceInformation));
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner resolvePropertyOwner(String fullPath, SourceInformation sourceInformation)
+    {
+        return this.resolve(fullPath, sourceInformation, path -> this.pureModel.getPropertyOwner(path, sourceInformation));
+    }
+
     public Enumeration<Enum> resolveEnumeration(String fullPath)
     {
         return this.resolveEnumeration(fullPath, SourceInformation.getUnknownSourceInformation());

@@ -1,0 +1,70 @@
+# Copyright 2022 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Release (Large Runner)
+
+env:
+  CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+  CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
+  DOCKER_USERNAME: finos
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  MAVEN_OPTS: -Xms10g -Xmx10g
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "New release version"
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest-16-cores
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config --global user.email "37706051+finos-admin@users.noreply.github.com"
+          git config --global user.name "FINOS Administrator"
+
+      - name: Set up Maven Central
+        uses: actions/setup-java@v2
+        with:
+          distribution: "zulu"
+          java-version: "11"
+          server-id: ossrh
+          server-username: CI_DEPLOY_USERNAME
+          server-password: CI_DEPLOY_PASSWORD
+          gpg-private-key: ${{ secrets.CI_GPG_PRIVATE_KEY }}
+          gpg-passphrase: CI_GPG_PASSPHRASE
+
+      - name: Compute next development version
+        run: |
+          releaseVersion=${{ github.event.inputs.releaseVersion }}
+          n=${releaseVersion//[!0-9]/ }
+          a=(${n//\./ })
+          nextPatch=$((${a[2]} + 1))
+          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
+          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
+
+      - name: Prepare release
+        run: mvn -B -e release:prepare -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
+
+      - name: Perform release
+        run: mvn -B -e -T 4 release:perform -Darguments="-DargLine=-Xms12g -Xmx12g" -P release,docker

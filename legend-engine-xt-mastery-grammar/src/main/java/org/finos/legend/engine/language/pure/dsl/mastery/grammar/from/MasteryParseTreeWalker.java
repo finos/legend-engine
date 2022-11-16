@@ -92,9 +92,7 @@ public class MasteryParseTreeWalker
     {
         RecordSource source = new RecordSource();
         source.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        MasteryParserGrammar.IdContext idContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.id(), "id", source.sourceInformation);
-        source.id = PureGrammarParserUtility.fromGrammarString(idContext.STRING().getText(), true);
+        source.id = PureGrammarParserUtility.fromIdentifier(ctx.masteryIdentifier());
 
         MasteryParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.description(), "description", source.sourceInformation);
         source.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
@@ -195,9 +193,7 @@ public class MasteryParseTreeWalker
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         RecordSourcePartition partition = new RecordSourcePartition();
-
-        MasteryParserGrammar.IdContext idContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.id(), "id", sourceInformation);
-        partition.id = PureGrammarParserUtility.fromGrammarString(idContext.STRING().getText(), true);
+        partition.id = PureGrammarParserUtility.fromIdentifier(ctx.masteryIdentifier());
 
         MasteryParserGrammar.TagsContext tagsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.tags(), "tags", sourceInformation);
         if (tagsContext != null)

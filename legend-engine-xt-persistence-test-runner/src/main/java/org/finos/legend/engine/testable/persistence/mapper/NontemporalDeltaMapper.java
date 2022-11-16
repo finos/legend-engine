@@ -16,8 +16,6 @@ package org.finos.legend.engine.testable.persistence.mapper;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.delta.NontemporalDelta;
 
-import java.util.Arrays;
-
 import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class NontemporalDeltaMapper

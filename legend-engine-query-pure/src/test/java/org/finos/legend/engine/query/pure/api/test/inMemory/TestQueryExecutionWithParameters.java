@@ -55,7 +55,7 @@ public class TestQueryExecutionWithParameters
     {
         ExecuteInput input = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("relationalQueryExecutionInputEnumZeroOne.json")), ExecuteInput.class);
         String json = TestExecutionUtility.responseAsString(runTest(input));
-        assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where \\\"root\\\".Inc = 'LLC'\"}], \"result\" : {\"columns\" : [\"Inc Type\"], \"rows\" : [{\"values\": [\"LLC\"]}]}}", json);
+        assertEquals("{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"Inc Type\",\"type\":\"model::IncType\",\"relationalType\":\"VARCHAR(200)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select top 1000 \\\"root\\\".Inc as \\\"Inc Type\\\" from FirmTable as \\\"root\\\" where (\\\"root\\\".Inc = 'LLC')\"}], \"result\" : {\"columns\" : [\"Inc Type\"], \"rows\" : [{\"values\": [\"LLC\"]}]}}", json);
     }
 
     private Response runTest(ExecuteInput input)

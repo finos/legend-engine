@@ -24,6 +24,7 @@ public class Test_Pure_Relational
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
+        executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
         //NOTE- we are not collecting parameterized test collection in meta::relational here
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::relational", executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));

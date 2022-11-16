@@ -19,6 +19,8 @@ import meta::json::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::router::clustering::*;
 import meta::pure::graphFetch::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::metamodel::clustering::*;
 import meta::pure::metamodel::path::*;
 
 function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::valueSpecification::transformFunctionBody(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_20_0::metamodel::valueSpecification::ValueSpecification[*]

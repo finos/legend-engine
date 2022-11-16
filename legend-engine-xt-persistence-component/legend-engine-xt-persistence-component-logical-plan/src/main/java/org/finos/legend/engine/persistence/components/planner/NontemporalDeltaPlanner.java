@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
-import java.util.Collections;
 import java.util.HashMap;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -27,7 +26,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.And
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
@@ -359,17 +357,6 @@ class NontemporalDeltaPlanner extends Planner
                                         .condition(And.builder().addConditions(this.pkMatchCondition, this.digestMatchCondition, this.deleteIndicatorIsSetCondition.get()).build())
                                         .build())
                                 .build()))).build();
-//            LogicalPlan rowsDeletedCountPlan = LogicalPlan.builder().addOps(LogicalPlanUtils
-//                .getRecordCount(
-//                    stagingDataset(),
-//                    ROWS_DELETED.get(),
-//                    Optional.of(And.builder().addConditions(this.deleteIndicatorIsSetCondition.get(),
-//                        Exists.builder()
-//                            .source(Selection.builder()
-//                                .source(mainDataset())
-//                                .condition(And.builder().addConditions(this.pkMatchCondition, digestMatchCondition).build())
-//                                .build())
-//                            .build()).build()))).build();
 
             preRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
         }

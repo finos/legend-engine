@@ -15,6 +15,10 @@
 package org.finos.legend.engine.plan.execution.nodes.helpers;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.TokenBuffer;
+import org.eclipse.collections.impl.block.factory.Functions;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
@@ -25,6 +29,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -68,7 +73,7 @@ public class ExecutionNodeSerializerHelper
         return new JsonStreamingResult(new Serializer<>(stream, specifics, config), childResult);
     }
 
-    private static class Serializer<T> implements Consumer<JsonGenerator>
+    private static class Serializer<T> implements JsonStreamingResult.JsonStreamHandler
     {
         private final Stream<T> stream;
         private final IPlatformPureExpressionExecutionNodeSerializeSpecifics specifics;
@@ -81,10 +86,28 @@ public class ExecutionNodeSerializerHelper
             this.config = config;
         }
 
-        @Override
-        public void accept(JsonGenerator generator)
+        private IGraphSerializer<T> createSerializer(JsonGenerator generator)
         {
-            IGraphSerializer<T> serializer = (IGraphSerializer<T>) specifics.serializer(new Writer(generator, this.config), context);
+            return (IGraphSerializer<T>) specifics.serializer(new Writer(generator, this.config), context);
+        }
+
+        @Override
+        public Stream<ObjectNode> toStream()
+        {
+            TokenBuffer tokenBuffer = new TokenBuffer(ObjectMapperFactory.getNewStandardObjectMapper(), true);
+            JsonParser jsonParser = tokenBuffer.asParser();
+            IGraphSerializer<T> serializer = this.createSerializer(tokenBuffer);
+            return this.stream.map(Functions.throwing(x ->
+            {
+                serializer.serialize(x);
+                return jsonParser.readValueAs(ObjectNode.class);
+            }));
+        }
+
+        @Override
+        public void writeTo(JsonGenerator generator)
+        {
+            IGraphSerializer<T> serializer = this.createSerializer(generator);
             try
             {
                 Iterator<T> iter = this.stream.iterator();
@@ -133,10 +156,10 @@ public class ExecutionNodeSerializerHelper
         Writer(JsonGenerator generator, SerializationConfig config)
         {
             this.generator = generator;
-            this.includeEnumType = config == null ? false : config.includeEnumType;
-            this.removePropertiesWithEmptySets = config == null ? false : config.removePropertiesWithEmptySets;
-            this.removePropertiesWithNullValues = config == null ? false : config.removePropertiesWithNullValues;
-            this.includeObjectReference = config == null ? false : config.includeObjectReference;
+            this.includeEnumType = config != null && config.includeEnumType;
+            this.removePropertiesWithEmptySets = config != null && config.removePropertiesWithEmptySets;
+            this.removePropertiesWithNullValues = config != null && config.removePropertiesWithNullValues;
+            this.includeObjectReference = config != null && config.includeObjectReference;
 
             if (config == null || !config.includeType)
             {
@@ -591,7 +614,7 @@ public class ExecutionNodeSerializerHelper
             }
         }
 
-        private <T> void writeEmptyPropertyZeroOne(String name)
+        private void writeEmptyPropertyZeroOne(String name)
         {
             if (!this.removePropertiesWithNullValues)
             {
@@ -600,7 +623,7 @@ public class ExecutionNodeSerializerHelper
             }
         }
 
-        private <T> void writeEmptyPropertyMany(String name)
+        private void writeEmptyPropertyMany(String name)
         {
             if (!this.removePropertiesWithEmptySets)
             {

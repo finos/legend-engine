@@ -29,4 +29,5 @@ public class Property
     public List<TaggedValue> taggedValues = Collections.emptyList();
     public SourceInformation sourceInformation;
     public SourceInformation propertyTypeSourceInformation;
+    public AggregationKind aggregation;
 }
