@@ -61,7 +61,7 @@ jobs:
       - name: Get last open nexus repo Id
         run: |
           mvn nexus-staging:rc-list | tee rc-list.log
-          idLine=$(grep 'orgfinoslegend' rc-list.log | | grep '${{ github.event.inputs.releaseVersion }}')
+          idLine=$(grep 'orgfinoslegend' rc-list.log | grep '${{ github.event.inputs.releaseVersion }}')
           arrLine=(${idLine// / })
           repoId=${arrLine[1]}
           echo "NEXUS_REPO_ID=${repoId}" >> $GITHUB_ENV
