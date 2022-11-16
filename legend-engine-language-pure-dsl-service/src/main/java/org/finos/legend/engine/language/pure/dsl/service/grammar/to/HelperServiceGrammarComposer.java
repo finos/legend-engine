@@ -31,6 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidationAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
@@ -249,5 +251,30 @@ public class HelperServiceGrammarComposer
                 + testContainer._assert.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + " }").makeString(",\n")).append(testContainers.isEmpty() ? "" : "\n");
         builder.append(getTabString(indentation)).append("];");
         return builder.toString();
+    }
+
+    public static String renderPostValidation(PostValidation postValidation, PureGrammarComposerContext context)
+    {
+        int baseIndentation = 2;
+        StringBuilder builder = new StringBuilder();
+        appendTabString(builder, baseIndentation).append("{\n");
+        // description
+        appendTabString(builder, baseIndentation + 1).append("description: ").append(convertString(postValidation.description, true)).append(";\n");
+        // parameters
+        appendTabString(builder, baseIndentation + 1).append("params:[\n");
+        builder.append(String.join(",\n", ListIterate.collect(postValidation.parameters, parameter -> appendTabString(new StringBuilder(), baseIndentation + 2).append(parameter.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).toString()))).append("\n");
+        appendTabString(builder, baseIndentation + 1).append("];\n");
+        // assertions
+        appendTabString(builder, baseIndentation + 1).append("assertions:[\n");
+        builder.append(String.join(",\n", ListIterate.collect(postValidation.assertions, assertion -> renderPostValidationAssertion(assertion, baseIndentation + 2, context)))).append("\n");
+        appendTabString(builder, baseIndentation + 1).append("];\n");
+
+        return builder.append(getTabString(baseIndentation)).append("}\n").toString();
+    }
+
+    private static String renderPostValidationAssertion(PostValidationAssertion postValidationAssertion, int indentation, PureGrammarComposerContext context)
+    {
+        StringBuilder builder = new StringBuilder();
+        return appendTabString(builder, indentation).append(postValidationAssertion.id).append(": ").append(postValidationAssertion.assertion.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).toString();
     }
 }
