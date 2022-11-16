@@ -1,0 +1,167 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::analytics::lineage::flow::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+
+Class meta::analytics::lineage::flow::Flow
+{
+   functions : FunctionDefinition<Any>[*];
+   systems : System[*];
+   packages : Package[*];
+   databases : Database[*];
+   tables : NamedRelation[*];
+   properties : Property<Nil,Any|*>[*];
+   classes : Class<Any>[*];
+   groups : Group[*];
+   links : FlowEdge[*];
+}
+
+Class meta::analytics::lineage::flow::Group
+{
+   groupId : Integer[1];
+   name : String[1];
+   nodes : FlowNode[*];
+}
+
+Class meta::analytics::lineage::flow::System
+{
+   appId : Integer[1];
+   name : String[1];
+}
+
+Class meta::analytics::lineage::flow::FlowEdge
+{
+   <<equality.Key>> source : FlowNode[1];
+   <<equality.Key>> target : FlowNode[1];
+   lineageMaturity : LineageMaturity[0..1];
+   text : String[0..1];
+}
+
+function meta::analytics::lineage::flow::maturity(link:FlowEdge[1], maturityTests:Pair<Function<{FlowNode[1],FlowNode[1]->Boolean[1]}>,LineageMaturity>[*]):LineageMaturity[1]
+{
+   maturity($link.source, $link.target, $maturityTests)
+}
+
+function meta::analytics::lineage::flow::maturity(src:FlowNode[1], target:FlowNode[1], maturityTests:Pair<Function<{FlowNode[1],FlowNode[1]->Boolean[1]}>,LineageMaturity>[*]):LineageMaturity[1]
+{
+   let res = $maturityTests->filter(p|$p.first->eval($src, $target)).second;
+   if ($res->isEmpty(),|LineageMaturity.Registered, |$res->at(0));
+}
+
+function meta::analytics::lineage::flow::maturityTests():Pair<Function<{FlowNode[1],FlowNode[1]->Boolean[1]}>,LineageMaturity>[*]
+{
+   [
+      pair({source:FlowNode[1], target:FlowNode[1]| $source->instanceOf(SystemNode) && $target->instanceOf(SystemNode)}, LineageMaturity.System),
+      pair({source:FlowNode[1], target:FlowNode[1]| $source->instanceOf(DatabaseNode)}, LineageMaturity.DataSet),
+      pair({source:FlowNode[1], target:FlowNode[1]| $source->instanceOf(NamedRelationNode)}, LineageMaturity.DataSet),
+      pair({source:FlowNode[1], target:FlowNode[1]| $source->instanceOf(FunctionNode)}, LineageMaturity.Attribute),
+      pair({source:FlowNode[1], target:FlowNode[1]| $source->instanceOf(PropertyNode)}, LineageMaturity.Attribute)
+   ]
+}
+
+Enum meta::analytics::lineage::flow::LineageMaturity
+{
+   Registered,
+   System,
+   DataSet,
+   Attribute
+}
+
+Class meta::analytics::lineage::flow::FlowNode
+{
+   parent: FlowNode[0..1];
+}
+
+Class meta::analytics::lineage::flow::PropertyNode extends FlowNode
+{
+   <<equality.Key>> property : AbstractProperty<Any>[1];
+}
+
+Class meta::analytics::lineage::flow::ClassNode extends FlowNode
+{
+   <<equality.Key>> class : Class<Any>[1];
+}
+
+Class meta::analytics::lineage::flow::DatabaseNode extends FlowNode
+{
+   <<equality.Key>> db : Database[1];
+}
+
+Class meta::analytics::lineage::flow::NamedRelationNode extends FlowNode
+{
+   <<equality.Key>> relation : NamedRelation[1];
+}
+
+Class meta::analytics::lineage::flow::GroupNode extends FlowNode
+{
+   <<equality.Key>> groupId : Integer[1];
+}
+
+Class meta::analytics::lineage::flow::SystemNode extends FlowNode
+{
+   <<equality.Key>> appId : Integer[1];
+}
+
+Class meta::analytics::lineage::flow::FunctionNode extends FlowNode
+{
+   <<equality.Key>> func : Function<Any>[1];
+}
+
+Class meta::analytics::lineage::flow::PackageNode extends FlowNode
+{
+   <<equality.Key>> package : Package[1];
+}
+
+function meta::analytics::lineage::flow::merge(flows:Flow[*]):Flow[1]
+{
+   ^Flow
+   (
+      functions = $flows.functions->removeDuplicates(),
+      databases = $flows.databases->removeDuplicates(),
+      tables = $flows.tables->removeDuplicates(),
+      systems = $flows.systems->removeDuplicates({a,b|$a.appId == $b.appId}),
+      packages = $flows.packages->removeDuplicates(),
+      classes = $flows.classes->removeDuplicates(),
+      properties = $flows.properties->removeDuplicates(),
+      links = $flows.links->removeDuplicates()
+   )
+}
+
+function meta::analytics::lineage::flow::removeNode(flow:Flow[1],node:FlowNode[1]):Flow[1]
+{
+   let in = $flow.links->filter(l|$l.target==$node);
+   let out = $flow.links->filter(l|$l.source==$node);
+
+   let maturityTests = maturityTests();
+
+   ^Flow
+   (
+      functions = if($node->instanceOf(FunctionNode),|$flow.functions->filter(f|$f!=$node->cast(@FunctionNode).func),|$flow.functions),
+      databases = if($node->instanceOf(DatabaseNode),|$flow.databases->filter(d|$d!=$node->cast(@DatabaseNode).db),|$flow.databases),
+      tables = if($node->instanceOf(NamedRelationNode),|$flow.tables->filter(t|$t!=$node->cast(@NamedRelationNode).relation),|$flow.tables),
+      systems = if($node->instanceOf(SystemNode),|$flow.systems->filter(s|$s.appId!=$node->cast(@SystemNode).appId),|$flow.systems),
+      packages = if($node->instanceOf(PackageNode),|$flow.packages->filter(p|$p!=$node->cast(@PackageNode).package),|$flow.packages),
+      classes = if($node->instanceOf(ClassNode),|$flow.classes->filter(c|$c!=$c->cast(@ClassNode).class),|$flow.classes),
+      properties = if($node->instanceOf(PropertyNode),|$flow.properties->filter(p|$p!=$p->cast(@PropertyNode).property),|$flow.properties),
+      links = $flow.links->filter(l|!$l->in($in))->filter(l|!$l->in($out))->concatenate($in.source->fold({x,y:FlowEdge[*]|$y->concatenate($out.target->map(e|^FlowEdge(source=$x, target=$e, lineageMaturity=maturity($x, $e, $maturityTests))))},[]))
+   );
+}
+
+function meta::analytics::lineage::flow::removeFunctions(flow:Flow[1],functions:Function<Any>[*]):Flow[1]
+{
+   let nodes = $flow.links.source->concatenate($flow.links.target)->filter(e|$e->instanceOf(FunctionNode))->filter(e|$e->cast(@FunctionNode).func->in($functions))->removeDuplicates();
+   $nodes->fold({x,y|$y->removeNode($x)}, $flow);
+}

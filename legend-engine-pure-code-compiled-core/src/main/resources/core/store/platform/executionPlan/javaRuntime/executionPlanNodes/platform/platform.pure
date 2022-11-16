@@ -32,7 +32,7 @@ import meta::pure::graphFetch::execution::*;
 // Prepare
 function meta::pure::executionPlan::engine::java::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
-   if($p.expression->cast(@FunctionExpression)->isSerialize($extensions),
+   if($p.expression->cast(@FunctionExpression)->isSerialize(),
       | prepareForSerialize($p, $path, $context, $debug),
       | prepareForExpression($p, $path, $context, $debug)
    );
@@ -64,7 +64,7 @@ function meta::pure::executionPlan::engine::java::generateImplementionForPlatfor
    if($p.expression->cast(@FunctionExpression).func == currentUserId__String_1_,
       | generateImplementionForCurrentUserId($context.conventions),
       |
-   if($p.expression->cast(@FunctionExpression)->isSerialize($extensions),
+   if($p.expression->cast(@FunctionExpression)->isSerialize(),
       | generateImplementionForSerialize($p, $path, $context, $debug),
       |
    if($p.expression->cast(@FunctionExpression)->isParseObjectReferences(),

@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,27 +12,183 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
-
 import meta::pure::executionPlan::*;
-
 import meta::pure::extension::*;
+import meta::pure::graphFetch::*;
+import meta::pure::router::clustering::*;
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::functions::*;
+import meta::pure::router::externalFormat::metamodel::clustering::*;
+import meta::pure::router::metamodel::*;
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::router::utils::*;
 
-function meta::external::shared::format::executionPlan::getSourceNodeFromExternalSource(externalSource:ExternalSource[1]): ExecutionNode[1]
+Class meta::external::shared::format::executionPlan::ExternalFormatPlanGenerationState
 {
-   $externalSource->match([
-      u:UrlStreamExternalSource[1]     | generateUrlStreamExecutionNode($u),
-      e:ExternalSource[1]              | fail('External source format not supported !!'); @ExecutionNode;
+   inScopeVars     : Map<String, List<Any>>[1];
+   exeCtx          : meta::pure::runtime::ExecutionContext[1];
+
+   checked         : Boolean[0..1];
+   graphContext    : GraphFetchContext[0..1];
+}
+
+Class meta::external::shared::format::executionPlan::GraphFetchContext
+{
+   graphFetchTree  : RootGraphFetchTree<Any>[1];
+   batchSize       : Integer[0..1];
+}
+
+Class meta::external::shared::format::executionPlan::PureFunctionToProcessFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{FunctionExpression[1], ExternalFormatPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>>
+{
+}
+
+function meta::external::shared::format::executionPlan::processValueSpecification(vs:ValueSpecification[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[0..1]
+{
+   $vs->match([
+      f:SimpleFunctionExpression[1]         | $f->getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
+      c:ClusteredValueSpecification[1]      | $c->plan($state.inScopeVars, $state.exeCtx, $extensions, $debug),
+      e:ExtendedRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
+      i:InstanceValue[1]                    | [],
+      v:ValueSpecification[1]               | []
    ]);
 }
 
-function meta::external::shared::format::executionPlan::generateUrlStreamExecutionNode(externalSource:UrlStreamExternalSource[1]): ExecutionNode[1]
+function <<access.private>> meta::external::shared::format::executionPlan::checkedFunctionProcessor(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let sourceUrl = $externalSource->cast(@UrlStreamExternalSource).url;
+   $fe.parametersValues->at(0)->meta::external::shared::format::executionPlan::processValueSpecification(^$state(checked = true), $extensions, $debug)->toOne();
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::graphFetchFunctionProcessor(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let updatedState = if($fe.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_,   
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_,
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements(), batchSize = getFunctionParameterValue($fe, $state.inScopeVars, 2)->cast(@Integer)->toOne())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
+                          |^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne()->meta::pure::graphFetch::ensureConstraintsRequirements())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_,
+                          | ^$state(checked = false, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
+                          | 
+                      if($fe.func == meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_,
+                          | ^$state(checked = true, graphContext = ^GraphFetchContext(graphFetchTree = getFunctionParameterValue($fe, $state.inScopeVars, 1)->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne())),
+                          | fail('Unknown graphFetch function - ' + $fe.func.name->orElse('')); $state;
+                      )))));
+
+   $fe.parametersValues->at(0)->meta::external::shared::format::executionPlan::processValueSpecification($updatedState, $extensions, $debug)->toOne();
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::getFunctionParameterValue(fe:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], index: Integer[1]):Any[*]
+{
+   $fe.parametersValues->evaluateAndDeactivate()->at($index)->match([
+      i:InstanceValue[1]| $i.values,
+      v:VariableExpression[1]|  $inScopeVars->get($v.name->toOne()).values
+    ]);
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::externalizeFunctionProcessor(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let children        = $fe.parametersValues->evaluateAndDeactivate()->at(0)->processValueSpecification($state, $extensions, $debug)->toOneMany();
+
+   let inScopeVars     = $state.inScopeVars;
+   let bindingArg      = $fe.parametersValues->at(1);
+   assert($bindingArg->instanceOf(InstanceValue) || ($bindingArg->instanceOf(VariableExpression) && $inScopeVars->get($bindingArg->cast(@VariableExpression).name).values->toOne()->instanceOf(meta::external::shared::format::binding::Binding)), 'Only literal binding is supported');
+   let binding         = $bindingArg->match([
+                                             i:InstanceValue[1]      | $i.values->at(0),
+                                             v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
+                                            ])->cast(@meta::external::shared::format::binding::Binding);
+
+   let checked         = $fe.func == externalize_Checked_MANY__Binding_1__String_1_;
+
+   ^ExternalFormatExternalizeExecutionNode
+   (
+      resultType      = ^ResultType(type=String),
+      resultSizeRange = PureOne,
+      checked         = $checked,
+      binding         = $binding,
+      executionNodes  = $children
+   );
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::internalizeFunctionProcessor(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+{
+   let checked            = $state.checked->isTrue();
+   let graphFetchTree     = $state.graphContext.graphFetchTree;
+   let enableConstraints  = $state.exeCtx.enableConstraints->isEmpty() || $state.exeCtx.enableConstraints->toOne();
+   let bindingArg         = $fe.parametersValues->at(1);
+   let inScopeVars        = $state.inScopeVars;
+
+   assert($bindingArg->instanceOf(InstanceValue) || ($bindingArg->instanceOf(VariableExpression) && $inScopeVars->get($bindingArg->cast(@VariableExpression).name).values->toOne()->instanceOf(meta::external::shared::format::binding::Binding)), 'Only literal binding is supported');
+   let binding            = $bindingArg->match([
+                                                i:InstanceValue[1]      | $i.values->at(0),
+                                                v:VariableExpression[1] | $inScopeVars->get($v.name).values->toOne()
+                                              ])->cast(@meta::external::shared::format::binding::Binding);
+
+   let classArg           = $fe.parametersValues->at(0);
+   assert($classArg->instanceOf(InstanceValue), 'Only literal class is supported');
+   let class              = $classArg->cast(@InstanceValue).values->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
    
-   ^UrlStreamExecutionNode(
-      resultType = ^DataTypeResultType(type = String),
-      url        = $sourceUrl
+   ^ExternalFormatInternalizeExecutionNode
+   (
+      resultType        = ^ClassResultType(type=$class),
+      resultSizeRange   = ZeroMany,
+      binding           = $binding,
+      enableConstraints = $enableConstraints,
+      checked           = $checked,
+      tree              = $graphFetchTree,
+      executionNodes    = generateSourceNodeFromFunctionExpression($fe),
+      fromCluster       = ^ExternalFormatClusteredValueSpecification(val = $fe, executable=true, binding = $binding, multiplicity = $fe.multiplicity, genericType  = $fe.genericType, openVars = newMap([]))
+   );
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::generateSourceNodeFromFunctionExpression(fe:FunctionExpression[1]): ExecutionNode[1]
+{
+   $fe.parametersValues->at(2)->byPassValueSpecificationWrapper()
+                              ->match([ var:VariableExpression[1] | ^VariableResolutionExecutionNode(varName=$var.name->toOne(), resultType = ^DataTypeResultType(type = $var.genericType.rawType->toOne())),
+                                        ins:InstanceValue[1]      | assert($ins.values->size() == 1 && $ins.values->toOne()->instanceOf(String), | 'Expected single string value as parameter for internalize. Please contact dev team with this issue!');
+
+                                                                    let varName           = 'internalizeVar$';
+                                                                    let allocationNode    = ^AllocationExecutionNode(varName        = $varName, 
+                                                                                                                     executionNodes = ^ConstantExecutionNode(values=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(type = String)),
+                                                                                                                     resultType     = ^VoidResultType(type = meta::pure::router::store::routing::Void));
+                                                                    let varResolutionNode = ^VariableResolutionExecutionNode(varName         = $varName,
+                                                                                                                             resultType      = ^DataTypeResultType(type = String),
+                                                                                                                             resultSizeRange = PureOne);
+
+                                                                    ^SequenceExecutionNode(executionNodes = [$allocationNode, $varResolutionNode], resultType = ^DataTypeResultType(type = String), resultSizeRange = PureOne);,
+                                        fe:FunctionExpression[1]  | assert($fe.func == new_Class_1__String_1__KeyExpression_MANY__T_1_, 'Url must be created using new (^)');
+                                                                    let url = $fe.parametersValues->at(2)->cast(@InstanceValue).values
+                                                                                                          ->cast(@KeyExpression)
+                                                                                                          ->filter(kv|$kv.key.values == 'url')
+                                                                                                          ->toOne().expression;
+                                                                    $url->match([
+                                                                      var:VariableExpression[1] | ^UrlStreamExecutionNode(url='${' + $var.name->toOne() + '}', resultType = ^DataTypeResultType(type = ByteStream), requiredVariableInputs = ^VariableInput(name = $var.name->toOne(), multiplicity = $var.multiplicity, type = $var.genericType.rawType->toOne())),
+                                                                      ins:InstanceValue[1]      | ^UrlStreamExecutionNode(url=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(type = ByteStream))
+                                                                    ]);
+                                      ]);
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], ExternalFormatPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
+{
+   let specificProcessorsForFunctions = 
+      newMap([
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::dataQuality::checked_T_MANY__Checked_MANY_, second = checkedFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::externalize_T_MANY__Binding_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::externalize_Checked_MANY__Binding_1__String_1_, second = externalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetch_T_MANY__RootGraphFetchTree_1__Integer_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchChecked_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__Url_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
+      ]);
+   
+   if($specificProcessorsForFunctions->get($f.func)->isNotEmpty(),
+      |$specificProcessorsForFunctions->get($f.func)->toOne(),
+      |fail('Processing of function - ' + $f.func.name->toOne() + ' is not supported by ExternalFormatClusteredValueSpecification. Please contact dev team'); @Function<{FunctionExpression[1], ExternalFormatPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>;
    );
 }

@@ -27,6 +27,7 @@ import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
@@ -54,6 +55,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSp
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -256,12 +258,32 @@ public class ServiceParseTreeWalker
             ServiceParserGrammar.ServiceFuncContext funcContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureSingleExecContext.serviceFunc(), "query", pureSingleExecution.sourceInformation);
             pureSingleExecution.func = visitLambda(funcContext.combinedExpression());
             // mapping
-            ServiceParserGrammar.ServiceMappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureSingleExecContext.serviceMapping(), "mapping", pureSingleExecution.sourceInformation);
-            pureSingleExecution.mapping = PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier());
-            pureSingleExecution.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
+            ServiceParserGrammar.ServiceMappingContext mappingContext = PureGrammarParserUtility.validateAndExtractOptionalField(pureSingleExecContext.serviceMapping(), "mapping", pureSingleExecution.sourceInformation);
+
             // runtime
-            ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureSingleExecContext.serviceRuntime(), "runtime", pureSingleExecution.sourceInformation);
-            pureSingleExecution.runtime = this.visitRuntime(runtimeContext);
+            ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(pureSingleExecContext.serviceRuntime(), "runtime", pureSingleExecution.sourceInformation);
+            if (mappingContext != null && runtimeContext != null)
+            {
+                pureSingleExecution.mapping = PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier());
+                pureSingleExecution.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
+                pureSingleExecution.runtime = this.visitRuntime(runtimeContext);
+            }
+            else if (mappingContext == null && runtimeContext == null)
+            {
+                pureSingleExecution.mapping = null;
+                pureSingleExecution.runtime = null;
+            }
+            else
+            {
+                if (mappingContext == null)
+                {
+                    throw new EngineException("Field 'mapping' is required", pureSingleExecution.sourceInformation, EngineErrorType.PARSER);
+                }
+                else
+                {
+                    throw new EngineException("Field 'runtime' is required", pureSingleExecution.sourceInformation, EngineErrorType.PARSER);
+                }
+            }
             return pureSingleExecution;
         }
         else if (ctx.multiExec() != null)
