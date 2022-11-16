@@ -19,7 +19,7 @@ env:
   CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  MAVEN_OPTS: -Xms3500m -Xmx3500m
+  MAVEN_OPTS: -Xmx3500m
 
 on: [push, pull_request]
 
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc -DargLine="-Xms3g -Xmx3g"
+        run: mvn install javadoc:javadoc -DargLine="-Xmx3g"
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
@@ -76,8 +76,8 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          mvn install -DargLine="-Xms3g -Xmx3g" -DskipTests=true
-          mvn javadoc:javadoc deploy -P docker-snapshot
+          mvn install -DskipTests=true
+          mvn javadoc:javadoc deploy -DargLine="-Xmx3g" -P docker-snapshot
 
       - name: Upload Test Results
         if: always()
