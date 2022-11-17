@@ -16,22 +16,22 @@ import meta::pure::test::*;
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 
-function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::redshift::testSuiteInvoker(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::sqlServer::testSuiteInvoker(): PureTestCollection[1]
 {
-  let connection = getTestConnection(DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+  let connection = getTestConnection(DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
   
   // If a feature described in extension APIs / test suite is not supported,
   // then throw an exception with message that starts with '[unsupported-api]'
   // Tests which raise such exception will be reported as ignored by the runner
   
-  meta::relational::tests::dbSpecificTests->collectParameterizedTests('Redshift',
-                ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection),
-                meta::relational::tests::sqlQueryToString::redshift::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+  meta::relational::tests::dbSpecificTests->collectParameterizedTests('SqlServer',
+                ^DbTestConfig(dbType=DatabaseType.SqlServer, connection=$connection),
+                meta::relational::tests::sqlQueryToString::sqlServer::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
                 []
             );
 }
 
-function <<access.private>> meta::relational::tests::sqlQueryToString::redshift::testParamCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
+function <<access.private>> meta::relational::tests::sqlQueryToString::sqlServer::testParamCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
 {
   let expectedSql = [
     // You can optionally provide a list of pair of (test fn reference, sql string to be asserted as part of test)

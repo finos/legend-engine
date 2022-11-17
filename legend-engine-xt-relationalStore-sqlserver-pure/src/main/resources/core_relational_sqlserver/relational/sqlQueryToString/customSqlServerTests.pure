@@ -21,7 +21,7 @@ import meta::pure::executionPlan::tests::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testSqlGenerationDivide_SqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testSqlGenerationDivide_SqlServer():Boolean[1]
 {
    let query = {|Trade.all()->filter(t | $t.id == 2)->map(t | $t.quantity->divide(1000000))};
    let expectedSQL = 'select ((1.0 * "root".quantity) / 1000000) from tradeTable as "root" left outer join (select "root".trade_id as trade_id, max("root".eventDate) as maxTradeEventDate from tradeEventTable as "root" group by "root".trade_id) as "tradeEventViewMaxTradeEventDate_d#4_d#4_m5" on ("root".ID = "tradeEventViewMaxTradeEventDate_d#4_d#4_m5".trade_id) where "root".ID = 2';
@@ -29,7 +29,7 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertSameSQL($expectedSQL, $resultSqlServer);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringConcatSQLServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringConcatSQLServer():Boolean[1]
 {
    let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John')
                                     ->project(p|$p.firstName + ' ' + $p.lastName, 'fullName'),
@@ -39,13 +39,13 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals('select "root".FIRSTNAME+\' \'+"root".LASTNAME as "fullName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringSQLServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringSQLServer():Boolean[1]
 {
    let s = toSQLString(|Person.all()->filter(p|$p.firstName == 'John'), meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".FIRSTNAME = \'John\'', $s);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringTodaySQLServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringTodaySQLServer():Boolean[1]
 {
    let query = {|Trade.all()->filter(t|datePart($t.settlementDateTime) == today())->project(t|$t.id, 'tradeId')};
    let mapping = meta::relational::tests::simpleRelationalMapping;
@@ -55,13 +55,13 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals($expectedSql, $result, '\nSQL not as expected\n\nexpected: %s\nactual:   %s', [$expectedSql, $result]);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringWithLengthSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringWithLengthSqlServer():Boolean[1]
 {
    let mssql = toSQLString(|Person.all()->project(p|length($p.firstName), 'nameLength'), simpleRelationalMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
    assertEquals('select len("root".FIRSTNAME) as "nameLength" from personTable as "root"', $mssql);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringWithPositionSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringWithPositionSqlServer():Boolean[1]
 {
    let mssql = toSQLString(
               |meta::relational::tests::mapping::propertyfunc::model::domain::Person.all()->project(p|$p.firstName, 'firstName'),
@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals('select substring("root".FULLNAME, 0, charindex(\',\', "root".FULLNAME)-1) as "firstName" from personTable as "root"', $mssql);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringWithStdDevPopulationSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringWithStdDevPopulationSqlServer():Boolean[1]
 {
    let s2 = toSQLString(
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals('select stdevp("root".int1) as "stdDevPopulation" from dataTable as "root"', $s2);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringWithStdDevSampleSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringWithStdDevSampleSqlServer():Boolean[1]
 {
    let s2 = toSQLString(
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevSample, 'stdDevSample'),
@@ -88,7 +88,7 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testToSQLStringParseIntegerinSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testToSQLStringParseIntegerinSqlServer():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
@@ -96,7 +96,7 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testTriminSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testTriminSqlServer():Boolean[1]
 {
    let sSqlServer = toSQLString(|SqlFunctionDemo.all()->project([s | $s.trimResult], ['trim']),
                                                 testMapping,
@@ -105,13 +105,13 @@ function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::cust
    assertEquals('select trim("root".string2) as "trim" from dataTable as "root"',$sSqlServer);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testSortQuotesSqlServer():Boolean[1]
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testSortQuotesSqlServer():Boolean[1]
 {
    let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
 }
 
-function <<test.Test>> meta::relational::tests::dbSpecificTests::sqlServer::custom::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]      
+function <<test.Test>> meta::relational::tests::sqlQueryToString::sqlServer::custom::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]      
 {
    let expectedPlan ='Sequence\n'+
                      '(\n'+

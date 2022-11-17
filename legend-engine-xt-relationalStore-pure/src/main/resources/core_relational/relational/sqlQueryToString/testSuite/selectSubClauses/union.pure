@@ -30,7 +30,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
       simpleRelationalMapping, 
       meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
    
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | let tds = $result.values->toOne()->sort([asc('lastName')]);
     assertSize($tds.columns, 1);   
     assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
@@ -49,7 +49,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
       simpleRelationalMapping, 
       meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
    
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | let tds = $result.values->toOne()->sort([asc('lastName')]);
     assertSize($tds.columns, 1);   
     assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
@@ -68,7 +68,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
       simpleRelationalMapping, 
       meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
    
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | let tds = $result.values->toOne()->sort([asc('lastName')]); 
     assertSize($tds.columns, 1);   
     assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
