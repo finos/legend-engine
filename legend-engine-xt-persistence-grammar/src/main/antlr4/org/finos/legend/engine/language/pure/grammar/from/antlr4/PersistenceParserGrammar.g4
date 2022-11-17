@@ -19,8 +19,7 @@ identifier:                                 VALID_STRING | STRING
                                             | NOTIFIER | NOTIFIER_NOTIFYEES | NOTIFYEE_EMAIL | NOTIFYEE_EMAIL_ADDRESS | NOTIFYEE_PAGER_DUTY| NOTIFYEE_PAGER_DUTY_URL
                                             | PERSISTENCE_TESTS | PERSISTENCE_TEST_DATA | PERSISTENCE_TEST_CONNECTION_DATA | PERSISTENCE_TEST_BATCHES | PERSISTENCE_TEST_ASSERTS | PERSISTENCE_TEST_DATA_FROM_SERVICE_OUTPUT
                                             | SERVICE_OUTPUT_TARGET_SERVICE_OUTPUT | SERVICE_OUTPUT_TARGET_TARGET
-                                            | SERVICE_OUTPUT_ROOT | DATASET_KEYS | DATASET_EVENT_TIME | DATASET_DEDUPLICATION | DATASET_TYPE
-                                            | EVENT_TIME_START | EVENT_TIME_START_AND_END | EVENT_TIME_START_FIELD | EVENT_TIME_END_FIELD
+                                            | SERVICE_OUTPUT_ROOT | DATASET_KEYS | DATASET_DEDUPLICATION | DATASET_TYPE
                                             | DEDUPLICATION_ANY | DEDUPLICATION_MAX | DEDUPLICATION_MAX_VERSION_FIELD
                                             | DATASET_SNAPSHOT | DATASET_SNAPSHOT_PARTITIONING | DATASET_DELTA | DATASET_DELTA_ACTION_INDICATOR
                                             | PARTITIONING_FIELD_BASED | PARTITIONING_FIELD_BASED_FIELDS | PARTITIONING_NONE_EMPTY_DATASET_HANDLING
@@ -192,7 +191,6 @@ serviceOutput:                              (SERVICE_OUTPUT_ROOT | STRING)
                                                 BRACE_OPEN
                                                     (
                                                         datasetKeys
-                                                        | eventTime
                                                         | deduplication
                                                         | datasetType
                                                     )*
@@ -213,36 +211,6 @@ datasetKeys:                                DATASET_KEYS COLON
                                                 BRACKET_OPEN
                                                     (identifier (COMMA identifier)*)?
                                                 BRACKET_CLOSE
-;
-eventTime:                                  DATASET_EVENT_TIME COLON
-                                                (
-                                                    eventTimeNone
-                                                    | eventTimeStart
-                                                    | eventTimeStartAndEnd
-                                                )
-;
-eventTimeNone:                              NONE
-                                                (
-                                                    SEMI_COLON
-                                                    | (BRACE_OPEN BRACE_CLOSE)
-                                                )
-;
-eventTimeStart:                             EVENT_TIME_START
-                                                BRACE_OPEN
-                                                    (eventTimeStartField)*
-                                                BRACE_CLOSE
-;
-eventTimeStartAndEnd:                       EVENT_TIME_START_AND_END
-                                                BRACE_OPEN
-                                                    (
-                                                        eventTimeStartField
-                                                        | eventTimeEndField
-                                                    )*
-                                                BRACE_CLOSE
-;
-eventTimeStartField:                        EVENT_TIME_START_FIELD COLON identifier SEMI_COLON
-;
-eventTimeEndField:                          EVENT_TIME_END_FIELD COLON identifier SEMI_COLON
 ;
 deduplication:                              DATASET_DEDUPLICATION COLON
                                                 (

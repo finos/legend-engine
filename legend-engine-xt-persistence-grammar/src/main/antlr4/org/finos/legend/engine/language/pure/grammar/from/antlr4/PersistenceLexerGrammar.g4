@@ -60,15 +60,8 @@ PERSISTENCE_TEST_ASSERTS:                   'asserts';
 // DATASET
 SERVICE_OUTPUT_ROOT:                        'ROOT';
 DATASET_KEYS:                               'keys';
-DATASET_EVENT_TIME:                         'eventTime';
 DATASET_DEDUPLICATION:                      'deduplication';
 DATASET_TYPE:                               'datasetType';
-
-// EVENT TIME
-EVENT_TIME_START:                           'Start';
-EVENT_TIME_START_AND_END:                   'StartAndEnd';
-EVENT_TIME_START_FIELD:                     'startField';
-EVENT_TIME_END_FIELD:                       'endField';
 
 // DEDUPLICATION
 DEDUPLICATION_ANY:                          'AnyVersion';

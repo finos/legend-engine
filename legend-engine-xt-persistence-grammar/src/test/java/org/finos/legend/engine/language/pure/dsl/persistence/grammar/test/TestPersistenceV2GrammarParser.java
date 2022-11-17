@@ -47,10 +47,6 @@ public class TestPersistenceV2GrammarParser extends TestGrammarParser.TestGramma
                 "      [\n" +
                 "        foo, bar\n" +
                 "      ]\n" +
-                "      eventTime: Start\n" +
-                "      {\n" +
-                "        startField: timeIn;\n" +
-                "      }\n" +
                 "      deduplication: AnyVersion;\n" +
                 "      datasetType: Delta\n" +
                 "      {\n" +
@@ -70,11 +66,6 @@ public class TestPersistenceV2GrammarParser extends TestGrammarParser.TestGramma
                 "      [\n" +
                 "        '#/test::example::MyType/prop/foo', '#/test::example::MyType/prop/bar'\n" +
                 "      ]\n" +
-                "      eventTime: StartAndEnd\n" +
-                "      {\n" +
-                "        startField: timeIn;\n" +
-                "        endField: timeOut;\n" +
-                "      }\n" +
                 "      deduplication: MaxVersion\n" +
                 "      {\n" +
                 "        versionField: version;\n" +

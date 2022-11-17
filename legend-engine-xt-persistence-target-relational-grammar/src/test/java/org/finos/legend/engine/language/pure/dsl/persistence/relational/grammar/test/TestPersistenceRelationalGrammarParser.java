@@ -47,10 +47,6 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "      [\n" +
                 "        foo, bar\n" +
                 "      ]\n" +
-                "      eventTime: Start\n" +
-                "      {\n" +
-                "        startField: timeIn;\n" +
-                "      }\n" +
                 "      deduplication: AnyVersion;\n" +
                 "      datasetType: Delta\n" +
                 "      {\n" +
@@ -80,8 +76,8 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "          dateTimeEnd: y;\n" +
                 "          sourceFields: StartAndEnd\n" +
                 "          {\n" +
-                "            startField: xField;\n" +
-                "            endField: yField;\n" +
+                "            startField: timeIn;\n" +
+                "            endField: timeOut;\n" +
                 "          }\n" +
                 "        }\n" +
                 "      }\n" +
@@ -92,11 +88,6 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "      [\n" +
                 "        '#/test::example::MyType/prop/foo', '#/test::example::MyType/prop/bar'\n" +
                 "      ]\n" +
-                "      eventTime: StartAndEnd\n" +
-                "      {\n" +
-                "        startField: timeIn;\n" +
-                "        endField: timeOut;\n" +
-                "      }\n" +
                 "      deduplication: MaxVersion\n" +
                 "      {\n" +
                 "        versionField: version;\n" +

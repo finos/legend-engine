@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
-import java.util.ArrayList;
-import java.util.stream.Collectors;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
@@ -42,10 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.DeleteTargetDataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeFields;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeStart;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.EventTimeStartAndEnd;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.eventtime.NoEventTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
@@ -53,15 +47,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.PagerDutyNotifyee;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutput;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.TdsServiceOutput;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.StreamingPersister;
@@ -104,15 +89,26 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.GraphFetchServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.TdsServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.TestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PersistenceParseTreeWalker
 {
@@ -269,10 +265,6 @@ public class PersistenceParseTreeWalker
         ServiceOutput serviceOutput = createServiceOutput(ctx, sourceInformation);
         serviceOutput.sourceInformation = sourceInformation;
 
-        // event time (optional)
-        PersistenceParserGrammar.EventTimeContext eventTimeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.eventTime(), "eventTime", sourceInformation);
-        serviceOutput.eventTimeFields = eventTimeContext == null ? new NoEventTime() : visitEventTime(eventTimeContext);
-
         // deduplication (optional)
         PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
         serviceOutput.deduplication = deduplicationContext == null ? new NoDeduplication() : visitDeduplication(deduplicationContext);
@@ -379,60 +371,6 @@ public class PersistenceParseTreeWalker
     {
         List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
         return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
-    }
-
-    private EventTimeFields visitEventTime(PersistenceParserGrammar.EventTimeContext ctx)
-    {
-        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        if (ctx.eventTimeNone() != null)
-        {
-            return visitNoEventTime(ctx.eventTimeNone());
-        }
-        else if (ctx.eventTimeStart() != null)
-        {
-            return visitEventTimeStart(ctx.eventTimeStart());
-        }
-        else if (ctx.eventTimeStartAndEnd() != null)
-        {
-            return visitEventTimeStartAndEnd(ctx.eventTimeStartAndEnd());
-        }
-        throw new EngineException("Unrecognized event time", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private NoEventTime visitNoEventTime(PersistenceParserGrammar.EventTimeNoneContext ctx)
-    {
-        NoEventTime eventTime = new NoEventTime();
-        eventTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        return eventTime;
-    }
-
-    private EventTimeStart visitEventTimeStart(PersistenceParserGrammar.EventTimeStartContext ctx)
-    {
-        EventTimeStart eventTime = new EventTimeStart();
-        eventTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // start field
-        PersistenceParserGrammar.EventTimeStartFieldContext startFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.eventTimeStartField(), "startField", eventTime.sourceInformation);
-        eventTime.startField = PureGrammarParserUtility.fromIdentifier(startFieldContext.identifier());
-
-        return eventTime;
-    }
-
-    private EventTimeStartAndEnd visitEventTimeStartAndEnd(PersistenceParserGrammar.EventTimeStartAndEndContext ctx)
-    {
-        EventTimeStartAndEnd eventTime = new EventTimeStartAndEnd();
-        eventTime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-
-        // start field
-        PersistenceParserGrammar.EventTimeStartFieldContext startFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.eventTimeStartField(), "startField", eventTime.sourceInformation);
-        eventTime.startField = PureGrammarParserUtility.fromIdentifier(startFieldContext.identifier());
-
-        // end field
-        PersistenceParserGrammar.EventTimeEndFieldContext endFieldContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.eventTimeEndField(), "endField", eventTime.sourceInformation);
-        eventTime.endField = PureGrammarParserUtility.fromIdentifier(endFieldContext.identifier());
-
-        return eventTime;
     }
 
     private Deduplication visitDeduplication(PersistenceParserGrammar.DeduplicationContext ctx)
