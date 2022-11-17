@@ -57,6 +57,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutput;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.ServiceOutputTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.service.output.TdsServiceOutput;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
@@ -119,16 +120,18 @@ public class PersistenceParseTreeWalker
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
     private final List<Function<TriggerSourceCode, Trigger>> triggerProcessors;
+    private final List<Function<PersistenceTargetSourceCode, PersistenceTarget>> targetProcessors;
     private final PureGrammarParserContext context;
 
     private final PersistenceContextParseTreeWalker persistenceContextWalker;
 
-    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, PersistenceContextParseTreeWalker persistenceContextWalker, PureGrammarParserContext context)
+    public PersistenceParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, List<Function<TriggerSourceCode, Trigger>> triggerProcessors, List<Function<PersistenceTargetSourceCode, PersistenceTarget>> targetProcessors, PersistenceContextParseTreeWalker persistenceContextWalker, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.triggerProcessors = triggerProcessors;
+        this.targetProcessors = targetProcessors;
         this.context = context;
         this.persistenceContextWalker = persistenceContextWalker;
     }
@@ -249,7 +252,8 @@ public class PersistenceParseTreeWalker
 
         // persistence target
         //TODO: ledav -- delegate to extension
-        serviceOutputTarget.persistenceTarget = null;
+        PersistenceParserGrammar.TargetContext targetContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.target()), "target", serviceOutputTarget.sourceInformation);
+        serviceOutputTarget.persistenceTarget = visitTarget(targetContext);
 
         return serviceOutputTarget;
     }
@@ -319,6 +323,56 @@ public class PersistenceParseTreeWalker
         serviceOutput.keys = null; //TODO: ledav -- handle path
 
         return serviceOutput;
+    }
+
+    /**********
+     * target
+     **********/
+
+    private PersistenceTarget visitTarget(PersistenceParserGrammar.TargetContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        if (ctx.BRACE_OPEN() != null)
+        {
+            return null;
+        }
+        else if (ctx.targetSpecification() != null)
+        {
+            return visitTargetSpecification(ctx.targetSpecification());
+        }
+        throw new EngineException("Unrecognized target", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private PersistenceTarget visitTargetSpecification(PersistenceParserGrammar.TargetSpecificationContext ctx)
+    {
+        StringBuilder text = new StringBuilder();
+        PersistenceParserGrammar.TargetValueContext targetValueContext = ctx.targetValue();
+        if (targetValueContext != null)
+        {
+            for (PersistenceParserGrammar.TargetValueContentContext fragment : targetValueContext.targetValueContent())
+            {
+                text.append(fragment.getText());
+            }
+            String textToParse = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
+
+            // prepare island grammar walker source information
+            int startLine = targetValueContext.ISLAND_OPEN().getSymbol().getLine();
+            int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+            // only add current walker source information column offset if this is the first line
+            int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + targetValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + targetValueContext.ISLAND_OPEN().getSymbol().getText().length();
+            ParseTreeWalkerSourceInformation targetValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+            SourceInformation targetValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            PersistenceTargetSourceCode sourceCode = new PersistenceTargetSourceCode(textToParse, ctx.targetType().getText(), targetValueSourceInformation, targetValueWalkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, targetProcessors);
+        }
+        else
+        {
+            SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+
+            PersistenceTargetSourceCode sourceCode = new PersistenceTargetSourceCode(text.toString(), ctx.targetType().getText(), sourceInformation, walkerSourceInformation);
+            return IPersistenceParserExtension.process(sourceCode, targetProcessors);
+        }
     }
 
     private List<String> visitDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)

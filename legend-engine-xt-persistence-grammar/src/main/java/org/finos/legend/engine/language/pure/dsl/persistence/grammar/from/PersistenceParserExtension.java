@@ -32,6 +32,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParse
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.sink.PersistenceTarget;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -100,9 +101,10 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
         List<IPersistenceParserExtension> extensions = IPersistenceParserExtension.getExtensions();
         List<Function<PersistencePlatformSourceCode, PersistencePlatform>> platformProcessors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistencePlatformParsers);
         List<Function<TriggerSourceCode, Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraTriggerParsers);
+        List<Function<PersistenceTargetSourceCode, PersistenceTarget>> targetProcessors = ListIterate.flatCollect(extensions, IPersistenceParserExtension::getExtraPersistenceTargetParsers);
 
         PersistenceContextParseTreeWalker persistenceContextWalker = new PersistenceContextParseTreeWalker(parserInfo.walkerSourceInformation, connectionParser, platformProcessors);
-        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, triggerProcessors, persistenceContextWalker, context);
+        PersistenceParseTreeWalker persistenceWalker = new PersistenceParseTreeWalker(parserInfo.walkerSourceInformation, elementConsumer, section, triggerProcessors, targetProcessors, persistenceContextWalker, context);
         persistenceWalker.visit((PersistenceParserGrammar.DefinitionContext) parserInfo.rootContext);
 
         return section;

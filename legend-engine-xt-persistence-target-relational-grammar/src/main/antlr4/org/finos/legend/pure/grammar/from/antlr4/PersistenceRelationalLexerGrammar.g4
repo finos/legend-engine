@@ -14,7 +14,7 @@ DATE_TIME:                                  'DateTime';
 
 TARGET_RELATIONAL:                          'Relational';
 TARGET_RELATIONAL_TABLE:                    'table';
-TARGET_RELATIONAL_TEMPORAL:                 'milestoning';
+TARGET_RELATIONAL_TEMPORAL:                 'temporality';
 
 // TEMPORALITY
 TEMPORAL_UNI:                               'Unitemporal';

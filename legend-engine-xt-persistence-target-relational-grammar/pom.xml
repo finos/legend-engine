@@ -134,14 +134,14 @@
         <!-- ANTLR -->
 
         <!-- ECLIPSE COLLECTIONS -->
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections-api</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.collections</groupId>-->
-<!--            <artifactId>eclipse-collections</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
         <!-- JACKSON -->
@@ -150,5 +150,19 @@
 <!--            <artifactId>jackson-core</artifactId>-->
 <!--        </dependency>-->
         <!-- JACKSON -->
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
     </dependencies>
 </project>

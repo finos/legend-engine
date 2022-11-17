@@ -198,8 +198,16 @@ serviceOutput:                              (SERVICE_OUTPUT_ROOT | STRING)
                                                     )*
                                                 BRACE_CLOSE
 ;
-target:                                     BRACE_OPEN
-                                            BRACE_CLOSE
+target:                                     (BRACE_OPEN BRACE_CLOSE)
+                                            | (targetSpecification)
+;
+targetSpecification:                        targetType (targetValue)?
+;
+targetType:                                 identifier
+;
+targetValue:                                ISLAND_OPEN (targetValueContent)* ISLAND_END
+;
+targetValueContent:                         ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
 ;
 datasetKeys:                                DATASET_KEYS COLON
                                                 BRACKET_OPEN
