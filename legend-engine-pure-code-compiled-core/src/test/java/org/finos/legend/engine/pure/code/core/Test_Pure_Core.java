@@ -24,6 +24,7 @@ public class Test_Pure_Core
     public static TestSuite suite()
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
+        executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::json", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::protocols", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));

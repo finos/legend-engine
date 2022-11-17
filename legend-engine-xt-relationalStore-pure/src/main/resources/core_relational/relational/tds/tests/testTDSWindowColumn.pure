@@ -104,6 +104,17 @@ function <<test.Test>> meta::relational::tests::tds::tdsWindow::testFilterAfterW
    assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", "testCol" as "testCol" from (select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "testCol7" as "testCol7", dense_rank() OVER (Partition By "firstName" Order By "lastName" ASC) as "testCol" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "testCol7" from personTable as "root") as "subselect") as "subselect" where "testCol" = 1', $result);
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsWindow::testChainedAggregation(): Any[*]
+{
+   let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
+                            ->olapGroupBy(func('age', y|$y->min()->toOne()),'minOlapAgg')
+                            ->olapGroupBy(func('age', y|$y->max()->toOne()),'maxOlapAgg')
+                            ->filter(row | $row.getInteger('minOlapAgg') == 1 || $row.getInteger('maxOlapAgg') == 1)
+   };
+   let result =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "minOlapAgg" as "minOlapAgg", "maxOlapAgg" as "maxOlapAgg" from (select "firstName" as "firstName", "lastName" as "lastName", "age" as "age", "minOlapAgg" as "minOlapAgg", max("age") OVER () as "maxOlapAgg" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", min("root".AGE) OVER () as "minOlapAgg" from personTable as "root") as "subselect") as "subselect" where ("minOlapAgg" = 1 or "maxOlapAgg" = 1)', $result);
+}
+
 function <<test.Test>> meta::relational::tests::tds::tdsWindow::testFilterBeforeWindow(): Any[*]
 {
    let func = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])

@@ -19,7 +19,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ShardSpecification;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 public class BaseTestUtils
@@ -40,6 +43,7 @@ public class BaseTestUtils
     static Field colDouble = Field.builder().name("col_double").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
     static Field colTime = Field.builder().name("col_time").type(FieldType.of(DataType.TIME, Optional.empty(), Optional.empty())).build();
     static Field colBoolean = Field.builder().name("col_boolean").type(FieldType.of(DataType.BOOLEAN, Optional.empty(), Optional.empty())).build();
+    public static Index index = Index.builder().indexName("my_idx").addAllColumns(Arrays.asList(colInt)).build();
 
     public static SchemaDefinition schemaWithAllColumns = SchemaDefinition.builder()
         .addFields(colInt)
@@ -59,6 +63,35 @@ public class BaseTestUtils
         .addFields(colTime)
         .addFields(colBoolean)
         .build();
+
+    public static SchemaDefinition schemaWithAllColumnsWithShardColumnStore = SchemaDefinition.builder()
+            .addFields(colInt)
+            .addFields(colInteger)
+            .addFields(colBigint)
+            .columnStoreSpecification(ColumnStoreSpecification.builder().columnStore(true).addColumnStoreKeys(colInt).build())
+            .shardSpecification(ShardSpecification.builder().addShardKeys(colInt).build())
+            .build();
+
+    public static SchemaDefinition schemaWithColumnStoreWithoutShard = SchemaDefinition.builder()
+            .addFields(colInt)
+            .addFields(colInteger)
+            .addFields(colBigint)
+            .columnStoreSpecification(ColumnStoreSpecification.builder().columnStore(true).addColumnStoreKeys(colInt).build())
+            .build();
+
+    public static SchemaDefinition schemaWithRowStoreWithoutShard = SchemaDefinition.builder()
+            .addFields(colInt)
+            .addFields(colInteger)
+            .addFields(colBigint)
+            .addIndexes(index)
+            .build();
+
+    public static SchemaDefinition schemaWithRowStoreShards = SchemaDefinition.builder()
+            .addFields(colInt)
+            .addFields(colInteger)
+            .addFields(colBigint)
+            .shardSpecification(ShardSpecification.builder().addShardKeys(colInt).build())
+            .build();
 
     public static SchemaDefinition schemaWithColumnStore = SchemaDefinition.builder()
         .addFields(colInt)

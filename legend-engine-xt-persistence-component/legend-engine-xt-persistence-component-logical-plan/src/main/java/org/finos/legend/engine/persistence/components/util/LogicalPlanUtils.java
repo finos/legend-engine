@@ -157,9 +157,9 @@ public class LogicalPlanUtils
             FieldValue.builder().datasetRef(stagingDataSet.datasetReference()).fieldName(digestField).build());
     }
 
-    public static Condition getDeleteIndicatorIsSetCondition(Dataset stagingDataSet, String deleteIndicatorField, List<Object> deleteIndicatorValues)
+    public static Condition getDeleteIndicatorIsSetCondition(Dataset stagingDataset, String deleteIndicatorField, List<Object> deleteIndicatorValues)
     {
-        Field deleteIndicator = stagingDataSet.schema().fields().stream()
+        Field deleteIndicator = stagingDataset.schema().fields().stream()
             .filter(field -> field.name().equalsIgnoreCase(deleteIndicatorField))
             .findFirst().orElseThrow(() -> new IllegalArgumentException("Delete indicator [" + deleteIndicatorField + "] not found in staging dataset"));
         boolean isStringDatatype = DataType.isStringDatatype(deleteIndicator.type().dataType());
@@ -168,19 +168,19 @@ public class LogicalPlanUtils
         if (deleteIndicatorValues.size() == 1)
         {
             return Equals.of(
-                FieldValue.builder().datasetRef(stagingDataSet.datasetReference()).fieldName(deleteIndicatorField).build(),
+                FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(deleteIndicatorField).build(),
                 getDeleteIndicatorValue(deleteIndicatorValues.get(0), isStringDatatype));
         }
 
         // if there are multiple deleteIndicatorValues Use InCondition with String/Object value as needed
         return In.of(
-            FieldValue.builder().datasetRef(stagingDataSet.datasetReference()).fieldName(deleteIndicatorField).build(),
+            FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(deleteIndicatorField).build(),
             Array.of(deleteIndicatorValues.stream().map(val -> getDeleteIndicatorValue(val, isStringDatatype)).collect(Collectors.toList())));
     }
 
-    public static Condition getDeleteIndicatorIsNotSetCondition(Dataset stagingDataSet, String deleteIndicatorField, List<Object> deleteIndicatorValues)
+    public static Condition getDeleteIndicatorIsNotSetCondition(Dataset stagingDataset, String deleteIndicatorField, List<Object> deleteIndicatorValues)
     {
-        Field deleteIndicator = stagingDataSet.schema().fields().stream()
+        Field deleteIndicator = stagingDataset.schema().fields().stream()
             .filter(field -> field.name().equalsIgnoreCase(deleteIndicatorField))
             .findFirst().orElseThrow(() -> new IllegalArgumentException("Delete indicator [\" + deleteIndicatorField + \"] not found in staging dataset"));
         boolean isStringDatatype = DataType.isStringDatatype(deleteIndicator.type().dataType());
@@ -189,13 +189,13 @@ public class LogicalPlanUtils
         if (deleteIndicatorValues.size() == 1)
         {
             return NotEquals.of(
-                FieldValue.builder().datasetRef(stagingDataSet.datasetReference()).fieldName(deleteIndicatorField).build(),
+                FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(deleteIndicatorField).build(),
                 getDeleteIndicatorValue(deleteIndicatorValues.get(0), isStringDatatype));
         }
 
         // if there is multiple deleteIndicatorValues Use NotInCondition with String/Object value as needed
         return NotIn.of(
-            FieldValue.builder().datasetRef(stagingDataSet.datasetReference()).fieldName(deleteIndicatorField).build(),
+            FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(deleteIndicatorField).build(),
             Array.of(deleteIndicatorValues.stream().map(val -> getDeleteIndicatorValue(val, isStringDatatype)).collect(Collectors.toList())));
     }
 

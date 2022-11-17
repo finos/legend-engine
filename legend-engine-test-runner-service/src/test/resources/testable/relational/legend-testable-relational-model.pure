@@ -4,10 +4,10 @@ Data data::RelationalData
   Relational
   #{
     default.PersonTable:
-              'id,firm_id,firstName,lastName\n' +
-              '1,1,John,Doe\n' +
-              '2,1,Nicole,Smith\n' +
-              '3,2,Time,Smith\n';
+              'id,firm_id,firstName,lastName,employeeType\n' +
+              '1,1,John,Doe,FTO\n' +
+              '2,1,Nicole,Smith,FTC\n' +
+              '3,2,Time,Smith,FTE\n';
 
     default.FirmTable:
           'id,legal_name\n' +
@@ -30,7 +30,8 @@ Database store::TestDB
     id INTEGER PRIMARY KEY,
     firm_id INTEGER,
     firstName VARCHAR(200),
-    lastName VARCHAR(200)
+    lastName VARCHAR(200),
+    employeeType VARCHAR(200)
   )
 
   Join FirmPerson(PersonTable.firm_id = FirmTable.id)
@@ -42,6 +43,13 @@ Class model::Person
 {
   firstName: String[1];
   lastName: String[1];
+  employeeType: model::EmployeeType[1];
+}
+
+Enum model::EmployeeType
+{
+    CONTRACT,
+    FULL_TIME
 }
 
 Class model::Firm
@@ -62,8 +70,16 @@ Mapping execution::RelationalMapping
     )
     ~mainTable [store::TestDB]PersonTable
     firstName: [store::TestDB]PersonTable.firstName,
-    lastName: [store::TestDB]PersonTable.lastName
+    lastName: [store::TestDB]PersonTable.lastName,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [store::TestDB]PersonTable.employeeType
   }
+
+  model::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    CONTRACT: ['FTC', 'FTO'],
+    FULL_TIME: 'FTE'
+  }
+
   *model::Firm: Relational
   {
     ~primaryKey
@@ -85,7 +101,7 @@ RelationalDatabaseConnection model::MyConnection
   specification: LocalH2
   {
     testDataSetupSqls: [
-      'Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200));\nInsert into FirmTable (id, Legal_Name) values (1, \'FirmA\');\nInsert into FirmTable (id, Legal_Name) values (2, \'Apple\');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (1, 1, \'John\', \'Doe\');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (2, 2, \'Tim\', \'Smith\');\nInsert into PersonTable (id, firm_id, lastName, firstName) values (3, 3, \'Nicole\', \'Doe\');\n\n'
+      'Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), employeeType VARCHAR(200));\nInsert into FirmTable (id, Legal_Name) values (1, \'FirmA\');\nInsert into FirmTable (id, Legal_Name) values (2, \'Apple\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (1, 1, \'John\', \'Doe\', \'FTC\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (2, 2, \'Tim\', \'Smith\', \'FTE\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (3, 3, \'Nicole\', \'Doe\', \'FTO\');\n\n'
       ];
   };
   auth: DefaultH2;

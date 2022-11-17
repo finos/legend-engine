@@ -14,16 +14,14 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
-import java.util.Arrays;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -51,7 +49,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Del
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.UpdateAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
-import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
@@ -61,20 +58,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
+import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 
 class BitemporalDeltaPlanner extends BitemporalPlanner
 {
@@ -84,6 +73,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "y";
     private static final String TEMP_DATASET_BASE_NAME = "temp";
     private static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "tempWithDeleteIndicator";
+    private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "stageWithoutDuplicates";
 
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
@@ -93,6 +83,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     private final Optional<Condition> dataSplitInRangeCondition;
 
     // TODO: optional? final?
+    private Dataset stagingDataset;
     private Dataset tempDataset;
     private Dataset tempDatasetWithDeleteIndicator;
 
@@ -114,12 +105,21 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     {
         super(datasets, ingestMode, plannerOptions);
 
+        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+        {
+            this.stagingDataset = getStagingDatasetWithoutDuplicates(datasets);
+        }
+        else
+        {
+            this.stagingDataset = stagingDataset();
+        }
+
         this.deleteIndicatorField = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
         this.deleteIndicatorValues = ingestMode.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_VALUES);
 
-        this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
-        this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
-        this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
+        this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset, field, deleteIndicatorValues));
+        this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset, field, deleteIndicatorValues));
+        this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset, field));
 
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime)
         {
@@ -132,12 +132,12 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             this.validDateTimeFrom = FieldValue.builder().fieldName(VALID_DATE_TIME_FROM_NAME).build();
             this.validDateTimeThru = FieldValue.builder().fieldName(VALID_DATE_TIME_THRU_NAME).build();
 
-            this.dataFields = stagingDataset().schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
+            this.dataFields = stagingDataset.schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
             this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField()));
             this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
 
             this.primaryKeys.removeIf(fieldName -> fieldName.equals(targetValidDatetimeFrom.fieldName()));
-            this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
+            this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset, primaryKeys.toArray(new String[0]));
 
             this.primaryKeyFields = new ArrayList<>();
             for (String pkName : primaryKeys)
@@ -171,6 +171,17 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
                 this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.dataSplitField().get()));
             }
         }
+    }
+
+    private Dataset getStagingDatasetWithoutDuplicates(Datasets datasets)
+    {
+        return datasets.stagingDatasetWithoutDuplicates().orElse(DatasetDefinition.builder()
+            .schema(stagingDataset().schema())
+            .database(stagingDataset().datasetReference().database())
+            .group(stagingDataset().datasetReference().group())
+            .name(LogicalPlanUtils.generateTableNameWithSuffix(stagingDataset().datasetReference().name().orElseThrow((IllegalStateException::new)), STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME))
+            .alias(STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME)
+            .build());
     }
 
     private Dataset getTempDataset(Datasets datasets)
@@ -225,6 +236,11 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         }
         else
         {
+            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            {
+                // Op 0: Insert records from stage table to stage without duplicates table
+                operations.add(getStageToStageWithoutDuplicates());
+            }
             // Op 1: Insert records from stage table to temp table
             operations.add(getStageToTemp());
             // Op 2: Insert records from main table to temp table
@@ -248,6 +264,10 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             {
                 operations.add(Delete.builder().dataset(tempDatasetWithDeleteIndicator).build());
             }
+            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            {
+                operations.add(Delete.builder().dataset(stagingDataset).build());
+            }
         }
         return LogicalPlan.of(operations);
     }
@@ -266,6 +286,10 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             if (deleteIndicatorField.isPresent())
             {
                 operations.add(Create.of(true, tempDatasetWithDeleteIndicator));
+            }
+            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            {
+                operations.add(Create.of(true, stagingDataset));
             }
         }
 
@@ -380,6 +404,23 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     }
 
     /*
+    ------------------
+    Stage to Stage without Duplicates Logic:
+    ------------------
+    INSERT INTO stage_without_duplicates (ALL_FIELDS_FROM_STAGE)
+        SELECT ALL_FIELDS_FROM_STAGE FROM stage WHERE NOT EXISTS
+            (SELECT * FROM main WHERE stage.digest = main.digest AND openRecordCondition)
+    */
+    private Insert getStageToStageWithoutDuplicates()
+    {
+        Condition digestMatchAndOpenCondition = And.builder().addConditions(digestMatchCondition, openRecordCondition).build();
+        Condition whereNotExists = Not.of(Exists.of(Selection.builder().source(mainDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(digestMatchAndOpenCondition).build()));
+        List<Value> stageFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        Selection select = Selection.builder().source(stagingDataset()).addAllFields(stageFields).condition(whereNotExists).build();
+        return Insert.builder().sourceDataset(select).targetDataset(stagingDataset).addAllFields(stageFields).build();
+    }
+
+    /*
     -------------------
     Stage to Temp Logic:
     -------------------
@@ -415,19 +456,19 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectX1;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectX1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         Selection selectY1 = Selection.builder().source(mainDataset()).condition(openRecordCondition).addAllFields(primaryKeyFieldsAndFromFieldFromMain).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
 
@@ -451,19 +492,19 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectY2;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectY2 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY2 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
 
         Condition x2AndY2PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX2, selectY2, primaryKeys.toArray(new String[0]));
@@ -488,19 +529,19 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectX3;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectX3 = Selection.builder().source(stagingDataset()).addAllFields(stagingDataset().schemaReference().fieldValues()).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX3 = Selection.builder().source(stagingDataset).addAllFields(stagingDataset.schemaReference().fieldValues()).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectX3 = Selection.builder().source(stagingDataset()).addAllFields(stagingDataset().schemaReference().fieldValues()).condition(deleteIndicatorIsNotSetCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX3 = Selection.builder().source(stagingDataset).addAllFields(stagingDataset.schemaReference().fieldValues()).condition(deleteIndicatorIsNotSetCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectX3 = Selection.builder().source(stagingDataset()).addAllFields(stagingDataset().schemaReference().fieldValues()).condition(dataSplitInRangeCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX3 = Selection.builder().source(stagingDataset).addAllFields(stagingDataset.schemaReference().fieldValues()).condition(dataSplitInRangeCondition).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectX3 = Selection.builder().source(stagingDataset()).addAllFields(stagingDataset().schemaReference().fieldValues()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
+            selectX3 = Selection.builder().source(stagingDataset).addAllFields(stagingDataset.schemaReference().fieldValues()).alias(LEFT_DATASET_IN_JOIN_ALIAS).build();
         }
 
         Selection selectY3 = selectXY2.withAlias(RIGHT_DATASET_IN_JOIN_ALIAS);
@@ -573,19 +614,19 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectY1;
         if (deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(And.builder().addConditions(deleteIndicatorIsNotSetCondition.orElseThrow(IllegalStateException::new), dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (deleteIndicatorField.isPresent() && !ingestMode().dataSplitField().isPresent())
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(deleteIndicatorIsNotSetCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else if (!deleteIndicatorField.isPresent() && ingestMode().dataSplitField().isPresent())
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectY1 = Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY1 = Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
 
         Condition x1AndY1PkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX1, selectY1, primaryKeys.toArray(new String[0]));
@@ -604,8 +645,8 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         // SECOND JOIN between X and Y
         Selection selectX2 = selectXY1.withAlias(LEFT_DATASET_IN_JOIN_ALIAS);
 
-        Condition x2AndStagePkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX2, stagingDataset(), primaryKeys.toArray(new String[0]));
-        Condition x2FromEqualsStageFrom = Equals.of(validDateTimeFrom.withDatasetRef(selectX2.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
+        Condition x2AndStagePkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX2, stagingDataset, primaryKeys.toArray(new String[0]));
+        Condition x2FromEqualsStageFrom = Equals.of(validDateTimeFrom.withDatasetRef(selectX2.datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset.datasetReference()));
         Condition selectFromStageCondition = And.builder().addConditions(x2AndStagePkMatchCondition, x2FromEqualsStageFrom).build();
         if (deleteIndicatorField.isPresent())
         {
@@ -615,7 +656,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         {
             selectFromStageCondition = And.builder().addConditions(selectFromStageCondition, dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build();
         }
-        Condition whereNotExists = Not.builder().condition(Exists.of(Selection.builder().source(stagingDataset()).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(selectFromStageCondition).build())).build();
+        Condition whereNotExists = Not.builder().condition(Exists.of(Selection.builder().source(stagingDataset).addAllFields(primaryKeyFieldsAndFromFieldFromStage).condition(selectFromStageCondition).build())).build();
 
         List<Value> selectXY2Fields = primaryKeyFieldsAndFromFieldForSelection.stream().map(field -> field.withDatasetRef(selectX2.datasetReference())).collect(Collectors.toList());
         selectXY2Fields.add(validDateTimeThru.withDatasetRef(selectX2.datasetReference()).withAlias(VALID_DATE_TIME_THRU_NAME));
@@ -707,18 +748,18 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     */
     private Insert getMainToTempForDeletion()
     {
-        Condition mainFromEqualsStageFrom = Equals.of(targetValidDatetimeFrom.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
-        Condition mainThroughEqualsStageFrom = Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset().datasetReference()));
+        Condition mainFromEqualsStageFrom = Equals.of(targetValidDatetimeFrom.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset.datasetReference()));
+        Condition mainThroughEqualsStageFrom = Equals.of(targetValidDatetimeThru.withDatasetRef(mainDataset().datasetReference()), sourceValidDatetimeFrom.withDatasetRef(stagingDataset.datasetReference()));
         Condition innerSelectCondition = And.builder().addConditions(primaryKeysMatchCondition, Or.builder().addConditions(mainFromEqualsStageFrom, mainThroughEqualsStageFrom).build(), deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).build();
 
         Selection innerSelect;
         if (ingestMode().dataSplitField().isPresent())
         {
-            innerSelect = Selection.builder().source(stagingDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(innerSelectCondition, dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).build();
+            innerSelect = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(And.builder().addConditions(innerSelectCondition, dataSplitInRangeCondition.orElseThrow(IllegalStateException::new)).build()).build();
         }
         else
         {
-            innerSelect = Selection.builder().source(stagingDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(innerSelectCondition).build();
+            innerSelect = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(innerSelectCondition).build();
         }
 
         Condition selectXCondition = And.builder().addConditions(openRecordCondition, Exists.of(innerSelect)).build();
@@ -727,11 +768,11 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         Selection selectY;
         if (ingestMode().dataSplitField().isPresent())
         {
-            selectY = Selection.builder().source(stagingDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).condition(dataSplitInRangeCondition).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
         else
         {
-            selectY = Selection.builder().source(stagingDataset()).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
+            selectY = Selection.builder().source(stagingDataset).addAllFields(LogicalPlanUtils.ALL_COLUMNS()).alias(RIGHT_DATASET_IN_JOIN_ALIAS).build();
         }
 
         Condition xAndYPkMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(selectX, selectY, primaryKeys.toArray(new String[0]));

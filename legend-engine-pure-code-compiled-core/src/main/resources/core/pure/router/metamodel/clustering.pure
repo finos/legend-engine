@@ -1,0 +1,133 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::*;
+
+Class meta::pure::router::metamodel::clustering::ClusteredValueSpecification extends ValueSpecification
+{
+   executable   : Boolean[1];
+   exeCtx       : ExecutionContext[0..1];    //TODO: This should be made mandatory
+   openVars     : Map<String, List<Any>>[1];
+   val          : ValueSpecification[1];
+}
+
+
+// =======================================================================================================
+// Utility Functions
+// TODO: We should consider moving this logic as part of ClusterValueSpecification instances
+// =======================================================================================================
+
+###Pure
+import meta::pure::executionPlan::*;
+import meta::pure::router::clustering::*;
+import meta::pure::router::externalFormat::metamodel::clustering::*;
+import meta::pure::router::metamodel::clustering::*;
+import meta::pure::router::platform::metamodel::clustering::*;
+import meta::pure::router::printer::*;
+import meta::pure::router::store::metamodel::clustering::*;
+import meta::pure::router::store::clustering::*;
+import meta::pure::router::utils::*;
+import meta::pure::runtime::*;
+
+function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+{
+  let fe = $cluster.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
+
+  $cluster->match([
+      sc:StoreMappingClusteredValueSpecification[1] |
+          //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
+          //the only place where sql is generated for this case.
+          let rt = $sc.runtime->match([
+            r:Runtime[1] | ^$r(connections = $r.connections->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|$sc.s.reprocessConnection->toOne()->eval($c)))),
+            r:Runtime[0..1] | $r
+          ]);
+
+          let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);
+          let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $sc.mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
+          ^$res(fromCluster=$cluster);,
+      ef:ExternalFormatClusteredValueSpecification[1] |
+          let state = ^meta::external::shared::format::executionPlan::ExternalFormatPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $ef.exeCtx->toOne());
+          $fe->meta::external::shared::format::executionPlan::processValueSpecification($state, $extensions, $debugContext)->toOne();,
+      pl:PlatformClusteredValueSpecification[1] |
+          let state = ^meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
+          $fe->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
+  ]);
+}
+
+function meta::pure::router::clustering::areClustersCompatible(cluster1:ClusteredValueSpecification[1], cluster2:ClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+{
+  $cluster1->match([
+      sc:StoreMappingClusteredValueSpecification[1] |
+          $cluster2->instanceOf(StoreMappingClusteredValueSpecification) && areStoreMappingClustersCompatible($cluster1->cast(@StoreMappingClusteredValueSpecification), $cluster2->cast(@StoreMappingClusteredValueSpecification), $extensions),
+      ef:ExternalFormatClusteredValueSpecification[1] |
+          $cluster2->instanceOf(ExternalFormatClusteredValueSpecification) && $cluster1->cast(@ExternalFormatClusteredValueSpecification).binding == $cluster2->cast(@ExternalFormatClusteredValueSpecification).binding,
+      pl:PlatformClusteredValueSpecification[1] |
+          $cluster2->instanceOf(PlatformClusteredValueSpecification)
+  ]);
+}
+
+function meta::pure::router::clustering::isFunctionSupportedByCluster(cluster:ClusteredValueSpecification[1], f:FunctionExpression[1]):Boolean[1]
+{
+  $cluster->match([
+      sc:StoreMappingClusteredValueSpecification[1] |
+          $sc.s.supports->toOne()->eval($f->evaluateAndDeactivate()),
+      ef:ExternalFormatClusteredValueSpecification[1] |
+          $f->meta::pure::router::externalFormat::clustering::externalFormatSupportsFunction(),
+      pl:PlatformClusteredValueSpecification[1] |
+          true;
+  ]);
+}
+
+function meta::pure::router::clustering::streamSupportedFunctionEvaluator(cluster:ClusteredValueSpecification[1]):Function<{FunctionExpression[1]->Boolean[1]}>[1]
+{
+  $cluster->match([
+      sc:StoreMappingClusteredValueSpecification[1] |
+          $sc.s.supportsStream,
+      ef:ExternalFormatClusteredValueSpecification[1] |
+          {fxn:FunctionExpression[1] | false},
+      pl:PlatformClusteredValueSpecification[1] |
+          {fxn:FunctionExpression[1] | false};
+  ]);
+}
+
+function meta::pure::router::clustering::elementPathForCluster(cluster:ClusteredValueSpecification[1]):String[1]
+{
+  $cluster->match([
+      sc:StoreMappingClusteredValueSpecification[1] |
+          $sc.store->elementToPath(),
+      ef:ExternalFormatClusteredValueSpecification[1] |
+          $ef.binding->elementToPath(),
+      pl:PlatformClusteredValueSpecification[1] |
+          'Platform'
+  ]);
+}
+
+function meta::pure::router::clustering::toString(cluster:ClusteredValueSpecification[1], pref:Pref[1]):String[1]
+{
+  $cluster->match([
+      sc:StoreMappingClusteredValueSpecification[1]  | if($pref.useClusterIndex,
+                                                         | '[Node Index:'+$pref.clusterIndex->indexOf($sc)->toString()+']',
+                                                         | let start = '{'+$sc.store->toOne()->elementToPath()+'> ';
+                                                           $start + $sc.val->asString($pref)->replace('\n','\n'+space($start->length()))+'}';
+                                                       );,
+      p:PlatformClusteredValueSpecification[1]       | if($pref.useClusterIndex,
+                                                         |'[Node Index:'+$pref.clusterIndex->indexOf($p)->toString()+']',
+                                                         |'{Platform> '+$p.val->asString($pref)->replace('\n','\n'+space('{Platform>'->length()))+'}';
+                                                       );,
+      e:ExternalFormatClusteredValueSpecification[1] | if($pref.useClusterIndex,
+                                                         | '[Node Index:'+$pref.clusterIndex->indexOf($e)->toString()+']',
+                                                         | '{ExternalFormat> '+$e.val->asString($pref)->replace('\n','\n'+space('{ExternalFormat>'->length()))+'}';
+                                                       );
+  ]);
+}

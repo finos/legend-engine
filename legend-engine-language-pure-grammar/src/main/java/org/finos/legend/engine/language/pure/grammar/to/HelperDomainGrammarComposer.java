@@ -15,6 +15,8 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
@@ -24,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +77,34 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderAnnotations(property.stereotypes, property.taggedValues) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderAnnotations(property.stereotypes, property.taggedValues) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + property.type + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+    }
+
+    private static String renderAggregation(AggregationKind aggregationKind)
+    {
+        if (aggregationKind == null)
+        {
+            return "";
+        }
+        switch (aggregationKind)
+        {
+            case NONE:
+            {
+                return "(none) ";
+            }
+            case SHARED:
+            {
+                return "(shared) ";
+            }
+            case COMPOSITE:
+            {
+                return "(composite) ";
+            }
+            default:
+            {
+                throw new EngineException("Unknown aggregation kind '" + aggregationKind + "'", EngineErrorType.COMPOSER);
+            }
+        }
     }
 
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)

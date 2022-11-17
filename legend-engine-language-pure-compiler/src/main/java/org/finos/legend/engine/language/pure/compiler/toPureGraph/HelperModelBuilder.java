@@ -47,11 +47,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Cons
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecificationContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -77,8 +79,36 @@ public class HelperModelBuilder
                     ._multiplicity(context.pureModel.getMultiplicity(property.multiplicity))
                     ._stereotypes(ListIterate.collect(property.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
                     ._taggedValues(ListIterate.collect(property.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.sourceInformation))._value(t.value)))
+                    ._aggregation(getPropertyAggregationKindEnum(property, context))
                     ._owner(owner);
         };
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum getPropertyAggregationKindEnum(Property property, CompileContext context)
+    {
+        if (property.aggregation == null)
+        {
+            return null;
+        }
+        switch (property.aggregation)
+        {
+            case NONE:
+            {
+                return context.pureModel.getEnumValue(M3Paths.AggregationKind, "None");
+            }
+            case SHARED:
+            {
+                return context.pureModel.getEnumValue(M3Paths.AggregationKind, "Shared");
+            }
+            case COMPOSITE:
+            {
+                return context.pureModel.getEnumValue(M3Paths.AggregationKind, "Composite");
+            }
+            default:
+            {
+                throw new EngineException("Unsupported aggregation kind '" + property.aggregation + "'", property.sourceInformation, EngineErrorType.COMPILATION);
+            }
+        }
     }
 
     public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createThisVariableForClass(CompileContext context, String classPackageString)
@@ -265,7 +295,7 @@ public class HelperModelBuilder
 
     private static String terseSignatureSuffix(Function function)
     {
-        String functionSignature =  LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
+        String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
         return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
@@ -360,6 +390,39 @@ public class HelperModelBuilder
             prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
         }
         Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in class '" + (classPath != null ? classPath : getElementFullPath(_class, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
+        return prop;
+    }
+
+    /**
+     * Find the property (normal and derived) that the a property owner (class or association) owns.
+     */
+    public static AbstractProperty<?> getAllOwnedAppliedProperty(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner propertyOwner, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation, CompiledExecutionSupport executionSupport)
+    {
+        AbstractProperty<?> prop = null;
+        if (propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) propertyOwner;
+            prop = _class._properties().detect(p -> name.equals(p.getName()));
+            if (prop == null)
+            {
+                prop = _class._propertiesFromAssociations().detect(p -> name.equals(p._name()));
+            }
+            if (prop == null)
+            {
+                prop = _class._qualifiedProperties().detect(p -> name.equals(p._name()));
+            }
+            if (prop == null)
+            {
+                prop = _class._qualifiedPropertiesFromAssociations().detect(p -> name.equals(p._name()));
+            }
+        }
+        else if (propertyOwner instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association _association = (Association) propertyOwner;
+            prop = _association._properties().detect(p -> name.equals(p.getName()));
+        }
+        String propertyOwnerType = propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class ? "class" : "association";
+        Assert.assertTrue(prop != null, () -> "Can't find property '" + name + "' in " + propertyOwnerType + " '" + (getElementFullPath(propertyOwner, executionSupport)) + "'", sourceInformation, EngineErrorType.COMPILATION);
         return prop;
     }
 

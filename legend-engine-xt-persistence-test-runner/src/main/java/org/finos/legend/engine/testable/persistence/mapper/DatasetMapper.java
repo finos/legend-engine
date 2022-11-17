@@ -14,13 +14,15 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.eclipse.collections.api.RichIterable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.IngestMode;
 import org.finos.legend.engine.testable.persistence.exception.PersistenceException;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_sink_Sink;
@@ -34,10 +36,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.SchemaAcc
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_persister_Persister;
 import org.finos.legend.pure.generated.platform_relational_relational;
+import static org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper.getIngestMode;
 
 public class DatasetMapper
 {
-    private static String STAGING_SUFFIX = "_staging";
+    public static String STAGING_SUFFIX = "_staging";
     private static String DEFAULT_SCHEMA = "default";
     private static String H2_PUBLIC_SCHEMA = "PUBLIC";
 
@@ -72,36 +75,10 @@ public class DatasetMapper
         return datasetDefinition;
     }
 
-    public static Dataset getStagingDataset(String jsonData, Root_meta_pure_persistence_metamodel_Persistence persistence) throws Exception
+    public static Datasets enrichAndDeriveDatasets(Persistence persistence, Dataset mainDataset, String testData) throws Exception
     {
-        // TODO: (kminky) In future derive the schema definition of stagingTable from targetDataset and jsonData
-        Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister = getBatchPersister(persistence);
-        Database database = getDatabase(batchPersister);
-        Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget flatTarget = getTarget(batchPersister);
-
-        // Find the table
-        RichIterable<? extends Table> tables = database._schemas().flatCollect(SchemaAccessor::_tables);
-        String stagingTableName = flatTarget._targetName() + STAGING_SUFFIX;
-        Table table = tables.detect(t -> t._name().equals(flatTarget._targetName() + STAGING_SUFFIX));
-        if (table == null)
-        {
-            throw new PersistenceException(String.format("Staging table [%s] not found in Persistence Spec", stagingTableName));
-        }
-        String tableName = table._name();
-        String schemaName = table._schema()._name();
-        if (schemaName.equals(DEFAULT_SCHEMA))
-        {
-            schemaName = H2_PUBLIC_SCHEMA;
-        }
-        SchemaDefinition schemaDefinition = getSchemaDefinition(table);
-        JsonExternalDatasetReference stagingDataset = JsonExternalDatasetReference.builder()
-                .group(schemaName)
-                .name(tableName)
-                .schema(schemaDefinition)
-                .data(jsonData)
-                .build();
-
-        return stagingDataset;
+        IngestMode ingestMode = getIngestMode(persistence);
+        return ingestMode.accept(new DeriveDatasets(mainDataset, testData));
     }
 
     private static Root_meta_pure_persistence_metamodel_persister_targetshape_FlatTarget getTarget(Root_meta_pure_persistence_metamodel_persister_BatchPersister batchPersister)
@@ -154,5 +131,10 @@ public class DatasetMapper
             throw new UnsupportedOperationException("write-component-test only supports BatchPersister");
         }
         return (Root_meta_pure_persistence_metamodel_persister_BatchPersister) persister;
+    }
+
+    static boolean isFieldNamePresent(SchemaDefinition schema, String fieldName)
+    {
+        return schema.fields().stream().anyMatch(field -> field.name().equals(fieldName));
     }
 }

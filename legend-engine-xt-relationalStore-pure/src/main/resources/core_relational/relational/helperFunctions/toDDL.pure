@@ -76,101 +76,49 @@ function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: Str
 //use corresponding functions parameterized with dbType instead
 function <<doc.deprecated>> meta::relational::functions::toDDL::createSchemaStatement(schema:String[1]) : String[1]
 {
-   meta::relational::functions::toDDL::createSchemaStatement($schema, createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::createSchemaStatement(schemaName:String[1], dbConfig:DbConfig[1]) : String[1]
-{
-  $dbConfig.translateCreateSchema(^CreateSchemaSQL(schema= ^Schema(name= $schemaName, database=^Database(name='dummy'))))->toOne();
+   meta::relational::functions::toDDL::createSchemaStatement($schema, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropSchemaStatement(schema:String[1]) : String[1]
 {
-   dropSchemaStatement($schema, createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::dropSchemaStatement(schemaName:String[1], dbConfig:DbConfig[1]) : String[1]
-{
-   $dbConfig.translateDropSchema(^DropSchemaSQL(schema= ^Schema(name= $schemaName, database=^Database(name='dummy'))))->toOne();
+   dropSchemaStatement($schema, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1]) : String[1]
 {
-    dropTableStatement($database, $tableName, createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
-{
-    dropTableStatement($database, 'default', $tableName, $dbConfig);
+    dropTableStatement($database, $tableName, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], tableName: String[1]) : String[1]
 {
-    createTableStatement($database, $tableName, createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::createTableStatement(database:Database[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
-{
-    createTableStatement($database, 'default', $tableName, $dbConfig);
+    createTableStatement($database, $tableName, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
 {
-   dropTableStatement($database, $schema, $tableName , createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
-{
-   dropTableStatement($database, $schema, $tableName, getTableToTableIdentityFunction(), $dbConfig);
+   dropTableStatement($database, $schema, $tableName , createDbConfig(DatabaseType.H2))->toOne();
 }
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1]) : String[1]
 {
-    dropTableStatement($database, $schema, $tableName, $tablePostProcess, createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::dropTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], dbConfig:DbConfig[1]) : String[1]
-{
-   let t = $tablePostProcess->eval(getTable($database, $schema, $tableName));
-   dropTableStatement($t, $dbConfig);
-}
-
-function meta::relational::functions::toDDL::dropTableStatement(t:Table[1], dbConfig:DbConfig[1]) : String[1]
-{
-   $dbConfig.translateDropTable(^DropTableSQL(table=$t))->toOne();
+    dropTableStatement($database, $schema, $tableName, $tablePostProcess, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 function <<doc.deprecated>>  meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1]) : String[1]
 {
-   createTableStatement($database, $schema, $tableName, createDbConfig(DatabaseType.H2));
-}
-
-function meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], dbConfig:DbConfig[1]) : String[1]
-{
-   createTableStatement($database, $schema, $tableName, getTableToTableIdentityFunction(), true, $dbConfig);
+   createTableStatement($database, $schema, $tableName, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 //deprecated
 function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
 {
-   createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig(DatabaseType.H2));
+   createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 //deprecated
 function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], dbType:DatabaseType[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
 {
-   createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig($dbType));
-}
-
-function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
-{
-   let t = $tablePostProcess->eval(getTable($database, $schema, $tableName));
-   $t->createTableStatement($applyConstraints, $dbConfig);
-}
-
-function meta::relational::functions::toDDL::createTableStatement(t:Table[1], applyConstraints:Boolean[1], dbConfig:DbConfig[1]) : String[1]
-{
-   $dbConfig.translateCreateTable(^CreateTableSQL(table= $t, applyConstraints= $applyConstraints))->toOne();
+   createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig($dbType))->toOne();
 }
 
 //deprecated

@@ -1,0 +1,95 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::lineage::scanExecutes::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+
+function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProject():Any[1]
+{
+   execute(|Firm.all()->project([ f|$f.legalName,
+                                  f|$f.employees->sortBy(#/Person/lastName#).firstName->joinStrings('^')
+                                ],
+                                [
+                                   'legalName',
+                                   'employeesFirstNamePerFirm'
+                                ]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectUsingCol():Any[1]
+{
+   execute(|Firm.all()->project([
+                                  col(f|$f.legalName,'a'),
+                                  col(f|$f.employees->map(e|$e.lastName),'b'),
+                                  col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c')
+                                ] 
+                               ), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+}
+
+Class <<access.private>> meta::pure::lineage::scanProject::test::LambdaHolder
+{
+   lambda: FunctionDefinition<{->Any[*]}>[1];
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectInKeyExpression():Any[1]
+{
+   let holder = ^meta::pure::lineage::scanProject::test::LambdaHolder(
+      lambda = {|Firm.all()->project([
+                                  col(f|$f.legalName,'a'),
+                                  col(f|$f.employees->map(e|$e.lastName),'b'),
+                                  col(f|$f.employees->map(e|2 + $e.locations.place->count()),'c')
+                                ] 
+                               )}
+   );
+   execute($holder.lambda, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+}
+
+function <<access.private>> meta::pure::lineage::scanProject::test::executeWithProjectUsingCol2():Any[1]
+{
+   execute(|Firm.all()->project([
+                                  ^BasicColumnSpecification<Firm>(name='a', func={f:Firm[1]|$f.legalName}),
+                                  ^BasicColumnSpecification<Firm>(name='b', func={f:Firm[1]|$f.employees->map(e|$e.lastName)}),
+                                  ^BasicColumnSpecification<Firm>(name='c', func={f:Firm[1]|$f.employees->map(e|2+$e.locations.place->count())})
+                                ] 
+                               ), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::test::testFindProject():Boolean[1]
+{
+   let x = meta::pure::lineage::scanProject::test::executeWithProject__Any_1_->scanExecutes();
+   let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
+   assertEquals(['legalName', 'employeesFirstNamePerFirm'], $p.columns.first);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::test::testFindProjectCol():Boolean[1]
+{
+   let x = meta::pure::lineage::scanProject::test::executeWithProjectUsingCol__Any_1_->scanExecutes();
+   let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
+   assertEquals(['a', 'b', 'c'], $p.columns.first);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::test::testFindProjectColInKeyExpression():Boolean[1]
+{
+   let x = meta::pure::lineage::scanProject::test::executeWithProjectInKeyExpression__Any_1_->scanExecutes();
+   let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
+   assertEquals(['a', 'b', 'c'], $p.columns.first);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProject::test::testFindProjectBasicColumnSpec():Boolean[1]
+{
+   let x = meta::pure::lineage::scanProject::test::executeWithProjectUsingCol2__Any_1_->scanExecutes();
+   let p = $x.funcEntryPoint->toOne()->evaluateAndDeactivate()->meta::pure::lineage::scanProject::scanProject();
+   assertEquals(['a', 'b', 'c'], $p.columns.first);
+}

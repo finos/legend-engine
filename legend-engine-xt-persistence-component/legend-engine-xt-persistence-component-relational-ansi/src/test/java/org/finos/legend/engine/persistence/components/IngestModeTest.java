@@ -59,6 +59,10 @@ public class IngestModeTest
     protected String tempWithDeleteIndicatorTableName = "tempWithDeleteIndicator";
     protected String tempWithDeleteIndicatorTableAlias = "tempWithDeleteIndicator";
 
+    protected String stagingWithoutDuplicatesDbName = "mydb";
+    protected String stagingTableWithoutDuplicatesName = "stagingWithoutDuplicates";
+    protected String stagingTableWithoutDuplicatesAlias = "stage";
+
     protected String digestField = "digest";
     protected String dataSplitField = "data_split";
     protected String batchUpdateTimeField = "batch_update_time";
@@ -553,6 +557,32 @@ public class IngestModeTest
         "\"validity_through_target\" DATETIME," +
         "\"delete_indicator\" VARCHAR," +
         "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
+    protected String expectedBitemporalFromOnlyStageWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+        "(\"id\" INTEGER," +
+        "\"name\" VARCHAR," +
+        "\"amount\" DOUBLE," +
+        "\"validity_from_reference\" DATETIME," +
+        "\"digest\" VARCHAR," +
+        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
+
+    protected String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+        "(\"id\" INTEGER," +
+        "\"name\" VARCHAR," +
+        "\"amount\" DOUBLE," +
+        "\"validity_from_reference\" DATETIME," +
+        "\"digest\" VARCHAR," +
+        "\"delete_indicator\" VARCHAR," +
+        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
+
+    protected String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+        "(\"id\" INTEGER," +
+        "\"name\" VARCHAR," +
+        "\"amount\" DOUBLE," +
+        "\"validity_from_reference\" DATETIME," +
+        "\"digest\" VARCHAR," +
+        "\"data_split\" BIGINT," +
+        "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"data_split\"))";
 
     protected String getExpectedCleanupSql(String fullName, String alias)
     {
