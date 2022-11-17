@@ -60,19 +60,19 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    windowColumnProcessor(w:WindowColumn[1], sgc:SqlGenerationContext[1])
    {
-     assert($this.dbExtension.windowColumnProcessor->isNotEmpty(), 'Window Columns not supported for Database Type: ' + $this.dbType->toString());
+     assert($this.dbExtension.windowColumnProcessor->isNotEmpty(), '[unsupported-api] Window Columns not supported for Database Type: ' + $this.dbType->toString());
      $this.dbExtension.windowColumnProcessor->toOne()->eval($w, $sgc);
    }: String[1];
 
    semiStructuredElementProcessor(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1])
    {
-     assert($this.dbExtension.semiStructuredElementProcessor->isNotEmpty(), 'Semi structured array element processing not supported for Database Type: ' + $this.dbType->toString());
+     assert($this.dbExtension.semiStructuredElementProcessor->isNotEmpty(), '[unsupported-api] Semi structured array element processing not supported for Database Type: ' + $this.dbType->toString());
      $this.dbExtension.semiStructuredElementProcessor->toOne()->eval($s, $sgc);
    }: String[1];
 
    joinStringsProcessor(j:JoinStrings[1], sgc:SqlGenerationContext[1])
    {
-     assert($this.dbExtension.joinStringsProcessor->isNotEmpty(), 'Join strings operation not supported for Database Type: ' + $this.dbType->toString());
+     assert($this.dbExtension.joinStringsProcessor->isNotEmpty(), '[unsupported-api] Join strings operation not supported for Database Type: ' + $this.dbType->toString());
      $this.dbExtension.joinStringsProcessor->toOne()->eval($j, $sgc);
    }: String[1];
 
@@ -103,47 +103,48 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
 
    dynaFuncDispatch(dynaFn:DynaFunction[1], sgc:SqlGenerationContext[1])
    {
+     assert(DynaFunctionRegistry->enumValues().name->contains($dynaFn.name), 'dyna function [' + $dynaFn.name + '] is not registered in meta::relational::functions::sqlQueryToString::DynaFunctionRegistry');
      $this.dbExtension.dynaFuncDispatch->eval($dynaFn, $sgc);
    }: DynaFunctionToSql[1];
 
    ddlCommandsTranslator()
    {
-     assert($this.dbExtension.ddlCommandsTranslator->isNotEmpty(), 'DDL commands translator not supported for Database Type: ' + $this.dbType->toString());
+     assert($this.dbExtension.ddlCommandsTranslator->isNotEmpty(), '[unsupported-api] DDL commands translator not supported for Database Type: ' + $this.dbType->toString());
      $this.dbExtension.ddlCommandsTranslator->toOne();
    }: RelationalDDLCommandsTranslator[1];
 
    translateCreateSchema(c:CreateSchemaSQL[1])
    {
      let translator = $this.ddlCommandsTranslator;
-     assert($translator.createSchema->isNotEmpty(), 'Create schema translation not supported for Database Type: ' + $this.dbType->toString());
+     assert($translator.createSchema->isNotEmpty(), '[unsupported-api] Create schema translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.createSchema->toOne()->eval($c);
    }: String[*];
 
    translateDropSchema(d:DropSchemaSQL[1])
    {
      let translator = $this.ddlCommandsTranslator;
-     assert($translator.dropSchema->isNotEmpty(), 'Drop schema translation not supported for Database Type: ' + $this.dbType->toString());
+     assert($translator.dropSchema->isNotEmpty(), '[unsupported-api] Drop schema translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.dropSchema->toOne()->eval($d);
    }: String[*];
 
    translateCreateTable(c:CreateTableSQL[1])
    {
      let translator = $this.ddlCommandsTranslator;
-     assert($translator.createTable->isNotEmpty(), 'Create table translation not supported for Database Type: ' + $this.dbType->toString());
+     assert($translator.createTable->isNotEmpty(), '[unsupported-api] Create table translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.createTable->toOne()->eval($c, $this);
    }: String[*];
 
    translateDropTable(d:DropTableSQL[1])
    {
      let translator = $this.ddlCommandsTranslator;
-     assert($translator.dropTable->isNotEmpty(), 'Drop table translation not supported for Database Type: ' + $this.dbType->toString());
+     assert($translator.dropTable->isNotEmpty(), '[unsupported-api] Drop table translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.dropTable->toOne()->eval($d);
    }: String[*];
 
    translateLoadTable(l:LoadTableSQL[1])
    {
      let translator = $this.ddlCommandsTranslator;
-     assert($translator.loadTable->isNotEmpty(), 'Load table translation not supported for Database Type: ' + $this.dbType->toString());
+     assert($translator.loadTable->isNotEmpty(), '[unsupported-api] Load table translation not supported for Database Type: ' + $this.dbType->toString());
      $translator.loadTable->toOne()->eval($l, $this);
    }: String[*];
 }
@@ -707,7 +708,7 @@ function meta::relational::functions::sqlQueryToString::getDynaFunctionDispatche
 {
    { func:DynaFunction[1], sgc:SqlGenerationContext[1] |
         let result = $dispatch->get($func.name)->cast(@List<DynaFunctionToSql>).values->filter(d | $d.stateMatch->isEmpty() || $sgc.generationState->in($d.stateMatch));
-        assertSize($result, 1, | 'The function \''+$func.name+'\' (state: ['+$sgc.generationState.generationSide->id()+', '+if($sgc.generationState->isEmpty(),|'empty',|$sgc.generationState.withinWhenClause->toOne()->toString())+']) is not supported yet');
+        assertSize($result, 1, | '[unsupported-api] The function \''+$func.name+'\' (state: ['+$sgc.generationState.generationSide->id()+', '+if($sgc.generationState->isEmpty(),|'empty',|$sgc.generationState.withinWhenClause->toOne()->toString())+']) is not supported yet');
         assert($result.toSql.parametersWithinWhenClause->isEmpty() || ($result.toSql.parametersWithinWhenClause->size() >= $func.parameters->size()),|'Error generating \''+$func.name+'\' The function takes '+$func.parameters->size()->toString()+' parameters but '+$result.toSql.parametersWithinWhenClause->size()->toString()+' within where clause flag were provided.');
         $result->toOne();
    };
@@ -736,4 +737,129 @@ Class meta::relational::functions::sqlQueryToString::ToSql
    format:String[1];
    transform:meta::pure::metamodel::function::Function<{String[*]->String[*]}>[0..1];
    parametersWithinWhenClause : Boolean[*];
+}
+
+Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
+{
+  abs,
+  acos,
+  add,
+  adjust,
+  and,
+  asin,
+  atan,
+  atan2,
+  average,
+  averageRank,
+  case,
+  ceiling,
+  coalesce,
+  concat,
+  contains,
+  convertDate,
+  convertDateTime,
+  convertVarchar128,
+  cos,
+  count,
+  dateDiff,
+  datePart,
+  dayOfMonth,
+  dayOfWeek,
+  dayOfWeekNumber,
+  decodeBase64,
+  denseRank,
+  distinct,
+  divide,
+  encodeBase64,
+  endsWith,
+  equal,
+  exists,
+  exp,
+  firstDayOfMonth,
+  firstDayOfQuarter,
+  firstDayOfThisMonth,
+  firstDayOfThisQuarter,
+  firstDayOfThisYear,
+  firstDayOfWeek,
+  firstDayOfYear,
+  floor,
+  greaterThan,
+  greaterThanEqual,
+  group,
+  hour,
+  if,
+  in,
+  indexOf,
+  isAlphaNumeric,
+  isDistinct,
+  isEmpty,
+  isNotEmpty,
+  isNotNull,
+  isNull,
+  isNumeric,
+  joinStrings,
+  left,
+  length,
+  lessThan,
+  lessThanEqual,
+  log,
+  ltrim,
+  matches,
+  max,
+  min,
+  minus,
+  minute,
+  mod,
+  month,
+  monthNumber,
+  mostRecentDayOfWeek,
+  not,
+  notEqual,
+  notEqualAnsi,
+  now,
+  objectReferenceIn,
+  or,
+  parseDate,
+  parseDecimal,
+  parseFloat,
+  parseInteger,
+  parseJson,
+  percentile,
+  plus,
+  position,
+  pow,
+  previousDayOfWeek,
+  quarter,
+  quarterNumber,
+  rank,
+  rem,
+  replace,
+  right,
+  round,
+  rowNumber,
+  rtrim,
+  second,
+  sin,
+  size,
+  sqlFalse,
+  sqlNull,
+  sqlTrue,
+  sqrt,
+  startsWith,
+  stdDevPopulation,
+  stdDevSample,
+  sub,
+  substring,
+  sum,
+  tan,
+  times,
+  toLower,
+  toOne,
+  toString,
+  toTimestamp,
+  toUpper,
+  today,
+  trim,
+  weekOfYear,
+  year
 }

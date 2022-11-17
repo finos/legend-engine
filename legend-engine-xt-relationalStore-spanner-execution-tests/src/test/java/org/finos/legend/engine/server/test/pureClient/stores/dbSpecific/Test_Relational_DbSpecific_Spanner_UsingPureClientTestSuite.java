@@ -18,14 +18,17 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
 import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
+import org.finos.legend.pure.code.core.compiled.test.IgnoreUnsupportedApiPureTestSuiteRunner;
+import org.junit.runner.RunWith;
 
+@RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
 public class Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite
     extends Relational_DbSpecific_UsingPureClientTestSuite
 {
   public static Test suite() throws Exception
   {
     return createSuite(
-        "meta::relational::tests::dbSpecificTests::spanner",
+        "meta::relational::tests::sqlQueryToString::spanner",
         "org/finos/legend/engine/server/test/userTestConfig_withSpannerTestConnection.json",
         new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "spannerTest"));
   }
