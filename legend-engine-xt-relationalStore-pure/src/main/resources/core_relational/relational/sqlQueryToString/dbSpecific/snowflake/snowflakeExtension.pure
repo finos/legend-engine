@@ -81,7 +81,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
-    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s), %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
