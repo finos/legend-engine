@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.core_pure_extensions_functions;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class TestServicePlanGenerator
         PureModel pureModel = new PureModel(data, null, DeploymentMode.TEST);
         Service service = data.getElementsOfType(Service.class).get(0);
         Assert.assertTrue(service.execution instanceof PureSingleExecution);
-        ExecutionPlan plan = ServicePlanGenerator.generateServiceExecutionPlan(service, null, pureModel, "vX_X_X", PlanPlatform.JAVA, core_pure_extensions_functions.Root_meta_pure_extension_defaultExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers);
+        ExecutionPlan plan = ServicePlanGenerator.generateServiceExecutionPlan(service, null, pureModel, "vX_X_X", PlanPlatform.JAVA, core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers);
         Assert.assertTrue(plan instanceof SingleExecutionPlan);
     }
 

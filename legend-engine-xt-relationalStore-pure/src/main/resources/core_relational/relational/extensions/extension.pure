@@ -201,14 +201,7 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                              )
                                     },
       testExtension_testedBy = {allReferenceUses:ReferenceUsage[*], extensions:Extension[*] | {soFarr:TestedByResult[1]| $allReferenceUses.owner->filter(o|$o->instanceOf(Database))->cast(@Database)->fold({db,tbr|$db->testedBy($tbr, $extensions)}, $soFarr)}},
-      validTestPackages = 'meta::relational::tests',
-
-      //TODO: Move this out along with Java Binding
-      availablePlatformBindings = meta::pure::extension::defaultExtensions().availablePlatformBindings->concatenate(
-         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
-           meta::relational::executionPlan::platformBinding::legendJava::relationalLegendJavaPlatformBindingExtension()
-         ])
-      )
+      validTestPackages = 'meta::relational::tests'
    )
 }
 

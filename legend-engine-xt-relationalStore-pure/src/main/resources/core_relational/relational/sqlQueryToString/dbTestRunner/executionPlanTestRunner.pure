@@ -105,13 +105,12 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
   );
 
   let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-  let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-  
+
   if($config.expectedSql->isEmpty(), |true,
-    |assertEquals($config.expectedSql->toOne(), $boundPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
+    |assertEquals($config.expectedSql->toOne(), $basicPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
 
   if($config.connection->isEmpty(), |[],             
-     | 
+     | let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocally($basicPlan, $extensions);
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
        let values = $res.values->cast(@T);
        ^Result<T|m>(values = $values, activities= $res.activities);
