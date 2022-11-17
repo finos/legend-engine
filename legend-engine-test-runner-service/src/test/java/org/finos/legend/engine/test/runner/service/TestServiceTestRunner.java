@@ -31,7 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public class TestServiceTestRunner
 {
@@ -63,7 +63,7 @@ public class TestServiceTestRunner
 
     private List<RichServiceTestResult> runTest(Service service, PureModel pureModel, PureModelContextData pureModelContextData)
     {
-        ServiceTestRunner serviceTestRunner = new ServiceTestRunner(service, (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement(service.getPath()), pureModelContextData, pureModel, ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports(), PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(), Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
+        ServiceTestRunner serviceTestRunner = new ServiceTestRunner(service, (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement(service.getPath()), pureModelContextData, pureModel, ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports(), PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(), Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X");
         try
         {
             return serviceTestRunner.executeTests();

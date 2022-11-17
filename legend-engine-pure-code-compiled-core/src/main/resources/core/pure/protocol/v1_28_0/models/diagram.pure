@@ -1,0 +1,117 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::protocols::pure::v1_28_0::metamodel::diagram::view::*;
+import meta::protocols::pure::v1_28_0::metamodel::diagram::geometry::*;
+import meta::protocols::pure::v1_28_0::metamodel::diagram::visibility::*;
+import meta::protocols::pure::v1_28_0::metamodel::diagram::rendering::*;
+
+// Diagram
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::Diagram extends meta::protocols::pure::v1_28_0::metamodel::PackageableElement
+{
+   classViews : ClassView[*];
+   propertyViews : PropertyView[*];
+   generalizationViews : GeneralizationView[*];
+}
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::view::ClassView
+{
+   id : String[1];
+
+   class : String[1];
+
+   position : Point[0..1];
+   rectangle : Rectangle[0..1];
+
+   hideStereotypes : Boolean[0..1];
+   hideTaggedValues : Boolean[0..1];
+   hideProperties : Boolean[0..1];
+
+   <<doc.deprecated>> rendering : Rendering[0..1];
+   <<doc.deprecated>> visibility : TypeVisibility[0..1];
+}
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::view::RelationshipView
+{
+   sourceView : String[1];
+   targetView : String[1];
+   line : Line[0..1];
+   <<doc.deprecated>> rendering : Rendering[0..1];
+}
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::view::PropertyView extends meta::protocols::pure::v1_28_0::metamodel::diagram::view::RelationshipView
+{
+   property : meta::protocols::pure::v1_28_0::metamodel::domain::PropertyPtr[1];
+   <<doc.deprecated>> visibility : PropertyVisibility[0..1];
+}
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::view::GeneralizationView extends meta::protocols::pure::v1_28_0::metamodel::diagram::view::RelationshipView
+{
+}
+
+// Visibility
+
+Class <<doc.deprecated>> meta::protocols::pure::v1_28_0::metamodel::diagram::visibility::Visibility
+{
+   stereotypes: Boolean[0..1];
+   taggedValues : Boolean[0..1];
+}
+
+Class <<doc.deprecated>> meta::protocols::pure::v1_28_0::metamodel::diagram::visibility::PropertyVisibility extends Visibility
+{
+   type: Boolean[0..1];
+   multiplicity : Boolean[0..1];
+}
+
+Class <<doc.deprecated>> meta::protocols::pure::v1_28_0::metamodel::diagram::visibility::TypeVisibility extends Visibility
+{
+   attributes: Boolean[0..1];
+}
+
+// Rendering
+
+Class <<doc.deprecated>> meta::protocols::pure::v1_28_0::metamodel::diagram::rendering::Rendering
+{
+   color : String[1];
+   lineWidth : Float[1];
+}
+
+// Geometry
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::geometry::Point
+{
+   x : Float[1];
+   y : Float[1];
+}
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::geometry::Rectangle
+{
+   width : Float[1];
+   height : Float[1];
+}
+
+Class meta::protocols::pure::v1_28_0::metamodel::diagram::geometry::Line
+{
+   <<doc.deprecated>> style : LineType[0..1];
+   points : Point[*];
+}
+
+Enum <<doc.deprecated>> meta::protocols::pure::v1_28_0::metamodel::diagram::geometry::LineType
+{
+   SIMPLE,
+   RIGHT_ANGLE
+}
+

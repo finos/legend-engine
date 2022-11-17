@@ -36,7 +36,7 @@ Class meta::external::format::flatdata::executionPlan::test::Person
    lastName  : String[1];
 }
 
-function meta::external::format::flatdata::executionPlan::test::getTestBinding():Binding[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::test::getTestBinding():Binding[1]
 {
    let schemaSet = ^SchemaSet(
          name    = 'TestSchema',
@@ -120,4 +120,75 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::e
         ')\n';
 
    assertEquals($expected, $planString);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
+{
+   let extensions = [meta::external::shared::format::externalFormatExtension(), meta::external::format::flatdata::extension::flatDataFormatExtension()];
+   let binding = getTestBinding();
+
+   let plan = buildPlan({| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'stringConstant')}, $extensions, true);
+   let planString = $plan->planToString(false, $extensions);
+  
+   let expectedPlan = 
+        'ExternalFormat_Internalize\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  binding = meta::external::format::flatdata::executionPlan::test::TestBinding[application/x.flatdata]\n' +
+        '  enableConstraints = true\n' +
+        '  checked = false\n' +
+        '\n' +
+        '  (\n' +
+        '    Sequence\n' +
+        '    (\n' +
+        '      type = String\n' +
+        '      resultSizeRange = 1\n' +
+        '      (\n' +
+        '        Allocation\n' +
+        '        (\n' +
+        '          type = Void\n' +
+        '          name = internalizeVar$\n' +
+        '          value = \n' +
+        '            (\n' +
+        '              Constant\n' +
+        '              (\n' +
+        '                type = String\n' +
+        '                values=[stringConstant]\n' +
+        '              )\n' +
+        '            )\n' +
+        '        )\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = String\n' +
+        '          resultSizeRange = 1\n' +
+        '          varName = internalizeVar$\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        '  implementation\n' +
+        '  (\n' +
+        '    calls = _pure.plan.root.FlatDataDeserializeSpecifics\n' +
+        '  )\n' +
+        ')\n';
+
+   assertEquals($expectedPlan, $planString);
+
+   let impl = $plan.globalImplementationSupport->toOne()->cast(@JavaPlatformImplementation);
+
+   let allConstraintsSource = $impl.classes->filter(c| $c.name == 'meta_external_format_flatdata_executionPlan_test_Person_Impl').source->toOne();
+   let expectedAllConstraintsMethod = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        if (!context.visited.contains(this))\n' +
+                '        {\n' +
+                '            context.visited.add(this);\n' +
+                '            this.constraint_0().ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+
+   assert($allConstraintsSource->contains($expectedAllConstraintsMethod));
 }

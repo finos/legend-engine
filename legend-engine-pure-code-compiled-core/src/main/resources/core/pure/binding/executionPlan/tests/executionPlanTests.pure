@@ -13,6 +13,236 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::factory::*;
+import meta::external::shared::format::functions::*;
+import meta::pure::graphFetch::*;
+import meta::external::language::java::factory::project::*;
+import meta::external::language::java::serialization::*;
+import meta::external::language::java::metamodel::project::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
+import meta::external::shared::format::executionPlan::tests::*;
+import meta::pure::executionPlan::engine::java::typeInfo::*;
+import meta::pure::extension::*;
+
+Class meta::external::shared::format::executionPlan::tests::A
+[
+   a1: $this.i > 10,
+   $this.s->length() <= 15,
+   a2: $this.b.i > 10
+]
+{
+   i: Integer[1];
+   s: String[1];
+   b: B[1];
+   bs: B[*];
+}
+
+Class meta::external::shared::format::executionPlan::tests::B
+[
+   b1: $this.i > 10,
+   b2: $this.c.i > 10
+]
+{
+   i: Integer[1];
+   c: C[1];
+}
+
+Class meta::external::shared::format::executionPlan::tests::C
+[
+   c0: $this.i0 > 10
+]
+{
+   i: Integer[1];
+   i0: Integer[1];
+}
+
+Class meta::external::shared::format::executionPlan::tests::C1 extends meta::external::shared::format::executionPlan::tests::C
+[
+   c1: $this.i2 > 10
+]
+{
+   i2: Integer[1];
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesOnlyConstraintsUsingPropertiesGivenInSimpleTree(): Boolean[1]
+{
+   let tree = #{A {i}}#;
+
+   let java = makeJava($tree);
+
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                  '    {\n' +
+                  '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                  '        this.constraint_a1().ifPresent(result::add);\n' +
+                  '        return result;\n' +
+                  '    }\n';
+
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesMultipleConstraintsUsingPropertiesGivenInSimpleTree(): Boolean[1]
+{
+   let tree = #{A {i, s}}#;
+   let java = makeJava($tree);
+
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                  '    {\n' +
+                  '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                  '        this.constraint_a1().ifPresent(result::add);\n' +
+                  '        this.constraint_1().ifPresent(result::add);\n' +
+                  '        return result;\n' +
+                  '    }\n';
+
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesConstraintsUsingPropertiesGivenInMultiLevelTreeOne(): Boolean[1]
+{
+   let tree = #{A {i, s, b {i}}}#;
+   let java = makeJava($tree);
+
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        this.constraint_a1().ifPresent(result::add);\n' +
+                '        this.constraint_1().ifPresent(result::add);\n' +
+                '        this.constraint_a2().ifPresent(result::add);\n' +
+                '        if (this.getB() != null)\n' +
+                '        {\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getB();\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode(\"b\")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesConstraintsUsingPropertiesGivenInMultiLevelTreeMany(): Boolean[1]
+{
+   let tree = #{A {i, s, bs {i}}}#;
+   let java = makeJava($tree);
+   
+   let expected = '    public List<IDefect> allConstraints(GraphContext context)\n' +
+                '    {\n' +
+                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
+                '        this.constraint_a1().ifPresent(result::add);\n' +
+                '        this.constraint_1().ifPresent(result::add);\n' +
+                '        for (int i_0 = 0; i_0 < this.getBs().size(); i_0++)\n' +
+                '        {\n' +
+                '            int j_0 = i_0;\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getBs()\n' +
+                '                                                                                                                                          .get(i_0);\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n' +
+                '        return result;\n' +
+                '    }';
+   assert($java->contains($expected));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::testGeneratesConstraintsUsingPropertiesGivenInMultiLevelTreeSubType(): Boolean[1]
+{
+   let tree = #{A {i, s, b{i, c{i}}, bs{i, c->subType(@meta::external::shared::format::executionPlan::tests::C1){i, i2}}}}#;
+   let java = makeJava($tree);
+
+   let expected1_0 = '        for (int i_0 = 0; i_0 < this.getBs().size(); i_0++)\n' +
+                '        {\n' +
+                '            int j_0 = i_0;\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getBs()\n' +
+                '                                                                                                                                          .get(i_0);\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_0.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            if (child_0.getC() != null)\n' +
+                '            {\n' +
+                '                meta_external_shared_format_executionPlan_tests_C1_Impl child_0_0 = (meta_external_shared_format_executionPlan_tests_C1_Impl) child_0.getC();\n' +
+                '                child_0_0.constraint_c1()\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("c")))\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("bs", j_0)))\n' +
+                '                         .ifPresent(result::add);\n' +
+                '            }\n' +
+                '        }';
+   let expected1_1 = '        for (int i_1 = 0; i_1 < this.getBs().size(); i_1++)\n' +
+                '        {\n' +
+                '            int j_1 = i_1;\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_1 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getBs()\n' +
+                '                                                                                                                                          .get(i_1);\n' +
+                '            child_1.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_1)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_1.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("bs", j_1)))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            if (child_1.getC() != null)\n' +
+                '            {\n' +
+                '                meta_external_shared_format_executionPlan_tests_C1_Impl child_1_0 = (meta_external_shared_format_executionPlan_tests_C1_Impl) child_1.getC();\n' +
+                '                child_1_0.constraint_c1()\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("c")))\n' +
+                '                         .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                                    BasicRelativePathNode.newRelativePathNode("bs", j_1)))\n' +
+                '                         .ifPresent(result::add);\n' +
+                '            }\n' +
+                '        }';
+
+   let expected2_0 = '        if (this.getB() != null)\n' +
+                '        {\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_0 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getB();\n' +
+                '            child_0.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_0.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n';
+   let expected2_1 = '        if (this.getB() != null)\n' +
+                '        {\n' +
+                '            meta_external_shared_format_executionPlan_tests_B_Impl child_1 = (meta_external_shared_format_executionPlan_tests_B_Impl) this.getB();\n' +
+                '            child_1.constraint_b1()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '            child_1.constraint_b2()\n' +
+                '                   .map((IDefect d) -> BasicDefect.prefixPath(d,\n' +
+                '                                                              BasicRelativePathNode.newRelativePathNode("b")))\n' +
+                '                   .ifPresent(result::add);\n' +
+                '        }\n';
+
+   assert(($java->contains($expected1_0) && $java->contains($expected2_1)) || ($java->contains($expected1_1) && $java->contains($expected2_0)));
+}
+
+function <<access.private>> meta::external::shared::format::executionPlan::tests::makeJava(tree:RootGraphFetchTree<Any>[1]): String[1]
+{
+   let typeInfos = newTypeInfoSet()
+      ->addForGraphFetchTree($tree)
+      ->addConstraintsForGraphFetchTree($tree);
+   let context = ^GenerationContext(typeInfos=$typeInfos, conventions=engineConventions([]));
+
+
+   javaClass('test.Something')
+      ->addMethod(cls| $cls->createConstraintCheckingForTree('path', $context, $tree, noDebug()).first)
+      ->inferImports()->classToString();
+}
+
+###Pure
+
 import meta::external::shared::format::binding::*;
 import meta::pure::dataQuality::*;
 import meta::external::shared::format::functions::*;
@@ -377,17 +607,20 @@ function <<access.private>> meta::external::shared::format::executionPlan::tests
 function meta::external::shared::format::executionPlan::tests::buildPlan(query:FunctionDefinition<Any>[1]): String[1]
 {
    let extensions = meta::external::shared::format::externalFormatExtension();
-   let plan = $query->buildPlan($extensions);
+   let plan = $query->buildPlan($extensions, false);
    $plan->planToString(false, $extensions);
 }
 
-function meta::external::shared::format::executionPlan::tests::buildPlan(query:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]): ExecutionPlan[1]
+function meta::external::shared::format::executionPlan::tests::buildPlan(query:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*], generatePlatformCode:Boolean[1]): ExecutionPlan[1]
 {
    let funcBody = $query.expressionSequence->at(0)->evaluateAndDeactivate();
    let q        = inlineQualifiedProperties($funcBody, $query->openVariableValues()->toOne());
    let newQuery = ^$query(expressionSequence=$q);
 
-   executionPlan($newQuery, ^ExecutionContext(), $extensions, noDebug());
+   let plan     = executionPlan($newQuery, ^ExecutionContext(), $extensions, noDebug());
+   if($generatePlatformCode,
+      | $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions),
+      | $plan);
 }
 
 function <<access.private>> meta::external::shared::format::executionPlan::tests::inlineQualifiedProperties(vs: ValueSpecification[1], openVars:Map<String, List<Any>>[1]):ValueSpecification[1]

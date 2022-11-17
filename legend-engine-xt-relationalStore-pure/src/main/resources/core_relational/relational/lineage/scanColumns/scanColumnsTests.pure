@@ -1,0 +1,96 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::metamodel::relation::*;
+import meta::pure::lineage::scanColumns::*;
+import meta::pure::lineage::scanProperties::propertyTree::*;
+import meta::pure::lineage::scanProperties::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::test::testSubType():Boolean[1]
+{
+   let p = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name,
+                                                                           f|$f.vehicles->subType(@meta::relational::tests::model::inheritance::Car).mechanic.name,
+                                                                           f|$f.vehicles->subType(@meta::relational::tests::model::inheritance::Bicycle).mechanic.name],
+                                                                          ['Person','Car Mechanic','Bicycle Mechanic'])
+           }.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+
+   let tree = $p.result->buildPropertyTree();
+
+   let f = $tree->scanColumns(meta::relational::tests::mapping::inheritance::inheritanceWithEmbedded)->removeDuplicates();
+
+   assertEquals(['Person.ID <JoinTreeNode>', 'Person.name <TableAliasColumn>', 'Vehicle.PersonID <JoinTreeNode>', 'Vehicle.bicycleMechanicName <TableAliasColumn>', 'Vehicle.carMechanicName <TableAliasColumn>'], $f->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::test::testQualifier():Boolean[1]
+{
+   let p = {|Trade.all()->project([t|$t.product.name,
+                                   t|$t.product->toOne().synonymByType(ProductSynonymType.CUSIP).name],
+                                  ['prodName', 'synName'])
+           }.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+
+   let tree = $p.result->buildPropertyTree();
+
+   let f = $tree->scanColumns(simpleRelationalMapping)->removeDuplicates();
+
+   assertEquals(['productTable.ID <JoinTreeNode>', 'productTable.NAME <TableAliasColumn>', 'synonymTable.NAME <TableAliasColumn>', 'synonymTable.PRODID <JoinTreeNode>', 'synonymTable.TYPE <TableAliasColumn>', 'tradeTable.prodId <JoinTreeNode>'], $f->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::test::testAssociationMapping():Boolean[1]
+{
+   let p = {|meta::relational::tests::model::simple::Firm.all()->project([f|$f.legalName, f|$f.employees->size()], ['Firm', 'Employee Count'])
+           }.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+
+   let tree = $p.result->buildPropertyTree();
+
+   let f = $tree->scanColumns(meta::relational::tests::mapping::association::associationMappingWithIds)->removeDuplicates();
+
+   assertEquals(['firmTable.ID <JoinTreeNode>', 'firmTable.LEGALNAME <TableAliasColumn>', 'personTable.FIRMID <JoinTreeNode>'], $f->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::test::testNonDataTypeProperty():Boolean[1]
+{
+   let p = {|meta::relational::tests::model::simple::Person.all()->project([p|$p.name(), p|$p.address], ['Employee', 'Address'])
+           }.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+
+   let tree = $p.result->buildPropertyTree();
+
+   let f = $tree->scanColumns(meta::relational::tests::mapping::association::associationMappingWithIds)->removeDuplicates();
+
+   assertEquals(['addressTable.ID <JoinTreeNode>', 'personTable.ADDRESSID <JoinTreeNode>', 'personTable.FIRSTNAME <TableAliasColumn>', 'personTable.LASTNAME <TableAliasColumn>'], $f->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::test::testEmbeddedMapping():Boolean[1]
+{
+   let p = {|meta::relational::tests::model::simple::Person.all()->project([p|$p.firm.address.name, p|$p.address.name], ['Firm Address', 'Employee Address'])
+           }.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+
+   let tree = $p.result->buildPropertyTree();
+
+   let f = $tree->scanColumns(meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded)->removeDuplicates();
+
+   assertEquals(['PERSON_FIRM_DENORM.FIRM_ADDRESS_NAME <TableAliasColumn>', 'PERSON_FIRM_DENORM.PERSON_ADDRESS_NAME <TableAliasColumn>'], $f->map(t|$t.column.owner->cast(@Table).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::test::testView():Boolean[1]
+{
+   let p = {|Person.all()->project([ x|$x.firstName],['firstname'])}.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(^List<PropertyPathNode>(), [], []);
+
+   let tree = $p.result->buildPropertyTree();
+
+   let f = $tree->scanColumns(TestMappingWithViewJoins)->removeDuplicates();
+   
+   assertEquals(['firmTable.ID <JoinTreeNode>', 'personTable.AGE <JoinTreeNode>', 'personTable.FIRMID <JoinTreeNode>', 'personTable.FIRSTNAME <RelationalOperationElementWithJoin>', 'personTable.ID <JoinTreeNode>'], $f->map(t|$t.column.owner->cast(@NamedRelation).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
+}

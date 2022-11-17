@@ -22,7 +22,6 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 
 public class ArrayVisitor implements LogicalPlanVisitor<Array<?>>
 {
-
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.values.Array<?> current, VisitorContext context)
     {

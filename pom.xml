@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.22.1-SNAPSHOT</version>
+    <version>3.23.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -146,6 +146,9 @@
         <module>legend-engine-xt-analytics-mapping-protocol</module>
         <module>legend-engine-xt-analytics-mapping-pure</module>
 
+        <module>legend-engine-xt-analytics-lineage-api</module>
+        <module>legend-engine-xt-analytics-lineage-pure</module>
+
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-pure-ide-light</module>
@@ -199,19 +202,11 @@
         <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
-        <module>legend-engine-xt-javaGeneration-pure</module>
-        <module>legend-engine-xt-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-flatdata-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-json-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-xml-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
-        <module>legend-engine-xt-serviceStore-javaPlatformBinding-pure</module>
-        <module>legend-engine-pure-code-compiled-core-configuration</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.7.2</legend.pure.version>
+        <legend.pure.version>3.7.3</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -362,6 +357,7 @@
                         <skip>${javadoc.skip}</skip>
                         <source>8</source>
                         <doclint>none</doclint>
+                        <quiet>true</quiet>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -1105,6 +1101,17 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-lineage-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-data-space-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1406,46 +1413,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-flatdata-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-json-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-xml-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-serviceStore-javaPlatformBinding-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-code-compiled-core-configuration</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

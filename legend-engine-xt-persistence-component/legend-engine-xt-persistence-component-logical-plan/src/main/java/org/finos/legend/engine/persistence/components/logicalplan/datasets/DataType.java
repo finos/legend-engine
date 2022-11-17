@@ -62,7 +62,7 @@ public enum DataType
 
     public static boolean isStringDatatype(DataType type)
     {
-        List<DataType> stringDatatype = new ArrayList<DataType>(Arrays.asList(CHAR, CHARACTER, VARCHAR, LONGVARCHAR, NCHAR, NVARCHAR, LONGNVARCHAR, LONGTEXT, TEXT, JSON));
+        List<DataType> stringDatatype = new ArrayList<DataType>(Arrays.asList(CHAR, CHARACTER, VARCHAR, LONGVARCHAR, NCHAR, NVARCHAR, LONGNVARCHAR, LONGTEXT, TEXT, JSON, STRING));
         return stringDatatype.contains(type);
     }
 }

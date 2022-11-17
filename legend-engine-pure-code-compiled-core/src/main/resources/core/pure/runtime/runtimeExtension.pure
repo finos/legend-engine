@@ -89,9 +89,9 @@ function meta::pure::runtime::connectionByElement(runtime:Runtime[1], store:Stor
    )
 }
 
-function meta::pure::runtime::getMappingsFromRuntime(runtime:Runtime[1]):Mapping[*]
+function meta::pure::runtime::getMappingsFromRuntime(runtime:Runtime[0..1]):Mapping[*]
 {
-   $runtime.connections->filter(c | $c->instanceOf(ModelChainConnection))->cast(@ModelChainConnection).mappings;
+   if($runtime->isNotEmpty(),|$runtime.connections->filter(c | $c->instanceOf(ModelChainConnection))->cast(@ModelChainConnection).mappings,|[]);
 }
 
 function meta::pure::runtime::getRuntimeWithModelConnection(sourceClass:Class<Any>[1], inputs:Any[*]):Runtime[1]

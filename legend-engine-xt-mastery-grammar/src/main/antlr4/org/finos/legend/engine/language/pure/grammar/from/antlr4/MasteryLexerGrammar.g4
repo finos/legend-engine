@@ -1,7 +1,6 @@
-lexer grammar MasteryLexerGrammar;
+    lexer grammar MasteryLexerGrammar;
 
 import M3LexerGrammar;
-//import DomainLexerGrammar;
 
 // -------------------------------------- KEYWORD --------------------------------------
 
