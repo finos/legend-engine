@@ -14,6 +14,8 @@ identifier:                                 VALID_STRING | STRING
                                             | MASTER_RECORD_DEFINITION | MODEL_CLASS | RECORD_SOURCES | SOURCE_PARTITIONS
 ;
 
+masteryIdentifier:                          (VALID_STRING | '-' | INTEGER) (VALID_STRING | '-' | INTEGER)*;
+
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                                 //imports
@@ -25,9 +27,8 @@ imports:                                    (importStatement)*
 importStatement:                            IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
 
-/*************
- * Common
- *************/
+// -------------------------------------- COMMON --------------------------------------
+
 boolean_value:                              TRUE | FALSE
 ;
 modelClass:                                 MODEL_CLASS COLON qualifiedName SEMI_COLON
@@ -44,9 +45,9 @@ tags:                                       TAGS COLON
                                             BRACKET_CLOSE
                                             SEMI_COLON
 ;
-/*************
- * MasterRecordDefinition
- *************/
+
+// -------------------------------------- MASTER_RECORD_DEFIMNITION --------------------------------------
+
 mastery:                                    MASTER_RECORD_DEFINITION qualifiedName
                                                 BRACE_OPEN
                                                 (
@@ -57,9 +58,8 @@ mastery:                                    MASTER_RECORD_DEFINITION qualifiedNa
                                                 BRACE_CLOSE
 ;
 
-/****************
- * RecordSources
- ****************/
+// -------------------------------------- RECORD_SOURCES --------------------------------------
+
 recordSources:                              RECORD_SOURCES COLON
                                             BRACKET_OPEN
                                             (
@@ -71,10 +71,9 @@ recordSources:                              RECORD_SOURCES COLON
                                             )
                                             BRACKET_CLOSE
 ;
-recordSource:                               BRACE_OPEN
+recordSource:                               masteryIdentifier COLON BRACE_OPEN
                                             (
-                                                id
-                                                | recordStatus
+                                                recordStatus
                                                 | description
                                                 | parseService
                                                 | transformService
@@ -120,18 +119,16 @@ sourcePartitions:                           SOURCE_PARTITIONS COLON
                                             )
                                             BRACKET_CLOSE
 ;
-sourcePartiton:                             BRACE_OPEN
+sourcePartiton:                             masteryIdentifier COLON BRACE_OPEN
                                             (
-                                                 id
-                                                 | tags
+                                                 tags
                                             )*
                                             BRACE_CLOSE
 ;
 
 
-/*************
- * Resolution
- *************/
+// -------------------------------------- RESOLUTION --------------------------------------
+
 identityResolution:                         IDENTITIY_RESOLUTION COLON
                                             BRACE_OPEN
                                             (

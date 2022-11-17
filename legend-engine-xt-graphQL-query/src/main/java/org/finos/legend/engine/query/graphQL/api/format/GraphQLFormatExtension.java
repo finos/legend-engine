@@ -29,7 +29,7 @@ import org.finos.legend.pure.generated.Root_meta_external_shared_format_transfor
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl;
 import org.finos.legend.pure.generated.core_external_query_graphql_contract;
 
-public class GraphQLFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, SchemaToModelConfiguration>
+public class GraphQLFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, GraphQLSchemaToModelConfiguration>
 {
     private final Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_shared_format_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
@@ -65,7 +65,7 @@ public class GraphQLFormatExtension implements ExternalFormatModelGenerationExte
     }
 
     @Override
-    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(SchemaToModelConfiguration configuration, PureModel pureModel)
+    public Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration compileSchemaToModelConfiguration(GraphQLSchemaToModelConfiguration configuration, PureModel pureModel)
     {
         return new Root_meta_external_shared_format_transformation_toPure_SchemaToModelConfiguration_Impl("", null, pureModel.getClass("meta::external::shared::format::transformation::toPure::SchemaToModelConfiguration"))
                 ._sourceSchemaId(configuration.sourceSchemaId)

@@ -1,0 +1,23 @@
+name: Build (Large Runner)
+
+on: [workflow_dispatch]
+
+jobs:
+  build-large-runner:
+
+    runs-on: ubuntu-latest-16-cores
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: "zulu"
+          java-version: "11"
+
+      - name: Build
+        run: mvn -B -e -T 4 install -DargLine="-Xms12g -Xmx12g"
+        env:
+          MAVEN_OPTS: -Xms10g -Xmx10g

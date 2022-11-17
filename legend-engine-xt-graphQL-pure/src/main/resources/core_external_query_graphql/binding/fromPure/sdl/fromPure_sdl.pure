@@ -1,0 +1,84 @@
+import meta::external::query::graphQL::binding::fromPure::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+
+function meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL(types:meta::pure::metamodel::PackageableElement[*]):meta::external::query::graphQL::metamodel::sdl::typeSystem::TypeSystemDefinition[*]
+{
+  let allTypes = $types->findTypes();
+
+  let query = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Query'))->map(x|^RootOperationTypeDefinition(operationType = OperationType.query, type = $x->cast(@Class<Any>).name->toOne()));
+  let mutation = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Mutation'))->map(x|^RootOperationTypeDefinition(operationType = OperationType.mutation, type = $x->cast(@Class<Any>).name->toOne()));
+  let subscription = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Subscription'))->map(x|^RootOperationTypeDefinition(operationType = OperationType.subscription, type = $x->cast(@Class<Any>).name->toOne()));
+
+
+  $allTypes->map(c|
+    $c->match(
+      [
+        c:Class<Any>[1] |
+            ^ObjectTypeDefinition(
+              name = $c.name->toOne(),
+              fields = $c->allProperties()->map(p|
+                                      ^FieldDefinition
+                                      (
+                                        name = $p.name->toOne(),
+                                        type = buildType($p->functionReturnType(), $p->functionReturnMultiplicity()),
+                                        argumentDefinitions = if ($p->instanceOf(QualifiedProperty),
+                                                    |$p->functionType().parameters->evaluateAndDeactivate()->tail()->map(pa|
+                                                                    ^InputValueDefinition
+                                                                    (
+                                                                      name=$pa.name,
+                                                                      type=buildType($pa.genericType, $pa.multiplicity)
+                                                                    )
+                                                                ),
+                                                    |[]
+                                               )
+                                        )
+                                      
+                                      )
+            ),
+        e:Enumeration<Any>[1] |
+            ^EnumTypeDefinition(
+              name = $c.name->toOne(),
+              values = $e->enumValues()->map(z|^EnumValueDefinition(value=$z->id()))
+            )
+      ]
+    );
+  )->meta::pure::functions::collection::sortBy(t|$t->match([o:ObjectTypeDefinition[1]|$o.name,e:EnumTypeDefinition[1]|$e.name])->toOne())
+  ->concatenate(
+    ^SchemaDefinition
+    (
+      rootOperationTypeDefinitions = $query->concatenate($mutation)->concatenate($subscription)
+    )
+  );
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildType(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]):TypeReference[1]
+{
+  let primitives = [
+    pair(String, 'String'),
+    pair(Integer, 'Int'),
+    pair(Float, 'Float'),
+    pair(Boolean, 'Boolean')
+  ]->newMap();
+
+  let name = $primitives->get($type.rawType->toOne());
+  let fName = if ($name->isEmpty(),|$type.rawType.name->toOne(),|$name->toOne());
+
+  if ($mul == ZeroOne,
+    | ^NamedTypeReference(name = $fName, nullable=true),
+    | if ($mul == PureOne,
+      | ^NamedTypeReference(name = $fName, nullable=false),
+      | ^ListTypeReference(itemType=^NamedTypeReference(name = $fName, nullable=false), nullable=false)
+    )
+  );
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::findTypes(pElems:meta::pure::metamodel::PackageableElement[*]):meta::pure::metamodel::type::Type[*]
+{
+  $pElems
+    ->filter(i|$i->instanceOf(meta::pure::metamodel::type::Type))
+    ->cast(@meta::pure::metamodel::type::Type)
+    ->map(p|$p->meta::external::query::graphQL::binding::fromPure::introspection::scanTypes([]))
+    ->removeDuplicates()
+}
+

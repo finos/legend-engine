@@ -1,0 +1,191 @@
+import meta::relational::functions::sqlQueryToString::memSql::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::memSql::dbExtensionLoaderForMemSQL():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.MemSQL, loader = createDbExtensionForMemSQL__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::createDbExtensionForMemSQL():DbExtension[1]
+{
+   let reservedWords = memSQLReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors();
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForMemSQL()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      collectionThresholdLimit = 1048576,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::memSQLReservedWords():String[*]
+{
+    [
+       'absolute','action','allocate','are','assertion',
+       'bit', 'bit_length', 'both',
+       'cascaded',' case',' cast',' catalog',' char',' char_length',' character',' character_length',' coalesce',' collate',' collation',' column',' connection',' constraints',' corresponding',' cross',' current_date',' current_time',' current_timestamp',' current_user',
+       'date',' day',' dec',' decimal',' deferrable',' deferred',' describe',' descriptor',' diagnostics',' disconnect',' domain',
+       'end-exec',' exception',' extract',
+       'false',' first',' float',' found',' full',
+       'get',' global',' go',
+       'hour',
+       'immediate',' indicator',' initially',' inner',' input',' insensitive',' int',' integer',' interval',
+       'join',
+       'kerberos','key',
+       'language',' last',' leading',' left',' local',' lower',
+       'match',' minute',' module',' month',
+       'names',' natural',' nchar',' next',' no',' nullif',' numeric',
+       'octet_length',' outer',' output',' overlaps',
+       'pad',' partial',' position',' preserve',' prior',
+       'real',' relative',' restrict',' right',
+       'scroll',' second',' section',' semi_sensitive',' session_user ',' size ',' smallint',' space',' sql',' sqlcode',' sqlerror',' sqlstate',' substring',' system_user',
+       'then',' time',' timestamp',' timezone_hour',' timezone_minute',' trailing',' translate',' translation',' trim',' true',
+       'unknown',' upper',' usage',
+       'value', 'varchar',
+       'when',' whenever','window',' write',' year',
+       'zone'
+       ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::getDynaFunctionToSqlForMemSQL(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='adddate(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
+    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(%s, CHAR)')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(1),$p->at(0), $p->at(2)])})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='dayofweek(%s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='cast(from_base64(%s) as char)')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='cast(to_base64(%s) as char)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='subdate(%s, INTERVAL dayofmonth(%s) - 1 DAY) ', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='adddate(subdate(%s, INTERVAL dayofyear(%s) - 1 DAY), INTERVAL (quarter(date(%s) -1)) QUARTER)', transform={p:String[1] | $p->repeat(3)})),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='subdate(curdate(), INTERVAL dayofmonth(current_date()) - 1 DAY) ')),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='adddate(subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY), INTERVAL (quarter(curdate()) -1) QUARTER)')),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='subdate(%s, INTERVAL dayofyear(%s) - 1 DAY)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='group_concat(%s separator %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) > 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as signed integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='LOCATE(%s, %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='adddate(%s, INTERVAL case when %s - dayofweek(%s) >= 0 then %s - dayofweek(%s) - 7 else %s - dayofweek(%s) end DAY)', transform={p:String[1..2] | $p->formatMostRecentMemSQL('curdate()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='curdate()')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as char)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})), 
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::convertToDateMemSQL(params:String[*]):String[1]
+{
+   assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+   assert($params->size()==1 || dateFormatsMemSQL()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   let dateFormat = if( $params->size() == 1,|'\'YYYY-MM-DD\'' ,| $params->at(1););
+   'cast( to_date('+$params->at(0)+','+$dateFormat +') as date)';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::transformToTimestampMemSQL(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = $params->at(1);   
+   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';   
+}
+
+function  <<access.private>> meta::relational::functions::sqlQueryToString::memSql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
+{
+  let enumList = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+
+  let indexOfDiff = $enumList->indexOf($params->at(2)->replace('Text', ''));
+
+  let dbSpecificUnits = [
+
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| format('(%s)', [
+        'datediff(%s , %s)'
+     ])},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
+     {| format('(%s)', [
+        'time_to_sec(timediff(%s , %s))'
+     ])},
+     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';}
+  ];
+
+  format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::formatMostRecentMemSQL(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $day, $current, $day, $current, $day, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::dateFormatsMemSQL():String[*]
+{
+   ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSelectSQLQueryForMemSQL(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForMemSQL($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::processSelectSQLQueryForMemSQL(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let joinOrder = [JoinType.INNER, JoinType.LEFT_OUTER, JoinType.RIGHT_OUTER];
+
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, processTakeDefault_SelectSQLQuery_1__Format_1__String_1_, processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}

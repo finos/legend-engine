@@ -724,6 +724,37 @@ public class PureModel implements IPureModel
         return _class;
     }
 
+    public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner getPropertyOwner(String fullPath, SourceInformation sourceInformation)
+    {
+        Type type = getType_safe(fullPath);
+        if (type != null)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class;
+            try
+            {
+                _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) type;
+            }
+            catch (ClassCastException e)
+            {
+                throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+            }
+            return _class;
+        }
+        else
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association association;
+            try
+            {
+                association = this.getAssociation(fullPath, sourceInformation);
+            }
+            catch (EngineException e)
+            {
+                throw new EngineException("Can't find property owner '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION, e);
+            }
+            return association;
+        }
+    }
+
     public Enumeration<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum> getEnumeration(String fullPath, SourceInformation sourceInformation)
     {
         Type type;

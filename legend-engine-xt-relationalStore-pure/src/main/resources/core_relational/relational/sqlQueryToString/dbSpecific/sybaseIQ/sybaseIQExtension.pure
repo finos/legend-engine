@@ -1,0 +1,609 @@
+import meta::relational::functions::sqlQueryToString::sybaseIQ::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::sybaseIQ::dbExtensionLoaderForSybaseIQ():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.SybaseIQ, loader = createDbExtensionForSybaseIQ__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::createDbExtensionForSybaseIQ():DbExtension[1]
+{
+   let reservedWords = sybaseReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSybaseIQ());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForSybaseIQ()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = false,
+      collectionThresholdLimit = 250000,
+      aliasLimit = 255,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForSybaseIQ_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForSybaseIQ_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      columnNameToIdentifier = columnNameToIdentifierForSybaseIQ_String_1__DbConfig_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getLiteralProcessorsForSybaseIQ():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(StrictDate,     ^LiteralProcessor(format = 'convert(DATE, \'%s\', 121)',     transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'convert(DATETIME, \'%s\', 121)', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctionToSqlForSybaseIQ(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->processDateDiffDurationUnitForSybaseIQ(),$p->at(0),$p->at(1)]})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
+    dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()})),
+    dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=likePatternWithoutEscape('%%%s%%'), transform={p:String[1]|$p->transformAlphaNumericParamsForSybaseIQ()})),
+    dynaFnToSql('startsWith',             $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParamsForSybaseIQ()}))
+  ]->concatenate(getDynaFunctionToSqlCommonToBothSybases());
+}
+
+function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctionToSqlCommonToBothSybases(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+  let selectOutsideWhen = selectOutsideWhenGenerationState();
+  let notSelectOutsideWhen = notSelectOutsideWhenGenerationStates();
+
+  [
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateIQ()})),
+    dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeIQ()})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='convert(VARCHAR(128), %s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='datename(WEEKDAY,%s)')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'datepart(Weekday,'+ $p->at(0)+')',|$p->dayOfWeekNumberSybaseIQ());})),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='datepart(DAY,%s)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(day(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(%s) - 1, dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(day(today()) - 1), today())%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(QUARTER, quarter(today()) - 1, dateadd(DAY, -(datepart(dayofyear, today()) - 1), today()))%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, today()) - 1), today())%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='dateadd(DAY, -(mod(datepart(weekday, %s)+5, 7)), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(DAY, -(datepart(dayofyear, %s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='LOCATE(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('isEmpty',                $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isEmpty',                $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+    dynaFnToSql('isNotEmpty',             $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotEmpty',             $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNotNull',              $selectOutsideWhen,    ^ToSql(format='case when (%s is not null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNotNull',              $notSelectOutsideWhen, ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNull',                 $selectOutsideWhen,    ^ToSql(format='case when (%s is null) then \'true\' else \'false\' end', parametersWithinWhenClause=true)),
+    dynaFnToSql('isNull',                 $notSelectOutsideWhen, ^ToSql(format='%s is null')),
+    dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='isnumeric(%s)')),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='list(%s,%s)')),
+    dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
+    dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(Day, case when %s - dow(%s) > 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentSybase('today()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='now(%s)', transform={p:String[*] | ''})),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if( $p->size()==1,|'cast('+$p->at(0)+' as timestamp)' ,|'convert( datetime,'+ $p->at(0)+','+$p->at(1)+')' )})),
+    dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='charindex(%s, %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - dow(%s) >= 0 then %s - dow(%s) - 7 else %s - dow(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentSybase('today()')}, parametersWithinWhenClause = [false, false])),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='today(%s)', transform={p:String[*] | ''})),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampSybaseIQ()})),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(WEEK,%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::convertToDateIQ(params:String[*]):String[1]
+{
+   $params->convertDateFunctionHasCorrectParams();
+   let dateFormat = if( $params->size() == 1,| 120,| dateFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
+   if ($dateFormat == 106,
+       |'convert ( date,(\'01 \' + ' + 'substring(' + $params->at(0) + ',1,3)' + ' + \' \' + ' + 'substring(' + $params->at(0) + ',4,4))' + ',' + $dateFormat->toString() + ')',
+       |'convert ( date,'+$params->at(0)+','+$dateFormat->toString() +')';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformLikeParamsForSybaseIQ(params: String[2]):String[*]
+{
+   let likeExpression = $params->at(1)->removeQuotes()->escapeLikeExprForSybaseIQ();
+   $params->at(0)
+      ->concatenate($likeExpression)
+      ->concatenate(likeEscapeClauseForSybaseIQ($likeExpression));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::likeEscapeClauseForSybaseIQ(expr: String[1]):String[*]
+{
+   if($expr->contains('\\'),
+      |' escape \'\\\'',
+      |'');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::escapeLikeExprForSybaseIQ(query: String[1]):String[1]
+{
+   // Escaping references...
+   // Sybase IQ: http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1520/html/iqrefbb/CACGCGGC.htm
+
+   $query
+      ->replace('_', '\\_')
+      ->replace('%', '\\%')
+      ->replace('[', '\\[');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::convertToDateTimeIQ(params:String[*]):String[1]
+{
+   $params->convertDateTimeFunctionHasCorrectParams();
+   let dateTimeFormat = if( $params->size() == 1,| 120 ,| dateTimeFormats()->get($params->at(1)->replace('\'', ''))->toOne(););
+   //http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1520/html/iqrefbb/Dateformat.htm
+   'convert( timestamp,'+$params->at(0)+','+$dateTimeFormat->toString() +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformToTimestampSybaseIQ(params:String[2]):String[1]
+{
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');    
+   let timestampFormat = 121;   
+   'convert(datetime,'+$params->at(0)+','+$timestampFormat->toString() +')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::formatMostRecentSybase(p:String[1..2], defaultDay:String[1]):String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumber()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$day, $current, $day, $current, $day, $current, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processDateDiffDurationUnitForSybaseIQ(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['yy', 'mm', 'wk', 'dd', 'hh', 'mi', 'ss', 'ms'];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformAlphaNumericParamsForSybaseIQ(params: String[1]):String[*]
+{
+   let param = '\'[^a-zA-Z0-9]\'';
+   let expression = $param->removeQuotes();
+   $params->at(0)->concatenate($expression);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processJoinStringsOperationForSybaseIQ(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, {col, sep| 'list(' + $col + ',' + $sep + ' )'}, {strs, sep| $strs->joinStrings(if('\'\'' == $sep, |'+', |'+' + $sep + '+'))});
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processSelectSQLQueryForSybaseIQ(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSybaseIQ($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processSelectSQLQueryForSybaseIQ(sq:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  // Sybase IQ does not support limit / offset in a subselect, so we need to adjust it, e.g.
+  //       select * from (select top 10 "root".id as "ID" from trades as "root" ) as x
+  // gives
+  //       SQL Anywhere Error -1001030: Feature,  TOP/FIRST/LIMIT in a view, is not supported.
+  // but instead needs to be
+  //      select * from (select "limitoffset_via_window_subquery"."ID" as "ID" from (select "root".id as "ID", row_number() OVER (Order By "root".id) as "row_number" from trades as "root")
+  //            as "limitoffset_via_window_subquery" where "limitoffset_via_window_subquery".row_number < 10) as x
+  // Also see https://www.jooq.org/doc/3.1/manual/sql-building/sql-statements/select-statement/limit-clause/#N467C4
+
+  let s = if($isSubSelect && ($sq.fromRow->isNotEmpty() || $sq.toRow->isNotEmpty()), |$sq->rewriteSliceAsWindowFunction(), |$sq);
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  
+  $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') + processTop($s, $format) +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), false, $extensions) +
+  if ($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, [], processSliceOrDropForSybaseIQ_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::processSliceOrDropForSybaseIQ(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+{
+    // queries where specifying query with "limit 100,1000" would return 1100 rows.
+    // However when a order by column is specified, the expected number of rows is returned (i.e. 900 rows).
+    // Given that a slice without an order is largely meaningless, we'll simply report an error (rather than trying to simulate something)
+    //
+    // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc00801.1601/doc/html/san1281564978024.html
+
+    assert($s.orderBy->isNotEmpty(), | 'SybaseIQ requires an order by column for meaningful limit/offset');
+    '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::columnNameToIdentifierForSybaseIQ(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if($dbConfig.isDbReservedIdentifier($columnName->toLower()), |'"' + $columnName->toLower() + '"', |$columnName->quoteIdentifierDefault());
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::dayOfWeekNumberSybaseIQ(dayOfWeek: String[*]):String[1]
+{
+   let day = if(startsWith($dayOfWeek->at(1),'\''),|$dayOfWeek->at(1)->removeQuotes(),|$dayOfWeek->at(1));
+   assert(or($day == 'Sunday',$day == 'Monday'),'DayOfWeekNumber Function requires either Sunday or Monday as First Day of Week');
+   if($day =='Sunday',|'datepart(Weekday,'+$dayOfWeek->at(0)+')',|'mod (datepart(weekday,'+$dayOfWeek->at(0)+')+5,7)+1');
+}    
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::sybaseReservedWords():String[*]
+{
+   //Based on
+   // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1510/html/iqrefbb/Alhakeywords.htm
+   // and
+   // http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc38151.1601/doc/html/san1278452828146.html
+
+   [
+   'active',
+   'add',
+   'algorithm',
+   'all',
+   'alter',
+   'and',
+   'any',
+   'append',
+   'array',
+   'as',
+   'asc',
+   'attach',
+   'auto',
+   'backup',
+   'begin',
+   'between',
+   'bigint',
+   'binary',
+   'bit',
+   'bottom',
+   'break',
+   'by',
+   'calibrate',
+   'calibration',
+   'call',
+   'cancel',
+   'capability',
+   'cascade',
+   'case',
+   'cast',
+   'certificate',
+   'char',
+   'char_convert',
+   'character',
+   'check',
+   'checkpoint',
+   'checksum',
+   'clientport',
+   'close',
+   'columns',
+   'comment',
+   'commit',
+   'committed',
+   'comparisons',
+   'compressed',
+   'computes',
+   'conflict',
+   'connect',
+   'constraint',
+   'contains',
+   'continue',
+   'convert',
+   'create',
+   'cross',
+   'cube',
+   'current',
+   'current_timestamp',
+   'current_user',
+   'cursor',
+   'date',
+   'datetimeoffset',
+   'dbspace',
+   'dbspacename',
+   'deallocate',
+   'debug',
+   'dec',
+   'decimal',
+   'declare',
+   'decoupled',
+   'decrypted',
+   'default',
+   'delay',
+   'delete',
+   'deleting',
+   'density',
+   'desc',
+   'detach',
+   'deterministic',
+   'disable',
+   'distinct',
+   'do',
+   'double',
+   'drop',
+   'dynamic',
+   'elements',
+   'else',
+   'elseif',
+   'enable',
+   'encapsulated',
+   'encrypted',
+   'end',
+   'endif',
+   'escape',
+   'except',
+   'exception',
+   'exclude',
+   'exec',
+   'execute',
+   'existing',
+   'exists',
+   'explicit',
+   'express',
+   'externlogin',
+   'fastfirstrow',
+   'fetch',
+   'first',
+   'float',
+   'following',
+   'for',
+   'force',
+   'foreign',
+   'forward',
+   'from',
+   'full',
+   'gb',
+   'goto',
+   'grant',
+   'group',
+   'grouping',
+   'having',
+   'hidden',
+   'history',
+   'holdlock',
+   'identified',
+   'if',
+   'in',
+   'inactive',
+   'index',
+   'index_lparen',
+   'inner',
+   'inout',
+   'input',
+   'insensitive',
+   'insert',
+   'inserting',
+   'install',
+   'instead',
+   'int',
+   'integer',
+   'integrated',
+   'intersect',
+   'into',
+   'iq',
+   'is',
+   'isolation',
+   'jdk',
+   'join',
+   'json',
+   'kb',
+   'kerberos',
+   'key',
+   'lateral',
+   'left',
+   'like',
+   'limit',
+   'lock',
+   'logging',
+   'login',
+   'long',
+   'match',
+   'mb',
+   'membership',
+   'merge',
+   'message',
+   'mode',
+   'modify',
+   'namespace',
+   'natural',
+   'nchar',
+   'new',
+   'no',
+   'noholdlock',
+   'nolock',
+   'not',
+   'notify',
+   'null',
+   'numeric',
+   'nvarchar',
+   'of',
+   'off',
+   'on',
+   'open',
+   'openstring',
+   'openxml',
+   'optimization',
+   'option',
+   'options',
+   'or',
+   'order',
+   'others',
+   'out',
+   'outer',
+   'over',
+   'pages',
+   'paglock',
+   'partial',
+   'partition',
+   'passthrough',
+   'password',
+   'plan',
+   'preceding',
+   'precision',
+   'prepare',
+   'primary',
+   'print',
+   'privileges',
+   'proc',
+   'procedure',
+   'proxy',
+   'publication',
+   'raiserror',
+   'range',
+   'raw',
+   'readcommitted',
+   'readonly',
+   'readpast',
+   'readtext',
+   'readuncommitted',
+   'readwrite',
+   'real',
+   'recursive',
+   'reference',
+   'references',
+   'refresh',
+   'release',
+   'relocate',
+   'remote',
+   'remove',
+   'rename',
+   'reorganize',
+   'repeatable',
+   'repeatableread',
+   'reserve',
+   'resizing',
+   'resource',
+   'restore',
+   'restrict',
+   'return',
+   'revoke',
+   'right',
+   'rollback',
+   'rollup',
+   'root',
+   'row',
+   'rowlock',
+   'rows',
+   'rowtype',
+   'save',
+   'savepoint',
+   'schedule',
+   'scroll',
+   'secure',
+   'select',
+   'sensitive',
+   'serializable',
+   'service',
+   'session',
+   'set',
+   'setuser',
+   'share',
+   'smallint',
+   'soapaction',
+   'some',
+   'space',
+   'spatial',
+   'sqlcode',
+   'sqlstate',
+   'start',
+   'stop',
+   'subtrans',
+   'subtransaction',
+   'synchronize',
+   'syntax_error',
+   'table',
+   'tablock',
+   'tablockx',
+   'tb',
+   'temporary',
+   'then',
+   'ties',
+   'time',
+   'timestamp',
+   'tinyint',
+   'to',
+   'top',
+   'tran',
+   'transaction',
+   'transactional',
+   'transfer',
+   'treat',
+   'tries',
+   'trigger',
+   'truncate',
+   'tsequal',
+   'unbounded',
+   'uncommitted',
+   'union',
+   'unique',
+   'uniqueidentifier',
+   'unknown',
+   'unnest',
+   'unsigned',
+   'update',
+   'updating',
+   'updlock',
+   'url',
+   'user',
+   'using',
+   'utc',
+   'validate',
+   'values',
+   'varbinary',
+   'varbit',
+   'varchar',
+   'variable',
+   'varray',
+   'varying',
+   'view',
+   'virtual',
+   'wait',
+   'waitfor',
+   'web',
+   'when',
+   'where',
+   'while',
+   'window',
+   'with',
+   'with_cube',
+   'with_lparen',
+   'with_rollup',
+   'withauto',
+   'within',
+   'word',
+   'work',
+   'writeserver',
+   'writetext',
+   'xlock',
+   'xml'
+   ]
+}

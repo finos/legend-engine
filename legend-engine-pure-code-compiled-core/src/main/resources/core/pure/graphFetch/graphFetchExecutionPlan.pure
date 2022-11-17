@@ -25,14 +25,8 @@ import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::runtime::*;
-
-Class <<doc.deprecated>> meta::pure::graphFetch::executionPlan::GraphFetchExecutionNode extends ExecutionNode
-{
-   graphFetchTree : ClusteredGraphFetchTree[1];
-   rootExecutionNode : ExecutionNode[1];
-   batchSize : Integer[0..1];
-   globalGraphFetchExecutionNode : GlobalGraphFetchExecutionNode[1];
-}
+import meta::pure::router::metamodel::*;
+import meta::pure::router::utils::*;
 
 Class meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode extends ExecutionNode
 {
@@ -77,7 +71,7 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
 {
    let fe = $sq.fe->evaluateAndDeactivate();
    let resultSize = $fe.parametersValues->evaluateAndDeactivate()->at(0)->match([rvs:ExtendedRoutedValueSpecification[1] | $rvs.value.multiplicity->toOne(),
-                                                                                          vs: ValueSpecification[1] | $fe.multiplicity->toOne()]);
+                                                                                 vs: ValueSpecification[1] | $fe.multiplicity->toOne()]);
    assert($fe.func->in(graphFetchFunctions()) || $fe->isUnionOnGraphFetch(true)); 
    let clusteredTree            = $fe.parametersValues->evaluateAndDeactivate()->at(1)->cast(@InstanceValue).values->at(0)->cast(@ClusteredGraphFetchTree);
    let orderedPaths             = $clusteredTree->getPathsOrdered();
@@ -135,7 +129,7 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
    let fe = $sq.fe->evaluateAndDeactivate();
    assert($fe->isUnionOnGraphFetch(true), | 'Non union graphFetch function encountered');
 
-   let subClusters  = $fe.parametersValues->evaluateAndDeactivate()->map({p | $p->meta::pure::router::clustering::cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@meta::pure::router::clustering::ClusteredValueSpecification);
+   let subClusters  = $fe.parametersValues->evaluateAndDeactivate()->map({p | $p->meta::pure::router::clustering::cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@meta::pure::router::metamodel::clustering::ClusteredValueSpecification);
    let firstCluster = $subClusters->at(0);
    let childNodes   = $subClusters->map(cls | $cls->plan($sq.inScopeVars, $exeCtx, $extensions, $debug));
    

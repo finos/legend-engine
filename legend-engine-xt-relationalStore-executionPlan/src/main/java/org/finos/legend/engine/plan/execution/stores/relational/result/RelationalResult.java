@@ -14,8 +14,27 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.TimeZone;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -37,6 +56,7 @@ import org.finos.legend.engine.plan.execution.result.builder._class.PartialClass
 import org.finos.legend.engine.plan.execution.result.builder._class.PropertyInfo;
 import org.finos.legend.engine.plan.execution.result.builder.datatype.DataTypeBuilder;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
+import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResultObjectMapperFactory;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.result.transformer.SetImplTransformers;
@@ -60,18 +80,6 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
-
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.function.Consumer;
 
 public class RelationalResult extends StreamingResult implements IRelationalResult
 {
@@ -571,5 +579,40 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
                 this.close();
                 throw new RuntimeException(format.toString() + " format not currently supported with RelationalResult");
         }
+    }
+
+    public Stream<ObjectNode> toStream()
+    {
+        ObjectMapper objectMapper = ExecutionResultObjectMapperFactory.getNewObjectMapper();
+        Map<String, Object> row = Maps.mutable.empty();
+
+        Spliterator<ObjectNode> spliterator = new Spliterators.AbstractSpliterator<ObjectNode>(Long.MAX_VALUE, 0)
+        {
+            @Override
+            public boolean tryAdvance(Consumer<? super ObjectNode> action)
+            {
+                try
+                {
+                    boolean next = resultSet.next();
+                    if (next)
+                    {
+                        List<Function<Object, Object>> transformers = getTransformers();
+
+                        for (int i = 0; i < resultColumns.size(); i++)
+                        {
+                            row.put(columnListForSerializer.get(i), transformers.get(i).valueOf(getValue(i + 1)));
+                        }
+                        action.accept(objectMapper.convertValue(row, ObjectNode.class));
+                    }
+                    return next;
+                }
+                catch (SQLException e)
+                {
+                    throw new RuntimeException(e);
+                }
+            }
+        };
+
+        return StreamSupport.stream(spliterator, false).onClose(this::close);
     }
 }

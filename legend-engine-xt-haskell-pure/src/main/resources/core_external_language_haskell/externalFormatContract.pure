@@ -1,0 +1,17 @@
+import meta::external::shared::format::*;
+import meta::external::language::haskell::format::*;
+import meta::external::language::haskell::transformation::fromPure::*;
+
+
+function meta::external::language::haskell::contract::haskellFormatContract(): ExternalFormatContract<HaskellSchema>[1]
+{
+   ^ExternalFormatContract<HaskellSchema>
+   (
+      id                               = 'Haskell',
+      contentTypes                     = ['text/x-haskell'],
+
+      externalFormatMetamodel          = HaskellSchema,
+
+      externalFormatFromPureDescriptor = haskellFromPureDescriptor()
+   )
+}

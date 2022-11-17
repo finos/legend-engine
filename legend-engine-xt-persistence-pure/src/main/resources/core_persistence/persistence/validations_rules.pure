@@ -137,10 +137,11 @@ Class meta::pure::persistence::validation::OtherExecutionClassification extends 
 
 function meta::pure::persistence::validation::classify(execution: PureSingleExecution[1]): ExecutionClassification[1]
 {
+  assert($execution->cast(@PureSingleExecution).mapping->isNotEmpty() && $execution->cast(@PureSingleExecution).runtime->isNotEmpty(),'Please provide mapping and runtime as part of execution');
   $execution.func.expressionSequence->evaluateAndDeactivate()->last()->match([
     fe: FunctionExpression[1] | if ($fe.func == meta::pure::graphFetch::execution::serialize_T_MANY__RootGraphFetchTree_1__String_1_,
       | classifyFunctionExpression($execution.func, $fe),
-      | let plan = executionPlan($execution.func, $execution.mapping, $execution.runtime, extensions());
+      | let plan = executionPlan($execution.func, $execution.mapping->toOne(), $execution.runtime->toOne(), extensions());
         $plan.rootExecutionNode.resultType->match([
           tds: TDSResultType[1] |
             let columnByName = $tds.tdsColumns->map(c | pair($c.name, $c))->newMap();

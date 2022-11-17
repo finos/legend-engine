@@ -310,7 +310,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
                            j_throw(j_new(javaRuntimeException(), [
                               j_string('Enumeration mapping failure. Cannot find transformation for source value \'')
                               ->j_plus($r)
-                              ->j_plus(j_string('\' for enumeration property \'' + $property.name->toOne() + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).name->toOne() + '.'))
+                              ->j_plus(j_string('\' for enumeration property \'' + $property.name->toOne() + '\' of type ' + $propertyType->elementToPath() + ' in enumeration mapping ' + $currentPropertyMapping.transformer->cast(@EnumerationMapping<Any>).name->concatenate('{missing enum mapping}')->first()->toOne() + '.'))
                            ]))
                         ),
                         $enumResVar->j_assign(javaClass('java.lang.Enum')->j_invoke('valueOf', [$javaEnumeration->j_classField(), $transformedR], $javaEnumeration))

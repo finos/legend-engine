@@ -70,6 +70,12 @@ public class EngineException extends RuntimeException
         this.errorCategory = errorCategory;
     }
 
+    public EngineException(String message, EngineErrorType type)
+    {
+        super(message);
+        this.errorType = type;
+    }
+
     public EngineException(String message, SourceInformation sourceInformation, EngineErrorType type)
     {
         super(message);

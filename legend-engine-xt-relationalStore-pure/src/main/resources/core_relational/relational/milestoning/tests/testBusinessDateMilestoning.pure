@@ -578,6 +578,14 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testD
    assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join ProductClassificationSystemTable as "ProductClassificationSystemTable_d#5_d#2_m1" on ("root".classificationSystemId = "ProductClassificationSystemTable_d#5_d#2_m1".id and "ProductClassificationSystemTable_d#5_d#2_m1".from_z <= \'2015-01-01\' and "ProductClassificationSystemTable_d#5_d#2_m1".thru_z > \'2015-01-01\') left outer join SystemTable as "SystemTable_d#5_l_d#2_m1_r" on ("ProductClassificationSystemTable_d#5_d#2_m1".name = "SystemTable_d#5_l_d#2_m1_r".name) where "SystemTable_d#5_l_d#2_m1_r".name = \'SYS1\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $sql);
 }
 
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testAllVersionsQueryWithMilestonedProperty():Boolean[1]
+{
+   let query = {|Product.allVersions()->filter(p|$p.classificationAllVersions.system.name=='SYS1')->project([p|$p.name],['name'])};
+   let sql = toSQLString($query, milestoningMapWithEmbeddedSimple, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   
+   assertSameSQL('select "root".name as "name" from ProductTable as "root" left outer join ProductClassificationSystemTable as "ProductClassificationSystemTable_d#6_f_d_d#2_m1" on ("root".classificationSystemId = "ProductClassificationSystemTable_d#6_f_d_d#2_m1".id) left outer join SystemTable as "SystemTable_d#6_f_d_l_d#2_m1_r" on ("ProductClassificationSystemTable_d#6_f_d_d#2_m1".name = "SystemTable_d#6_f_d_l_d#2_m1_r".name) where "SystemTable_d#6_f_d_l_d#2_m1_r".name = \'SYS1\'', $sql);
+}
+
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testMilestoningCriteriaAppliedToViewRoot():Boolean[1]
 {
    let businessDate = %2016-7-22;

@@ -104,7 +104,7 @@ class NontemporalSnapshotTest extends BaseTest
     @Test
     void testNontemporalSnapshotWithAuditing() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getMainTableWithbatchUpdateTimeField();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTable(dataPass1);
 

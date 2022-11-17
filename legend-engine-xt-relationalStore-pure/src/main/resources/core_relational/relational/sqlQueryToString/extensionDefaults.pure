@@ -1,0 +1,622 @@
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::join::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function meta::relational::functions::sqlQueryToString::default::defaultReservedWords():String[*]
+{
+  ['kerberos', 'date', 'first'];
+}
+
+function meta::relational::functions::sqlQueryToString::default::columnNameToIdentifierDefault(columnName: String[1], dbConfig: DbConfig[1]): String[1]
+{
+   if($columnName->toLower()->in(['kerberos', 'date', 'first']), |'"' + $columnName->toUpper() + '"', |$columnName);
+}
+
+function meta::relational::functions::sqlQueryToString::default::quoteIdentifierDefault(identifier:String[1]):String[1]
+{
+   if(!$identifier->startsWith('"') && $identifier->hasSpecialChars() && !isFreeMarkerIdentifier($identifier), |'"' + $identifier + '"', |$identifier);
+}
+
+function meta::relational::functions::sqlQueryToString::default::hasSpecialChars(identifier:String[1]):Boolean[1]
+{
+  $identifier->contains(' ') || $identifier->contains('/')
+}
+
+function meta::relational::functions::sqlQueryToString::default::isFreeMarkerIdentifier(identifier:String[1]):Boolean[1]
+{
+  $identifier->startsWith('${')
+}
+
+function meta::relational::functions::sqlQueryToString::default::rewriteSliceAsWindowFunction(selectQuery:SelectSQLQuery[1]):SelectSQLQuery[1]
+{
+   assert($selectQuery.fromRow->isNotEmpty() || $selectQuery.toRow->isNotEmpty(), 'Expected at least one of fromRow/toRow');
+
+   let columnName = 'row_number';
+   let func = ^DynaFunction(name = meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_.functionName->toOne()) ;
+   let sortDirection = if($selectQuery.orderBy->isNotEmpty(),
+                   | $selectQuery.orderBy->at(0).direction, //We probably should pass on all order by columns (rather than just the first), but WindowColumn doesn't support that
+                   | []
+                   );
+   let sortBy = if($selectQuery.orderBy->isNotEmpty(),
+                   | $selectQuery.orderBy.column->at(0), //We probably should pass on all order by columns (rather than just the first), but WindowColumn doesn't support that
+                   | $selectQuery.columns->at(0)
+                   )
+                  ->match([
+                         a:Alias[1]|$a.relationalElement,
+                         r:RelationalOperationElement[1]|$r
+                      ]);
+
+   let windowColumn = ^Alias(
+          name='"'+$columnName+'"' ,
+          relationalElement = ^meta::relational::metamodel::WindowColumn(
+                columnName = $columnName,
+                func= $func,
+                window = ^meta::relational::metamodel::Window(partition=[],sortBy=$sortBy, sortDirection=$sortDirection)
+             )
+          );
+
+   let innerQuery = ^$selectQuery(
+      columns = $selectQuery.columns->concatenate($windowColumn),
+      toRow = [],
+      fromRow = [],
+      orderBy = []
+      );
+
+   let tableAlias = ^TableAlias(name = 'limitoffset_via_window_subquery', relationalElement=$innerQuery);
+
+   let row_number_col = ^TableAliasColumn(
+                           alias =  $tableAlias,
+                           column = ^Column(
+                                           name = $columnName,
+                                           type = ^meta::relational::metamodel::datatype::Integer()
+                                           )
+                        );
+
+
+   let filters = if($selectQuery.fromRow->isEmpty(),
+                       | [],
+                       | ^DynaFunction(name = greaterThan_Number_1__Number_1__Boolean_1_.functionName->toOne(), parameters = [$row_number_col, $selectQuery.fromRow->toOne()])
+                       )
+                 ->concatenate(
+                       if($selectQuery.toRow->isEmpty(),
+                          | [],
+                          | ^DynaFunction(name = lessThanEqual_Number_1__Number_1__Boolean_1_.functionName->toOne(), parameters = [$row_number_col,  $selectQuery.toRow->toOne()])
+                          )
+                       );
+
+   let filter = if($filters->size() <= 1,
+                   | $filters->first(),
+                   | ^DynaFunction(name = and_Boolean_MANY__Boolean_1_.functionName->toOne(), parameters = $filters)
+                );
+
+   ^TdsSelectSqlQuery(
+      columns = $innerQuery.columns->init()->cast(@Alias)->map(c|
+            ^Alias(
+               name = $c.name,
+               relationalElement = ^TableAliasColumn(
+                                                     alias =  $tableAlias,
+                                                     column = ^Column(
+                                                              name = $c.name,
+                                                              type = ^meta::relational::metamodel::datatype::Integer()
+                                                              )
+                                                      )
+                )
+            ),
+      data =^RootJoinTreeNode(alias = $tableAlias),
+      filteringOperation = $filter
+      );
+}
+
+function meta::relational::functions::sqlQueryToString::default::processTakeDefault(s:SelectSQLQuery[1], format:Format[1]):String[1]
+{
+   '%s limit %s'->format([$format.separator, $s.toRow->toOne()->getValueForTake()]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::getDefaultLiteralProcessors():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+      pair(Enum,           ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString_String_1__String_1_->literalTransform())),
+      pair(Number,         ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Integer,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Float,          ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Decimal,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
+      pair(Boolean,        ^LiteralProcessor(format = '\'%s\'', transform = toString_Any_1__String_1_->literalTransform())),
+      pair(SQLNull,        ^LiteralProcessor(format = '%s',     transform = convertSQLNullToSQLString_SQLNull_1__String_1_->literalTransform())),
+      pair(StrictDate,     ^LiteralProcessor(format = '\'%s\'', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = '\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = '\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+   ]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::convertDateToSqlString(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
+   let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
+   if($date->hasSecond(),
+      | if ($date->hasSubsecond(),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
+            | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)),
+      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date));
+}
+
+function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperationWithConcatCall(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+}
+
+function meta::relational::functions::sqlQueryToString::default::getDynaFunctionToSqlDefault(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+    dynaFnToSql('abs',                    $allStates,            ^ToSql(format='abs(%s)')),
+    dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
+    dynaFnToSql('add',                    $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus())),
+    dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('asin',                   $allStates,            ^ToSql(format='asin(%s)')),
+    dynaFnToSql('atan',                   $allStates,            ^ToSql(format='atan(%s)')),
+    dynaFnToSql('average',                $allStates,            ^ToSql(format='avg(1.0 * %s)')),
+    dynaFnToSql('averageRank',            $allStates,            ^ToSql(format='average_rank()')),
+    dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
+    dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
+    dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')),
+    dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('denseRank',              $allStates,            ^ToSql(format='dense_rank()')),
+    dynaFnToSql('distinct',               $allStates,            ^ToSql(format='distinct(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('divide',                 $allStates,            ^ToSql(format='((1.0 * %s) / %s)')),
+    dynaFnToSql('equal',                  $allStates,            ^ToSql(format='%s = %s')),
+    dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
+    dynaFnToSql('exists',                 $allStates,            ^ToSql(format='exists(%s)')),
+    dynaFnToSql('exp',                    $allStates,            ^ToSql(format='exp(%s)')),
+    dynaFnToSql('floor',                  $allStates,            ^ToSql(format='floor(%s)')),
+    dynaFnToSql('greaterThan',            $allStates,            ^ToSql(format='%s > %s')),
+    dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
+    dynaFnToSql('group',                  $allStates,            ^ToSql(format='(%s)')),
+    dynaFnToSql('if',                     $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false])),
+    dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
+    dynaFnToSql('objectReferenceIn',      $allStates,            ^ToSql(format='%s objectReferenceIn %s', transform={p:String[*] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | [$p->at(0), $p->at(1)], | [$p->at(0), ('(' + $p->at(1) + ')')])})),
+    dynaFnToSql('isDistinct',             $allStates,            ^ToSql(format='count(distinct(%s)) = count(%s)', transform={p:String[*]|assert($p->isNotEmpty(), |'"isDistinct" aggregation can be applied on primitive values only'); $p->concatenate($p);})),
+    dynaFnToSql('isEmpty',                $allStates,            ^ToSql(format='%s is null')),
+    dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNotNull',              $allStates,            ^ToSql(format='%s is not null')),
+    dynaFnToSql('isNull',                 $allStates,            ^ToSql(format='%s is null')),
+    dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
+    dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
+    dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s)')),
+    dynaFnToSql('max',                    $allStates,            ^ToSql(format='max(%s)')),
+    dynaFnToSql('min',                    $allStates,            ^ToSql(format='min(%s)')),
+    dynaFnToSql('minus',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | '-' + $p->toOne(), | $p->joinStrings('(', ' - ', ')'))})),
+    dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
+    dynaFnToSql('notEqualAnsi',           $allStates,            ^ToSql(format='%s <> %s')),
+    dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
+    dynaFnToSql('plus',                   $allStates,            ^ToSql(format='%s', transform=getTransformForAddPlus())),
+    dynaFnToSql('pow',                    $allStates,            ^ToSql(format='power(%s, %s)')),
+    dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform = {p:String[*] | $p->transformPercentile($literalProcessor)})),
+    dynaFnToSql('rank',                   $allStates,            ^ToSql(format='rank()')),
+    dynaFnToSql('replace',                $allStates,            ^ToSql(format='replace(%s, %s, %s)')),
+    dynaFnToSql('rowNumber',              $allStates,            ^ToSql(format='row_number()')),
+    dynaFnToSql('sin',                    $allStates,            ^ToSql(format='sin(%s)')),
+    dynaFnToSql('size',                   $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),
+    dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null')),
+    dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(true, [], $literalProcessor)})),
+    dynaFnToSql('sqrt',                   $allStates,            ^ToSql(format='sqrt(%s)')),
+    dynaFnToSql('startsWith',             $allStates,            ^ToSql(format=likePattern('%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
+    dynaFnToSql('sub',                    $allStates,            ^ToSql(format='%s-%s')),
+    dynaFnToSql('sum',                    $allStates,            ^ToSql(format='sum(%s)')),
+    dynaFnToSql('tan',                    $allStates,            ^ToSql(format='tan(%s)')),
+    dynaFnToSql('times',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | $p->toOne() , | $p->joinStrings('(', ' * ', ')'))})),
+    dynaFnToSql('toLower',                $allStates,            ^ToSql(format='lower(%s)')),
+    dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
+    dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
+    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)'))
+  ];
+}
+
+function meta::relational::functions::sqlQueryToString::default::processWindowColumn(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $w.func->processOperation($sgc) + ' OVER ('
+   + if($w.window.partition->isNotEmpty(),
+        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(',')+' ',
+        |'')
+   + if($w.window.sortBy->isNotEmpty(),
+        |'Order By '+$w.window.sortBy->toOne()->processOperation($sgc)
+              + if($w.window.sortDirection->isNotEmpty(), | ' ' +$w.window.sortDirection->toOne().name, | '')
+              +')',
+        |')') ;
+}
+
+function meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryDefault($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processSelectSQLQueryDefault(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+  $format.separator + 'select ' + processTop($s, $format) + if($s.distinct == true,|'distinct ',|'') +
+  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+  + processLimit($s, $format, [], processSliceOrDropDefault_SelectSQLQuery_1__Format_1__Any_1__String_1_);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processTop(s:SelectSQLQuery[1], format:Format[1]):String[1]
+{
+   if ($s.fromRow == [] && $s.toRow != [] && !$s.toRow->toOne().value->instanceOf(SQLNull),
+         |'top '+$s.toRow->toOne()->getValueForTake()+' ', |'');
+}
+
+function meta::relational::functions::sqlQueryToString::default::processSelectColumns(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+   if ($s->size() == 0,
+         |'*',
+         | $format.separator + $s->map(r|  $r->match([a:Alias[1] | let shouldWrapWithCase = ( $a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed );
+
+                                                                   $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $extensions) + ') then \'true\' else \'false\' end as ' + $a.name,
+                                                                                           | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+                                                                                           );,
+                                                      z:RelationalOperationElement[1]   | $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $extensions)
+                                                      ])
+
+                                      )->joinStrings(', ' + $format.separator);
+
+       );
+}
+
+function meta::relational::functions::sqlQueryToString::default::processJoinTreeNode(joinTreeNode:RelationalTreeNode[1], parent:TableAlias[0..1], dbConfig : DbConfig[1], format:Format[1], joinOrder:JoinType[*], extensions:Extension[*]):String[1]
+{
+   let tableAlias = $joinTreeNode->match(
+                                    [
+                                       r:RootJoinTreeNode[1] | $r.alias,
+                                       j:JoinTreeNode[1] | $j.join.otherTableFromAlias($parent->toOne());
+                                    ]
+                                    );
+   let val = $joinTreeNode->match(
+                                    [
+                                       r:RootJoinTreeNode[1] |
+                                             $tableAlias->toOne()
+                                                ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                                                ->processOperation($dbConfig, $format->indent(), $extensions),
+                                       j:JoinTreeNode[1] |
+                                             if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join '))
+                                                + if ($j.lateral == true, | 'lateral ', | '')
+                                                + $j.alias
+                                                      ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                                                      ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                                                + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';,
+                                       a:Any[1] | ''
+                                    ]
+                                    );
+   let children = if($joinOrder->isNotEmpty(),
+                     |$joinTreeNode.children()->sortBy({node | if($node.joinType->isEmpty(), |2, |$joinOrder->indexOf($node.joinType->toOne()))}),
+                     |$joinTreeNode.children());
+   $children->map(child | processJoinTreeNode($child, $tableAlias->cast(@TableAlias), $dbConfig, $format, $joinOrder, $extensions))->joinStrings($val, '', '');
+}
+
+function meta::relational::functions::sqlQueryToString::default::processGroupByColumns(columns:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], supportsAliasInGroupBy:Boolean[1], extensions:Extension[*]):String[*]
+{
+   $columns->map(c | $c->match([
+                                a:Alias[1] | if($supportsAliasInGroupBy == true, | $dbConfig.identifierProcessor($a->cast(@Alias).name)
+                                                                               , | $a->cast(@Alias).relationalElement->processOperation($dbConfig, $format, $extensions)),
+                                c:TableAliasColumn[1] | $c->processOperation($dbConfig, $format, $extensions)
+                                ]));
+}
+
+function meta::relational::functions::sqlQueryToString::default::processOrderBy(orderBy:OrderBy[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[*]
+{
+   $orderBy->map(o | $o.column->match([
+        a:Alias[1]|$dbConfig.identifierProcessor($a.name),
+        r:RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $config, $extensions)
+   ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'));
+}
+
+function meta::relational::functions::sqlQueryToString::default::processLimit(s:SelectSQLQuery[1], format:Format[1],
+              takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1] -> String[1]}>[0..1],
+              sliceOrDropProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], Any[1] -> String[1]}>[1]):String[1]
+{
+   if ($s.fromRow == [] && $s.toRow == [],
+      |
+         // No limit or offset required
+         '';
+      , |let size = if ($s.toRow == [] || $s.fromRow == [],
+                      | -1,
+                      |$s.toRow.value->match([
+                          i:Integer[1]| $s.toRow->toOne().value->cast(@Integer) - $s.fromRow->toOne().value->cast(@Integer) ,
+                          v:VarPlaceHolder[1]|[$s.toRow->toOne().value->cast(@VarPlaceHolder).name, $s.fromRow->toOne().value->cast(@VarPlaceHolder).name]->joinStrings('${','?number - ', '?number}')
+                          ])
+                      );
+         if ($s.fromRow == [],
+            |
+               // We have a "take"
+               assert($s.toRow->isNotEmpty());
+               if($takeProcessor->isNotEmpty(), |$takeProcessor->toOne()->eval($s, $format), |'');
+            ,
+            |
+               //We have a "slice" or a "drop"
+               assert($s.fromRow->isNotEmpty());
+               $sliceOrDropProcessor->eval($s, $format, $size);
+            );
+      );
+}
+
+function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
+{
+   '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);
+}
+
+function  meta::relational::functions::sqlQueryToString::default::getValueForTake(l:Literal[1]):String[1]
+{
+   $l.value->match([
+      i:Integer[1]| $i->toString(),
+      v:VarPlaceHolder[1] |$v->processPlaceHolder($v->getVariableType(), '', '', [])
+   ]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processIdentifierWithBackTicks(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->processIdentifierWithQuoteChar('`', $dbConfig);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processIdentifierWithDoubleQuotes(identifier:String[1], dbConfig: DbConfig[1]):String[1]
+{
+   $identifier->processIdentifierWithQuoteChar('"', $dbConfig);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processIdentifierWithQuoteChar(identifier:String[1], quoteChar: String[1], dbConfig : DbConfig[1]):String[1]
+{
+  if($dbConfig.quoteIdentifiers || $identifier->startsWith('"') || $dbConfig.isDbReservedIdentifier($identifier),
+    | '%s%s%s'->format([$quoteChar, $identifier->replace('"', ''), $quoteChar]),
+    | $identifier
+  );
+}
+
+function meta::relational::functions::sqlQueryToString::default::getDDLCommandsTranslatorDefault(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementDefault_CreateSchemaSQL_1__String_1_,
+                dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__String_1_,
+                createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__String_1_,
+                loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function meta::relational::functions::sqlQueryToString::default::translateCreateSchemaStatementDefault(createSchemaSQL:CreateSchemaSQL[1]) : String[1]
+{
+   'Create Schema ' + $createSchemaSQL.schema.name + ';';
+}
+
+function meta::relational::functions::sqlQueryToString::default::translateDropSchemaStatementDefault(dropSchemaSQL:DropSchemaSQL[1]) : String[1]
+{
+   'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' cascade;';
+}
+
+function meta::relational::functions::sqlQueryToString::default::translateDropTableStatementDefault(dropTableSQL:DropTableSQL[1]) : String[1]
+{
+  let t= $dropTableSQL.table;
+  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
+}
+
+function meta::relational::functions::sqlQueryToString::default::translateCreateTableStatementDefault(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+  let t= $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextDefault($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+        ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
+      +');';
+}
+
+function meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARCHAR(4000)',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+
+function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+
+    $loadTableSQL.parsedData.values->map(row |  let sql = 'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+            + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+            +') '
+            + 'values ('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ');';
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::default::mapToDBUnitType(unit:String[1]):String[1]
+{
+   [
+      pair(DurationUnit.YEARS->toString(), 'YEAR'),
+      pair(DurationUnit.MONTHS->toString(), 'MONTH'),
+      pair(DurationUnit.WEEKS->toString(), 'WEEK'),
+      pair(DurationUnit.DAYS->toString(), 'DAY'),
+      pair(DurationUnit.HOURS->toString(), 'HOUR'),
+      pair(DurationUnit.MINUTES->toString(), 'MINUTE'),
+      pair(DurationUnit.SECONDS->toString(), 'SECOND'),
+      pair(DurationUnit.MILLISECONDS->toString(), 'MILLISECOND'),
+      pair(DurationUnit.MICROSECONDS->toString(), 'MICROSECOND')
+   ]->filter(p | $p.first == $unit).second->toOne();
+}
+
+function meta::relational::functions::sqlQueryToString::default::regexpPattern(query: String[1]):String[1]
+{
+   '%s regexp \'' + '^' +$query + '$' +'\''
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformAlphaNumericParamsDefault(params: String[1]):String[*]
+{
+   let param = '\'[a-zA-Z0-9]*\'';
+   let expression = $param->removeQuotes();
+   $params->at(0)->concatenate($expression);
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformRegexpParams(params: String[2]):String[*]
+{
+   let regExpression = $params->at(1)->removeQuotes();
+   $params->at(0)->concatenate($regExpression);
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformRound(p:String[*]):String[*]
+{
+   if ($p->size() == 2,
+       | [$p->at(0), $p->at(1)],
+       | [$p->at(0), '0']);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperation(js:JoinStrings[1], sgc:SqlGenerationContext[1],
+         groupByCat:meta::pure::metamodel::function::Function<{String[1], String[1] -> String[1]}>[0..1], stringCat:meta::pure::metamodel::function::Function<{String[*], String[1] -> String[1]}>[0..1]):String[1]
+{
+    let strings = $js.strings->map(s | $s->processOperation($sgc));
+    let isGroupByCat = $js.strings->size() == 1;
+
+    let separator = if($js.separator->isEmpty(), |'\'\'', |$js.separator->toOne()->processOperation($sgc));
+    let prefix = if($js.prefix->isEmpty(), |'\'\'', |$js.prefix->toOne()->processOperation($sgc));
+    let suffix = if($js.suffix->isEmpty(), |'\'\'', |$js.suffix->toOne()->processOperation($sgc));
+    let strs = if(eq($prefix, '\'\''),
+                  | if(eq($suffix, '\'\''), | $strings, | $strings->add($suffix)),
+                  | if(eq($suffix, '\'\''), | $strings->add(0, $prefix), | $strings->add(0, $prefix)->add($suffix)));
+    if ($strs->size() == 0, | $strs->at(0), | if ($isGroupByCat,
+        |assert($groupByCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $groupByCat->toOne()->eval($strs->at(0), $separator);,
+        |assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($strs, $separator);));
+}
+
+function meta::relational::functions::sqlQueryToString::default::convertDateTimeFunctionHasCorrectParams(params:String[*]):Boolean[1]
+{
+  assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateTimeformat])');
+  let supportedDateTimeFormat = if($params->size() == 2, |dateTimeFormats()->get($params->at(1)->replace('\'', '')), |[]);
+  assert($params->size() ==1 || $supportedDateTimeFormat->size() == 1 , | $params->at(1) +' not supported ');
+}
+
+function meta::relational::functions::sqlQueryToString::default::convertDateFunctionHasCorrectParams(params:String[*]):Boolean[1]
+{
+  assert( 2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
+  let supportedDateFormat = if($params->size() == 2, |dateFormats()->get($params->at(1)->replace('\'', '')), |[]);
+  assert($params->size()==1 || $supportedDateFormat->size() == 1 , | $params->at(1) +' not supported ');
+}
+
+function meta::relational::functions::sqlQueryToString::default::mapToDBDayOfWeekNumber(day:String[1]):Integer[1]
+{
+   [
+      pair(DayOfWeek.Monday->toString(), 2),
+      pair(DayOfWeek.Tuesday->toString(), 3),
+      pair(DayOfWeek.Wednesday->toString(), 4),
+      pair(DayOfWeek.Thursday->toString(), 5),
+      pair(DayOfWeek.Friday->toString(), 6),
+      pair(DayOfWeek.Saturday->toString(), 7),
+      pair(DayOfWeek.Sunday->toString(), 1)
+   ]->filter(p | $p.first == $day).second->toOne();
+}
+
+function meta::relational::functions::sqlQueryToString::default::getTransformForAddPlus():LambdaFunction<{String[*]->String[*]}>[1]
+{
+   {p:String[*]|if($p->size() == 1, | 'sum(' + $p->toOne() + ')', | $p->joinStrings('(', ' + ', ')'))};
+}
+
+function meta::relational::functions::sqlQueryToString::default::likePattern(query: String[1]):String[1]
+{
+   '%s like \'' + $query + '\'%s'
+}
+
+function meta::relational::functions::sqlQueryToString::default::likePatternWithoutEscape(query: String[1]):String[1]
+{
+   '%s not like \'' + $query + '\''
+}
+
+function meta::relational::functions::sqlQueryToString::default::regexpLikePattern(query1: String[1], query2: String[1]):String[1]
+{
+   'REGEXP_LIKE(' + $query1 + ', \'' + '^' +$query2 + '$' +'\')'
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformLikeParamsDefault(params: String[2]):String[*]
+{
+   let likeExpression = $params->at(1)->removeQuotes()->escapeLikeExprDefault();
+   $params->at(0)
+      ->concatenate($likeExpression)
+      ->concatenate('');
+}
+
+function meta::relational::functions::sqlQueryToString::default::transformPercentile(args: String[*], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): String[1]
+{
+   let boolProc = $literalProcessor->eval(Boolean);
+   let trueVal  = $boolProc.formatValue(true, []);
+   let falseVal = $boolProc.formatValue(false, []);
+
+   let column     = $args->at(0);
+   let percentile = $args->at(1);
+   let ascending  = if($args->size() > 2, | $args->at(2), | $trueVal);
+   let continuous = if($args->size() > 3, | $args->at(3), | $trueVal);
+
+   assert($ascending->in([$trueVal, $falseVal]), 'Ascending argument for percentile should be ' + $trueVal + ' or ' + $falseVal + '. Got: ' + $ascending);
+   assert($continuous->in([$trueVal, $falseVal]), 'Continuous argument for percentile should be ' + $trueVal + ' or ' + $falseVal + '. Got: ' + $continuous);
+
+   let func  = if($continuous == $trueVal, | 'percentile_cont', | 'percentile_disc');
+   let order = if($ascending == $trueVal, | 'asc', | 'desc');
+
+   $func + '(' + $percentile + ') within group (order by ' + $column + ' ' + $order + ')';
+}
+
+function meta::relational::functions::sqlQueryToString::default::processLiteralValue(a:Any[1], dbTimeZone:String[0..1], dbType:DatabaseType[1], quoteIdentifiers:Boolean[0..1]) : String[1]
+{
+   let dbConfig = createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers);
+   processLiteralValue($a, $dbConfig);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processLiteralValue(a:Any[1], dbTimeZone: String[0..1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]) : String[1]
+{
+   let processor = $literalProcessor->eval($a->type());
+   $processor.formatValue($a, $dbTimeZone);
+}
+
+function meta::relational::functions::sqlQueryToString::default::removeQuotes(s:String[1]):String[1]
+{
+   let firstQuote = $s->indexOf('\'') +1;
+   $s->substring($firstQuote, $s->length()-1);
+}
+
+function meta::relational::functions::sqlQueryToString::default::dateTimeFormats():Map<String,Integer>[1]
+{
+   newMap([pair('yyyy-mm-dd hh:mi:ss',120),
+           pair('yyyy-MM-dd hh:mm:ss',120),
+           pair('yyyy-MM-dd hh:mm:ss.mmm',121)]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::dateFormats():Map<String,Integer>[1]
+{
+   newMap([pair('yyyy-MM-dd',120),
+           pair('MMMyyyy', 106),
+           pair('dd MMM yy',6),
+           pair('yyyyMMdd', 112)]);
+}
+
+function meta::relational::functions::sqlQueryToString::default::escapeLikeExprDefault(query: String[1]):String[1]
+{
+   // Escaping references...
+   // DB2: https://www.ibm.com/support/knowledgecenter/SSEPGG_9.7.0/com.ibm.db2.luw.sql.ref.doc/doc/r0000751.html
+   // H2: http://www.h2database.com/html/grammar.html#condition_right_hand_side
+
+   $query
+      ->replace('_', '\\_')
+      ->replace('%', '\\%');
+}

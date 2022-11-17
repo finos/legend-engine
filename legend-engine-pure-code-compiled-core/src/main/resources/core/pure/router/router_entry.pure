@@ -13,13 +13,11 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::external::language::java::metamodel::project::*;
 import meta::pure::executionPlan::toString::*;
-import meta::pure::router::clustering::*;
-import meta::pure::runtime::*;
+import meta::pure::functions::tracing::*;
 import meta::pure::mapping::*;
 import meta::pure::router::*;
-import meta::pure::functions::tracing::*;
+import meta::pure::runtime::*;
 
 function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]
 {
@@ -40,7 +38,7 @@ function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:M
               $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, $serializationKind, 'FULL_INTERACTIVE']->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);
            )
        },
-       |^RoutingQuery<T|y>(fn=$f)->execute($m, $runtime, $exeCtx, $extensions, noDebug());
+       |$f->execute($m, $runtime, $exeCtx, $extensions, noDebug());
       ),
       'query execution',
       |traceSpan({|[pair('query-execution-info',  $extensions.routerExtensions().traceQueryInfoBuilder->map(x|$x->eval($f,$m,$runtime))->joinStrings(','))]->newMap()}, 'build query tags'),
@@ -50,12 +48,7 @@ function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:M
 
 function meta::pure::router::execute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<T|m>[1]
 {
-    ^RoutingQuery<T|m>(fn=$f)->execute($m, $runtime, ^ExecutionContext(), $extensions, $debug);
-}
-
-function meta::pure::router::execute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<T|m>[1]
-{
-   ^RoutingQuery<T|m>(fn=$f)->execute($m, $runtime, $exeCtx, $extensions, $debug);
+    $f->meta::pure::router::execute($m, $runtime, ^ExecutionContext(), $extensions, $debug);
 }
 
 //meant for legend engine execution only
