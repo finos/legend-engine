@@ -62,7 +62,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Comparator;
 
-@Ignore
 public class PureTestHelper
 {
     private static final ThreadLocal<ServersState> state = new ThreadLocal<>();

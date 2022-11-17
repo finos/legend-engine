@@ -339,7 +339,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         {
             LogicalPlan rowsTerminatedCountPlan = LogicalPlan.builder()
                     .addOps(Selection.builder()
-                            .addFields(DiffBinaryValueOperator.of(getRowsInvalidatedInSink(), SelectValue.of(getRowsUpdated(null, getPrimaryKeysCondition()))).withAlias(ROWS_TERMINATED.get()))
+                            .addFields(DiffBinaryValueOperator.of(getRowsInvalidatedInSink(), SelectValue.of(getRowsUpdated(null, getPrimaryKeyFieldsAndFromFieldFromMain()))).withAlias(ROWS_TERMINATED.get()))
                             .build())
                     .build();
             postRunStatisticsResult.put(ROWS_TERMINATED, rowsTerminatedCountPlan);
@@ -362,7 +362,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         }
         else
         {
-            LogicalPlan rowsUpdatedCountPlan = LogicalPlan.builder().addOps(getRowsUpdated(ROWS_UPDATED.get(), getPrimaryKeysCondition())).build();
+            LogicalPlan rowsUpdatedCountPlan = LogicalPlan.builder().addOps(getRowsUpdated(ROWS_UPDATED.get(), getPrimaryKeyFieldsAndFromFieldFromMain())).build();
             postRunStatisticsResult.put(ROWS_UPDATED, rowsUpdatedCountPlan);
         }
     }
@@ -389,18 +389,17 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         {
             LogicalPlan rowsInsertedCountPlan = LogicalPlan.builder()
                     .addOps(Selection.builder()
-                            .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), SelectValue.of(getRowsUpdated(null, getPrimaryKeysCondition()))).withAlias(ROWS_INSERTED.get()))
+                            .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), SelectValue.of(getRowsUpdated(null, getPrimaryKeyFieldsAndFromFieldFromMain()))).withAlias(ROWS_INSERTED.get()))
                             .build())
                     .build();
             postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
         }
     }
 
-    private Condition getPrimaryKeysCondition()
+    private Condition getPrimaryKeyFieldsAndFromFieldFromMain()
     {
         Dataset sink2 = super.getMainDatasetWithDifferentAlias("sink2");
         return LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), primaryKeyFieldsAndFromFieldFromMain.stream().map(FieldValue::fieldName).collect(Collectors.toList()).toArray(new String[0]));
-
     }
 
     /*
