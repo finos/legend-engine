@@ -15,18 +15,16 @@
     <properties>
         <maven-shade-plugin.shadedPattern>org.finos.legend.engine.spanner.jdbc.shaded</maven-shade-plugin.shadedPattern>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-spanner-jdbc</artifactId>
-            <version>2.7.12</version>
-            <classifier>single-jar-with-dependencies</classifier>
-            <!--excluding everything cause everything would be in full jar and shaded-->
+            <version>2.7.3</version>
             <exclusions>
                 <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -44,26 +42,60 @@
                                 <exclude>META-INF/*.SF</exclude>
                                 <exclude>META-INF/*.DSA</exclude>
                                 <exclude>META-INF/*.RSA</exclude>
+                                <exclude>META-INF/versions/15/**</exclude>
                             </excludes>
                         </filter>
                     </filters>
                     <shadeSourcesContent>true</shadeSourcesContent>
                     <relocations>
                         <relocation>
-                            <pattern>org</pattern>
-                            <shadedPattern>${maven-shade-plugin.shadedPattern}.org</shadedPattern>
+                            <pattern>org.apache</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.org.apache</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>io</pattern>
-                            <shadedPattern>${maven-shade-plugin.shadedPattern}.io</shadedPattern>
+                            <pattern>org.bouncycastle</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.org.bouncycastle</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>javax</pattern>
-                            <shadedPattern>${maven-shade-plugin.shadedPattern}.javax</shadedPattern>
+                            <pattern>org.checkerframework</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.org.checkerframework</shadedPattern>
                         </relocation>
                         <relocation>
-                            <pattern>com</pattern>
-                            <shadedPattern>${maven-shade-plugin.shadedPattern}.com</shadedPattern>
+                            <pattern>org.codehaus</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.org.codehaus</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.threeten</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.org.threeten</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.opencensus</pattern>
+                            <shadedPattern>
+                                ${maven-shade-plugin.shadedPattern}.io.opencensus
+                            </shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.perfmark</pattern>
+                            <shadedPattern>
+                                ${maven-shade-plugin.shadedPattern}.io.perfmark
+                            </shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>io.grpc</pattern>
+                            <shadedPattern>
+                                ${maven-shade-plugin.shadedPattern}.io.grpc
+                            </shadedPattern>
+                            <excludes>
+                                <exclude>io.grpc.netty.shaded.io.grpc.netty.NettyChannelProvider</exclude>
+                                <exclude>io.grpc.internal.DnsNameResolverProvider</exclude>
+                                <exclude>io.grpc.googleapis.GoogleCloudToProdNameResolverProvider</exclude>
+                                <exclude>io.grpc.xds.XdsNameResolverProvider</exclude>
+                                <exclude>io.grpc.grpclb.**</exclude>
+                            </excludes>
+                        </relocation>
+                        <relocation>
+                            <pattern>com.google</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.com.google</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
@@ -74,7 +106,10 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
