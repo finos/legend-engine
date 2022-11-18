@@ -31,9 +31,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
               ['eID', 'eID'], ['fID', 'fID']
         ), testJoinTDSMapping,meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
-  | assertSize($result.values.rows, 7 );
-    assertEquals(['personID', 'personName', 'eID', 'firmName', 'fID'], $result.values.columns.name);
+  runDataAssertion($result, $config,
+  | assertEquals(['personID', 'personName', 'eID', 'firmName', 'fID'], $result.values.columns.name);
     assertSameElements(['1,Smith,1,Firm X,1', '2,Johnson,1,Firm X,1', '3,Hill,1,Firm X,1', '4,Allen,1,Firm X,1',
                        '5,Roberts,2,Firm A,2', '6,Hill,3,Firm B,3', '7,Harris,4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -49,9 +48,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
               ['eID'], ['fID']
         ), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
-  | assertSize($result.values.rows, 7 );
-    assertEquals(['personID', 'personName', 'eID', 'firmName', 'fID'], $result.values.columns.name);
+  runDataAssertion($result, $config,
+  | assertEquals(['personID', 'personName', 'eID', 'firmName', 'fID'], $result.values.columns.name);
     assertSameElements(['1,Smith,1,Firm X,1', '2,Johnson,1,Firm X,1', '3,Hill,1,Firm X,1', '4,Allen,1,Firm X,1',
                        '5,Roberts,2,Firm A,2', '6,Hill,3,Firm B,3', '7,Harris,4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -62,9 +60,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
                       ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');}), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
   
-  if($result->isEmpty(), | true,
-  | assertSize($result.values.rows, 7 );
-    assertSameElements(['1,Smith,1,Firm X,1', '2,Johnson,1,Firm X,1', '3,Hill,1,Firm X,1', '4,Allen,1,Firm X,1',
+  runDataAssertion($result, $config,
+  | assertSameElements(['1,Smith,1,Firm X,1', '2,Johnson,1,Firm X,1', '3,Hill,1,Firm X,1', '4,Allen,1,Firm X,1',
                        '5,Roberts,2,Firm A,2', '6,Hill,3,Firm B,3', '7,Harris,4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
@@ -74,9 +71,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
                       ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.LEFT_OUTER, {a,b|($a.getInteger('eID') + 2) == $b.getInteger('fID')}), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
                       
-  if($result->isEmpty(), | true,
-  | assertSize($result.values.rows, 7);
-    assertSameElements(['1,Smith,1,Firm B,3', '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3',
+  runDataAssertion($result, $config,
+  | assertSameElements(['1,Smith,1,Firm B,3', '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3',
                        '5,Roberts,2,Firm C,4', '6,Hill,3,TDSNull,TDSNull', '7,Harris,4,TDSNull,TDSNull'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
@@ -86,9 +82,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
                       ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.RIGHT_OUTER, {a,b|($a.getInteger('eID') + 2) == $b.getInteger('fID');}), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
                   
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertEquals([Integer , String, Integer, String, Integer], $result.values.columns.type);
-    assertSize($result.values.rows, 7);
     assertSameElements(['1,Smith,1,Firm B,3', '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3',
                        '5,Roberts,2,Firm C,4', 'TDSNull,TDSNull,TDSNull,Firm A,2', 'TDSNull,TDSNull,TDSNull,Firm X,1'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
@@ -101,9 +96,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                       ->join(testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!pID#, #/testJoinTDS_Person/lastName!managerName#]), $type, {a,b |$a.getInteger('mID')  == $b.getInteger('pID');})
                       ->restrict(['personName', 'managerName']), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
-  | assertSize($result.values.rows, 3);
-    assertSameElements(['Smith,Johnson', 'Johnson,Allen', 'Hill,Johnson'], $result.values.rows->map(r|$r.values->makeString(',')));
+  runDataAssertion($result, $config,
+  | assertSameElements(['Smith,Johnson', 'Johnson,Allen', 'Hill,Johnson'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }
 
@@ -114,9 +108,8 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                       ->join(testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!pID#, #/testJoinTDS_Person/lastName!managerName#]), $type, {a,b |$a.getInteger('mID')  == $b.getInteger('pID');})
                       ->restrict(['personName', 'managerName']), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
-  | assertSize($result.values.rows, 7);
-    assertSameElements(['Smith,Johnson', 'Johnson,Allen', 'Hill,Johnson', 'Allen,TDSNull',
+  runDataAssertion($result, $config,
+  | assertSameElements(['Smith,Johnson', 'Johnson,Allen', 'Hill,Johnson', 'Allen,TDSNull',
                        'Roberts,TDSNull', 'Hill,TDSNull', 'Harris,TDSNull'], $result.values.rows->map(r|$r.values->makeString(',')));
   );
 }

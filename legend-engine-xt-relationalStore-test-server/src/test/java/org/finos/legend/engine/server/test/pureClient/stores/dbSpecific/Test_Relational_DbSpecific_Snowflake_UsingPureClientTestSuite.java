@@ -18,14 +18,17 @@ import com.fasterxml.jackson.databind.jsontype.NamedType;
 import junit.framework.Test;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.Relational_DbSpecific_UsingPureClientTestSuite;
+import org.finos.legend.pure.code.core.compiled.test.IgnoreUnsupportedApiPureTestSuiteRunner;
+import org.junit.runner.RunWith;
 
+@RunWith(IgnoreUnsupportedApiPureTestSuiteRunner.class)
 public class Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite
         extends Relational_DbSpecific_UsingPureClientTestSuite
 {
     public static Test suite() throws Exception
     {
         return createSuite(
-                "meta::relational::tests::dbSpecificTests::snowflake",
+                "meta::relational::tests::sqlQueryToString::snowflake",
                 "org/finos/legend/engine/server/test/userTestConfig_withSnowflakeTestConnection.json",
                 new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
         );

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::runtime::*;
+import meta::relational::mapping::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;
 import meta::pure::mapping::*;
@@ -23,6 +24,7 @@ Class meta::relational::dbTestRunner::DbTestConfig
    dbType: DatabaseType[1];
    connection: RelationalDatabaseConnection[0..1];
    expectedSql: String[0..1];
+   deviatesFromStandard: Boolean[0..1];
 }
 
 function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1], extensions:meta::pure::extension::Extension[*]):RelationalDatabaseConnection[0..1]
@@ -46,11 +48,11 @@ function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1
      );
 }
 
-function meta::relational::dbTestRunner::collectTests(pack: Package[1]): Function<{DbTestConfig[1] -> Boolean[1]}>[*]
+function meta::relational::dbTestRunner::findParameterizedTests(packOrFn: Any[*]): Function<{DbTestConfig[1] -> Boolean[1]}>[*]
 {
-   $pack.children->map(c| $c->match([
+   $packOrFn->map(pof| $pof->match([
       f:Function<Any>[1]| if($f.stereotypes->contains(meta::pure::test::paramTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> Boolean[1]}>), |[]),
-      p:Package[1]| collectTests($p),
+      p:Package[1]| $p.children->findParameterizedTests(),
       x:Any[1]| []
    ]));
 }
@@ -92,24 +94,41 @@ function meta::relational::dbTestRunner::executeInRelationalDb(sqls:String[*], c
 
 function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], db:meta::relational::metamodel::Database[1], config:DbTestConfig[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[0..1]
 {
-  if($config.connection->isEmpty(),
+  let pureRuntime = if($config.connection->isEmpty(),
      | 
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
-       let pureRuntime = ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));
-
-       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-       []; ,               
-     | 
+       ^Runtime(connections= ^TestDatabaseConnection(element = $db, type= $config.dbType));,
+     |
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
        let connWithDb= ^$conn(element=$db);
-       let pureRuntime = ^Runtime(connections=$connWithDb);
+       ^Runtime(connections=$connWithDb);
+  );
 
-       let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
-       let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
-                             
+  let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+  let boundPlan = meta::pure::executionPlan::generatePlatformCode($basicPlan, meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), $extensions);
+  
+  if($config.expectedSql->isEmpty(), |true,
+    |assertEquals($config.expectedSql->toOne(), $boundPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));
+
+  if($config.connection->isEmpty(), |[],             
+     | 
        let res=meta::pure::router::executePlan($boundPlan,$extensions);
        let values = $res.values->cast(@T);
        ^Result<T|m>(values = $values, activities= $res.activities);
   );  
+}
+
+function meta::relational::dbTestRunner::runDataAssertion(result:Any[0..1], config:DbTestConfig[1], assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
+{
+  if($result->isEmpty(), |true,
+    |if($config.deviatesFromStandard == true,
+        | $assertion->runDataAssertionWhichDeviatesFromStandard();
+          fail('**** Error **** : The dbType is configured as deviating from standard for this case, but the data assertion passes. Please reconfigure the dbType as not deviating');,
+        | $assertion->eval()));
+}
+
+function meta::relational::dbTestRunner::runDataAssertionWhichDeviatesFromStandard(assertion:Function<{->Boolean[1]}>[1]): Boolean[1]
+{
+  println('**** Warning **** : The dbType is configured as deviating from standard for this case, hence data assertion results are expected to fail');
+  $assertion->eval();
 }
