@@ -57,7 +57,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Functio
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
@@ -378,7 +377,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         {
             return super.getRowsUpdated(alias);
         }
-        Dataset sink2 = getMainDatasetWithDifferentAlias("sink2");
+        Dataset sink2 = getMainDatasetWithProvidedAlias("sink2");
         return getRowsUpdated(alias, getPrimaryKeyFieldsAndFromFieldFromMain(), sink2);
     }
 
@@ -389,7 +388,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
 
     private Condition getPrimaryKeyFieldsAndFromFieldFromMain()
     {
-        Dataset sink2 = super.getMainDatasetWithDifferentAlias("sink2");
+        Dataset sink2 = super.getMainDatasetWithProvidedAlias("sink2");
         return LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), primaryKeyFieldsAndFromFieldFromMain.stream().map(FieldValue::fieldName).collect(Collectors.toList()).toArray(new String[0]));
     }
 

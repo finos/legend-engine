@@ -146,12 +146,12 @@ abstract class UnitemporalPlanner extends Planner
 
     protected Selection getRowsUpdated(String alias)
     {
-        Dataset sink2 = getMainDatasetWithDifferentAlias("sink2");
+        Dataset sink2 = getMainDatasetWithProvidedAlias("sink2");
         Condition primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), primaryKeys.toArray(new String[0]));
         return getRowsUpdated(alias, primaryKeysMatchCondition, sink2);
     }
 
-    protected DatasetDefinition getMainDatasetWithDifferentAlias(String alias)
+    protected DatasetDefinition getMainDatasetWithProvidedAlias(String alias)
     {
         return DatasetDefinition.builder()
                 .database(mainDataset().datasetReference().database())
