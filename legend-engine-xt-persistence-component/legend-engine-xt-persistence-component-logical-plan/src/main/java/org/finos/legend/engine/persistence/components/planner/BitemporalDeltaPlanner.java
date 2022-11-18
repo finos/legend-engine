@@ -330,19 +330,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             LogicalPlan rowsTerminatedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L);
             postRunStatisticsResult.put(ROWS_TERMINATED, rowsTerminatedCountPlan);
         }
-        //if Source specifies From and Thru date, then Rows terminated follows the super class implementation
-        else if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromAndThruDateTime)
-        {
-            super.addPostRunStatsForRowsTerminated(postRunStatisticsResult);
-        }
         else
         {
-            LogicalPlan rowsTerminatedCountPlan = LogicalPlan.builder()
-                    .addOps(Selection.builder()
-                            .addFields(DiffBinaryValueOperator.of(getRowsInvalidatedInSink(), SelectValue.of(getRowsUpdated(null, getPrimaryKeyFieldsAndFromFieldFromMain()))).withAlias(ROWS_TERMINATED.get()))
-                            .build())
-                    .build();
-            postRunStatisticsResult.put(ROWS_TERMINATED, rowsTerminatedCountPlan);
+            super.addPostRunStatsForRowsTerminated(postRunStatisticsResult);
         }
     }
 
@@ -355,15 +345,9 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             LogicalPlan rowsUpdatedCountPlan = LogicalPlan.builder().addOps(getRowsInvalidatedInSink(ROWS_UPDATED.get())).build();
             postRunStatisticsResult.put(ROWS_UPDATED, rowsUpdatedCountPlan);
         }
-        //if Source specifies From and Thru date, then Rows updated follows the super class implementation
-        else if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromAndThruDateTime)
-        {
-            super.addPostRunStatsForRowsUpdated(postRunStatisticsResult);
-        }
         else
         {
-            LogicalPlan rowsUpdatedCountPlan = LogicalPlan.builder().addOps(getRowsUpdated(ROWS_UPDATED.get(), getPrimaryKeyFieldsAndFromFieldFromMain())).build();
-            postRunStatisticsResult.put(ROWS_UPDATED, rowsUpdatedCountPlan);
+            super.addPostRunStatsForRowsUpdated(postRunStatisticsResult);
         }
     }
 
@@ -380,20 +364,27 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
                     .build();
             postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
         }
-        //if Source specifies From and Thru date, then Rows inserted follows the super class implementation
-        else if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromAndThruDateTime)
+        else
         {
             super.addPostRunStatsForRowsInserted(postRunStatisticsResult);
         }
-        else
+    }
+
+    @Override
+    protected Selection getRowsUpdated(String alias)
+    {
+        //if Source specifies From and Thru date, then Rows inserted follows the super class implementation
+        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromAndThruDateTime)
         {
-            LogicalPlan rowsInsertedCountPlan = LogicalPlan.builder()
-                    .addOps(Selection.builder()
-                            .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), SelectValue.of(getRowsUpdated(null, getPrimaryKeyFieldsAndFromFieldFromMain()))).withAlias(ROWS_INSERTED.get()))
-                            .build())
-                    .build();
-            postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
+            return super.getRowsUpdated(alias);
         }
+        Dataset sink2 = getMainDatasetWithDifferentAlias("sink2");
+        return getRowsUpdated(alias, getPrimaryKeyFieldsAndFromFieldFromMain(), sink2);
+    }
+
+    public Optional<Condition> getDataSplitInRangeConditionForStatistics()
+    {
+        return ingestMode().dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
     }
 
     private Condition getPrimaryKeyFieldsAndFromFieldFromMain()
