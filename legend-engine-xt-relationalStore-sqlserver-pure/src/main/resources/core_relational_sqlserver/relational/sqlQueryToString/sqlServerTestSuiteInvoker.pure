@@ -24,7 +24,7 @@ function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::sqlS
   // then throw an exception with message that starts with '[unsupported-api]'
   // Tests which raise such exception will be reported as ignored by the runner
   
-  meta::relational::tests::dbSpecificTests->collectParameterizedTests('SqlServer',
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions->collectParameterizedTests('SqlServer',
                 ^DbTestConfig(dbType=DatabaseType.SqlServer, connection=$connection),
                 meta::relational::tests::sqlQueryToString::sqlServer::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
                 []
