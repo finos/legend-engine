@@ -26,13 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.DateTimeValidityMilestoning;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.validitymilestoning.derivation.ValidityDerivation;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class IngestModeMapper
 {
@@ -41,11 +36,11 @@ public class IngestModeMapper
     /*
     Mapper from Persistence model to IngestMode object
      */
-    public static org.finos.legend.engine.persistence.components.ingestmode.IngestMode from(Persistence persistence, Dataset mainDataSet,
-                                                                     Dataset stagingDataset) throws Exception
+    public static org.finos.legend.engine.persistence.components.ingestmode.IngestMode from(Persistence persistence) throws Exception
     {
         IngestMode ingestMode = getIngestMode(persistence);
         IngestModeType mode = getIngestModeName(ingestMode);
+
         switch (mode)
         {
             case NontemporalSnapshot:
@@ -79,7 +74,7 @@ public class IngestModeMapper
         return ingestMode.accept(IngestModeVisitors.EXTRACT_TRANSACTION_MILESTONING_TIME_BASED);
     }
 
-    private static IngestMode getIngestMode(Persistence persistence) throws Exception
+    public static IngestMode getIngestMode(Persistence persistence) throws Exception
     {
         Persister persister = persistence.persister;
         if (persister instanceof BatchPersister)
@@ -90,11 +85,10 @@ public class IngestModeMapper
         throw new Exception("Only BatchPersister has Ingest Mode");
     }
 
-    private static IngestModeType getIngestModeName(IngestMode ingestMode)
+    public static IngestModeType getIngestModeName(IngestMode ingestMode)
     {
         String clazz = ingestMode.getClass().getSimpleName();
         IngestModeType ingestModeType = IngestModeType.valueOf(clazz);
         return ingestModeType;
     }
-
 }

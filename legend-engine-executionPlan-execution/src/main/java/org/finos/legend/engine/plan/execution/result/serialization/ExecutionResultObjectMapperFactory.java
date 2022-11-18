@@ -44,7 +44,7 @@ public class ExecutionResultObjectMapperFactory
         @Override
         public void serialize(PureDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException
         {
-            gen.writeRawValue("\"" + value.toString() + "\"");
+            gen.writeString(value.toString());
         }
     }
 

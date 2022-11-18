@@ -1,0 +1,336 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::protocols::pure::v1_28_0::extension::*;
+import meta::json::*;
+import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::csv::*;
+import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::*;
+import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::*;
+import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::context::*;
+import meta::pure::runtime::*;
+import meta::protocols::pure::v1_28_0::invocation::execution::execute::*;
+import meta::relational::mapping::*;
+import meta::pure::mapping::*;
+import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::*;
+
+function meta::protocols::pure::v1_28_0::extension::getRelationalExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
+{
+   let res = [
+      pair('relational', | getRelationalExtension())
+   ]->filter(f|$f.first == $type);
+   assert($res->isNotEmpty(), |'Can\'t find the type '+$type);
+   $res->at(0).second->eval();
+   
+}
+
+function meta::protocols::pure::v1_28_0::extension::getRelationalExtension():meta::protocols::pure::v1_28_0::extension::SerializerExtension_v1_28_0[1]
+{
+   ^meta::protocols::pure::v1_28_0::extension::SerializerExtension_v1_28_0
+   (
+       moduleSerializerExtensions = meta::protocols::pure::v1_28_0::extension::relationalModuleSerializerExtension(),
+       transfers_mapping_transformMapping = x:SetImplementation[1] | !$x->instanceOf(EmbeddedRelationalInstanceSetImplementation),
+       transfers_mapping_transformSetImplementation2 = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | [
+                  r:RootRelationalInstanceSetImplementation[1]| $r->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::transformRootRelationalInstanceSetImplementation($mapping, $extensions),
+                  a:meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1]| $a->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::transformAggregationAwareSetImplementation($mapping, $extensions);
+            ]},
+       transfers_mapping_transformAssociationImplementation = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] | a:RelationalAssociationImplementation[1] | $a->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::transformRelationalAssociationImplementation($mapping, $extensions)},
+
+       transfers_valueSpecification_transformAny = {
+          inScope:String[*], open:Map<String,List<Any>>[1], m:Multiplicity[1], fe:FunctionExpression[0..1],useAppliedFunction:Boolean[1], extensions:meta::pure::extension::Extension[*] |
+          [
+                r:meta::pure::runtime::Runtime[1]|
+                ^meta::protocols::pure::v1_28_0::metamodel::valueSpecification::ClassInstance
+                (
+                  _type = 'classInstance',
+                  type = 'runtimeInstance',
+                  value = ^meta::protocols::pure::v1_28_0::metamodel::valueSpecification::raw::RuntimeInstance
+                          (
+                            runtime = $r->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::runtime::transformRuntime($extensions)
+                          )
+                ),
+                e:meta::pure::runtime::ExecutionContext[1]|
+                ^meta::protocols::pure::v1_28_0::metamodel::valueSpecification::ClassInstance
+                (
+                  _type = 'classInstance',
+                  type = 'executionContextInstance',
+                  value = ^meta::protocols::pure::v1_28_0::metamodel::valueSpecification::raw::ExecutionContextInstance
+                          (
+                            executionContext = $e->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::context::transformContext($extensions)
+                          )
+                 ),
+                d:meta::relational::metamodel::Database[1]|
+                 ^meta::protocols::pure::v1_28_0::metamodel::valueSpecification::raw::PackageableElementPtr
+                  (
+                     _type = 'packageableElementPtr',
+                     fullPath = $d->elementToPath()
+                  )
+          ]
+       },
+       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+          [
+                     rb:meta::pure::executionPlan::RelationalBlockExecutionNode[1]|
+                               ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalBlockExecutionNode( _type = 'relationalBlock',
+                                                                                                                       resultType = $rb.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions)),
+                     rel:meta::relational::mapping::SQLExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::SQLExecutionNode(
+                           _type = 'sql',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           resultColumns = $rel.resultColumns->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn()),
+                           sqlQuery = $rel.sqlQuery,
+                           onConnectionCloseCommitQuery = $rel.onConnectionCloseCommitQuery,
+                           onConnectionCloseRollbackQuery = $rel.onConnectionCloseRollbackQuery,
+                           connection = $rel.connection->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+                        ),
+                     rel:meta::relational::mapping::RelationalTdsInstantiationExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalTdsInstantiationExecutionNode(
+                           _type = 'relationalTdsInstantiation',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity())
+                        ),
+                     rel:meta::relational::mapping::RelationalClassInstantiationExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalClassInstantiationExecutionNode(
+                           _type = 'relationalClassInstantiation',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity())
+                        ),
+                     rel:meta::relational::mapping::RelationalRelationDataInstantiationExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalRelationDataInstantiationExecutionNode(
+                           _type = 'relationalRelationDataInstantiation',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity())
+                        ),
+                     rel:meta::relational::mapping::RelationalDataTypeInstantiationExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalDataTypeInstantiationExecutionNode(
+                           _type = 'relationalDataTypeInstantiation',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity())
+                        ),
+                     cpt:meta::relational::mapping::CreateAndPopulateTempTableExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::CreateAndPopulateTempTableExecutionNode
+                        (
+                           _type = 'createAndPopulateTempTable',
+                           inputVarNames = $cpt.inputVarNames,
+                           tempTableName = $cpt.tempTableName,
+                           resultType = $cpt.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $cpt.resultSizeRange->isEmpty()->if(|[],|$cpt.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           tempTableColumnMetaData = $cpt.tempTableColumnMetaData->map(col | $col->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformTempTableColumnMetaData()),
+                           connection = $cpt.connection->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+                        ),
+                     rel:meta::relational::graphFetch::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalRootQueryTempTableGraphFetchExecutionNode(
+                           _type = 'relationalRootQueryTempTableGraphFetch',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           batchSize = $rel.batchSize,
+                           tempTableName = $rel.tempTableName,
+                           columns = $rel.columns->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn()),
+                           children = $rel.children->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalGraphFetchExecutionNode),
+                           nodeIndex = $rel.nodeIndex,
+                           parentIndex = $rel.parentIndex,
+                           graphFetchTree = $rel.graphFetchTree->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions),
+                           checked = $rel.checked
+                        ),
+                     rel:meta::relational::graphFetch::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalCrossRootQueryTempTableGraphFetchExecutionNode(
+                           _type = 'relationalCrossRootQueryTempTableGraphFetch',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           tempTableName = $rel.tempTableName,
+                           columns = $rel.columns->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn()),
+                           children = $rel.children->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalGraphFetchExecutionNode),
+                           nodeIndex = $rel.nodeIndex,
+                           parentIndex = $rel.parentIndex,
+                           parentTempTableName = $rel.parentTempTableName,
+                           parentTempTableColumns = $rel.parentTempTableColumns->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn()),
+                           graphFetchTree = $rel.graphFetchTree->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
+                        ),
+                     rel:meta::relational::graphFetch::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode(
+                           _type = 'relationalClassQueryTempTableGraphFetch',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           tempTableName = $rel.tempTableName,
+                           columns = $rel.columns->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn()),
+                           children = $rel.children->map(c | $c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformNode($mapping, $extensions))->cast(@meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalGraphFetchExecutionNode),
+                           nodeIndex = $rel.nodeIndex,
+                           parentIndex = $rel.parentIndex,
+                           graphFetchTree = $rel.graphFetchTree->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
+                        ),
+                     rel:meta::relational::graphFetch::executionPlan::RelationalPrimitiveQueryGraphFetchExecutionNode[1]|
+                        ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationalPrimitiveQueryGraphFetchExecutionNode(
+                           _type = 'relationalPrimitiveQueryGraphFetch',
+                           resultType = $rel.resultType->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
+                           resultSizeRange = $rel.resultSizeRange->isEmpty()->if(|[],|$rel.resultSizeRange->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::domain::transformMultiplicity()),
+                           nodeIndex = $rel.nodeIndex,
+                           parentIndex = $rel.parentIndex,
+                           graphFetchTree = $rel.graphFetchTree->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)
+                        )
+          ]
+       },
+       transfers_executionPlan_transformResultType =  {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+         [
+            tds:meta::pure::executionPlan::TDSResultType[1]|^meta::protocols::pure::v1_28_0::metamodel::executionPlan::TDSResultType
+                                                            (
+                                                               _type='tds',
+                                                               tdsColumns=$tds.tdsColumns->map(c|^meta::protocols::pure::v1_28_0::metamodel::invocation::execution::execute::TDSColumn
+                                                                                                 (
+                                                                                                    name = $c.name,
+                                                                                                    doc = $c.documentation,
+                                                                                                    type = $c.type->toOne()->elementToPath(),
+                                                                                                    enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping.enumerationMappingByName($c.enumMappingId->toOne())->toOne())),
+                                                                                                    relationalType = $c.sourceDataType->match(
+                                                                                                       [
+                                                                                                          d:meta::relational::metamodel::datatype::DataType[0]|[],
+                                                                                                          d:meta::relational::metamodel::datatype::DataType[1]|$d->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::alloyTypeToString()
+                                                                                                       ]
+                                                                                                    )
+                                                                                                 )
+                                                                                           )
+                                                            ),
+         rel:meta::pure::executionPlan::RelationResultType[1]|^meta::protocols::pure::v1_28_0::metamodel::executionPlan::RelationResultType
+                                                             (
+                                                                _type='relation',
+                                                                relationName = $rel.relationName,
+                                                                relationType = $rel.relationType->toString(),
+                                                                schemaName = $rel.schemaName,
+                                                                database = $rel.database,
+                                                                columns = $rel.columns->map(c|$c->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::transformColumn())
+                                                             )
+         ]
+     },
+     transfers_executionPlan_transformSetImplementation = pair(p:meta::pure::mapping::PropertyMapping[1]|$p->instanceOf(meta::relational::mapping::RelationalPropertyMapping) && !$p->cast(@meta::relational::mapping::RelationalPropertyMapping).transformer->isEmpty(), p:meta::pure::mapping::PropertyMapping[1]|$p->cast(@meta::relational::mapping::RelationalPropertyMapping).transformer->cast(@meta::pure::mapping::EnumerationMapping<Any>)->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformEnumMapping()),
+      scan_buildBasePureModel_extractStores = {m:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+                                                [
+                                                   rsi: RootRelationalInstanceSetImplementation[1] |
+                                                                     // Main Store
+                                                                     let mainTableAlias = $rsi.mainTableAlias;
+                                                                     let mainStore = if ($mainTableAlias.database->isEmpty(), | $rsi.mainTable.schema.database, | $mainTableAlias.database->toOne());
+                                                                     // Filter
+                                                                     let filter = $rsi.resolveFilter();
+                                                                     let fromFilter = $filter.database;
+                                                                     let fromFilterOpertation = $filter.filter.operation->meta::relational::functions::pureToSqlQuery::extractStore();
+                                                                     let fromFilterJoins = $filter.joinTreeNode->map(x|$x->meta::relational::functions::pureToSqlQuery::flatten()).database;
+                                                                     // Properties
+                                                                     let fromProperties = $rsi->processProperties($m, $extensions);
+                                                                     // All
+                                                                     $mainStore->concatenate($fromFilter)->concatenate($fromFilterOpertation)->concatenate($fromFilterJoins)->concatenate($fromProperties);,
+                                                   x: EmbeddedRelationalInstanceSetImplementation[1]|$x->processProperties($m, $extensions),
+                                                   ag:	meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1]| $ag.mainSetImplementation->extractStores($m, $extensions)->concatenate($ag.aggregateSetImplementations->map(a|$a.setImplementation->extractStores($m, $extensions)))
+                                                ]
+                                              },
+      scan_buildBasePureModel_processProperties ={m:Mapping[1], extensions:meta::pure::extension::Extension[*] |
+                                                  [
+                                                     r:RelationalPropertyMapping[1]|$r.relationalOperationElement->map(o|$o->meta::relational::functions::pureToSqlQuery::extractStore()),
+                                                     e:EmbeddedRelationalInstanceSetImplementation[1]|extractStores($e, $m, $extensions)
+                                                  ]
+                                                 },
+      scan_buildBasePureModel_buildPureModelFromMapping1 = {d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore())},
+      invocation_execution_execute2_pre2 = {extensions:meta::pure::extension::Extension[*] | [
+               pair ( builderType:String[1]| $builderType->isNotEmpty() && $builderType->toOne()=='tdsBuilder',
+                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
+                            let rv = $resultJSON->fromJSON(meta::protocols::pure::v1_28_0::metamodel::invocation::execution::execute::RelationalTDSResult, $extendedJSONDeserializationConfig);
+                            $rv->cast(@meta::protocols::pure::v1_28_0::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne()->processTDSResult($extensions);}
+                    ),
+      
+               pair (builderType:String[1]| $builderType->isNotEmpty() && $builderType->toOne()=='classBuilder',
+                     {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], pureRuntime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
+                            let r = $resultJSON->fromJSON(meta::protocols::pure::v1_28_0::metamodel::invocation::execution::execute::RelationalClassResult, $extendedJSONDeserializationConfig);
+                            processRelationalClassResult($r, $m, $pureRuntime, $context, $extensions);}
+                    )
+      ]},
+      invocation_execution_execute2_post2 = {extensions:meta::pure::extension::Extension[*] | [
+               pair(builderType:String[1]|true,
+                    {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], runtime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
+                            let r = $resultJSON->fromJSON(meta::protocols::pure::v1_28_0::metamodel::invocation::execution::execute::RelationalDataTypeResult, $extendedJSONDeserializationConfig); // Assume dataTypeBuilder is resultType
+                            processDataTypeResult($r, $extensions);}
+                    )
+      ]}
+
+   ,
+   invocation_execution_transformContext = 
+      [
+         r:meta::relational::runtime::RelationalExecutionContext[1]|
+            let importDataFlowFkCols = if($r.importDataFlowFksByTable->isEmpty(), |[],
+               |$r.importDataFlowFksByTable->toOne()->keyValues()->map(p| ^meta::protocols::pure::v1_28_0::metamodel::TableForeignColumns(
+                  table=$p.first->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::setRelationToTablePtr(),
+                  columns=$p.second.values->map(c| $c.name)))
+            );
+            ^meta::protocols::pure::v1_28_0::metamodel::RelationalExecutionContext
+             (
+                queryTimeOutInSeconds = $r.queryTimeOutInSeconds,
+                enableConstraints = $r.enableConstraints,
+                addDriverTablePkForProject = $r.addDriverTablePkForProject,
+                insertDriverTablePkInTempTable = $r.insertDriverTablePkInTempTable,
+                useTempTableAsDriver = $r.useTempTableAsDriver,
+                preserveJoinOrder = $r.preserveJoinOrder,
+                importDataFlow = $r.importDataFlow,
+                importDataFlowAddFks = $r.importDataFlowAddFks,
+                importDataFlowFkCols = $importDataFlowFkCols,
+                importDataFlowImplementationCount = $r.importDataFlowImplementationCount,
+                _type = 'RelationalExecutionContext'
+             );
+
+      ],
+      transfers_store_transformStore2 = {extensions:meta::pure::extension::Extension[*] |
+      [
+         d:meta::relational::metamodel::Database[1] | $d->transformDatabase($extensions)
+      ]},
+      transfers_store_transformConnection2 = {extensions:meta::pure::extension::Extension[*] |
+      [
+         db:meta::relational::runtime::DatabaseConnection[1] | $db->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
+      ]},
+      scan_buildPureModelAsText_getAllElementsFromMapping = {stores : meta::pure::store::Store[*] |
+                        $stores->map(s|$s->concatenate($s->match([d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore()),a:Any[1]|[]])))      
+      }
+   )
+}
+
+function meta::protocols::pure::v1_28_0::extension::relationalModuleSerializerExtension(): meta::protocols::pure::v1_28_0::extension::RelationalModuleSerializerExtension[1]
+{
+  let dbSpecificExtensions = meta::protocols::pure::v1_28_0::extension::RelationalModule->stereotype('SerializerExtension').modelElements->cast(@meta::pure::metamodel::function::Function<{->meta::protocols::pure::v1_28_0::extension::RelationalModuleSerializerExtension[1]}>)
+    ->map(f| $f->eval())->sortBy(e| $e.module);
+  let transformDatabaseConnection = $dbSpecificExtensions.transfers_connection_transformDatabaseConnection;
+  ^meta::protocols::pure::v1_28_0::extension::RelationalModuleSerializerExtension(
+    module = 'relational',
+    transfers_connection_transformDatabaseConnection = if($transformDatabaseConnection->isNotEmpty(), |$transformDatabaseConnection->toOne(), |[]),
+    transfers_connection_transformPostProcessors = $dbSpecificExtensions.transfers_connection_transformPostProcessors,
+    transfers_connection_transformAuthenticationStrategy = $dbSpecificExtensions.transfers_connection_transformAuthenticationStrategy,
+    transfers_connection_transformDatasourceSpecification = $dbSpecificExtensions.transfers_connection_transformDatasourceSpecification,
+    transfers_connection_transformPostProcessorParameters = $dbSpecificExtensions.transfers_connection_transformPostProcessorParameters,
+    transfers_milestoning_transformMilestoning = $dbSpecificExtensions.transfers_milestoning_transformMilestoning,
+    reverse_transfers_typeLookups = $dbSpecificExtensions.reverse_transfers_typeLookups,
+    reverse_transfers_connection_transformAuthenticationStrategy = $dbSpecificExtensions.reverse_transfers_connection_transformAuthenticationStrategy,
+    reverse_transfers_connection_transformDatasourceSpecification = $dbSpecificExtensions.reverse_transfers_connection_transformDatasourceSpecification
+  );
+}
+
+function meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn(c: meta::relational::mapping::SQLResultColumn[1]):meta::protocols::pure::v1_28_0::metamodel::executionPlan::SQLResultColumn[1]
+{
+   ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::SQLResultColumn
+   (
+      label = $c.label,
+      dataType = $c.dataType->isEmpty()->if(|'', |$c.dataType->toOne()->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::store::relational::alloyTypeToString())
+   )
+}
+
+function meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformTempTableColumnMetaData(c: meta::relational::mapping::TempTableColumnMetaData[1]):meta::protocols::pure::v1_28_0::metamodel::executionPlan::TempTableColumnMetaData[1]
+{
+   ^meta::protocols::pure::v1_28_0::metamodel::executionPlan::TempTableColumnMetaData
+   (
+      column = $c.column->meta::protocols::pure::v1_28_0::transformation::fromPureGraph::executionPlan::transformResultColumn(),
+      identifierForGetter = $c.identifierForGetter,
+      parametersForGetter = $c.parametersForGetter
+   )
+}

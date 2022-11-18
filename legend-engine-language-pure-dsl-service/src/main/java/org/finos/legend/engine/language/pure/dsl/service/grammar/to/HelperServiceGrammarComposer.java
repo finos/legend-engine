@@ -54,11 +54,16 @@ public class HelperServiceGrammarComposer
         if (execution instanceof PureSingleExecution)
         {
             PureSingleExecution pureSingleExecution = (PureSingleExecution) execution;
+            String explicitExecutionInfoString = "";
+            if (pureSingleExecution.mapping != null && pureSingleExecution.runtime != null)
+            {
+                explicitExecutionInfoString = getTabString(baseIndentation + 1) + "mapping: " + pureSingleExecution.mapping + ";\n" +
+                                              renderServiceExecutionRuntime(pureSingleExecution.runtime, baseIndentation + 1, context) + "\n";
+            }
             return "Single\n" +
                     getTabString(baseIndentation) + "{\n" +
                     getTabString(baseIndentation + 1) + "query: " + pureSingleExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()) + ";\n" +
-                    getTabString(baseIndentation + 1) + "mapping: " + pureSingleExecution.mapping + ";\n" +
-                    renderServiceExecutionRuntime(pureSingleExecution.runtime, baseIndentation + 1, context) + "\n" +
+                    explicitExecutionInfoString +
                     getTabString(baseIndentation) + "}\n";
         }
         else if (execution instanceof PureMultiExecution)

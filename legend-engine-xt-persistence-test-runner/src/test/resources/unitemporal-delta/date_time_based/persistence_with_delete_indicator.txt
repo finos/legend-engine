@@ -20,16 +20,7 @@ Database test::TestDatabase
   Table personTable
   (
     ID INTEGER PRIMARY KEY,
-    NAME VARCHAR(100),
-    DIGEST VARCHAR(100),
-    IN_Z TIMESTAMP PRIMARY KEY,
-    OUT_Z TIMESTAMP
-  )
-  Table personTable_staging
-  (
-    ID INTEGER PRIMARY KEY,
-    NAME VARCHAR(100),
-    DELETED VARCHAR(10)
+    NAME VARCHAR(100)
   )
 )
 ###Service
@@ -140,7 +131,7 @@ Persistence test::TestPersistence
                  ExternalFormat
                  #{
                    contentType: 'application/json';
-                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}, {"ID":3, "NAME":"CATHY"}, {"ID":3, "NAME":"CATHERINE"}, {"ID":4, "NAME":"TOM"}]';
+                   data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":3, "NAME":"CATHERINE"},{"ID":4, "NAME":"TOM"}]';
                  }#;
              }#
          ]

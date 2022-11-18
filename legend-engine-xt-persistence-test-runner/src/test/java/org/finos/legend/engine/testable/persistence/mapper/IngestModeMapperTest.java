@@ -54,7 +54,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         IngestMode ingestMode = getNonTemporalSnapshotDateTimeAuditing();
         Persistence persistence = getPersistence(ingestMode);
         org.finos.legend.engine.persistence.components.ingestmode.IngestMode componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof NontemporalSnapshot);
 
         NontemporalSnapshot nontemporalSnapshot = (NontemporalSnapshot) componentIngestMode;
@@ -64,7 +64,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getNonTemporalSnapshotNoAuditing();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof NontemporalSnapshot);
 
         nontemporalSnapshot = (NontemporalSnapshot) componentIngestMode;
@@ -77,7 +77,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         IngestMode ingestMode = getAppendOnlyNoAuditingNoFilteringDuplicates();
         Persistence persistence = getPersistence(ingestMode);
         org.finos.legend.engine.persistence.components.ingestmode.IngestMode componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDatasetWithoutPK(), getStagingDatasetWithoutPK());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         AppendOnly appendOnly = (AppendOnly) componentIngestMode;
@@ -88,7 +88,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         ingestMode = getAppendOnlyNoAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
         componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
@@ -99,7 +99,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         ingestMode = getAppendOnlyDatetimeAuditingNoFilteringDuplicates();
         persistence = getPersistence(ingestMode);
         componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDatasetWithoutPK(), getStagingDatasetWithoutPK());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
@@ -112,7 +112,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         ingestMode = getAppendOnlyDatetimeAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
         componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
@@ -129,7 +129,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         IngestMode ingestMode = getNontemporalDeltaNoAuditingNoMergeStrategy();
         Persistence persistence = getPersistence(ingestMode);
         org.finos.legend.engine.persistence.components.ingestmode.IngestMode componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         NontemporalDelta nontemporalDelta = (NontemporalDelta) componentIngestMode;
@@ -139,7 +139,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getNontemporalDeltaNoAuditingDeleteIndMergeStrategy();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         nontemporalDelta = (NontemporalDelta) componentIngestMode;
@@ -149,7 +149,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getNontemporalDeltaWithAuditingNoMergeStrategy();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         nontemporalDelta = (NontemporalDelta) componentIngestMode;
@@ -159,7 +159,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getNontemporalDeltaWithAuditingDeleteIndMergeStrategy();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof NontemporalDelta);
 
         nontemporalDelta = (NontemporalDelta) componentIngestMode;
@@ -174,7 +174,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         IngestMode ingestMode = getUnitempDeltaNoMergeBatchIdBased();
         Persistence persistence = getPersistence(ingestMode);
         org.finos.legend.engine.persistence.components.ingestmode.IngestMode componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         UnitemporalDelta unitemporalDelta = (UnitemporalDelta) componentIngestMode;
@@ -185,7 +185,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitempDeltaNoMergeBatchIdAndTimeBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
@@ -196,7 +196,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitempDeltaNoMergeTimeBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
@@ -207,7 +207,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitempDeltaDelIndMergeBatchIdBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
@@ -218,7 +218,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitempDeltaDelIndMergeBatchIdAndTimeBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
@@ -229,7 +229,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitempDeltaDelIndMergeTimeBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalDelta);
 
         unitemporalDelta = (UnitemporalDelta) componentIngestMode;
@@ -245,7 +245,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         IngestMode ingestMode = getUnitemporalSnapshotBatchIdBased();
         Persistence persistence = getPersistence(ingestMode);
         org.finos.legend.engine.persistence.components.ingestmode.IngestMode componentIngestMode =
-                IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+                IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalSnapshot);
 
         UnitemporalSnapshot unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
@@ -255,7 +255,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitemporalSnapshotBatchIdAndTimeBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalSnapshot);
 
         unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;
@@ -265,7 +265,7 @@ public class IngestModeMapperTest extends MapperBaseTest
 
         ingestMode = getUnitemporalSnapshotTimeBased();
         persistence = getPersistence(ingestMode);
-        componentIngestMode = IngestModeMapper.from(persistence, getMainDataset(), getStagingDataset());
+        componentIngestMode = IngestModeMapper.from(persistence);
         Assert.assertTrue(componentIngestMode instanceof UnitemporalSnapshot);
 
         unitemporalSnapshot = (UnitemporalSnapshot) componentIngestMode;

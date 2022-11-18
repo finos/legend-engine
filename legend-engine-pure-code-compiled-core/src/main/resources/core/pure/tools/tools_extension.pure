@@ -15,6 +15,7 @@
 import meta::pure::tools::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::printer::*;
+import meta::pure::router::metamodel::*;
 
 function meta::pure::tools::debug():DebugContext[1]
 {

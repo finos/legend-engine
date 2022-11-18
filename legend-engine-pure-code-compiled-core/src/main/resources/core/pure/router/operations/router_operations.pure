@@ -1,0 +1,106 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::router::operations::*;
+import meta::pure::router::routing::*;
+
+function meta::pure::router::operations::inheritance(o:OperationSetImplementation[1]):SetImplementation[*]
+{
+   $o.class->getMappedLeafTypes($o.parent)->map(c|$c->potentiallyResolveOperation($o.parent))
+}
+
+function meta::pure::router::operations::union(o:OperationSetImplementation[1]):SetImplementation[*]
+{
+   $o.parameters.setImplementation;
+}
+
+function meta::pure::router::operations::merge(o:OperationSetImplementation[1]):SetImplementation[*]
+{
+   $o.parameters.setImplementation;
+}
+
+function meta::pure::router::operations::special_union(o:OperationSetImplementation[1]):SetImplementation[*]
+{
+   $o.parameters.setImplementation;
+}
+
+function meta::pure::router::operations::getMappedLeafTypes(type:Class<Any>[1], mapping:Mapping[1]):SetImplementation[*]
+{
+   $type.specializations->map(s | $s.specific->cast(@Class<Any>)->getMappedLeafTypes_recursive([], $mapping))->removeDuplicates()
+}
+
+function <<access.private>> meta::pure::router::operations::getMappedLeafTypes_recursive(type:Class<Any>[1], leafMostClassMapping:SetImplementation[*],
+                                                                      mapping:Mapping[1]):SetImplementation[*]
+{
+   let specs = $type.specializations->map(s | $s.specific);
+   let foundClassMapping = $mapping.rootClassMappingByClass($type);
+   let classMapping = if($foundClassMapping->isEmpty()
+                         ,| $leafMostClassMapping
+                         ,| $foundClassMapping);
+   if($specs->isEmpty(), |$classMapping
+                       , |$specs->map(s | $s->cast(@Class<Any>)->getMappedLeafTypes_recursive($classMapping, $mapping)));
+}
+
+// TODO: Fix packages for below functions
+function meta::pure::router::routing::potentiallyResolveOperation(s:SetImplementation[*], mapping:Mapping[1]):SetImplementation[*]
+{
+   if($s->isEmpty(),
+      |[],
+      |$s->map(e|$e->match([
+                            o:OperationSetImplementation[1]| // Temporary
+                                                             if ($o.operation.name == 'special_union_OperationSetImplementation_1__SetImplementation_MANY_',
+                                                                   |$o.operation->eval($o->reprocessOperationForAssociationMapping($mapping)->toOne())->potentiallyResolveOperation($mapping),
+                                                                   |$o->reprocessOperationForAssociationMapping($mapping)
+                                                                );,
+                            r:SetImplementation[1]|$r
+                          ]))
+   );
+}
+
+function meta::pure::router::routing::potentiallyResolveOperation(s:SetImplementation[*], mapping:Mapping[1], allClassMappings: SetImplementation[*]):SetImplementation[*]
+{
+   if($s->isEmpty(),
+      |[],
+      |$s->map(e|$e->match([
+                            o:OperationSetImplementation[1]| // Temporary
+                                                             if ($o.operation.name == 'special_union_OperationSetImplementation_1__SetImplementation_MANY_',
+                                                                   |$o.operation->eval($o->reprocessOperationForAssociationMapping($mapping, $allClassMappings)->toOne())->potentiallyResolveOperation($mapping, $allClassMappings),
+                                                                   |$o->reprocessOperationForAssociationMapping($mapping, $allClassMappings)
+                                                                );,
+                            r:SetImplementation[1]|$r
+                          ]))
+   );
+}
+
+function meta::pure::router::routing::reprocessOperationForAssociationMapping(o:OperationSetImplementation[1], mapping:Mapping[1]):OperationSetImplementation[1]
+{
+   if($o.id == 'embedded_operation', | $o, | ^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=$mapping.classMappingById($i.id)->toOne()))))
+}
+
+function meta::pure::router::routing::reprocessOperationForAssociationMapping(o:OperationSetImplementation[1], mapping:Mapping[1], allClassMappings: SetImplementation[*]):OperationSetImplementation[1]
+{
+   if($o.id == 'embedded_operation', | $o, | ^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=$allClassMappings->filter(x | $x.id == $i.id)->toOne()))))
+}
+
+function meta::pure::router::routing::resolveOperation(s:SetImplementation[*], mapping:Mapping[1]):InstanceSetImplementation[*]
+{
+   if($s->isEmpty(),
+      |[],
+      |$s->map(o|$o->match([
+                            s:OperationSetImplementation[1]| $s.operation->eval($s->reprocessOperationForAssociationMapping($mapping)->toOne())->resolveOperation($mapping);,
+                            r:InstanceSetImplementation[1]| $r
+                          ]))
+   );
+}

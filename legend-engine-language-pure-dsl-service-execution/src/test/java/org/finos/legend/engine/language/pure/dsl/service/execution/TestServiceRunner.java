@@ -439,6 +439,22 @@ public class TestServiceRunner
         this.testServiceExecutionWithEnumParam("test::IfOpFilterEnumValueWithClassProp_String_1__TabularDataSet_1_", "str", "random", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Bob\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Bob\"]}]}");
     }
 
+    @Test
+    public void testServiceWithOptionalEnumParam()
+    {
+        this.testServiceExecutionWithEnumParam("test::OptionalEnumParam_YesNo_$0_1$__TabularDataSet_1_", "yesOrNo", "NO", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Status\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"InActive User\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"InActive User\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::OptionalEnumParam_YesNo_$0_1$__TabularDataSet_1_", "yesOrNo", null, "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Status\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"Active User\"]},{\"values\":[102,\"Active User\"]},{\"values\":[103,\"Active User\"]},{\"values\":[104,\"Active User\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::OptionalEnumParamClassProp_YesNo_$0_1$__TabularDataSet_1_", "yesOrNo", "NO", "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Status\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"InActive User\"]},{\"values\":[102,\"Active User\"]},{\"values\":[103,\"InActive User\"]},{\"values\":[104,\"Active User\"]}]}");
+        this.testServiceExecutionWithEnumParam("test::OptionalEnumParamClassProp_YesNo_$0_1$__TabularDataSet_1_", "yesOrNo", null, "{\"columns\":[{\"name\":\"ID\",\"type\":\"Integer\"},{\"name\":\"Status\",\"type\":\"String\"}],\"rows\":[{\"values\":[101,\"Active User\"]},{\"values\":[102,\"Active User\"]},{\"values\":[103,\"Active User\"]},{\"values\":[104,\"Active User\"]}]}");
+    }
+
+    @Test
+    public void testServiceWithCollectionEnumParam()
+    {
+        Exception e = Assert.assertThrows(RuntimeException.class, () -> buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/enumServiceParameter.pure", "test::CollectionEnumParam_EmployeeType_MANY__TabularDataSet_1_"));
+        e.getMessage().contains("Collection of Enums is not supported as service parameter [eType]");
+    }
+
     private static class EnumMultipleParamServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName1;
@@ -874,25 +890,32 @@ public class TestServiceRunner
 
     public static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName)
     {
-        InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(bufferedReader.lines().collect(Collectors.joining("\n")));
-        PureModel pureModel = Compiler.compile(contextData, null, null);
+        try
+        {
+            InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(bufferedReader.lines().collect(Collectors.joining("\n")));
+            PureModel pureModel = Compiler.compile(contextData, null, null);
 
-        Function fetchFunction = contextData.getElementsOfType(Function.class).stream().filter(x -> fetchFunctionName.equals(x._package + "::" + x.name)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function"));
+            Function fetchFunction = contextData.getElementsOfType(Function.class).stream().filter(x -> fetchFunctionName.equals(x._package + "::" + x.name)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function"));
 
-        return PlanGenerator.generateExecutionPlan(
-                HelperValueSpecificationBuilder.buildLambda(fetchFunction.body, fetchFunction.parameters, new CompileContext.Builder(pureModel).build()),
-                pureModel.getMapping("test::Map"),
-                pureModel.getRuntime("test::Runtime"),
-                null,
-                pureModel,
-                "vX_X_X",
-                PlanPlatform.JAVA,
-                null,
-                Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()),
-                LegendPlanTransformers.transformers
-        );
+            return PlanGenerator.generateExecutionPlan(
+                    HelperValueSpecificationBuilder.buildLambda(fetchFunction.body, fetchFunction.parameters, new CompileContext.Builder(pureModel).build()),
+                    pureModel.getMapping("test::Map"),
+                    pureModel.getRuntime("test::Runtime"),
+                    null,
+                    pureModel,
+                    "vX_X_X",
+                    PlanPlatform.JAVA,
+                    null,
+                    Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()),
+                    LegendPlanTransformers.transformers
+            );
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void assertCacheStats(ExecutionCache<?, ?> cache, int estimatedSize, int requestCount, int hitCount, int missCount)
