@@ -1,0 +1,137 @@
+###ServiceStore
+ServiceStore testServiceStoreTestSuites::ServiceStore
+(
+  ServiceGroup EmployeeServices
+  (
+    path : '/employees';
+    Service EmployeeService
+    (
+      path : '/allEmployees';
+      method : GET;
+      response : [testServiceStoreTestSuites::Employee <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
+      security : [];
+    )
+    Service EmployeeServiceWithParameters
+    (
+      path : '/employeesWithParameters';
+      method : GET;
+      parameters :
+      (
+          stringParam : String (location = query),
+          integerParam : Integer (location = query),
+          floatParam : Float (location = query),
+          booleanParam : Boolean (location = query)
+      );
+      response : [testServiceStoreTestSuites::Employee2 <- testServiceStoreTestSuites::employeeServiceStoreSchemaBinding];
+      security : [];
+    )
+  )
+)
+
+
+###Data
+Data testServiceStoreTestSuites::TestData
+{
+  ServiceStore #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees/allEmployees';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[ { \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" } ]';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+
+###ExternalFormat
+Binding testServiceStoreTestSuites::employeeServiceStoreSchemaBinding
+{
+  contentType: 'application/json';
+  modelIncludes:
+  [
+    testServiceStoreTestSuites::Employee,
+    testServiceStoreTestSuites::Employee2
+  ];
+}
+
+
+###Pure
+Class testServiceStoreTestSuites::Employee
+{
+  kerberos: String[1];
+  employeeID: String[1];
+  title: String[0..1];
+  firstName: String[0..1];
+  lastName: String[0..1];
+  countryCode: String[0..1];
+}
+Class testServiceStoreTestSuites::Employee2
+{
+  stringParam : String[1];
+  integerParam :  Integer[1];
+  floatParam :  Float[1];
+  booleanParam :  Boolean[1];
+}
+
+
+###Mapping
+Mapping testServiceStoreTestSuites::ServiceStoreMapping
+(
+  *testServiceStoreTestSuites::Employee[employee_set]: ServiceStore
+  {
+    ~service [testServiceStoreTestSuites::ServiceStore] EmployeeServices.EmployeeService
+  }
+  *testServiceStoreTestSuites::Employee2[employee2_set]: ServiceStore
+  {
+    ~service [testServiceStoreTestSuites::ServiceStore] EmployeeServices.EmployeeServiceWithParameters
+    (
+      ~request
+      (
+        parameters
+        (
+          stringParam = $this.stringParam,
+          integerParam = $this.integerParam,
+          floatParam = $this.floatParam,
+          booleanParam = $this.booleanParam
+        )
+      )
+    )
+  }
+)
+
+
+###Connection
+ServiceStoreConnection testServiceStoreTestSuites::ServiceStoreConnection
+{
+  store: testServiceStoreTestSuites::ServiceStore;
+  baseUrl: 'https://prodUrl.com';
+}
+
+
+###Runtime
+Runtime testServiceStoreTestSuites::ServiceStoreRuntime
+{
+  mappings:
+  [
+    testServiceStoreTestSuites::ServiceStoreMapping
+  ];
+  connections:
+  [
+    testServiceStoreTestSuites::ServiceStore:
+    [
+      connection_1: testServiceStoreTestSuites::ServiceStoreConnection
+    ]
+  ];
+}
