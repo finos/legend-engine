@@ -1,8 +1,8 @@
 # Service store
 
-Service store is a collection of service definitions. These service definitions correspond to the user's REST endpoints. You can use the service store to model your REST endpoints as stores in Legend, map them to their models, and author Alloy services on these models.
+Service store is a collection of service definitions. These service definitions correspond to the user's REST endpoints. You can use the service store to model your REST endpoints as stores in Legend, map them to their models, and author Legend services on these models.
 
-## Where does service store fit in Alloy/PURE modeling?
+## Where does service store fit in Legend/PURE modeling?
 
 Service store is a *type* of store that fits in the store layer, along with a relational (database) and model store.
 
@@ -50,7 +50,7 @@ REST APIs hosted by different servers should be defined in different service sto
     - type :`TypeReference`[1] : Specifies the schema of your parameter value.
     - location : `Location`[1] : Specifies location of your parameter (path, query, header, etc).
     - enum :`Enumeration`<Any>[0..1] : Lets you link your service parameter with enum.
-    - allowReserved: `Boolean`[0..1] : This is an optional parameter with default value `false`. This should be set to `true` when you don't want Alloy platform to use URL encoding for this parameter.
+    - allowReserved: `Boolean`[0..1] : This is an optional parameter with default value `false`. This should be set to `true` when you don't want Legend platform to use URL encoding for this parameter.
     - required: `Boolean`[0..1]: This is an optional parameter with default value `false`. This should be set to `true` when this parameter is required by the API. Setting this to `true` enforces compilation checks that mapping using the service provides value for this parameter.
     - serializationFormat :`SerializationFormat`[0..1] : If your service parameter takes in a list of values or a non-primitive value, you need to specify the serialization format using style and explode.
     - Details can be found [here](https://swagger.io/docs/specification/serialization/).
@@ -233,7 +233,7 @@ ServiceStoreConnection demo::connection::serviceStoreConnection
 
 #### RootServiceInstanceSetImplementation (a.k.a ServiceClassMapping)
 
-`RootServiceInstanceSetImplementation` lets you map a model to your REST APIs. Service Class Mapping is modelled keeping in mind that an Alloy model can be sourced from multiple REST APIs (e.g.- : model Product can be sourced from the following three services using the same class mapping):
+`RootServiceInstanceSetImplementation` lets you map a model to your REST APIs. Service Class Mapping is modelled keeping in mind that an Legend model can be sourced from multiple REST APIs (e.g.- : model Product can be sourced from the following three services using the same class mapping):
 
 - `/getAllProducts` : API which fetches all products.
 - `/getProductById?id=xyz` : API which fetches product details for a particular product based on ID.
@@ -745,7 +745,7 @@ Mapping meta::external::store::service::showcase::mapping::ServiceStoreMapping
 
 ## Service store test data
 
-While building Alloy services or using service store for your use case, we highly recommend safe-guarding your use case with tests. To build tests, you can model your test data using the `ServiceStoreEmbeddedData` concept explained below.
+While building Legend services or using service store for your use case, we highly recommend safe-guarding your use case with tests. To build tests, you can model your test data using the `ServiceStoreEmbeddedData` concept explained below.
 
 ### Structure
 
