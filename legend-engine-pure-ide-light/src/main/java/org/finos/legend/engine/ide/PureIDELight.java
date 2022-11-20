@@ -65,6 +65,14 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-pure-code-compiled-core", ""))
                 .with(this.buildCore("legend-engine-xt-analytics-mapping-pure", "analytics-mapping"))
                 .with(this.buildCore("legend-engine-xt-analytics-lineage-pure", "analytics-lineage"))
+                .with(this.buildCore("legend-engine-xt-javaGeneration-pure", "external-language-java"))
+                .with(this.buildCore("legend-engine-xt-javaPlatformBinding-pure", "java-platform-binding"))
+                .with(this.buildCore("legend-engine-xt-flatdata-javaPlatformBinding-pure", "external-format-flatdata-java-platform-binding"))
+                .with(this.buildCore("legend-engine-xt-json-javaPlatformBinding-pure", "external-format-json-java-platform-binding"))
+                .with(this.buildCore("legend-engine-xt-xml-javaPlatformBinding-pure", "external-format-xml-java-platform-binding"))
+                .with(this.buildCore("legend-engine-xt-relationalStore-javaPlatformBinding-pure", "relational-java-platform-binding"))
+                .with(this.buildCore("legend-engine-xt-serviceStore-javaPlatformBinding-pure", "servicestore-java-platform-binding"))
+                .with(this.buildCore("legend-engine-pure-code-compiled-core-configuration", "configuration"))
                 .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
     }
 
