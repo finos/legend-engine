@@ -48,7 +48,7 @@ function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], e
       | true
     );
   
-if($testConfig.connection->isEmpty(),
+  if($testConfig.connection->isEmpty(),
     |   true ,                                                     // test Connection not available ,do nothing further,
     |     let conn1= $testConfig.connection->toOne();
           let conn = ^$conn1(element= ^Database(name='dummyDB'));                      // overwite given connection db 
@@ -57,15 +57,16 @@ if($testConfig.connection->isEmpty(),
           let plan = wrapSQLStringInExecutionPlan($sqlString, $newExpectedResultTypes, $testConfig.dbType,$conn) ;
           
           let res = executePlan($plan,relationalExtensions());
-          if($res->isEmpty(),
-              | true ,                                  //legend engine not available 
-              | let areEqual = if($equalityComparator->isNotEmpty(),
+
+          runDataAssertion($res, $testConfig,                                  
+                | let areEqual = if($equalityComparator->isNotEmpty(),
                                   | $equalityComparator->toOne()->eval($res.values->toOneMany(), $newExpectedResult.value->toOneMany());, // expected values are wrapped in Literals currently
                                   | defaultEqualityComparator($res.values->toOneMany(), $newExpectedResult.value->toOneMany());
                                  );
+
                   let expectedStr = $newExpectedResult.value->map(v|$v->toString())->makeString('[',', ',']');
                   let resStr = $res.values->map(v|$v->toString())->makeString('[',', ',']');
-                  let errMsg=    'Result assert failed ,expected Values : '+ $expectedStr  +', actual Values : ' + $resStr;
+                  let errMsg = 'Result assert failed, expected Values : '+ $expectedStr  +', actual Values : ' + $resStr;
                   
                   assert($areEqual , $errMsg);
               );

@@ -18,6 +18,6 @@ jobs:
           java-version: "11"
 
       - name: Build
-        run: mvn -B -e -T 4 install -DargLine="-Xms12g -Xmx12g"
+        run: mvn -B -e -T 4 install -DargLine="-Xmx12g"
         env:
-          MAVEN_OPTS: -Xms10g -Xmx10g
+          MAVEN_OPTS: -Xmx10g

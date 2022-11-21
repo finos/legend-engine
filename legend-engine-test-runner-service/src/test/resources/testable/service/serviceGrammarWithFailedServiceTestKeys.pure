@@ -1,0 +1,59 @@
+###Service
+Service testServiceStoreTestSuites::TestService
+{
+  pattern: '/testServiceStoreTestSuites/testService';
+  owners:
+  [
+    'dummy1',
+    'dummy2'
+  ];
+  autoActivateUpdates: true;
+  documentation: 'Service to test Service testSuite';
+  execution: Single
+  {
+    query: |testServiceStoreTestSuites::Employee.all()->graphFetch(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#)->serialize(#{testServiceStoreTestSuites::Employee{kerberos,employeeID,title,firstName,lastName,countryCode}}#);
+    mapping: testServiceStoreTestSuites::ServiceStoreMapping;
+    runtime: testServiceStoreTestSuites::ServiceStoreRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference 
+            #{ 
+              testServiceStoreTestSuites::TestData 
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE;
+          keys:
+          [
+            'QA' 
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected : 
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{ \"kerberos\": \"dummy kerberos\", \"employeeID\": \"dummy id\", \"title\": \"dummy title\", \"firstName\": \"dummy firstName\", \"lastName\": \"dummy lastname\", \"countryCode\": \"dummy countryCode\" }';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -27,7 +27,7 @@ import meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::*;
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames(config:DbTestConfig[1]):Boolean[1]
 {
    let result = executeViaPlan(| MyClass.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
-   if($result->isEmpty(), | true,
+   runDataAssertion($result, $config,
    | 
       assertSize($result->toOne(), 1);
       assertEquals(2, $result.values->first()->cast(@MyClass).a);
@@ -35,15 +35,15 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
    );
    
    let result2 = executeViaPlan(| MyClassB.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
-   if($result2->isEmpty(), | true,
+   runDataAssertion($result2, $config,
     |  assertSize($result2, 1);
        assertEquals('\'Description A\'', $result2.values->first()->cast(@MyClassB).c);
     );
          
    let filteredResult = executeViaPlan(| MyClass.all()->filter(m | $m.a == 2), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
-   if($filteredResult->isEmpty(), | true,
+   runDataAssertion($filteredResult, $config,
     |  assertSize($filteredResult, 1);
-       assertEquals(2, $result.values->first()->cast(@MyClass).a);
+       assertEquals(2, $filteredResult.values->first()->cast(@MyClass).a);
    );
 }
 
@@ -52,7 +52,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let runtime = ^Runtime(connections=$config.connection);
   
    let result = executeViaPlan(| MyClass.all()->project([c | $c.b.c], ['c']), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
-    if($result->isEmpty(), | true,
+    runDataAssertion($result, $config,
        | assertSize($result, 1);
     );
 }
@@ -60,7 +60,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testASCiiColumnName(config:DbTestConfig[1]):Boolean[1]
 {
   let result = executeViaPlan(| MyClassC.all(), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
-   if($result->isEmpty(), | true,
+   runDataAssertion($result, $config,
    | 
       assertSize($result->toOne(), 1);
       assertEquals(0, $result.values->first()->cast(@MyClassC).capitalAlphabets);
@@ -81,7 +81,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let runtime = ^Runtime(connections=$config.connection);
   let result = executeViaPlan(| MyClassD.all()->project([x | $x.a, x | $x.b, x | $x.c, x | $x.d] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]), testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
   
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | 
   assertEquals($result.values.columns->map(x | $x.name), [$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]);
   );
@@ -98,7 +98,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 
    let result = executeViaPlan(| MyClassC.all()->project([x | $x.specialCharacters, x | $x.numbers, x | $x.smallAlphabets, x | $x.capitalAlphabets] ,[$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]),testMapping, meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::myDB, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | 
    assertEquals($result.values.rows->map(x | $x.values), ['testData', 1, 2, 0]);
    assertEquals($result.values.columns->map(x | $x.name), [$specialCharacters, $numbers, $smallAlphabets, $capitalAlphabets]);

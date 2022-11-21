@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.platform;
 import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_generation;
-import org.finos.legend.pure.generated.core_pure_executionPlan_legendJavaPlatformBinding_legendJavaPlatformBinding;
+import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_legendJavaPlatformBinding;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_platformBinding_PlatformBindingConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_platformBinding_legendJava_LegendJavaPlatformBindingConfig_Impl;
@@ -34,7 +34,7 @@ class JavaPlatformBinder extends PlatformBinder
     @Override
     Root_meta_pure_executionPlan_ExecutionPlan bindPlanToPlatform(Root_meta_pure_executionPlan_ExecutionPlan plan, String planId, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
-        String platformId = core_pure_executionPlan_legendJavaPlatformBinding_legendJavaPlatformBinding.Root_meta_pure_executionPlan_platformBinding_legendJava_legendJavaPlatformBindingId__String_1_(pureModel.getExecutionSupport());
+        String platformId = core_java_platform_binding_legendJavaPlatformBinding_legendJavaPlatformBinding.Root_meta_pure_executionPlan_platformBinding_legendJava_legendJavaPlatformBindingId__String_1_(pureModel.getExecutionSupport());
         return core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_generatePlatformCode_ExecutionPlan_1__String_1__PlatformBindingConfig_1__Extension_MANY__ExecutionPlan_1_(plan, platformId, getLegendJavaPlatformBindingConfig(planId), extensions, pureModel.getExecutionSupport());
     }
 
