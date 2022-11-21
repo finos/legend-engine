@@ -63,7 +63,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 
 public class TestServiceRunner
 {
@@ -908,7 +908,7 @@ public class TestServiceRunner
                     "vX_X_X",
                     PlanPlatform.JAVA,
                     null,
-                    Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()),
+                    Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()),
                     LegendPlanTransformers.transformers
             );
         }

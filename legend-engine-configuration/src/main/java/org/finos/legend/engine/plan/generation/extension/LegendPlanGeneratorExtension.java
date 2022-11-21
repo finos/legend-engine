@@ -22,13 +22,7 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-
-import static org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_;
-import static org.finos.legend.pure.generated.core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_;
-import static org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_;
-import static org.finos.legend.pure.generated.core_pure_binding_extension.Root_meta_external_shared_format_externalFormatExtension__Extension_1_;
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
-import static org.finos.legend.pure.generated.core_servicestore_extensions_extension.Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_;
+import org.finos.legend.pure.generated.core_configuration_coreExtensions;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
 {
@@ -44,13 +38,7 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
     {
         MutableList<Root_meta_pure_extension_Extension> pureExtensions = Lists.mutable.empty();
 
-        pureExtensions.add(Root_meta_external_shared_format_externalFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
-        pureExtensions.add(Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
-        pureExtensions.add(Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
-        pureExtensions.add(Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_(pureModel.getExecutionSupport()));
-
-        pureExtensions.add(Root_meta_external_store_service_extension_serviceStoreExtensions__Extension_1_(pureModel.getExecutionSupport()));
-        pureExtensions.addAll(Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()).toList());
+        pureExtensions.addAll(core_configuration_coreExtensions.Root_meta_pure_extension_configuration_coreExtensions__Extension_MANY_(pureModel.getExecutionSupport()).toList());
 
         return pureExtensions.toImmutable();
     }

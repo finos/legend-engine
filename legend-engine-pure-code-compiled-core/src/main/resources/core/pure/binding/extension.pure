@@ -61,13 +61,7 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
                                      printConnectionToString = printConnection_Extension_MANY__Function_MANY_,
                                      printPlanNodeToString = {space:String[1], extensions:Extension[*] | printPlanNodeToString($space, $extensions)}
                                   ),
-      serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_,
-      //TODO: Move this out along with Java Binding
-      availablePlatformBindings = meta::pure::extension::defaultExtensions().availablePlatformBindings->concatenate(
-         meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
-            meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension()
-         ])
-      )
+      serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_
    )
 }
 
