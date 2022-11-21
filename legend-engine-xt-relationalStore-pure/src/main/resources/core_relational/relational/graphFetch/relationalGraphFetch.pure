@@ -43,24 +43,13 @@ import meta::relational::runtime::*;
 
 Class meta::relational::graphFetch::executionPlan::RelationalGraphFetchExecutionNode extends LocalGraphFetchExecutionNode
 {
-   <<doc.deprecated>> relationalNode : ExecutionNode[0..1];
    children : RelationalGraphFetchExecutionNode[*];
 }
 
-Class <<doc.deprecated>> meta::relational::graphFetch::executionPlan::RelationalTempTableGraphFetchExecutionNode extends RelationalGraphFetchExecutionNode
+Class meta::relational::graphFetch::executionPlan::RelationalTempTableGraphFetchExecutionNode extends RelationalGraphFetchExecutionNode
 {
    tempTableName : String[1];
    columns : SQLResultColumn[*];
-}
-
-Class <<doc.deprecated>>  meta::relational::graphFetch::executionPlan::RelationalRootGraphFetchExecutionNode extends RelationalTempTableGraphFetchExecutionNode
-{
-}
-
-Class <<doc.deprecated>> meta::relational::graphFetch::executionPlan::RelationalCrossRootGraphFetchExecutionNode extends RelationalTempTableGraphFetchExecutionNode
-{
-   parentTempTableName : String[1];
-   parentTempTableColumns : SQLResultColumn[*];
 }
 
 Class meta::relational::graphFetch::executionPlan::RelationalClassQueryTempTableGraphFetchExecutionNode extends RelationalTempTableGraphFetchExecutionNode

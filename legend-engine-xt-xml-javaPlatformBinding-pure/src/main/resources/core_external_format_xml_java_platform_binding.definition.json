@@ -1,0 +1,5 @@
+{
+    "name" : "core_external_format_xml_java_platform_binding",
+    "pattern" : "(meta::external::format::xml::executionPlan::engine::java)(::.*)?",
+    "dependencies" : ["platform", "core", "core_external_format_xml", "core_external_language_java", "core_java_platform_binding"]
+}
