@@ -21,8 +21,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecifica
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualToJson_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EquivalentToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualTo_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 
@@ -42,6 +44,13 @@ public class TestAssertionCompilerHelper
 
             return new Root_meta_pure_test_assertion_EqualToJson_Impl("")
                     ._expected(equalToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+        }
+        else if (testAssertion instanceof EquivalentToJson)
+        {
+            EquivalentToJson equivalentToJson = (EquivalentToJson) testAssertion;
+
+            return new Root_meta_pure_test_assertion_EquivalentToJson_Impl("")
+                ._expected(equivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
         }
         else
         {
