@@ -349,6 +349,33 @@ public class TestServiceRunner
         Assert.assertEquals("{\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\"},{\"name\":\"First Name\",\"type\":\"String\"},{\"name\":\"Last Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[1,\"f1\",\"l1\"]}]}", result1);
     }
 
+    private static class SimpleM2MServiceRunnerForRecursive extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerForRecursive()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::recursiveTestingForM2M_Integer_1__String_1_"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.singletonList(new ServiceVariable("input",Integer.class,Multiplicity.PURE_ONE));
+        }
+    }
+
+    @Test
+    public void SimpleM2MServiceRunnerForRecursiveExecution()
+    {
+        SimpleM2MServiceRunnerForRecursive simpleM2MServiceRunnerForRecursive = new SimpleM2MServiceRunnerForRecursive();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(1))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = simpleM2MServiceRunnerForRecursive.run(serviceRunnerInput);
+        Assert.assertEquals("{\"wheels\":55}", result);
+    }
+
     private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
     {
         private String argName;
