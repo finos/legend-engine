@@ -219,9 +219,9 @@ public class LogicalPlanUtils
     {
         fieldsList.forEach(field ->
         {
-            if (field instanceof FieldValue && ((FieldValue) field).fieldName().equalsIgnoreCase(oldFieldName))
+            if (field instanceof FieldValue && ((FieldValue) field).fieldName().equals(oldFieldName))
             {
-                if (((FieldValue) field).fieldName().equalsIgnoreCase(oldFieldName))
+                if (((FieldValue) field).fieldName().equals(oldFieldName))
                 {
                     fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
                 }

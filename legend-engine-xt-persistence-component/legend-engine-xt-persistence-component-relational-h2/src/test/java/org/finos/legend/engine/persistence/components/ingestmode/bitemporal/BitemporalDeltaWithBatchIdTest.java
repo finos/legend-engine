@@ -72,7 +72,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, lakeFromName, lakeThroughName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -135,7 +135,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTableWithDeleteIndicator();
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, lakeFromName, lakeThroughName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -199,7 +199,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from_and_through/less_columns_in_staging/staging_data_pass1.csv";
         Dataset stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMainForBitemp(dataPass1);
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, lakeFromName, lakeThroughName, digestName, batchIdInName, batchIdOutName};
 
         BitemporalDelta ingestMode = BitemporalDelta.builder()
             .digestField(digestName)
@@ -250,7 +250,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTableWithDeleteIndicator();
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, lakeFromName, lakeThroughName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);

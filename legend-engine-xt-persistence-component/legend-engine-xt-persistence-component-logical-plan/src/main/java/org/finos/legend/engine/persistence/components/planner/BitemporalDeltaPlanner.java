@@ -136,7 +136,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField()));
             this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
 
-            this.primaryKeys.removeIf(fieldName -> fieldName.equals(targetValidDatetimeFrom.fieldName()));
+            this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
             this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset, primaryKeys.toArray(new String[0]));
 
             this.primaryKeyFields = new ArrayList<>();
