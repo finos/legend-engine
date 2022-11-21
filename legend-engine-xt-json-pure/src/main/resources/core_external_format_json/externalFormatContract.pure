@@ -51,9 +51,6 @@ function meta::external::format::json::extension::jsonSchemaFormatExtension(): E
    ^Extension
    (
       type                     = 'External Format - JsonSchema',
-      availableExternalFormats = jsonSchemaFormatContract(),
-
-      //TODO: Move this out along with Java Binding
-      availablePlatformBindings = externalFormatLegendJavaPlatformBinding(jsonSchemaJavaBindingDescriptor())
+      availableExternalFormats = jsonSchemaFormatContract()
    )
 }

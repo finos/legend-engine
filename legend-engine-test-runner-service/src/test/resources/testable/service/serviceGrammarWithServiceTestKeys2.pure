@@ -1,0 +1,109 @@
+###Service
+Service testModelStoreTestSuites::service::DocM2MService2
+{
+  pattern: '/testModelStoreTestSuites/service';
+  owners:
+  [
+    'dummy',
+    'dummy1'
+  ];
+  documentation: 'Service to test refiner flow';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#);
+    key: 'env';
+    executions['QA1']:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;
+    }
+    executions['QA2']:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime2;
+    }
+    executions['QA3']:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;
+    }
+    executions['QA4']:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime2;
+    }
+    executions['UAT']:
+    {
+      mapping: testModelStoreTestSuites::mapping::DocM2MMapping;
+      runtime: testModelStoreTestSuites::runtime::DocM2MRuntime;
+    }
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{\n  "sFirm_tbl": {\n    "legalName": "legalName 85",\n    "firmId": 78,\n    "ceoId": 40,\n    "addressId": 78,\n    "employees": {\n      "firstName": "firstName 52",\n      "lastName": "lastName 77",\n      "age": 89,\n      "id": 59,\n      "addressId": 88,\n      "firmId": 49\n    }\n  },\n  "sPerson_tbl": {\n    "firstName": "firstName 99",\n    "lastName": "lastName 62",\n    "age": 75,\n    "id": 53,\n    "addressId": 50,\n    "firmId": 70\n  }\n}';
+            }#,
+          connection_2:
+            Reference
+            #{
+              testServiceStoreTestSuites::TestData2
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE;
+          keys:
+          [
+            'QA1','UAT'
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "defects" : [ ],\n  "source" : {\n    "defects" : [ ],\n    "source" : {\n      "number" : 1,\n      "record" : "{\\"sFirm_tbl\\":{\\"legalName\\":\\"legalName 85\\",\\"firmId\\":78,\\"ceoId\\":40,\\"addressId\\":78,\\"employees\\":{\\"firstName\\":\\"firstName 52\\",\\"lastName\\":\\"lastName 77\\",\\"age\\":89,\\"id\\":59,\\"addressId\\":88,\\"firmId\\":49}},\\"sPerson_tbl\\":{\\"firstName\\":\\"firstName 99\\",\\"lastName\\":\\"lastName 62\\",\\"age\\":75,\\"id\\":53,\\"addressId\\":50,\\"firmId\\":70}}"\n    },\n    "value" : {\n      "sFirm_tbl" : {\n        "addressId" : 78,\n        "ceoId" : 40,\n        "firmId" : 78,\n        "legalName" : "legalName 85"\n      },\n      "sPerson_tbl" : {\n        "addressId" : 50,\n        "age" : 75,\n        "firmId" : 70,\n        "firstName" : "firstName 99",\n        "id" : 53,\n        "lastName" : "lastName 62"\n      }\n    }\n  },\n  "value" : {\n    "firm_tbl" : {\n      "addressId" : 78,\n      "firmId" : 78,\n      "legalName" : "legalName 85x",\n      "ceoId" : 40\n    },\n    "person_tbl" : {\n      "addressId" : 50,\n      "age" : 75,\n      "firmId" : 70,\n      "firstName" : "firstName 99",\n      "id" : 53,\n      "lastName" : "lastName 62"\n    }\n  }\n}';
+                  }#;
+              }#,
+            assert2:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "defects" : [ ],\n  "source" : {\n    "defects" : [ ],\n    "source" : {\n      "number" : 1,\n      "record" : "{\\"sFirm_tbl\\":{\\"legalName\\":\\"legalName 85\\",\\"firmId\\":78,\\"ceoId\\":40,\\"addressId\\":78,\\"employees\\":{\\"firstName\\":\\"firstName 52\\",\\"lastName\\":\\"lastName 77\\",\\"age\\":89,\\"id\\":59,\\"addressId\\":88,\\"firmId\\":49}},\\"sPerson_tbl\\":{\\"firstName\\":\\"firstName 99\\",\\"lastName\\":\\"lastName 62\\",\\"age\\":75,\\"id\\":53,\\"addressId\\":50,\\"firmId\\":70}}"\n    },\n    "value" : {\n      "sFirm_tbl" : {\n        "addressId" : 78,\n        "ceoId" : 40,\n        "firmId" : 78,\n        "legalName" : "legalName 85"\n      },\n      "sPerson_tbl" : {\n        "addressId" : 50,\n        "age" : 75,\n        "firmId" : 70,\n        "firstName" : "firstName 99",\n        "id" : 53,\n        "lastName" : "lastName 62"\n      }\n    }\n  },\n  "value" : {\n    "firm_tbl" : {\n      "addressId" : 78,\n      "firmId" : 78,\n      "legalName" : "legalName 85x",\n      "ceoId" : 40\n    },\n    "person_tbl" : {\n      "addressId" : 50,\n      "age" : 75,\n      "firmId" : 70,\n      "firstName" : "firstName 99",\n      "id" : 53,\n      "lastName" : "lastName 62"\n    }\n  }\n}';
+                  }#;
+              }#,
+            assert3:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{\n  "defects" : [ ],\n  "source" : {\n    "defects" : [ ],\n    "source" : {\n      "number" : 1,\n      "record" : "{\\"sFirm_tbl\\":{\\"legalName\\":\\"legalName 85\\",\\"firmId\\":78,\\"ceoId\\":40,\\"addressId\\":78,\\"employees\\":{\\"firstName\\":\\"firstName 52\\",\\"lastName\\":\\"lastName 77\\",\\"age\\":89,\\"id\\":59,\\"addressId\\":88,\\"firmId\\":49}},\\"sPerson_tbl\\":{\\"firstName\\":\\"firstName 99\\",\\"lastName\\":\\"lastName 62\\",\\"age\\":75,\\"id\\":53,\\"addressId\\":50,\\"firmId\\":70}}"\n    },\n    "value" : {\n      "sFirm_tbl" : {\n        "addressId" : 78,\n        "ceoId" : 40,\n        "firmId" : 78,\n        "legalName" : "legalName 85"\n      },\n      "sPerson_tbl" : {\n        "addressId" : 50,\n        "age" : 75,\n        "firmId" : 70,\n        "firstName" : "firstName 99",\n        "id" : 53,\n        "lastName" : "lastName 62"\n      }\n    }\n  },\n  "value" : {\n    "firm_tbl" : {\n      "addressId" : 78,\n      "firmId" : 78,\n      "legalName" : "legalName 85x",\n      "ceoId" : 40\n    },\n    "person_tbl" : {\n      "addressId" : 50,\n      "age" : 75,\n      "firmId" : 70,\n      "firstName" : "firstName 99",\n      "id" : 53,\n      "lastName" : "lastName 62"\n    }\n  }\n}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
