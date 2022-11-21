@@ -142,7 +142,7 @@ public abstract class RelationalGeneratorAbstract
             .collect(Collectors.toList());
     }
 
-    //TODO: ledav -- generateOperationsWithDataSplitsForEmptyBatch
+    //TODO: generateOperationsWithDataSplitsForEmptyBatch
 
 
     // ---------- UTILITY METHODS ----------

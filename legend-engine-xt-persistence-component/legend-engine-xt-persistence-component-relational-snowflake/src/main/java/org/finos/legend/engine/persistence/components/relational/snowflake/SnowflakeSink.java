@@ -120,7 +120,7 @@ public class SnowflakeSink extends AnsiSqlSink
             LOGICAL_PLAN_VISITOR_BY_CLASS,
             (executor, sink, dataset) ->
             {
-                //TODO: ledav -- pass transformer as an argument
+                //TODO: pass transformer as an argument
                 RelationalTransformer transformer = new RelationalTransformer(SnowflakeSink.get());
                 LogicalPlan datasetExistLogicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
                 SqlPlan physicalPlanForDoesDatasetExist = transformer.generatePhysicalPlan(datasetExistLogicalPlan);
