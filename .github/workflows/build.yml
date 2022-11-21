@@ -68,7 +68,7 @@ jobs:
 
       - name: Build + Test
         if: (github.repository != 'finos/legend-engine') || (github.ref != 'refs/heads/master')
-        run: mvn install javadoc:javadoc -DargLine="-Xmx2200m"
+        run: mvn -B -e install javadoc:javadoc -DargLine="-Xmx2200m"
 
       - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
         if: (github.repository == 'finos/legend-engine') && (github.ref == 'refs/heads/master')
@@ -76,8 +76,8 @@ jobs:
           DOCKER_USERNAME: finos
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: |
-          mvn install -DskipTests=true
-          mvn javadoc:javadoc deploy -DargLine="-Xmx2200m" -P docker-snapshot
+          mvn -B -e install -DskipTests=true
+          mvn -B -e javadoc:javadoc deploy -DargLine="-Xmx2200m" -P docker-snapshot
 
       - name: Upload Test Results
         if: always()
