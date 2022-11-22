@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.dependencies.util;
 
+import org.finos.legend.engine.plan.dependencies.domain.date.AbstractPureDate;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
@@ -51,49 +52,49 @@ public class Library
     private static final Comparator<Object> DEFAULT_COMPARATOR = Library::compareInt;
     private static final TimeZone GMT_TIME_ZONE = TimeZone.getTimeZone("GMT");
 
-    public static PureDate adjustDate(PureDate date, long number, DurationUnit unit)
+    public static PureDate adjustDate(AbstractPureDate date, long number, DurationUnit unit)
     {
         switch (unit.name())
         {
             case "YEARS":
             {
-                return date.addYears((int) number);
+                return (PureDate) date.addYears((int) number);
             }
             case "MONTHS":
             {
-                return date.addMonths((int) number);
+                return (PureDate) date.addMonths((int) number);
             }
             case "WEEKS":
             {
-                return date.addWeeks((int) number);
+                return (PureDate) date.addWeeks((int) number);
             }
             case "DAYS":
             {
-                return date.addDays((int) number);
+                return (PureDate) date.addDays((int) number);
             }
             case "HOURS":
             {
-                return date.addHours((int) number);
+                return (PureDate) date.addHours((int) number);
             }
             case "MINUTES":
             {
-                return date.addMinutes((int) number);
+                return (PureDate) date.addMinutes((int) number);
             }
             case "SECONDS":
             {
-                return date.addSeconds((int) number);
+                return (PureDate) date.addSeconds((int) number);
             }
             case "MILLISECONDS":
             {
-                return date.addMilliseconds((int) number);
+                return (PureDate) date.addMilliseconds((int) number);
             }
             case "MICROSECONDS":
             {
-                return date.addMicroseconds(number);
+                return (PureDate) date.addMicroseconds(number);
             }
             case "NANOSECONDS":
             {
-                return date.addNanoseconds(number);
+                return (PureDate) date.addNanoseconds(number);
             }
             default:
             {
@@ -102,16 +103,16 @@ public class Library
         }
     }
 
-    public static long dateDiff(PureDate date1, PureDate date2, DurationUnit unit)
+    public static long dateDiff(AbstractPureDate date1, AbstractPureDate date2, DurationUnit unit)
     {
         return date1.dateDifference(date2, unit.name());
     }
 
-    public static PureDate datePart(PureDate date)
+    public static PureDate datePart(AbstractPureDate date)
     {
         if (!date.hasHour())
         {
-            return date;
+            return (PureDate) date;
         }
         else
         {
@@ -119,7 +120,7 @@ public class Library
         }
     }
 
-    public static long dayOfMonth(PureDate date)
+    public static long dayOfMonth(AbstractPureDate date)
     {
         if (!date.hasDay())
         {
@@ -130,7 +131,7 @@ public class Library
     }
 
 
-    public static long dayOfWeekNumber(PureDate date)
+    public static long dayOfWeekNumber(AbstractPureDate date)
     {
         if (!date.hasDay())
         {
@@ -173,22 +174,22 @@ public class Library
         }
     }
 
-    public static PureDate firstDayOfWeek(PureDate date)
+    public static PureDate firstDayOfWeek(AbstractPureDate date)
     {
         return mostRecentDayOfWeek(date, DayOfWeek.Monday);
     }
 
-    public static PureDate firstDayOfMonth(PureDate date)
+    public static PureDate firstDayOfMonth(AbstractPureDate date)
     {
         return PureDate.newPureDate(date.getYear(), date.getMonth(), 1);
     }
 
-    public static PureDate firstDayOfQuarter(PureDate date)
+    public static PureDate firstDayOfQuarter(AbstractPureDate date)
     {
-        return PureDate.newPureDate(date.getYear(), (date.getQuarter() * 3) - 2, 1);
+        return PureDate.newPureDate(date.getYear(), (((PureDate)date).getQuarter() * 3) - 2, 1);
     }
 
-    public static PureDate firstDayOfYear(PureDate date)
+    public static PureDate firstDayOfYear(AbstractPureDate date)
     {
         return PureDate.newPureDate(date.getYear(), 1, 1);
     }
@@ -214,7 +215,7 @@ public class Library
         return firstDayOfYear(today());
     }
 
-    public static long weekOfYear(PureDate date)
+    public static long weekOfYear(AbstractPureDate date)
     {
         if (!date.hasDay())
         {
@@ -223,7 +224,7 @@ public class Library
         return date.getCalendar().get(Calendar.WEEK_OF_YEAR);
     }
 
-    public static PureDate mostRecentDayOfWeek(PureDate date, DayOfWeek dayOfWeek)
+    public static PureDate mostRecentDayOfWeek(AbstractPureDate date, DayOfWeek dayOfWeek)
     {
         PureDate datePart = datePart(date);
         int dayOfWeekNumber = dayOfWeek.ordinal() + 1;
@@ -239,7 +240,7 @@ public class Library
         return mostRecentDayOfWeek(today(), dayOfWeek);
     }
 
-    public static PureDate previousDayOfWeek(PureDate date, DayOfWeek dayOfWeek)
+    public static PureDate previousDayOfWeek(AbstractPureDate date, DayOfWeek dayOfWeek)
     {
         PureDate datePart = datePart(date);
         int dayOfWeekNumber = dayOfWeek.ordinal() + 1;
@@ -255,7 +256,7 @@ public class Library
         return previousDayOfWeek(today(), dayOfWeek);
     }
 
-    public static boolean lessThan(PureDate date1, PureDate date2)
+    public static boolean lessThan(AbstractPureDate date1, AbstractPureDate date2)
     {
         if (date1 == null || date2 == null)
         {
@@ -267,7 +268,7 @@ public class Library
         }
     }
 
-    public static boolean lessThanEqual(PureDate date1, PureDate date2)
+    public static boolean lessThanEqual(AbstractPureDate date1, AbstractPureDate date2)
     {
         if (date1 == null || date2 == null)
         {
@@ -279,7 +280,7 @@ public class Library
         }
     }
 
-    public static boolean greaterThan(PureDate date1, PureDate date2)
+    public static boolean greaterThan(AbstractPureDate date1, AbstractPureDate date2)
     {
         if (date1 == null || date2 == null)
         {
@@ -291,7 +292,7 @@ public class Library
         }
     }
 
-    public static boolean greaterThanEqual(PureDate date1, PureDate date2)
+    public static boolean greaterThanEqual(AbstractPureDate date1, AbstractPureDate date2)
     {
         if (date1 == null || date2 == null)
         {

@@ -203,11 +203,14 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
            if($type == Date,
               | $conventions->dateType($mult),
               |
+           if($type == LatestDate,
+              | $conventions->latestDateType($mult),
+              |
            if($type->instanceOf(meta::pure::metamodel::type::Enumeration) || $type->instanceOf(meta::pure::metamodel::type::Class) || $type->instanceOf(Unit) || $type->instanceOf(Measure),
               | $conventions->className($type)->listIfMulti($mult),
               | fail('Unsupported type: ' + $type.name->toOne());
                 ^meta::external::language::java::metamodel::Type();
-   )))))))))));
+   ))))))))))));
 }
 
 function meta::external::language::java::transform::stringType(     conventions:Conventions[1]): meta::external::language::java::metamodel::Type[1] { $conventions->stringType(     PureOne); }
@@ -248,6 +251,11 @@ function meta::external::language::java::transform::decimalType(conventions:Conv
 function meta::external::language::java::transform::numberType(conventions:Conventions[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
 {
    $conventions->javaType(Number, $mult);
+}
+
+function meta::external::language::java::transform::latestDateType(conventions:Conventions[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
+{
+   $conventions->javaType(LatestDate, $mult);
 }
 
 function meta::external::language::java::transform::strictDateType(conventions:Conventions[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
@@ -295,6 +303,11 @@ function meta::external::language::java::transform::booleanLiteral(conventions:C
    $conventions->typeConversion(Boolean).literalCoder->eval($b)
 }
 
+function meta::external::language::java::transform::latestDateLiteral(conventions:Conventions[1], ld:LatestDate[1]): Code[1]
+{  
+   $conventions->typeConversion(LatestDate).literalCoder->eval($ld)
+}
+
 function meta::external::language::java::transform::strictDateLiteral(conventions:Conventions[1], sd:StrictDate[1]): Code[1]
 {
    $conventions->typeConversion(StrictDate).literalCoder->eval($sd)
@@ -317,6 +330,7 @@ function meta::external::language::java::transform::primitiveLiteral(conventions
       {i:Integer[1]     | $conventions->integerLiteral($i)},
       {f:Float[1]       | $conventions->floatLiteral($f)},
       {d:Decimal[1]     | $conventions->decimalLiteral($d)},
+      {ld:LatestDate[1] | $conventions->latestDateLiteral($ld)},
       {sd:StrictDate[1] | $conventions->strictDateLiteral($sd)},
       {dt:DateTime[1]   | $conventions->dateTimeLiteral($dt)},
       {d:Date[1]        | $conventions->dateLiteral($d)},
@@ -755,6 +769,19 @@ function meta::external::language::java::transform::usesDate(library:Conventions
    );
 
    ^$library(typeConversions=$library.typeConversions->put(Date, $typeCoder));
+}
+
+function meta::external::language::java::transform::usesLatestDate(library:ConventionsLibrary[1], javaType:meta::external::language::java::metamodel::Type[1], literalCoder:Function<{LatestDate[1]->Code[1]}>[1]): ConventionsLibrary[1]
+{
+   let typeCoder = ^TypeConversion
+   (
+      type           = LatestDate,
+      oneJavaType    = $javaType,
+      nonOneJavaType = $javaType,
+      literalCoder   = {a:Any[1]| $literalCoder->eval($a->cast(@LatestDate))}
+   );
+
+   ^$library(typeConversions=$library.typeConversions->put(LatestDate, $typeCoder));
 }
 
 // ----------------------------------------------------------------------------------------------------------
