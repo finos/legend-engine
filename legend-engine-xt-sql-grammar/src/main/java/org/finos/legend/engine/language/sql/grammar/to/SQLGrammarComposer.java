@@ -14,8 +14,12 @@
 
 package org.finos.legend.engine.language.sql.grammar.to;
 
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.AllRows;
+import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.ComparisonOperator;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
 import org.finos.legend.engine.protocol.sql.metamodel.Limit;
@@ -40,8 +44,16 @@ import java.util.stream.Collectors;
 
 public class SQLGrammarComposer
 {
+    private final MutableMap<ComparisonOperator, String> comparator;
+
     private SQLGrammarComposer()
     {
+        comparator = Maps.mutable.with(
+                ComparisonOperator.EQUAL, "=",
+                ComparisonOperator.NOT_EQUAL, "!=",
+                ComparisonOperator.GREATER_THAN, ">",
+                ComparisonOperator.LESS_THAN, "<"
+        );
     }
 
     public static SQLGrammarComposer newInstance()
@@ -63,6 +75,19 @@ public class SQLGrammarComposer
             public String visit(AllRows val)
             {
                 return "ALL";
+            }
+
+            @Override
+            public String visit(ComparisonExpression val)
+            {
+                String left = val.left.accept(this);
+                String right = val.right.accept(this);
+                String operator = comparator.get(val.operator);
+                if (operator == null)
+                {
+                    throw new IllegalArgumentException("Unknown operator: " + val.operator);
+                }
+                return left + " " + operator + " " + right;
             }
 
             @Override
@@ -106,7 +131,7 @@ public class SQLGrammarComposer
             {
                 return val.queryBody.accept(this)
                         + val.orderBy.accept(this)
-                        + val.limit.accept(this);
+                        + (val.limit == null ? "" : val.limit.accept(this));
             }
 
             @Override
@@ -118,7 +143,9 @@ public class SQLGrammarComposer
             @Override
             public String visit(QuerySpecification val)
             {
-                return val.select.accept(this) + " from " + visit(val.from, "");
+                return val.select.accept(this)
+                        + " from " + visit(val.from, "")
+                        + (val.where == null ? "" : " where " + val.where.accept(this));
             }
 
             @Override

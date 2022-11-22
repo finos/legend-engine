@@ -56,6 +56,12 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testFilter()
+    {
+        check("SELECT id1, id2 FROM alloy.\"table\" WHERE id1 > 1");
+    }
+
+    @Test
     public void testEmptyStatement()
     {
         try
