@@ -64,7 +64,7 @@ jobs:
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
 
       - name: Prepare release
-        run: mvn -B -e release:prepare -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
+        run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B -e -T 4 release:perform -Darguments='-DargLine="-Xmx12g"' -P release,docker
+        run: mvn -B -e release:perform -Darguments='-B -e -T 4 -DargLine="-Xmx12g"' -P release,docker

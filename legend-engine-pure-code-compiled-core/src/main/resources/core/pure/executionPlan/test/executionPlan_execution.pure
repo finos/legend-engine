@@ -13,12 +13,10 @@
 // limitations under the License.
 
 function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::tests::testAllNodesForGraphNode() : Boolean[1]
-{
-   let sysMapping = meta::pure::store::platform::contract::platformStoreContract();
-   
+{  
    let tree = ^meta::pure::graphFetch::GraphFetchTree();
    let routedTree = ^meta::pure::graphFetch::routing::RoutedGraphFetchTree();
-   let clusteredTree = ^meta::pure::graphFetch::routing::ClusteredGraphFetchTree(openVars = []->cast(@Pair<String, List<Any>>)->newMap(), s = $sysMapping, tree = $routedTree, store = ^meta::pure::store::Store());
+   let clusteredTree = ^meta::pure::graphFetch::routing::ClusteredGraphFetchTree(openVars = []->cast(@Pair<String, List<Any>>)->newMap(), s = meta::pure::mapping::modelToModel::contract::modelStoreContract(), tree = $routedTree, store = ^meta::pure::store::Store());
 
    let voidResultType = ^meta::pure::executionPlan::VoidResultType(type = Any);
    let localGraphNode = ^meta::pure::graphFetch::executionPlan::LocalGraphFetchExecutionNode(graphFetchTree = $routedTree, resultType = $voidResultType, nodeIndex = 0);

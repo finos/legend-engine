@@ -1043,6 +1043,24 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::fetchGraphIsExpande
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{
+  serverVersion.start='vX_X_X'
+}
+meta::pure::mapping::modelToModel::test::alloy::dataQuality::testWordCountForM2MNonRecursiveFunction() : Boolean[1]
+{
+  let tree = #{Book {wordCount} }#;
+  let func = {|Book.all()->graphFetch($tree)->serialize($tree)};
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::simpleLiteratureMapping;
+  let runtime = testJsonRuntime(_Book, '{"pages":5}');
+  let result = execute($func, $mapping, $runtime,meta::pure::extension::defaultExtensions());
+  let json = $result.values->toOne();
+  
+  let expected = '{"wordCount":250}';
+  
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));  
+}
+
 
 ###Pure
 import meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::*;
@@ -1259,6 +1277,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::Book
 {
    title : String[1];
    pages : Integer[1];
+   wordCount: Integer[1];
 }
 
 Class meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::BookWithConstraints
@@ -1307,6 +1326,15 @@ Association meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::M
    reviews: Review[*];
 }
 
+function meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::totalWords(pages:Integer[1]):Integer[1]
+{
+  if($pages == 1,|50,|meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::finalWordCount($pages));
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::finalWordCount(pages:Integer[1]):Integer[1]
+{
+  $pages * 50;
+}
 
 ###Mapping
 import meta::pure::mapping::modelToModel::test::alloy::dataQuality::src::*;
@@ -1325,7 +1353,8 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::dataQuality::mapping::si
       {
          ~src _Book
          title : $src.title,
-         pages : $src.pages
+         pages : $src.pages,
+         wordCount: $src.pages->meta::pure::mapping::modelToModel::test::alloy::dataQuality::dest::totalWords()
       }
 )
 

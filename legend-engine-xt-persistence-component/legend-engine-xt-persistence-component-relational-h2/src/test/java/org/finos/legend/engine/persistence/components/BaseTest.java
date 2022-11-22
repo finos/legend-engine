@@ -200,9 +200,9 @@ public class BaseTest
     protected void loadStagingDataForWithPartition(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(date, ticker, close_price, volume, digest) " +
-            "SELECT CONVERT( \"date\",DATE ), \"ticker\", CONVERT( \"close_price\", DECIMAL(20,2)), CONVERT( \"volume\", INT), \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'date, ticker, close_price, volume, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
+            "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", INT), \"digest\"" +
+            " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -242,39 +242,39 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForLoans(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnly(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(gs_loan_id, datetime, balance, digest) " +
-            "SELECT CONVERT( \"gs_loan_id\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
-            " FROM CSVREAD( '" + path + "', 'gs_loan_id, datetime, balance, digest', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForLoansWithDeleteInd(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDeleteInd(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(gs_loan_id, datetime, balance, digest, delete_indicator) " +
-            "SELECT CONVERT( \"gs_loan_id\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\"" +
-            " FROM CSVREAD( '" + path + "', 'gs_loan_id, datetime, balance, digest, delete_indicator', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\"" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForLoansWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDataSplit(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(gs_loan_id, datetime, balance, digest, data_split) " +
-            "SELECT CONVERT( \"gs_loan_id\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'gs_loan_id, datetime, balance, digest, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForLoansWithDeleteIndWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(String path) throws Exception
     {
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(gs_loan_id, datetime, balance, digest, delete_indicator, data_split) " +
-            "SELECT CONVERT( \"gs_loan_id\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'gs_loan_id, datetime, balance, digest, delete_indicator, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 }

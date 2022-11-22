@@ -35,10 +35,6 @@ import meta::pure::extension::*;
 // TODO: To be removed
 import meta::pure::runtime::*;
 
-import meta::pure::store::platform::executionPlan::generation::*;
-import meta::pure::store::platform::extension::*;
-
-
 import meta::pure::store::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::routing::*;
