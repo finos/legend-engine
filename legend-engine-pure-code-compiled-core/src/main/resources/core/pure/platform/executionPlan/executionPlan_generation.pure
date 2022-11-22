@@ -15,29 +15,28 @@
 import meta::pure::executionPlan::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
+import meta::pure::metamodel::function::*;
+import meta::pure::platform::executionPlan::generation::*;
 import meta::pure::router::clustering::*;
-import meta::pure::runtime::*;
-import meta::pure::store::*;
-import meta::pure::store::platform::executionPlan::generation::*;
-import meta::pure::router::platform::metamodel::clustering::*;
-import meta::pure::store::platform::metamodel::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
+import meta::pure::router::platform::metamodel::clustering::*;
+import meta::pure::runtime::*;
 
-Class meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState
+Class meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState
 {
    inScopeVars     : Map<String, List<Any>>[1];
    exeCtx          : ExecutionContext[1];
 }
 
-Class meta::pure::store::platform::executionPlan::generation::PureFunctionToProcessFunctionPair extends Pair<meta::pure::metamodel::function::Function<Any>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>>
+Class meta::pure::platform::executionPlan::generation::PureFunctionToProcessFunctionPair extends Pair<Function<Any>, Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>>
 {
 }
 
-function meta::pure::store::platform::executionPlan::generation::processValueSpecification(vs:ValueSpecification[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[0..1]
+function meta::pure::platform::executionPlan::generation::processValueSpecification(vs:ValueSpecification[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[0..1]
 {
    $vs->match([
-      f:SimpleFunctionExpression[1]         | $f->meta::pure::store::platform::executionPlan::generation::getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
+      f:SimpleFunctionExpression[1]         | $f->getFunctionProcessor($extensions)->eval($f, $state, $extensions, $debug), 
       c:ClusteredValueSpecification[1]      | $c->plan($state.inScopeVars, $state.exeCtx, $extensions, $debug),
       e:ExtendedRoutedValueSpecification[1] | $e.value->processValueSpecification($state, $extensions, $debug),
       i:InstanceValue[1]                    | [],
@@ -45,11 +44,11 @@ function meta::pure::store::platform::executionPlan::generation::processValueSpe
    ]);
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::defaultFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->meta::pure::router::clustering::recursivelyFetchClusteredValueSpecification(false))->map(v|$v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug));
+   let children = $fe.parametersValues->evaluateAndDeactivate()->map(v|$v->recursivelyFetchClusteredValueSpecification(false))->map(v|$v->processValueSpecification($state, $extensions, $debug));
    let funcParams = $fe->findVariableExpressionsInValueSpecification()->removeDuplicatesBy(v | $v.name);
-   let varInputs = $funcParams->filter(x| $state.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^meta::pure::executionPlan::VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
+   let varInputs = $funcParams->filter(x| $state.inScopeVars->get($x.name->toOne())->isNotEmpty())->map(v | ^VariableInput(name = $v.name->toOne(), type = $v.genericType->cast(@GenericType).rawType->toOne(), multiplicity = $v.multiplicity->toOne()));
 
    ^PureExpressionPlatformExecutionNode
    (
@@ -58,15 +57,15 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
       requiredVariableInputs = $varInputs,
       resultSizeRange = $fe.multiplicity,
       executionNodes = $children,
-      fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $state.inScopeVars)
+      fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::serializeFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::serializeFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let params     = $fe.parametersValues->evaluateAndDeactivate();
    let collection = $params->at(0);   
-   let children   = $collection->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug);
+   let children   = $collection->processValueSpecification($state, $extensions, $debug);
 
    // Curtail the expression so that only the serialize part that is represented by the node is held
    let substitute = ^InstanceValue(values=[], genericType=$collection.genericType, multiplicity=ZeroMany);
@@ -76,13 +75,13 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
       expression = ^$fe(parametersValues=$substitute->concatenate($params->tail())),
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
       executionNodes = $children,
-      fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $state.inScopeVars)
+      fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::unionFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::unionFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
-   let children = $fe.parametersValues->evaluateAndDeactivate()->map(v | $v->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debug));
+   let children = $fe.parametersValues->evaluateAndDeactivate()->map(v | $v->processValueSpecification($state, $extensions, $debug));
    
    let nestedNodesFromChildUnion = $children->filter(ch | $ch->instanceOf(PlatformUnionExecutionNode));
    let updatedChildren = $children->filter(ch | !$ch->in($nestedNodesFromChildUnion))->concatenate($children->filter(ch | $ch->in($nestedNodesFromChildUnion)).executionNodes);
@@ -91,15 +90,15 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    (
       resultType = ^ResultType(type=$fe.genericType.rawType->toOne()),
       executionNodes = $updatedChildren,
-      fromCluster = meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction($fe, $state.inScopeVars)
+      fromCluster = generatePlatformClusterForFunction($fe, $state.inScopeVars)
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::letFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::letFunctionProcessor(fe:FunctionExpression[1], state:PlatformPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let subPlan   = $fe.parametersValues->at(1)->match(
                       [
-                        i:InstanceValue[1]      | ^meta::pure::executionPlan::ConstantExecutionNode
+                        i:InstanceValue[1]      | ^ConstantExecutionNode
                                                   (
                                                       resultType = ^ResultType(type = $i.genericType.rawType->toOne()),
                                                       resultSizeRange = $i.multiplicity,
@@ -109,7 +108,7 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
                       ]
                     );
 
-   ^meta::pure::executionPlan::AllocationExecutionNode
+   ^AllocationExecutionNode
    (
      varName         = $fe.parametersValues->at(0)->cast(@InstanceValue).values->toOne()->cast(@String),
      resultType      = $subPlan.resultType,
@@ -118,7 +117,7 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):PlatformClusteredValueSpecification[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::generatePlatformClusterForFunction(fe:FunctionExpression[1], inScopeVars : Map<String, List<Any>>[1]):PlatformClusteredValueSpecification[1]
 {
    ^PlatformClusteredValueSpecification(
       val = $fe,
@@ -129,7 +128,7 @@ function <<access.private>> meta::pure::store::platform::executionPlan::generati
    );
 }
 
-function <<access.private>> meta::pure::store::platform::executionPlan::generation::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
+function <<access.private>> meta::pure::platform::executionPlan::generation::getFunctionProcessor(f:SimpleFunctionExpression[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::function::Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>[1]
 {
    let specificProcessorsForFunctions = 
       newMap([

@@ -395,11 +395,6 @@ public class PureModel implements IPureModel
                 "getterOverrideMapped_Any_1__PropertyMapping_1__Any_MANY_",
                 "getterOverrideNonMapped_Any_1__Property_1__Any_MANY_"
         ));
-        registerElementForPathToElement("meta::pure::store::platform::contract", Lists.mutable.with(
-                "supports_FunctionExpression_1__Boolean_1_",
-                "execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_",
-                "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_"
-        ));
         registerElementForPathToElement("meta::pure::mapping::aggregationAware::contract", Lists.mutable.with(
                 "supports_FunctionExpression_1__Boolean_1_",
                 "planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_",

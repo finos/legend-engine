@@ -360,7 +360,7 @@ function meta::pure::graphFetch::routing::asString(r: GraphFetchTree[1], spaceSt
    let newLine = if($multiLine, | '\n', | '');
    $r->match([
       c: ClusteredGraphFetchTree[1] |
-         let start = '{'+if($c.store->instanceOf(meta::pure::store::platform::metamodel::PlatformStore),|'Platform', |$c.store->toOne()->elementToPath())+'> ';
+         let start = '{'+$c.store->toOne()->elementToPath()+'> ';
          $space+$start+$c.tree->asString($space, $multiLine)+'}';,
 
       rr: RoutedRootGraphFetchTree<Any>[1] |
