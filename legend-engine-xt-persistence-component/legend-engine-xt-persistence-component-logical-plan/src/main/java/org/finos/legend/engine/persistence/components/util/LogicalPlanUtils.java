@@ -221,10 +221,7 @@ public class LogicalPlanUtils
         {
             if (field instanceof FieldValue && ((FieldValue) field).fieldName().equals(oldFieldName))
             {
-                if (((FieldValue) field).fieldName().equals(oldFieldName))
-                {
-                    fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
-                }
+                fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
             }
         });
     }
