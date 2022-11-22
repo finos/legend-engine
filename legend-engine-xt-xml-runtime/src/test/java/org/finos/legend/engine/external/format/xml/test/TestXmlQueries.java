@@ -24,6 +24,8 @@ import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.NamedInputStream;
 import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
 import org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract;
+import org.finos.legend.pure.generated.core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor;
+import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -36,7 +38,9 @@ public class TestXmlQueries extends TestExternalFormatQueries
     @BeforeClass
     public static void setup()
     {
-        formatExtensions = Collections.singletonList(core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_(Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport()));
+        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport();
+        formatExtensions = Collections.singletonList(core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_(executionSupport));
+        formatDescriptors = Collections.singletonList(core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_xml_executionPlan_engine_java_xsdJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }
 
     @Test

@@ -195,6 +195,17 @@ public class AnsiTestArtifacts
 
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"staging\" CASCADE";
 
+    public static String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata " +
+            "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE batch_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
+    public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA " +
+            "(\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata " +
+            "WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',CURRENT_TIMESTAMP(),'DONE')";
 
+    public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata " +
+            "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") " +
+            "(SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 }

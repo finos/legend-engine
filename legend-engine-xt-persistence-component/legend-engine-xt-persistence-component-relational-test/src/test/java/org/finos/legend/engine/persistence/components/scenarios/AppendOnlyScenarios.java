@@ -37,7 +37,7 @@ public class AppendOnlyScenarios extends BaseTest
     Valid Combinations:
     1) Allow_Duplicates, No Auditing
     2) Allow_Duplicates, With Auditing
-    3) Allow_Duplicates, With Auditing, With Data Splits -> TBD later
+    3) Allow_Duplicates, With Auditing, With Data Splits
 
     4) Fail on Duplicates, No Auditing
     5) Fail on Duplicates, With Auditing
@@ -73,7 +73,13 @@ public class AppendOnlyScenarios extends BaseTest
 
     public TestScenario ALLOW_DUPLICATES_WITH_AUDITING__WITH_DATASPLIT()
     {
-        return null;
+        AppendOnly ingestMode = AppendOnly.builder()
+                .digestField(digestField)
+                .deduplicationStrategy(AllowDuplicates.builder().build())
+                .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+                .dataSplitField(Optional.of(dataSplitField))
+                .build();
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
     public TestScenario FAIL_ON_DUPLICATES_NO_AUDITING()

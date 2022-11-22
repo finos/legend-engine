@@ -64,7 +64,8 @@ class AppendOnlyPlanner extends Planner
         super(datasets, ingestMode, plannerOptions);
 
         // validate
-        ingestMode.deduplicationStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysIsEmpty, this::validatePrimaryKeysNotEmpty));
+        ingestMode.deduplicationStrategy().accept(new ValidatePrimaryKeys(primaryKeys, this::validatePrimaryKeysIsEmpty,
+                this::validatePrimaryKeysNotEmpty, ingestMode.dataSplitField().isPresent()));
         // if data splits are present, then audit Column must be a PK
         if (ingestMode.dataSplitField().isPresent())
         {
@@ -156,18 +157,24 @@ class AppendOnlyPlanner extends Planner
         final List<String> primaryKeys;
         final Consumer<List<String>> validatePrimaryKeysIsEmpty;
         final Consumer<List<String>> validatePrimaryKeysNotEmpty;
+        final boolean dataSplitsEnabled;
 
-        ValidatePrimaryKeys(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysIsEmpty, Consumer<List<String>> validatePrimaryKeysNotEmpty)
+        ValidatePrimaryKeys(List<String> primaryKeys, Consumer<List<String>> validatePrimaryKeysIsEmpty, Consumer<List<String>> validatePrimaryKeysNotEmpty, boolean dataSplitsEnabled)
         {
             this.primaryKeys = primaryKeys;
             this.validatePrimaryKeysIsEmpty = validatePrimaryKeysIsEmpty;
             this.validatePrimaryKeysNotEmpty = validatePrimaryKeysNotEmpty;
+            this.dataSplitsEnabled = dataSplitsEnabled;
         }
 
         @Override
         public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
         {
-            validatePrimaryKeysIsEmpty.accept(primaryKeys);
+            // If data splits are enabled, then PKs are allowed, Otherwise PKs are not allowed
+            if (!dataSplitsEnabled)
+            {
+                validatePrimaryKeysIsEmpty.accept(primaryKeys);
+            }
             return null;
         }
 
