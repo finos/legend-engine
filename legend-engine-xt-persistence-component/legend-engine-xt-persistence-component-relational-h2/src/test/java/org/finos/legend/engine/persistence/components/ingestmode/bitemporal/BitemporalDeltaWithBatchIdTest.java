@@ -1370,7 +1370,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
-        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass4.csv";
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass3);

@@ -126,6 +126,7 @@ class UnitemporalDeltaDbAndSchemaMissingTest extends BaseTest
 
     private void loadStagingData(String path, String tableName) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE %s;" +
             "INSERT INTO %s(id, name, income, start_time ,expiry_date, digest) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\"" +
