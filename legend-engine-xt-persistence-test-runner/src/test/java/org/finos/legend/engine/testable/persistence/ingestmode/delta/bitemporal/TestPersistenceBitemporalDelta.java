@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.testable.persistence.ingestmode.delta.bitemporal;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.testable.persistence.ingestmode.TestPersistenceBase;
