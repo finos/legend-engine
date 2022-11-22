@@ -358,7 +358,6 @@ public class MappingVisitors
                 mainSchemaDefinitionBuilder.addFields(dateTimeThru);
             }
 
-            validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(mainSchemaDefinitionBuilder, baseSchema));
             validDateTime.derivation.accept(new EnrichSchemaWithValidityMilestoningDerivation(stagingSchemaDefinitionBuilder, baseSchema));
             return null;
         }
