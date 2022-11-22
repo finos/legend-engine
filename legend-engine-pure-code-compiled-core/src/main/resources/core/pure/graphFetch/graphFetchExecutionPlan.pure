@@ -28,14 +28,6 @@ import meta::pure::runtime::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::utils::*;
 
-Class <<doc.deprecated>> meta::pure::graphFetch::executionPlan::GraphFetchExecutionNode extends ExecutionNode
-{
-   graphFetchTree : ClusteredGraphFetchTree[1];
-   rootExecutionNode : ExecutionNode[1];
-   batchSize : Integer[0..1];
-   globalGraphFetchExecutionNode : GlobalGraphFetchExecutionNode[1];
-}
-
 Class meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode extends ExecutionNode
 {
    graphFetchTree               : ClusteredGraphFetchTree[1];

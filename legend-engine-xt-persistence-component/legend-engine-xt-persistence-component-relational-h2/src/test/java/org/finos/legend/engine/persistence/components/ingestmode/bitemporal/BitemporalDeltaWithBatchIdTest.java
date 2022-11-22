@@ -48,13 +48,13 @@ import static org.finos.legend.engine.persistence.components.TestUtils.deleteInd
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.key1Name;
 import static org.finos.legend.engine.persistence.components.TestUtils.key2Name;
-import static org.finos.legend.engine.persistence.components.TestUtils.lakeFromName;
-import static org.finos.legend.engine.persistence.components.TestUtils.lakeThroughName;
-import static org.finos.legend.engine.persistence.components.TestUtils.loanBalanceName;
-import static org.finos.legend.engine.persistence.components.TestUtils.loanDateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.loanEndDateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.loanIdName;
-import static org.finos.legend.engine.persistence.components.TestUtils.loanStartDateTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.fromName;
+import static org.finos.legend.engine.persistence.components.TestUtils.throughName;
+import static org.finos.legend.engine.persistence.components.TestUtils.balanceName;
+import static org.finos.legend.engine.persistence.components.TestUtils.dateTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.endDateTimeName;
+import static org.finos.legend.engine.persistence.components.TestUtils.indexName;
+import static org.finos.legend.engine.persistence.components.TestUtils.startDateTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.valueName;
 
 // todo: stats collection is turned off for now
@@ -72,7 +72,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -84,8 +84,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -135,7 +135,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTableWithDeleteIndicator();
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -147,8 +147,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -199,7 +199,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from_and_through/less_columns_in_staging/staging_data_pass1.csv";
         Dataset stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMainForBitemp(dataPass1);
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         BitemporalDelta ingestMode = BitemporalDelta.builder()
             .digestField(digestName)
@@ -208,8 +208,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -250,7 +250,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTableWithDeleteIndicator();
 
-        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, lakeFromName, lakeThroughName};
+        String[] schema = new String[] {key1Name, key2Name, valueName, dateInName, dateOutName, digestName, batchIdInName, batchIdOutName, fromName, throughName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -262,8 +262,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(lakeFromName)
-                .dateTimeThruName(lakeThroughName)
+                .dateTimeFromName(fromName)
+                .dateTimeThruName(throughName)
                 .validityDerivation(SourceSpecifiesFromAndThruDateTime.builder()
                     .sourceDateTimeFromField(dateInName)
                     .sourceDateTimeThruField(dateOutName)
@@ -297,11 +297,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet1() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -315,10 +315,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .build();
@@ -330,7 +330,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoans(dataPass1);
+        loadStagingDataForBitemporalFromOnly(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
@@ -339,7 +339,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoans(dataPass2);
+        loadStagingDataForBitemporalFromOnly(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
@@ -348,7 +348,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass3.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass3.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass3);
+        loadStagingDataForBitemporalFromOnly(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
@@ -357,7 +357,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass4 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass4.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass4.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass4);
+        loadStagingDataForBitemporalFromOnly(dataPass4);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
@@ -366,7 +366,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass5 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass5.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass5.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass5);
+        loadStagingDataForBitemporalFromOnly(dataPass5);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
@@ -375,7 +375,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass6 = basePathForInput + "source_specifies_from/without_delete_ind/set_1/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_1/expected_pass6.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass6);
+        loadStagingDataForBitemporalFromOnly(dataPass6);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
@@ -388,11 +388,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet2() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -406,10 +406,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .build();
@@ -421,7 +421,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_2/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_2/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoans(dataPass1);
+        loadStagingDataForBitemporalFromOnly(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
@@ -430,7 +430,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_2/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_2/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoans(dataPass2);
+        loadStagingDataForBitemporalFromOnly(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
@@ -442,11 +442,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet3WithDataSplit() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDataSplitIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -461,10 +461,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .build();
@@ -476,7 +476,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -488,7 +488,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -504,7 +504,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass6.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -521,11 +521,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet3WithDataSplitMultiPasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDataSplitIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -540,10 +540,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .build();
@@ -555,7 +555,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -567,7 +567,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -597,7 +597,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/without_delete_ind/set_3_with_data_split/expected_pass5.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -621,12 +621,12 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet4FilterDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
-        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getLoansStagingTableWithoutDuplicatesIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
+        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getBitemporalFromOnlyStagingTableWithoutDuplicatesIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -642,10 +642,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
@@ -658,7 +658,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoans(dataPass1);
+        loadStagingDataForBitemporalFromOnly(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
@@ -667,7 +667,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoans(dataPass2);
+        loadStagingDataForBitemporalFromOnly(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
@@ -676,7 +676,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/expected_pass3.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass3);
+        loadStagingDataForBitemporalFromOnly(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
@@ -685,7 +685,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass4 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass4.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/expected_pass4.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass4);
+        loadStagingDataForBitemporalFromOnly(dataPass4);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
@@ -694,7 +694,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass5 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass5.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/expected_pass5.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass5);
+        loadStagingDataForBitemporalFromOnly(dataPass5);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
@@ -703,7 +703,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass6 = basePathForInput + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_4_filter_duplicates/expected_pass6.csv";
         // 1. Load staging table
-        loadStagingDataForLoans(dataPass6);
+        loadStagingDataForBitemporalFromOnly(dataPass6);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
@@ -715,11 +715,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet5WithDataSplitFilterDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDataSplitIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -734,10 +734,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
@@ -750,7 +750,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -762,7 +762,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -778,7 +778,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass6.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -795,11 +795,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromSet5WithDataSplitFilterDuplicatesMultiPasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDataSplitIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDataSplitIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -814,10 +814,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
@@ -830,7 +830,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -842,7 +842,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -872,7 +872,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/without_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass5.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
@@ -896,12 +896,12 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet1() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
-        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getLoansTempTableWithDeleteIndicatorIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
+        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getBitemporalFromOnlyTempTableWithDeleteIndicatorIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -916,10 +916,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -935,7 +935,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
@@ -944,7 +944,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
@@ -953,7 +953,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass3.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass3.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass3);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
@@ -962,7 +962,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass4 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass4.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass4);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass4);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
@@ -971,7 +971,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass5 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass5.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass5.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass5);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass5);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
@@ -980,7 +980,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass6 = basePathForInput + "source_specifies_from/with_delete_ind/set_1/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/with_delete_ind/set_1/expected_pass6.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass6);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass6);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
@@ -992,12 +992,12 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet2() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
-        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getLoansTempTableWithDeleteIndicatorIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
+        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getBitemporalFromOnlyTempTableWithDeleteIndicatorIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -1012,10 +1012,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -1031,7 +1031,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_2/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_2/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
@@ -1040,7 +1040,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_2/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_2/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
@@ -1052,10 +1052,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet3WithDataSplit() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -1068,10 +1068,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -1087,7 +1087,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
@@ -1099,7 +1099,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass3.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 1));
@@ -1113,7 +1113,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(70, 70));
@@ -1128,10 +1128,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet3WithDataSplitWithMultiplePasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -1144,10 +1144,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -1163,7 +1163,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
@@ -1175,7 +1175,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 1));
@@ -1196,7 +1196,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_3_with_data_split/staging_data_pass3.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_3_with_data_split/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(70, 71));
@@ -1211,12 +1211,12 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet4FilterDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorIdBased();
-        DatasetDefinition tempTable = TestUtils.getLoansTempTableIdBased();
-        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getLoansTempTableWithDeleteIndicatorIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorIdBased();
+        DatasetDefinition tempTable = TestUtils.getBitemporalFromOnlyTempTableIdBased();
+        DatasetDefinition tempTableWithDeleteIndicator = TestUtils.getBitemporalFromOnlyTempTableWithDeleteIndicatorIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -1231,10 +1231,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -1251,7 +1251,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
         Map<String, Object> expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
@@ -1260,7 +1260,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
@@ -1269,7 +1269,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass3.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass3);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
@@ -1278,7 +1278,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass4 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass4.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass4);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass4);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
@@ -1287,7 +1287,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass5 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass5.csv";
         String expectedDataPass5 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass5.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass5);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass5);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
@@ -1296,7 +1296,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass6 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass6.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteInd(dataPass6);
+        loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass6);
         // 2. Execute Plan and Verify Results
         expectedStats = new HashMap<>();
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
@@ -1308,11 +1308,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet5WithDataSplitFilterDuplicates() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
-        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getLoansStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -1327,10 +1327,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -1347,7 +1347,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
@@ -1359,7 +1359,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass3.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 1));
@@ -1373,7 +1373,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass4.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 100));
@@ -1388,11 +1388,11 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
     @Test
     void testMilestoningSourceSpecifiesFromWithDeleteIndicatorSet5WithDataSplitFilterDuplicatesWithMultiplePasses() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getLoansMainTableIdBased();
-        DatasetDefinition stagingTable = TestUtils.getLoansStagingTableWithDeleteIndicatorWithDataSplitIdBased();
-        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getLoansStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition mainTable = TestUtils.getBitemporalFromOnlyMainTableIdBased();
+        DatasetDefinition stagingTable = TestUtils.getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased();
+        DatasetDefinition stagingTableWithoutDuplicates = TestUtils.getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased();
 
-        String[] schema = new String[] {loanIdName, loanBalanceName, digestName, loanStartDateTimeName, loanEndDateTimeName, batchIdInName, batchIdOutName};
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -1407,10 +1407,10 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdOutName(batchIdOutName)
                 .build())
             .validityMilestoning(ValidDateTime.builder()
-                .dateTimeFromName(loanStartDateTimeName)
-                .dateTimeThruName(loanEndDateTimeName)
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
                 .validityDerivation(SourceSpecifiesFromDateTime.builder()
-                    .sourceDateTimeFromField(loanDateTimeName)
+                    .sourceDateTimeFromField(dateTimeName)
                     .build())
                 .build())
             .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
@@ -1427,7 +1427,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass1 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass1.csv";
         String expectedDataPass1 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass1.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass1);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass1);
         // 2. Execute Plan and Verify Results
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
@@ -1439,7 +1439,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass2 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass2.csv";
         String expectedDataPass2 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass2.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass2);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass2);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 1));
@@ -1460,7 +1460,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
         // 1. Load Staging table
-        loadStagingDataForLoansWithDeleteIndWithDataSplit(dataPass3);
+        loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass3);
         // 2. Execute Plan and Verify Results
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 100));

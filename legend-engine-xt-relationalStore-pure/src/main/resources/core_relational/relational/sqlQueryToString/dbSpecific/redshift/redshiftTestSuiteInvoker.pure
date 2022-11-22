@@ -12,52 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::test::*;
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
-import meta::pure::alloy::connections::*;
-import meta::pure::functions::meta::*;
-import meta::pure::test::*;
 
-function <<test.TestCollection>> meta::relational::tests::dbSpecificTests::redshift::runTests(): PureTestCollection[1]
+function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::redshift::testSuiteInvoker(): PureTestCollection[1]
 {
-  let connection = meta::relational::dbTestRunner::getTestConnection(DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
+  let connection = getTestConnection(DatabaseType.Redshift, meta::relational::extension::relationalExtensions());
   
-  meta::relational::tests::dbSpecificTests
-          ->collectParameterizedTests('Redshift',
-                ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection), [],
-                meta::relational::tests::dbSpecificTests::redshift::testsFilter_FunctionDefinition_1__Boolean_1_
-                );
+  // If a feature described in extension APIs / test suite is not supported,
+  // then throw an exception with message that starts with '[unsupported-api]'
+  // Tests which raise such exception will be reported as ignored by the runner
+  
+  meta::relational::tests::dbSpecificTests->collectParameterizedTests('Redshift',
+                ^DbTestConfig(dbType=DatabaseType.Redshift, connection=$connection),
+                meta::relational::tests::sqlQueryToString::redshift::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
+                []
+            );
 }
 
-function meta::relational::tests::dbSpecificTests::redshift::testsFilter(f:FunctionDefinition<Any>[1]):Boolean[1]
+function <<access.private>> meta::relational::tests::sqlQueryToString::redshift::testParamCustomizations(f:FunctionDefinition<Any>[1], dbTestConfig:DbTestConfig[1]): DbTestConfig[1]
 {
-  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
-  let unsupportedDynaFunctions = [ 'adjust', 'dateDiff', 'datePart','dayOfMonth', 'dayOfWeekNumber', 
-                                   'firstDayOfMonth', 'firstDayOfQuarter','firstDayOfThisMonth','firstDayOfThisQuarter', 'firstDayOfThisYear','firstDayOfWeek' ,'firstDayOfYear' , 
-                                   'indexOf', 'left', 'length', 'ltrim',
-                                  'mostRecentDayOfWeek','previousDayOfWeek',
-                                  'quarter', 'quarterNumber','toTimestamp'];
-  
-  //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
-  let failingSupportedDynaFunctions = ['joinStrings'];
+  let expectedSql = [
+    // You can optionally provide a list of pair of (test fn reference, sql string to be asserted as part of test)
+  ]->cast(@Pair<FunctionDefinition<Any>, String>)->newMap()->get($f);
 
-  let ignoredDynaFunctionTests= $unsupportedDynaFunctions->concatenate($failingSupportedDynaFunctions)->map(dynaFuncName |
-              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::' + $dynaFuncName;
-              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););
+  let deviatesFromStandard = $f->in([
+    // List of test fn or packages, where the db extension deviates from behaviour described in test.
+    // This is to preserve older (incorrect) behaviour for backward compatibility reasons.
+    // Use this feature carefully and sparingly
+  ]->findParameterizedTests());
 
-  
-  // currently hardcoding unsupported funcs, In future fetch this from db extensions and skip
-  let unsupportedAggregateFunctions = [ ];
-  
-  //these dynafunctions need to be fixed , currently skipping to suppress github integration test failures
-  let failingSupportedAggregateFunctions = ['drop', 'slice'];
-
-  let ignoredAggregateFunctionTests= $unsupportedAggregateFunctions->concatenate($failingSupportedAggregateFunctions)->map(dynaFuncName |
-              let dynaFuncPackageName = 'meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::' + $dynaFuncName;
-              $dynaFuncPackageName->pathToElement()->cast(@Package)->collectTests(););      
-
-  let ignoredNamingTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::namingTests::testColumnNames_DbTestConfig_1__Boolean_1_]; 
-  let ignoredFilterTests = [meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testFilterAfterFilter_DbTestConfig_1__Boolean_1_];     
-
-  !$ignoredDynaFunctionTests->concatenate($ignoredFilterTests)->concatenate($ignoredAggregateFunctionTests)->concatenate($ignoredNamingTests)->contains($f);
+  ^$dbTestConfig(expectedSql = $expectedSql, deviatesFromStandard = $deviatesFromStandard);
 }

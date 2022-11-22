@@ -32,7 +32,7 @@ import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
 import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.closePriceName;
+import static org.finos.legend.engine.persistence.components.TestUtils.priceName;
 import static org.finos.legend.engine.persistence.components.TestUtils.dateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
@@ -41,7 +41,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.incomeNam
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.partitionFilter;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.tickerName;
+import static org.finos.legend.engine.persistence.components.TestUtils.entityName;
 import static org.finos.legend.engine.persistence.components.TestUtils.volumeName;
 
 class UnitemporalSnapshotWithBatchIdTest extends BaseTest
@@ -108,17 +108,15 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
 
     /*
     Scenario: Test milestoning Logic with Partition when staging table pre populated
-    This test case is adapted from
-    https://confluence.site.gs.com/display/DIO/Alloy+Streaming+-+Milestoning+Schemes#AlloyStreamingMilestoningSchemes-Withpartitioning
     */
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithPartition() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getTickerPriceIdBasedMainTable();
-        DatasetDefinition stagingTable = TestUtils.getTickerPriceStagingTable();
+        DatasetDefinition mainTable = TestUtils.getEntityPriceIdBasedMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTable();
         MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
-        String[] schema = new String[]{dateName, tickerName, closePriceName, volumeName, digestName, batchIdInName, batchIdOutName};
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -169,11 +167,11 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithPartitionFilter() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getTickerPriceIdBasedMainTable();
-        DatasetDefinition stagingTable = TestUtils.getTickerPriceStagingTable();
+        DatasetDefinition mainTable = TestUtils.getEntityPriceIdBasedMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTable();
         MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
-        String[] schema = new String[]{dateName, tickerName, closePriceName, volumeName, digestName, batchIdInName, batchIdOutName};
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -267,11 +265,11 @@ class UnitemporalSnapshotWithBatchIdTest extends BaseTest
     void testUnitemporalSnapshotMilestoningLogicWithPartitionWithCleanStagingData() throws Exception
     {
 
-        DatasetDefinition mainTable = TestUtils.getTickerPriceIdBasedMainTable();
-        DatasetDefinition stagingTable = TestUtils.getTickerPriceStagingTable();
+        DatasetDefinition mainTable = TestUtils.getEntityPriceIdBasedMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTable();
         MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
-        String[] schema = new String[]{dateName, tickerName, closePriceName, volumeName, digestName, batchIdInName, batchIdOutName};
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
