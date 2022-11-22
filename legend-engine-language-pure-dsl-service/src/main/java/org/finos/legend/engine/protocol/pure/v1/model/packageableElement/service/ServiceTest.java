@@ -17,10 +17,12 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.servic
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 
+import java.util.Collections;
 import java.util.List;
 
 public class ServiceTest extends AtomicTest
 {
     public String serializationFormat;
     public List<ParameterValue> parameters;
+    public List<String> keys = Collections.emptyList();
 }

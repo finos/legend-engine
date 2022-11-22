@@ -302,45 +302,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -431,45 +431,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\" FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
-            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE (((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -484,17 +484,17 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedMainToTempForDeletion = "INSERT INTO \"mydb\".\"tempWithDeleteIndicator\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,x.\"validity_through_target\" as end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_x.\"validity_through_target\" as legend_persistence_end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN legend_persistence_y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
             "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
             "((sink.\"validity_from_target\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
-            "AND (stage.\"delete_indicator\" IN ('yes','1','true'))))) as x " +
+            "AND (stage.\"delete_indicator\" IN ('yes','1','true'))))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT * FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"validity_from_reference\"))";
+            "(SELECT * FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"validity_from_reference\"))";
 
         String expectedUpdateMainForDeletion = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -505,16 +505,16 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedTempToMainForDeletion = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"start_date\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,COALESCE(MIN(y.\"validity_from_target\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
-            "FROM \"mydb\".\"tempWithDeleteIndicator\" as x " +
-            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_target\" > x.\"validity_from_target\") AND (y.\"delete_indicator\" = 0) " +
-            "WHERE x.\"delete_indicator\" = 0 " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"validity_from_target\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
-            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"start_date\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"start_date\", x.\"batch_id_in\", x.\"batch_id_out\")";
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"legend_persistence_start_date\" as legend_persistence_start_date,MAX(legend_persistence_y.\"validity_through_target\") as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" FROM " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,COALESCE(MIN(legend_persistence_y.\"validity_from_target\"),'9999-12-31 23:59:59') as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" " +
+            "FROM \"mydb\".\"tempWithDeleteIndicator\" as legend_persistence_x " +
+            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_from_target\" > legend_persistence_x.\"validity_from_target\") AND (legend_persistence_y.\"delete_indicator\" = 0) " +
+            "WHERE legend_persistence_x.\"delete_indicator\" = 0 " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"validity_from_target\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\") as legend_persistence_x " +
+            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_through_target\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"validity_through_target\" <= legend_persistence_x.\"legend_persistence_end_date\") AND (legend_persistence_y.\"delete_indicator\" <> 0) " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -586,45 +586,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"data_split\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"data_split\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
-            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE (((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -733,90 +733,90 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO " + tempName + " " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\",stage.\"data_split\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\",stage.\"data_split\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO " + tempName + " " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
-            "(SELECT * FROM " + tempName + " as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
+            "(SELECT * FROM " + tempName + " as legend_persistence_temp " +
+            "WHERE ((sink.\"id\" = legend_persistence_temp.\"id\") AND (sink.\"name\" = legend_persistence_temp.\"name\")) AND (sink.\"validity_from_target\" = legend_persistence_temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM " + tempName + " as temp)";
+            "(SELECT legend_persistence_temp.\"id\",legend_persistence_temp.\"name\",legend_persistence_temp.\"amount\",legend_persistence_temp.\"digest\",legend_persistence_temp.\"batch_id_in\",legend_persistence_temp.\"batch_id_out\",legend_persistence_temp.\"validity_from_target\",legend_persistence_temp.\"validity_through_target\" FROM " + tempName + " as legend_persistence_temp)";
 
         String expectedMainToTempForDeletion = "INSERT INTO " + tempWithDeleteIndicatorName + " " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,x.\"validity_through_target\" as end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_x.\"validity_through_target\" as legend_persistence_end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN legend_persistence_y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (EXISTS " +
             "(SELECT * FROM \"mydb\".\"staging\" as stage " +
             "WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
             "((sink.\"validity_from_target\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
-            "AND (stage.\"delete_indicator\" IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as x " +
+            "AND (stage.\"delete_indicator\" IN ('yes','1','true'))) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT * FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"validity_from_reference\"))";
+            "(SELECT * FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"validity_from_reference\"))";
 
         String expectedUpdateMainForDeletion = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
-            "(SELECT * FROM " + tempWithDeleteIndicatorName + " as tempWithDeleteIndicator " +
-            "WHERE ((sink.\"id\" = tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_target\" = tempWithDeleteIndicator.\"validity_from_target\"))) " +
+            "(SELECT * FROM " + tempWithDeleteIndicatorName + " as legend_persistence_tempWithDeleteIndicator " +
+            "WHERE ((sink.\"id\" = legend_persistence_tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = legend_persistence_tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_target\" = legend_persistence_tempWithDeleteIndicator.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMainForDeletion = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"start_date\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,COALESCE(MIN(y.\"validity_from_target\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
-            "FROM " + tempWithDeleteIndicatorName + " as x " +
-            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_target\" > x.\"validity_from_target\") AND (y.\"delete_indicator\" = 0) " +
-            "WHERE x.\"delete_indicator\" = 0 " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"validity_from_target\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
-            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"start_date\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"start_date\", x.\"batch_id_in\", x.\"batch_id_out\")";
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"legend_persistence_start_date\" as legend_persistence_start_date,MAX(legend_persistence_y.\"validity_through_target\") as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" FROM " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,COALESCE(MIN(legend_persistence_y.\"validity_from_target\"),'9999-12-31 23:59:59') as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" " +
+            "FROM " + tempWithDeleteIndicatorName + " as legend_persistence_x " +
+            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_from_target\" > legend_persistence_x.\"validity_from_target\") AND (legend_persistence_y.\"delete_indicator\" = 0) " +
+            "WHERE legend_persistence_x.\"delete_indicator\" = 0 " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"validity_from_target\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\") as legend_persistence_x " +
+            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_through_target\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"validity_through_target\" <= legend_persistence_x.\"legend_persistence_end_date\") AND (legend_persistence_y.\"delete_indicator\" <> 0) " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
@@ -830,8 +830,8 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         Assertions.assertEquals(String.format(expectedMainToTempForDeletion, 2, 5, 2, 5), operations.get(0).ingestSql().get(4));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(0).ingestSql().get(5));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(0).ingestSql().get(6));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName, "temp"), operations.get(0).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "tempWithDeleteIndicator"), operations.get(0).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(0).ingestSql().get(7));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(0).ingestSql().get(8));
 
         Assertions.assertEquals(String.format(expectedStageToTemp, 6, 7, 6, 7, 6, 7), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(String.format(expectedMainToTemp, 6, 7, 6, 7), operations.get(1).ingestSql().get(1));
@@ -840,8 +840,8 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         Assertions.assertEquals(String.format(expectedMainToTempForDeletion, 6, 7, 6, 7), operations.get(1).ingestSql().get(4));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(1).ingestSql().get(5));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(1).ingestSql().get(6));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName, "temp"), operations.get(1).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "tempWithDeleteIndicator"), operations.get(1).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(1).ingestSql().get(7));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(1).ingestSql().get(8));
 
         Assertions.assertEquals(expectedMetadataTableIngestQuery, operations.get(0).metadataIngestSql().get(0));
 
@@ -915,45 +915,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
+            "WHERE ((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -1060,45 +1060,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\" FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"delete_indicator\" FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE stage.\"delete_indicator\" NOT IN ('yes','1','true')) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
-            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
+            "WHERE (((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")) AND (stage.\"delete_indicator\" NOT IN ('yes','1','true'))))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -1113,17 +1113,17 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedMainToTempForDeletion = "INSERT INTO \"mydb\".\"tempWithDeleteIndicator\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,x.\"validity_through_target\" as end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_x.\"validity_through_target\" as legend_persistence_end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN legend_persistence_y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (EXISTS " +
             "(SELECT * FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
             "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
             "((sink.\"validity_from_target\" = stage.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stage.\"validity_from_reference\")) " +
-            "AND (stage.\"delete_indicator\" IN ('yes','1','true'))))) as x " +
+            "AND (stage.\"delete_indicator\" IN ('yes','1','true'))))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT * FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"validity_from_reference\"))";
+            "(SELECT * FROM \"mydb\".\"stagingWithoutDuplicates\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"validity_from_reference\"))";
 
         String expectedUpdateMainForDeletion = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -1134,16 +1134,16 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedTempToMainForDeletion = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"start_date\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,COALESCE(MIN(y.\"validity_from_target\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
-            "FROM \"mydb\".\"tempWithDeleteIndicator\" as x " +
-            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_target\" > x.\"validity_from_target\") AND (y.\"delete_indicator\" = 0) " +
-            "WHERE x.\"delete_indicator\" = 0 " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"validity_from_target\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
-            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"start_date\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"start_date\", x.\"batch_id_in\", x.\"batch_id_out\")";
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"legend_persistence_start_date\" as legend_persistence_start_date,MAX(legend_persistence_y.\"validity_through_target\") as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" FROM " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,COALESCE(MIN(legend_persistence_y.\"validity_from_target\"),'9999-12-31 23:59:59') as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" " +
+            "FROM \"mydb\".\"tempWithDeleteIndicator\" as legend_persistence_x " +
+            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_from_target\" > legend_persistence_x.\"validity_from_target\") AND (legend_persistence_y.\"delete_indicator\" = 0) " +
+            "WHERE legend_persistence_x.\"delete_indicator\" = 0 " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"validity_from_target\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\") as legend_persistence_x " +
+            "LEFT OUTER JOIN \"mydb\".\"tempWithDeleteIndicator\" as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_through_target\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"validity_through_target\" <= legend_persistence_x.\"legend_persistence_end_date\") AND (legend_persistence_y.\"delete_indicator\" <> 0) " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, preActionsSql.get(1));
@@ -1231,45 +1231,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"data_split\" FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\",stage.\"data_split\" FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage WHERE (stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s)) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
-            "WHERE (((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"stagingWithoutDuplicates\" as stage " +
+            "WHERE (((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")) AND ((stage.\"data_split\" >= %s) AND (stage.\"data_split\" <= %s))))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -1400,90 +1400,90 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO " + tempName + " " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stageWithoutDuplicates.\"id\",stageWithoutDuplicates.\"name\",stageWithoutDuplicates.\"amount\",stageWithoutDuplicates.\"validity_from_reference\",stageWithoutDuplicates.\"digest\",stageWithoutDuplicates.\"delete_indicator\",stageWithoutDuplicates.\"data_split\" FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates WHERE (stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s))) as x " +
+            "(SELECT legend_persistence_stageWithoutDuplicates.\"id\",legend_persistence_stageWithoutDuplicates.\"name\",legend_persistence_stageWithoutDuplicates.\"amount\",legend_persistence_stageWithoutDuplicates.\"validity_from_reference\",legend_persistence_stageWithoutDuplicates.\"digest\",legend_persistence_stageWithoutDuplicates.\"delete_indicator\",legend_persistence_stageWithoutDuplicates.\"data_split\" FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates WHERE (stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s))) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates WHERE (stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO " + tempName + " " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates WHERE (stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true')) AND ((legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates " +
-            "WHERE ((((x.\"id\" = stageWithoutDuplicates.\"id\") AND (x.\"name\" = stageWithoutDuplicates.\"name\")) AND (x.\"start_date\" = stageWithoutDuplicates.\"validity_from_reference\")) AND (stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true'))) AND ((stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s))))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates " +
+            "WHERE ((((legend_persistence_x.\"id\" = legend_persistence_stageWithoutDuplicates.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_stageWithoutDuplicates.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = legend_persistence_stageWithoutDuplicates.\"validity_from_reference\")) AND (legend_persistence_stageWithoutDuplicates.\"delete_indicator\" NOT IN ('yes','1','true'))) AND ((legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s))))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
-            "(SELECT * FROM " + tempName + " as temp " +
-            "WHERE ((sink.\"id\" = temp.\"id\") AND (sink.\"name\" = temp.\"name\")) AND (sink.\"validity_from_target\" = temp.\"validity_from_target\"))) " +
+            "(SELECT * FROM " + tempName + " as legend_persistence_temp " +
+            "WHERE ((sink.\"id\" = legend_persistence_temp.\"id\") AND (sink.\"name\" = legend_persistence_temp.\"name\")) AND (sink.\"validity_from_target\" = legend_persistence_temp.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMain = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"validity_from_target\", \"validity_through_target\") " +
-            "(SELECT temp.\"id\",temp.\"name\",temp.\"amount\",temp.\"digest\",temp.\"batch_id_in\",temp.\"batch_id_out\",temp.\"validity_from_target\",temp.\"validity_through_target\" FROM " + tempName + " as temp)";
+            "(SELECT legend_persistence_temp.\"id\",legend_persistence_temp.\"name\",legend_persistence_temp.\"amount\",legend_persistence_temp.\"digest\",legend_persistence_temp.\"batch_id_in\",legend_persistence_temp.\"batch_id_out\",legend_persistence_temp.\"validity_from_target\",legend_persistence_temp.\"validity_through_target\" FROM " + tempName + " as legend_persistence_temp)";
 
         String expectedMainToTempForDeletion = "INSERT INTO " + tempWithDeleteIndicatorName + " " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\", \"delete_indicator\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,x.\"validity_through_target\" as end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_x.\"validity_through_target\" as legend_persistence_end_date,(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999,(CASE WHEN legend_persistence_y.\"delete_indicator\" IS NULL THEN 0 ELSE 1 END) " +
             "FROM " +
             "(SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = 999999999) " +
             "AND (EXISTS " +
-            "(SELECT * FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates " +
-            "WHERE (((sink.\"id\" = stageWithoutDuplicates.\"id\") AND (sink.\"name\" = stageWithoutDuplicates.\"name\")) AND " +
-            "((sink.\"validity_from_target\" = stageWithoutDuplicates.\"validity_from_reference\") OR (sink.\"validity_through_target\" = stageWithoutDuplicates.\"validity_from_reference\")) " +
-            "AND (stageWithoutDuplicates.\"delete_indicator\" IN ('yes','1','true'))) AND ((stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s))))) as x " +
+            "(SELECT * FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates " +
+            "WHERE (((sink.\"id\" = legend_persistence_stageWithoutDuplicates.\"id\") AND (sink.\"name\" = legend_persistence_stageWithoutDuplicates.\"name\")) AND " +
+            "((sink.\"validity_from_target\" = legend_persistence_stageWithoutDuplicates.\"validity_from_reference\") OR (sink.\"validity_through_target\" = legend_persistence_stageWithoutDuplicates.\"validity_from_reference\")) " +
+            "AND (legend_persistence_stageWithoutDuplicates.\"delete_indicator\" IN ('yes','1','true'))) AND ((legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s))))) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT * FROM " + stageWithoutDuplicatesName + " as stageWithoutDuplicates WHERE (stageWithoutDuplicates.\"data_split\" >= %s) AND (stageWithoutDuplicates.\"data_split\" <= %s)) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"validity_from_reference\"))";
+            "(SELECT * FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.\"data_split\" >= %s) AND (legend_persistence_stageWithoutDuplicates.\"data_split\" <= %s)) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"validity_from_reference\"))";
 
         String expectedUpdateMainForDeletion = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
             "WHERE (EXISTS " +
-            "(SELECT * FROM " + tempWithDeleteIndicatorName + " as tempWithDeleteIndicator " +
-            "WHERE ((sink.\"id\" = tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_target\" = tempWithDeleteIndicator.\"validity_from_target\"))) " +
+            "(SELECT * FROM " + tempWithDeleteIndicatorName + " as legend_persistence_tempWithDeleteIndicator " +
+            "WHERE ((sink.\"id\" = legend_persistence_tempWithDeleteIndicator.\"id\") AND (sink.\"name\" = legend_persistence_tempWithDeleteIndicator.\"name\")) AND (sink.\"validity_from_target\" = legend_persistence_tempWithDeleteIndicator.\"validity_from_target\"))) " +
             "AND (sink.\"batch_id_out\" = 999999999)";
 
         String expectedTempToMainForDeletion = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"start_date\" as start_date,MAX(y.\"validity_through_target\") as end_date,x.\"batch_id_in\",x.\"batch_id_out\" FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,COALESCE(MIN(y.\"validity_from_target\"),'9999-12-31 23:59:59') as end_date,x.\"batch_id_in\",x.\"batch_id_out\" " +
-            "FROM " + tempWithDeleteIndicatorName + " as x " +
-            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_from_target\" > x.\"validity_from_target\") AND (y.\"delete_indicator\" = 0) " +
-            "WHERE x.\"delete_indicator\" = 0 " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"validity_from_target\", x.\"batch_id_in\", x.\"batch_id_out\") as x " +
-            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"validity_through_target\" > x.\"start_date\") AND (y.\"validity_through_target\" <= x.\"end_date\") AND (y.\"delete_indicator\" <> 0) " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"amount\", x.\"digest\", x.\"start_date\", x.\"batch_id_in\", x.\"batch_id_out\")";
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"legend_persistence_start_date\" as legend_persistence_start_date,MAX(legend_persistence_y.\"validity_through_target\") as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" FROM " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,COALESCE(MIN(legend_persistence_y.\"validity_from_target\"),'9999-12-31 23:59:59') as legend_persistence_end_date,legend_persistence_x.\"batch_id_in\",legend_persistence_x.\"batch_id_out\" " +
+            "FROM " + tempWithDeleteIndicatorName + " as legend_persistence_x " +
+            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_from_target\" > legend_persistence_x.\"validity_from_target\") AND (legend_persistence_y.\"delete_indicator\" = 0) " +
+            "WHERE legend_persistence_x.\"delete_indicator\" = 0 " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"validity_from_target\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\") as legend_persistence_x " +
+            "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"validity_through_target\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"validity_through_target\" <= legend_persistence_x.\"legend_persistence_end_date\") AND (legend_persistence_y.\"delete_indicator\" <> 0) " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"amount\", legend_persistence_x.\"digest\", legend_persistence_x.\"legend_persistence_start_date\", legend_persistence_x.\"batch_id_in\", legend_persistence_x.\"batch_id_out\")";
 
         Assertions.assertEquals(expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
@@ -1499,9 +1499,9 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         Assertions.assertEquals(String.format(expectedMainToTempForDeletion, 2, 5, 2, 5), operations.get(0).ingestSql().get(5));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(0).ingestSql().get(6));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(0).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName, "temp"), operations.get(0).ingestSql().get(8));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "tempWithDeleteIndicator"), operations.get(0).ingestSql().get(9));
-        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "stageWithoutDuplicates"), operations.get(0).ingestSql().get(10));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(0).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(0).ingestSql().get(9));
+        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "legend_persistence_stageWithoutDuplicates"), operations.get(0).ingestSql().get(10));
 
         Assertions.assertEquals(expectedStageToStageWithoutDuplicates, operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(String.format(expectedStageToTemp, 6, 7, 6, 7, 6, 7), operations.get(1).ingestSql().get(1));
@@ -1511,9 +1511,9 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
         Assertions.assertEquals(String.format(expectedMainToTempForDeletion, 6, 7, 6, 7), operations.get(1).ingestSql().get(5));
         Assertions.assertEquals(expectedUpdateMainForDeletion, operations.get(1).ingestSql().get(6));
         Assertions.assertEquals(expectedTempToMainForDeletion, operations.get(1).ingestSql().get(7));
-        Assertions.assertEquals(getExpectedCleanupSql(tempName, "temp"), operations.get(1).ingestSql().get(8));
-        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "tempWithDeleteIndicator"), operations.get(1).ingestSql().get(9));
-        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "stageWithoutDuplicates"), operations.get(1).ingestSql().get(10));
+        Assertions.assertEquals(getExpectedCleanupSql(tempName, "legend_persistence_temp"), operations.get(1).ingestSql().get(8));
+        Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(1).ingestSql().get(9));
+        Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "legend_persistence_stageWithoutDuplicates"), operations.get(1).ingestSql().get(10));
 
         Assertions.assertEquals(expectedMetadataTableIngestQuery, operations.get(0).metadataIngestSql().get(0));
 
@@ -1573,45 +1573,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main'),999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE batch_metadata.\"table_name\" = 'main')-1 " +
@@ -1691,45 +1691,45 @@ public class BitemporalDeltaWithBatchIdTest extends IngestModeTest
 
         String expectedStageToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_reference\" as start_date,y.\"end_date\",{BATCH_ID_PATTERN},999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_reference\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",{BATCH_ID_PATTERN},999999999 " +
             "FROM " +
-            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),MIN(x.\"end_date\")) as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),MIN(legend_persistence_x.\"legend_persistence_end_date\")) as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",COALESCE(MIN(y.\"start_date\"),'9999-12-31 23:59:59') as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",COALESCE(MIN(legend_persistence_y.\"legend_persistence_start_date\"),'9999-12-31 23:59:59') as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"start_date\" < y.\"start_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" < legend_persistence_y.\"legend_persistence_start_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "LEFT OUTER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_reference\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_reference\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedMainToTemp = "INSERT INTO \"mydb\".\"temp\" " +
             "(\"id\", \"name\", \"amount\", \"digest\", \"validity_from_target\", \"validity_through_target\", \"batch_id_in\", \"batch_id_out\") " +
-            "(SELECT x.\"id\",x.\"name\",x.\"amount\",x.\"digest\",x.\"validity_from_target\" as start_date,y.\"end_date\",{BATCH_ID_PATTERN},999999999 " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"amount\",legend_persistence_x.\"digest\",legend_persistence_x.\"validity_from_target\" as legend_persistence_start_date,legend_persistence_y.\"legend_persistence_end_date\",{BATCH_ID_PATTERN},999999999 " +
             "FROM " +
-            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT sink.\"id\",sink.\"name\",sink.\"amount\",sink.\"digest\",sink.\"batch_id_in\",sink.\"batch_id_out\",sink.\"validity_from_target\",sink.\"validity_through_target\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",x.\"end_date\" as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",legend_persistence_x.\"legend_persistence_end_date\" as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT x.\"id\",x.\"name\",x.\"start_date\",MIN(y.\"start_date\") as end_date " +
+            "(SELECT legend_persistence_x.\"id\",legend_persistence_x.\"name\",legend_persistence_x.\"legend_persistence_start_date\",MIN(legend_persistence_y.\"legend_persistence_start_date\") as legend_persistence_end_date " +
             "FROM " +
-            "(SELECT \"id\",\"name\",\"validity_from_target\" as start_date,\"validity_through_target\" as end_date " +
-            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_target\" as legend_persistence_start_date,\"validity_through_target\" as legend_persistence_end_date " +
+            "FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999) as legend_persistence_x " +
             "INNER JOIN " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (y.\"start_date\" > x.\"start_date\") AND (y.\"start_date\" < x.\"end_date\") " +
-            "GROUP BY x.\"id\", x.\"name\", x.\"start_date\") as x " +
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_y.\"legend_persistence_start_date\" > legend_persistence_x.\"legend_persistence_start_date\") AND (legend_persistence_y.\"legend_persistence_start_date\" < legend_persistence_x.\"legend_persistence_end_date\") " +
+            "GROUP BY legend_persistence_x.\"id\", legend_persistence_x.\"name\", legend_persistence_x.\"legend_persistence_start_date\") as legend_persistence_x " +
             "WHERE NOT (EXISTS " +
-            "(SELECT \"id\",\"name\",\"validity_from_reference\" as start_date FROM \"mydb\".\"staging\" as stage " +
-            "WHERE ((x.\"id\" = stage.\"id\") AND (x.\"name\" = stage.\"name\")) AND (x.\"start_date\" = stage.\"validity_from_reference\")))) as y " +
-            "ON ((x.\"id\" = y.\"id\") AND (x.\"name\" = y.\"name\")) AND (x.\"validity_from_target\" = y.\"start_date\"))";
+            "(SELECT \"id\",\"name\",\"validity_from_reference\" as legend_persistence_start_date FROM \"mydb\".\"staging\" as stage " +
+            "WHERE ((legend_persistence_x.\"id\" = stage.\"id\") AND (legend_persistence_x.\"name\" = stage.\"name\")) AND (legend_persistence_x.\"legend_persistence_start_date\" = stage.\"validity_from_reference\")))) as legend_persistence_y " +
+            "ON ((legend_persistence_x.\"id\" = legend_persistence_y.\"id\") AND (legend_persistence_x.\"name\" = legend_persistence_y.\"name\")) AND (legend_persistence_x.\"validity_from_target\" = legend_persistence_y.\"legend_persistence_start_date\"))";
 
         String expectedUpdateMain = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"batch_id_out\" = {BATCH_ID_PATTERN}-1 " +
