@@ -26,115 +26,6 @@ import meta::relational::runtime::*;
 import meta::pure::alloy::connections::*;
 import  meta::relational::metamodel::relation::*;
 
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::count::testOnAllRows(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'count' , parameters=[]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=7);
-  runSqlQueryTest($sqlQuery, $expected,[], $config);
-}
-
-// size and count are functionally same
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::size::testSize(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'size' , parameters=[]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=7);
-  runSqlQueryTest($sqlQuery, $expected,[], $config);
-}
-
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::average::testAverage(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'average' , parameters=[^ColumnName(name='AGE')]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=25.714);
-  let equalityComparator =  floatEqualityComparatorGenerator([0.099]);
-  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
-}
-
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::sum::testSum(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'sum' , parameters=[^ColumnName(name='AGE')]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=180);
-  runSqlQueryTest($sqlQuery, $expected,[], $config);
-}
-
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::max::testMax(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'max' , parameters=[^ColumnName(name='AGE')]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=35);
-  runSqlQueryTest($sqlQuery, $expected,[], $config);
-}
-
-
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::min::testMin(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'min' , parameters=[^ColumnName(name='AGE')]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=12);
-  runSqlQueryTest($sqlQuery, $expected,[], $config);
-}
-
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::stdDevSample::testStdDevSample(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'stdDevSample' , parameters=[^ColumnName(name='AGE')]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=8.34);
-  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
-  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
-}
-
-function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::stdDevPopulation::testStdDevPopulation(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'stdDevPopulation' , parameters=[^ColumnName(name='AGE')]);
-
-  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
-  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
-                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
-                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
-
-  let expected = ^Literal(value=7.72);
-  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
-  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
-}
-
 //Tests on groups
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::groupBy::simpleGroupByCount(config:DbTestConfig[1]):Boolean[1]
 {
@@ -143,10 +34,9 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
                          ->groupBy('prodName', agg('cnt', x|$x, y| $y->count())),
                          simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
    
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   |let tds = $result.values->at(0);
    assertEquals([String, Integer], $result.values.columns.type);
-   assertEquals(4, $tds.rows->size());
    let resultStrs = $tds.rows->map(r| if($r.values->at(0) == ^TDSNull(), |'Null', |$r.values->at(0)->cast(@String)) + ', ' + $r.values->at(1)->toString())->sort();
    assertEquals(['Firm A, 3', 'Firm C, 5', 'Firm X, 2', 'Null, 1'], $resultStrs);
   );

@@ -34,7 +34,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
     ])}; 
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, ['Smith', 23.0, 'Johnson', 17.0, 'Hill', 17.0, 'Allen', 22.0, 'Roberts', 34.0, 'Hill', 32.0, 'Harris', 35.0]);
     assertEquals($result.values.columns.name, ['lastName', 'ageWindow']);
   );
@@ -49,7 +49,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
     ])};
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
   
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, ['Smith', 23.0, 'Johnson', 17.0, 'Hill', 12.0, 'Allen', 22.0, 'Roberts', 34.0, 'Hill', 32.0, 'Harris', 35.0]);
     assertEquals($result.values.columns.name, ['lastName', 'ageAverageWindow']);
   );
@@ -66,7 +66,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
     ])};
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, ['Smith', 23.0, 35.0, 'Johnson', 17.0, 22.0, 'Hill', 12.0, 35.0, 'Allen', 22.0, 123.0, 'Roberts', 34.0, 123.0, 'Hill', 32.0, 123.0, 'Harris', 35.0, 123.0]);
     assertEquals($result.values.columns.name, ['lastName', 'ageAverageWindow', 'ageSumWindow']);
   );
@@ -82,7 +82,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
     ])};
   let result = executeViaPlan($func, simpleRelationalMappingInc, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  if($result->isEmpty(), | true,
+  runDataAssertion($result, $config,
   | assertEquals($result.values.rows.values, ['Smith', 23.0, 35.0, 'Johnson', 22.0, 22.0, 'Hill', 22.0, 35.0, 'Allen', 22.0, 123.0, 'Roberts', 34.0, 123.0, 'Hill', 32.0, 123.0, 'Harris', 35.0, 123.0]);
     assertEquals($result.values.columns.name, ['lastName', 'ageMaxWindow', 'ageSumWindow']);
   );

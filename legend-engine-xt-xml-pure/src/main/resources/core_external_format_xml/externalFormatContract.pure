@@ -44,9 +44,6 @@ function meta::external::format::xml::extension::xsdFormatExtension(): Extension
    ^Extension
    (
       type                     = 'External Format - XSD',
-      availableExternalFormats = xsdFormatContract(),
-
-      //TODO: Move this out along with Java Binding
-      availablePlatformBindings = externalFormatLegendJavaPlatformBinding(xsdJavaBindingDescriptor())
+      availableExternalFormats = xsdFormatContract()
    )
 }

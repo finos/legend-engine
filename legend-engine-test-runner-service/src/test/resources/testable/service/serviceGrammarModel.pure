@@ -1,0 +1,173 @@
+###Data
+Data testServiceStoreTestSuites::TestData
+{
+   ExternalFormat
+   #{
+       contentType: 'application/json';
+       data: '{\n  "sFirm_tbl": {\n    "legalName": "legalName 18",\n    "firmId": 22,\n    "ceoId": 49,\n    "addressId": 88,\n    "employees": {\n      "firstName": "firstName 69",\n      "lastName": "lastName 2",\n      "age": 14,\n      "id": 52,\n      "addressId": 83,\n      "firmId": 73\n    }\n  },\n  "sPerson_tbl": {\n    "firstName": "firstName 69",\n    "lastName": "lastName 4",\n    "age": 98,\n    "id": 87,\n    "addressId": 46,\n    "firmId": 26\n  }\n}';
+   }#
+}
+Data testServiceStoreTestSuites::TestData2
+{
+   ExternalFormat
+   #{
+       contentType: 'application/json';
+       data: '{\n  "sFirm_tbl": {\n    "legalName": "legalName 18",\n    "firmId": 22,\n    "ceoId": 49,\n    "addressId": 88,\n    "employees": {\n      "firstName": "firstName 69",\n      "lastName": "lastName 2",\n      "age": 14,\n      "id": 52,\n      "addressId": 83,\n      "firmId": 73\n    }\n  },\n  "sPerson_tbl": {\n    "firstName": "firstName 69",\n    "lastName": "lastName 4",\n    "age": 98,\n    "id": 87,\n    "addressId": 46,\n    "firmId": 26\n  }\n}';
+   }#
+}
+Data testServiceStoreTestSuites::TestData3
+{
+   ExternalFormat
+   #{
+       contentType: 'application/json';
+       data: '{\n  "sFirm_tbl": {\n    "legalName": "legalName 18",\n    "firmId": 22,\n    "ceoId": 49,\n    "addressId": 88,\n    "employees": {\n      "firstName": "firstName 69",\n      "lastName": "lastName 2",\n      "age": 14,\n      "id": 52,\n      "addressId": 83,\n      "firmId": 73\n    }\n  },\n  "sPerson_tbl": {\n    "firstName": "firstName 69",\n    "lastName": "lastName 4",\n    "age": 98,\n    "id": 87,\n    "addressId": 46,\n    "firmId": 26\n  }\n}';
+   }#
+}
+
+###Pure
+Class testModelStoreTestSuites::model::Doc
+{
+  firm_tbl: testModelStoreTestSuites::model::Firm_TBL[1];
+  person_tbl: testModelStoreTestSuites::model::Person_TBL[1];
+}
+
+Class testModelStoreTestSuites::model::Firm_TBL
+{
+  legalName: String[1];
+  <<equality.Key>> firmId: Integer[1];
+  ceoId: Integer[1];
+  addressId: Integer[1];
+}
+
+Class testModelStoreTestSuites::model::Person_TBL
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+  <<equality.Key>> id: Integer[1];
+  addressId: Integer[1];
+  firmId: Integer[1];
+}
+
+Class testModelStoreTestSuites::model::sDoc
+{
+  sFirm_tbl: testModelStoreTestSuites::model::sFirm_TBL[1];
+  sPerson_tbl: testModelStoreTestSuites::model::sPerson_TBL[1];
+}
+
+Class testModelStoreTestSuites::model::sFirm_TBL
+{
+  legalName: String[1];
+  firmId: Integer[1];
+  ceoId: Integer[1];
+  addressId: Integer[1];
+  employees: testModelStoreTestSuites::model::sPerson_TBL[1];
+}
+
+Class testModelStoreTestSuites::model::sPerson_TBL
+{
+  firstName: String[1];
+  lastName: String[1];
+  age: Integer[1];
+  id: Integer[1];
+  addressId: Integer[1];
+  firmId: Integer[1];
+}
+
+
+###Mapping
+Mapping testModelStoreTestSuites::mapping::DocM2MMapping
+(
+  *testModelStoreTestSuites::model::Doc: Pure
+  {
+    ~src testModelStoreTestSuites::model::sDoc
+    firm_tbl: $src.sFirm_tbl,
+    person_tbl: $src.sPerson_tbl
+  }
+  *testModelStoreTestSuites::model::Firm_TBL: Pure
+  {
+    ~src testModelStoreTestSuites::model::sFirm_TBL
+    legalName: $src.legalName + 'x',
+    firmId: $src.firmId,
+    ceoId: $src.ceoId,
+    addressId: $src.addressId
+  }
+  *testModelStoreTestSuites::model::Person_TBL: Pure
+  {
+    ~src testModelStoreTestSuites::model::sPerson_TBL
+    firstName: $src.firstName,
+    lastName: $src.lastName,
+    age: $src.age,
+    id: $src.id,
+    addressId: $src.addressId,
+    firmId: $src.firmId
+  }
+)
+
+
+###Runtime
+Runtime testModelStoreTestSuites::runtime::DocM2MRuntime
+{
+  mappings:
+  [
+    testModelStoreTestSuites::mapping::DocM2MMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: testModelStoreTestSuites::model::sDoc;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime testModelStoreTestSuites::runtime::DocM2MRuntime2
+{
+  mappings:
+  [
+    testModelStoreTestSuites::mapping::DocM2MMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: testModelStoreTestSuites::model::sDoc;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime testModelStoreTestSuites::runtime::DocM2MRuntime3
+{
+  mappings:
+  [
+    testModelStoreTestSuites::mapping::DocM2MMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_2:
+      #{
+        JsonModelConnection
+        {
+          class: testModelStoreTestSuites::model::sDoc;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}

@@ -1,6 +1,6 @@
 # Get started with service store
 
-This page lists the steps to quickly get started with integrating your REST API in the Alloy ecosystem.
+This page lists the steps to quickly get started with integrating your REST API in the Legend ecosystem.
 
 1. Model your business concepts using classes in Studio.
 
@@ -91,7 +91,7 @@ This page lists the steps to quickly get started with integrating your REST API 
     }
     ```
 
-5. Define Alloy service with queries on your models.
+5. Define Legend service with queries on your models.
 
     ```java
     ###Service

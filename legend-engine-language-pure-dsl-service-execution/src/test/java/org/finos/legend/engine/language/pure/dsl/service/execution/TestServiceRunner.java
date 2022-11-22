@@ -63,7 +63,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 
 public class TestServiceRunner
 {
@@ -347,6 +347,33 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
         String result1 = simpleRelationalServiceRunner.run(serviceRunnerInput1);
         Assert.assertEquals("{\"columns\":[{\"name\":\"Age\",\"type\":\"Integer\"},{\"name\":\"First Name\",\"type\":\"String\"},{\"name\":\"Last Name\",\"type\":\"String\"}],\"rows\":[{\"values\":[1,\"f1\",\"l1\"]}]}", result1);
+    }
+
+    private static class SimpleM2MServiceRunnerForRecursive extends AbstractServicePlanExecutor
+    {
+        SimpleM2MServiceRunnerForRecursive()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::recursiveTestingForM2M_Integer_1__String_1_"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.singletonList(new ServiceVariable("input",Integer.class,Multiplicity.PURE_ONE));
+        }
+    }
+
+    @Test
+    public void SimpleM2MServiceRunnerForRecursiveExecution()
+    {
+        SimpleM2MServiceRunnerForRecursive simpleM2MServiceRunnerForRecursive = new SimpleM2MServiceRunnerForRecursive();
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withArgs(Collections.singletonList(1))
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        String result = simpleM2MServiceRunnerForRecursive.run(serviceRunnerInput);
+        Assert.assertEquals("{\"wheels\":55}", result);
     }
 
     private static class EnumParamServiceRunner extends AbstractServicePlanExecutor
@@ -908,7 +935,7 @@ public class TestServiceRunner
                     "vX_X_X",
                     PlanPlatform.JAVA,
                     null,
-                    Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()),
+                    Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()),
                     LegendPlanTransformers.transformers
             );
         }
