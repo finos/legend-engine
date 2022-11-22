@@ -2789,4 +2789,147 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
         //                ""
         //        );
     }
+
+    @Test
+    public void testBindingServices()
+    {
+        String resource = "###Pure\n" +
+                "Enum test::firm::model::AddressType\n" +
+                "{\n" +
+                "   Headquarters,\n" +
+                "   RegionalOffice,\n" +
+                "   Home,\n" +
+                "   Holiday\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Firm\n" +
+                "{\n" +
+                "   name      : String[1];\n" +
+                "   ranking   : Integer[0..1];\n" +
+                "   addresses : test::firm::model::AddressUse[1..*];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Address\n" +
+                "{\n" +
+                "   firstLine  : String[1];\n" +
+                "   secondLine : String[0..1];\n" +
+                "   city       : String[0..1];\n" +
+                "   region     : String[0..1];\n" +
+                "   country    : String[1];\n" +
+                "   position   : test::firm::model::GeographicPosition[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::GeographicPosition\n" +
+                "[\n" +
+                "   validLatitude: ($this.latitude >= -90) && ($this.latitude <= 90),\n" +
+                "   validLongitude: ($this.longitude >= -180) && ($this.longitude <= 180)\n" +
+                "]\n" +
+                "{\n" +
+                "   latitude  : Decimal[1];\n" +
+                "   longitude : Decimal[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::AddressUse\n" +
+                "{\n" +
+                "   addressType : test::firm::model::AddressType[1];\n" +
+                "   address     : test::firm::model::Address[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Person\n" +
+                "{\n" +
+                "   firstName      : String[1];\n" +
+                "   lastName       : String[1];\n" +
+                "   dateOfBirth    : StrictDate[0..1];   \n" +
+                "   addresses      : test::firm::model::AddressUse[*];\n" +
+                "   isAlive        : Boolean[1];\n" +
+                "   heightInMeters : Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::firm::model::Firm_Person\n" +
+                "{\n" +
+                "   firm      : test::firm::model::Firm[1];\n" +
+                "   employees : test::firm::model::Person[*];\n" +
+                "}\n" +
+                "\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::firm::model::TestBinding1\n" +
+                "{\n" +
+                "   contentType   : 'application/json';\n" +
+                "   modelIncludes : [ test::firm::model::Firm, test::firm::model::Person, test::firm::model::Address, test::firm::model::AddressUse, test::firm::model::GeographicPosition ];" +
+                "}\n" +
+                "Binding test::firm::model::TestBinding2\n" +
+                "{\n" +
+                "   contentType   : 'application/json';\n" +
+                "   modelIncludes : [ test::firm::model::Address, test::firm::model::GeographicPosition ];" +
+                "}\n" +
+                "\n\n";
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: url: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, ^Url(url = $url))->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding2, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+    }
 }
