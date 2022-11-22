@@ -41,6 +41,7 @@ Class meta::external::query::sql::metamodel::QuerySpecification extends meta::ex
 {
   select: meta::external::query::sql::metamodel::Select[1];
   from: meta::external::query::sql::metamodel::Relation[*];
+  where: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 Class meta::external::query::sql::metamodel::Select extends meta::external::query::sql::metamodel::Node
@@ -109,6 +110,13 @@ Class meta::external::query::sql::metamodel::SortItem extends meta::external::qu
   nullOrdering: meta::external::query::sql::metamodel::SortItemNullOrdering[1];
 }
 
+Class meta::external::query::sql::metamodel::ComparisonExpression extends meta::external::query::sql::metamodel::Expression
+{
+  left: meta::external::query::sql::metamodel::Expression[1];
+  right: meta::external::query::sql::metamodel::Expression[1];
+  operator: meta::external::query::sql::metamodel::ComparisonOperator[1];
+}
+
 Enum meta::external::query::sql::metamodel::SortItemOrdering
 {
   ASCENDING,
@@ -120,4 +128,14 @@ Enum meta::external::query::sql::metamodel::SortItemNullOrdering
   FIRST,
   LAST,
   UNDEFINED
+}
+
+Enum meta::external::query::sql::metamodel::ComparisonOperator
+{
+  EQUAL,
+  NOT_EQUAL,
+  LESS_THAN,
+  LESS_THAN_OR_EQUAL,
+  GREATER_THAN,
+  GREATER_THAN_OR_EQUAL
 }

@@ -16,11 +16,14 @@ package org.finos.legend.engine.language.sql.grammar.from;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseBaseVisitor;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.AllRows;
+import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.ComparisonOperator;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Identifier;
 import org.finos.legend.engine.protocol.sql.metamodel.Limit;
@@ -85,6 +88,7 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
         select.distinct = isDistinct(ctx.setQuant());
         querySpecification.select = select;
         querySpecification.from = relations;
+        querySpecification.where = visitIfPresent(ctx.where(), Expression.class);
         return querySpecification;
     }
 
@@ -181,6 +185,47 @@ public class SqlVisitor extends SqlBaseBaseVisitor<Node>
         sortItem.ordering = getOrdering(ctx.ordering);
         sortItem.nullOrdering = getNullOrdering(ctx.nullOrdering);
         return sortItem;
+    }
+
+    @Override
+    public Node visitWhere(SqlBaseParser.WhereContext ctx)
+    {
+        return ctx.condition.accept(this);
+    }
+
+    @Override
+    public Node visitComparison(SqlBaseParser.ComparisonContext ctx)
+    {
+        TerminalNode cmpOpNode = (TerminalNode) ctx.cmpOp().getChild(0);
+        Token cmpOpSymbol = cmpOpNode.getSymbol();
+
+        ComparisonExpression comparisonExpression = new ComparisonExpression();
+        comparisonExpression.operator = getComparisonOperator(cmpOpSymbol);
+        comparisonExpression.left = (Expression) ctx.value.accept(this);
+        comparisonExpression.right = (Expression) ctx.right.accept(this);
+
+        return comparisonExpression;
+    }
+
+    private static ComparisonOperator getComparisonOperator(Token cmpOpSymbol)
+    {
+        switch (cmpOpSymbol.getType())
+        {
+            case SqlBaseParser.EQ:
+                return ComparisonOperator.EQUAL;
+            case SqlBaseParser.NEQ:
+                return ComparisonOperator.NOT_EQUAL;
+            case SqlBaseParser.LT:
+                return ComparisonOperator.LESS_THAN;
+            case SqlBaseParser.LTE:
+                return ComparisonOperator.LESS_THAN_OR_EQUAL;
+            case SqlBaseParser.GT:
+                return ComparisonOperator.GREATER_THAN;
+            case SqlBaseParser.GTE:
+                return ComparisonOperator.GREATER_THAN_OR_EQUAL;
+        }
+        throw new IllegalArgumentException("Unknown comparison operator: " + cmpOpSymbol.getText());
+
     }
 
     private SortItemNullOrdering getNullOrdering(Token token)
