@@ -9,7 +9,7 @@ function meta::pure::alloy::connections::tests::testTableMapperPostProcessor():B
             connections = ^TestDatabaseConnection(
                                 element = meta::relational::tests::db,
                                 type = DatabaseType.Sybase,
-                                queryPostProcessorWithParameter = meta::pure::alloy::connections::tableMapperPostProcessor(^meta::pure::alloy::connections::MapperPostProcessor(mappers = ^meta::pure::alloy::connections::SchemaNameMapper(from = 'productSchema', to = 'productSchemaTransformed')))
+                                queryPostProcessorsWithParameter = meta::pure::alloy::connections::tableMapperPostProcessor(^meta::pure::alloy::connections::MapperPostProcessor(mappers = ^meta::pure::alloy::connections::SchemaNameMapper(from = 'productSchema', to = 'productSchemaTransformed')))
                             )
         );
         let result = meta::pure::executionPlan::executionPlan({|Product.all()->filter(p|$p.name == 'ok')}, meta::relational::tests::simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
