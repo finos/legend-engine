@@ -18,7 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -28,18 +32,17 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCollection;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
-import org.slf4j.Logger;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class ModelManager
 {
@@ -54,8 +57,8 @@ public class ModelManager
     // TODO: consider renaming this to UNSAFE/DEPRECATED_objectMapper
     //-------------------------------------------------------------------------------------------------
     public static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
-    public final Cache<PureModelContext, PureModel> pureModelCache = CacheBuilder.newBuilder().recordStats().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
+    public final Cache<PureModelContext, Pair<PureModelContextData, PureModel>> pureModelCache = CacheBuilder.newBuilder().recordStats().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
+    public final Cache<PureModelContext, PureModelContextData> pointerToPmcdCache = CacheBuilder.newBuilder().recordStats().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
     private final DeploymentMode deploymentMode;
     private final MutableList<ModelLoader> modelLoaders;
 
@@ -69,30 +72,27 @@ public class ModelManager
     // Remove clientVersion
     public PureModel loadModel(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
     {
-        if (!(context instanceof PureModelContextData) && !(context instanceof PureModelContextText))
-        {
-            ModelLoader loader = this.modelLoaderForContext(context);
-            if (loader.shouldCache(context))
-            {
-                PureModelContext cacheKey = loader.cacheKey(context, pm);
-                try
-                {
-                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, pm), this.deploymentMode, pm, packageOffset));
-                }
-                catch (ExecutionException e)
-                {
-                    throw new EngineException("Engine was not able to cache", e);
-                }
-            }
-        }
-        return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
+        return this.loadModelAndData(context, clientVersion, pm, packageOffset).getTwo();
     }
 
     // Remove clientVersion
     public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
     {
-        PureModelContextData data = this.loadData(context, clientVersion, pm);
-        return Tuples.pair(data, loadModel(data, clientVersion, pm, packageOffset));
+        Supplier<Pair<PureModelContextData, PureModel>> resolver = () ->
+        {
+            PureModelContextData pmcd = this.loadData(context, clientVersion, pm);
+            return Tuples.pair(pmcd, Compiler.compile(pmcd, this.deploymentMode, pm, packageOffset));
+        };
+
+        if (context instanceof PureModelContextPointer)
+        {
+            ModelLoader loader = this.modelLoaderForContext(context);
+            return this.resolveAndCacheIfAllowed(this.pureModelCache, loader, (PureModelContextPointer) context, pm, resolver);
+        }
+        else
+        {
+            return resolver.get();
+        }
     }
 
     // Remove clientVersion
@@ -105,22 +105,47 @@ public class ModelManager
     // Remove clientVersion
     public PureModelContextData loadData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
     {
-        try (Scope scope = GlobalTracer.get().buildSpan("Load Model").startActive(true))
+        Span span = GlobalTracer.get().buildSpan("Load Model").start();
+        try (Scope ignored =  GlobalTracer.get().activateSpan(span))
         {
-            scope.span().setTag("context", context.getClass().getSimpleName());
-            if (context instanceof PureModelContextData)
+            span.setTag("context", context.getClass().getSimpleName());
+
+            PureModelContextVisitor<PureModelContextData> visitor = new PureModelContextVisitor<PureModelContextData>()
             {
-                return (PureModelContextData) context;
-            }
-            else if (context instanceof PureModelContextText)
-            {
-                return PureGrammarParser.newInstance().parseModel(((PureModelContextText) context).code);
-            }
-            else
-            {
-                ModelLoader loader = this.modelLoaderForContext(context);
-                return loader.load(pm, context, clientVersion, scope.span());
-            }
+                @Override
+                public PureModelContextData visit(PureModelContextData data)
+                {
+                    return data;
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContextText text)
+                {
+                    return PureGrammarParser.newInstance().parseModel(text.code);
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContextPointer pointer)
+                {
+                    ModelLoader loader = modelLoaderForContext(context);
+                    Supplier<PureModelContextData> resolver = () -> loader.load(pm, pointer, clientVersion, span);
+                    return resolveAndCacheIfAllowed(pointerToPmcdCache, loader, pointer, pm, resolver);
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContextCollection collection)
+                {
+                    PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+                    collection.contextCollection.stream().map(x -> x.accept(this)).forEach(builder::addPureModelContextData);
+                    return builder.distinct().sorted().build();
+                }
+            };
+
+            return context.accept(visitor);
+        }
+        finally
+        {
+            span.finish();
         }
     }
 
@@ -131,4 +156,23 @@ public class ModelManager
         return loaders.get(0);
     }
 
+    private <V> V resolveAndCacheIfAllowed(Cache<PureModelContext, V> cache, ModelLoader loader, PureModelContextPointer context, MutableList<CommonProfile> pm, Supplier<V> resolver)
+    {
+        if (loader.shouldCache(context))
+        {
+            PureModelContext cacheKey = loader.cacheKey(context, pm);
+            try
+            {
+                return cache.get(cacheKey, resolver::get);
+            }
+            catch (ExecutionException e)
+            {
+                throw new EngineException("Engine was not able to cache", e);
+            }
+        }
+        else
+        {
+            return resolver.get();
+        }
+    }
 }

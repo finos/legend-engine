@@ -79,4 +79,10 @@ public class PureModelContextPointer extends PureModelContext
     {
         return Objects.hash(serializer, sdlcInfo);
     }
+
+    @Override
+    public <T> T accept(PureModelContextVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

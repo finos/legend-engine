@@ -346,4 +346,10 @@ public class PureModelContextData extends PureModelContext
             return new PureModelContextData(this.serializer, this.origin, this.elements.toList());
         }
     }
+
+    @Override
+    public <T> T accept(PureModelContextVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }
