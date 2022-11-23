@@ -21,6 +21,7 @@ import meta::pure::mapping::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::milestoning::*;
+import meta::pure::router::metamodel::*;
 
 
 
@@ -140,6 +141,13 @@ function meta::pure::executionPlan::platformBinding::typeInfo::addProperties(inf
 function meta::pure::executionPlan::platformBinding::typeInfo::addForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
 {
    $info->typeInfoFromTree($tree);
+}
+
+
+// function adds extra types by Re-scanning targetTree and its property mappings for new types ( which are not part of calculated source Tree)
+function meta::pure::executionPlan::platformBinding::typeInfo::addExtraTypesForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
+{
+   $info->typeInfoFromTreeExtra($tree, noDebug());
 }
 
 function meta::pure::executionPlan::platformBinding::typeInfo::addConstraintsForGraphFetchTree(info:TypeInfoSet[1], tree: GraphFetchTree[1]): TypeInfoSet[1]
@@ -648,4 +656,129 @@ function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInf
 function  <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::elementsEquals():Function<{PackageableElement[1],PackageableElement[1]->Boolean[1]}>[1]
 {
    {pe1:PackageableElement[1], pe2:PackageableElement[1] | $pe1->elementToPath() == $pe2->elementToPath()};
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::typeInfoFromTreeExtra(info:TypeInfoSet[1],tree:GraphFetchTree[1], debug:DebugContext[1]): TypeInfoSet[1]
+{
+  print(if($debug.debug,|$debug.space+'getting extra types from tree : '+  + $tree->asString(false) + '\n',|''));
+                                    
+  let extraTypesAndProperties= $tree->match([
+    p:RoutedPropertyGraphFetchTree[1]| 
+             $p.propertyMapping->map(pm|  
+                  $pm->match([
+                        //TODO : move this to M2M extension
+                        ppm: meta::pure::mapping::modelToModel::PurePropertyMapping[1] | 
+                            $ppm.transform->evaluateAndDeactivate()->scanTypesAndPropertiesFromAny([], $debug->indent()->indent());,
+                        apm: Any[1] | []
+                    ]));,
+    r:RootGraphFetchTree<Any>[1] | []
+  ])->removeDuplicates();
+  print(if($debug.debug,|$debug->indent().space+'found extraTypesAndProeprties: '+ $extraTypesAndProperties->map(t|$t->typeToString())->makeString('[', ', ', ']') + '\n',|''));
+  
+  
+  let extraTypes= $extraTypesAndProperties->map(x|$x->match([
+                    t:Type[1]| $t,
+                    a:Any[1]| []
+                ]))->cast(@Type)->meta::pure::executionPlan::platformBinding::typeInfo::filterTypes($info);
+  print(if($debug.debug,|$debug->indent().space+'found extraTypes: '+ $extraTypes->map(t|$t->typeToString())->makeString('[', ', ', ']') + '\n',|''));
+  let withExtraTypes = $extraTypes->fold({t, tis| $tis->addBasicTypeInfoIfMissing([], $t , true)}, $info);    // only add basic typeInfo
+    
+  let extraProperties= $extraTypesAndProperties->map(x|$x->match([
+                    p:Property<Nil,Any|*>[1]| $p,
+                    a:Any[1]| []
+                ]))->cast(@Property<Nil,Any|*>)->meta::pure::executionPlan::platformBinding::typeInfo::filterProperties($info);
+  print(if($debug.debug,|$debug->indent().space+'found extraProperties: '+ $extraProperties->map(t|$t.owner.name->toOne() +'.' +$t.name->toOne())->makeString('[', ', ', ']') + '\n',|''));
+  let withExtraProperties = $extraProperties->fold({p, ti| $ti->addPropertyForTypeIfMissing($p, true)}, $withExtraTypes);          // only add accessed properties 
+
+   $tree.subTrees->map(x | $x->meta::pure::graphFetch::routing::byPassClusteringInfo())->cast(@PropertyGraphFetchTree)
+                 ->fold({pgft, tis| typeInfoFromTreeExtra($tis, $pgft, $debug->indent())}, $withExtraProperties);
+}
+
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::scanTypesAndPropertiesFromAny(a:Any[1], processed:Function<Any>[*], debug:DebugContext[1]):Any[*]
+{
+  $a->match([
+    vs:ValueSpecification[1] | $vs->scanTypesAndPropertiesFromValueSpecification($processed, $debug);,
+    f:Function<Any>[1] |       $f->scanTypesAndPropertiesFromFunction($processed, $debug);,
+    t:Type[1]          |        $t;, 
+    an:Any[1]          |        print(if($debug.debug,|$debug.space+'  Unknown\n',|''));[];
+  ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::scanTypesAndPropertiesFromValueSpecification(vs:ValueSpecification[1], processed:Function<Any>[*], debug: meta::pure::tools::DebugContext[1]):Any[*]
+{
+   let res = $vs->evaluateAndDeactivate()->match([
+               fe:FunctionExpression[1] | print(if($debug.debug,|$debug.space+'Processing Function Expression : ' + $fe->printValueSpecification('') + '\n',|''));
+                                          let params = $fe.parametersValues->evaluateAndDeactivate();
+                                          $fe.func->evaluateAndDeactivate()->match([
+                                                            p:Property<Nil,Any|*>[1]|print(if($debug.debug,|$debug.space+'  property:'+$p.name->toOne()+'\n', |''));
+                                                                                     let leftSide = $params->at(0)->scanTypesAndPropertiesFromAny($processed,$debug->indent());
+                                                                                     $p->concatenate($leftSide);,
+                                                            q:QualifiedProperty<Any>[1]|print(if($debug.debug,|$debug.space+'  qualifier:'+$q.name->toOne()+'\n', |''));
+                                                                                        let leftSide = $params->at(0)->scanTypesAndPropertiesFromValueSpecification($processed->concatenate($q), $debug->indent());
+                                                                                        let fTypes= $q->scanTypesAndPropertiesFromFunction($processed, $debug->indent());
+                                                                                        $leftSide->concatenate($fTypes);,
+                                                            z:Function<Any>[1]|print(if($debug.debug,|$debug.space+'  function: \''+$fe.func.name->toOne()+'\'\n',|''));
+                                                                    let pp = $params->map(v|$v->scanTypesAndPropertiesFromAny($processed->concatenate($z),$debug->indent()));
+                                                                    let fTypes= $z->scanTypesAndPropertiesFromFunction($processed, $debug->indent());
+                                                                    $pp->concatenate($fTypes);
+                                                                          
+                                                          ]);,
+               i:InstanceValue[1] | print(if($debug.debug,|$debug.space+'Processing Instance'+  + $i->printValueSpecification('') + '\n',|''));
+                                    $i.values->evaluateAndDeactivate()->map( v | $v->scanTypesAndPropertiesFromAny($processed, $debug->indent()));
+                                    ,
+               ve:VariableExpression[1] | print(if($debug.debug,|$debug.space+'Processing Variable '+$ve->printValueSpecification('') +'\n',|''));
+                                         $ve->evaluateAndDeactivate().genericType.rawType;,
+               ervs:ExtendedRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing ExtendedRoutedValueSpecification\n',|''));
+                                                          $ervs.value->scanTypesAndPropertiesFromValueSpecification($processed, $debug->indent());,
+               frvs:FunctionRoutedValueSpecification[1] | print(if($debug.debug,|$debug.space+'Bypassing FunctionRoutedValueSpecification\n',|''));
+                                                          $frvs.value->scanTypesAndPropertiesFromValueSpecification($processed, $debug->indent());
+               default: ValueSpecification[1]  | print(if($debug.debug,|$debug.space+' UNKNOWN ValueSpecification\n',|''));    []->cast(@Type);
+             ]
+          );
+
+   print(if($debug.debug,|$debug.space+'Current:'+$res->map(t|$t->typeToString())->makeString('[',', ',']')+'\n',|''));
+   $res;
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::scanTypesAndPropertiesFromFunction(f:Function<Any>[1],processed:Function<Any>[*], debug:DebugContext[1]):Any[*]
+{
+   let fn= if(shouldProcess($f, $processed),|$f,|[]);
+   print(if($debug.debug,|$debug.space+'  - func '+if($fn->isEmpty(), |'not found or excuded', |if($fn.name->isEmpty(), |$fn->toOne()->type().name->toOne(), |$fn.name->toOne()))+'\n',|''));
+   $fn->match([
+      {f0:Function<Any>[0] | []},
+      {f1 :Function<Any>[1] |
+         let paramExtraTypes=  $f1->functionType().parameters->map(p|$p->scanTypesAndPropertiesFromAny($processed->concatenate($f1), $debug->indent()));
+         let expressions = $f1->match([l:FunctionDefinition<Any>[1]| $l.expressionSequence, n:NativeFunction<Any>[1]| []]);
+         let expExtraTypes= $expressions->map(e| $e->scanTypesAndPropertiesFromValueSpecification($processed->concatenate($f1), $debug->indent()));
+         $paramExtraTypes->concatenate($expExtraTypes);
+      }
+   ]);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::shouldProcess(f:Function<Any>[1], processed:Function<Any>[*]):Boolean[1]
+{
+   let pkgOk = !$f->isWithinPackage(meta) || $f->meta::alloy::isMetaAlloyTestDependency();
+   $pkgOk && !$processed->contains($f);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::filterTypes(ts:Type[*], info:TypeInfoSet[1]):Type[*]
+{
+  $ts->filter(t| !$info.typeInfos.type->contains($t))                                                             // dont add already present typeinfos 
+     ->filter(t|!$t->isWithinPackage(meta) || $t->meta::alloy::isMetaAlloyTestDependency())
+     ->remove(Any)->remove(Function)->cast(@Type)
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::filterProperties(ps:Property<Nil,Any|*>[*], info:TypeInfoSet[1]):Property<Nil,Any|*>[*]
+{
+  $ps->filter(p |!$info->containsProperty($p))                                                                  // dont add already present properties
+      ->filter(p|!$p.owner->isWithinPackage(meta) || $p.owner->meta::alloy::isMetaAlloyTestDependency())->cast(@Property<Nil,Any|*>);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::typeInfo::typeToString(ts:Any[1]):String[1]
+{
+  $ts->match([
+     p:Property<Nil,Any|*>[1] | $p.owner.name->toOne() +'.' +$p.name->toOne();,
+     t:Type[1]   | $t->toString();
+  ])
 }

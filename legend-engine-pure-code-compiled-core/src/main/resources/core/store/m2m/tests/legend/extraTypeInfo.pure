@@ -1,0 +1,121 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::runtime::*;
+import  meta::pure::mapping::modelToModel::*;
+import meta::json::*;
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'} 
+meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::testSubtypeOfRootWithoutPropertyAccess() : Boolean[1]
+{
+   let tree = #{TargetPolygon {area} }#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::TargetPolygon.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::mappingWithExtraTypes,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon, 
+                                url='data:application/json,\n{}\n'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"area":0.0}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0'} 
+meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::testPropertyAccessOnSubtypeOfRoot() : Boolean[1]
+{
+   let tree = #{TargetPolygon {area} }#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::TargetPolygon.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::mapping,
+      ^Runtime(connections = ^JsonModelConnection(
+                                element=^ModelStore(), 
+                                class=meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon, 
+                                url='data:application/json,\n{}\n'
+                             )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent('{"area":0.0}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon
+{
+
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Triangle extends Polygon
+{
+  base :Float[1];
+  height : Float[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Rectangle extends Polygon
+{
+  base :Float[1];
+  height : Float[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::TargetPolygon
+{
+  area: Float[1];
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::getAreaOfPolygon(p:Polygon[1]) :Float[1]
+{
+  $p->match([
+    triangle:meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Triangle[1] | $triangle.base * $triangle.height*0.5,
+    rectangle:meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Rectangle[1]| $rectangle.base * $rectangle.height,
+    default : meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon[1] | 0.0
+  ])
+}
+
+function meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::getAreaOfPolygonNoPropertyAccess(p:Polygon[1]) :Float[1]
+{
+  $p->match([
+    triangle:meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Triangle[1] | 0.0,
+    rectangle:meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Rectangle[1]| 0.0,
+    default : meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon[1] | 0.0
+  ])
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::*;
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::mapping
+(
+  meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::TargetPolygon : Pure
+   {
+      ~src  meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon
+      area: $src->meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::getAreaOfPolygon()
+   }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::mappingWithExtraTypes
+(
+  meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::TargetPolygon : Pure
+   {
+      ~src  meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::Polygon
+      area: $src->meta::pure::mapping::modelToModel::test::alloy::typeInfo::extraTypes::getAreaOfPolygonNoPropertyAccess()
+   }
+)

@@ -105,8 +105,11 @@ function meta::pure::executionPlan::engine::java::graphFetch::inMemory::prepareF
                                                                
    ]);
    
+   // add extra types that are not found in source tree  > these are not property acces , these are referenced in some other contexts - eg as a match type 
+   let withExtraTypeInfos=   meta::pure::executionPlan::platformBinding::typeInfo::addExtraTypesForGraphFetchTree($newTypeInfos, $node.graphFetchTree);
+
    ^$context(
-      typeInfos = $newTypeInfos,
+      typeInfos = $withExtraTypeInfos,
       nodeInfos = $context.nodeInfos->concatenate($currentNodeInfo)
    );
 }
