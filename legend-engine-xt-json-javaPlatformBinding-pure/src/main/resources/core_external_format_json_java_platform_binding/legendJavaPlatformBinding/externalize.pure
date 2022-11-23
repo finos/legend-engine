@@ -92,7 +92,10 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
                          c:ClassResultType[1] | $c.type->cast(@meta::pure::metamodel::type::Class<Any>)
                       ]);
 
-   let tree         = generateRootTreeFromBindingDetail($classIn, $bindingDetail->cast(@JsonSchemaBindingDetail));
+   let tree         = if($node.tree->isEmpty(),
+                        | generateRootTreeFromBindingDetail($classIn, $bindingDetail->cast(@JsonSchemaBindingDetail)),
+                        | resolveTreeForSerialize($node.tree->toOne()));
+
    $context.typeInfos->addForGraphFetchTree($tree);
 }
 
@@ -110,7 +113,10 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
    let classIn      = $node.executionNodes.resultType->match([
                          c:ClassResultType[1] | $c.type->cast(@meta::pure::metamodel::type::Class<Any>)
                       ]);
-   let tree         = generateRootTreeFromBindingDetail($classIn, $bindingDetail->cast(@JsonSchemaBindingDetail));
+   let tree         = if($node.tree->isEmpty(),
+                        | generateRootTreeFromBindingDetail($classIn, $bindingDetail->cast(@JsonSchemaBindingDetail)),
+                        | resolveTreeForSerialize($node.tree->toOne()));
+
    let childInfo    = $context->childNodeInfosForPath($path);
 
    let data         = ^SerializeData(
@@ -131,7 +137,15 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
 // helper functions
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::generateRootTreeFromBindingDetail(classIn:meta::pure::metamodel::type::Class<Any>[1], detail:JsonSchemaBindingDetail[1]): RootGraphFetchTree<Any>[1]
+function meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::resolveTreeForSerialize(tree:RootGraphFetchTree<Any>[1]): RootGraphFetchTree<Any>[1]
+{
+   if($tree.class == meta::pure::dataQuality::Checked,
+     |let propTree = $tree.subTrees->cast(@PropertyGraphFetchTree)->filter(p | $p.property.name == 'value')->toOne();
+      $propTree->propertyGraphFetchTreeToRootGraphFetchTree();,
+     |$tree)
+}
+
+function <<doc.deprecated>> meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::generateRootTreeFromBindingDetail(classIn:meta::pure::metamodel::type::Class<Any>[1], detail:JsonSchemaBindingDetail[1]): RootGraphFetchTree<Any>[1]
 {
    let propertiesInScope = $detail.mappedPropertiesForClass($classIn);
    let subTrees          = $propertiesInScope->map(p | $p->generatePropertyTreeForProperty($detail));

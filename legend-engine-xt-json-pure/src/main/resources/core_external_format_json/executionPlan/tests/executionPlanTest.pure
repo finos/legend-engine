@@ -125,7 +125,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    let tree = #{meta::external::format::json::executionPlan::test::Person {firstName, lastName, firm {legalName}}}#;
 
    let plan = executionPlan(
-      |meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url = 'executor:default'))->graphFetchChecked($tree)->externalize($binding),
+      |meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url = 'executor:default'))->graphFetchChecked($tree)->externalize($binding, checked($tree, $binding)),
       ^ExecutionContext(),
       $extensions,
       noDebug()
