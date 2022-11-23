@@ -331,7 +331,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     }
 
     @Test
-    public void testInternalizeAndExternalizeWithGeneratedSchema()
+    public void testInternalizeAndExternalizeWithGeneratedSchemaLegacy()
     {
         String modelGrammar = firmModel();
         ModelUnit modelUnit = new ModelUnit();
@@ -346,7 +346,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     }
 
     @Test
-    public void testInternalizeAndExternalizeUncheckedCsvWithGeneratedSchema()
+    public void testInternalizeAndExternalizeUncheckedCsvWithGeneratedSchemaLegacy()
     {
         String modelGrammar = firmModel();
         ModelUnit modelUnit = new ModelUnit();
@@ -361,7 +361,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     }
 
     @Test
-    public void testInternalizeAndExternalizeWithGeneratedModel()
+    public void testInternalizeAndExternalizeWithGeneratedModelLegacy()
     {
         String schemaCode = tradeSchema();
         PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, fromFlatDataConfig(), true, "test::gen::TestBinding");
@@ -378,6 +378,57 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
                 Maps.mutable.with("data", new ByteArrayInputStream(tradeData.getBytes(StandardCharsets.UTF_8))));
 
         Assert.assertEquals(tradeData, result);
+    }
+
+    @Test
+    public void testExternalizeWithCheckedTree()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
+
+        try
+        {
+            runTest(generated,
+                    "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + personTree() + ")->externalize(test::gen::TestBinding, checked(" + personTree() + ", test::gen::TestBinding))",
+                    Maps.mutable.with("data", resource("queries/peopleWithExactHeadings.csv")));
+            Assert.fail("Exception expected");
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("Assert failure at (resource:/core_external_format_flatdata_java_platform_binding/legendJavaPlatformBinding/externalize.pure line:96 column:4), \"Multi Section serialization is not yet supported !!\"", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testExternalizeWithTree()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetch(" + personTree() + ")->externalize(test::gen::TestBinding, " + personTree() + ")",
+                Maps.mutable.with("data", resource("queries/peopleWithExactHeadings.csv")));
+
+        Assert.assertEquals(resourceAsString("queries/peopleWithExactHeadings.csv"), result);
+    }
+
+    @Test
+    public void testExternalizeWithSmallerTree()
+    {
+        String modelGrammar = firmModel();
+        ModelUnit modelUnit = new ModelUnit();
+        modelUnit.packageableElementIncludes = Collections.singletonList("test::firm::model::Person");
+        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toFlatDataConfig(), true, "test::gen::TestBinding");
+
+        String result = runTest(generated,
+                "data:ByteStream[1]|test::firm::model::Person->internalize(test::gen::TestBinding, $data)->graphFetch(" + personTree() + ")->externalize(test::gen::TestBinding, #{test::firm::model::Person {firstName, lastName}}#)",
+                Maps.mutable.with("data", resource("queries/peopleWithExactHeadings.csv")));
+
+        Assert.assertEquals(resourceAsString("queries/externalizeResultWithSmallerTree.csv"), result);
     }
 
     @Test
