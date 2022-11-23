@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -68,6 +69,8 @@ public interface ValueSpecificationVisitor<T>
     T visit(CInteger cInteger);
 
     T visit(CDecimal cDecimal);
+
+    T visit(CByteStream cByteStream);
 
     T visit(Lambda lambda);
 

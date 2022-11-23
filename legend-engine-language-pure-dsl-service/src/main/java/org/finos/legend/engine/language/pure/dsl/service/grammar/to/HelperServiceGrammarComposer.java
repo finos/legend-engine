@@ -19,6 +19,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.HelperRuntimeGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
@@ -38,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UrlTestData;
 
 import java.util.List;
 
@@ -133,6 +135,14 @@ public class HelperServiceGrammarComposer
                 str.append(getTabString(baseIndentation + 2)).append("]\n");
             }
 
+            if (serviceTestSuite.testData.urlsTestData != null && !serviceTestSuite.testData.urlsTestData.isEmpty())
+            {
+                str.append(getTabString(baseIndentation + 2)).append("urls").append(":\n");
+                str.append(getTabString(baseIndentation + 2)).append("[\n");
+                str.append(String.join(",\n", ListIterate.collect(serviceTestSuite.testData.urlsTestData, data -> renderUrlData(data, baseIndentation + 3, context)))).append("\n");
+                str.append(getTabString(baseIndentation + 2)).append("]\n");
+            }
+
             str.append(getTabString(baseIndentation + 1)).append("]\n");
         }
 
@@ -156,6 +166,16 @@ public class HelperServiceGrammarComposer
 
         str.append(getTabString(baseIndentation)).append(connectionData.id).append(":\n");
         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(connectionData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+
+        return str.toString();
+    }
+
+    private static String renderUrlData(UrlTestData urlTestData, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(PureGrammarComposerUtility.convertIdentifier(urlTestData.id, true)).append(":\n");
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(urlTestData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
 
         return str.toString();
     }

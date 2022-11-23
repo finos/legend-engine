@@ -41,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UrlTestData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData_Impl;
@@ -61,6 +62,8 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestCo
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestData_Impl;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_UrlTestData;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_UrlTestData_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -172,6 +175,18 @@ public class HelperServiceBuilder
             pureTestData._connectionsTestData(ListIterate.collect(testData.connectionsTestData, data -> HelperServiceBuilder.processServiceConnectionData(data, context, processingContext)));
         }
 
+        if (testData.urlsTestData != null && !testData.urlsTestData.isEmpty())
+        {
+            List<String> urlIds = ListIterate.collect(testData.urlsTestData, d -> d.id);
+            List<String> duplicateUrlIds = urlIds.stream().filter(e -> Collections.frequency(urlIds, e) > 1).distinct().collect(Collectors.toList());
+
+            if (!duplicateUrlIds.isEmpty())
+            {
+                throw new EngineException("Multiple connection test data found with ids : '" + String.join(",", duplicateUrlIds) + "'", testData.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            pureTestData._urlsTestData(ListIterate.collect(testData.urlsTestData, data -> HelperServiceBuilder.processServiceUrlData(data, context, processingContext)));
+        }
+
         return pureTestData;
     }
 
@@ -183,6 +198,16 @@ public class HelperServiceBuilder
         pureConnectionData._testData(connectionData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
 
         return pureConnectionData;
+    }
+
+    private static Root_meta_legend_service_metamodel_UrlTestData processServiceUrlData(UrlTestData urlTestData, CompileContext context, ProcessingContext processingContext)
+    {
+        Root_meta_legend_service_metamodel_UrlTestData pureUrlData = new Root_meta_legend_service_metamodel_UrlTestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::UrlTestData"));
+
+        pureUrlData._urlId(urlTestData.id);
+        pureUrlData._testData(urlTestData.data.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+
+        return pureUrlData;
     }
 
     public static Root_meta_legend_service_metamodel_ParameterValue processServiceTestParameterValue(ParameterValue parameterValue, CompileContext context)

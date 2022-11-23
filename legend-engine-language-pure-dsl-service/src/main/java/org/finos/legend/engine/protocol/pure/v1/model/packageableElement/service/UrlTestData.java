@@ -15,13 +15,12 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 
-import java.util.List;
-
-public class TestData
+public class UrlTestData
 {
-    public List<ConnectionTestData> connectionsTestData;
-    public List<UrlTestData> urlsTestData;
+    public String id;
+    public EmbeddedData data;
 
     public SourceInformation sourceInformation;
 }

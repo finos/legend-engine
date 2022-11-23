@@ -10,17 +10,18 @@ options
 
 // -------------------------------------- IDENTIFIER --------------------------------------
 
-identifier:                             VALID_STRING | STRING
+unquotedIdentifier:                     VALID_STRING
                                         | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
                                         | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
                                         | SERVICE_SINGLE | SERVICE_MULTI
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
-                                        | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
+                                        | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_URL_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS
 ;
-
+identifier:                             unquotedIdentifier | STRING
+;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
@@ -121,11 +122,15 @@ serviceTestSuites:                      SERVICE_TEST_SUITES COLON BRACKET_OPEN (
 ;
 serviceTestSuite:                       identifier COLON BRACE_OPEN ( serviceTestSuiteData | serviceTestSuiteTests )* BRACE_CLOSE
 ;
-serviceTestSuiteData:                   SERVICE_TEST_DATA COLON BRACKET_OPEN (serviceTestConnectionsData)* BRACKET_CLOSE
+serviceTestSuiteData:                   SERVICE_TEST_DATA COLON BRACKET_OPEN (serviceTestConnectionsData | serviceTestUrlsData)* BRACKET_CLOSE
 ;
 serviceTestConnectionsData:             SERVICE_TEST_CONNECTION_DATA COLON BRACKET_OPEN (serviceTestConnectionData ( COMMA serviceTestConnectionData )*)? BRACKET_CLOSE
 ;
 serviceTestConnectionData:              identifier COLON embeddedData
+;
+serviceTestUrlsData:                    SERVICE_TEST_URL_DATA COLON BRACKET_OPEN (serviceTestUrlData ( COMMA serviceTestUrlData )*)? BRACKET_CLOSE
+;
+serviceTestUrlData:                     (unquotedIdentifier | QUOTED_STRING) COLON embeddedData
 ;
 embeddedData:                           identifier ISLAND_OPEN (embeddedDataContent)*
 ;

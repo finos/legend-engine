@@ -50,6 +50,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UrlTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -150,10 +151,17 @@ public class ServiceParseTreeWalker
         TestData testData = new TestData();
 
         testData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
         ServiceParserGrammar.ServiceTestConnectionsDataContext testConnectionsDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestConnectionsData(), "connections", testData.sourceInformation);
         if (testConnectionsDataContext != null)
         {
             testData.connectionsTestData = ListIterate.collect(testConnectionsDataContext.serviceTestConnectionData(), this::visitServiceTestConnectionData);
+        }
+
+        ServiceParserGrammar.ServiceTestUrlsDataContext testUrlsDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestUrlsData(), "urls", testData.sourceInformation);
+        if (testUrlsDataContext != null)
+        {
+            testData.urlsTestData = ListIterate.collect(testUrlsDataContext.serviceTestUrlData(), this::visitServiceTestUrlData);
         }
 
         return testData;
@@ -168,6 +176,17 @@ public class ServiceParseTreeWalker
         connectionData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
 
         return connectionData;
+    }
+
+    private UrlTestData visitServiceTestUrlData(ServiceParserGrammar.ServiceTestUrlDataContext ctx)
+    {
+        UrlTestData urlTestData = new UrlTestData();
+
+        urlTestData.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        urlTestData.id = ctx.unquotedIdentifier() != null ? PureGrammarParserUtility.fromIdentifier(ctx.unquotedIdentifier()) : PureGrammarParserUtility.fromGrammarString(ctx.QUOTED_STRING().getText(), true);
+        urlTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+
+        return urlTestData;
     }
 
     private ServiceTest visitServiceTest(ServiceParserGrammar.ServiceTestBlockContext ctx)

@@ -29,12 +29,15 @@ SERVICE_RUNTIME:                    'runtime';
 SERVICE_TEST_SUITES:                'testSuites';
 SERVICE_TEST_DATA:                  'data';
 SERVICE_TEST_CONNECTION_DATA:       'connections';
+SERVICE_TEST_URL_DATA:              'urls';
 SERVICE_TEST_TESTS:                 'tests';
 SERVICE_TEST_ASSERTS:               'asserts';
 SERVICE_TEST_SERIALIZATION_FORMAT:  'serializationFormat';
 SERVICE_TEST_PARAMETERS:            'parameters';
 ASSERT_FOR_KEYS:                    'keys';
 PARAM_GROUP:                        'list';
+
+QUOTED_STRING:                      ('"' ( EscSeq | ~["\r\n] )*  '"');
 
 // -------------------------------------- LEGACY --------------------------------------
 

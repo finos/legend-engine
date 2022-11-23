@@ -63,6 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variabl
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
@@ -611,6 +612,13 @@ public class DomainParseTreeWalker
         if (ctx.instanceLiteral() != null)
         {
             return this.instanceLiteral(ctx.instanceLiteral(), exprName, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+        }
+        else if (ctx.byteStreamLiteral() != null)
+        {
+            CByteStream byteStream = new CByteStream(PureGrammarParserUtility.fromGrammarString(ctx.byteStreamLiteral().STRING().getText(), true));
+            byteStream.multiplicity = getMultiplicityOneOne();
+            byteStream.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+            return byteStream;
         }
         else if (ctx.enumReference() != null)
         {

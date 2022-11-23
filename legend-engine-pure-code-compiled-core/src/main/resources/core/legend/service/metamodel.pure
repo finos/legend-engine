@@ -107,6 +107,13 @@ Class meta::legend::service::metamodel::ParameterValue
 Class meta::legend::service::metamodel::TestData
 {
   connectionsTestData : ConnectionTestData[*];
+  urlsTestData        : UrlTestData[*];
+}
+
+Class meta::legend::service::metamodel::UrlTestData
+{
+  urlId    : String[1];
+  testData : meta::pure::data::EmbeddedData[1];
 }
 
 Class meta::legend::service::metamodel::ConnectionTestData

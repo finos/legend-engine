@@ -20,6 +20,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -34,6 +35,8 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
@@ -44,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UrlTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTestId;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
@@ -54,6 +58,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
+import org.finos.legend.engine.shared.core.url.NamedInputStream;
+import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
+import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.helper.PrimitiveValueSpecificationToObjectVisitor;
@@ -65,8 +72,10 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -185,7 +194,6 @@ public class ServiceTestRunner implements TestRunner
                 testPureSingleExecution = execution;
             }
 
-
             ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
             JavaHelper.compilePlan(singleExecutionPlan, null);
@@ -194,11 +202,22 @@ public class ServiceTestRunner implements TestRunner
             {
                 if (testIds.contains(test.id))
                 {
+                    if(suite.testData != null && suite.testData.urlsTestData != null && !suite.testData.urlsTestData.isEmpty())
+                    {
+                        List<NamedInputStream> namedInputStreamList = ListIterate.collect(suite.testData.urlsTestData, urlTestData -> new NamedInputStream(urlTestData.id.substring("executor:".length()), new ByteArrayInputStream(((ExternalFormatData) urlTestData.data).data.getBytes(StandardCharsets.UTF_8))));
+                        StreamProviderHolder.streamProviderThreadLocal.set(new NamedInputStreamProvider(namedInputStreamList));
+                    }
+
                     org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeServiceTest((ServiceTest) test, singleExecutionPlan);
                     testResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
                     testResult.atomicTestId.testSuiteId = suite.id;
 
                     results.add(testResult);
+
+                    if(suite.testData != null && suite.testData.urlsTestData != null && !suite.testData.urlsTestData.isEmpty())
+                    {
+                        StreamProviderHolder.streamProviderThreadLocal.remove();
+                    }
                 }
             }
         }

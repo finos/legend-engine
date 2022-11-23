@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -45,6 +46,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pri
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecificationVisitor<Object>
 {
@@ -142,6 +146,12 @@ public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecific
     public Object visit(CDecimal cDecimal)
     {
         return cDecimal.value;
+    }
+
+    @Override
+    public Object visit(CByteStream cByteStream)
+    {
+        return new ByteArrayInputStream(cByteStream.value.getBytes(cByteStream.charset));
     }
 
     @Override

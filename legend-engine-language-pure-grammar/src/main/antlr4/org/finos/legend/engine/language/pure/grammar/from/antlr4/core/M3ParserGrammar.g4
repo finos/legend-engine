@@ -154,11 +154,13 @@ primitiveValue:                                 primitiveValueAtomic | primitive
 ;
 primitiveValueVector:                           BRACKET_OPEN (primitiveValueAtomic (COMMA primitiveValueAtomic)* )? BRACKET_CLOSE
 ;
-primitiveValueAtomic:                           instanceLiteral | enumReference
+primitiveValueAtomic:                           instanceLiteral | byteStreamLiteral | enumReference
 ;
 instanceLiteral:                                instanceLiteralToken | (MINUS INTEGER) | (MINUS FLOAT) | (MINUS DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
 ;
 instanceLiteralToken:                           STRING | INTEGER | FLOAT | DECIMAL | DATE | BOOLEAN | STRICTTIME
+;
+byteStreamLiteral:                              BYTE_STREAM_FUNCTION PAREN_OPEN STRING PAREN_CLOSE
 ;
 unitInstanceLiteral:                            (MINUS? INTEGER) | (MINUS? FLOAT) | (MINUS? DECIMAL) | (PLUS INTEGER) | (PLUS FLOAT) | (PLUS DECIMAL)
 ;
