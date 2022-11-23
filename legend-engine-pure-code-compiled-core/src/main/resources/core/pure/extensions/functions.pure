@@ -82,7 +82,6 @@ function meta::pure::extension::defaultExtensions():Extension[*]
   (
     type = 'defaultExtensions',    
     availableStores = [
-                          meta::pure::store::platform::contract::platformStoreContract(),
                           meta::pure::mapping::modelToModel::contract::modelStoreContract(),
                           meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreContract()
                       ]
