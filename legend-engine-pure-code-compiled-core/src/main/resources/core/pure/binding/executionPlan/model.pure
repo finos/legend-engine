@@ -31,8 +31,9 @@ import meta::pure::runtime::*;
 
 Class meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode extends ExecutionNode
 {
-   checked : Boolean[1];      
    binding : Binding[1];
+   checked : Boolean[1];
+   tree    : RootGraphFetchTree<Any>[0..1];                                 // TODO: This would be made mandatory
 }
 
 Class meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode extends ExecutionNode
