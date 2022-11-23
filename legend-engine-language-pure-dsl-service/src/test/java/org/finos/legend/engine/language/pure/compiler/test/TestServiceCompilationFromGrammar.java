@@ -759,27 +759,6 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [28:68-71]: Can't find a match for function 'from(class[*],Runtime[1],Mapping[1])'");
-
-        test(resource + "###Service\n" +
-                "Service test::Service\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['ownerName', 'ownerName2'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                // intentionally mess up the spacing here to test source information
-                "    query: |test::class.all()->graphFetch(#{test::class{prop1}}#);\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "    ];\n" +
-                "  }\n" +
-                "}\n", "COMPILATION error at [26:14-29:3]: Mapping, runtime has not been provided. Either provide via the 'from' function or as separate 'mapping', 'runtime' attributes");
     }
 
     @Test
