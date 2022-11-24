@@ -81,7 +81,7 @@ Class meta::pure::test::assertion::EqualToJsonAssertFail extends AssertFail
     actual      : String[1];
 }
 
-Class meta::pure::test::assertion::EquivalentToJsonAssertFail extends AssertFail
+Class meta::pure::test::assertion::AssertAllRowsAssertFail extends AssertFail
 {
     expected    : String[1];
     actual      : String[1];

@@ -54,9 +54,9 @@ import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElement
 import org.finos.legend.engine.language.pure.grammar.from.mapping.OperationClassMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.PureInstanceClassMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.XStoreAssociationMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.AssertAllRowsGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.from.test.assertion.AssertAllRowsGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
