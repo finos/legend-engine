@@ -40,7 +40,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 
-import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
+import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 
 public class TestLegendServicePostValidationRunner
 {
@@ -67,7 +67,7 @@ public class TestLegendServicePostValidationRunner
     {
         Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
 
-        LegendServicePostValidationRunner servicePostValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, ((PureExecution) service.execution).func.parameters, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X", null, serializationFormat);
+        LegendServicePostValidationRunner servicePostValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, ((PureExecution) service.execution).func.parameters, Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X", null, serializationFormat);
         try
         {
             return servicePostValidationRunner.runValidationAssertion(assertionId);
