@@ -58,13 +58,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EquivalentToJsonAssertFail;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertAllRowsAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
@@ -115,7 +115,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
                         .withSubtype(EqualTo.class, "equalTo")
                         .withSubtype(EqualToJson.class, "equalToJson")
-                        .withSubtype(EquivalentToJson.class, "equivalentToJson")
+                        .withSubtype(AssertAllRows.class, "assertAllRows")
                         .build(),
                 // Test Result
                 ProtocolSubTypeInfo.newBuilder(TestResult.class)
@@ -128,7 +128,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(AssertPass.class, "assertPass")
                         .withSubtype(AssertFail.class, "assertFail")
                         .withSubtype(EqualToJsonAssertFail.class, "equalToJsonAssertFail")
-                        .withSubtype(EquivalentToJsonAssertFail.class, "equivalentToJsonAssertFail")
+                        .withSubtype(AssertAllRowsAssertFail.class, "assertAllRowsAssertFail")
                         .build(),
                 // External Source
                 ProtocolSubTypeInfo.newBuilder(ExternalSource.class)

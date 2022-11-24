@@ -19,12 +19,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_AssertAllRows_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualToJson_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EquivalentToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualTo_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 
@@ -45,12 +45,12 @@ public class TestAssertionCompilerHelper
             return new Root_meta_pure_test_assertion_EqualToJson_Impl("")
                     ._expected(equalToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
         }
-        else if (testAssertion instanceof EquivalentToJson)
+        else if (testAssertion instanceof AssertAllRows)
         {
-            EquivalentToJson equivalentToJson = (EquivalentToJson) testAssertion;
+            AssertAllRows assertAllRows = (AssertAllRows) testAssertion;
 
-            return new Root_meta_pure_test_assertion_EquivalentToJson_Impl("")
-                ._expected(equivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+            return new Root_meta_pure_test_assertion_AssertAllRows_Impl("")
+                ._expected(assertAllRows.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
         }
         else
         {

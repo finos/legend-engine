@@ -102,7 +102,7 @@ Class meta::pure::test::assertion::EqualToJson extends TestAssertion
     expected    : EmbeddedData[1];
 }
 
-Class meta::pure::test::assertion::EquivalentToJson extends TestAssertion
+Class meta::pure::test::assertion::AssertAllRows extends TestAssertion
 {
     expected    : EmbeddedData[1];
 }

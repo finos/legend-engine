@@ -20,19 +20,19 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.equivalentToJson.EquivalentToJsonAssertionLexerGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.equivalentToJson.EquivalentToJsonAssertionParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.assertAllRows.AssertAllRowsAssertionLexerGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.antlr4.test.assertion.assertAllRows.AssertAllRowsAssertionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
-public class EquivalentToJsonGrammarParser implements TestAssertionParser
+public class AssertAllRowsGrammarParser implements TestAssertionParser
 {
-    public static final String TYPE = "EquivalentToJson";
+    public static final String TYPE = "AssertAllRows";
 
     @Override
     public String getType()
@@ -43,26 +43,26 @@ public class EquivalentToJsonGrammarParser implements TestAssertionParser
     @Override
     public TestAssertion parse(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation, PureGrammarParserExtensions extensions)
     {
-        SourceCodeParserInfo parserInfo = getEquivalentToJsonAssertionParserInfo(code, walkerSourceInformation, sourceInformation);
+        SourceCodeParserInfo parserInfo = getAssertAllRowsAssertionParserInfo(code, walkerSourceInformation, sourceInformation);
 
-        EquivalentToJsonAssertionParserGrammar.DefinitionContext ctx = (EquivalentToJsonAssertionParserGrammar.DefinitionContext) parserInfo.rootContext;
-        EquivalentToJsonAssertionParserGrammar.ExpectedDefinitionContext expectedDefinitionContext = ctx.expectedDefinition();
+        AssertAllRowsAssertionParserGrammar.DefinitionContext ctx = (AssertAllRowsAssertionParserGrammar.DefinitionContext) parserInfo.rootContext;
+        AssertAllRowsAssertionParserGrammar.ExpectedDefinitionContext expectedDefinitionContext = ctx.expectedDefinition();
 
-        EquivalentToJson result = new EquivalentToJson();
+        AssertAllRows result = new AssertAllRows();
         result.sourceInformation = sourceInformation;
         result.expected = (ExternalFormatData) HelperEmbeddedDataGrammarParser.parseEmbeddedData(expectedDefinitionContext.embeddedData(), walkerSourceInformation, extensions);
 
         return result;
     }
 
-    private static SourceCodeParserInfo getEquivalentToJsonAssertionParserInfo(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation)
+    private static SourceCodeParserInfo getAssertAllRowsAssertionParserInfo(String code, ParseTreeWalkerSourceInformation walkerSourceInformation, SourceInformation sourceInformation)
     {
         CharStream input = CharStreams.fromString(code);
         ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
-        EquivalentToJsonAssertionLexerGrammar lexer = new EquivalentToJsonAssertionLexerGrammar(input);
+        AssertAllRowsAssertionLexerGrammar lexer = new AssertAllRowsAssertionLexerGrammar(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
-        EquivalentToJsonAssertionParserGrammar parser = new EquivalentToJsonAssertionParserGrammar(new CommonTokenStream(lexer));
+        AssertAllRowsAssertionParserGrammar parser = new AssertAllRowsAssertionParserGrammar(new CommonTokenStream(lexer));
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         return new SourceCodeParserInfo(code, input, sourceInformation, walkerSourceInformation, lexer, parser, parser.definition());

@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.test.assertion;
+package org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status;
 
-import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-
-public class EquivalentToJson extends TestAssertion
+public class AssertAllRowsAssertFail extends AssertFail
 {
-    public ExternalFormatData expected;
+    public String expected;
+    public String actual;
 }

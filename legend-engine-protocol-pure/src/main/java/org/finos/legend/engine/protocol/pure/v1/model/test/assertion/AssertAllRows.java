@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-lexer grammar EquivalentToJsonAssertionLexerGrammar;
+package org.finos.legend.engine.protocol.pure.v1.model.test.assertion;
 
-import CoreLexerGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 
-// -------------------------------------- KEYWORD --------------------------------------
-
-EQUIVALENT_TO_JSON:                    'EquivalentToJson';
-EXPECTED:                              'expected';
+public class AssertAllRows extends TestAssertion
+{
+    public ExternalFormatData expected;
+}

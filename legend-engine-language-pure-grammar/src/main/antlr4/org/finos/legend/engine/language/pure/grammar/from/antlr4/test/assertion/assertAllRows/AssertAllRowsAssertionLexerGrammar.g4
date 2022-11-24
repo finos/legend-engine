@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status;
+lexer grammar AssertAllRowsAssertionLexerGrammar;
 
-public class EquivalentToJsonAssertFail extends AssertFail
-{
-    public String expected;
-    public String actual;
-}
+import CoreLexerGrammar;
+
+// -------------------------------------- KEYWORD --------------------------------------
+
+ASSERT_ALL_ROWS:                       'AssertAllRows';
+EXPECTED:                              'expected';

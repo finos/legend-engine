@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-parser grammar EquivalentToJsonAssertionParserGrammar;
+parser grammar AssertAllRowsAssertionParserGrammar;
 
 import CoreParserGrammar;
 
 options
 {
-    tokenVocab = EquivalentToJsonAssertionLexerGrammar;
+    tokenVocab = AssertAllRowsAssertionLexerGrammar;
 }
 
 
 // -------------------------------------- IDENTIFIER -------------------------------------
 
-identifier:                            VALID_STRING | STRING | EQUIVALENT_TO_JSON | EXPECTED
+identifier:                            VALID_STRING | STRING | ASSERT_ALL_ROWS | EXPECTED
 ;
 
 
