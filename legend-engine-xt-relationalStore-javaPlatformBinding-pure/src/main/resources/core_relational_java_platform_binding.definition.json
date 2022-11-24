@@ -1,0 +1,5 @@
+{
+    "name" : "core_relational_java_platform_binding",
+    "pattern" : "(meta::relational::executionPlan::platformBinding::legendJava)(::.*)?",
+    "dependencies" : ["platform", "core", "core_relational", "core_external_language_java", "core_java_platform_binding"]
+}

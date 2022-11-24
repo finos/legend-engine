@@ -18,7 +18,7 @@ import java.util.Optional;
 
 public interface DatasetReference extends Dataset
 {
-    //TODO: ledav -- only optional b/c of CSV + JSON inheritance
+    //TODO: only optional b/c of CSV + JSON inheritance
     Optional<String> name();
 
     Optional<String> database();

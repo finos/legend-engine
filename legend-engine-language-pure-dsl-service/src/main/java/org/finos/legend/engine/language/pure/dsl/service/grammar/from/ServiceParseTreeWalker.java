@@ -200,6 +200,10 @@ public class ServiceParseTreeWalker
             serviceTest.parameters = ListIterate.collect(testParametersContext.serviceTestParameter(), this::visitServiceTestParameter);
         }
 
+        //keys
+        ServiceParserGrammar.KeysContext scopeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.keys(), "keys", serviceTest.sourceInformation);
+        serviceTest.keys = scopeContext != null && scopeContext.STRING() != null ? ListIterate.collect(scopeContext.STRING(), keyInScopeCtx -> PureGrammarParserUtility.fromGrammarString(keyInScopeCtx.getText(), true)) : new ArrayList<>();
+
         // asserts
         ServiceParserGrammar.ServiceTestAssertsContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTestAsserts(), "asserts", serviceTest.sourceInformation);
         serviceTest.assertions = ListIterate.collect(testAssertsContext.serviceTestAssert(), this::visitServiceTestAsserts);

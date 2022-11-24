@@ -68,6 +68,22 @@ public abstract class AppendOnlyTestCases extends BaseTest
     public abstract void verifyAppendOnlyAllowDuplicatesWithAuditing(GeneratorResult operations);
 
     @Test
+    void testAppendOnlyAllowDuplicatesWithAuditingWithDataSplits()
+    {
+        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING__WITH_DATASPLIT();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .collectStatistics(true)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .build();
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyAppendOnlyAllowDuplicatesWithAuditingWithDataSplits(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyAppendOnlyAllowDuplicatesWithAuditingWithDataSplits(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
+
+    @Test
     void testAppendOnlyFailOnDuplicatesNoAuditing()
     {
         TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_NO_AUDITING();

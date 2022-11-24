@@ -66,13 +66,13 @@ import java.util.stream.Collectors;
 
 class BitemporalDeltaPlanner extends BitemporalPlanner
 {
-    private static final String VALID_DATE_TIME_FROM_NAME = "start_date";
-    private static final String VALID_DATE_TIME_THRU_NAME = "end_date";
-    private static final String LEFT_DATASET_IN_JOIN_ALIAS = "x";
-    private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "y";
-    private static final String TEMP_DATASET_BASE_NAME = "temp";
-    private static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "tempWithDeleteIndicator";
-    private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "stageWithoutDuplicates";
+    private static final String VALID_DATE_TIME_FROM_NAME = "legend_persistence_start_date";
+    private static final String VALID_DATE_TIME_THRU_NAME = "legend_persistence_end_date";
+    private static final String LEFT_DATASET_IN_JOIN_ALIAS = "legend_persistence_x";
+    private static final String RIGHT_DATASET_IN_JOIN_ALIAS = "legend_persistence_y";
+    private static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
+    private static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
+    private static final String STAGE_DATASET_WITHOUT_DUPLICATES_BASE_NAME = "legend_persistence_stageWithoutDuplicates";
 
     private final Optional<String> deleteIndicatorField;
     private final List<Object> deleteIndicatorValues;
@@ -292,23 +292,6 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             }
         }
 
-        return LogicalPlan.of(operations);
-    }
-
-    @Override
-    public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-
-        // Drop table or clean table based on flags
-        if (resources.externalDatasetImported())
-        {
-            operations.add(Drop.of(true, stagingDataset(), true));
-        }
-        else if (options().cleanupStagingData())
-        {
-            operations.add(Delete.builder().dataset(stagingDataset()).build());
-        }
         return LogicalPlan.of(operations);
     }
 
@@ -587,8 +570,8 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
           ) x
           ----------------------------------------END OF FIRST JOIN-----------------------------------------------------
        WHERE NOT EXISTS
-       (SELECT gs_loan_number, start_date FROM stage
-       WHERE x.gs_loan_number = y.gs_loan_number AND x.start_date = y.start_date)
+       (SELECT PK_FIELDS, FROM_FIELD FROM stage
+       WHERE PKS_MATCH AND FROM_FIELD_MATCH)
        ) y
        -------------------------------------------END OF SECOND JOIN----------------------------------------------------
     ON PKS_MATCH AND FROM_FIELD_MATCH

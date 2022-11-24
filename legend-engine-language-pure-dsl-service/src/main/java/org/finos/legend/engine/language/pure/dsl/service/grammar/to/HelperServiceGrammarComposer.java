@@ -185,6 +185,12 @@ public class HelperServiceGrammarComposer
             str.append(getTabString(baseIndentation + 1)).append("]\n");
         }
 
+        // keys
+        if (!test.keys.isEmpty() && test.keys != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("keys:\n").append(getTabString(baseIndentation + 1)).append("[\n").append(getTabString(baseIndentation + 2)).append(LazyIterate.collect(test.keys, k -> convertString(k, true)).makeString(",\n")).append("\n").append(getTabString(baseIndentation + 1)).append("];\n");
+        }
+
         // Asserts
         if (test.assertions != null)
         {

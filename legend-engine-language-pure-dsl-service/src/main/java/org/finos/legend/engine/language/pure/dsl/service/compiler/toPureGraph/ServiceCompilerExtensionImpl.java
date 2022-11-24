@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
@@ -107,7 +108,14 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             for (Root_meta_pure_test_AtomicTest pureTest : pureServiceTestSuite._tests())
                             {
                                 Root_meta_legend_service_metamodel_ServiceTest pureServiceTest = (Root_meta_legend_service_metamodel_ServiceTest) pureTest;
+
+                                if (pureService._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution_Impl && pureServiceTest._keys().size() != 0)
+                                {
+                                    throw new EngineException("Service Test cannot have keys for SingleExecution Tests", service.sourceInformation, EngineErrorType.COMPILATION);
+                                }
+
                                 HelperServiceBuilder.validateServiceTestParameterValues((List<Root_meta_legend_service_metamodel_ParameterValue>) pureServiceTest._parameters().toList(), parameters, ListIterate.detect(suite.tests, t -> t.id.equals(pureServiceTest._id())).sourceInformation);
+
                             }
                             return pureServiceTestSuite;
                         }));
@@ -219,6 +227,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 {
                     pureServiceTest._serializationFormat(serviceTest.serializationFormat);
                 }
+                pureServiceTest._keysAddAll(Lists.mutable.withAll(serviceTest.keys));
                 if (serviceTest.assertions == null || serviceTest.assertions.isEmpty())
                 {
                     throw new EngineException("Service Tests should have atleast 1 assert", serviceTest.sourceInformation, EngineErrorType.COMPILATION);

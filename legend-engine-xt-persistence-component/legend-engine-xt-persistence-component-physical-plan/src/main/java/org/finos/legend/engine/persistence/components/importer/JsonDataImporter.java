@@ -97,7 +97,7 @@ class JsonDataImporter<C extends PhysicalPlanNode, P extends PhysicalPlan<C>, R 
             }
             if (populateDigest)
             {
-                //TODO: ledav -- confirm we *actually* want to capitalize (vs decapitalize if this is a lower case optimizer)
+                //TODO: confirm we *actually* want to capitalize (vs decapitalize if this is a lower case optimizer)
                 boolean convertFieldNamesToUpperCase = transformer.options().optimizers().stream().anyMatch(opt -> opt instanceof CaseConversionOptimizer);
                 DigestContext context = DigestUtils.getDigestContext(jsonExternalDatasetReference.schema(), digestInfo.metaFields());
                 String digest = DigestUtils.getDigest(objArray, context, convertFieldNamesToUpperCase);

@@ -1,0 +1,173 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::format::flatdata::binding::validation::*;
+import meta::external::format::flatdata::executionPlan::engine::java::*;
+import meta::external::format::flatdata::metamodel::*;
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::external::language::java::transform::*;
+
+import meta::pure::graphFetch::*;
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::createFieldVars(fields:FlatDataRecordField[*], recordTypeParam:Code[1], conventions:Conventions[1]): Pair<Code,Code>[*]
+{
+   $fields->toIndexed()->map({indexedField|
+      let var     = j_variable($conventions->className(_FlatDataRecordField), 'field' + $indexedField.first->toString());
+      let lParam  = j_parameter($conventions->className(_FlatDataRecordField), 'f');
+      let lambda  = j_lambda($lParam, $lParam->j_invoke('getLabel', [])->j_invoke('equals', j_string($indexedField.second.label)));                                                            
+      let declare = $var->j_declare($recordTypeParam->j_invoke('getFields', [])->j_streamOf()->js_filter($lambda)->js_findFirst()->jo_get());
+      pair($var, $declare);
+   });
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::createSchema(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], conventions:Conventions[1]): Code[1]
+{   
+   $flatData.sections->fold(
+      {section, code| 
+         $code->j_invoke('withSection', j_this($jClass)->j_invoke($section->sectionMethodName(), []), $conventions->className(_FlatData))
+      }, 
+      j_new($conventions->className(_FlatData), [])
+   );
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::sectionMethodName(section:FlatDataSection[1]): String[1]
+{   
+   'flatDataSection_' + $section.name;
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::sectionFactoryMethodName(section:FlatDataSection[1]): String[1]
+{   
+   'flatDataSection_Factory_' + $section.name;
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::addSectionMethods(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], bindingDetail:FlatDataBindingDetail[1], tree:RootGraphFetchTree<Any>[0..1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{  
+   assert($tree.subTrees->cast(@PropertyGraphFetchTree).property->filter(p | $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->isEmpty(), |'Multi Section serialization is not yet supported !!');
+
+   $jClass
+      ->addMethods({cls|
+         $flatData.sections->map({section|
+            let sectionBindingDetail = $bindingDetail.sectionBindingDetails->filter(s | $s.section ==  $section);
+            let fieldToPropertyMap   = $sectionBindingDetail.details->map(d | pair($d.field, $d.property))->newMap();
+            javaMethod('public', $conventions->className(_FlatDataSection), $section->sectionMethodName(), [],
+               j_new($conventions->className(_FlatDataSection), [j_string($section.name), j_string($section.driverId)])
+                  ->map({jSection|
+                      $section.sectionProperties->fold(
+                         {sp, code| 
+                            let name  = j_string($sp.name);
+                            let value = $sp.value->match([
+                               i:Integer[1]  | j_long($i), 
+                               s:String[1]   | j_string($s), 
+                               b:Boolean[1]  | j_boolean($b),
+                               is:Integer[*] | javaArrays()->j_invoke(javaLongBoxed(), 'asList', $is->map(i|j_long($i)), javaList(javaLongBoxed())),
+                               ss:String[*]  | javaArrays()->j_invoke(javaString(), 'asList', $ss->map(s|j_string($s)), javaList(javaString()))
+                            ]);
+                            $code->j_invoke('withProperty', [$name, $value], $conventions->className(_FlatDataSection));
+                         },
+                         $jSection
+                      );
+                  })
+                  ->map({jSection|
+                     $section.recordType->match([
+                        {none:FlatDataRecordType[0]| 
+                           j_return($jSection)
+                        },
+                        {rt:FlatDataRecordType[1]|
+                           let recordTypeVar  = j_variable($conventions->className(_FlatDataRecordType), 'recordType');
+                           let newRecordType  = j_new($conventions->className(_FlatDataRecordType), []);
+                           let requiredFields = if($tree->isEmpty(),
+                                                  | $rt.fields,
+                                                  | $rt.fields->filter(f | $tree.subTrees->cast(@PropertyGraphFetchTree).property->contains($fieldToPropertyMap->get($f)->toOne())));
+                           let withFields     = $requiredFields->fold({field, rType| $rType->codeWithField($field, $conventions)}, $newRecordType);
+                           [
+                              $recordTypeVar->j_declare($withFields),
+                              j_return($jSection->j_invoke('withRecordType', $recordTypeVar))
+                           ];
+                        }
+                     ])
+                  })
+            );            
+         });
+      });
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::codeWithField(recordType:Code[1], field:FlatDataRecordField[1], conventions:Conventions[1]): Code[1]
+{
+   let fieldLabel = j_string($field.label);
+   let fieldType  = $field.type->codeFlatDataDatatype($conventions);
+
+   $field.address->match([
+      a0:String[0]| $recordType->j_invoke('withField', [$fieldLabel, $fieldType], $conventions->className(_FlatDataRecordType)),
+      a :String[1]| $recordType->j_invoke('withField', [$fieldLabel, $fieldType, j_string($a)], $conventions->className(_FlatDataRecordType))
+   ]);
+}
+
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::codeFlatDataDatatype(type:FlatDataDataType[1], conventions:Conventions[1]): Code[1]
+{   
+   let optional = j_boolean($type.optional);
+   
+   $type->match([
+      {str:FlatDataString[1]|
+         j_new($conventions->className(_FlatDataString), $optional);
+      },
+      {bool:FlatDataBoolean[1]|
+         j_new($conventions->className(_FlatDataBoolean), $optional)
+            ->map(j| $bool.trueString->match([
+                        t0:String[0]| $j,
+                        t :String[1]| $j->j_invoke('withTrueString', j_string($t))
+                     ])
+            )
+            ->map(j| $bool.falseString->match([
+                        f0:String[0]| $j,
+                        f :String[1]| $j->j_invoke('withFalseString', j_string($f))
+                     ])
+            );
+      },
+      {int:FlatDataInteger[1]|
+         j_new($conventions->className(_FlatDataInteger), $optional)
+            ->map(j| $int.format->match([
+                        f0:String[0]| $j,
+                        f :String[1]| $j->j_invoke('withFormat', j_string($f))
+                     ])
+            );
+      },
+      {dec:FlatDataDecimal[1]|
+         j_new($conventions->className(_FlatDataDecimal), $optional)
+            ->map(j| $dec.format->match([
+                        f0:String[0]| $j,
+                        f :String[1]| $j->j_invoke('withFormat', j_string($f))
+                     ])
+            );
+      },
+      {date:FlatDataDate[1]|
+         $date.format->fold(
+            {fmt, cde | $cde->j_invoke('addFormat', j_string($fmt))}, 
+            j_new($conventions->className(_FlatDataDate), $optional)
+         )
+      },
+      {dateTime:FlatDataDateTime[1]|
+         $dateTime.format->fold(
+            {fmt, cde | $cde->j_invoke('addFormat', j_string($fmt))}, 
+            j_new($conventions->className(_FlatDataDateTime), $optional)
+               ->map(j| $dateTime.timeZone->match([
+                           z0:String[0]| $j,
+                           z :String[1]| $j->j_invoke('withTimeZone', j_string($z))
+                        ])
+            )
+         )
+      }
+   ]);
+}

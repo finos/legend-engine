@@ -1,0 +1,113 @@
+import meta::relational::dbTestRunner::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::relation::*;
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::count::testOnAllRows(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'count' , parameters=[]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=7);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+// size and count are functionally same
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::size::testSize(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'size' , parameters=[]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=7);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::average::testAverage(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'average' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=25.714);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.099]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::sum::testSum(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'sum' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=180);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::max::testMax(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'max' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=35);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::min::testMin(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'min' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=12);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::stdDevSample::testStdDevSample(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'stdDevSample' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=8.34);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::stdDevPopulation::testStdDevPopulation(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name= 'stdDevPopulation' , parameters=[^ColumnName(name='AGE')]);
+
+  let table= meta::relational::tests::db->cast(@Database).schema('default').table('personTable')->toOne();
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=7.72);
+  let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
+  runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
+}

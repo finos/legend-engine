@@ -32,7 +32,7 @@ import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeInName;
 import static org.finos.legend.engine.persistence.components.TestUtils.batchTimeOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.closePriceName;
+import static org.finos.legend.engine.persistence.components.TestUtils.priceName;
 import static org.finos.legend.engine.persistence.components.TestUtils.dateName;
 import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
 import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
@@ -40,7 +40,7 @@ import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.tickerName;
+import static org.finos.legend.engine.persistence.components.TestUtils.entityName;
 import static org.finos.legend.engine.persistence.components.TestUtils.volumeName;
 
 class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
@@ -107,17 +107,15 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
 
     /*
     Scenario: Test milestoning Logic with Partition when staging table pre populated
-    This test case is adapted from
-    https://confluence.site.gs.com/display/DIO/Alloy+Streaming+-+Milestoning+Schemes#AlloyStreamingMilestoningSchemes-Withpartitioning
     */
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithPartition() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getTickerPriceTimeBasedMainTable();
-        DatasetDefinition stagingTable = TestUtils.getTickerPriceStagingTable();
+        DatasetDefinition mainTable = TestUtils.getEntityPriceTimeBasedMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTable();
         MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
-        String[] schema = new String[]{dateName, tickerName, closePriceName, volumeName, digestName, batchTimeInName, batchTimeOutName};
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, digestName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
         createStagingTable(stagingTable);
@@ -209,11 +207,11 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
     @Test
     void testUnitemporalSnapshotMilestoningLogicWithPartitionWithCleanStagingData() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getTickerPriceTimeBasedMainTable();
-        DatasetDefinition stagingTable = TestUtils.getTickerPriceStagingTable();
+        DatasetDefinition mainTable = TestUtils.getEntityPriceTimeBasedMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceStagingTable();
         MetadataDataset metadataDataset = TestUtils.getMetadataDataset();
 
-        String[] schema = new String[]{dateName, tickerName, closePriceName, volumeName, digestName, batchTimeInName, batchTimeOutName};
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, digestName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
         createStagingTable(stagingTable);

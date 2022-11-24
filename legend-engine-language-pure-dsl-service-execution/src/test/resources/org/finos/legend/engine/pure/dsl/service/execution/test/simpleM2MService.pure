@@ -23,6 +23,16 @@ Class test::S_Person
   fullName: String[1];
 }
 
+Class test::Vehicle
+{
+  wheels: Integer[1];
+}
+
+Class test::Traffic
+{
+  vehicleCount: Integer[1];
+}
+
 function test::function(input: String[1]): String[1]
 {
    test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
@@ -31,6 +41,21 @@ function test::function(input: String[1]): String[1]
 function test::functionWithBatchSize(input: String[1]): String[1]
 {
    test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#, 10)->serialize(#{test::Person{firstName,lastName}}#)
+}
+
+function test::recursiveTestingForM2M(input:Integer[1]): String[1]
+{
+   test::Vehicle.all()->graphFetch(#{test::Vehicle{wheels}}#)->serialize(#{test::Vehicle{wheels}}#)
+}
+
+function test::wheelsSum(arg: Integer[1]): Integer[1]
+{
+  test::wheelsSum2($arg - 2) +  test::wheelsSum2($arg-3);
+}
+
+function test::wheelsSum2(arg: Integer[1]): Integer[1]
+{
+  if($arg <= 1, |3, |4 + test::wheelsSum($arg));
 }
 
 
@@ -43,8 +68,13 @@ Mapping test::Map
     firstName: $src.fullName->split(' ')->at(0),
     lastName: $src.fullName->split(' ')->at(1)
   }
-)
 
+  *test::Vehicle: Pure
+   {
+     ~src test::Traffic
+      wheels: $src.vehicleCount->test::wheelsSum()
+   }
+)
 
 ###Runtime
 Runtime test::Runtime
@@ -64,7 +94,15 @@ Runtime test::Runtime
           class: test::S_Person;
           url: 'data:application/json,${input}';
         }
-      }#
+      }#,
+      connection_2:
+       #{
+         JsonModelConnection
+         {
+           class: test::Traffic;
+           url: 'data:application/json,{"vehicleCount" : 8}';
+         }
+       }#
     ]
   ];
 }

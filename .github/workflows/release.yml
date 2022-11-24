@@ -21,7 +21,6 @@ env:
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   MAVEN_OPTS: -Xmx4g
-
 on:
   workflow_dispatch:
     inputs:
@@ -64,7 +63,7 @@ jobs:
           echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
 
       - name: Prepare release
-        run: mvn -B -DpreparationGoals=clean release:prepare -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
+        run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
 
       - name: Perform release
-        run: mvn -B release:perform -P release,docker
+        run: mvn -B -e release:perform -Darguments='-B -e -DargLine="-Xmx2200m"' -P release,docker
