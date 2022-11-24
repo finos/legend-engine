@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.to.test.assertion;
 
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.AssertActiveRowsGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.AssertAllRowsGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
@@ -22,6 +23,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertActiveRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
@@ -82,6 +84,14 @@ public class HelperTestAssertionGrammarComposer
                 + HelperEmbeddedDataGrammarComposer.composeEmbeddedData(assertAllRows.expected, updatedContext) + ";";
 
             return new ContentWithType(AssertAllRowsGrammarParser.TYPE, content);
+        }
+        else if (testAssertion instanceof AssertActiveRows)
+        {
+            AssertActiveRows assertActiveRows = (AssertActiveRows) testAssertion;
+            String content = context.getIndentationString() + "expected : \n"
+                + HelperEmbeddedDataGrammarComposer.composeEmbeddedData(assertActiveRows.expected, updatedContext) + ";";
+
+            return new ContentWithType(AssertActiveRowsGrammarParser.TYPE, content);
         }
         else
         {

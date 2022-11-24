@@ -87,6 +87,12 @@ Class meta::pure::test::assertion::AssertAllRowsAssertFail extends AssertFail
     actual      : String[1];
 }
 
+Class meta::pure::test::assertion::AssertActiveRowsAssertFail extends AssertFail
+{
+    expected    : String[1];
+    actual      : String[1];
+}
+
 Class <<typemodifiers.abstract>> meta::pure::test::assertion::TestAssertion
 {
     id          : String[1]; 
@@ -103,6 +109,11 @@ Class meta::pure::test::assertion::EqualToJson extends TestAssertion
 }
 
 Class meta::pure::test::assertion::AssertAllRows extends TestAssertion
+{
+    expected    : EmbeddedData[1];
+}
+
+Class meta::pure::test::assertion::AssertActiveRows extends TestAssertion
 {
     expected    : EmbeddedData[1];
 }

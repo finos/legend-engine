@@ -56,10 +56,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertActiveRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertActiveRowsAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertAllRowsAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
@@ -116,6 +118,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(EqualTo.class, "equalTo")
                         .withSubtype(EqualToJson.class, "equalToJson")
                         .withSubtype(AssertAllRows.class, "assertAllRows")
+                        .withSubtype(AssertActiveRows.class, "assertActiveRows")
                         .build(),
                 // Test Result
                 ProtocolSubTypeInfo.newBuilder(TestResult.class)
@@ -129,6 +132,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(AssertFail.class, "assertFail")
                         .withSubtype(EqualToJsonAssertFail.class, "equalToJsonAssertFail")
                         .withSubtype(AssertAllRowsAssertFail.class, "assertAllRowsAssertFail")
+                        .withSubtype(AssertActiveRowsAssertFail.class, "assertActiveRowsAssertFail")
                         .build(),
                 // External Source
                 ProtocolSubTypeInfo.newBuilder(ExternalSource.class)

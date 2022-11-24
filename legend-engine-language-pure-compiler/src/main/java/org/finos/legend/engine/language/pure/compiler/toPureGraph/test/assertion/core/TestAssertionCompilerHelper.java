@@ -19,10 +19,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertActiveRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_AssertActiveRows_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_AssertAllRows_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_EqualTo_Impl;
@@ -51,6 +53,13 @@ public class TestAssertionCompilerHelper
 
             return new Root_meta_pure_test_assertion_AssertAllRows_Impl("")
                 ._expected(assertAllRows.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+        }
+        else if (testAssertion instanceof AssertActiveRows)
+        {
+            AssertActiveRows assertActiveRows = (AssertActiveRows) testAssertion;
+
+            return new Root_meta_pure_test_assertion_AssertActiveRows_Impl("")
+                ._expected(assertActiveRows.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
         }
         else
         {
