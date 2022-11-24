@@ -41,6 +41,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidationAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureSingleExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
@@ -121,6 +123,12 @@ public class ServiceParseTreeWalker
         if (testContext != null)
         {
             service.test = this.visitTest(testContext);
+        }
+        // post validation
+        ServiceParserGrammar.ServicePostValidationsContext postValidationsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.servicePostValidations(), "postValidation", service.sourceInformation);
+        if (postValidationsContext != null)
+        {
+            service.postValidations = ListIterate.collect(postValidationsContext.postValidation(), this::visitPostValidation);
         }
         return service;
     }
@@ -468,5 +476,28 @@ public class ServiceParseTreeWalker
         lambda.body.add(valueSpecification);
         lambda.parameters = new ArrayList<>();
         return lambda;
+    }
+
+    private PostValidation visitPostValidation(ServiceParserGrammar.PostValidationContext ctx)
+    {
+        PostValidation postValidation = new PostValidation();
+        postValidation.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        // description
+        ServiceParserGrammar.PostValidationDescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.postValidationDescription(), "description", postValidation.sourceInformation);
+        postValidation.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
+        // parameters
+        postValidation.parameters = ListIterate.collect(PureGrammarParserUtility.validateAndExtractRequiredField(ctx.postValidationParameters(), "params", postValidation.sourceInformation).combinedExpression(), this::visitLambda);
+        // assertions
+        postValidation.assertions = ListIterate.collect(PureGrammarParserUtility.validateAndExtractRequiredField(ctx.postValidationAssertions(), "assertions", postValidation.sourceInformation).postValidationAssertion(), this::visitPostValidationAssertion);
+        return postValidation;
+    }
+
+    private PostValidationAssertion visitPostValidationAssertion(ServiceParserGrammar.PostValidationAssertionContext ctx)
+    {
+        PostValidationAssertion postValidationAssertion = new PostValidationAssertion();
+        postValidationAssertion.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        postValidationAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        postValidationAssertion.assertion = visitLambda(ctx.combinedExpression());
+        return postValidationAssertion;
     }
 }

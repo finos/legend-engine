@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.service.ServiceModeling;
 import org.finos.legend.engine.plan.execution.service.test.TestResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
@@ -42,6 +43,8 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -90,6 +93,44 @@ public class ServiceModelingApi
             MetricsHandler.observe("service test", start, System.currentTimeMillis());
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
             return Response.ok(objectMapper.writeValueAsString(results), MediaType.APPLICATION_JSON_TYPE).build();
+        }
+        catch (Exception ex)
+        {
+            String servicePattern = null;
+            if (service instanceof PureModelContextData)
+            {
+                PureModelContextData data = ((PureModelContextData) service).shallowCopy();
+                Service invokedService = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
+                servicePattern = invokedService == null ? null : invokedService.pattern;
+            }
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, ex, servicePattern);
+            return response;
+        }
+    }
+
+    @POST
+    @Path("doValidation")
+    @ApiOperation(value = "Execute a service validation assertion. Only Full_Interactive mode is supported by giving appropriate PureModelContext (i.e. PureModelContextData)")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Prometheus(name = "service validation", doc = "Service validation execution duration")
+    public Response doValidation(PureModelContext service,
+                                 @DefaultValue("") @ApiParam(value = "The ID of the assertion to execute from the service", required = true) @QueryParam("assertionId") String assertionId,
+                                 @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format,
+                                 @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm,
+                                 @Context UriInfo uriInfo)
+    {
+        MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
+        try
+        {
+            if (!(service instanceof PureModelContextData))
+            {
+                throw new RuntimeException("Only Full Interactive mode currently supported.  Received " + service.getClass().getName());
+            }
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
+            String metricContext = uriInfo != null ? uriInfo.getPath() : null;
+
+            return this.serviceModeling.validateService(profiles, service, metricContext, assertionId, format);
         }
         catch (Exception ex)
         {

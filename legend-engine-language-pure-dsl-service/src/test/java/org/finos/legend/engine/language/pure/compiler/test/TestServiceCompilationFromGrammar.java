@@ -2789,4 +2789,139 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
         //                ""
         //        );
     }
+
+    @Test
+    public void testServiceWithPostValidation()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : String[1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime\n" +
+                "{\n" +
+                " mappings: [test::mapping];\n" +
+                "}\n";
+
+        // check valid post validation
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('prop1')->startsWith('X'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no prop1 values to begin with the letter X');\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}");
+
+        // check matching query and assertion types
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: var: Integer[1]|true;\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function parameter type 'Integer[1]' does not match with service execution return type 'TabularDataSet[1]'");
+
+        // check parameter count matches service parameter count (multi execution)
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/{executionKey}'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Multi \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    key: 'executionKey';" +
+                "    executions['keyOne']: {" +
+                "       mapping: test::mapping; \n" +
+                "       runtime: test::runtime; \n" +
+                "    }" +
+                "    executions['keyTwo']: {" +
+                "       mapping: test::mapping; \n" +
+                "       runtime: test::runtime; \n" +
+                "    }" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('firstName')->startsWith('T'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no first names to begin with the letter T');\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", " at [20:1-44:1]: Error in 'test::Service': Post validation parameter count '0' does not match with service parameter count '1'");
+
+        // check assertion lambda has parameter
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: |true;\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function expects 1 parameter");
+    }
 }
