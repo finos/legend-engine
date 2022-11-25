@@ -1,11 +1,11 @@
 # FlatData
 
-Flat data is a type of Binding used to process many data formats that are not described by well-known Schemas.
+Flat data is a type of External Format used to process many data formats that are not described by well-known Schemas.
 Examples are:
 
-* Comma Separated Values (CSV) and alike (`DelimitedWithHeadings` and `DelimitedWithoutHeadings`)
-* Fixed Width data
-* Bloomberg extracts
+- Comma Separated Values (CSV) and alike (`DelimitedWithHeadings` and `DelimitedWithoutHeadings`)
+- Fixed Width data
+- Bloomberg extracts
 
 ## Schema Syntax
 
@@ -22,20 +22,20 @@ Each driver provides implementations of:
 `FlatDataReadDriver` to handle deserialization for the format
 `FlatDataWriteDriver` to handle serialization for the format
 
-It's not necessary to implement both `FlatDataReadDriver` and `FlatDataWriteDriver` for a 
+It's not necessary to implement both `FlatDataReadDriver` and `FlatDataWriteDriver` for a
 driver (but it's meaningless to implement neither). That is a driver can support read only
 or write only.
 
 A `FlatDataProcessingContext` carries state for the processing while a driver is in use.
-State consists of `FlatDataVariable`s.  Drivers of different types can use that state to
+State consists of `FlatDataVariable`s. Drivers of different types can use that state to
 share information (such as a line number) across sections of a FlatData file/stream.
 The context also provides access to object factories (`ParsedFlatDataToObject` and
-`ObjectToParsedFlatData`).  The factories themselves are implemented by Java code generated
+`ObjectToParsedFlatData`). The factories themselves are implemented by Java code generated
 for the execution plan.
 
 ## Data Types
 
-The Flat Data data types are common to all drivers.  Common code is therefore provided
+The Flat Data data types are common to all drivers. Common code is therefore provided
 to convert between values of those types (as represented by Java types) and textual representations
 in Strings.
 
@@ -60,15 +60,15 @@ There are two levels of representing data in Flat Data:
 * `RawFlatData`
 * `ParsedFlatData`
 
-The former represents the data as extracted directly from the file/stream.  For example in a CSV file
+The former represents the data as extracted directly from the file/stream. For example in a CSV file
 (`DelimitedWithHeadings` driver) the `RawFlatData` represents the text value of each column for a row of the file.  
 It will contain all the values extracted for a row even if they are not ultimately used.
 
-The latter represents the data translated according to the record type defined for the section.  For example in
+The latter represents the data translated according to the record type defined for the section. For example in
 a CSV file this will be the values translated into the data types described in the record type.
 It will only contain values described in the record type.
 
-The `ParsedFlatData` is used to translate to and from the Pure model instances (as represented in the bound 
-execution plan - that is in Java).  The translation is performed by the factories as mentioned in the
+The `ParsedFlatData` is used to translate to and from the Pure model instances (as represented in the bound
+execution plan - that is in Java). The translation is performed by the factories as mentioned in the
 `FlatDataProcessingContext` above.
 
