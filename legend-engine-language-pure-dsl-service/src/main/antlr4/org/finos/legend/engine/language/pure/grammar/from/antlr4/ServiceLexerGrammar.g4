@@ -36,6 +36,11 @@ SERVICE_TEST_PARAMETERS:            'parameters';
 ASSERT_FOR_KEYS:                    'keys';
 PARAM_GROUP:                        'list';
 
+SERVICE_POST_VALIDATION:            'postValidations';
+SERVICE_POST_VALIDATION_DESCRIPTION:'description';
+SERVICE_POST_VALIDATION_PARAMETERS: 'params';
+SERVICE_POST_VALIDATION_ASSERTIONS: 'assertions';
+
 // -------------------------------------- LEGACY --------------------------------------
 
 SERVICE_TEST:                       'test';

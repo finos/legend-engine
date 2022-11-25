@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::dataQuality::*;
+import meta::pure::graphFetch::*;
 
 Enum meta::pure::dataQuality::RuleType
 {
@@ -52,4 +53,33 @@ function meta::pure::dataQuality::checked<T>(collection: T[*]):Checked<T>[*]
 {
    fail('Not implemented!');
    $collection->map(e|^Checked<T>(value=$e));
+}
+
+function meta::pure::dataQuality::checked(valueTree: RootGraphFetchTree<Any>[1], defectTree: RootGraphFetchTree<Defect>[1], sourceTree: RootGraphFetchTree<Any>[1]):RootGraphFetchTree<Checked<Any>>[1]
+{
+   let castedClass          = Checked->cast(@Class<Checked<Nil>>);
+
+   let valueProperty        = $castedClass.properties->filter(p | $p.name == 'value')->toOne();
+   let updatedValueProperty = ^$valueProperty(genericType = ^GenericType(rawType = $valueTree.class));
+   let valuePropTree        = ^PropertyGraphFetchTree(
+                                property = $updatedValueProperty,
+                                subTrees = $valueTree.subTrees
+                              );
+
+   let defectsPropTree      = ^PropertyGraphFetchTree(
+                                property = $castedClass.properties->filter(p | $p.name == 'defects')->toOne(),
+                                subTrees = $defectTree.subTrees
+                              );
+   
+   let sourcePropTree       = ^PropertyGraphFetchTree(
+                                property = $castedClass.properties->filter(p | $p.name == 'source')->toOne(),
+                                subTrees = $sourceTree.subTrees,
+                                subType = $sourceTree.class
+                              );
+
+   ^RootGraphFetchTree<Checked<Nil>>
+   (
+     class    = $castedClass,
+     subTrees = [$defectsPropTree, $sourcePropTree, $valuePropTree]
+   );
 }
