@@ -1,9 +1,7 @@
 # ExternalFormat
 
 ExternalFormat lets users define formal schema (eg : XSD, Json-Schema) of their data using PURE DSL. <br>
-Users can model these schema in Legend ecosystem within `ExternalFormat` section of PURE DSL using PackageableElement
-
-- `SchemaSet`.
+Users can model these schema in Legend ecosystem within `ExternalFormat` section of PURE DSL using PackageableElement - `SchemaSet`.
 
 ## Where does External Format fit in Legend/Pure modeling?
 
