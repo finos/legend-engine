@@ -28,11 +28,28 @@ public class TestCastFunctionTest
     public void testUpcast() throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.readTree("{\"version\":\"ftdm:abcdefg123\", \"@type\": \"meta::pure::changetoken::tests::SampleClass\"}");
+        JsonNode jsonNode = mapper.readTree(
+                "{\n" +
+                        "  \"version\":\"ftdm:abcdefg123\", \n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"},\n" +
+                        "  \"innerNestedArray\":[\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}, \n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n" +
+                        "  ]\n" +
+                        "}");
         JsonNode jsonNodeOut = TestCastFunction2.upcast(jsonNode);
-        JsonNode expectedJsonNodeOut = mapper.readTree("{\"version\":\"ftdm:abcdefg456\","
-                + "\"@type\": \"meta::pure::changetoken::tests::SampleClass\", "
-                + "\"abc\": 100}"); // new default value field added
+        JsonNode expectedJsonNodeOut = mapper.readTree(
+                "{\n" +
+                        "  \"version\":\"ftdm:abcdefg456\",\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100},\n" +
+                        "  \"innerNestedArray\":[\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100}]\n" +
+                        "  ],\n" +
+                        "  \"abc\": 100\n" +
+                        "}"); // updated version and new default value field added
         assertEquals(expectedJsonNodeOut, jsonNodeOut);
     }
 

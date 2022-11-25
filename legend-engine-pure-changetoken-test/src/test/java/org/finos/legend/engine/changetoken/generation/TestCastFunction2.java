@@ -15,29 +15,58 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import java.util.Iterator;
+import java.util.Map;
 
 public class TestCastFunction2
 {
-    private static JsonNode _upcast_to_ftdm_abcdefg456(JsonNode node)
-    {
-        if (node.isObject())
-        {
-            ObjectNode object = (ObjectNode) node;
-            if (object.get("@type") == null)
-            {
-                throw new RuntimeException("Missing @type");
+    private static ArrayNode _upcast_to_ftdm_abcdefg456_array(ArrayNode arrayNode) {
+        for (int i = 0; i < arrayNode.size(); ++i) {
+            if (arrayNode.get(i).isArray()) {
+                arrayNode.set(i, _upcast_to_ftdm_abcdefg456_array((ArrayNode) arrayNode.get(i)));
+            } else if (arrayNode.get(i).isObject()) {
+                arrayNode.set(i, _upcast_to_ftdm_abcdefg456_object((ObjectNode) arrayNode.get(i)));
             }
-            String type = object.get("@type").asText();
-            if (type.equals("meta::pure::changetoken::tests::SampleClass"))
-            {
-                object = object.deepCopy();
-                node = object;
-                object.put("abc", 100);
-            }
-            object.put("version", "ftdm:abcdefg456");
         }
-        return node;
+        return arrayNode;
+    }
+
+    private static ObjectNode _upcast_to_ftdm_abcdefg456_object(ObjectNode objectNode) {
+        if (objectNode.get("@type") == null) {
+            throw new RuntimeException("Missing @type");
+        }
+        String type = objectNode.get("@type").asText();
+        if (type.equals("meta::pure::changetoken::tests::SampleClass")) {
+            objectNode.put("abc", 100);
+        }
+
+        // recurse
+        Iterator<Map.Entry<String, JsonNode>> it = objectNode.fields();
+        while (it.hasNext())
+        {
+            Map.Entry<String, JsonNode> en = it.next();
+            if (en.getValue().isObject())
+            {
+                ObjectNode innerObjectNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_object((ObjectNode) en.getValue());
+                ObjectNode newInnerObjectNode = objectNode.putObject(en.getKey());
+                newInnerObjectNode.setAll(innerObjectNode);
+            } else if( en.getValue().isArray()) {
+                ArrayNode arrayNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_array((ArrayNode) en.getValue());
+                ArrayNode newArrayNode = objectNode.putArray(en.getKey());
+                newArrayNode.addAll(arrayNode);
+            }
+        }
+
+        return objectNode;
+    }
+
+    private static ObjectNode _upcast_to_ftdm_abcdefg456(ObjectNode objectNode)
+    {
+        objectNode.put("version", "ftdm:abcdefg456");
+        return TestCastFunction2._upcast_to_ftdm_abcdefg456_object(objectNode);
     }
 
     public static JsonNode upcast(JsonNode node)
@@ -46,17 +75,19 @@ public class TestCastFunction2
         {
             throw new RuntimeException("Missing version");
         }
-        String version = node.get("version").asText();
+        ObjectNode objectNode = node.deepCopy();
+
+        String version = objectNode.get("version").asText();
         if (version.equals("ftdm:abcdefg123"))
         {
-            node = TestCastFunction2._upcast_to_ftdm_abcdefg456(node);
-            version = node.get("version").asText();
+            objectNode = TestCastFunction2._upcast_to_ftdm_abcdefg456(objectNode);
+            version = objectNode.get("version").asText();
         }
         if (!version.equals("ftdm:abcdefg456"))
         {
             throw new RuntimeException("Unexpected version: " + version);
         }
-        return node;
+        return objectNode;
     }
 
     public static JsonNode downcast(JsonNode node, String version)

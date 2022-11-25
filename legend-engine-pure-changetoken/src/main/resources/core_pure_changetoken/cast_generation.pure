@@ -65,14 +65,17 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
 
 
   let verVar = j_variable(javaString(), 'version');
+  // public static JsonNode upcast(JsonNode node)
   let upcastMethod = javaMethod(['public', 'static'], jsonNode(), 'upcast', [$paramNode],
     j_block(
       [
+        // if (!node.isObject() || !node.has("version")) throw new RuntimeException("Missing version")
         j_if(
           j_or(
             j_not($paramNode->j_invoke('isObject', [], javaBoolean())),
             j_not($paramNode->j_invoke('has', [j_string('version')], javaBoolean()))),
           javaRuntimeException()->j_new([j_string('Missing version')])->j_throw()),
+        // 
         $verVar->j_declare($paramNode->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
       ]
       ->concatenate($codeAndClass.first.values)
@@ -118,12 +121,11 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddField(token:AddField[1], paramNode:Code[1], version:String[1]):Code[1]
 {
-  let objectNode = javaClass('com.fasterxml.jackson.databind.node.ObjectNode'); 
-  let objVar = j_variable($objectNode, 'object');
+  let objVar = j_variable(objectNode(), 'object');
   let typeVar = j_variable(javaString(), 'type');
   j_if($paramNode->j_invoke('isObject', [], javaBoolean()),
     j_block([
-      $objVar->j_declare($paramNode->j_cast($objectNode)),      
+      $objVar->j_declare($paramNode->j_cast(objectNode())),      
       j_if(
         j_eq($objVar->j_invoke('get', [j_string('@type')], jsonNode()), j_null()),
         javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
@@ -132,7 +134,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
       j_if(
         $typeVar->j_invoke('equals', [j_string($token.class)]),
         j_block([
-          $objVar->j_assign($objVar->j_invoke('deepCopy', [], $objectNode)), // TODO: is there a shallow copy?
+          $objVar->j_assign($objVar->j_invoke('deepCopy', [], objectNode())), // TODO: is there a shallow copy?
           $paramNode->j_assign($objVar),
           $objVar->j_invoke('put', [j_string('abc'), j_int($token.defaultValue->cast(@ConstValue).value->cast(@Integer))], javaVoid()) // TODO: need copy logic here too and other formatters
         ])
@@ -140,3 +142,5 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
       $objVar->j_invoke('put', [j_string('version'), j_string($version)], javaVoid()) // TODO: this belongs in the outer handler, not per token
     ]));
 }
+
+function <<access.private>> meta::pure::changetoken::cast_generation::objectNode():meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.node.ObjectNode'); }
