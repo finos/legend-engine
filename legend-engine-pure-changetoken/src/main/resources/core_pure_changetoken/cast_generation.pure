@@ -25,19 +25,34 @@ import meta::pure::functions::collection::*;
 // entry point into cast generation
 function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName:String[1], outputClassName:String[1]):Project[1]
 {
+  // load Versions()
   let versions = functionDescriptorToId($versionsFuncName + '():Versions[1]')
     ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>)
     ->eval();
 
+  // generated class  
   let class = javaClass(['public'], javaPackage('org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation'), $outputClassName);
-  let paramNode = j_parameter(jsonNode(), 'node');
-  let class2 = _generateUpcastFunction($class, $versions);
   
+  newProject()->addClass(
+    $class
+      ->_generateUpcastFunction($versions)
+      ->_generateDowncastFunction($versions)
+  );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateDowncastFunction(
+  class:meta::external::language::java::metamodel::Class[1],
+  versions:Versions[1]
+)
+:meta::external::language::java::metamodel::Class[1]
+{
+  let paramNode = j_parameter(jsonNode(), 'node');
   let paramVersion = j_parameter(javaString(), 'version');
+  // public static JsonNode downcast(JsonNode node, String version)
   let downcastMethod = javaMethod(['public', 'static'], jsonNode(), 'downcast', [$paramNode, $paramVersion],
     j_return($paramNode)
   );
-  newProject()->addClass($class2->addMethods([$downcastMethod]));
+  $class->addMethods([$downcastMethod]);
 }
 
 
@@ -48,12 +63,13 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
 {
   let paramNode = j_parameter(jsonNode(), 'node');
 
+  // code for the main upcast() method (lots of IFs) and the class with added methods
   let codeAndClass = $versions.versions->fold(
     { 
       ver, resP |
       if($ver.prevVersion->size() != 0,
       {|
-        let p = $class->_generateSingleUpcastFunction($ver, $paramNode);
+        let p = $class->_generateSingleUpcastFunction($ver);
         let resPF = $resP.first;
         pair(^$resPF(values+=$p.first), $p.second);
       },
@@ -65,6 +81,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
 
 
   let verVar = j_variable(javaString(), 'version');
+  let objVar = j_variable(objectNode(), 'objectNode');
   // public static JsonNode upcast(JsonNode node)
   let upcastMethod = javaMethod(['public', 'static'], jsonNode(), 'upcast', [$paramNode],
     j_block(
@@ -75,72 +92,153 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateU
             j_not($paramNode->j_invoke('isObject', [], javaBoolean())),
             j_not($paramNode->j_invoke('has', [j_string('version')], javaBoolean()))),
           javaRuntimeException()->j_new([j_string('Missing version')])->j_throw()),
-        // 
-        $verVar->j_declare($paramNode->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
+        // ObjectNode objectNode = node.deepCopy()
+        $objVar->j_declare($paramNode->j_invoke('deepCopy', [], objectNode())),
+        // String version = objectNode.get("version").asText()
+        $verVar->j_declare($objVar->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))        
       ]
+      // [if (version.equals(<version>)) {...}]+
       ->concatenate($codeAndClass.first.values)
+      // if (!version.equals(<current_version>)) throw new RuntimeException('Unexpected version')
       ->concatenate([
         j_if(
           j_not($verVar->j_invoke('equals', j_string($versions.versions->at($versions.versions->size()-1).version))),
           javaRuntimeException()->j_new(j_plus(j_string('Unexpected version: '), $verVar))->j_throw()
         )
       ])
-      ->concatenate([j_return($paramNode)])));
+      // return objectNode
+      ->concatenate([j_return($objVar)])));
       
   $codeAndClass.second->addMethod($upcastMethod);
 }
 
 
+// upcast a single version
 function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastFunction(
   class:meta::external::language::java::metamodel::Class[1], 
-  version:Version[1], 
-  paramNode:Code[1]
+  version:Version[1]
 ):Pair<Code,meta::external::language::java::metamodel::Class>[1]
 {
-  let funcName = '_upcast_to_' + ($version.version->replace(':', '_'));
+  let mainFuncName = '_upcast_to_' + ($version.version->replace(':', '_'));
+  let objRecurseFuncName = $mainFuncName + '_object';
+  let arrRecurseFuncName = $mainFuncName + '_array';
+  let objVar = j_parameter(objectNode(), 'objectNode');
 
-  let methodBody = $version.changeTokens
-    ->filter(t|$t->instanceOf(AddField))
-    ->fold({t,res|
-      _handleAddField($t->cast(@AddField), $paramNode, $version.version)
-    }, [])->add(j_return($paramNode));
+  // private static _upcast_to_version(ObjectNode objectNode)
+  let class2 = $class->addMethod(javaMethod(['private', 'static'], objectNode(), $mainFuncName, [$objVar], j_block([
+    // objectNode.put('version', <current_version>)
+    $objVar->j_invoke('put', [j_string('version'), j_string($version.version)], javaVoid()),
+    // return _upcast_to_version_object(objectNode)
+    j_return($class->j_invoke($objRecurseFuncName, [$objVar], objectNode()))
+  ])));
 
-  let singleUpcastMethod = javaMethod(['private', 'static'], jsonNode(), $funcName, [$paramNode], j_block($methodBody));
-  let class2 = $class->addMethod($singleUpcastMethod);
-
-  let verVar = j_variable(javaString(), 'version');
-  let ifCond = j_if($verVar->j_invoke('equals', [j_string($version.prevVersion->toOne())]),
-    j_block([
-      $paramNode->j_assign($class2->j_invoke($funcName, $paramNode)),
-      $verVar->j_assign($paramNode->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
-    ]));
-
-  pair($ifCond, $class2);
-}
-
-
-function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddField(token:AddField[1], paramNode:Code[1], version:String[1]):Code[1]
-{
-  let objVar = j_variable(objectNode(), 'object');
   let typeVar = j_variable(javaString(), 'type');
-  j_if($paramNode->j_invoke('isObject', [], javaBoolean()),
-    j_block([
-      $objVar->j_declare($paramNode->j_cast(objectNode())),      
+  let changeTokenHandlers = $version.changeTokens
+    ->filter(t|$t->instanceOf(AddField)) // TODO: handle all changetoken types
+    ->fold({t,res|
+      _handleAddField($t->cast(@AddField), $objVar, $typeVar, $version.version)
+    }, []);
+
+  // private static _upcast_to_version_object(ObjectNode objectNode)
+  let class3 = $class2->addMethod(javaMethod(['private', 'static'], jsonNode(), $objRecurseFuncName, [$objVar], j_block(
+    [
+      // if(objectNode.get("@type") == null) throw new RuntimeException("Missing @type")
       j_if(
         j_eq($objVar->j_invoke('get', [j_string('@type')], jsonNode()), j_null()),
         javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
       ),
-      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], jsonNode())->j_invoke('asText', [], javaString())),
-      j_if(
-        $typeVar->j_invoke('equals', [j_string($token.class)]),
-        j_block([
-          $objVar->j_assign($objVar->j_invoke('deepCopy', [], objectNode())), // TODO: is there a shallow copy?
-          $paramNode->j_assign($objVar),
-          $objVar->j_invoke('put', [j_string('abc'), j_int($token.defaultValue->cast(@ConstValue).value->cast(@Integer))], javaVoid()) // TODO: need copy logic here too and other formatters
-        ])
-      ),
-      $objVar->j_invoke('put', [j_string('version'), j_string($version)], javaVoid()) // TODO: this belongs in the outer handler, not per token
+      // 
+      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], jsonNode())->j_invoke('asText', [], javaString()))
+    ]
+    ->concatenate($changeTokenHandlers)
+    ->concatenate([$class2->_generateSingleUpcastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName)])
+    ->concatenate([
+      j_return($objVar)
+    ]))));
+
+  let verVar = j_variable(javaString(), 'version');
+  // if (version.equals(version))
+  let ifCond = j_if($verVar->j_invoke('equals', [j_string($version.prevVersion->toOne())]),
+    j_block([
+      // objectNode = Class._upcast_to_version(objectNode)
+      $objVar->j_assign($class3->j_invoke($mainFuncName, $objVar)),
+      // version = objectNode.get("version").asText()
+      $verVar->j_assign($objVar->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
     ]));
+
+  let class4 = $class3->addMethod($class3->_generateSingleUpcastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
+
+  pair($ifCond, $class4);
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastArrayRecurseFunction(
+  class:meta::external::language::java::metamodel::Class[1], 
+  objRecurseFuncName:String[1],
+  arrRecurseFuncName:String[1]
+):Method[1]
+{
+  let arrVar = j_parameter(arrayNode(), 'arrayNode');
+  let i = j_variable(javaInt(), 'i');
+  let arrI = $arrVar->j_invoke('get', [$i], jsonNode());
+
+  // private static ArrayNode _upcast_to_version_array(ArrayNode arrayNode)
+  javaMethod(['private', 'static'], arrayNode(), $arrRecurseFuncName, [$arrVar], j_block([
+    // for(int i = 0; i < arrayNode.size(); i++)
+    j_for($i->j_declare(j_int(0)), $i->j_le($arrVar->j_invoke('size', [], javaInt())), $i->j_inc(), [
+      // if (arrayNode.get(i).isArray())
+      j_if($arrI->j_invoke('isArray', [], javaBoolean()),
+        // arrayNode.set(i, Class._upcast_to_version_array((ArrayNode)arrayNode.get(i)))
+        $arrVar->j_invoke('set', [$i, $class->j_invoke($arrRecurseFuncName, [$arrI->j_cast(arrayNode())], arrayNode())], javaVoid()),
+        // else if (arrayNode.get(i).isObject())
+        j_if($arrI->j_invoke('isObject', [], javaBoolean()),
+          // arrayNode.set(i, Class._upcast_to_version_object((ObjectNode) arrayNode.get(i)))
+          $arrVar->j_invoke('set', [$i, $class->j_invoke($objRecurseFuncName, [$arrI->j_cast(objectNode())], objectNode())], javaVoid())
+        )
+      )
+    ]),
+    j_return($arrVar)
+  ]));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastObjectRecurseBlock(
+  class:meta::external::language::java::metamodel::Class[1], 
+  objRecurseFuncName:String[1],
+  arrRecurseFuncName:String[1]
+):Code[1]
+{
+  // TODO
+
+        // Iterator<Map.Entry<String, JsonNode>> it = objectNode.fields();
+        // while (it.hasNext())
+        // {
+        //     Map.Entry<String, JsonNode> en = it.next();
+        //     if (en.getValue().isObject())
+        //     {
+        //         ObjectNode innerObjectNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_object((ObjectNode) en.getValue());
+        //         ObjectNode newInnerObjectNode = objectNode.putObject(en.getKey());
+        //         newInnerObjectNode.setAll(innerObjectNode);
+        //     } else if( en.getValue().isArray()) {
+        //         ArrayNode arrayNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_array((ArrayNode) en.getValue());
+        //         ArrayNode newArrayNode = objectNode.putArray(en.getKey());
+        //         newArrayNode.addAll(arrayNode);
+        //     }
+        // }
+
+  j_return(j_string('blah'));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddField(
+  token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1]):Code[1]
+{
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    j_block([
+      // objectNode.put(fieldName, defaultValue)
+      $objVar->j_invoke('put', [j_string($token.fieldName), j_int($token.defaultValue->cast(@ConstValue).value->cast(@Integer))], javaVoid()) // TODO: need copy logic here too and other formatters
+    ])
+  );
 }
 
 function <<access.private>> meta::pure::changetoken::cast_generation::objectNode():meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.node.ObjectNode'); }
+function <<access.private>> meta::pure::changetoken::cast_generation::arrayNode():meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.node.ArrayNode'); }
