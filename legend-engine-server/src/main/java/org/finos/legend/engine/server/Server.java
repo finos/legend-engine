@@ -220,8 +220,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());
-        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor, serverConfiguration.metadataserver, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
-        environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver));
+        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor, serverConfiguration.metadataserver, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
+        environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver, routerExtensions));
 
         // Service
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));
