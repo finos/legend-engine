@@ -120,4 +120,4 @@ This page lists the steps to quickly get started with integrating your REST API 
 ## More info
 
 - [Service store reference documents](./service-store.md)
-- [Service store examples and templates](./service-store-examples-templates.md)
+- [Service store examples and templates](service-store-examples-templates.md)
