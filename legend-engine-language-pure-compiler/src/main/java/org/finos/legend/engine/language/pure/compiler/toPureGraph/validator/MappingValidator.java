@@ -24,14 +24,15 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumValueMappingSourceValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementationAccessor;
 
@@ -45,12 +46,14 @@ import java.util.stream.Collectors;
 
 public class MappingValidator
 {
-    public void validate(PureModel pureModel, PureModelContextData pureModelContextData)
+    public void validate(PureModel pureModel, PureModelContextData pureModelContextData, CompilerExtensions extensions)
     {
         // Create map of elements in V1 since when we try to resolve the generalization in M3, we will get stuffs like Annotated Element, PackageableElement
         // Also using V1 element is more convenient for extracting the source information purpose
         Map<String, Mapping> mappings = new LinkedHashMap<>(); // ensure we validate element in order they are inserted in the pure model context data
         Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings = new LinkedHashMap<>();
+
+        Map<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping>> mappingByClassMappingId = Maps.mutable.empty();
         LazyIterate.selectInstancesOf(pureModelContextData.getElements(), Mapping.class).forEach(mapping ->
         {
             String mappingPath = pureModel.buildPackageString(mapping._package, mapping.name);
@@ -59,8 +62,17 @@ public class MappingValidator
         });
         this.validateGeneralization(pureModel, mappings);
         this.validateEnumerationMappings(pureModel, mappings);
-        this.validateMappingElementIds(pureModel, mappings, pureMappings);
+        this.validateMappingElementIds(pureModel, mappings, pureMappings, mappingByClassMappingId);
         this.validateClassMappingRoots(pureModel, mappings, pureMappings);
+
+        MappingValidatorContext mappingValidatorContext = new MappingValidatorContext(mappingByClassMappingId, pureMappings, mappings);
+        extensions.getExtraMappingPostValidators().forEach(v -> v.accept(pureModel, mappingValidatorContext));
+    }
+
+
+    public void validate(PureModel pureModel, PureModelContextData pureModelContextData)
+    {
+        validate(pureModel, pureModelContextData, null);
     }
 
     private void visitMappingInclude(Mapping mapping, PureModel pureModel, Map<String, Mapping> mappings, Set<Mapping> visited, Set<Mapping> discovered)
@@ -215,15 +227,18 @@ public class MappingValidator
     }
 
 
-    public void validateMappingElementIds(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings)
+    public void validateMappingElementIds(PureModel pureModel, Map<String, Mapping> mappings, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> pureMappings, Map<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping>> mappingByClassMappingId)
     {
         pureMappings.forEach((mappingPath, mapping) ->
         {
             try
             {
-                Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId = Maps.mutable.empty();
-                collectAndValidateClassMappingIds(mapping, mappingByClassMappingId, new HashSet<>());
-                validatePropertyMappings(pureModel, mapping, mappingByClassMappingId);
+                Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> localMappingByID = Maps.mutable.empty();
+
+                collectAndValidateClassMappingIds(mapping, localMappingByID, new HashSet<>());
+                validatePropertyMappings(pureModel, mapping, localMappingByID);
+
+                mappingByClassMappingId.put(mapping, localMappingByID);
             }
             catch (EngineException e)
             {
@@ -240,14 +255,15 @@ public class MappingValidator
         });
     }
 
+
     private void validatePropertyMappings(PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId)
     {
         Set<String> ids = mappingByClassMappingId.keySet();
         pureModel.addWarnings(mapping._classMappings().flatCollect(cm ->
         {
-            if (cm instanceof InstanceSetImplementation)
+            if (cm instanceof PropertyMappingsImplementation && !(cm instanceof EmbeddedSetImplementation))
             {
-                return ((InstanceSetImplementation) cm)._propertyMappings().flatCollect(pm ->
+                return ((PropertyMappingsImplementation) cm)._propertyMappings().select(p -> !(p instanceof EmbeddedSetImplementation)).flatCollect(pm ->
                         Lists.mutable.withAll(checkId(pureModel, mapping, ids, pm, pm._sourceSetImplementationId()))
                                 .withAll(checkId(pureModel, mapping, ids, pm, pm._targetSetImplementationId()))
                 );
