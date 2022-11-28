@@ -23,23 +23,31 @@ import java.util.Map;
 
 public class TestCastFunction2
 {
-    private static ArrayNode _upcast_to_ftdm_abcdefg456_array(ArrayNode arrayNode) {
-        for (int i = 0; i < arrayNode.size(); ++i) {
-            if (arrayNode.get(i).isArray()) {
+    private static ArrayNode _upcast_to_ftdm_abcdefg456_array(ArrayNode arrayNode)
+    {
+        for (int i = 0; i < arrayNode.size(); ++i)
+        {
+            if (arrayNode.get(i).isArray())
+            {
                 arrayNode.set(i, _upcast_to_ftdm_abcdefg456_array((ArrayNode) arrayNode.get(i)));
-            } else if (arrayNode.get(i).isObject()) {
+            }
+            else if (arrayNode.get(i).isObject())
+            {
                 arrayNode.set(i, _upcast_to_ftdm_abcdefg456_object((ObjectNode) arrayNode.get(i)));
             }
         }
         return arrayNode;
     }
 
-    private static ObjectNode _upcast_to_ftdm_abcdefg456_object(ObjectNode objectNode) {
-        if (objectNode.get("@type") == null) {
+    private static ObjectNode _upcast_to_ftdm_abcdefg456_object(ObjectNode objectNode)
+    {
+        if (objectNode.get("@type") == null)
+        {
             throw new RuntimeException("Missing @type");
         }
         String type = objectNode.get("@type").asText();
-        if (type.equals("meta::pure::changetoken::tests::SampleClass")) {
+        if (type.equals("meta::pure::changetoken::tests::SampleClass"))
+        {
             objectNode.put("abc", 100);
         }
 
@@ -53,7 +61,9 @@ public class TestCastFunction2
                 ObjectNode innerObjectNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_object((ObjectNode) en.getValue());
                 ObjectNode newInnerObjectNode = objectNode.putObject(en.getKey());
                 newInnerObjectNode.setAll(innerObjectNode);
-            } else if( en.getValue().isArray()) {
+            }
+            else if (en.getValue().isArray())
+            {
                 ArrayNode arrayNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_array((ArrayNode) en.getValue());
                 ArrayNode newArrayNode = objectNode.putArray(en.getKey());
                 newArrayNode.addAll(arrayNode);

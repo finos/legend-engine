@@ -38,7 +38,7 @@ public class TestCastFunctionTest
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n" +
                         "  ]\n" +
                         "}");
-        JsonNode jsonNodeOut = TestCastFunction2.upcast(jsonNode);
+        JsonNode jsonNodeOut = TestCastFunction.upcast(jsonNode);
         JsonNode expectedJsonNodeOut = mapper.readTree(
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +

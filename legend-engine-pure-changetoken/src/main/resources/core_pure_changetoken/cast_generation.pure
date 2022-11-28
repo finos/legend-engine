@@ -140,7 +140,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
     }, []);
 
   // private static _upcast_to_version_object(ObjectNode objectNode)
-  let class3 = $class2->addMethod(javaMethod(['private', 'static'], jsonNode(), $objRecurseFuncName, [$objVar], j_block(
+  let class3 = $class2->addMethod(javaMethod(['private', 'static'], objectNode(), $objRecurseFuncName, [$objVar], j_block(
     [
       // if(objectNode.get("@type") == null) throw new RuntimeException("Missing @type")
       j_if(
@@ -151,7 +151,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], jsonNode())->j_invoke('asText', [], javaString()))
     ]
     ->concatenate($changeTokenHandlers)
-    ->concatenate([$class2->_generateSingleUpcastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName)])
+    ->concatenate($class2->_generateSingleUpcastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar))
     ->concatenate([
       j_return($objVar)
     ]))));
@@ -184,7 +184,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   // private static ArrayNode _upcast_to_version_array(ArrayNode arrayNode)
   javaMethod(['private', 'static'], arrayNode(), $arrRecurseFuncName, [$arrVar], j_block([
     // for(int i = 0; i < arrayNode.size(); i++)
-    j_for($i->j_declare(j_int(0)), $i->j_le($arrVar->j_invoke('size', [], javaInt())), $i->j_inc(), [
+    j_for($i->j_declare(j_int(0)), $i->j_lt($arrVar->j_invoke('size', [], javaInt())), $i->j_inc(), [
       // if (arrayNode.get(i).isArray())
       j_if($arrI->j_invoke('isArray', [], javaBoolean()),
         // arrayNode.set(i, Class._upcast_to_version_array((ArrayNode)arrayNode.get(i)))
@@ -203,28 +203,55 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
 function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastObjectRecurseBlock(
   class:meta::external::language::java::metamodel::Class[1], 
   objRecurseFuncName:String[1],
-  arrRecurseFuncName:String[1]
-):Code[1]
+  arrRecurseFuncName:String[1],
+  objVar:Code[1]
+):Code[1..*]
 {
-  // TODO
+  let entryType = ^ParameterizedType(
+      rawType=javaClass('java.util.Map.Entry'), 
+      typeArguments=[javaString(), jsonNode()]);
+  let itType = ^ParameterizedType(
+    rawType=javaClass('java.util.Iterator'), 
+    typeArguments=[$entryType]);
+  let itVar = j_variable($itType, 'it');
 
-        // Iterator<Map.Entry<String, JsonNode>> it = objectNode.fields();
-        // while (it.hasNext())
-        // {
-        //     Map.Entry<String, JsonNode> en = it.next();
-        //     if (en.getValue().isObject())
-        //     {
-        //         ObjectNode innerObjectNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_object((ObjectNode) en.getValue());
-        //         ObjectNode newInnerObjectNode = objectNode.putObject(en.getKey());
-        //         newInnerObjectNode.setAll(innerObjectNode);
+  let enVar = j_variable($entryType, 'en');
+  let innerObjectNodeVar = j_variable(objectNode(), 'innerObjectNode');
+  let newInnerObjectNodeVar = j_variable(objectNode(), 'newInnerObjectNode');  
+  let arrayNodeVar = j_variable(arrayNode(), 'arrayNode');
+  let newArrayNodeVar = j_variable(arrayNode(), 'newArrayNode');
+
+  [
+    // Iterator<Map.Entry<String, JsonNode>> it = objectNode.fields();
+    $itVar->j_declare($objVar->j_invoke('fields', [], $itType)),
+
+    // while (it.hasNext())
+    j_while($itVar->j_invoke('hasNext', [], javaBoolean()), [
+      //     Map.Entry<String, JsonNode> en = it.next();
+      $enVar->j_declare($itVar->j_invoke('next', [], $entryType)),
+      //     if (en.getValue().isObject())
+      j_if($enVar->j_invoke('getValue', [], jsonNode())->j_invoke('isObject', [], javaBoolean()),
+        [
+          //         ObjectNode innerObjectNode = Class._upcast_to_version_object((ObjectNode) en.getValue());
+          $innerObjectNodeVar->j_declare($class->j_invoke($objRecurseFuncName, [$enVar->j_invoke('getValue', [], jsonNode())->j_cast(objectNode())], objectNode())),
+          //         ObjectNode newInnerObjectNode = objectNode.putObject(en.getKey());
+          $newInnerObjectNodeVar->j_declare($objVar->j_invoke('putObject', [$enVar->j_invoke('getKey', [], javaString())], javaVoid())),
+          //         newInnerObjectNode.setAll(innerObjectNode);
+          $newInnerObjectNodeVar->j_invoke('setAll', [$innerObjectNodeVar], javaVoid())
+        ],
         //     } else if( en.getValue().isArray()) {
-        //         ArrayNode arrayNode = TestCastFunction2._upcast_to_ftdm_abcdefg456_array((ArrayNode) en.getValue());
-        //         ArrayNode newArrayNode = objectNode.putArray(en.getKey());
-        //         newArrayNode.addAll(arrayNode);
-        //     }
-        // }
-
-  j_return(j_string('blah'));
+        j_if($enVar->j_invoke('getValue', [], jsonNode())->j_invoke('isArray', [], javaBoolean()), 
+        [
+          //         ArrayNode arrayNode = Class._upcast_to_version_array((ArrayNode) en.getValue());
+          $arrayNodeVar->j_declare($class->j_invoke($arrRecurseFuncName, [$enVar->j_invoke('getValue', [], jsonNode())->j_cast(arrayNode())], arrayNode())),
+          //         ArrayNode newArrayNode = objectNode.putArray(en.getKey());
+          $newArrayNodeVar->j_declare($objVar->j_invoke('putArray', [$enVar->j_invoke('getKey', [], javaString())], javaVoid())),
+          //         newArrayNode.addAll(arrayNode);
+          $newArrayNodeVar->j_invoke('addAll', [$arrayNodeVar], javaVoid())
+        ])
+      )
+    ])
+  ];
 }
 
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddField(
