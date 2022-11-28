@@ -1243,4 +1243,79 @@ public class TestServiceGrammarParser extends TestGrammarParser.TestGrammarParse
                 "PARSER error at [43:17-22]: Unexpected token 'actual'"
         );
     }
+
+    @Test
+    public void testServiceWithPostValidation()
+    {
+        // Missing fields
+        test("###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('firstName')->startsWith('T'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no first names to begin with the letter T');\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", "PARSER error at [16:5-21:5]: Field 'description' is required");
+
+        test("###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('firstName')->startsWith('T'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no first names to begin with the letter T');\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", "PARSER error at [16:5-21:5]: Field 'params' is required");
+
+        test("###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", "PARSER error at [16:5-19:5]: Field 'assertions' is required");
+    }
 }

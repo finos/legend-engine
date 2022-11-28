@@ -99,6 +99,13 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             serviceBuilder.append(getTabString()).append("test: ");
             serviceBuilder.append(HelperServiceGrammarComposer.renderServiceTest(service.test, context));
         }
+        if (service.postValidations != null && !service.postValidations.isEmpty())
+        {
+            serviceBuilder.append(getTabString()).append("postValidations:\n");
+            serviceBuilder.append(getTabString()).append("[\n");
+            serviceBuilder.append(String.join(",\n", ListIterate.collect(service.postValidations, postValidation -> HelperServiceGrammarComposer.renderPostValidation(postValidation, context))));
+            serviceBuilder.append(getTabString()).append("]\n");
+        }
         return serviceBuilder.append("}").toString();
     }
 }

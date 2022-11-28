@@ -60,8 +60,8 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
           let state = ^meta::external::shared::format::executionPlan::ExternalFormatPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $ef.exeCtx->toOne());
           $fe->meta::external::shared::format::executionPlan::processValueSpecification($state, $extensions, $debugContext)->toOne();,
       pl:PlatformClusteredValueSpecification[1] |
-          let state = ^meta::pure::store::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
-          $fe->meta::pure::store::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
+          let state = ^meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
+          $fe->meta::pure::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
   ]);
 }
 

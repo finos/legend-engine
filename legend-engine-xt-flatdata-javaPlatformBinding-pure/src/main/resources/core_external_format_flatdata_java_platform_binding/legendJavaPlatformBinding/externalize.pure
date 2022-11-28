@@ -30,6 +30,8 @@ import meta::external::shared::format::executionPlan::engine::*;
 import meta::external::shared::format::executionPlan::engine::java::*;
 import meta::external::shared::format::metamodel::*;
 
+import meta::pure::dataQuality::*;
+
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
@@ -83,13 +85,16 @@ Class <<access.private>> meta::external::format::flatdata::executionPlan::engine
 function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::generateForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatExternalizeExecutionNode for FlatData \n', |''));
+   assert($node.tree->isEmpty() || !$node.tree->toOne().class->instanceOf(Checked), | 'Checked results serialization not support with flatdata');
 
    let specificsClass  = createExternalizeSpecificsClass($node, $path, $context);
    newProject()->addClasses($specificsClass)->generatedCode($specificsClass);
 }
 
 function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::createExternalizeSpecificsClass(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
-{   
+{  
+   assert($node.tree.subTrees->cast(@PropertyGraphFetchTree).property->filter(p | $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->isEmpty(), |'Multi Section serialization is not yet supported !!');
+
    let conventions     = $context.conventions;
    let bindingDetail   = $context->nodeInfosForPath($path).data->toOne();
    assert($bindingDetail->instanceOf(FlatDataBindingDetail), | 'Detailed binding failed: ' + $bindingDetail->cast(@FailedBindingDetail).errorMessages->joinStrings('\n'));
@@ -109,9 +114,11 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
 
    $context.conventions->planNodeClass('public', $path, 'FlatDataSerializeSpecifics')
       ->implements(javaParameterizedType($conventions->className(_IFlatDataSerializeExecutionNodeSpecifics), $rootInterface))
-      ->addSectionMethods($flatData, $conventions)
+      ->addSectionMethods($flatData, $bindingDetail->cast(@FlatDataBindingDetail), $node.tree, $conventions)
       ->addMethods({cls|
          $flatData.sections->filter(s| $s.recordType->isNotEmpty())->map({section|
+            let sectionBindingDetail = $externalizeData.bindingDetail.sectionBindingDetails->filter(sc| $sc.section == $section)->toOne();
+            let fieldToPropertyMap   = $sectionBindingDetail.details->map(d | pair($d.field, $d.property))->newMap();
             /*
              * It may seem odd that the factory accepts a recordType when the recordType is already known.
              * This happens because the implementation passed at runtime can include driver-specific 
@@ -119,12 +126,11 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
              * to interrogate the parsed data values.
              */
             let recordTypeParam = j_parameter($conventions->className(_FlatDataRecordType), 'recordType');
-            let fields          = $section.recordType.fields;
+            let fields          = $section.recordType.fields->filter(f | $node.tree->isEmpty() || $node.tree.subTrees->cast(@PropertyGraphFetchTree).property->contains($fieldToPropertyMap->get($f)->toOne()));
             let fieldVars       = createFieldVars($fields, $recordTypeParam, $conventions);
             let objectParam     = j_parameter($rootInterface, 'value');
             let fieldParam      = j_parameter($conventions->className(_FlatDataRecordField), 'field');
          
-            let sectionBindingDetail = $externalizeData.bindingDetail.sectionBindingDetails->filter(sc| $sc.section == $section)->toOne();
             let parsedFlatDataCodes  = $fields->toIndexed()->fold(
                {indexedField, codes|
                   let fieldVar     = $fieldVars->at($indexedField.first).first;

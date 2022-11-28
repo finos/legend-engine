@@ -12,12 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::format::flatdata::binding::validation::*;
 import meta::external::format::flatdata::executionPlan::engine::java::*;
 import meta::external::format::flatdata::metamodel::*;
 
 import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::transform::*;
+
+import meta::pure::graphFetch::*;
 
 function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::createFieldVars(fields:FlatDataRecordField[*], recordTypeParam:Code[1], conventions:Conventions[1]): Pair<Code,Code>[*]
 {
@@ -50,11 +53,15 @@ function <<access.protected>> meta::external::format::flatdata::executionPlan::e
    'flatDataSection_Factory_' + $section.name;
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::addSectionMethods(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
-{   
+function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::addSectionMethods(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], bindingDetail:FlatDataBindingDetail[1], tree:RootGraphFetchTree<Any>[0..1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+{  
+   assert($tree.subTrees->cast(@PropertyGraphFetchTree).property->filter(p | $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->isEmpty(), |'Multi Section serialization is not yet supported !!');
+
    $jClass
       ->addMethods({cls|
          $flatData.sections->map({section|
+            let sectionBindingDetail = $bindingDetail.sectionBindingDetails->filter(s | $s.section ==  $section);
+            let fieldToPropertyMap   = $sectionBindingDetail.details->map(d | pair($d.field, $d.property))->newMap();
             javaMethod('public', $conventions->className(_FlatDataSection), $section->sectionMethodName(), [],
                j_new($conventions->className(_FlatDataSection), [j_string($section.name), j_string($section.driverId)])
                   ->map({jSection|
@@ -79,9 +86,12 @@ function <<access.protected>> meta::external::format::flatdata::executionPlan::e
                            j_return($jSection)
                         },
                         {rt:FlatDataRecordType[1]|
-                           let recordTypeVar = j_variable($conventions->className(_FlatDataRecordType), 'recordType');
-                           let newRecordType = j_new($conventions->className(_FlatDataRecordType), []);
-                           let withFields    = $rt.fields->fold({field, rType| $rType->codeWithField($field, $conventions)}, $newRecordType);
+                           let recordTypeVar  = j_variable($conventions->className(_FlatDataRecordType), 'recordType');
+                           let newRecordType  = j_new($conventions->className(_FlatDataRecordType), []);
+                           let requiredFields = if($tree->isEmpty(),
+                                                  | $rt.fields,
+                                                  | $rt.fields->filter(f | $tree.subTrees->cast(@PropertyGraphFetchTree).property->contains($fieldToPropertyMap->get($f)->toOne())));
+                           let withFields     = $requiredFields->fold({field, rType| $rType->codeWithField($field, $conventions)}, $newRecordType);
                            [
                               $recordTypeVar->j_declare($withFields),
                               j_return($jSection->j_invoke('withRecordType', $recordTypeVar))
