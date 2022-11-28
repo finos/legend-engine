@@ -23,7 +23,7 @@ public class Test_Pure_Relational_Custom_BigQuery
 {
     public static TestSuite suite()
     {
-        String testPackage = "meta::relational::tests::sqlQueryToString::bigQuery";
+        String testPackage = "meta::relational::bigQuery::tests";
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
         return PureTestBuilderHelper.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
     }
