@@ -38,6 +38,7 @@ public class Service extends PackageableElement
     public List<ServiceTestSuite> testSuites;
 
     public ServiceTest_Legacy test;
+    public List<PostValidation> postValidations = Collections.emptyList();
 
     @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)

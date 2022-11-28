@@ -18,7 +18,8 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_PATTERN | SERVICE_OWNERS | SERVICE_DOCUMENTATION | SERVICE_AUTO_ACTIVATE_UPDATES
                                         | SERVICE_EXECUTION | SERVICE_FUNCTION | SERVICE_EXECUTION_KEY | SERVICE_EXECUTION_EXECUTIONS | SERVICE_RUNTIME | SERVICE_MAPPING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
-                                        | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS
+                                        | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
+                                        | SERVICE_POST_VALIDATION_PARAMETERS | SERVICE_POST_VALIDATION_ASSERTIONS
 ;
 
 
@@ -42,6 +43,7 @@ service:                                SERVICE stereotypes? taggedValues? quali
                                                     | serviceExec
                                                     | serviceTest
                                                     | serviceTestSuites
+                                                    | servicePostValidations
                                                 )*
                                             BRACE_CLOSE
 ;
@@ -156,6 +158,25 @@ testAssertion:                          identifier ISLAND_OPEN (testAssertionCon
 testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 
+// -------------------------------------- VALIDATION ----------------------------------
+servicePostValidations:                 SERVICE_POST_VALIDATION COLON BRACKET_OPEN ( postValidation ( COMMA postValidation) * )? BRACKET_CLOSE
+;
+postValidation:                         BRACE_OPEN
+                                             (
+                                                 postValidationDescription
+                                                 | postValidationParameters
+                                                 | postValidationAssertions
+                                             )*
+                                        BRACE_CLOSE
+;
+postValidationDescription:              SERVICE_POST_VALIDATION_DESCRIPTION COLON STRING SEMI_COLON
+;
+postValidationParameters:               SERVICE_POST_VALIDATION_PARAMETERS COLON BRACKET_OPEN ( combinedExpression ( COMMA combinedExpression)* )? BRACKET_CLOSE SEMI_COLON
+;
+postValidationAssertions:               SERVICE_POST_VALIDATION_ASSERTIONS COLON BRACKET_OPEN ( postValidationAssertion ( COMMA postValidationAssertion)* )? BRACKET_CLOSE SEMI_COLON
+;
+postValidationAssertion:                identifier COLON combinedExpression
+;
 // -------------------------------------- LEGACY --------------------------------------
 
 serviceTest:                            SERVICE_TEST COLON (singleTest|multiTest)

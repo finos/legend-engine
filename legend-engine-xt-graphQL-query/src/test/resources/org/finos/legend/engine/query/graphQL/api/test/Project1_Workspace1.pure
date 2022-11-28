@@ -1,0 +1,114 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import simple::model::*;
+
+Class simple::model::Query
+{
+  allFirms() {Firm.all()}: Firm[*];
+}
+
+Class simple::model::Firm
+{
+  legalName: String[1];
+  employees: Person[*];
+}
+
+Class simple::model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  employer: Firm[0..1];
+}
+
+###Relational
+Database simple::store::DB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(100)
+  )
+
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100),
+    LAST_NAME VARCHAR(100),
+    FIRM_ID INTEGER
+  )
+
+  Join PERSON_FIRM(PERSON_TABLE.FIRM_ID = FIRM_TABLE.ID)
+)
+
+###Mapping
+import simple::model::*;
+import simple::store::*;
+
+Mapping simple::mapping::Map
+(
+  Firm : Relational
+  {
+    legalName: [DB]FIRM_TABLE.LEGAL_NAME,
+    employees: [DB]@PERSON_FIRM
+  }
+
+  Person : Relational
+  {
+    firstName: [DB]PERSON_TABLE.FIRST_NAME,
+    lastName: [DB]PERSON_TABLE.LAST_NAME,
+    employer: [DB]@PERSON_FIRM
+  }
+)
+
+###Runtime
+Runtime simple::runtime::Runtime
+{
+    mappings :
+    [
+        simple::mapping::Map
+    ];
+    connections :
+    [
+        simple::store::DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: simple::store::DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP TABLE IF EXISTS PERSON_TABLE;',
+                            'CREATE TABLE PERSON_TABLE(ID INT PRIMARY KEY, FIRST_NAME VARCHAR(100), LAST_NAME VARCHAR(100), FIRM_ID INT);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (1,\'Peter\',\'Smith\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (2,\'John\',\'Johnson\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (3,\'John\',\'Hill\',1);',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (4,\'Anthony\',\'Allen\',1)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (5,\'Fabrice\',\'Roberts\',2)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (6,\'Oliver\',\'Hill\',3)',
+                            'INSERT INTO PERSON_TABLE(ID,FIRST_NAME,LAST_NAME,FIRM_ID) VALUES (7,\'David\',\'Harris\',3)',
+                            'DROP TABLE IF EXISTS FIRM_TABLE;',
+                            'CREATE TABLE FIRM_TABLE(ID INT PRIMARY KEY, LEGAL_NAME VARCHAR(100));',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (1,\'Firm X\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (2,\'Firm A\');',
+                            'INSERT INTO FIRM_TABLE(ID,LEGAL_NAME) VALUES (3,\'Firm B\');'
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
