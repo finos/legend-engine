@@ -47,12 +47,58 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateD
 :meta::external::language::java::metamodel::Class[1]
 {
   let paramNode = j_parameter(jsonNode(), 'node');
-  let paramVersion = j_parameter(javaString(), 'version');
-  // public static JsonNode downcast(JsonNode node, String version)
-  let downcastMethod = javaMethod(['public', 'static'], jsonNode(), 'downcast', [$paramNode, $paramVersion],
-    j_return($paramNode)
+  let paramVersion = j_parameter(javaString(), 'targetVersion');
+
+  // code for the main downcast() method (lots of IFs) and the class with added methods
+  let codeAndClass = $versions.versions->reverse()->fold(
+    { 
+      ver, resP |
+      if($ver.prevVersion->size() != 0,
+      {|
+        let p = $class->_generateSingleDowncastFunction($ver, $paramVersion);
+        let resPF = $resP.first;
+        pair(^$resPF(values+=$p.first), $p.second);
+      },
+      |$resP
+      );
+    }, 
+    pair(^List<Code>(), $class)
   );
-  $class->addMethods([$downcastMethod]);
+
+
+  let verVar = j_variable(javaString(), 'version');
+  let objVar = j_variable(objectNode(), 'objectNode');
+  // public static JsonNode upcast(JsonNode node)
+  let downcastMethod = javaMethod(['public', 'static'], jsonNode(), 'downcast', [$paramNode, $paramVersion],
+    j_block(
+      [
+        // if (!node.isObject() || !node.has("version")) throw new RuntimeException("Missing version")
+        j_if(
+          j_or(
+            j_not($paramNode->j_invoke('isObject', [], javaBoolean())),
+            j_not($paramNode->j_invoke('has', [j_string('version')], javaBoolean()))),
+          javaRuntimeException()->j_new([j_string('Missing version')])->j_throw()),
+        // ObjectNode objectNode = node.deepCopy()
+        $objVar->j_declare($paramNode->j_invoke('deepCopy', [], objectNode())),
+        // String version = objectNode.get("version").asText()
+        $verVar->j_declare($objVar->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))        
+      ]
+      // [if (version.equals(<version>)) {...}]+
+      ->concatenate($codeAndClass.first.values)
+      // if (!version.equals(<first_version>) || !targetVersion.equals(version)) throw new RuntimeException('Unexpected version')
+      ->concatenate([
+        j_if(
+          j_or(
+            j_not($verVar->j_invoke('equals', j_string($versions.versions->at(0).version))),
+            j_not($paramVersion->j_invoke('equals', $verVar))
+          ),
+          javaRuntimeException()->j_new(j_plus(j_string('Unexpected version: '), $verVar))->j_throw()
+        )
+      ])
+      // return objectNode
+      ->concatenate([j_return($objVar)])));
+      
+  $codeAndClass.second->addMethod($downcastMethod);
 }
 
 
@@ -136,7 +182,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->filter(t|$t->instanceOf(AddField)) // TODO: handle all changetoken types
     ->fold({t,res|
-      _handleAddField($t->cast(@AddField), $objVar, $typeVar, $version.version)
+      _handleAddFieldUpcast($t->cast(@AddField), $objVar, $typeVar, $version.version)
     }, []);
 
   // private static _upcast_to_version_object(ObjectNode objectNode)
@@ -171,7 +217,70 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   pair($ifCond, $class4);
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastArrayRecurseFunction(
+
+// downcast a single version
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleDowncastFunction(
+  class:meta::external::language::java::metamodel::Class[1], 
+  version:Version[1],
+  paramVersion:Code[1]
+):Pair<Code,meta::external::language::java::metamodel::Class>[1]
+{
+  let mainFuncName = '_downcast_to_' + ($version.prevVersion->toOne()->replace(':', '_'));
+  let objRecurseFuncName = $mainFuncName + '_object';
+  let arrRecurseFuncName = $mainFuncName + '_array';
+  let objVar = j_parameter(objectNode(), 'objectNode');
+
+  // private static _downcast_to_version(ObjectNode objectNode)
+  let class2 = $class->addMethod(javaMethod(['private', 'static'], objectNode(), $mainFuncName, [$objVar], j_block([
+    // objectNode.put('version', <previous_version>)
+    $objVar->j_invoke('put', [j_string('version'), j_string($version.prevVersion->toOne())], javaVoid()),
+    // return _downcast_to_version_object(objectNode)
+    j_return($class->j_invoke($objRecurseFuncName, [$objVar], objectNode()))
+  ])));
+
+  let typeVar = j_variable(javaString(), 'type');
+  let changeTokenHandlers = $version.changeTokens
+    ->filter(t|$t->instanceOf(AddField)) // TODO: handle all changetoken types
+    ->fold({t,res|
+      _handleAddFieldUpcast($t->cast(@AddField), $objVar, $typeVar, $version.version) // XXX
+    }, []);
+
+  // private static _downcast_to_version_object(ObjectNode objectNode)
+  let class3 = $class2->addMethod(javaMethod(['private', 'static'], objectNode(), $objRecurseFuncName, [$objVar], j_block(
+    [
+      // if(objectNode.get("@type") == null) throw new RuntimeException("Missing @type")
+      j_if(
+        j_eq($objVar->j_invoke('get', [j_string('@type')], jsonNode()), j_null()),
+        javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
+      ),
+      // 
+      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], jsonNode())->j_invoke('asText', [], javaString()))
+    ]
+    ->concatenate($changeTokenHandlers)
+    ->concatenate($class2->_generateSingleUpcastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar))
+    ->concatenate([
+      j_return($objVar)
+    ]))));
+
+  let verVar = j_variable(javaString(), 'version');
+  // if (version.equals(cur_version))
+  let ifCond = j_if($verVar->j_invoke('equals', [j_string($version.version)]),
+    [
+      // if (targetVersion.equals(version)) return objectNode
+      j_if($paramVersion->j_invoke('equals', [$verVar]), j_return($objVar)),
+      // objectNode = Class._downcast_to_version(objectNode)
+      $objVar->j_assign($class3->j_invoke($mainFuncName, $objVar)),
+      // version = objectNode.get("version").asText()
+      $verVar->j_assign($objVar->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
+    ]);
+
+  let class4 = $class3->addMethod($class3->_generateSingleUpcastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
+
+  pair($ifCond, $class4);
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastArrayRecurseFunction( /// XXX: rename
   class:meta::external::language::java::metamodel::Class[1], 
   objRecurseFuncName:String[1],
   arrRecurseFuncName:String[1]
@@ -200,7 +309,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   ]));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastObjectRecurseBlock(
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastObjectRecurseBlock( // XXX: rename
   class:meta::external::language::java::metamodel::Class[1], 
   objRecurseFuncName:String[1],
   arrRecurseFuncName:String[1],
@@ -254,7 +363,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   ];
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddField(
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldUpcast(
   token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1]):Code[1]
 {
   // if (type.equals(token.class))
