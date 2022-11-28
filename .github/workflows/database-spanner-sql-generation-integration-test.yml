@@ -72,7 +72,9 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run: mvn clean install -DskipTests=true
-      - name: Run Connection Protocol Integration Tests
+      - name: SQL Generation Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -pl legend-engine-xt-relationalStore-spanner-execution-tests -Dtest=Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite test
+        run: |
+          set -o pipefail
+          mvn -pl legend-engine-xt-relationalStore-spanner-execution-tests -Dtest=Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite test | tee >(grep -o "Tests run.*" | tail -1 >> $GITHUB_STEP_SUMMARY) | tee >(echo "Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> $GITHUB_STEP_SUMMARY)

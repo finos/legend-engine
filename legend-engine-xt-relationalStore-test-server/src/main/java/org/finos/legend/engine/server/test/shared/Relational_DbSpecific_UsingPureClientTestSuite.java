@@ -87,9 +87,9 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                             {
                                 if (e instanceof PureAssertFailException)
                                 {
-                                    throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] " + e.getInfo(), (PureAssertFailException) e);
+                                    throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
                                 }
-                                throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] " + e.getInfo(), e);
+                                throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), e);
                             }
                             throw e;
                         }
