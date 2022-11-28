@@ -111,6 +111,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='curdate()')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as char)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})), 
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }
