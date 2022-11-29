@@ -53,7 +53,7 @@ public class DefaultExecutionNodeContext implements ExecutionNodeContext
         Result result = state.getResult(key);
         if (result == null)
         {
-            return null;
+            return (T) result;
         }
         else if (type instanceof Class)
         {
