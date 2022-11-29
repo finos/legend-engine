@@ -42,7 +42,7 @@ Class meta::external::language::java::transform::Conventions
    basePackageName             : String[1];
    typeAndPackageNameStrategy  : Function<{meta::pure::metamodel::type::Type[1],Conventions[1]->Pair<String,String>[1]}>[0..1];
    functionSignatureFactory    : Function<{ConcreteFunctionDefinition<Any>[1],Conventions[1]->FunctionSignature[1]}>[1];
-   providedTypes               : ProvidedType[*];
+   providedTypes               : Map<String, meta::external::language::java::metamodel::Class>[1];
 
    classCoders                 : Map<Any, Function<{meta::pure::metamodel::type::Type[1],Conventions[1],DebugContext[1]->meta::external::language::java::metamodel::Class[1]}>>[1];
    functionCoders              : Map<String, Function<{FunctionExpression[1],Conventions[1],DebugContext[1]->Code[1]}>>[1];
@@ -79,12 +79,6 @@ Class meta::external::language::java::transform::FunctionSignature
 {
    class  : meta::external::language::java::metamodel::Class[1];
    method : meta::external::language::java::metamodel::Method[1];
-}
-
-Class meta::external::language::java::transform::ProvidedType
-{
-   type           : meta::pure::metamodel::type::Type[1];
-   providedAs     : meta::external::language::java::metamodel::Class[1];
 }
 
 function {doc.doc='Returns any base-level java types and dependencied necessary'}
@@ -135,12 +129,12 @@ function meta::external::language::java::transform::setterName(conventions: Conv
 
 function meta::external::language::java::transform::getProvidedType(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): meta::external::language::java::metamodel::Class[1]
 {
-   $conventions.providedTypes->filter(pt| $pt.type->elementToPath() == $type->elementToPath()).providedAs->toOne();
+   $conventions.providedTypes->get($type->elementToPath())->toOne();
 }
 
 function meta::external::language::java::transform::isProvidedType(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): Boolean[1]
 {
-   $conventions.providedTypes->filter(pt| $pt.type->elementToPath() == $type->elementToPath())->isNotEmpty();
+   $conventions.providedTypes->get($type->elementToPath())->isNotEmpty();
 }
 
 function meta::external::language::java::transform::getProvidedVariable(conventions: Conventions[1], name:String[1]): Code[1]
@@ -1002,6 +996,7 @@ function meta::external::language::java::transform::newConventions(extensions : 
       identifierFactory          = meta::external::language::java::transform::sanitizeJavaKeywords_String_1__String_1_,
       basePackageName            = '_pure',
       functionSignatureFactory   = defaultFunctionSignatureFactory(),
+      providedTypes              = ^Map<String, meta::external::language::java::metamodel::Class>(),
 
       classCoders                = newMap(@Pair<Any, Function<{meta::pure::metamodel::type::Type[1],Conventions[1],DebugContext[1]->meta::external::language::java::metamodel::Class[1]}>>),
       functionCoders             = newMap(@Pair<String, Function<{FunctionExpression[1],Conventions[1],DebugContext[1]->Code[1]}>>),
@@ -1030,8 +1025,7 @@ function meta::external::language::java::transform::addProvidedType(conventions:
 
 function meta::external::language::java::transform::addProvidedType(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1], providedAs:meta::external::language::java::metamodel::Class[1]): Conventions[1]
 {
-   let cleaned = $conventions.providedTypes->filter(pt | $pt.type != $type);
-   ^$conventions(providedTypes=$cleaned->add(^ProvidedType(type=$type, providedAs=$providedAs)));
+   ^$conventions(providedTypes = $conventions.providedTypes->put($type->elementToPath(), $providedAs))
 }
 
 function meta::external::language::java::transform::addProvidedVariables(conventions:Conventions[1], codes:Code[*]): Conventions[1]
