@@ -43,7 +43,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::dummyRu
   );
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::assertEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::assertLambdaEquals(expected:FunctionDefinition<Any>[1], actual:FunctionDefinition<Any>[1]): Boolean[1]
 {
   assertEquals($expected->printFunctionDefinition(''), $actual->printFunctionDefinition(''));
 }

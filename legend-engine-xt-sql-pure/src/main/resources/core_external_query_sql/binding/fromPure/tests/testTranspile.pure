@@ -15,7 +15,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectAllColumns():Boolean[1]
@@ -27,7 +27,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctAllColumns():Boolean[1]
@@ -40,7 +40,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
       ->distinct()
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctSingleColumn():Boolean[1]
@@ -53,7 +53,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->restrict(['Boolean'])
       ->distinct()
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimit():Boolean[1]
@@ -66,7 +66,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
       ->limit(2)
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLimitAll():Boolean[1]
@@ -78,7 +78,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuotedSingleColumn():Boolean[1]
@@ -90,7 +90,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnquotedSingleColumn():Boolean[1]
@@ -102,7 +102,20 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       };
-  assertEquals($expected, $sqlTransformContext.lambda());
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSort():Boolean[1]
+{
+  let sqlString = 'SELECT Boolean, Integer FROM service."/service/testTdsService" ORDER BY Integer DESC, Boolean';
+  let sqlTransformContext = $sqlString->processQuery();
+  let expected = {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      ->sort([desc('Integer'), asc('Boolean')])
+      };
+  assertLambdaEquals($expected, $sqlTransformContext.lambda());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]

@@ -59,9 +59,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let sortInformation = $orderBy.sortItems->fold({k,a| 
     let column = $k.sortKey->cast(@Identifier)->at(0).value;
-    let direction = if($k.ordering == SortItemOrdering.ASCENDING, |SortDirection.ASC, |SortDirection.DESC);
+    let sortFunc = if($k.ordering == SortItemOrdering.ASCENDING, |asc_String_1__SortInformation_1_, |desc_String_1__SortInformation_1_);
     $a->add(
-      ^SortInformation(column=$column, direction=$direction)
+      ^SimpleFunctionExpression(
+        func = $sortFunc,
+        genericType = $sortFunc->functionReturnType(),
+        importGroup = system::imports::coreImport,
+        multiplicity = $sortFunc->functionReturnMultiplicity(),
+        parametersValues = $column->wrapAsInstanceValue()
+      )
     );
   }, []);
   let newExp = if($sortInformation->isEmpty(),
