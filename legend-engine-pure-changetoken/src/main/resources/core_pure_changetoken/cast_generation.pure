@@ -197,7 +197,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], jsonNode())->j_invoke('asText', [], javaString()))
     ]
     ->concatenate($changeTokenHandlers)
-    ->concatenate($class2->_generateSingleUpcastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar))
+    ->concatenate($class2->_generateSingleCastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar))
     ->concatenate([
       j_return($objVar)
     ]))));
@@ -212,7 +212,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       $verVar->j_assign($objVar->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
     ]));
 
-  let class4 = $class3->addMethod($class3->_generateSingleUpcastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
+  let class4 = $class3->addMethod($class3->_generateSingleCastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
 
   pair($ifCond, $class4);
 }
@@ -242,7 +242,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   let changeTokenHandlers = $version.changeTokens
     ->filter(t|$t->instanceOf(AddField)) // TODO: handle all changetoken types
     ->fold({t,res|
-      _handleAddFieldUpcast($t->cast(@AddField), $objVar, $typeVar, $version.version) // XXX
+      _handleAddFieldDowncast($t->cast(@AddField), $objVar, $typeVar, $version.version)
     }, []);
 
   // private static _downcast_to_version_object(ObjectNode objectNode)
@@ -257,7 +257,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], jsonNode())->j_invoke('asText', [], javaString()))
     ]
     ->concatenate($changeTokenHandlers)
-    ->concatenate($class2->_generateSingleUpcastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar))
+    ->concatenate($class2->_generateSingleCastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar))
     ->concatenate([
       j_return($objVar)
     ]))));
@@ -274,13 +274,13 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       $verVar->j_assign($objVar->j_invoke('get', [j_string('version')], jsonNode())->j_invoke('asText', [], javaString()))
     ]);
 
-  let class4 = $class3->addMethod($class3->_generateSingleUpcastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
+  let class4 = $class3->addMethod($class3->_generateSingleCastArrayRecurseFunction($objRecurseFuncName, $arrRecurseFuncName));
 
   pair($ifCond, $class4);
 }
 
 
-function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastArrayRecurseFunction( /// XXX: rename
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleCastArrayRecurseFunction(
   class:meta::external::language::java::metamodel::Class[1], 
   objRecurseFuncName:String[1],
   arrRecurseFuncName:String[1]
@@ -296,11 +296,11 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
     j_for($i->j_declare(j_int(0)), $i->j_lt($arrVar->j_invoke('size', [], javaInt())), $i->j_inc(), [
       // if (arrayNode.get(i).isArray())
       j_if($arrI->j_invoke('isArray', [], javaBoolean()),
-        // arrayNode.set(i, Class._upcast_to_version_array((ArrayNode)arrayNode.get(i)))
+        // arrayNode.set(i, Class._up/downcast_to_version_array((ArrayNode)arrayNode.get(i)))
         $arrVar->j_invoke('set', [$i, $class->j_invoke($arrRecurseFuncName, [$arrI->j_cast(arrayNode())], arrayNode())], javaVoid()),
         // else if (arrayNode.get(i).isObject())
         j_if($arrI->j_invoke('isObject', [], javaBoolean()),
-          // arrayNode.set(i, Class._upcast_to_version_object((ObjectNode) arrayNode.get(i)))
+          // arrayNode.set(i, Class._up/downcast_to_version_object((ObjectNode) arrayNode.get(i)))
           $arrVar->j_invoke('set', [$i, $class->j_invoke($objRecurseFuncName, [$arrI->j_cast(objectNode())], objectNode())], javaVoid())
         )
       )
@@ -309,7 +309,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   ]));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleUpcastObjectRecurseBlock( // XXX: rename
+function <<access.private>> meta::pure::changetoken::cast_generation::_generateSingleCastObjectRecurseBlock(
   class:meta::external::language::java::metamodel::Class[1], 
   objRecurseFuncName:String[1],
   arrRecurseFuncName:String[1],
@@ -341,7 +341,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
       //     if (en.getValue().isObject())
       j_if($enVar->j_invoke('getValue', [], jsonNode())->j_invoke('isObject', [], javaBoolean()),
         [
-          //         ObjectNode innerObjectNode = Class._upcast_to_version_object((ObjectNode) en.getValue());
+          //         ObjectNode innerObjectNode = Class._up/downcast_to_version_object((ObjectNode) en.getValue());
           $innerObjectNodeVar->j_declare($class->j_invoke($objRecurseFuncName, [$enVar->j_invoke('getValue', [], jsonNode())->j_cast(objectNode())], objectNode())),
           //         ObjectNode newInnerObjectNode = objectNode.putObject(en.getKey());
           $newInnerObjectNodeVar->j_declare($objVar->j_invoke('putObject', [$enVar->j_invoke('getKey', [], javaString())], javaVoid())),
@@ -351,7 +351,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
         //     } else if( en.getValue().isArray()) {
         j_if($enVar->j_invoke('getValue', [], jsonNode())->j_invoke('isArray', [], javaBoolean()), 
         [
-          //         ArrayNode arrayNode = Class._upcast_to_version_array((ArrayNode) en.getValue());
+          //         ArrayNode arrayNode = Class._up/downcast_to_version_array((ArrayNode) en.getValue());
           $arrayNodeVar->j_declare($class->j_invoke($arrRecurseFuncName, [$enVar->j_invoke('getValue', [], jsonNode())->j_cast(arrayNode())], arrayNode())),
           //         ArrayNode newArrayNode = objectNode.putArray(en.getKey());
           $newArrayNodeVar->j_declare($objVar->j_invoke('putArray', [$enVar->j_invoke('getKey', [], javaString())], javaVoid())),
@@ -363,6 +363,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
   ];
 }
 
+
 function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldUpcast(
   token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1]):Code[1]
 {
@@ -373,6 +374,26 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
       // objectNode.put(fieldName, defaultValue)
       $objVar->j_invoke('put', [j_string($token.fieldName), j_int($token.defaultValue->cast(@ConstValue).value->cast(@Integer))], javaVoid()) // TODO: need copy logic here too and other formatters
     ])
+  );
+}
+
+
+function <<access.private>> meta::pure::changetoken::cast_generation::_handleAddFieldDowncast(
+  token:AddField[1], objVar:Code[1], typeVar:Code[1], version:String[1]):Code[1]
+{
+  let defValue = j_int($token.defaultValue->cast(@ConstValue).value->cast(@Integer)); // TODO: need copy logic here too and other formatters
+
+  // if (type.equals(token.class))
+  j_if(
+    $typeVar->j_invoke('equals', [j_string($token.class)]),
+    [
+      // if (! objectNode.get(fieldName).equals(defaultValue)) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName"))
+      j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', [$defValue]),
+          javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+
+      // objectNode.remove(fieldName)
+      $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid()) 
+    ]
   );
 }
 
