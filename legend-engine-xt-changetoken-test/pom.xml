@@ -23,9 +23,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-pure-changetoken-test</artifactId>
+    <artifactId>legend-engine-xt-changetoken-test</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - Pure - ChangeToken - Test</name>
+    <name>Legend Engine - XT - ChangeToken - Test</name>
 
     <build>
         <plugins>
@@ -59,12 +59,12 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-changetoken-compile</artifactId>
+                        <artifactId>legend-engine-xt-changetoken-compile</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-changetoken</artifactId>
+                        <artifactId>legend-engine-xt-changetoken-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -115,11 +115,6 @@
         <!-- dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
-        </dependency -->
-
-        <!-- dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-changetoken-compile</artifactId>
         </dependency -->
 
         <!-- ECLIPSE COLLECTIONS -->

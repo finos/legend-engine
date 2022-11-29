@@ -25,9 +25,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-pure-changetoken-compile</artifactId>
+    <artifactId>legend-engine-xt-changetoken-compile</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - Pure - ChangeToken - Compile</name>
+    <name>Legend Engine - XT - ChangeToken - Compile</name>
 
     <dependencies>
         <!-- PURE -->
@@ -57,7 +57,7 @@
         </dependency-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-changetoken</artifactId>
+            <artifactId>legend-engine-xt-changetoken-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
