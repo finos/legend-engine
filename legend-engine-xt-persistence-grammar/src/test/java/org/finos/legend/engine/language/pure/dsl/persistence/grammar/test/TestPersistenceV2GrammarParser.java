@@ -60,11 +60,11 @@ public class TestPersistenceV2GrammarParser extends TestGrammarParser.TestGramma
                 "    ->\n" +
                 "    {\n" +
                 "    },\n" +
-                "    '#/test::example::MyType/prop/'\n" +
+                "    #/test::example::MyType/prop#\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
-                "        '#/test::example::MyType/prop/foo', '#/test::example::MyType/prop/bar'\n" +
+                "        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#\n" +
                 "      ]\n" +
                 "      deduplication: MaxVersion\n" +
                 "      {\n" +

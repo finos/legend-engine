@@ -12,29 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.test;
+package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 
-import org.antlr.v4.runtime.Vocabulary;
-import org.eclipse.collections.impl.list.mutable.ListAdapter;
-import org.finos.legend.engine.language.pure.grammar.test.TestGrammarParser;
-import org.finos.legend.pure.grammar.from.antlr4.PersistenceRelationalParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
+import org.junit.Ignore;
+import org.junit.Test;
 
-import java.util.List;
-
-public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.TestGrammarParserTestSuite
+public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    @Override
-    public Vocabulary getParserGrammarVocabulary()
+    @Ignore
+    @Test
+    public void persistencePermitOptionalFieldsToBeEmpty()
     {
-        return PersistenceRelationalParserGrammar.VOCABULARY;
-    }
-
-    @Override
-    public String getParserGrammarIdentifierInclusionTestCode(List<String> keywords)
-    {
-        return "###Persistence\n" +
+        test("###Persistence\n" +
                 "\n" +
-                "Persistence " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
+                "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
                 "  trigger: Manual;\n" +
@@ -47,65 +39,26 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "      [\n" +
                 "        foo, bar\n" +
                 "      ]\n" +
-                "      deduplication: AnyVersion;\n" +
                 "      datasetType: Delta\n" +
                 "      {\n" +
-                "        actionIndicator: DeleteIndicator\n" +
-                "        {\n" +
-                "          deleteField: isDeleted;\n" +
-                "          deleteValues: ['Y', '1', 'true'];\n" +
-                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "    ->\n" +
-                "    Relational" +
-                "    #{\n" +
-                "      table: TableA;\n" +
-                "      temporality: Bitemporal\n" +
-                "      {\n" +
-                "        processingDimension: BatchIdAndDateTime\n" +
-                "        {\n" +
-                "          batchIdIn: x;\n" +
-                "          batchIdOut: y;\n" +
-                "          dateTimeIn: y;\n" +
-                "          dateTimeOut: y;\n" +
-                "        }\n" +
-                "        sourceDerivedDimension: DateTime\n" +
-                "        {\n" +
-                "          dateTimeStart: x;\n" +
-                "          dateTimeEnd: y;\n" +
-                "          sourceFields: StartAndEnd\n" +
-                "          {\n" +
-                "            startField: timeIn;\n" +
-                "            endField: timeOut;\n" +
-                "          }\n" +
-                "        }\n" +
-                "      }\n" +
-                "    }#,\n" +
+                "    {\n" +
+                "    },\n" +
                 "    #/test::example::MyType/prop#\n" +
                 "    {\n" +
                 "      keys:\n" +
                 "      [\n" +
                 "        #/test::example::MyType/prop/foo#, #/test::example::MyType/prop/bar#\n" +
                 "      ]\n" +
-                "      deduplication: MaxVersion\n" +
-                "      {\n" +
-                "        versionField: version;\n" +
-                "      }\n" +
                 "      datasetType: Snapshot\n" +
                 "      {\n" +
-                "        partitioning: None\n" +
-                "        {\n" +
-                "          emptyDatasetHandling: NoOp;\n" +
-                "        }\n" +
                 "      }\n" +
                 "    }\n" +
                 "    ->\n" +
-                "    Relational\n" +
-                "    #{\n" +
-                "      table: TableB;\n" +
-                "      temporality: None;\n" +
-                "    }#\n" +
+                "    {\n" +
+                "    }\n" +
                 "  ];\n" +
                 "  tests:\n" +
                 "  [\n" +
@@ -144,6 +97,6 @@ public class TestPersistenceRelationalGrammarParser extends TestGrammarParser.Te
                 "      isTestDataFromServiceOutput: false;\n" +
                 "    }\n" +
                 "  ]\n" +
-                "}\n";
+                "}\n");
     }
 }

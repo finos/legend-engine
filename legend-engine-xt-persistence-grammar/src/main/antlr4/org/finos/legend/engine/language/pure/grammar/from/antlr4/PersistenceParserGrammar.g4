@@ -187,10 +187,21 @@ pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING
 
 // -------------------------------------- DATASET --------------------------------------
 
-serviceOutput:                              (SERVICE_OUTPUT_ROOT | STRING)
+serviceOutput:                              (graphFetchServiceOutput | tdsServiceOutput)
+;
+graphFetchServiceOutput:                    dslNavigationPath
                                                 BRACE_OPEN
                                                     (
-                                                        datasetKeys
+                                                        graphFetchDatasetKeys
+                                                        | deduplication
+                                                        | datasetType
+                                                    )*
+                                                BRACE_CLOSE
+;
+tdsServiceOutput:                           SERVICE_OUTPUT_ROOT
+                                                BRACE_OPEN
+                                                    (
+                                                        tdsDatasetKeys
                                                         | deduplication
                                                         | datasetType
                                                     )*
@@ -207,7 +218,12 @@ targetValue:                                ISLAND_OPEN (targetValueContent)* IS
 ;
 targetValueContent:                         ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
 ;
-datasetKeys:                                DATASET_KEYS COLON
+graphFetchDatasetKeys:                      DATASET_KEYS COLON
+                                                BRACKET_OPEN
+                                                    (dslNavigationPath (COMMA dslNavigationPath)*)?
+                                                BRACKET_CLOSE
+;
+tdsDatasetKeys:                             DATASET_KEYS COLON
                                                 BRACKET_OPEN
                                                     (identifier (COMMA identifier)*)?
                                                 BRACKET_CLOSE

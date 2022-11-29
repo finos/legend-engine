@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
@@ -22,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserConte
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -101,6 +104,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -262,8 +269,29 @@ public class PersistenceParseTreeWalker
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        ServiceOutput serviceOutput = createServiceOutput(ctx, sourceInformation);
+        if (ctx.graphFetchServiceOutput() != null)
+        {
+            return visitGraphFetchServiceOutput(ctx.graphFetchServiceOutput(), sourceInformation);
+        }
+        else if (ctx.tdsServiceOutput() != null)
+        {
+            return visitTdsServiceOutput(ctx.tdsServiceOutput(), sourceInformation);
+        }
+        throw new EngineException("Ambiguous service output: expected reference to service output root or a graph fetch path", sourceInformation, EngineErrorType.PARSER);
+    }
+
+    private GraphFetchServiceOutput visitGraphFetchServiceOutput(PersistenceParserGrammar.GraphFetchServiceOutputContext ctx, SourceInformation sourceInformation)
+    {
+        GraphFetchServiceOutput serviceOutput = new GraphFetchServiceOutput();
         serviceOutput.sourceInformation = sourceInformation;
+
+        // path
+        PersistenceParserGrammar.DslNavigationPathContext path = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.dslNavigationPath()), "path", sourceInformation);
+        serviceOutput.path = visitPath(path);
+
+        // keys
+        PersistenceParserGrammar.GraphFetchDatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.graphFetchDatasetKeys(), "keys", sourceInformation);
+        serviceOutput.keys = visitGraphFetchDatasetKeys(datasetKeysContext);
 
         // deduplication (optional)
         PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
@@ -276,43 +304,22 @@ public class PersistenceParseTreeWalker
         return serviceOutput;
     }
 
-    private ServiceOutput createServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx, SourceInformation sourceInformation)
-    {
-        if (ctx.SERVICE_OUTPUT_ROOT() != null)
-        {
-            return visitTdsServiceOutput(ctx, sourceInformation);
-        }
-        else if (ctx.STRING() != null)
-        {
-            return visitGraphFetchServiceOutput(ctx, sourceInformation);
-        }
-        throw new EngineException("Ambiguous service output: expected reference to service output root or a graph fetch path", sourceInformation, EngineErrorType.PARSER);
-    }
-
-    private TdsServiceOutput visitTdsServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx, SourceInformation sourceInformation)
+    private TdsServiceOutput visitTdsServiceOutput(PersistenceParserGrammar.TdsServiceOutputContext ctx, SourceInformation sourceInformation)
     {
         TdsServiceOutput serviceOutput = new TdsServiceOutput();
         serviceOutput.sourceInformation = sourceInformation;
 
         // keys
-        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
-        serviceOutput.keys = visitDatasetKeys(datasetKeysContext);
+        PersistenceParserGrammar.TdsDatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.tdsDatasetKeys(), "keys", sourceInformation);
+        serviceOutput.keys = visitTdsDatasetKeys(datasetKeysContext);
 
-        return serviceOutput;
-    }
+        // deduplication (optional)
+        PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
+        serviceOutput.deduplication = deduplicationContext == null ? new NoDeduplication() : visitDeduplication(deduplicationContext);
 
-    private GraphFetchServiceOutput visitGraphFetchServiceOutput(PersistenceParserGrammar.ServiceOutputContext ctx, SourceInformation sourceInformation)
-    {
-        GraphFetchServiceOutput serviceOutput = new GraphFetchServiceOutput();
-        serviceOutput.sourceInformation = sourceInformation;
-
-        // path
-        String pathString = PureGrammarParserUtility.fromGrammarString(ctx.STRING().getText(), false);
-        //TODO: ledav -- handle path
-
-        // keys
-        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
-        serviceOutput.keys = null; //TODO: ledav -- handle path
+        // dataset type
+        PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
+        serviceOutput.datasetType = visitDatasetType(datasetTypeContext);
 
         return serviceOutput;
     }
@@ -367,7 +374,35 @@ public class PersistenceParseTreeWalker
         }
     }
 
-    private List<String> visitDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
+    private Path visitPath(ParserRuleContext ctx)
+    {
+        DomainParser parser = new DomainParser();
+        // prepare island grammar walker source information
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        String pathString = PureGrammarParserUtility.fromGrammarString("#" + ctx.getText() + "#", false);
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(pathString, combineExpressionSourceInformation, null);
+        if (valueSpecification instanceof ClassInstance)
+        {
+            ClassInstance classInstance = (ClassInstance) valueSpecification;
+            if ("path".equals(classInstance.type))
+            {
+                return (Path) classInstance.value;
+            }
+        }
+        throw new EngineException("Unable to parse path [" + pathString + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
+    }
+
+    private List<Path> visitGraphFetchDatasetKeys(PersistenceParserGrammar.GraphFetchDatasetKeysContext ctx)
+    {
+        List<PersistenceParserGrammar.DslNavigationPathContext> dslNavigationPathContexts = ctx.dslNavigationPath();
+        return Lists.immutable.ofAll(dslNavigationPathContexts).collect(this::visitPath).castToList();
+    }
+
+    private List<String> visitTdsDatasetKeys(PersistenceParserGrammar.TdsDatasetKeysContext ctx)
     {
         List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
         return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
