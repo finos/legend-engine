@@ -170,7 +170,7 @@ public class PureDate implements AbstractPureDate
                             }
                             else if (next == '"')
                             {
-                                inQuotes = false;
+                                inQuotes = !inQuotes;
                             }
                             else if (next == '\\')
                             {
