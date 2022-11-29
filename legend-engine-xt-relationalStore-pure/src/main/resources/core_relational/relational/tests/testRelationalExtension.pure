@@ -176,28 +176,10 @@ Class meta::relational::tests::runtime::extractDBs::SubstitutionTestClass1
    prop1: Integer[1];
 }
 
-Class meta::relational::tests::runtime::extractDBs::TestClassWithBoolProperty
-{
-   prop1: Boolean[1];
-}
-
-Class meta::relational::tests::runtime::extractDBs::TestClassWithDateProperty
-{
-   prop1: Date[1];
-}
-
 ###Relational
 Database meta::relational::tests::runtime::extractDBs::SubstitutionTestDB1_Inc
 (
    Table testTable1(prop1 INT)
-)
-
-###Relational
-Database meta::relational::tests::runtime::extractDBs::TestDifferentTypesDB
-(
-   Table testTableFloat(prop1 FLOAT)
-   Table testTableTimestamp(prop1 TIMESTAMP)
-   Table testTableBit(prop1 BIT)
 )
 
 ###Relational
@@ -214,52 +196,10 @@ Mapping meta::relational::tests::runtime::extractDBs::SubstitutionTestMappingLev
    }
 )
 
-Mapping meta::relational::tests::runtime::extractDBs::TestIntFloatPropertyMapping
-(
-   meta::relational::tests::runtime::extractDBs::SubstitutionTestClass1 : Relational {
-      prop1: [meta::relational::tests::runtime::extractDBs::TestDifferentTypesDB]testTableFloat.prop1
-   }
-)
-
-Mapping meta::relational::tests::runtime::extractDBs::TestDateTimestampPropertyMapping
-(
-   meta::relational::tests::runtime::extractDBs::TestClassWithDateProperty : Relational {
-      prop1: [meta::relational::tests::runtime::extractDBs::TestDifferentTypesDB]testTableTimestamp.prop1
-   }
-)
-
-Mapping meta::relational::tests::runtime::extractDBs::TestBooleanBitPropertyMapping
-(
-   meta::relational::tests::runtime::extractDBs::TestClassWithBoolProperty : Relational {
-      prop1: [meta::relational::tests::runtime::extractDBs::TestDifferentTypesDB]testTableBit.prop1
-   }
-)
-
 ###Pure
 function <<test.Test>> meta::relational::tests::runtime::extractDBs::testExtractDBsWithSubstituition():Boolean[1]
 {
    let dbs = meta::relational::tests::runtime::extractDBs::SubstitutionTestMappingLevel1->meta::relational::runtime::extractDBs();
    assertSize($dbs, 1);
    assert($dbs->at(0) == meta::relational::tests::runtime::extractDBs::SubstitutionTestDB1);
-}
-
-function <<test.Test>> meta::relational::tests::runtime::extractDBs::testAssertCompatibleTypesInRelationalPropertyMapping():Boolean[1]
-{
-  assert(meta::relational::tests::runtime::extractDBs::TestIntFloatPropertyMapping.classMappings
-  ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappings->at(0)
-  ->cast(@meta::relational::mapping::RelationalPropertyMapping)->meta::relational::mapping::verifyTypesCompatibilityInRelationalPropertyMapping().first);
-   
-  assert(meta::relational::tests::runtime::extractDBs::TestDateTimestampPropertyMapping.classMappings
-  ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappings->at(0)
-  ->cast(@meta::relational::mapping::RelationalPropertyMapping)->meta::relational::mapping::verifyTypesCompatibilityInRelationalPropertyMapping().first);
-  
-  assert(meta::relational::tests::runtime::extractDBs::TestBooleanBitPropertyMapping.classMappings
-  ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappings->at(0)
-  ->cast(@meta::relational::mapping::RelationalPropertyMapping)->meta::relational::mapping::verifyTypesCompatibilityInRelationalPropertyMapping().first);
-
-  assert(meta::relational::tests::mapping::propertyfunc::model::mapping::PropertyfuncMappingWithJoin
-  .rootClassMappingByClass(meta::relational::tests::mapping::propertyfunc::model::domain::Person)->toOne()
-  ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation).propertyMappingsByPropertyName('lastName')->at(0)
-  ->cast(@meta::relational::mapping::RelationalPropertyMapping)->meta::relational::mapping::verifyTypesCompatibilityInRelationalPropertyMapping().first);
-
 }
