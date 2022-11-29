@@ -33,6 +33,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.DeleteTargetDataset;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandlingVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.NoOp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
@@ -410,7 +414,10 @@ public class HelperPersistenceComposer
         @Override
         public String visitNoPartitioning(NoPartitioning val)
         {
-            return getTabString(indentLevel) + "partitioning: None;\n";
+            return getTabString(indentLevel) + "partitioning: None\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderEmptyDatasetHandling(val.emptyDatasetHandling, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
         }
 
         @Override
@@ -422,12 +429,39 @@ public class HelperPersistenceComposer
                     getTabString(indentLevel) + "}\n";
         }
 
-        private String renderPartitionFields(List<String> fields, int indentLevel)
+        private static String renderEmptyDatasetHandling(EmptyDatasetHandling emptyDatasetHandling, int indentLevel)
+        {
+            return emptyDatasetHandling == null ? "" : emptyDatasetHandling.accept(new EmptyDatasetHandlingComposer(indentLevel));
+        }
+
+        private static String renderPartitionFields(List<String> fields, int indentLevel)
         {
             return getTabString(indentLevel) + "partitionFields:\n" +
                     getTabString(indentLevel) + "[\n" +
                     getTabString(indentLevel + 1) + Iterate.makeString(fields, ", ") + "\n" +
                     getTabString(indentLevel) + "]\n";
+        }
+    }
+
+    private static class EmptyDatasetHandlingComposer implements EmptyDatasetHandlingVisitor<String>
+    {
+        private final int indentLevel;
+
+        private EmptyDatasetHandlingComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitNoOp(NoOp val)
+        {
+            return getTabString(indentLevel) + "emptyDatasetHandling: NoOp;\n";
+        }
+
+        @Override
+        public String visitDeleteTargetDataset(DeleteTargetDataset val)
+        {
+            return getTabString(indentLevel) + "emptyDatasetHandling: DeleteTargetData;";
         }
     }
 
