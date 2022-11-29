@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2020 Goldman Sachs
+ Copyright 2022 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.24.1-SNAPSHOT</version>
+        <version>3.25.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 

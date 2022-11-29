@@ -387,8 +387,8 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
   j_if(
     $typeVar->j_invoke('equals', [j_string($token.class)]),
     [
-      // if (! objectNode.get(fieldName).equals(defaultValue)) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName"))
-      j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', [$defValue]),
+      // if (objectNode.get(fieldName).asInt() != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
+      j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('asInt', [], javaInt())->j_ne($defValue),
           javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
 
       // objectNode.remove(fieldName)

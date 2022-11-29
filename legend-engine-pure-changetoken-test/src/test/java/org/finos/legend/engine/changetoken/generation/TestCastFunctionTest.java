@@ -21,6 +21,7 @@ import org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation.T
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 public class TestCastFunctionTest
 {
@@ -54,11 +55,50 @@ public class TestCastFunctionTest
     }
 
     @Test
-    public void testDowncast()
+    public void testDowncast() throws JsonProcessingException
     {
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonNode = mapper.createObjectNode();
-        JsonNode jsonNodeOut = TestCastFunction2.downcast(jsonNode, "ftdm:<version>");
-        assertEquals(jsonNode, jsonNodeOut);
+        JsonNode jsonNode = mapper.readTree(
+                "{\n" +
+                        "  \"version\":\"ftdm:abcdefg456\",\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100},\n" +
+                        "  \"innerNestedArray\":[\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100}]\n" +
+                        "  ],\n" +
+                        "  \"abc\": 100\n" +
+                        "}");
+        JsonNode jsonNodeOut = TestCastFunction.downcast(jsonNode, "ftdm:abcdefg123");
+        JsonNode expectedJsonNodeOut = mapper.readTree(
+                "{\n" +
+                        "  \"version\":\"ftdm:abcdefg123\", \n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"},\n" +
+                        "  \"innerNestedArray\":[\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}, \n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n" +
+                        "  ]\n" +
+                        "}"); // remove default values
+        assertEquals(expectedJsonNodeOut, jsonNodeOut);
+    }
+
+    @Test
+    public void testDowncastNonDefault() throws JsonProcessingException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonNode = mapper.readTree(
+                "{\n" +
+                        "  \"version\":\"ftdm:abcdefg456\",\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100},\n" +
+                        "  \"innerNestedArray\":[\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100}]\n" +
+                        "  ],\n" +
+                        "  \"abc\": 300\n" +
+                        "}");
+        RuntimeException re = assertThrows("non-default", RuntimeException.class, () -> TestCastFunction.downcast(jsonNode, "ftdm:abcdefg123"));
+        assertEquals("Cannot remove non-default value:300", re.getMessage());
     }
 }
