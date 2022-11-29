@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
@@ -28,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 })
 public abstract class ServiceOutput
 {
-    public Deduplication deduplication = new NoDeduplication();
+    public Deduplication deduplication;
     public DatasetType datasetType;
     public SourceInformation sourceInformation;
 

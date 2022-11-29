@@ -295,7 +295,7 @@ public class PersistenceParseTreeWalker
 
         // deduplication (optional)
         PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
-        serviceOutput.deduplication = deduplicationContext == null ? new NoDeduplication() : visitDeduplication(deduplicationContext);
+        serviceOutput.deduplication = deduplicationContext == null ? null : visitDeduplication(deduplicationContext);
 
         // dataset type
         PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
@@ -315,7 +315,7 @@ public class PersistenceParseTreeWalker
 
         // deduplication (optional)
         PersistenceParserGrammar.DeduplicationContext deduplicationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.deduplication(), "deduplication", sourceInformation);
-        serviceOutput.deduplication = deduplicationContext == null ? new NoDeduplication() : visitDeduplication(deduplicationContext);
+        serviceOutput.deduplication = deduplicationContext == null ? null : visitDeduplication(deduplicationContext);
 
         // dataset type
         PersistenceParserGrammar.DatasetTypeContext datasetTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetType(), "datasetType", sourceInformation);
@@ -475,7 +475,7 @@ public class PersistenceParseTreeWalker
 
         // partitioning
         PersistenceParserGrammar.PartitioningContext partitioningContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.partitioning(), "partitioning", datasetType.sourceInformation);
-        datasetType.partitioning = partitioningContext == null ? new NoPartitioning() : visitPartitioning(partitioningContext);
+        datasetType.partitioning = partitioningContext == null ? null : visitPartitioning(partitioningContext);
 
         return datasetType;
     }
@@ -502,7 +502,7 @@ public class PersistenceParseTreeWalker
 
         // empty dataset handling (optional)
         PersistenceParserGrammar.EmptyDatasetHandlingContext emptyDatasetHandlingContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.emptyDatasetHandling(), "emptyDatasetHandling", partitioning.sourceInformation);
-        partitioning.emptyDatasetHandling = emptyDatasetHandlingContext == null ? new NoOp() : visitEmptyDatasetHandling(emptyDatasetHandlingContext);
+        partitioning.emptyDatasetHandling = emptyDatasetHandlingContext == null ? null : visitEmptyDatasetHandling(emptyDatasetHandlingContext);
 
         return partitioning;
     }
@@ -560,7 +560,7 @@ public class PersistenceParseTreeWalker
 
         // action indicator (optional)
         PersistenceParserGrammar.ActionIndicatorContext actionIndicatorContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.actionIndicator(), "actionIndicator", datasetType.sourceInformation);
-        datasetType.actionIndicator = actionIndicatorContext == null ? new NoActionIndicator() : visitActionIndicator(actionIndicatorContext);
+        datasetType.actionIndicator = actionIndicatorContext == null ? null : visitActionIndicator(actionIndicatorContext);
 
         return datasetType;
     }

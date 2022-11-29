@@ -15,11 +15,10 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset;
 
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFields;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
 
 public class Delta extends DatasetType
 {
-    public ActionIndicatorFields actionIndicator = new NoActionIndicator();
+    public ActionIndicatorFields actionIndicator;
 
     @Override
     public <T> T accept(DatasetTypeVisitor<T> visitor)

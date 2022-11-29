@@ -15,17 +15,14 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.test;
 
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
-    @Ignore
     @Test
     public void persistencePermitOptionalFieldsToBeEmpty()
     {
         test("###Persistence\n" +
-                "\n" +
                 "Persistence test::TestPersistence\n" +
                 "{\n" +
                 "  doc: 'This is test documentation.';\n" +
@@ -68,29 +65,29 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "      [\n" +
                 "        testBatch1:\n" +
                 "        {\n" +
-                "         data:\n" +
-                "         {\n" +
-                "           connection:\n" +
-                "           {\n" +
+                "          data:\n" +
+                "          {\n" +
+                "            connection:\n" +
+                "            {\n" +
                 "              ExternalFormat\n" +
                 "              #{\n" +
                 "                contentType: 'application/x.flatdata';\n" +
                 "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
                 "              }#\n" +
-                "           }\n" +
-                "         }\n" +
-                "         asserts:\n" +
-                "         [\n" +
-                "           assert1:\n" +
-                "             EqualToJson\n" +
-                "             #{\n" +
-                "               expected: \n" +
-                "                 ExternalFormat\n" +
-                "                 #{\n" +
-                "                   contentType: 'application/json';\n" +
-                "                   data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
-                "                 }#;\n" +
-                "             }#\n" +
+                "            }\n" +
+                "          }\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"Age\":12, \"Name\":\"dummy\"}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
                 "          ]\n" +
                 "        }\n" +
                 "      ]\n" +

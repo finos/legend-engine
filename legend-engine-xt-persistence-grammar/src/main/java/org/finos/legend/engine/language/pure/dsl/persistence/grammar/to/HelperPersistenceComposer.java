@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
@@ -24,6 +25,18 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetTypeVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Delta;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.Snapshot;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFields;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFieldsVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.FieldBased;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.PartitioningVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.EmailNotifyee;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.notifier.Notifyee;
@@ -273,7 +286,7 @@ public class HelperPersistenceComposer
             str.append(getTabString(baseIndentation + 1)).append("asserts").append(":\n");
             str.append(getTabString(baseIndentation + 1)).append("[\n");
             str.append(String.join(",\n", ListIterate.collect(batch.assertions, assertion -> HelperTestAssertionGrammarComposer.composeTestAssertion(assertion, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 2)).build())))).append("\n");
-            str.append(getTabString(baseIndentation + 1)).append("]\n");;
+            str.append(getTabString(baseIndentation + 1)).append("]\n");
         }
 
         str.append(getTabString(baseIndentation)).append("}");
@@ -284,7 +297,7 @@ public class HelperPersistenceComposer
     private static String renderConnectionData(ConnectionTestData connectionData, int baseIndentation, PureGrammarComposerContext context)
     {
         StringBuilder str = new StringBuilder();
-        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(connectionData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(connectionData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation)).build()));
         return str.toString();
     }
 
@@ -300,25 +313,162 @@ public class HelperPersistenceComposer
         }
 
         @Override
-        public String visitTdsServiceOutput(TdsServiceOutput val)
-        {
-            return getTabString(indentLevel) + "ROOT\n" +
-                    getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel) + "}\n";
-        }
-
-        @Override
         public String visitGraphFetchServiceOutput(GraphFetchServiceOutput val)
         {
             Path path = val.path;
             return getTabString(indentLevel) + renderPath(path) + "\n" +
                     getTabString(indentLevel) + "{\n" +
+                    renderGraphFetchDatasetKeys(val.keys, indentLevel + 1) +
+                    renderDatasetType(val.datasetType, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visitTdsServiceOutput(TdsServiceOutput val)
+        {
+            return getTabString(indentLevel) + "ROOT\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderTdsDatasetKeys(val.keys, indentLevel + 1) +
+                    renderDatasetType(val.datasetType, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
         private static String renderPath(Path path)
         {
             return "#/" + path.startType + (path.path.isEmpty() ? "" : "/" + ListAdapter.adapt(path.path).collect(p -> HelperValueSpecificationGrammarComposer.renderPathElement(p, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().build())).makeString("/")) + (path.name == null || "".equals(path.name) ? "" : "!" + path.name) + "#";
+        }
+
+        private static String renderGraphFetchDatasetKeys(List<Path> paths, int indentLevel)
+        {
+            return getTabString(indentLevel) + "keys:\n" +
+                    getTabString(indentLevel) + "[\n" +
+                    getTabString(indentLevel + 1) + ListIterate.collect(paths, ServiceOutputComposer::renderPath).makeString(", ") + "\n" +
+                    getTabString(indentLevel) + "]\n";
+        }
+
+        private static String renderTdsDatasetKeys(List<String> keys, int indentLevel)
+        {
+            return getTabString(indentLevel) + "keys:\n" +
+                    getTabString(indentLevel) + "[\n" +
+                    getTabString(indentLevel + 1) + Iterate.makeString(keys, ", ") + "\n" +
+                    getTabString(indentLevel) + "]\n";
+        }
+
+        private static String renderDatasetType(DatasetType datasetType, int indentLevel)
+        {
+            return datasetType.accept(new DatasetTypeComposer(indentLevel));
+        }
+    }
+
+    private static class DatasetTypeComposer implements DatasetTypeVisitor<String>
+    {
+        private final int indentLevel;
+
+        private DatasetTypeComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitSnapshot(Snapshot val)
+        {
+            return getTabString(indentLevel) + "datasetType: Snapshot\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderPartitioning(val.partitioning, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        @Override
+        public String visitDelta(Delta val)
+        {
+            return getTabString(indentLevel) + "datasetType: Delta\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderActionIndicatorFields(val.actionIndicator, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderPartitioning(Partitioning partitioning, int indentLevel)
+        {
+            return partitioning == null ? "" : partitioning.accept(new PartitioningComposer(indentLevel));
+        }
+
+        private static String renderActionIndicatorFields(ActionIndicatorFields actionIndicatorFields, int indentLevel)
+        {
+            return actionIndicatorFields == null ? "" : actionIndicatorFields.accept(new ActionIndicatorComposer(indentLevel));
+        }
+    }
+
+    private static class PartitioningComposer implements PartitioningVisitor<String>
+    {
+        private final int indentLevel;
+
+        private PartitioningComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitNoPartitioning(NoPartitioning val)
+        {
+            return getTabString(indentLevel) + "partitioning: None;\n";
+        }
+
+        @Override
+        public String visitFieldBased(FieldBased val)
+        {
+            return getTabString(indentLevel) + "partitioning: FieldBased\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    renderPartitionFields(val.partitionFields, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private String renderPartitionFields(List<String> fields, int indentLevel)
+        {
+            return getTabString(indentLevel) + "partitionFields:\n" +
+                    getTabString(indentLevel) + "[\n" +
+                    getTabString(indentLevel + 1) + Iterate.makeString(fields, ", ") + "\n" +
+                    getTabString(indentLevel) + "]\n";
+        }
+    }
+
+    private static class ActionIndicatorComposer implements ActionIndicatorFieldsVisitor<String>
+    {
+        private final int indentLevel;
+
+        private ActionIndicatorComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitNoActionIndicator(NoActionIndicator val)
+        {
+            return getTabString(indentLevel) + "actionIndicator: None;\n";
+        }
+
+        @Override
+        public String visitDeleteIndicator(DeleteIndicator val)
+        {
+            return getTabString(indentLevel) + "actionIndicator: DeleteIndicator\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "deleteField: " + val.deleteField + ";\n" +
+                    renderDeleteValues(val, indentLevel + 1) +
+                    getTabString(indentLevel) + "}\n";
+        }
+
+        private static String renderDeleteValues(DeleteIndicator deleteIndicator, int indentLevel)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append(getTabString(indentLevel)).append("deleteValues: ");
+            if (!deleteIndicator.deleteValues.isEmpty())
+            {
+                builder.append("[").append(LazyIterate.collect(deleteIndicator.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
+            }
+            else
+            {
+                builder.append("[];\n");
+            }
+            return builder.toString();
         }
     }
 
@@ -354,7 +504,7 @@ public class HelperPersistenceComposer
 
     private static String renderPersister(Persister persister, int indentLevel, PureGrammarComposerContext context)
     {
-        return persister.accept(new PersisterComposer(indentLevel, context));
+        return persister == null ? "" : persister.accept(new PersisterComposer(indentLevel, context));
     }
 
     private static class PersisterComposer implements PersisterVisitor<String>

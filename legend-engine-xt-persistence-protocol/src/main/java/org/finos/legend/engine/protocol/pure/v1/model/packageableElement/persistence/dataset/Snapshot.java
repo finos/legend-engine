@@ -14,12 +14,11 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.NoPartitioning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.partitioning.Partitioning;
 
 public class Snapshot extends DatasetType
 {
-    public Partitioning partitioning = new NoPartitioning();
+    public Partitioning partitioning;
 
     @Override
     public <T> T accept(DatasetTypeVisitor<T> visitor)

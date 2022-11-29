@@ -487,11 +487,11 @@ public class TestPersistenceGrammarRoundtrip extends TestGrammarRoundtrip.TestGr
                 "          {\n" +
                 "            connection:\n" +
                 "            {\n" +
-                "                ExternalFormat\n" +
-                "                #{\n" +
-                "                  contentType: 'application/x.flatdata';\n" +
-                "                  data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
-                "                }#\n" +
+                "              ExternalFormat\n" +
+                "              #{\n" +
+                "                contentType: 'application/x.flatdata';\n" +
+                "                data: 'FIRST_NAME,LAST_NAME\\nFred,Bloggs\\nJane,Doe';\n" +
+                "              }#\n" +
                 "            }\n" +
                 "          }\n" +
                 "          asserts:\n" +
