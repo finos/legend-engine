@@ -180,6 +180,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static org.finos.legend.pure.generated.core_relational_relational_relationalMappingExecution.Root_meta_relational_mapping_verifyTypesCompatibilityInRelationalPropertyMapping_RelationalPropertyMapping_$0_1$__Pair_1_;
+
 public class HelperRelationalBuilder
 {
     private static final String DEFAULT_SCHEMA_NAME = "default";
@@ -961,6 +963,20 @@ public class HelperRelationalBuilder
             Assert.assertTrue(eMap != null, () -> "Can't find enumeration mapping '" + propertyMapping.enumMappingId + "'");
             res = res._transformer(eMap);
         }
+        try
+        {
+            Pair<Boolean, String> compareRelationalPropertyMappingTypes = (Pair<Boolean, String>) Root_meta_relational_mapping_verifyTypesCompatibilityInRelationalPropertyMapping_RelationalPropertyMapping_$0_1$__Pair_1_(res, context.pureModel.getExecutionSupport());
+            
+            if (!compareRelationalPropertyMappingTypes._first())
+            {
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(res.getSourceInformation()), compareRelationalPropertyMappingTypes._second())));
+            }
+        }
+        catch (Exception ignore)
+        {
+            //Ignore Exceptions
+        }
+
         return res;
     }
 
