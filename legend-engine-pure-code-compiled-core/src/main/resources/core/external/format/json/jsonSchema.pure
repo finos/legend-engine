@@ -75,7 +75,7 @@ Class <<access.protected>> meta::json::schema::JSONSchemaConfigInternal
    rootLevel:Boolean[1];//indicates if we are on first pass of generation
    generateAnyOfSubType:Boolean[1];  // defaults true - if true , SupertTypes generate a oneOF for all the subTypes.
    generateConstraintFunctionSchemas:Boolean[1];
-   rootElement:PackageableElement[0..1]; //root element for correct reletiveReferences
+   rootElement:Any[0..1]; //root element for correct reletiveReferences
    schemaSpecification:JSONSchemaSpecification[1];
    scopeElements: PackageableElement[*];
    fileType:String[1];
@@ -159,7 +159,7 @@ function <<access.protected>> meta::json::schema::schemaCollectionOutput(element
 
 function <<access.protected>> meta::json::schema::generateFunctionSchema(config:JSONSchemaConfigInternal[1], element:FunctionDefinition<Any>[1]) : JSONSchemaOutput[*]
 {
-   let functionDef =$element->toJSONSchemaFromFunctionDefinition($config);
+   let functionDef =$element->cast(@ConcreteFunctionDefinition<Any>)->toJSONSchemaFromFunctionDefinition($config);
 
    let objectTag = if($element->hasStereotype('object',JSONSchemaTypeExtension),
                               |newJSONKeyStringValue('type','object'),
@@ -422,33 +422,36 @@ function meta::json::schema::newJsonRef( element:PackageableElement[1] ) : JSONK
    newJsonRef( $element, [],true,[],defaultInternalConfig()) ;
 }
 
-function <<access.protected>> meta::json::schema::newJsonRef( element:Type[1], root:PackageableElement[0..1],useDefinitions:Boolean[1],propertyOwner:PackageableElement[0..1],config:JSONSchemaConfigInternal[1] ) : JSONKeyValue[1]
+function <<access.protected>> meta::json::schema::newJsonRef( element:FunctionDefinition<Any>[1], root:Any[0..1],useDefinitions:Boolean[1],propertyOwner:Any[0..1],config:JSONSchemaConfigInternal[1] ) : JSONKeyValue[1]
 {
     $element->cast(@PackageableElement)->newJsonRef($root, $useDefinitions, $propertyOwner, $config);
 }
 
-function <<access.protected>> meta::json::schema::newJsonRef( element:PackageableElement[1], root:PackageableElement[0..1],useDefinitions:Boolean[1],propertyOwner:PackageableElement[0..1],config:JSONSchemaConfigInternal[1] ) : JSONKeyValue[1]
+function <<access.protected>> meta::json::schema::newJsonRef( element:Type[1], root:Any[0..1],useDefinitions:Boolean[1],propertyOwner:Any[0..1],config:JSONSchemaConfigInternal[1] ) : JSONKeyValue[1]
+{
+    $element->cast(@PackageableElement)->newJsonRef($root, $useDefinitions, $propertyOwner, $config);
+}
+
+function <<access.protected>> meta::json::schema::newJsonRef( element:PackageableElement[1], root:Any[0..1],useDefinitions:Boolean[1],propertyOwner:Any[0..1],config:JSONSchemaConfigInternal[1] ) : JSONKeyValue[1]
 {
    newJSONKeyStringValue( '$ref', calculateJSONRef($element,$root,$useDefinitions,$propertyOwner,$config) ) ;
 }
 
 function <<access.protected>> meta::json::schema::isRef(pairs:JSONKeyValue[*] ) : Boolean[1]
 {
-
-            $pairs->filter(k|$k.key.value=='$ref').value->isNotEmpty();
-
+    $pairs->filter(k|$k.key.value=='$ref').value->isNotEmpty();
 }
 
 
 
-function <<access.private>> meta::json::schema::calculateJSONRef( element:PackageableElement[1], root:PackageableElement[0..1],useDefinitions:Boolean[1],referenceParent:PackageableElement[0..1], config:JSONSchemaConfigInternal[1] ) : String[1]
+function <<access.private>> meta::json::schema::calculateJSONRef( element:PackageableElement[1], root:Any[0..1],useDefinitions:Boolean[1],referenceParent:Any[0..1], config:JSONSchemaConfigInternal[1] ) : String[1]
 {
 
    if(  ( !$root->isEmpty() ) && $element == $root,
                       | '#',
                       | if($useDefinitions || $referenceParent->isEmpty() || $config.createSchemaCollection,
                              | $config->JSONRefPrefix() + $element->elementName($config,true,false,[]),
-                             |    let parentPath = $referenceParent->toOne()->elementPath().name->tail()->init();
+                             |    let parentPath = $referenceParent->toOne()->cast(@PackageableElement)->elementPath().name->tail()->init();
                                   let elementPath = $element->elementPath().name->tail()->init();
                             let parentWithIndex=  $parentPath->fold({p,a:Integer[1..*]| let next= $a->last()->toOne()+1;
                                                                     $a->concatenate($next);},0)->zip($parentPath  );
@@ -495,6 +498,11 @@ function <<access.private>> meta::json::schema::JSONRefPrefix(config:JSONSchemaC
 
 }
 
+function <<access.private>> meta::json::schema::elementName( element:FunctionDefinition<Any>[1],config:JSONSchemaConfigInternal[1],includePackage:Boolean[1],convertToPath:Boolean[1],newName:String[0..1] ) : String[1]
+{
+    $element->cast(@PackageableElement)->meta::json::schema::elementName($config, $includePackage, $convertToPath, $newName);
+}
+
 function <<access.private>> meta::json::schema::elementName( element:Type[1],config:JSONSchemaConfigInternal[1],includePackage:Boolean[1],convertToPath:Boolean[1],newName:String[0..1] ) : String[1]
 {
     $element->cast(@PackageableElement)->meta::json::schema::elementName($config, $includePackage, $convertToPath, $newName);
@@ -514,6 +522,10 @@ function <<access.private>> meta::json::schema::elementName( element:Packageable
 }
 
 
+function meta::json::schema::title( element:FunctionDefinition<Any>[1] ) : JSONKeyValue[1]
+{
+    $element->cast(@PackageableElement)->title();
+}
 
 function meta::json::schema::title( element:Type[1] ) : JSONKeyValue[1]
 {
@@ -532,23 +544,29 @@ function meta::json::schema::title( element:PackageableElement[1] ) : JSONKeyVal
 
 }
 
-function <<access.protected>> meta::json::schema::titleValue( element:PackageableElement[1] ) : String[1]
+function <<access.protected>> meta::json::schema::titleValue(element:Any[1] ) : String[1]
 {
-if($element->instanceOf(FunctionDefinition),
-   |$element.package->toOne()-> elementToPath()+ '::' + $element->cast(@FunctionDefinition<Any>).functionName->toOne()->split('::')->last()->toOne();,
-    |$element->elementToPath();
-   );
-
+    if($element->instanceOf(PackageableElement),
+        |if($element->instanceOf(PackageableFunction),
+            |$element->cast(@PackageableFunction<Any>).package->toOne()-> elementToPath()+ '::' + $element->cast(@PackageableFunction<Any>).functionName->toOne()->split('::')->last()->toOne();,
+            |$element->cast(@PackageableElement)->elementToPath();
+         ),
+        |''
+    );
 }
 
 
-function meta::json::schema::description( element:PackageableElement[1] ) : JSONKeyValue[0..1]
+function meta::json::schema::description( element:AnnotatedElement[1] ) : JSONKeyValue[0..1]
 {
    if( meta::pure::functions::doc::hasDoc( $element ),
       | newJSONKeyStringValue( 'description',
                                 meta::pure::functions::doc::getDocs( $element )->at(0) ),
       | [] );
 }
+function <<access.private>> meta::json::schema::schema( element:FunctionDefinition<Any>[1],schema:JSONSchemaSpecification[1])  : JSONKeyValue[0..1]
+ {
+     $element->cast(@PackageableElement)->meta::json::schema::schema($schema);
+ }
 
 function <<access.private>> meta::json::schema::schema( element:Type[1],schema:JSONSchemaSpecification[1])  : JSONKeyValue[0..1]
 {
@@ -754,9 +772,9 @@ function <<access.private>> meta::json::schema::allReferencedElements( element:P
                                               ->concatenate($bag)
                                               ->concatenate($class);
 
-                          meta::pure::functions::collection::removeDuplicates( $result )->concatenate($constraints);
+                          meta::pure::functions::collection::removeDuplicates( $result )->concatenate($constraints)->cast(@PackageableElement);
                      );,
-                a:Any[1]|$a->allFunctionElements([],$config)
+                a:Any[1]|$a->allFunctionElements([],$config)->cast(@PackageableElement)
 
                      ]);
 }
@@ -772,7 +790,7 @@ function <<access.private>> meta::json::schema::allFunctionElements(any:Any[1], 
          if($sfe.func->in($seen) || $sfe.func->instanceOf(Property),
             | [],
             |  let newElements = if($sfe.func->isWithinPackage(meta) &&!$sfe.func->meta::alloy::isMetaAlloyTestDependencyForGeneration(),|[];,|$sfe.func);
-               $newElements->concatenate($sfe.parametersValues->evaluateAndDeactivate()->map(p| $p->allFunctionElements($seen->concatenate($newElements),$config);));
+               $newElements->concatenate($sfe.parametersValues->evaluateAndDeactivate()->map(p| $p->allFunctionElements($seen->concatenate($newElements)->cast(@PackageableElement),$config);));
          );
       },
       lam:LambdaFunction<Any>[1]      | $lam.expressionSequence->evaluateAndDeactivate()->map(vs| $vs->allFunctionElements($seen,$config)),
@@ -906,6 +924,11 @@ function <<access.protected>> meta::json::schema::addNullType( existingType:JSON
      |$existingType);
 }
 
+function <<access.protected>> meta::json::schema::elementTags( element:FunctionDefinition<Any>[1],config: JSONSchemaConfigInternal[1]):JSONKeyValue[*]
+{
+    $element->cast(@AnnotatedElement)->elementTags($config);
+}
+
 function <<access.protected>> meta::json::schema::elementTags( element:Type[1],config: JSONSchemaConfigInternal[1]):JSONKeyValue[*]
 {
     $element->cast(@AnnotatedElement)->elementTags($config);
@@ -927,7 +950,7 @@ function <<access.protected>> meta::json::schema::elementTags( element:Annotated
                    | newJSONKeyValue('writeOnly', ^JSONBoolean(value=true)),
                        | []);
                  );
-  let doc =    $element->cast(@PackageableElement)->description();
+  let doc =    $element->cast(@AnnotatedElement)->description();
 
   let milestoning = $element->addMilestoningTag();
 
@@ -1073,7 +1096,7 @@ function  <<access.private>> meta::json::schema::definitions( class:Class<Any>[1
 {
    let updatedConfig = ^$config(rootLevel=false);
    let values = $class->allReferencedElements($config)->sortBy(e|$e->elementToPath())->map( p | newJSONKeyValue( $p->elementToPath(), $p->match([t:Type[1]|$t->toJSONSchema($root,$updatedConfig).schema,
-                                                                                                                                           f:FunctionDefinition<Any>[1] | $f->toJSONSchemaFromFunctionDefinition($updatedConfig).constraint->toOne()]))) ;
+                                                                                                                                           f:ConcreteFunctionDefinition<Any>[1] | $f->toJSONSchemaFromFunctionDefinition($updatedConfig).constraint->toOne()]))) ;
 
   if( $values->isEmpty(),
      | [],
@@ -1198,12 +1221,13 @@ function <<access.private>> meta::json::schema::schemaCollection(elements:Packag
    let generatedSchemas = $updatedElements->distinct()->sortBy(e|$e->elementToPath())->map( p | let keyName=$p->elementName($updatedConfig,true,false,[]);
                                                                                                 let generated =  $p->toOne()->match([ t:Type[1]|   let schema= $t->toJSONSchema([],$updatedConfig);
                                                                                                                                                     ^JsonSchemaKeyValueMessage(key=newJSONKeyValue($keyName,$schema.schema),message=$schema.message);  ,
-                                                                                                                                      f:FunctionDefinition<Any>[1] | let schema = $f->toJSONSchemaFromFunctionDefinition($updatedConfig);
-                                                                                                                                                                     let resolvedSchema = if($schema.constraint->isNotEmpty(),|$schema.constraint->toOne(),|^JSONObject());
-                                                                                                                                                                     ^JsonSchemaKeyValueMessage(key=newJSONKeyValue($keyName,$resolvedSchema),message=$schema.generationMessage);
+                                                                                                                                      f:FunctionDefinition<Any>[1] |
+                                                                                                                                                    let schema = $f->toJSONSchemaFromFunctionDefinition($updatedConfig);
+                                                                                                                                                    let resolvedSchema = if($schema.constraint->isNotEmpty(),|$schema.constraint->toOne(),|^JSONObject());
+                                                                                                                                                    ^JsonSchemaKeyValueMessage(key=newJSONKeyValue($keyName,$resolvedSchema),message=$schema.generationMessage);
 
 
-                                                                                                                                                   ])->cast(@JsonSchemaKeyValueMessage)->toOne();  );
+                                                                                                                              ])->cast(@JsonSchemaKeyValueMessage)->toOne();  );
 
     let collection =  if($config->isOpenAPI(),
                         | newJSONKeyValue('components',newJSONObject(newJSONKeyValue('schemas',newJSONObject($generatedSchemas.key)))),

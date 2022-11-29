@@ -33,7 +33,7 @@ function meta::pure::ide::findusages::findUsagesForProperty(ownerPath:String[1],
    ]);
 }
 
-function meta::pure::ide::findusages::findUsages(element:PackageableElement[1]):SourceInformation[*]
+function meta::pure::ide::findusages::findUsages(element:Any[1]):SourceInformation[*]
 {
    $element->match([
       f:Function<Any>[1] | $f.applications->evaluateAndDeactivate()->concatenate($f.referenceUsages.owner->evaluateAndDeactivate())->add($element),
