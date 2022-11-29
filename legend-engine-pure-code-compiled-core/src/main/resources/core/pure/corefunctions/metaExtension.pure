@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
+import meta::pure::runtime::*;
 
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
@@ -378,6 +380,14 @@ function meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefini
 function <<access.private>> meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition(func:FunctionDefinition<Any>[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1], visitedFuncs:FunctionDefinition<Any>[*]):FunctionExpression[*]
 {
    $func.expressionSequence->evaluateAndDeactivate()->map(vs | $vs->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs->add($func->cast(@FunctionDefinition<Any>))));
+}
+
+function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func:FunctionDefinition<Any>[1]):Runtime[*]
+{
+  let fromExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, 
+                                                                            from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, 
+                                                                            from_T_m__Mapping_1__Runtime_1__T_m_]);
+  $fromExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(2)->evaluateAndDeactivate()->cast(@InstanceValue).values)->cast(@Runtime);
 }
 
 function meta::pure::functions::meta::findPropertiesInValueSpecification(vs:ValueSpecification[1]):AbstractProperty<Any>[*]
