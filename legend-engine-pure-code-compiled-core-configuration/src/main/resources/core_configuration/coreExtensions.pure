@@ -52,7 +52,7 @@ function meta::pure::extension::configuration::coreLegendJavaPlatformBinding(): 
       meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
          meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor(),
          meta::external::format::json::executionPlan::engine::java::jsonSchemaJavaBindingDescriptor(),
-         meta::external::format::xml::executionPlan::engine::java::xsdJavaBindingDescriptor()
+         meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdJavaBindingDescriptor()
       ])
 
    ])

@@ -40,7 +40,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport();
         formatExtensions = Collections.singletonList(core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_(executionSupport));
-        formatDescriptors = Collections.singletonList(core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_xml_executionPlan_engine_java_xsdJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
+        formatDescriptors = Collections.singletonList(core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_xml_executionPlan_platformBinding_legendJava_xsdJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }
 
     @Test
