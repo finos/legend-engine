@@ -193,6 +193,11 @@ function <<access.private>> meta::pure::ide::getName(pe:PackageableElement[1]):S
    if($name->isEmpty(),|'',|$name->toOne());
 }
 
+function meta::pure::ide::display_ide_attr(element:FunctionDefinition<Any>[1]):String[1]
+{
+    $element->cast(@PackageableElement)->display_ide_attr();
+}
+
 function meta::pure::ide::display_ide_attr(element:PackageableElement[1]):String[1]
 {
    let notPublic = !(!$element->hasStereotype('private', meta::pure::profiles::access) && !$element->hasStereotype('protected', meta::pure::profiles::access));
