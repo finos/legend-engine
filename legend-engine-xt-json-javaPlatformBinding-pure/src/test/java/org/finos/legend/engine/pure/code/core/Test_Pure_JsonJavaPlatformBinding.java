@@ -25,7 +25,7 @@ public class Test_Pure_JsonJavaPlatformBinding
     {
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
         TestSuite suite = new TestSuite();
-        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::external::format::json::executionPlan::engine::java", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+        suite.addTest(PureTestBuilderHelper.buildSuite(TestCollection.collectTests("meta::external::format::json::executionPlan::platformBinding::legendJava", executionSupport.getProcessorSupport(), fn -> PureTestBuilderHelper.generatePureTestCollection(fn, executionSupport), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
         return suite;
     }
 
