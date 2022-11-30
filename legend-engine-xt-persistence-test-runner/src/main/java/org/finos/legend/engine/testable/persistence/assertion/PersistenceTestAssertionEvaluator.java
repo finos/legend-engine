@@ -20,12 +20,12 @@ import com.google.common.collect.Streams;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.finos.legend.engine.protocol.pure.v1.extension.TestAssertionEvaluator;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.AssertAllRows;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertAllRowsAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.testable.assertion.TestAssertionHelper;
 
 import java.util.List;
@@ -50,10 +50,11 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
     @Override
     public AssertionStatus visit(TestAssertion testAssertion)
     {
-        if (testAssertion instanceof EqualToJson)
+        if (testAssertion instanceof AssertAllRows)
         {
-            EqualToJson equaltoJson = (EqualToJson) testAssertion;
-            ExternalFormatData externalFormatData = equaltoJson.expected;
+            System.out.println("I'm at the right place");
+            AssertAllRows assertAllRows = (AssertAllRows) testAssertion;
+            ExternalFormatData externalFormatData = assertAllRows.expected;
             String expectedDataString = externalFormatData.data;
             AssertionStatus assertionStatus;
             ObjectMapper mapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
@@ -65,28 +66,31 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
                 compareJsonObjects(result, expected, fieldsToIgnore);
                 assertionStatus = new AssertPass();
+                System.out.println("Happy path");
 
             }
             catch (AssertionError e)
             {
-                EqualToJsonAssertFail fail = new EqualToJsonAssertFail();
+                AssertAllRowsAssertFail fail = new AssertAllRowsAssertFail();
                 fail.expected = expectedDataString;
                 fail.actual = actualResult;
                 fail.message = e.getMessage();
                 assertionStatus = fail;
+                System.out.println("Unhappy path 1");
             }
             catch (Exception e)
             {
                 AssertFail fail = new AssertFail();
                 fail.message = e.getMessage();
                 assertionStatus = fail;
+                System.out.println("Unhappy path 2");
             }
             assertionStatus.id = testAssertion.id;
             return assertionStatus;
         }
         else
         {
-            throw new UnsupportedOperationException("Only EqualToJson Supported");
+            throw new UnsupportedOperationException("Only AssertAllRows Supported");
         }
     }
 
