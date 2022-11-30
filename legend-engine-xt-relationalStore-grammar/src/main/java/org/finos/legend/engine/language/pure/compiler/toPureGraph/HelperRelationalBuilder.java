@@ -175,15 +175,20 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
+import org.slf4j.Logger;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static org.finos.legend.pure.generated.core_relational_relational_relationalMappingExecution.Root_meta_relational_mapping_getIncompatibleTypesInRelationalPropertyMapping_RelationalPropertyMapping_$0_1$__Pair_$0_1$_;
+
 public class HelperRelationalBuilder
 {
     private static final String DEFAULT_SCHEMA_NAME = "default";
     private static final String SELF_JOIN_TABLE_NAME = "{target}";
+
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HelperRelationalBuilder.class);
 
     private static final Predicate2<Schema, Object> SCHEMA_NAME_PREDICATE = Predicates2.attributeEqual(SchemaAccessor::_name);
     private static final Predicate2<RelationalOperationElement, Object> COLUMN_NAME_PREDICATE = Predicates2.attributeEqual(column -> ((Column) column)._name());
@@ -961,6 +966,20 @@ public class HelperRelationalBuilder
             Assert.assertTrue(eMap != null, () -> "Can't find enumeration mapping '" + propertyMapping.enumMappingId + "'");
             res = res._transformer(eMap);
         }
+        try
+        {
+            Pair<String, String> incompatiblePropertyMappingTypes = (Pair<String, String>) Root_meta_relational_mapping_getIncompatibleTypesInRelationalPropertyMapping_RelationalPropertyMapping_$0_1$__Pair_$0_1$_(res, context.pureModel.getExecutionSupport());
+
+            if (incompatiblePropertyMappingTypes != null)
+            {
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(res.getSourceInformation()), "Types of class property: " + incompatiblePropertyMappingTypes._first() + " and its mapped relational property: " + incompatiblePropertyMappingTypes._second() + " are incompatible")));
+            }
+        }
+        catch (Exception exception)
+        {
+            LOGGER.warn("Ignored exception: ", exception.getMessage());
+        }
+
         return res;
     }
 

@@ -435,6 +435,67 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
 
 
     @Test
+    public void testCompareTypesInRelationalPropertyMapping()
+    {
+        test("Class model::Person {\n" +
+                "   name:String[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database model::store::db\n" +
+                "(\n" +
+                "   Table myTable(name2 int)\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping \n" +
+                "model::mapping::myMap\n" +
+                "(\n" +
+                "   model::Person: Relational\n" +
+                "   {\n" +
+                "      name : [model::store::db]myTable.name2\n" +
+                "   }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [15:12-44]: Types of class property: String and its mapped relational property: Integer are incompatible")
+        );
+
+        test("Class model::Person {\n" +
+                "   name:Boolean[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database model::store::db\n" +
+                "(\n" +
+                "   Table myTable(name2 varchar(200))\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping \n" +
+                "model::mapping::myMap\n" +
+                "(\n" +
+                "   model::Person: Relational\n" +
+                "   {\n" +
+                "      name : [model::store::db]myTable.name2\n" +
+                "   }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [15:12-44]: Types of class property: Boolean and its mapped relational property: String are incompatible")
+        );
+
+        test("Class model::Person {\n" +
+                "   name:String[1];\n" +
+                "}\n" +
+                "###Relational\n" +
+                "Database model::store::db\n" +
+                "(\n" +
+                "   Table myTable(name2 varchar(200))\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping \n" +
+                "model::mapping::myMap\n" +
+                "(\n" +
+                "   model::Person: Relational\n" +
+                "   {\n" +
+                "      name : [model::store::db]myTable.name2\n" +
+                "   }\n" +
+                ")",null, Arrays.asList()
+        );
+    }
+
+    @Test
     public void testRelationalMapping()
     {
         test("Class simple::Person\n" +
