@@ -30,6 +30,12 @@ public abstract class TestGraphQLEmbedded
         test("assertEquals('ok', meta::legend::compileVS('#GQL{type ok{id : String}}#')->cast(@meta::external::query::graphQL::metamodel::sdl::ExecutableDocument).definitions->cast(@meta::external::query::graphQL::metamodel::sdl::typeSystem::ObjectTypeDefinition).name);");
     }
 
+    @Test
+    public void testCompileEnumGraphQL()
+    {
+        test("assertEquals(meta::external::query::graphQL::metamodel::sdl::executable::OperationType.mutation, meta::legend::compileVS('#GQL{mutation { likeStory(storyID: 12345) { story { likeCount } } }}#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document).definitions->at(0)->cast(@meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition).type)");
+    }
+
     private void test(String code)
     {
         Tools.test(code, functionExecution, runtime);
