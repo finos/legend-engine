@@ -57,7 +57,6 @@ import static org.finos.legend.engine.persistence.components.TestUtils.indexName
 import static org.finos.legend.engine.persistence.components.TestUtils.startDateTimeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.valueName;
 
-// todo: stats collection is turned off for now
 class BitemporalDeltaWithBatchIdTest extends BaseTest
 {
     private final String basePathForInput = "src/test/resources/data/bitemporal-incremental-milestoning/input/batch_id_based/";
@@ -93,7 +92,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
@@ -102,7 +101,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemp(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -114,6 +113,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemp(dataPass2);
         // 2. Execute Plan and Verify Results
+        expectedStats = createExpectedStatsMap(4, 0, 0, 2, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
@@ -122,6 +122,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemp(dataPass3);
         // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
@@ -160,7 +161,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
@@ -169,7 +170,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitempWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -178,6 +179,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitempWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
+        expectedStats = createExpectedStatsMap(4, 0, 0, 2, 1);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
@@ -186,6 +188,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitempWithDeleteInd(dataPass3);
         // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
     }
 
@@ -217,13 +220,13 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
         String expectedDataPass1 = basePathForExpected + "source_specifies_from_and_through/less_columns_in_staging/expected_pass1.csv";
         // Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -231,6 +234,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String expectedDataPass2 = basePathForExpected + "source_specifies_from_and_through/less_columns_in_staging/expected_pass2.csv";
         stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMainForBitemp(dataPass2);
         // Execute Plan and Verify Results
+        expectedStats = createExpectedStatsMap(4, 0, 0, 2, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
@@ -238,6 +242,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         String expectedDataPass3 = basePathForExpected + "source_specifies_from_and_through/less_columns_in_staging/expected_pass3.csv";
         stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMainForBitemp(dataPass3);
         // Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass3, expectedStats);
     }
 
@@ -275,7 +280,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
@@ -284,7 +289,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitempWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -323,7 +328,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -332,7 +337,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnly(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -341,7 +346,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnly(dataPass2);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 -------------------------
@@ -350,7 +355,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass3);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform Pass4 -------------------------
@@ -359,7 +364,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass4);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
 
         // ------------ Perform Pass5 -------------------------
@@ -368,7 +373,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass5);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
 
         // ------------ Perform Pass6 (identical records) -------------------------
@@ -377,7 +382,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass6);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
@@ -414,7 +419,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -423,7 +428,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnly(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -432,7 +437,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnly(dataPass2);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(8, 0, 6, 3, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
@@ -469,7 +474,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -481,7 +486,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -495,9 +500,9 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(2, 3));
         dataSplitRanges.add(DataSplitRange.of(50, 100));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
@@ -510,8 +515,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
@@ -548,7 +553,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -560,7 +565,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -572,7 +577,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
@@ -581,7 +586,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(2, 3));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 ------------------------
@@ -590,7 +595,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(50, 100));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass5 (identical records) ------------------------
@@ -602,7 +607,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass6 (identical records) ------------------------
@@ -611,7 +616,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
@@ -651,7 +656,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -660,7 +665,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnly(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -669,7 +674,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnly(dataPass2);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 -------------------------
@@ -678,7 +683,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass3);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform Pass4 -------------------------
@@ -687,7 +692,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass4);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
 
         // ------------ Perform Pass5 -------------------------
@@ -696,7 +701,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass5);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
 
         // ------------ Perform Pass6 (identical records) -------------------------
@@ -705,7 +710,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForBitemporalFromOnly(dataPass6);
         // 2. Execute plans and verify results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
@@ -743,7 +748,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -755,7 +760,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -769,9 +774,9 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(2, 3));
         dataSplitRanges.add(DataSplitRange.of(50, 100));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
@@ -784,8 +789,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
@@ -823,7 +828,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -835,7 +840,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -847,7 +852,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
@@ -856,7 +861,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(2, 3));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 ------------------------
@@ -865,7 +870,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(50, 100));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass5 (identical records) ------------------------
@@ -877,7 +882,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(1, 1));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass6 (identical records) ------------------------
@@ -886,7 +891,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
     }
 
@@ -928,7 +933,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -937,7 +942,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -946,7 +951,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 ------------------------
@@ -955,7 +960,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass3);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform Pass4 ------------------------
@@ -964,7 +969,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass4);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 1);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
 
         // ------------ Perform Pass5 ------------------------
@@ -973,7 +978,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass5);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 0, 1);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
 
         // ------------ Perform Pass6 (identical records) ------------------------
@@ -982,7 +987,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass6);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
@@ -1024,7 +1029,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -1033,7 +1038,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(9, 0, 9, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -1042,7 +1047,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(5, 0, 0, 2, 4);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
@@ -1080,7 +1085,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -1092,7 +1097,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -1105,8 +1110,8 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(0, 1));
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
@@ -1118,7 +1123,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(70, 70));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 0, 2, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
@@ -1156,7 +1161,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
                 .build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -1168,7 +1173,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -1180,7 +1185,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 1));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
@@ -1189,7 +1194,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 (identical records) ------------------------
@@ -1201,7 +1206,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(70, 71));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 0, 2, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
@@ -1244,7 +1249,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().collectStatistics(false).build();
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).tempDataset(tempTable).tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -1253,7 +1258,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass1);
         // 2. Execute Plan and Verify Results
-        Map<String, Object> expectedStats = new HashMap<>();
+        Map<String, Object> expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
 
         // ------------ Perform Pass2 ------------------------
@@ -1262,7 +1267,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass2);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 ------------------------
@@ -1271,7 +1276,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass3);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform Pass4 ------------------------
@@ -1280,7 +1285,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass4);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 1, 1);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats);
 
         // ------------ Perform Pass5 ------------------------
@@ -1289,16 +1294,16 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass5);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 0, 1);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass5, expectedStats);
 
-        // ------------ Perform Pass5 (identical records) ------------------------
+        // ------------ Perform Pass6 (identical records) ------------------------
         String dataPass6 = basePathForInput + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/staging_data_pass6.csv";
         String expectedDataPass6 = basePathForExpected + "source_specifies_from/with_delete_ind/set_4_filter_duplicates/expected_pass6.csv";
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteInd(dataPass6);
         // 2. Execute Plan and Verify Results
-        expectedStats = new HashMap<>();
+        expectedStats = createExpectedStatsMap(1, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats);
     }
 
@@ -1340,7 +1345,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -1352,7 +1357,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -1365,12 +1370,12 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges.add(DataSplitRange.of(0, 1));
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 (identical records) ------------------------
-        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass4.csv";
+        String dataPass3 = basePathForInput + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/staging_data_pass3.csv";
         String expectedDataPass4 = basePathForExpected + "source_specifies_from/with_delete_ind/set_5_with_data_split_filter_duplicates/expected_pass4.csv";
         // 1. Load Staging table
         loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(dataPass3);
@@ -1378,7 +1383,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 100));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 
@@ -1420,7 +1425,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
-        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates).build();
 
         // ------------ Perform Pass1 ------------------------
@@ -1432,7 +1437,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         List<DataSplitRange> dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(5, 5));
         List<Map<String, Object>> expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 2, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass2 ------------------------
@@ -1444,7 +1449,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 1));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 1, 1, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass3 ------------------------
@@ -1453,7 +1458,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(2, 2));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(1, 0, 0, 1, 1));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, dataSplitRanges);
 
         // ------------ Perform Pass4 (identical records) ------------------------
@@ -1465,7 +1470,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         dataSplitRanges = new ArrayList<>();
         dataSplitRanges.add(DataSplitRange.of(0, 100));
         expectedStats = new ArrayList<>();
-        expectedStats.add(new HashMap<>());
+        expectedStats.add(createExpectedStatsMap(2, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass4, expectedStats, dataSplitRanges);
     }
 }

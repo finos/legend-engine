@@ -89,7 +89,6 @@ public class SchemaEvolution
         this.ingestMode = ingestMode;
     }
 
-    //todo : check if user mainDataset schema matches with the actual table structure
     public SchemaEvolutionResult buildLogicalPlanForSchemaEvolution(Dataset mainDataset, Dataset stagingDataset)
     {
         List<Operation> operations = new ArrayList<>();

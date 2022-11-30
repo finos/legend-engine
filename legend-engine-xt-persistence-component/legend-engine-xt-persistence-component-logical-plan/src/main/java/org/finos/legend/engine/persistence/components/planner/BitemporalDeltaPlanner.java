@@ -16,12 +16,14 @@ package org.finos.legend.engine.persistence.components.planner;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -55,14 +57,20 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Functio
 import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Pair;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
+import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 
 class BitemporalDeltaPlanner extends BitemporalPlanner
 {
@@ -293,6 +301,78 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         }
 
         return LogicalPlan.of(operations);
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsTerminated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // If delete indicator is not present, then rows terminated = 0
+        if (!deleteIndicatorField.isPresent())
+        {
+            LogicalPlan rowsTerminatedCountPlan = LogicalPlanFactory.getLogicalPlanForConstantStats(ROWS_TERMINATED.get(), 0L);
+            postRunStatisticsResult.put(ROWS_TERMINATED, rowsTerminatedCountPlan);
+        }
+        else
+        {
+            super.addPostRunStatsForRowsTerminated(postRunStatisticsResult);
+        }
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // If delete indicator is not present, then rows updated = rows invalidated
+        if (!deleteIndicatorField.isPresent())
+        {
+            LogicalPlan rowsUpdatedCountPlan = LogicalPlan.builder().addOps(getRowsInvalidatedInSink(ROWS_UPDATED.get())).build();
+            postRunStatisticsResult.put(ROWS_UPDATED, rowsUpdatedCountPlan);
+        }
+        else
+        {
+            super.addPostRunStatsForRowsUpdated(postRunStatisticsResult);
+        }
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // if delete indicator is not present, then rows inserted = Rows added - Rows invalidated
+        if (!deleteIndicatorField.isPresent())
+        {
+            LogicalPlan rowsInsertedCountPlan = LogicalPlan.builder()
+                    .addOps(Selection.builder()
+                            .addFields(DiffBinaryValueOperator.of(getRowsAddedInSink(), getRowsInvalidatedInSink()).withAlias(ROWS_INSERTED.get()))
+                            .build())
+                    .build();
+            postRunStatisticsResult.put(ROWS_INSERTED, rowsInsertedCountPlan);
+        }
+        else
+        {
+            super.addPostRunStatsForRowsInserted(postRunStatisticsResult);
+        }
+    }
+
+    @Override
+    protected Selection getRowsUpdated(String alias)
+    {
+        //if Source specifies From and Thru date, then Rows inserted follows the super class implementation
+        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromAndThruDateTime)
+        {
+            return super.getRowsUpdated(alias);
+        }
+        Dataset sink2 = getMainDatasetWithProvidedAlias("sink2");
+        return getRowsUpdated(alias, getPrimaryKeyFieldsAndFromFieldFromMain(), sink2);
+    }
+
+    public Optional<Condition> getDataSplitInRangeConditionForStatistics()
+    {
+        return ingestMode().dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
+    }
+
+    private Condition getPrimaryKeyFieldsAndFromFieldFromMain()
+    {
+        Dataset sink2 = super.getMainDatasetWithProvidedAlias("sink2");
+        return LogicalPlanUtils.getPrimaryKeyMatchCondition(sink2, mainDataset(), primaryKeyFieldsAndFromFieldFromMain.stream().map(FieldValue::fieldName).collect(Collectors.toList()).toArray(new String[0]));
     }
 
     /*
