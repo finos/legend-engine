@@ -768,7 +768,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                   let paramType = $x.genericType.rawType->toOne();
                   let param = $property->functionType().parameters->evaluateAndDeactivate()->tail()->at($node.graphFetchTree->cast(@PropertyGraphFetchTree).parameters->evaluateAndDeactivate()->indexOf($x));
                   if($param.multiplicity->hasToOneUpperBound(),
-                     | $conventions->pureTypeToJavaType($paramType, $param.multiplicity),
+                     | $conventions->pureTypeToJavaType($param.genericType.rawType->toOne(), $param.multiplicity),
                      | javaClass('java.util.List')
                   )->j_classField();
                });

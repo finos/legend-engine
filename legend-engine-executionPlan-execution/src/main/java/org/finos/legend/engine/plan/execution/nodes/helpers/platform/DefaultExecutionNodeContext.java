@@ -15,6 +15,8 @@
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
 import org.apache.commons.lang3.reflect.TypeUtils;
+import org.finos.legend.engine.plan.dependencies.domain.date.AbstractPureDate;
+import org.finos.legend.engine.plan.dependencies.domain.date.LatestDate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.store.shared.IResult;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -70,15 +72,16 @@ public class DefaultExecutionNodeContext implements ExecutionNodeContext
         if (result instanceof ConstantResult)
         {
             Object value = ((ConstantResult) result).getValue();
+            boolean isDateType = clazz.equals(AbstractPureDate.class) || clazz.equals(PureDate.class);
             if (clazz.isInstance(value))
             {
                 return (T) value;
             }
-            else if (clazz.equals(PureDate.class) && value instanceof String)
+            else if (isDateType && value instanceof String)
             {
                 return (T) PureDate.parsePureDate((String) value);
             }
-            else if (clazz.equals(PureDate.class) && value instanceof EngineDate)
+            else if (isDateType && value instanceof EngineDate)
             {
                 return (T) ((EngineDate) value).transformToPureDate();
             }

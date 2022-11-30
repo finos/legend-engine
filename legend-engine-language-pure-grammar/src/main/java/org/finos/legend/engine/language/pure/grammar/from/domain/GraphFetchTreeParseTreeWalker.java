@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBo
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CInteger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CLatestDate;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
@@ -133,6 +134,12 @@ public class GraphFetchTreeParseTreeWalker
             ve.sourceInformation = walkerSourceInformation.getSourceInformation(scalarParameterContext.variable().identifier());
             ve.name = PureGrammarParserUtility.fromIdentifier(scalarParameterContext.variable().identifier());
             return ve;
+        }
+        if (scalarParameterContext.LATEST_DATE() != null)
+        {
+            CLatestDate result = new CLatestDate();
+            result.sourceInformation = walkerSourceInformation.getSourceInformation(scalarParameterContext);
+            return result;
         }
         return instanceLiteralToken(scalarParameterContext.instanceLiteral().instanceLiteralToken());
     }
