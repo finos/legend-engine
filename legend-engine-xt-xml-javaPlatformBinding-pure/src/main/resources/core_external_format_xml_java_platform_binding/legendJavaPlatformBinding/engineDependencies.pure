@@ -16,40 +16,40 @@
  * Generated extension externalFormatXml class definitions: see org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension
  */
 
-import meta::external::format::xml::executionPlan::engine::java::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 
-Class meta::external::format::xml::executionPlan::engine::java::_IXmlDeserializeExecutionNodeSpecifics {}
-Class meta::external::format::xml::executionPlan::engine::java::_DeserializeContext {}
-Class meta::external::format::xml::executionPlan::engine::java::_SimpleTypeHandler {}
-Class meta::external::format::xml::executionPlan::engine::java::_BooleanSimpleTypeHandler {}
-Class meta::external::format::xml::executionPlan::engine::java::_LongSimpleTypeHandler {}
-Class meta::external::format::xml::executionPlan::engine::java::_DoubleSimpleTypeHandler {}
-Class meta::external::format::xml::executionPlan::engine::java::_ValueProcessor {}
-Class meta::external::format::xml::executionPlan::engine::java::_AddBooleanToObject {}
-Class meta::external::format::xml::executionPlan::engine::java::_AddDoubleToObject {}
-Class meta::external::format::xml::executionPlan::engine::java::_AddEnumToObject {}
-Class meta::external::format::xml::executionPlan::engine::java::_AddLongToObject {}
-Class meta::external::format::xml::executionPlan::engine::java::_AddObjectToObject {}
-Class meta::external::format::xml::executionPlan::engine::java::h_ReadHandler {}
-Class meta::external::format::xml::executionPlan::engine::java::h_All {}
-Class meta::external::format::xml::executionPlan::engine::java::h_AnySurroundingElements {}
-Class meta::external::format::xml::executionPlan::engine::java::h_Attribute {}
-Class meta::external::format::xml::executionPlan::engine::java::h_Choice {}
-Class meta::external::format::xml::executionPlan::engine::java::h_Document {}
-Class meta::external::format::xml::executionPlan::engine::java::h_Element {}
-Class meta::external::format::xml::executionPlan::engine::java::h_FlexCollectionElement {}
-Class meta::external::format::xml::executionPlan::engine::java::h_Particle {}
-Class meta::external::format::xml::executionPlan::engine::java::h_Sequence {}
-Class meta::external::format::xml::executionPlan::engine::java::h_TextContent {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_IXmlDeserializeExecutionNodeSpecifics {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_DeserializeContext {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_SimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_BooleanSimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_LongSimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_DoubleSimpleTypeHandler {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_ValueProcessor {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddBooleanToObject {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddDoubleToObject {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddEnumToObject {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddLongToObject {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddObjectToObject {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_ReadHandler {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_All {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_AnySurroundingElements {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Attribute {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Choice {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Document {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Element {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_FlexCollectionElement {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Particle {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Sequence {}
+Class meta::external::format::xml::executionPlan::platformBinding::legendJava::h_TextContent {}
 
 /*
  * This function should be assigned to the router extension:
  *
- *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::xml::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
  */
-function meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+function meta::external::format::xml::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
 {
 
    let jXmlDataRecord = javaClass('public', 'org.finos.legend.engine.external.format.xml.read.XmlDataRecord')
@@ -209,27 +209,27 @@ function meta::external::format::xml::executionPlan::engine::java::extendJavaEng
 
    $conventions
       ->addProvidedType(meta::external::format::xml::executionPlan::model::XmlDataRecord, $jXmlDataRecord)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_IXmlDeserializeExecutionNodeSpecifics, $jIXmlDeserializeExecutionNodeSpecifics)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_DeserializeContext, $jDeserializeContext)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_SimpleTypeHandler, $jSimpleTypeHandler)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_BooleanSimpleTypeHandler, $jBooleanSimpleTypeHandler)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_LongSimpleTypeHandler, $jLongSimpleTypeHandler)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_DoubleSimpleTypeHandler, $jDoubleSimpleTypeHandler)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_ValueProcessor, $jValueProcessor)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddBooleanToObject, $jAddBooleanToObject)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddDoubleToObject, $jAddDoubleToObject)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddEnumToObject, $jAddEnumToObject)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddLongToObject, $jAddLongToObject)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::_AddObjectToObject, $jAddObjectToObject)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_ReadHandler, $jReadHandler)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_All, $jAll)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_AnySurroundingElements, $jAnySurroundingElements)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Attribute, $jAttribute)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Choice, $jChoice)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Document, $jDocument)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Element, $jElement)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_FlexCollectionElement, $jFlexCollectionElement)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Particle, $jParticle)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_Sequence, $jSequence)
-      ->addProvidedType(meta::external::format::xml::executionPlan::engine::java::h_TextContent, $jTextContent);
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_IXmlDeserializeExecutionNodeSpecifics, $jIXmlDeserializeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_DeserializeContext, $jDeserializeContext)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_SimpleTypeHandler, $jSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_BooleanSimpleTypeHandler, $jBooleanSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_LongSimpleTypeHandler, $jLongSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_DoubleSimpleTypeHandler, $jDoubleSimpleTypeHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_ValueProcessor, $jValueProcessor)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddBooleanToObject, $jAddBooleanToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddDoubleToObject, $jAddDoubleToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddEnumToObject, $jAddEnumToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddLongToObject, $jAddLongToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::_AddObjectToObject, $jAddObjectToObject)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_ReadHandler, $jReadHandler)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_All, $jAll)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_AnySurroundingElements, $jAnySurroundingElements)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Attribute, $jAttribute)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Choice, $jChoice)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Document, $jDocument)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Element, $jElement)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_FlexCollectionElement, $jFlexCollectionElement)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Particle, $jParticle)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_Sequence, $jSequence)
+      ->addProvidedType(meta::external::format::xml::executionPlan::platformBinding::legendJava::h_TextContent, $jTextContent);
 }
