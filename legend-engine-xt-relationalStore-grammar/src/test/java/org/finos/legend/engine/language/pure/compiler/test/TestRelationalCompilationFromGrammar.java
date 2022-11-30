@@ -453,7 +453,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   {\n" +
                 "      name : [model::store::db]myTable.name2\n" +
                 "   }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [15:12-44]: Types of class property: String and its mapped relational property: Integer are incompatible")
+                ")", null, Arrays.asList("COMPILATION error at [15:12-44]: Type of class property \"name\" i.e String is incompatible with it's mapped relational property type i.e Integer")
         );
 
         test("Class model::Person {\n" +
@@ -472,7 +472,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   {\n" +
                 "      name : [model::store::db]myTable.name2\n" +
                 "   }\n" +
-                ")", null, Arrays.asList("COMPILATION error at [15:12-44]: Types of class property: Boolean and its mapped relational property: String are incompatible")
+                ")", null, Arrays.asList("COMPILATION error at [15:12-44]: Type of class property \"name\" i.e Boolean is incompatible with it's mapped relational property type i.e String")
         );
 
         test("Class model::Person {\n" +

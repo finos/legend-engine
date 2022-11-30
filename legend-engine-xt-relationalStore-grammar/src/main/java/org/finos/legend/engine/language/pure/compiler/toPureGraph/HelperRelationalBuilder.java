@@ -968,16 +968,16 @@ public class HelperRelationalBuilder
         }
         try
         {
-            Pair<String, String> incompatiblePropertyMappingTypes = (Pair<String, String>) Root_meta_relational_mapping_getIncompatibleTypesInRelationalPropertyMapping_RelationalPropertyMapping_$0_1$__Pair_$0_1$_(res, context.pureModel.getExecutionSupport());
+            Pair<Type, Type> incompatiblePropertyMappingTypes = (Pair<Type, Type>) Root_meta_relational_mapping_getIncompatibleTypesInRelationalPropertyMapping_RelationalPropertyMapping_$0_1$__Pair_$0_1$_(res, context.pureModel.getExecutionSupport());
 
             if (incompatiblePropertyMappingTypes != null)
             {
-                context.pureModel.addWarnings(Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(res.getSourceInformation()), "Types of class property: " + incompatiblePropertyMappingTypes._first() + " and its mapped relational property: " + incompatiblePropertyMappingTypes._second() + " are incompatible")));
+                context.pureModel.addWarnings(Lists.mutable.with(new Warning(SourceInformationHelper.fromM3SourceInformation(res.getSourceInformation()), "Type of class property \"" + res._property()._name() + "\" i.e " + incompatiblePropertyMappingTypes._first()._name() + " is incompatible with it's mapped relational property type i.e " + incompatiblePropertyMappingTypes._second()._name())));
             }
         }
         catch (Exception exception)
         {
-            LOGGER.warn("Ignored exception: ", exception.getMessage());
+            LOGGER.warn("Ignored exception: ", exception);
         }
 
         return res;
