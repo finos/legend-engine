@@ -61,6 +61,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBin
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -389,10 +390,14 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
      */
     private Insert getUpsertLogic()
     {
+        Condition validDateFieldMatchCondition = Equals.of(
+            FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).build(),
+            FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).build());
+
         Condition notExistsCondition = Not.of(Exists.of(
             Selection.builder()
                 .source(mainDataset())
-                .condition(And.builder().addConditions(openRecordCondition, digestMatchCondition, primaryKeysMatchCondition).build())
+                .condition(And.builder().addConditions(openRecordCondition, digestMatchCondition, primaryKeysMatchCondition, validDateFieldMatchCondition).build())
                 .addAllFields(LogicalPlanUtils.ALL_COLUMNS())
                 .build()));
 
@@ -442,9 +447,13 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             ? Or.builder().addConditions(digestDoesNotMatchCondition, deleteIndicatorIsSetCondition.orElseThrow(IllegalStateException::new)).build()
             : digestDoesNotMatchCondition;
 
+        Condition validDateFieldMatchCondition = Equals.of(
+                FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).build(),
+                FieldValue.builder().datasetRef(stagingDataset().datasetReference()).fieldName(ingestMode().validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).build());
+
         Condition selectCondition = dataSplitInRangeCondition.isPresent()
-            ? And.builder().addConditions(dataSplitInRangeCondition.get(), primaryKeysMatchCondition, digestCondition).build()
-            : And.builder().addConditions(primaryKeysMatchCondition, digestCondition).build();
+            ? And.builder().addConditions(dataSplitInRangeCondition.get(), primaryKeysMatchCondition, validDateFieldMatchCondition, digestCondition).build()
+            : And.builder().addConditions(primaryKeysMatchCondition, validDateFieldMatchCondition, digestCondition).build();
 
         Condition existsCondition = Exists.of(Selection.builder()
             .source(stagingDataset())

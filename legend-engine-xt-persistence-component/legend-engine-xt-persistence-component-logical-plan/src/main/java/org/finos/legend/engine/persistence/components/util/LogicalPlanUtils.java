@@ -215,6 +215,17 @@ public class LogicalPlanUtils
         );
     }
 
+    public static void replaceField(List<Value> fieldsList, String oldFieldName, String newFieldName)
+    {
+        fieldsList.forEach(field ->
+        {
+            if (field instanceof FieldValue && ((FieldValue) field).fieldName().equals(oldFieldName))
+            {
+                fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
+            }
+        });
+    }
+
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)
     {
         return Equals.of(
