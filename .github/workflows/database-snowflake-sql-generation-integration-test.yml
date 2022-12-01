@@ -69,4 +69,6 @@ jobs:
           MAVEN_OPTS: -Xmx4g
           SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY }}
           SNOWFLAKE_INTEGRATION_USER1_PASSWORD: ${{ secrets.SNOWFLAKE_INTEGRATION_USER1_PASSWORD }}
-        run: mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite" test
+        run: |
+          set -o pipefail
+          mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Snowflake_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 >> $GITHUB_STEP_SUMMARY) | tee >(echo "Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> $GITHUB_STEP_SUMMARY)

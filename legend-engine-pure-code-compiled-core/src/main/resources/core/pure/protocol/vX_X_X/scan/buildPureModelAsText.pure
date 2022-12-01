@@ -135,7 +135,7 @@ function <<access.protected>> meta::protocols::pure::vX_X_X::transformation::fro
    // User defined functions
    let userDefinedFunctions = $found->fold({x, y | let expr = $x.classes->map(c | $c.qualifiedProperties->map(q | $q.expressionSequence));
                                                         let func = $expr->filter(e | $e->instanceOf(SimpleFunctionExpression))->map(s| $s->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().func);
-                                                        $y->concatenate($func->filter(f | $f->instanceOf(ConcreteFunctionDefinition))->filter(f | !$f->elementToPath()->startsWith('meta::pure::functions::')));
+                                                        $y->concatenate($func->filter(f | $f->instanceOf(ConcreteFunctionDefinition))->cast(@ConcreteFunctionDefinition<Any>)->filter(f | !$f->elementToPath()->startsWith('meta::pure::functions::')));
                                                 }, [])->removeDuplicatesBy(a|$a->elementToPath());
 
    // TODO? check have we included the measures mentioned in the mappings

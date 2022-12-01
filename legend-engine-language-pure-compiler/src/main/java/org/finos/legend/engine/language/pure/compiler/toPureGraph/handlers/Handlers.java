@@ -1135,7 +1135,7 @@ public class Handlers
     {
         for (FunctionHandler handler : handlers)
         {
-            org.finos.legend.pure.m3.coreinstance.Package pkg = handler.getFunc()._package();
+            org.finos.legend.pure.m3.coreinstance.Package pkg = handler.getFunc() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement ? ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)handler.getFunc())._package() : null;
             if (pkg != null)
             {
                 String path = platform_pure_corefunctions_meta.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(pkg, pureModel.getExecutionSupport());

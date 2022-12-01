@@ -77,7 +77,7 @@ function    meta::json::schema::fromSchema::tests::printTransformToString(packs:
    $packs->sortBy(p|$p->elementToPath())->map(p|$p->match([c:Class<Any>[1]|$c->printClass(),
                                                    p:Profile[1]|$p->meta::json::schema::fromSchema::tests::printProfile(),
                                                    e:Enumeration<Any>[1] |$e->printEnumeration(),
-                                                 f:FunctionDefinition<Any>[1] | 'function '+  printStereotypes($f) + printTaggedValues($f) + $f.package->toOne()->elementToPath()+'::'+$f->printFunctionDefinition('')  ]) ) ->joinStrings('\n')
+                                                   f:ConcreteFunctionDefinition<Any>[1] | 'function '+  printStereotypes($f) + printTaggedValues($f) + $f.package->toOne()->elementToPath()+'::'+$f->printFunctionDefinition('')  ]) ) ->joinStrings('\n')
                                                 
 }
 
@@ -177,7 +177,7 @@ function    meta::json::schema::fromSchema::tests::toSerializer(packs:Packageabl
 
    $packs->sortBy(p|$p.classifierGenericType.rawType.name->toOne())->map(p|$p->match([c:Class<Any>[1]|$c->transformClass(true, [])->alloyToJSON(),
                                                                                       e:Enumeration<Any>[1] |$e->transformEnum() ->alloyToJSON(),
-                                                                                      f:FunctionDefinition<Any>[1] |  $f->transformFunction([])->alloyToJSON(),
+                                                                                      f:ConcreteFunctionDefinition<Any>[1] |  $f->transformFunction([])->alloyToJSON(),
                                                                                       p:Profile[1]|$p->transformProfile([])->alloyToJSON()])) ->joinStrings(',\n\n')
                                                                                       
 }
@@ -937,6 +937,7 @@ function  meta::json::schema::fromSchema::tests::testfromJSONSchema(type:Package
        $generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()->toPrettyJSONString()->println();
        false;,
       |
+      println($generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()->toPrettyJSONString());
        assert(jsonEquivalent($type->toSerializer()->parseJSON(),$generatedElements->filter(p|$p->elementToPath()==$type->elementToPath())->toOne()->toSerializer()->parseJSON()));
 );
    

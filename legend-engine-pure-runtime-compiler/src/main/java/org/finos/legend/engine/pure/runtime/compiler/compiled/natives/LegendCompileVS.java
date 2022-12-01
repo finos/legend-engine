@@ -25,6 +25,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 import org.finos.legend.pure.runtime.java.compiled.generation.ProcessorContext;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.AbstractNative;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.valuespecification.ValueSpecificationProcessor;
+import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 
 public class LegendCompileVS extends AbstractNative
 {
@@ -44,6 +45,7 @@ public class LegendCompileVS extends AbstractNative
 
     public static Object compileExecVS(String code, final ExecutionSupport es)
     {
-        return ((InstanceValue)org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompileVS(code, null))._values().getFirst();
+        Metadata metadata = ((CompiledExecutionSupport) es).getProcessorSupport().getMetadata();
+        return ((InstanceValue) org.finos.legend.engine.pure.runtime.compiler.shared.LegendCompile.doCompileVS(code, metadata))._values().getFirst();
     }
 }

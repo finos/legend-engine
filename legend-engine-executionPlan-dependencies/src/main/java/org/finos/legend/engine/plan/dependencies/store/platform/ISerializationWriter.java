@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.dependencies.store.platform;
 
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
+import org.finos.legend.engine.plan.dependencies.domain.date.AbstractPureDate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -64,9 +65,9 @@ public interface ISerializationWriter
 
     void writeDateTimeProperty(String name, List<PureDate> values);
 
-    void writeDateProperty(String name, PureDate value);
+    void writeDateProperty(String name, AbstractPureDate value);
 
-    void writeDateProperty(String name, List<PureDate> values);
+    void writeDateProperty(String name, List<AbstractPureDate> values);
 
     void writeEnumProperty(String name, String path, String value);
 

@@ -103,7 +103,7 @@ function meta::protocols::pure::v1_19_0::transformation::fromPureGraph::valueSpe
 
                                                        ,|   if($passToTransformAny->contains($fe.func),
                                                                        |$fe->reactivate($fe->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::valueSpecification::scan()->map(o|pair($o,^List<Any>()))->newMap())->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, 0, $fe, $extensions);,
-                                                                       |let package = $fe.func.package->toOne();
+                                                                       |let package = if($fe.func->instanceOf(PackageableFunction), |$fe.func->cast(@PackageableFunction<Any>).package->toOne(), |::);
                                                                          if($fe.func->instanceOf(FunctionDefinition) && $useAppliedFunction && !$package->isWithinPackage(meta) && !$package->meta::alloy::isMetaAlloyTestDependency(),
                                                                            |^meta::protocols::pure::v1_19_0::metamodel::valueSpecification::application::AppliedFunction
                                                                                   (

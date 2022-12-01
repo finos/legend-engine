@@ -49,6 +49,7 @@ function meta::pure::mapping::aggregationAware::contract::planExecution(f:meta::
 function meta::pure::mapping::aggregationAware::contract::execution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1],  extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let reprocessedFunction = reprocessFunction($f.fe->evaluateAndDeactivate(), $f.inScopeVars, $e, $m, $debug);
+   print(if($debug.debug,|$reprocessedFunction->evaluateAndDeactivate()->asString()->debug($debug.space+'Agg Aware Reprocessed Function: '),|''));
    let result = execute($reprocessedFunction, $m, $runtime, $exeCtx, $extensions, $debug);
    let aggregationAwareActivity = ^AggregationAwareActivity(rewrittenQuery = $reprocessedFunction->asString());
    ^$result
