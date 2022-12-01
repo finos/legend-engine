@@ -211,6 +211,7 @@
         <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-serviceStore-javaPlatformBinding-pure</module>
         <module>legend-engine-pure-code-compiled-core-configuration</module>
+        <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
     </modules>
 
     <properties>
