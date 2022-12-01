@@ -16,36 +16,36 @@
  * Generated extension externalFormatFlatdata class definitions: see org.finos.legend.engine.external.format.flatdata.FlatDataJavaCompilerExtension
  */
 
-import meta::external::format::flatdata::executionPlan::engine::java::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 
-Class meta::external::format::flatdata::executionPlan::engine::java::_IFlatDataSerializeExecutionNodeSpecifics {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_IFlatDataDeserializeExecutionNodeSpecifics {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataContext {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_ParsedFlatData {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_ParsedFlatDataToObject {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_ObjectToParsedFlatData {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatData {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataSection {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataRecordType {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataRecordField {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDataType {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataString {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataBoolean {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataInteger {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDecimal {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDate {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDateTime {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataNumber {}
-Class meta::external::format::flatdata::executionPlan::engine::java::_FlatDataTemporal {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_IFlatDataSerializeExecutionNodeSpecifics {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_IFlatDataDeserializeExecutionNodeSpecifics {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataContext {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ParsedFlatData {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ParsedFlatDataToObject {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ObjectToParsedFlatData {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatData {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataSection {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataRecordType {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataRecordField {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDataType {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataString {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataBoolean {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataInteger {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDecimal {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDate {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDateTime {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataNumber {}
+Class meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataTemporal {}
 
 /*
  * This function should be assigned to the router extension:
  *
- *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::flatdata::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::flatdata::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
  */
-function meta::external::format::flatdata::executionPlan::engine::java::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
 {
 
    let jIChecked = $conventions->className(meta::pure::dataQuality::Checked);
@@ -174,23 +174,23 @@ function meta::external::format::flatdata::executionPlan::engine::java::extendJa
    $conventions
       ->addProvidedType(meta::external::format::flatdata::executionPlan::model::RawFlatData, $jRawFlatData)
       ->addProvidedType(meta::external::format::flatdata::executionPlan::model::RawFlatDataValue, $jRawFlatDataValue)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_IFlatDataSerializeExecutionNodeSpecifics, $jIFlatDataSerializeExecutionNodeSpecifics)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_IFlatDataDeserializeExecutionNodeSpecifics, $jIFlatDataDeserializeExecutionNodeSpecifics)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataContext, $jFlatDataContext)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_ParsedFlatData, $jParsedFlatData)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_ParsedFlatDataToObject, $jParsedFlatDataToObject)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_ObjectToParsedFlatData, $jObjectToParsedFlatData)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatData, $jFlatData)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataSection, $jFlatDataSection)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataRecordType, $jFlatDataRecordType)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataRecordField, $jFlatDataRecordField)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDataType, $jFlatDataDataType)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataString, $jFlatDataString)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataBoolean, $jFlatDataBoolean)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataInteger, $jFlatDataInteger)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDecimal, $jFlatDataDecimal)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDate, $jFlatDataDate)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataDateTime, $jFlatDataDateTime)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataNumber, $jFlatDataNumber)
-      ->addProvidedType(meta::external::format::flatdata::executionPlan::engine::java::_FlatDataTemporal, $jFlatDataTemporal);
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_IFlatDataSerializeExecutionNodeSpecifics, $jIFlatDataSerializeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_IFlatDataDeserializeExecutionNodeSpecifics, $jIFlatDataDeserializeExecutionNodeSpecifics)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataContext, $jFlatDataContext)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ParsedFlatData, $jParsedFlatData)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ParsedFlatDataToObject, $jParsedFlatDataToObject)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_ObjectToParsedFlatData, $jObjectToParsedFlatData)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatData, $jFlatData)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataSection, $jFlatDataSection)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataRecordType, $jFlatDataRecordType)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataRecordField, $jFlatDataRecordField)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDataType, $jFlatDataDataType)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataString, $jFlatDataString)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataBoolean, $jFlatDataBoolean)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataInteger, $jFlatDataInteger)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDecimal, $jFlatDataDecimal)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDate, $jFlatDataDate)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataDateTime, $jFlatDataDateTime)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataNumber, $jFlatDataNumber)
+      ->addProvidedType(meta::external::format::flatdata::executionPlan::platformBinding::legendJava::_FlatDataTemporal, $jFlatDataTemporal);
 }

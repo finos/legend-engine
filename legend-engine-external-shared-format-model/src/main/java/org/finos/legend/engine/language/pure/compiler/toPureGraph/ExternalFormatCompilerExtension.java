@@ -67,7 +67,8 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
                                         handlers.m(handlers.h("meta::external::shared::format::functions::externalize_Checked_MANY__Binding_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2 && "Checked".equals(ps.get(0)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::external::shared::format::functions::externalize_T_MANY__Binding_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2))
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::externalize_T_MANY__Binding_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 2)),
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_", false, ps -> handlers.res("String", "one"), ps -> ps.size() == 3))
                                 )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
@@ -75,6 +76,12 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
                                         handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "String".equals(ps.get(2)._genericType()._rawType()._name()))),
                                         handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "ByteStream".equals(ps.get(2)._genericType()._rawType()._name()))),
                                         handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__Url_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && ps.get(2)._genericType()._rawType()._name().endsWith("Url")))
+                                )
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(
+                                        handlers.m(handlers.h("meta::pure::dataQuality::checked_T_MANY__Checked_MANY_", false, ps -> handlers.res(handlers.res("meta::pure::dataQuality::Checked", "one").genericType._typeArgumentsAdd(ps.get(0)._genericType()), "zeroMany"), ps -> ps.size() == 1)),
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::checked_RootGraphFetchTree_1__Binding_1__RootGraphFetchTree_1_", false, ps -> handlers.res("meta::pure::graphFetch::RootGraphFetchTree", "one"), ps -> ps.size() == 2))
                                 )
                         )
                 ));

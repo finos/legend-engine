@@ -26,4 +26,12 @@ public class Warning
         this.sourceInformation = sourceInformation;
         this.message = message;
     }
+
+    /**
+     * Only used for testing, the backend should return just the error message.
+     */
+    public String buildPrettyWarningMessage()
+    {
+        return ("COMPILATION error" + (sourceInformation == SourceInformation.getUnknownSourceInformation() || sourceInformation == null ? "" : " at " + sourceInformation.getMessage() + "") + (message == null ? "" : ": " + message));
+    }
 }

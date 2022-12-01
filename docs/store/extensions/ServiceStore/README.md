@@ -6,6 +6,8 @@ Service store is a collection of service definitions. These service definitions 
 
 Service store is a *type* of store that fits in the store layer, along with a relational (database) and model store.
 
+![where-does-service-store-fit-in](resources/service-store.PNG)
+
 ## Use cases
 
 Service store should be used when users want to transform or model data consumed via REST APIs. Service store allows users to:
@@ -111,7 +113,7 @@ ServiceStore demo::store::ExampleServiceStore
 
 ## Diagram
 
-![service-store-metamodel-diagram](./resources/service-store-metamodel-diagram.PNG)
+![service-store-metamodel-diagram](resources/service-store-metamodel-diagram.PNG)
 
 ## Examples
 
@@ -364,7 +366,7 @@ We'll use the binding you linked in your service store to transform this PURE in
 
 ## Diagram
 
-![service-store-mapping-diagram](./resources/service-store-mapping-diagram.PNG)
+![service-store-mapping-diagram](resources/service-store-mapping-diagram.PNG)
 
 ### Example 1
 
@@ -804,7 +806,7 @@ It's modelled with the following fields:
 
 ## Diagram
 
-![service-store-test-data-diagram](./resources/service-store-test-data-diagram.PNG)
+![service-store-test-data-diagram](resources/service-store-test-data-diagram.PNG)
 
 ### Example
 

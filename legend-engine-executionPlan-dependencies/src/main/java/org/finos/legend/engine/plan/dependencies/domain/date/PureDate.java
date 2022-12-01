@@ -39,7 +39,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate
+public class PureDate implements AbstractPureDate
 {
     private static final char DATE_PREFIX = '%';
     private static final char DATE_SEPARATOR = '-';

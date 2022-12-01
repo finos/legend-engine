@@ -759,27 +759,6 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [28:68-71]: Can't find a match for function 'from(class[*],Runtime[1],Mapping[1])'");
-
-        test(resource + "###Service\n" +
-                "Service test::Service\n" +
-                "{\n" +
-                "  pattern: 'url/myUrl/';\n" +
-                "  owners: ['ownerName', 'ownerName2'];\n" +
-                "  documentation: 'test';\n" +
-                "  autoActivateUpdates: true;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                // intentionally mess up the spacing here to test source information
-                "    query: |test::class.all()->graphFetch(#{test::class{prop1}}#);\n" +
-                "  }\n" +
-                "  test: Single\n" +
-                "  {\n" +
-                "    data: 'moreThanData';\n" +
-                "    asserts:\n" +
-                "    [\n" +
-                "    ];\n" +
-                "  }\n" +
-                "}\n", "COMPILATION error at [26:14-29:3]: Mapping, runtime has not been provided. Either provide via the 'from' function or as separate 'mapping', 'runtime' attributes");
     }
 
     @Test
@@ -2788,5 +2767,283 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
         //                "}\n",
         //                ""
         //        );
+    }
+
+    @Test
+    public void testBindingServices()
+    {
+        String resource = "###Pure\n" +
+                "Enum test::firm::model::AddressType\n" +
+                "{\n" +
+                "   Headquarters,\n" +
+                "   RegionalOffice,\n" +
+                "   Home,\n" +
+                "   Holiday\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Firm\n" +
+                "{\n" +
+                "   name      : String[1];\n" +
+                "   ranking   : Integer[0..1];\n" +
+                "   addresses : test::firm::model::AddressUse[1..*];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Address\n" +
+                "{\n" +
+                "   firstLine  : String[1];\n" +
+                "   secondLine : String[0..1];\n" +
+                "   city       : String[0..1];\n" +
+                "   region     : String[0..1];\n" +
+                "   country    : String[1];\n" +
+                "   position   : test::firm::model::GeographicPosition[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::GeographicPosition\n" +
+                "[\n" +
+                "   validLatitude: ($this.latitude >= -90) && ($this.latitude <= 90),\n" +
+                "   validLongitude: ($this.longitude >= -180) && ($this.longitude <= 180)\n" +
+                "]\n" +
+                "{\n" +
+                "   latitude  : Decimal[1];\n" +
+                "   longitude : Decimal[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::AddressUse\n" +
+                "{\n" +
+                "   addressType : test::firm::model::AddressType[1];\n" +
+                "   address     : test::firm::model::Address[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Person\n" +
+                "{\n" +
+                "   firstName      : String[1];\n" +
+                "   lastName       : String[1];\n" +
+                "   dateOfBirth    : StrictDate[0..1];   \n" +
+                "   addresses      : test::firm::model::AddressUse[*];\n" +
+                "   isAlive        : Boolean[1];\n" +
+                "   heightInMeters : Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::firm::model::Firm_Person\n" +
+                "{\n" +
+                "   firm      : test::firm::model::Firm[1];\n" +
+                "   employees : test::firm::model::Person[*];\n" +
+                "}\n" +
+                "\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::firm::model::TestBinding1\n" +
+                "{\n" +
+                "   contentType   : 'application/json';\n" +
+                "   modelIncludes : [ test::firm::model::Firm, test::firm::model::Person, test::firm::model::Address, test::firm::model::AddressUse, test::firm::model::GeographicPosition ];" +
+                "}\n" +
+                "Binding test::firm::model::TestBinding2\n" +
+                "{\n" +
+                "   contentType   : 'application/json';\n" +
+                "   modelIncludes : [ test::firm::model::Address, test::firm::model::GeographicPosition ];" +
+                "}\n" +
+                "\n\n";
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: url: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, ^Url(url = $url))->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+
+        test(resource +
+                "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding2, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceWithPostValidation()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  prop1 : String[1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime\n" +
+                "{\n" +
+                " mappings: [test::mapping];\n" +
+                "}\n";
+
+        // check valid post validation
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('prop1')->startsWith('X'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no prop1 values to begin with the letter X');\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}");
+
+        // check matching query and assertion types
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: var: Integer[1]|true;\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function parameter type 'Integer[1]' does not match with service execution return type 'TabularDataSet[1]'");
+
+        // check parameter count matches service parameter count (multi execution)
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/{executionKey}'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Multi \n" +
+                "  { \n" +
+                "    query: |test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    key: 'executionKey';" +
+                "    executions['keyOne']: {" +
+                "       mapping: test::mapping; \n" +
+                "       runtime: test::runtime; \n" +
+                "    }" +
+                "    executions['keyTwo']: {" +
+                "       mapping: test::mapping; \n" +
+                "       runtime: test::runtime; \n" +
+                "    }" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: tds: TabularDataSet[1]|$tds->filter(row|$row.getString('firstName')->startsWith('T'))->meta::legend::service::validation::assertTabularDataSetEmpty('Expected no first names to begin with the letter T');\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", " at [20:1-44:1]: Error in 'test::Service': Post validation parameter count '0' does not match with service parameter count '1'");
+
+        // check assertion lambda has parameter
+        test(resource + "###Service \n" +
+                "Service test::Service \n" +
+                "{ \n" +
+                "  pattern: 'url/myUrl/'; \n" +
+                "  owners: ['ownerName']; \n" +
+                "  documentation: 'test'; \n" +
+                "  autoActivateUpdates: true; \n" +
+                "  execution: Single \n" +
+                "  { \n" +
+                "    query: test::class.all()->project([col(p|$p.prop1, 'prop1')]); \n" +
+                "    mapping: test::mapping; \n" +
+                "    runtime: test::runtime; \n" +
+                "  }\n" +
+                "  postValidations:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      description: 'A good description of the validation';\n" +
+                "      params: [];\n" +
+                "      assertions: [\n" +
+                "          testAssert: |true;\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}", " at [20:1-42:1]: Error in 'test::Service': Post validation assertion function expects 1 parameter");
     }
 }

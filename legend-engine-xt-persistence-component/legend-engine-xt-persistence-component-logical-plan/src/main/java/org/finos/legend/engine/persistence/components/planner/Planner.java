@@ -197,7 +197,7 @@ public abstract class Planner
         return true;
     }
 
-    public Optional<Condition> getDataSplitInRangeCondition()
+    public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return Optional.empty();
     }
@@ -210,7 +210,7 @@ public abstract class Planner
 
     protected void addPostRunStatsForIncomingRecords(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeCondition() : Optional.empty();
+        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeConditionForStatistics() : Optional.empty();
         LogicalPlan incomingRecordCountPlan = LogicalPlan.builder()
                 .addOps(LogicalPlanUtils.getRecordCount(stagingDataset(), INCOMING_RECORD_COUNT.get(), dataSplitInRangeCondition))
                 .build();

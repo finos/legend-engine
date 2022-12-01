@@ -40,6 +40,7 @@ Class meta::legend::service::metamodel::Service extends PackageableElement, meta
    documentation : String[1];
    execution : Execution[1];
    tags: ServiceTag[*];
+   postValidations: PostValidation<Any|*>[*];
 
    <<doc.deprecated>> test: Test[1];
 }
@@ -144,6 +145,20 @@ Class <<doc.deprecated>> meta::legend::service::metamodel::TestContainer
 {
    parametersValues : Any[*];
    assert:FunctionDefinition<{Result<Any|*>[1]->Boolean[1]}>[1];
+}
+
+//Post Validation
+Class meta::legend::service::metamodel::PostValidation<T|m>
+{
+  description: String[1];
+  parameters: Function<Any>[*];
+  assertions: meta::legend::service::metamodel::PostValidationAssertion<T|m>[1..*];
+}
+
+Class meta::legend::service::metamodel::PostValidationAssertion<T|m>
+{
+  id: String[1];
+  assertion: Function<{T[m]->Boolean[1]}>[1];
 }
 
 ###Diagram

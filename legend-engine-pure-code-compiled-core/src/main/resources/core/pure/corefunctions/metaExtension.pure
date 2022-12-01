@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
+import meta::pure::runtime::*;
 
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
@@ -210,18 +212,32 @@ function meta::pure::functions::meta::pathToPackage(path:String[1], createMissin
 }
 
 function {doc.doc = 'Returns package name from its root package'}
+meta::pure::functions::meta::fullPackageName(p:Function<Any>[1] ,sep:String[1]):String[1]
+{
+    $p->match(
+      [
+        p : AbstractProperty<Any>[1]|$p->meta::pure::functions::meta::fullPackageName($sep),
+        p : PackageableFunction<Any>[1]|$p->meta::pure::functions::meta::fullPackageName($sep)
+      ]
+    )
+}
+
+function {doc.doc = 'Returns package name from its root package'}
+meta::pure::functions::meta::fullPackageName(p:AbstractProperty<Any>[1] ,sep:String[1]):String[1]
+{
+    fullPackageName($p.owner,$sep) +  '.' + $p.name->toOne();
+}
+
+function {doc.doc = 'Returns package name from its root package'}
 meta::pure::functions::meta::fullPackageName(p:PackageableElement[1],sep:String[1]):String[1]
 {
-    if($p->isEmpty() || $p.name=='Root',
+    if($p.name=='Root',
        | '',
-       | let element = $p->toOne();
-         $element->match([prp:AbstractProperty<Any>[1] | fullPackageName($prp.owner,$sep) +  '.' + $prp.name->toOne(),
-                          a: PackageableElement[1]     | if(!$a.package->isEmpty() && ! $p.package.name =='Root' ,
-                                                             | fullPackageName($a.package->toOne(), $sep) + $sep + $a.name->toOne(),
-                                                             | $a.name->toOne());
-
-                          ]);
-       )
+       | if(!$p.package->isEmpty() && ! $p.package.name =='Root' ,
+            | fullPackageName($p.package->toOne(), $sep) + $sep + $p.name->toOne(),
+            | $p.name->toOne()
+         );
+    )
 }
 
 function meta::pure::functions::meta::isWithinPackage(element:Type[1],package:Package[1]):Boolean[1]
@@ -230,16 +246,20 @@ function meta::pure::functions::meta::isWithinPackage(element:Type[1],package:Pa
 }
 
 function {doc.doc = 'Returns true if the element is in the specified package or a sub package of it'}
-meta::pure::functions::meta::isWithinPackage(element:PackageableElement[1],package:Package[1]):Boolean[1]
+meta::pure::functions::meta::isWithinPackage(elementA:Any[1],package:Package[1]):Boolean[1]
 {
-   if($element.package->size() == 0,
-           | false,
-           | let elementPackage = $element.package->toOne();
-             if ($package == :: || $elementPackage == $package,
-                 | true,
-                 | $elementPackage->isWithinPackage($package);
-                 );
-           );
+   if ($elementA->instanceOf(PackageableElement),
+       | let element = $elementA->cast(@PackageableElement);
+         if($element.package->size() == 0,
+               | false,
+               | let elementPackage = $element.package->toOne();
+                 if ($package == :: || $elementPackage == $package,
+                     | true,
+                     | $elementPackage->isWithinPackage($package);
+                     );
+               );,
+       |false
+   );
 }
 
 function {doc.doc = 'Find packable elements contained in given file'}
@@ -264,7 +284,7 @@ function meta::pure::functions::meta::findPackagableElement(fe : ValueSpecificat
                                                                                        ->filter(r|$r->instanceOf(ValueSpecification))
                                                                                        ->cast(@ValueSpecification)->toOne()
                                                                                        ->findPackagableElement(),
-                                                                              p : PackageableElement[1] | $funcDef
+                                                                              p : PackageableElement[1] | $p
                                                                            ]);,
                         i:ClassConstraintValueSpecificationContext[1] | $i.class,
                         i:InstanceValueSpecificationContext[1] | $i.instanceValue->meta::pure::functions::meta::findPackagableElement(),
@@ -276,7 +296,8 @@ function meta::pure::functions::meta::findPackagableElement(fe : ValueSpecificat
 function meta::pure::functions::meta::findPackagableElement(obj : Any[1]) : PackageableElement[1]
 {
      let pe = $obj->match([ vs : ValueSpecification[1] | $vs->meta::pure::functions::meta::findPackagableElement(),
-                            pe : PackageableElement[1] | $pe, 
+                            pe : PackageableElement[1] | $pe,
+                            p  : AbstractProperty<Any>[1] | $p,
                             po : meta::pure::mapping::PropertyOwnerImplementation[1]|$po.parent->meta::pure::functions::meta::findPackagableElement()
                           ])
                   ->match([p:AbstractProperty<Any>[1] | $p.owner,
@@ -359,6 +380,14 @@ function meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefini
 function <<access.private>> meta::pure::functions::meta::findExpressionsForFunctionInFunctionDefinition(func:FunctionDefinition<Any>[1], funcs:Function<Any>[*], shouldRecurse:Function<{FunctionDefinition<Any>[1]->Boolean[1]}>[1], visitedFuncs:FunctionDefinition<Any>[*]):FunctionExpression[*]
 {
    $func.expressionSequence->evaluateAndDeactivate()->map(vs | $vs->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs->add($func->cast(@FunctionDefinition<Any>))));
+}
+
+function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func:FunctionDefinition<Any>[1]):Runtime[*]
+{
+  let fromExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_, 
+                                                                            from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_, 
+                                                                            from_T_m__Mapping_1__Runtime_1__T_m_]);
+  $fromExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(2)->evaluateAndDeactivate()->cast(@InstanceValue).values)->cast(@Runtime);
 }
 
 function meta::pure::functions::meta::findPropertiesInValueSpecification(vs:ValueSpecification[1]):AbstractProperty<Any>[*]
@@ -579,6 +608,11 @@ function meta::pure::functions::meta::hasStereotype(f:ElementWithStereotypes[1],
 function meta::pure::functions::meta::hasStereotype(f:Type[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
 {
     $f->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype($stereotype, $profile);
+}
+
+function meta::pure::functions::meta::hasStereotype(f:Function<Any>[1], stereotype:String[1], profile:Profile[1]):Boolean[1]
+{
+    $f->instanceOf(ElementWithStereotypes) && $f->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype($stereotype, $profile);
 }
 
 function meta::pure::functions::meta::functionType(f:Function<Any>[1]):FunctionType[1]

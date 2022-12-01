@@ -22,11 +22,21 @@ function meta::alloy::isMetaAlloyTestDependency(pe:Type[1]):Boolean[1]
     $pe->cast(@PackageableElement)->meta::alloy::isMetaAlloyTestDependency()
 }
 
+function meta::alloy::isMetaAlloyTestDependency(pe:Function<Any>[1]):Boolean[1]
+{
+    $pe->instanceOf(PackageableElement) && $pe->cast(@PackageableElement)->meta::alloy::isMetaAlloyTestDependency()
+}
+
 function meta::alloy::isMetaAlloyTestDependency(pe:PackageableElement[1]):Boolean[1]
 {
    let path = $pe->elementToPath();
    //TOFIX: use packages instead of STRINGS
    $path->startsWith('meta::relational::tests') ||  $path->startsWith('meta::pure::mapping::modelToModel::test::alloy') || $path->startsWith('meta::pure::mapping::modelToModel::test::createInstances') || $path->startsWith('meta::pure::tests::model::simple');
+}
+
+function meta::alloy::isMetaAlloyTestDependencyForGeneration(pe:Function<Any>[1]):Boolean[1]
+{
+    $pe->cast(@PackageableElement)->meta::alloy::isMetaAlloyTestDependencyForGeneration();
 }
 
 function meta::alloy::isMetaAlloyTestDependencyForGeneration(pe:PackageableElement[1]):Boolean[1]

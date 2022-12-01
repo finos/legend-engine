@@ -296,7 +296,7 @@ class NontemporalDeltaPlanner extends Planner
         return LogicalPlan.builder().addOps(Create.of(true, mainDataset())).build();
     }
 
-    public Optional<Condition> getDataSplitInRangeCondition()
+    public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return dataSplitInRangeCondition;
     }

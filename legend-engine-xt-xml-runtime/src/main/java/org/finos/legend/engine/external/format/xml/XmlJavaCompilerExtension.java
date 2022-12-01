@@ -49,7 +49,7 @@ import java.util.Map;
 
 public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtension
 {
-    private static final String PURE_PACKAGE = "meta::external::format::xml::executionPlan::engine::java::";
+    private static final String PURE_PACKAGE = "meta::external::format::xml::executionPlan::platformBinding::legendJava::";
     private static final Map<String, Class<?>> DEPENDENCIES = new LinkedHashMap<>();
 
     static

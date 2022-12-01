@@ -17,7 +17,9 @@ import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::functions::*;
 import meta::external::shared::format::metamodel::*;
 
-import  meta::pure::dataQuality::*;
+import meta::pure::dataQuality::*;
+
+import meta::pure::graphFetch::*;
 
 import meta::pure::model::binding::*;
 
@@ -26,6 +28,12 @@ Class meta::external::shared::format::functions::ExternalFormatOption
 }
 
 function meta::external::shared::format::functions::externalize<T>(collection: T[*], binding:Binding[1]):String[1]
+{
+   fail('Implemented by execution plans');
+   'Not impemented!';
+}
+
+function meta::external::shared::format::functions::externalize<T>(collection: T[*], binding:Binding[1], graphFetchTree: RootGraphFetchTree<T>[1]):String[1]
 {
    fail('Implemented by execution plans');
    'Not impemented!';
@@ -55,10 +63,10 @@ function meta::external::shared::format::functions::internalize<T>(toClass:Class
    [];
 }
 
-// TODO Can we avoid these?
-function meta::external::shared::format::functions::isSerialize(fe:FunctionExpression[1]):Boolean[1]
+function meta::external::shared::format::functions::checked(valueTree: RootGraphFetchTree<Any>[1], binding: Binding[1]):RootGraphFetchTree<Checked<Any>>[1]
 {
-   $fe.func->in(externalizeFunctions());
+   fail('To be evaluated as part of plan generation only');
+   @RootGraphFetchTree<Checked<Any>>;
 }
 
 function meta::external::shared::format::functions::internalizeFunctions():Function<Any>[*]
@@ -74,6 +82,7 @@ function meta::external::shared::format::functions::externalizeFunctions():Funct
 {
    [
       externalize_T_MANY__Binding_1__String_1_,
-      externalize_Checked_MANY__Binding_1__String_1_
+      externalize_Checked_MANY__Binding_1__String_1_,
+      externalize_T_MANY__Binding_1__RootGraphFetchTree_1__String_1_
    ]
 }
