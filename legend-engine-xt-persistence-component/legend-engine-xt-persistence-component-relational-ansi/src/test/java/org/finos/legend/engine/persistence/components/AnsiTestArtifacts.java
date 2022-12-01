@@ -129,6 +129,34 @@ public class AnsiTestArtifacts
             "\"validity_through_target\" DATETIME," +
             "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
 
+    public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME," +
+            "\"validity_through_reference\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER," +
+            "\"batch_id_out\" INTEGER," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"batch_time_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME," +
+            "\"validity_through_reference\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_time_in\", \"validity_from_target\"))";
+
     public static String expectedBitemporalFromOnlyMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
