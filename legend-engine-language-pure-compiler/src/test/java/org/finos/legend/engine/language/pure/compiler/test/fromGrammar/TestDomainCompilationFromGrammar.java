@@ -14,15 +14,12 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
@@ -39,6 +36,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -256,13 +255,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   tags : [doc, doc];\n" +
                 "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(3, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated tag 'doc' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated stereotype 'modifier' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated stereotype 'accessorType' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(2)));
+                "}\n",null,Arrays.asList("COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
     }
 
     @Test
@@ -271,12 +264,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Pair<PureModelContextData, PureModel> res = test("Enum test::A\n" +
                 "{\n" +
                 "   TEA,COFFEE,TEA,TEA,COFFEE\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(2, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":8,\"endLine\":3,\"endColumn\":13},\"message\":\"Found duplicated value 'COFFEE' in enumeration 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":6},\"message\":\"Found duplicated value 'TEA' in enumeration 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
+                "}\n",null, Arrays.asList("COMPILATION error at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION error at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
     }
 
     @Test
@@ -288,11 +276,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   property1: test::A[0..1];\n" +
                 "   property1: test::B[1];\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(1, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":28},\"message\":\"Found duplicated property 'property1' in association 'test::C'\"}", mapper.writeValueAsString(warnings.get(0)));
+                "}\n",null,Arrays.asList("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
     }
 
     @Test
@@ -305,12 +289,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(2, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":21},\"message\":\"Found duplicated property 'other' in class 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":28},\"message\":\"Found duplicated property 'property' in class 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
+                "}\n",null, Arrays.asList("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
     }
 
     @Test

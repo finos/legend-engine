@@ -358,6 +358,19 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testEnumerationMappingWithSpecialCharacters()
+    {
+        test("###Mapping\n" +
+                "Mapping ui::meta::something::tests::mapping::enumeration::model::mapping::employeeTestMapping\n" +
+                "(\n" +
+                "  demo::EnumWithSpace: EnumerationMapping\n" +
+                "  {\n" +
+                "    'ENUM VALUE WITH SPACE': ['Dummy Value']\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
     public void testUnionModelMapping()
     {
         test("###Mapping\n" +

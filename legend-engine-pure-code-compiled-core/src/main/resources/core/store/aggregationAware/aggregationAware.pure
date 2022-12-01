@@ -228,7 +228,7 @@ function meta::pure::mapping::aggregationAware::generateProjectPath(f: ValueSpec
             a: Property<Nil, Any|*>[1] | ^ProjectPath
                                           (
                                              children = $parametersValues->map(v | $v->generateProjectPath($vars, $inScopeVars)),
-                                             thisLevel = 'Property->' + $fe.func->elementToPath()
+                                             thisLevel = 'Property->' + $a.name->toOne()
                                           ),
             qp: QualifiedProperty<Any>[1] | let paths = $parametersValues->map(p | $p->generateProjectPath($vars, $inScopeVars));
                                             $qp.expressionSequence->toOne()->cast(@ValueSpecification)->cast(@SimpleFunctionExpression)->generateProjectPath(newMap($qp->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate().name->zip($paths)), ^Map<String, List<Any>>());,
@@ -237,7 +237,7 @@ function meta::pure::mapping::aggregationAware::generateProjectPath(f: ValueSpec
                                              $parametersValues->at(1)->match([v: VariableExpression[1]| $v->resolve(^Map<VariableExpression, ValueSpecification>(), $inScopeVars), i: Any[*]|$i])->cast(@InstanceValue).values->at(0)->match([
                                                 mf:FunctionDefinition<Any>[1] | $mf.expressionSequence->toOne()->cast(@ValueSpecification)->cast(@SimpleFunctionExpression)->generateProjectPath($vars->putAll($mf->genericType().typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->map(param | pair($param.name, $left))), $inScopeVars);,
                                                 pa:Path<Nil,Any|*>[1] | let rightPath = $pa.path->fold({p, projectPath |
-                                                                            ^ProjectPath(children = $p->cast(@PropertyPathElement).parameters->map(v | $v->generateProjectPath($vars, $inScopeVars))->concatenate($projectPath), thisLevel = 'Property->' + $p->cast(@PropertyPathElement).property->elementToPath())
+                                                                            ^ProjectPath(children = $p->cast(@PropertyPathElement).parameters->map(v | $v->generateProjectPath($vars, $inScopeVars))->concatenate($projectPath), thisLevel = 'Property->' + $p->cast(@PropertyPathElement).property.name->toOne())
                                                                          }, ^ProjectPath(thisLevel = $pa.start.rawType->toOne()->cast(@Class<Any>)->elementToPath()));
                                                                         $rightPath->replaceLeftMostNodeInTree($left);
                                              ]);,

@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import meta::external::format::json::binding::validation::*;
-import meta::external::format::json::executionPlan::engine::java::*;
-import meta::external::format::json::executionPlan::engine::java::externalize::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::*;
 import meta::external::format::json::metamodel::*;
 
 import meta::external::language::java::factory::*;
@@ -62,13 +62,13 @@ import meta::external::shared::format::executionPlan::*;
 
 import meta::external::format::json::binding::validation::*;
 import meta::external::format::json::executionPlan::*;
-import meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::*;
 
 // ========================================================================================================================================================
 // Descriptor
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::externalize::getExternalFormatExternalizeJavaBindingDescriptor(): ExternalFormatExternalizeBindingDescriptor[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::getExternalFormatExternalizeJavaBindingDescriptor(): ExternalFormatExternalizeBindingDescriptor[1]
 {
   ^ExternalFormatExternalizeBindingDescriptor
   (
@@ -81,7 +81,7 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
 // prepare
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::externalize::prepareForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): TypeInfoSet[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::prepareForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): TypeInfoSet[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatExternalizeExecutionNode for JsonSchema \n', |''));
 
@@ -104,7 +104,7 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
 // generate
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::externalize::generateForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::generateForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatExternalizeExecutionNode for JsonSchema \n', |''));
 
@@ -137,7 +137,7 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
 // helper functions
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::resolveTreeForSerialize(tree:RootGraphFetchTree<Any>[1]): RootGraphFetchTree<Any>[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::resolveTreeForSerialize(tree:RootGraphFetchTree<Any>[1]): RootGraphFetchTree<Any>[1]
 {
    if($tree.class == meta::pure::dataQuality::Checked,
      |let propTree = $tree.subTrees->cast(@PropertyGraphFetchTree)->filter(p | $p.property.name == 'value')->toOne();
@@ -145,7 +145,7 @@ function meta::external::format::json::executionPlan::engine::java::externalize:
      |$tree)
 }
 
-function <<doc.deprecated>> meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::generateRootTreeFromBindingDetail(classIn:meta::pure::metamodel::type::Class<Any>[1], detail:JsonSchemaBindingDetail[1]): RootGraphFetchTree<Any>[1]
+function <<doc.deprecated>> meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::generateRootTreeFromBindingDetail(classIn:meta::pure::metamodel::type::Class<Any>[1], detail:JsonSchemaBindingDetail[1]): RootGraphFetchTree<Any>[1]
 {
    let propertiesInScope = $detail.mappedPropertiesForClass($classIn);
    let subTrees          = $propertiesInScope->map(p | $p->generatePropertyTreeForProperty($detail));
@@ -153,7 +153,7 @@ function <<doc.deprecated>> meta::external::format::json::executionPlan::engine:
    ^RootGraphFetchTree<Any>(class=$classIn, subTrees = $subTrees);
 }
 
-function <<access.private>> meta::external::format::json::executionPlan::engine::java::externalize::helperFunctions::generatePropertyTreeForProperty(property:AbstractProperty<Any>[1], detail:JsonSchemaBindingDetail[1]): PropertyGraphFetchTree[1]
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::externalize::helperFunctions::generatePropertyTreeForProperty(property:AbstractProperty<Any>[1], detail:JsonSchemaBindingDetail[1]): PropertyGraphFetchTree[1]
 {
    let returnType           = $property->functionReturnType().rawType->toOne();
    let isPropertyPrimitive  = $returnType->instanceOf(meta::pure::metamodel::type::PrimitiveType) || $returnType->instanceOf(meta::pure::metamodel::type::Enumeration) ;

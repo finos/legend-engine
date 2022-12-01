@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import org.eclipse.collections.impl.block.factory.Functions;
+import org.finos.legend.engine.plan.dependencies.domain.date.AbstractPureDate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.store.platform.IGraphSerializer;
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
@@ -495,7 +496,7 @@ public class ExecutionNodeSerializerHelper
         }
 
         @Override
-        public void writeDateProperty(String name, PureDate value)
+        public void writeDateProperty(String name, AbstractPureDate value)
         {
             if (value == null)
             {
@@ -509,7 +510,7 @@ public class ExecutionNodeSerializerHelper
         }
 
         @Override
-        public void writeDateProperty(String name, List<PureDate> values)
+        public void writeDateProperty(String name, List<AbstractPureDate> values)
         {
             if (values == null || values.isEmpty())
             {

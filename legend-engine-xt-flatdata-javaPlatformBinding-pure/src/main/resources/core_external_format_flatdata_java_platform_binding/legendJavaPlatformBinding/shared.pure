@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::external::format::flatdata::binding::validation::*;
-import meta::external::format::flatdata::executionPlan::engine::java::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::*;
 import meta::external::format::flatdata::metamodel::*;
 
 import meta::external::language::java::factory::*;
@@ -22,7 +22,7 @@ import meta::external::language::java::transform::*;
 
 import meta::pure::graphFetch::*;
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::createFieldVars(fields:FlatDataRecordField[*], recordTypeParam:Code[1], conventions:Conventions[1]): Pair<Code,Code>[*]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::createFieldVars(fields:FlatDataRecordField[*], recordTypeParam:Code[1], conventions:Conventions[1]): Pair<Code,Code>[*]
 {
    $fields->toIndexed()->map({indexedField|
       let var     = j_variable($conventions->className(_FlatDataRecordField), 'field' + $indexedField.first->toString());
@@ -33,7 +33,7 @@ function <<access.protected>> meta::external::format::flatdata::executionPlan::e
    });
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::createSchema(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], conventions:Conventions[1]): Code[1]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::createSchema(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], conventions:Conventions[1]): Code[1]
 {   
    $flatData.sections->fold(
       {section, code| 
@@ -43,17 +43,17 @@ function <<access.protected>> meta::external::format::flatdata::executionPlan::e
    );
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::sectionMethodName(section:FlatDataSection[1]): String[1]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::sectionMethodName(section:FlatDataSection[1]): String[1]
 {   
    'flatDataSection_' + $section.name;
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::sectionFactoryMethodName(section:FlatDataSection[1]): String[1]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::sectionFactoryMethodName(section:FlatDataSection[1]): String[1]
 {   
    'flatDataSection_Factory_' + $section.name;
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::addSectionMethods(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], bindingDetail:FlatDataBindingDetail[1], tree:RootGraphFetchTree<Any>[0..1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::addSectionMethods(jClass:meta::external::language::java::metamodel::Class[1], flatData:FlatData[1], bindingDetail:FlatDataBindingDetail[1], tree:RootGraphFetchTree<Any>[0..1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {  
    assert($tree.subTrees->cast(@PropertyGraphFetchTree).property->filter(p | $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->isEmpty(), |'Multi Section serialization is not yet supported !!');
 
@@ -104,7 +104,7 @@ function <<access.protected>> meta::external::format::flatdata::executionPlan::e
       });
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::codeWithField(recordType:Code[1], field:FlatDataRecordField[1], conventions:Conventions[1]): Code[1]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::codeWithField(recordType:Code[1], field:FlatDataRecordField[1], conventions:Conventions[1]): Code[1]
 {
    let fieldLabel = j_string($field.label);
    let fieldType  = $field.type->codeFlatDataDatatype($conventions);
@@ -115,7 +115,7 @@ function <<access.protected>> meta::external::format::flatdata::executionPlan::e
    ]);
 }
 
-function <<access.protected>> meta::external::format::flatdata::executionPlan::engine::java::codeFlatDataDatatype(type:FlatDataDataType[1], conventions:Conventions[1]): Code[1]
+function <<access.protected>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::codeFlatDataDatatype(type:FlatDataDataType[1], conventions:Conventions[1]): Code[1]
 {   
    let optional = j_boolean($type.optional);
    

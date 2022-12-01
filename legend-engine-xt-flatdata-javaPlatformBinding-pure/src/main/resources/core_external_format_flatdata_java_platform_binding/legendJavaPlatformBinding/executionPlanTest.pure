@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::external::format::flatdata::executionPlan::test::*;
-import meta::external::format::flatdata::executionPlan::engine::java::test::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::*;
 import meta::external::format::flatdata::metamodel::*;
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::executionPlan::*;
@@ -28,7 +28,7 @@ import meta::pure::mapping::modelToModel::*;
 import meta::pure::model::unit::*;
 import meta::pure::runtime::*;
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::test::getExtensions(): meta::pure::extension::Extension[*]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::getExtensions(): meta::pure::extension::Extension[*]
 {
    [
       meta::external::shared::format::externalFormatExtension(),
@@ -37,25 +37,25 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
             meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
-               meta::external::format::flatdata::executionPlan::engine::java::flatDataJavaBindingDescriptor()
+               meta::external::format::flatdata::executionPlan::platformBinding::legendJava::flatDataJavaBindingDescriptor()
             ])
          ])
       ])
    ]
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::test::buildPlanWithJava(query:FunctionDefinition<Any>[1]): ExecutionPlan[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::buildPlanWithJava(query:FunctionDefinition<Any>[1]): ExecutionPlan[1]
 {
    let plan = meta::external::shared::format::executionPlan::tests::buildPlan($query, getExtensions());
    $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), getExtensions());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::engine::java::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
 {
    let extensions = [meta::external::shared::format::externalFormatExtension(), meta::external::format::flatdata::extension::flatDataFormatExtension()];
    let binding = getTestBinding();
 
-   let plan = meta::external::format::flatdata::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'stringConstant')});
+   let plan = meta::external::format::flatdata::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({| meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, 'stringConstant')});
    let planString = $plan->planToString(false, getExtensions());
   
    let expectedPlan = 

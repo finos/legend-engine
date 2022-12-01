@@ -439,11 +439,12 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToFunction(
   let property = if($isDiscriminator,
                    |let pname =  $functionSchema.keyValuePairs->getValueForKey('discriminator')->toOne()->cast(@JSONObject).keyValuePairs ->getValueForKey('propertyName')->cast(@JSONString).value->toOne();
                     let p =  newProperty($pname, ^GenericType(rawType=$rawType), ^GenericType(rawType=String),PureOne);
-                     $p->propertyParameter('value') ;,
-                    |$ft.parameters->at(0)
+                    $p->propertyParameter('value');,
+                   |$ft.parameters->at(0)
                   );
 
-   let updatedFT = ^$ft(parameters=^$ftparam(multiplicity=$multiplicity,genericType=$type)); 
+
+  let updatedFT = ^$ft(parameters=^$ftparam(multiplicity=$multiplicity,genericType=$type)); 
   let expressionSequenceInit = $functionSchema->fragmentToValueSpecifcation([],$fileName,$pathPrefix,$property,[],[],$property,$pathSchemas);
   if($expressionSequenceInit->isEmpty(),|fail('Unable to import schema, please check that it is correctly specified:\n'+ $fileName +'\n'+ $functionSchema->toOne()->toPrettyJSONString() ),|[]);
   let expressionSequence  = $expressionSequenceInit->toOneMany()->cast(@SimpleFunctionExpression)->wrapWithIF($ftparam,false,false)->evaluateAndDeactivate();
@@ -647,20 +648,20 @@ function  <<access.private>> meta::json::schema::fromSchema::fragmentToValueSpec
                                                                                       if($kvp.key.value=='$ref' ,
                                                                                             | $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);,
                                                                                             |if($kvp.key.value=='format',
-                                                                                                   |   $kvp.value->fragmentToValueSpecifcation($kvp.value->cast(@JSONString).value->toOne(),$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);,                                                                                         
+                                                                                                   | $kvp.value->fragmentToValueSpecifcation($kvp.value->cast(@JSONString).value->toOne(),$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);,                                                                                         
                                                                                                    | let lambda = $FunctionConstraintMap->get($kvp.key.value->toOne());
                                                                                                      let lambdaEs = $lambda.expressionSequence->toOne()->evaluateAndDeactivate()->cast(@FunctionExpression);
                                                                                                      let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
                                                                                                       if($kvp.key.value=='items',  
                                                                                                              | 
                                                                                                                let forAllproperty = ^VariableExpression(name='value',multiplicity=PureOne,genericType=^GenericType(rawType=Any));
-                                                                                                               let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$forAllproperty,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
+                                                                                                               let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$forAllproperty,$generateInstance,$formatElement,$rootProperty,$pathSchemas);                                                                                                               
                                                                                                                if ($lambdaParam->isNotEmpty(),
                                                                                                                     |let IV = $lambdaEs.parametersValues->at(1)->cast(@InstanceValue); 
                                                                                                                      let forAllLambda = $IV.values->cast(@LambdaFunction<Any>)->toOne();
-                                                                                                                     let initialParam = replaceFirstParameter($lambdaEs.parametersValues->at(0),$property);
-                                                                                                                     let lambdaWithParam =  ^$forAllLambda(expressionSequence=^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Boolean),values=$lambdaParam->toOne()));
-                                                                                                                      ^$lambdaEs(parametersValues=$initialParam->concatenate(^$IV(values=$lambdaWithParam)));,
+                                                                                                                     let initialParam = replaceFirstParameter($lambdaEs.parametersValues->at(0), $property);
+                                                                                                                     let lambdaWithParam = ^$forAllLambda(expressionSequence=^InstanceValue(multiplicity=PureOne,genericType=^GenericType(rawType=Boolean),values=$lambdaParam->toOne()));
+                                                                                                                     ^$lambdaEs(parametersValues=$initialParam->concatenate(^$IV(values=$lambdaWithParam)));,
                                                                                                                     |[]);,
                                                                                                              |let lambdaParam = $kvp.value->fragmentToValueSpecifcation($kvp.key.value,$ownerFileName,$pathPrefix,$property,$generateInstance,$formatElement,$rootProperty,$pathSchemas);
                                                                                                                if($lambdaParam->size()>1,
@@ -990,7 +991,7 @@ function <<access.private>> meta::json::schema::fromSchema::mergeDocTags(element
     ) ;
 }
 
-function <<access.private>> meta::json::schema::fromSchema::addSchemaTagsToPure(element:PackageableElement[1],objectWithTags:JSONObject[1],extendedProfile:Profile[0..1]):PackageableElement[1]
+function <<access.private>> meta::json::schema::fromSchema::addSchemaTagsToPure(element:AnnotatedElement[1],objectWithTags:JSONObject[1],extendedProfile:Profile[0..1]):AnnotatedElement[1]
 {
      //common tags that get go on properties and functions
     let keyValuePairs = $objectWithTags.keyValuePairs;
@@ -1044,18 +1045,18 @@ function <<access.private>> meta::json::schema::fromSchema::addSchemaTagsToPure(
             ->addTag(doc,'doc',$description)
             ->addTag(JSONSchemaJavaExtension,'javaInterface',$javaInterfaces)->addTag($extendedTaggedValues)
        ->cast(@ElementWithStereotypes)->addStereoType($nullST)->addStereoType($extendedSteroetypes)->addStereoType($milestoneSt)
-      ->cast(@PackageableElement);
+      ->cast(@AnnotatedElement);
 }
 
 function <<access.private>> meta::json::schema::fromSchema::getJSONElementAsString(value :JSONElement[0..1]):String[*]
 {
    
    if($value->isNotEmpty(),
-                     | $value->toOne()->  match([s:JSONString[1]|$s.value,
-                                                        n:JSONNumber[1] |$n.value,
-                                                        b:JSONBoolean[1]|$b.value,
-                                                        a:JSONArray[1]|$a.values->map(v| $v->getJSONElementAsString()),
-                                                        a:Any[1] | []        ])->map(s|$s->makeString());,
+                     | $value->toOne()->  match([ s:JSONString[1]|$s.value,
+                                                  n:JSONNumber[1] |$n.value,
+                                                  b:JSONBoolean[1]|$b.value,
+                                                  a:JSONArray[1]|$a.values->map(v| $v->getJSONElementAsString()),
+                                                  a:Any[1] | []        ])->map(s|$s->makeString());,
       |[]); 
    
 }
@@ -1064,11 +1065,11 @@ function <<access.private>> meta::json::schema::fromSchema::getJSONElementValue(
 {
    
    if($value->isNotEmpty(),
-                     | $value->toOne()->  match([s:JSONString[1]|$s.value,
-                                                        n:JSONNumber[1] |$n.value,
-                                                        b:JSONBoolean[1]|$b.value,
-                                                        a:JSONArray[1]|$a.values->map(v| $v->getJSONElementValue()),
-                                                        a:Any[1] | []        ]);,
+                     | $value->toOne()->  match([ s:JSONString[1]|$s.value,
+                                                  n:JSONNumber[1] |$n.value,
+                                                  b:JSONBoolean[1]|$b.value,
+                                                  a:JSONArray[1]|$a.values->map(v| $v->getJSONElementValue()),
+                                                  a:Any[1] | []        ]);,
       |[]); 
    
 }

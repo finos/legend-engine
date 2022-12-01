@@ -120,11 +120,11 @@ class AppendOnlyPlanner extends Planner
 
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeCondition() : Optional.empty();
+        Optional<Condition> dataSplitInRangeCondition = dataSplitExecutionSupported() ? getDataSplitInRangeConditionForStatistics() : Optional.empty();
         ingestMode().deduplicationStrategy().accept(new PopulatePostRunStatisticsBreakdown(ingestMode(), mainDataset(), stagingDataset(), postRunStatisticsResult, dataSplitInRangeCondition));
     }
 
-    public Optional<Condition> getDataSplitInRangeCondition()
+    public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return dataSplitInRangeCondition;
     }
