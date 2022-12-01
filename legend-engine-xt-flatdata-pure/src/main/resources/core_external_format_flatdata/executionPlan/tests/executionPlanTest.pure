@@ -81,7 +81,7 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::e
    let tree = #{meta::external::format::flatdata::executionPlan::test::Person {firstName, lastName}}#;
 
    let plan = executionPlan(
-      |meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, ^Url(url = 'executor:default'))->graphFetchChecked($tree)->externalize($binding),
+      data:ByteStream[1]|meta::external::format::flatdata::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)->externalize($binding),
       ^ExecutionContext(),
       $extensions,
       noDebug()
@@ -90,29 +90,40 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::flatdata::e
    let planString = $plan->planToString(false, $extensions);
 
    let expected = 
-        'ExternalFormat_Externalize\n' +
+        'Sequence\n' +
         '(\n' +
         '  type = String\n' +
         '  resultSizeRange = 1\n' +
-        '  checked = true\n' +
-        '  binding = meta::external::format::flatdata::executionPlan::test::TestBinding\n' +
-        '\n' +
         '  (\n' +
-        '    ExternalFormat_Internalize\n' +
+        '    FunctionParametersValidationNode\n' +
         '    (\n' +
-        '      type = Class[impls=]\n' +
-        '      resultSizeRange = *\n' +
-        '      binding = meta::external::format::flatdata::executionPlan::test::TestBinding[application/x.flatdata]\n' +
-        '      enableConstraints = true\n' +
+        '      functionParameters = [data:ByteStream[1]]\n' +
+        '    )\n' +
+        '    ExternalFormat_Externalize\n' +
+        '    (\n' +
+        '      type = String\n' +
+        '      resultSizeRange = 1\n' +
         '      checked = true\n' +
-        '      graphFetchTree = #{meta::external::format::flatdata::executionPlan::test::Person{firstName,lastName}}#\n' +
+        '      binding = meta::external::format::flatdata::executionPlan::test::TestBinding\n' +
         '\n' +
         '      (\n' +
-        '        UrlStream\n' +
+        '        ExternalFormat_Internalize\n' +
         '        (\n' +
-        '          type = ByteStream\n' +
-        '          url = executor:default\n' +
+        '          type = Class[impls=]\n' +
+        '          resultSizeRange = *\n' +
+        '          binding = meta::external::format::flatdata::executionPlan::test::TestBinding[application/x.flatdata]\n' +
+        '          enableConstraints = true\n' +
+        '          checked = true\n' +
+        '          graphFetchTree = #{meta::external::format::flatdata::executionPlan::test::Person{firstName,lastName}}#\n' +
         '\n' +
+        '          (\n' +
+        '            VariableResolution\n' +
+        '            (\n' +
+        '              type = ByteStream\n' +
+        '              varName = data\n' +
+        '\n' +
+        '            )\n' +
+        '          )\n' +
         '        )\n' +
         '      )\n' +
         '    )\n' +
