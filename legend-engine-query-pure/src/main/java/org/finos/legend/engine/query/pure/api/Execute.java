@@ -223,61 +223,12 @@ public class Execute
 
     public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)
     {
-        /*
-            planExecutionAuthorizer is used as a feature flag.
-            When not set, we switch to a code path that supports only push down executions.
-            When set, we switch to a code path that supports both push down and middle tier executions.
-         */
-        if (this.planExecutionAuthorizer == null)
-        {
-            return this.execLegacy(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters);
-        }
-        else
-        {
-            return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters);
-        }
+        return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters);
     }
 
     public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format)
     {
         return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, Maps.mutable.empty());
-    }
-
-    public Response execLegacy(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameterToValues)
-    {
-        try
-        {
-            long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
-            PureModel pureModel = pureModelFunc.value();
-            SingleExecutionPlan plan = PlanGenerator.generateExecutionPlanWithTrace(functionFunc.valueOf(pureModel),
-                    mapping == null ? null : pureModel.getMapping(mapping),
-                    HelperRuntimeBuilder.buildPureRuntime(runtime, pureModel.getContext()),
-                    HelperValueSpecificationBuilder.processExecutionContext(context, pureModel.getContext()),
-                    pureModel,
-                    clientVersion,
-                    PlanPlatform.JAVA,
-                    pm,
-                    this.extensions.apply(pureModel),
-                    this.transformers
-            );
-            MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
-            buildParameterToConstantResult(plan, parameterToValues, parametersToConstantResult);
-            Result result = planExecutor.execute(plan, parametersToConstantResult, user, pm);
-            LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
-            MetricsHandler.observe("execute", start, System.currentTimeMillis());
-            try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
-            {
-                return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
-            }
-
-        }
-        catch (Exception ex)
-        {
-            MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
-            return response;
-        }
     }
 
     public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)

@@ -74,47 +74,7 @@ public class ExecutePlan
 
     public Response doExecutePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        /*
-            planExecutionAuthorizer is used as a feature flag to gradually introduce middle tier authorization into the execution flow.
-            When configured, we switch to a code path that can handle both middle tier and push down executions.
-            When not configured, we switch to a code path that can handle only push down executions.
-         */
-        if (this.planExecutionAuthorizer == null)
-        {
-            return this.doExecutePlanLegacy(request, execPlan, format, pm);
-        }
-        else
-        {
-            return this.doExecutePlanImpl(execPlan, format, ProfileManagerHelper.extractProfiles(pm));
-        }
-    }
-
-    public Response doExecutePlanLegacy(HttpServletRequest request, ExecutionPlan execPlan, SerializationFormat format, ProfileManager<CommonProfile> pm)
-    {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-
-        try
-        {
-            if (execPlan instanceof SingleExecutionPlan)
-            {
-                LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
-                // Assume that the input exec plan has no variables
-                Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles);
-                try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
-                {
-                    LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
-                    return ResultManager.manageResult(profiles, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
-                }
-            }
-            else
-            {
-                return Response.status(500).type(MediaType.TEXT_PLAIN).entity(new ResultManager.ErrorMessage(20, "Only SingleExecutionPlan is supported")).build();
-            }
-        }
-        catch (Exception ex)
-        {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
-        }
+        return this.doExecutePlanImpl(execPlan, format, ProfileManagerHelper.extractProfiles(pm));
     }
 
     public Response doExecutePlanImpl(ExecutionPlan execPlan, SerializationFormat format, MutableList<CommonProfile> profiles)
