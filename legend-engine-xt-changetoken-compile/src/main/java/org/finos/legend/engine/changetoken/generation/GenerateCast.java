@@ -21,7 +21,7 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSu
 
 public class GenerateCast extends GenerateJavaProject
 {
-    public static void main(String[] args)
+    public static void main(String... args)
     {
         new GenerateCast(args[0], args[1], args[2]).execute();
     }
