@@ -21,15 +21,6 @@ public class Test${DbType}ConnectionGrammarRoundtrip extends TestGrammarRoundtri
     @Test
     public void testConnectionGrammar()
     {
-        test("#[[###]]#Connection\n" +
-                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
-                "{\n" +
-                "  store: store::Store;\n" +
-                "  type: ${DbType};\n" +
-                "  specification: ${DbType}\n" +
-                "  {\n" +
-                "  };\n" +
-                "  auth: ;\n" +
-                "}\n");
+        test("#[[###]]#Connection\n");
     }
 }

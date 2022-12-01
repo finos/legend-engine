@@ -23,7 +23,7 @@ public class ${DbType}RelationalTestServerInvoker
     public static void main(String[] args) throws Exception
     {
         RelationalTestServer.execute(
-                args.length == 0 ? new String[] {"server", "org/finos/legend/engine/server/test/userTestConfig_with${DbType}TestConnection.json"} : args,
+                args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-${dbtype}-execution-tests/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_with${DbType}TestConnection.json"} : args,
                 new NamedType(${DbType}TestDatabaseAuthenticationFlowProviderConfiguration.class, "${dbType}Test")
         );
     }
