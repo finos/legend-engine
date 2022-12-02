@@ -1223,6 +1223,16 @@ Mapping meta::relational::tests::milestoning::milestoningUnionMapWithOrderNonUni
    }
 )
 
+###Mapping
+import meta::relational::tests::milestoning::*;
+Mapping meta::relational::tests::milestoning::viewFilter::MilestoningWithFiltersOnView
+(
+  meta::relational::tests::milestoning::Product : Relational{
+         id : [db]@stockProductView_ProductTable | stockProductView.id,
+         name : [db]ProductTable.name
+   } 
+)
+
 ###Relational
 Database meta::relational::tests::milestoning::ViewChainDb
 (
@@ -1261,7 +1271,6 @@ Database meta::relational::tests::milestoning::ViewChainDb
    Join InterTwo_Product(interTwoView.l = ProductTableView.link )
 
 )
-
 
 ###Relational
 Database meta::relational::tests::milestoning::db(
@@ -1655,7 +1664,13 @@ Database meta::relational::tests::milestoning::db(
        pnl: tradePnlIntermediateView.pnl, 
        supportContactViaView : @tradePnlIntermediateView_TradePnlTable > @TradePnlTable_Trade > @Trade_SalesPerson > @SalesPersonTable_SalesPersonView | salesPersonView.SALES_PERSON_NAME
     ) 
-   
+
+    View stockProductView
+    (
+       ~filter filterById
+       id: StockProductTable.id PRIMARY KEY
+    )
+
    Table ProductTable3
    (
       milestoning(
@@ -1735,8 +1750,10 @@ Database meta::relational::tests::milestoning::db(
    Join productProductBridge2(ProductTable2. identifier = ProductTable3.id)
    Join SalesPersonTable_SalesPersonView(salesPersonTable.ACCOUNT_ID = salesPersonView.ACCOUNT_ID)
    Join tradePnlIntermediateView_TradePnlTable(tradePnlIntermediateView.TRADE_ID = tradePnlTable.TRADE_ID)
+   Join stockProductView_ProductTable(stockProductView.id = ProductTable.id)
    
    Filter IsStockType(ProductTable.type='STOCK')
    Filter LNSEProducts(ProductExchangeTable.name='STOCK')
    Filter NewActivityWithValidProduct(NewActivityInfoTable.productId > 0)
+   Filter filterById(StockProductTable.id > 152 or StockProductTable.id < 123)
 )

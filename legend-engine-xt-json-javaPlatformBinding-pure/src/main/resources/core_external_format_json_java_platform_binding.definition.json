@@ -1,5 +1,5 @@
 {
     "name" : "core_external_format_json_java_platform_binding",
-    "pattern" : "(meta::external::format::json::executionPlan::engine::java)(::.*)?",
+    "pattern" : "(meta::external::format::json::executionPlan::platformBinding::legendJava)(::.*)?",
     "dependencies" : ["platform", "core", "core_external_format_json", "core_external_language_java", "core_java_platform_binding"]
 }

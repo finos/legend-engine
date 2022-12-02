@@ -20,17 +20,20 @@ import meta::pure::executionPlan::engine::*;
 
 function meta::pure::executionPlan::engine::java::registerPureDateLibrary(conventions: Conventions[1]): Conventions[1]
 {
+   let iPureDate = $conventions->className(IPureDate);
    let pureDate = $conventions->className(PureDate);
-   let library  = $conventions->className(Library);
+   let latestDate = $conventions->className(meta::pure::executionPlan::engine::LatestDate);
+   let library  = $conventions->className(Library);   
 
    let lib = newConventionsLibrary()
       ->usesJavaClass($conventions->className(DayOfWeek))
       ->usesJavaClass($conventions->className(DurationUnit))
       ->usesJavaClass($conventions->className(Library))
       ->usesJavaClass($pureDate->typeToString())
+      ->usesLatestDate($latestDate, {d:LatestDate[1] | $latestDate->j_field('INSTANCE', $latestDate)})
       ->usesStrictDate($pureDate, {d:StrictDate[1] | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $pureDate)})
       ->usesDateTime(  $pureDate, {d:DateTime[1]   | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $pureDate)})
-      ->usesDate(      $pureDate, {d:Date[1]       | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $pureDate)})
+      ->usesDate(      $iPureDate, {d:Date[1]       | $pureDate->j_invoke('parsePureDate', j_string($d->toString()), $iPureDate)})
       ->addFunctionCoders([
          fc0(now__DateTime_1_,                                                                       {ctx                                    | $ctx.conventions->className(PureDate)->j_invoke('fromDate', javaDate()->j_new([]), $ctx.conventions->className(PureDate))}),
          fc0(today__StrictDate_1_,                                                                   {ctx                                    | $library->j_invoke('today', [], $ctx.conventions->className(PureDate))}),
