@@ -33,6 +33,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.ActionIndicatorFieldsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.DeleteIndicator;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.actionindicator.NoActionIndicator;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.AnyVersion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.Deduplication;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.DeduplicationVisitor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.MaxVersion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.deduplication.NoDeduplication;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.DeleteTargetDataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.emptyhandling.EmptyDatasetHandlingVisitor;
@@ -324,6 +329,7 @@ public class HelperPersistenceComposer
                     getTabString(indentLevel) + "{\n" +
                     renderGraphFetchDatasetKeys(val.keys, indentLevel + 1) +
                     renderDatasetType(val.datasetType, indentLevel + 1) +
+                    renderDeduplication(val.deduplication, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -334,6 +340,7 @@ public class HelperPersistenceComposer
                     getTabString(indentLevel) + "{\n" +
                     renderTdsDatasetKeys(val.keys, indentLevel + 1) +
                     renderDatasetType(val.datasetType, indentLevel + 1) +
+                    renderDeduplication(val.deduplication, indentLevel + 1) +
                     getTabString(indentLevel) + "}\n";
         }
 
@@ -361,6 +368,11 @@ public class HelperPersistenceComposer
         private static String renderDatasetType(DatasetType datasetType, int indentLevel)
         {
             return datasetType.accept(new DatasetTypeComposer(indentLevel));
+        }
+
+        private static String renderDeduplication(Deduplication deduplication, int indentLevel)
+        {
+            return deduplication == null ? "" : deduplication.accept(new DeduplicationComposer(indentLevel));
         }
     }
 
@@ -503,6 +515,37 @@ public class HelperPersistenceComposer
                 builder.append("[];\n");
             }
             return builder.toString();
+        }
+    }
+
+    private static class DeduplicationComposer implements DeduplicationVisitor<String>
+    {
+        private final int indentLevel;
+
+        private DeduplicationComposer(int indentLevel)
+        {
+            this.indentLevel = indentLevel;
+        }
+
+        @Override
+        public String visitNoDeduplication(NoDeduplication val)
+        {
+            return getTabString(indentLevel) + "deduplication: None;\n";
+        }
+
+        @Override
+        public String visitAnyVersion(AnyVersion val)
+        {
+            return getTabString(indentLevel) + "deduplication: Any;\n";
+        }
+
+        @Override
+        public String visitMaxVersion(MaxVersion val)
+        {
+            return getTabString(indentLevel) + "deduplication: MaxVersion\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "versionField: " + val.versionField + ";\n" +
+                    getTabString(indentLevel) + "}\n";
         }
     }
 
