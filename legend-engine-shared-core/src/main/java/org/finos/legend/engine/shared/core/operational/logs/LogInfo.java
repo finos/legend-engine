@@ -35,7 +35,7 @@ public class LogInfo
     public Date timeStamp;
     public DeploymentMode mode = DeploymentStateAndVersions.DEPLOYMENT_MODE;
     public String user;
-    public LoggingEventType eventType;
+    public String eventType;
     public String message;
     public Object info;
     public double duration;
@@ -44,6 +44,13 @@ public class LogInfo
     public SourceInformation sourceInformation;
 
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType)
+    {
+        this.timeStamp = new Date();
+        this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles));
+        this.eventType = eventType.toString();
+    }
+
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType)
     {
         this.timeStamp = new Date();
         this.user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles));
@@ -62,6 +69,12 @@ public class LogInfo
         this.message = message;
     }
 
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, String message)
+    {
+        this(userProfiles, eventType);
+        this.message = message;
+    }
+
     public LogInfo(LoggingEventType eventType, String message)
     {
         this(null, eventType);
@@ -74,13 +87,29 @@ public class LogInfo
         this.info = info;
     }
 
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, Object info)
+    {
+        this(userProfiles, eventType);
+        this.info = info;
+    }
+
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Object info, double duration)
+    {
+        this(userProfiles, eventType, info);
+        this.duration = duration;
+    }
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, Object info, double duration)
     {
         this(userProfiles, eventType, info);
         this.duration = duration;
     }
 
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, LoggingEventType eventType, Throwable t)
+    {
+        this(userProfiles, eventType.toString(), t);
+    }
+
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, Throwable t)
     {
         this(userProfiles, eventType);
         StringWriter out = new StringWriter();
