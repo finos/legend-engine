@@ -119,6 +119,31 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
    ]);
 }
 
+function meta::relational::mapping::getIncompatibleTypesInRelationalPropertyMapping(r:RelationalPropertyMapping[0..1]):Pair<Type, Type>[0..1]
+{
+  let classPropertyPureType = $r.property.genericType.rawType;
+  $classPropertyPureType->match([
+      p:PrimitiveType[1] | 
+         let ropType = meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($r, '');
+         let ropCompatiblePureType = if($ropType->isEmpty(),
+            | []
+           ,| dataTypeToCompatiblePureType($ropType->toOne());
+           );
+
+         let ropCompatiblePureTypeGeneralizations = if($ropCompatiblePureType->isEmpty(),
+            | [] 
+           ,| $ropCompatiblePureType->toOne()->meta::pure::functions::meta::getAllTypeGeneralisations();
+           );
+
+         if($p->isEmpty() || $ropCompatiblePureType->isEmpty() || 
+            $ropCompatiblePureTypeGeneralizations->filter(f| $f != Any)->exists(m|$p->toOne()->_subTypeOf($m)), 
+            |[],
+            |^Pair<Type, Type>(first = $p->toOne(), second = $ropCompatiblePureType->toOne() ));,
+      a:Any[0..1] | 
+         []
+   ]);
+}
+
 function <<access.private>> meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping(r:RelationalPropertyMapping[0..1], propertyName:String[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
 
