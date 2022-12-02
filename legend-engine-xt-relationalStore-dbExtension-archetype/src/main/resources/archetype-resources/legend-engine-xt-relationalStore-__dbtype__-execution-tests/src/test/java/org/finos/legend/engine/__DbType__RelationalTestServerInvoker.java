@@ -15,16 +15,16 @@
 package org.finos.legend.engine;
 
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import org.finos.legend.engine.authentication.SqlServerTestDatabaseAuthenticationFlowProviderConfiguration;
+import org.finos.legend.engine.authentication.${DbType}TestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.server.test.shared.RelationalTestServer;
 
-public class SqlServerRelationalTestServerInvoker
+public class ${DbType}RelationalTestServerInvoker
 {
     public static void main(String[] args) throws Exception
     {
         RelationalTestServer.execute(
-                args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-sqlserver-execution-tests/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json"} : args,
-                new NamedType(SqlServerTestDatabaseAuthenticationFlowProviderConfiguration.class, "sqlServerTest")
+                args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-${dbtype}-execution-tests/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_with${DbType}TestConnection.json"} : args,
+                new NamedType(${DbType}TestDatabaseAuthenticationFlowProviderConfiguration.class, "${dbType}Test")
         );
     }
 }
