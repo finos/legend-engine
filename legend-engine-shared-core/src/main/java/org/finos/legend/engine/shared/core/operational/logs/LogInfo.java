@@ -98,6 +98,7 @@ public class LogInfo
         this(userProfiles, eventType, info);
         this.duration = duration;
     }
+
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, Object info, double duration)
     {
         this(userProfiles, eventType, info);
