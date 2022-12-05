@@ -1538,11 +1538,8 @@ function meta::external::language::java::factory::j_cast(expression:Code[1], cas
         let deferred = $expression->cast(@DeferredStreamResolve);
         ^$deferred(stream=$deferred.stream->j_cast(javaStream($castTo->elementTypeOfJavaList())), type=$castTo);
      },
-     |
-   if($expression.type->instanceOf(meta::external::language::java::metamodel::Class) && $castTo->in($expression.type->cast(@meta::external::language::java::metamodel::Class).interfaces),
-     | $expression,
-     | ^Cast(expression=$expression, type=$castTo)
-   ))))))))))))))));
+     |^Cast(expression=$expression, type=$castTo)
+   )))))))))))))));
 }
 
 function <<access.private>> meta::external::language::java::factory::isLambdaReturningCollectionsEmptyList(c:Code[1]):Boolean[1]
