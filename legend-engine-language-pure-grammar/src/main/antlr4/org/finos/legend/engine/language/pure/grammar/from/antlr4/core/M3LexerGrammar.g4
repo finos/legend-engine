@@ -10,6 +10,7 @@ LET:                                        'let';
 ALL_VERSIONS:                               'allVersions';
 ALL_VERSIONS_IN_RANGE:                      'allVersionsInRange';
 
+BYTE_STREAM_FUNCTION:                       'byteStream';
 
 // ----------------------------------- BUILDING BLOCK -----------------------------------
 
