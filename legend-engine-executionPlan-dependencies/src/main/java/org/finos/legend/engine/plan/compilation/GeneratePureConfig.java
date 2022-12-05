@@ -25,10 +25,8 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.RelativePathNode;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.RuleType;
-import org.finos.legend.engine.plan.dependencies.domain.date.AbstractPureDate;
 import org.finos.legend.engine.plan.dependencies.domain.date.DayOfWeek;
 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;
-import org.finos.legend.engine.plan.dependencies.domain.date.LatestDate;
 import org.finos.legend.engine.plan.dependencies.domain.date.Month;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.domain.date.Quarter;
@@ -132,9 +130,7 @@ public class GeneratePureConfig
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "RelationalCrossRootGraphNodeExecutor", IRelationalCrossRootGraphNodeExecutor.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "RelationalChildGraphNodeExecutor", IRelationalChildGraphNodeExecutor.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "RelationalClassInstantiationNodeExecutor", IRelationalClassInstantiationNodeExecutor.class);
-        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IPureDate", AbstractPureDate.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "PureDate", PureDate.class);
-        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "LatestDate", LatestDate.class);
         MAIN_DEPENDENCIES.put("meta::pure::functions::date::DurationUnit", DurationUnit.class);
         MAIN_DEPENDENCIES.put("meta::pure::functions::date::DayOfWeek", DayOfWeek.class);
         MAIN_DEPENDENCIES.put("meta::pure::functions::date::Month", Month.class);
@@ -773,14 +769,6 @@ public class GeneratePureConfig
                         out.finishLine("");
                         out.startLine("->addMethod(" + d + ")");
                     });
-            Arrays.stream(this.clazz.getInterfaces())
-                    .sorted()
-                    .forEach(d ->
-                    {
-                        out.finishLine("");
-                        out.startLine("->implements(" + GeneratePureConfig.this.encodeType(d).code() + ")");
-                    }
-            );
             this.declared = true;
             out.finishLine(";");
             out.outdent();
