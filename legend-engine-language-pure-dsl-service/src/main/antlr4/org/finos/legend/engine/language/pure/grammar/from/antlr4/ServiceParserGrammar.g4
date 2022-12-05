@@ -11,7 +11,8 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                             VALID_STRING | STRING
-                                        | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
+                                        | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                        | BYTE_STREAM_FUNCTION      // from M3Parser
                                         | STEREOTYPES | TAGS
                                         | SERVICE | IMPORT
                                         | SERVICE_SINGLE | SERVICE_MULTI
