@@ -1,0 +1,235 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::router::printer::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::*;
+import meta::alloy::service::metamodel::*;
+import meta::json::*;
+import meta::pure::ide::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function meta::pure::ide::execute(func:String[0..1], param:List<Any>[*], query:String[0..1], block:String[0..1], format:String[0..1], processingFunc:String[0..1], processingParam:List<Any>[*], outFunc:String[0..1], outParam:List<Any>[*]):String[*]
+{
+   assert($outFunc->isEmpty() || $format->isEmpty(), | 'Cannot specify both parameter \'outFunc\' and parameter \'format\'');
+   assert($format->isEmpty() || $format->in(supportedFormats()), | 'Unsupported output format ' + $format->toOne() + ' the supported formats are ' + supportedFormats()->makeString());
+
+   if ($func->isNotEmpty() , | executeFunction($func->toOne(), $param, $format, $outFunc, $outParam)
+          ,| if($block->isNotEmpty(), | executeCodeBlock($block->toOne(), $format, $processingFunc, $processingParam, $outFunc, $outParam)
+                   ,| fail('Not Supported Yet'); '';
+                );
+    );
+}
+
+
+function meta::pure::ide::executeFunction(func:Function<Any>[1], param:List<Any>[*], format:String[0..1], outFunc:String[0..1], outParam:List<Any>[*]):String[*]
+{
+   let outputFormat = if($format->isEmpty() && $outFunc->isEmpty(), | 'json', | $format);
+   if ($outputFormat == 'raw',
+        | executeFunction_RAW($func, $param),
+        | if ($outputFormat == 'json',
+            | executeFunction_JSON($func, $param),
+            | fail('No supported execution function'); '';
+        )
+   );
+}
+
+function {service.contentType='application/json'}
+meta::pure::ide::executeFunction_JSON(func:Function<Any>[1], params:List<Any>[*]):String[*]
+{
+   $func->evaluate($params)->meta::json::toJSONStringStream([], config(true, true, false, false));
+}
+
+function {service.contentType='text/html;charset=UTF-8'}
+meta::pure::ide::executeFunction_RAW(func:Function<Any>[1], params:List<Any>[*]):String[*]
+{
+   let funcReturnType = $func->functionReturnType();
+   let ok = if (isConcrete($funcReturnType), | assert(String->subTypeOf($funcReturnType.rawType->toOne()), | 'Return type must be consistent with String, got: ' + $funcReturnType.rawType->toOne()->elementToPath()); , | true);
+
+   let res = $func->evaluate($params);
+
+   assertSize($res, 1, | 'Expected 1 result, got ' + $res->size()->toString());
+   let returnValueType = $res->type();
+   assert($returnValueType == String, | 'Expected a result of type String, got ' + $returnValueType->elementToPath());
+
+   $res->cast(@String);
+}
+
+function meta::pure::ide::executeFunction(func:String[1], param:List<Any>[*], format:String[0..1], outFunc:String[0..1], outParam:List<Any>[*]):String[*]
+{
+   let funcDef = $func->pathToElement()->cast(@Function<Any>);
+   let functionType = $funcDef->functionType();
+   assertSize($param, $functionType.parameters->size() , | 'Error executing the function:' + $func + '. Mismatch between the number of function parameters (' + $functionType.parameters->size()->toString() + ') and the number of supplied arguments (' + $param->size()->toString() + ')');
+
+   executeFunction($funcDef, $param, $format, $outFunc, $outParam);
+}
+
+function meta::pure::ide::executeCodeBlock(block:String[1], format:String[0..1], processingFunc:String[0..1], processingParam:List<Any>[*], outFunc:String[0..1], outParam:List<Any>[*]):String[*]
+{
+   if ($processingFunc->isEmpty(), | executeFunction(meta::pure::ide::compileAndExecuteCodeBlock_String_1__Any_MANY_, ^List<Any>(values=$block), $format, $outFunc, $outParam);
+                          , | let funcDef = $processingFunc->toOne()->pathToElement()->cast(@Function<Any>);
+                              executeFunction(meta::pure::ide::compileAndExecuteAndProcessCodeBlock_String_1__Function_1__List_MANY__Any_MANY_, [^List<Any>(values=$block),^List<Any>(values=$funcDef),^List<Any>(values=$processingParam)], $format, $outFunc, $outParam);
+       )
+}
+
+function <<access.private>> meta::pure::ide::compileAndExecuteAndProcessCodeBlock(block:String[1], func:Function<Any>[1], funcParams:List<Any>[*]):Any[*]
+{
+   $func->evaluate([^List<Any>(values=compileAndExecuteCodeBlock($block))]->concatenate($funcParams));
+}
+
+function meta::pure::ide::supportedFormats():String[*]
+{
+   ['json','csv', 'raw', 'pre', 'xlsx']
+}
+
+function <<access.private>> meta::pure::ide::compileAndExecuteCodeBlock(block:String[1]):Any[*]
+{
+   let prefix = '{|';
+   let vs = compileValueSpecification($prefix + $block + '}');
+   assert($vs.succeeded(), | 'Invalid PURE code block: ' + if($vs.failure.sourceInformation->isEmpty(), |'', | let col = ($vs.failure.sourceInformation->toOne().column - $prefix->length()); '(line:' + $vs.failure.sourceInformation->toOne().line->toString() + ' column:' + $col->toString() + ') ' + $vs.failure->toOne().message;));
+
+   $vs.result->toOne()->reactivate()->cast(@Function<{->Any[*]}>)->toOne()->eval();
+}
+
+
+function {service.contentType='application/json'} meta::pure::ide::display_ide(path:String[1]):String[1]
+{
+    $path->pathToElement()->display_ide();
+}
+
+function <<access.private>> meta::pure::ide::buildKey(e:PackageableElement[1]):String[1]
+{
+   $e->elementToPath()->replace('::','');
+}
+
+function <<access.private>> meta::pure::ide::display_ide(elem:Any[1]):String[1]
+{
+   $elem->match
+   (
+      [
+         c:Class<Any>[1]| $c->allProperties()->map(p|let s = $p->sourceInformation()->toOne();
+                                                     '{"text":"'+$p.name->toOne()+'",'+
+                                                     ' "icon":"/ide/pure/icons/'+if($p.owner->instanceOf(Association),|'doublearrow',|'line')+'.png",'+
+                                                     ' "li_attr":'+
+                                                     '  {'+
+                                                     '     '+if($s.source == 'TOFILL',|'', |'"RO":"' + $s.source->isSourceReadOnly()->toString() + '",')+
+                                                     '    "pureName":"' + $p.name->toOne() + '",'+
+                                                     '    "pureId":"' + $p->id() + '",'+
+                                                     '    "pureType":"' + $p->genericType().rawType->toOne()->id() + '",'+
+                                                     '    "classPath":"' + $p.owner->elementToPath() + '",'+
+                                                     '    "file":"' + $s.source + '",'+
+                                                     '    "line":"' + $s.line->toString()+'",'+
+                                                     '    "column":"' + $s.column->toString() +
+                                                     '  "}'+
+                                                     '}';)->joinStrings('[', ',', ']'),
+         p:Package[1]|$p.children
+                        ->map(c|pair(if($c->instanceOf(Package),
+                                     |if ($c->cast(@Package)->tacticalDeprecated(),|'1$',|'0$') + $c->id(),
+                                     |if ($c->hasStereotype('externalizable', meta::pure::profiles::access),
+                                        |'1',
+                                        |if((!$c->hasStereotype('private', meta::pure::profiles::access) && !$c->hasStereotype('protected', meta::pure::profiles::access)),
+                                           |'2',
+                                           |let access = !(!$c->hasStereotype('private', meta::pure::profiles::access) && !$c->hasStereotype('protected', meta::pure::profiles::access));
+                                            '3' +  $access->toString();
+                                         )
+                                      )+'$' + $c->type()->toOne()->id() + '$' + $c->id()), $c
+                                    )
+                          )
+                        ->sortBy(c | $c.first).second
+                        ->filter(p |$p != system)
+                        ->map(p |  $p->match([
+                                               p:Package[1] | '{"li_attr":' + display_ide_attr_pack($p) + ', "id":"'+$p->buildKey()+'","text":"' + $p.name->toOne() + '", "state":"closed", "children":true}',
+                                               f:FunctionDefinition<Any>[1] | let icon = if($f->hasStereotype('externalizable', meta::pure::profiles::access),
+                                                                                                |'"/ide/pure/icons/play.png"',
+                                                                                                |'"/ide/pure/icons/modelElements/function.png"'
+                                                                                                 );
+
+                                                                              '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f)->replace('<','&lt;') + '", "icon":'+$icon+'}';,
+                                               f:NativeFunction<Any>[1] | '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f)->replace('<','&lt;') + '", "icon":"/ide/pure/icons/modelElements/function_parenthesis.png"}',
+                                               e:Enumeration<Any>[1] | '{"li_attr":' + display_ide_attr($e) + ', "id":"'+$p->buildKey()+ '","text":"' + $e->id() + '", "icon":"/ide/pure/icons/modelElements/enumeration.gif"}',
+                                               p:PrimitiveType[1] | '{"li_attr":' + display_ide_attr($p) + ', "id":"'+$p->buildKey()+ '","text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/primitive.png"}',
+                                               c:Class<Any>[1] | '{"li_attr":' + display_ide_attr($c) + ', "id":"'+$p->buildKey()+ '","text":"' + $c->id() + '", "icon":"/ide/pure/icons/modelElements/class.png", "children":true}',
+                                               a:Association[1] | '{"li_attr":' + display_ide_attr($a) + ', "id":"'+$p->buildKey()+ '","text":"' + $a->id() + '", "icon":"/ide/pure/icons/modelElements/association.png"}',
+                                               m:Mapping[1] | '{"li_attr":' + display_ide_attr($m) + ', "id":"'+$p->buildKey()+ '","text":"' + $m->id() + '", "icon":"/ide/pure/icons/modelElements/map.png"}',
+                                               p:Profile[1] | '{"li_attr":' + display_ide_attr($p)+ ', "id":"'+$p->buildKey() + '","text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/profile.png"}',
+                                               d:meta::pure::diagram::Diagram[1] | '{"li_attr":' + display_ide_attr($p) + ', "id":"'+$p->buildKey()+ '","text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/diagram.png"}',
+                                               p:ImportGroup[1] | '{"li_attr":{"id":"system::imports::' + $p->id() + '"}, "text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/import.png"}',
+                                               p:PackageableElement[1] | '{"li_attr":' + display_ide_attr($p) + ', "id":"'+$p->buildKey()+ '","text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/unknown.png"}',
+                                               a:Any[1]|'{"text":"'+$a->id()+'", "icon":"/ide/pure/icons/modelElements/unknown.png"}'
+                                               ]))->joinStrings('[', ',', ']')
+      ]
+   )
+
+}
+
+function meta::pure::ide::getChildPackageableElements(package:String[1]):String[*]
+{
+   $package->pathToElement()->cast(@Package).children->map(x|$x->match([
+      p:Package[1] | $p->elementToPath()->getChildPackageableElements(),
+      pe:PackageableElement[1] | '{"pureName" : "'+ $pe->getName() +'", "pureId" : "' + $pe->elementToPath() +'", "pureType" : "' + $pe->genericType().rawType->toOne()->id() +'"}';
+   ]));
+}
+
+function <<access.private>> meta::pure::ide::getName(pe:PackageableElement[1]):String[1]
+{
+   let name =$pe->match([f:FunctionDefinition<Any>[1] | $f.functionName,
+                         nf:NativeFunction<Any>[1]    | $nf.functionName,
+                         p:PackageableElement[1]      | $p.name]);
+   if($name->isEmpty(),|'',|$name->toOne());
+}
+
+function meta::pure::ide::display_ide_attr(element:FunctionDefinition<Any>[1]):String[1]
+{
+    $element->cast(@PackageableElement)->display_ide_attr();
+}
+
+function meta::pure::ide::display_ide_attr(element:PackageableElement[1]):String[1]
+{
+   let notPublic = !(!$element->hasStereotype('private', meta::pure::profiles::access) && !$element->hasStereotype('protected', meta::pure::profiles::access));
+   let s = $element->sourceInformation()->toOne();
+   let name = $element->getName();
+   '{' + if($s.source == 'TOFILL',|'', |'"RO":"' + $s.source->isSourceReadOnly()->toString() + '",') +
+              '"notpublic":'+$notPublic->toString()+','+
+              '"pureType":"' + $element->genericType().rawType->toOne()->id() +
+              '", "user":"' + $s.source->startsWith('/users/')->toString() +
+              '","pureId":"' + $element->elementToPath() +
+              '", "file":"' + $s.source +
+              '", "line":"' + $s.line->toString() +
+              '", "column":"' + $s.column->toString() +
+              '", "pureName":"' + if($name->isEmpty(), |'', |$name->toOne()) + '"' +
+   '}';
+}
+
+function <<access.private>> meta::pure::ide::display_ide_attr_pack(element:Package[1]):String[1]
+{
+   let path = $element->elementToPath();
+   '{"pureId":"' + $path + '",'+
+   '"pureType":"Package",'+
+   '"deprecated":'+meta::pure::ide::tacticalDeprecated($element)->toString()+
+   '}';
+}
+
+function <<access.private>> meta::pure::ide::tacticalDeprecated(element:Package[1]):Boolean[1]
+{
+   let model =  'model'->forgivingPathToElement();
+   let domain = 'model::domain'->forgivingPathToElement();
+
+   ($model->isNotEmpty() && $element.package == $model && !$element.name->in(['domain', 'producers', 'external', 'consumers'])) ;
+}
+
+

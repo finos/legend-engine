@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.25.1-SNAPSHOT</version>
+    <version>3.27.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -212,6 +212,7 @@
         <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-serviceStore-javaPlatformBinding-pure</module>
         <module>legend-engine-pure-code-compiled-core-configuration</module>
+        <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
     </modules>
 
     <properties>

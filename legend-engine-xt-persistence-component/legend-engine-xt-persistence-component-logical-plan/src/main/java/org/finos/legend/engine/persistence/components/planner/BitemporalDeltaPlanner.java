@@ -129,54 +129,58 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset, field, deleteIndicatorValues));
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset, field));
 
+        // To be moved to a separate class for SourceSpecifiesFromOnly
+        this.sourceValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
+        this.targetValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
+        this.targetValidDatetimeThru = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_THRU)).alias(VALID_DATE_TIME_THRU_NAME).build();
+
+        this.validDateTimeFrom = FieldValue.builder().fieldName(VALID_DATE_TIME_FROM_NAME).build();
+        this.validDateTimeThru = FieldValue.builder().fieldName(VALID_DATE_TIME_THRU_NAME).build();
+
+        this.dataFields = stagingDataset.schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
+        this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField()));
+        this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
+
+        this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
+        this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset, primaryKeys.toArray(new String[0]));
+
+        this.primaryKeyFields = new ArrayList<>();
+        for (String pkName : primaryKeys)
+        {
+            this.primaryKeyFields.add(FieldValue.builder().fieldName(pkName).build());
+            this.dataFields.removeIf(field -> field.fieldName().equals(pkName));
+        }
+
+        this.primaryKeyFieldsAndFromFieldFromStage = new ArrayList<>();
+        this.primaryKeyFieldsAndFromFieldFromStage.addAll(primaryKeyFields);
+        this.primaryKeyFieldsAndFromFieldFromStage.add(sourceValidDatetimeFrom);
+
+        this.primaryKeyFieldsAndFromFieldFromMain = new ArrayList<>();
+        this.primaryKeyFieldsAndFromFieldFromMain.addAll(primaryKeyFields);
+        this.primaryKeyFieldsAndFromFieldFromMain.add(targetValidDatetimeFrom);
+
+        this.primaryKeyFieldsAndFromFieldForSelection = new ArrayList<>();
+        this.primaryKeyFieldsAndFromFieldForSelection.addAll(primaryKeyFields);
+        this.primaryKeyFieldsAndFromFieldForSelection.add(validDateTimeFrom);
+
+        this.digest = FieldValue.builder().fieldName(ingestMode.digestField()).build();
+
+        if (deleteIndicatorField.isPresent())
+        {
+            this.dataFields.removeIf(field -> field.fieldName().equals(deleteIndicatorField.get()));
+        }
+
+        if (ingestMode.dataSplitField().isPresent())
+        {
+            this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.dataSplitField().get()));
+        }
+
         if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime)
         {
             this.tempDataset = getTempDataset(datasets);
-
-            this.sourceValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().validityDerivation().accept(BitemporalPlanner.EXTRACT_SOURCE_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
-            this.targetValidDatetimeFrom = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_FROM)).alias(VALID_DATE_TIME_FROM_NAME).build();
-            this.targetValidDatetimeThru = FieldValue.builder().fieldName(ingestMode.validityMilestoning().accept(BitemporalPlanner.EXTRACT_TARGET_VALID_DATE_TIME_THRU)).alias(VALID_DATE_TIME_THRU_NAME).build();
-
-            this.validDateTimeFrom = FieldValue.builder().fieldName(VALID_DATE_TIME_FROM_NAME).build();
-            this.validDateTimeThru = FieldValue.builder().fieldName(VALID_DATE_TIME_THRU_NAME).build();
-
-            this.dataFields = stagingDataset.schemaReference().fieldValues().stream().map(field -> FieldValue.builder().fieldName(field.fieldName()).build()).collect(Collectors.toList());
-            this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.digestField()));
-            this.dataFields.removeIf(field -> field.fieldName().equals(sourceValidDatetimeFrom.fieldName()));
-
-            this.primaryKeys.removeIf(fieldName -> fieldName.equals(sourceValidDatetimeFrom.fieldName()));
-            this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset, primaryKeys.toArray(new String[0]));
-
-            this.primaryKeyFields = new ArrayList<>();
-            for (String pkName : primaryKeys)
-            {
-                this.primaryKeyFields.add(FieldValue.builder().fieldName(pkName).build());
-                this.dataFields.removeIf(field -> field.fieldName().equals(pkName));
-            }
-
-            this.primaryKeyFieldsAndFromFieldFromStage = new ArrayList<>();
-            this.primaryKeyFieldsAndFromFieldFromStage.addAll(primaryKeyFields);
-            this.primaryKeyFieldsAndFromFieldFromStage.add(sourceValidDatetimeFrom);
-
-            this.primaryKeyFieldsAndFromFieldFromMain = new ArrayList<>();
-            this.primaryKeyFieldsAndFromFieldFromMain.addAll(primaryKeyFields);
-            this.primaryKeyFieldsAndFromFieldFromMain.add(targetValidDatetimeFrom);
-
-            this.primaryKeyFieldsAndFromFieldForSelection = new ArrayList<>();
-            this.primaryKeyFieldsAndFromFieldForSelection.addAll(primaryKeyFields);
-            this.primaryKeyFieldsAndFromFieldForSelection.add(validDateTimeFrom);
-
-            this.digest = FieldValue.builder().fieldName(ingestMode.digestField()).build();
-
             if (deleteIndicatorField.isPresent())
             {
                 this.tempDatasetWithDeleteIndicator = getTempDatasetWithDeleteIndicator(datasets);
-                this.dataFields.removeIf(field -> field.fieldName().equals(deleteIndicatorField.get()));
-            }
-
-            if (ingestMode.dataSplitField().isPresent())
-            {
-                this.dataFields.removeIf(field -> field.fieldName().equals(ingestMode.dataSplitField().get()));
             }
         }
     }
@@ -356,11 +360,6 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     @Override
     protected Selection getRowsUpdated(String alias)
     {
-        //if Source specifies From and Thru date, then Rows inserted follows the super class implementation
-        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromAndThruDateTime)
-        {
-            return super.getRowsUpdated(alias);
-        }
         Dataset sink2 = getMainDatasetWithProvidedAlias("sink2");
         return getRowsUpdated(alias, getPrimaryKeyFieldsAndFromFieldFromMain(), sink2);
     }
