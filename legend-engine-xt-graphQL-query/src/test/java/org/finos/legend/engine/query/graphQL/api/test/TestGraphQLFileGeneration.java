@@ -42,6 +42,9 @@ public class TestGraphQLFileGeneration
             GraphQLGenerationExtension graphQLGenerationExtension = new GraphQLGenerationExtension();
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = graphQLGenerationExtension.generateFromElement(fileGeneration, pureModel.getContext());
             Assert.assertEquals(outputs.size(), 4);
+            outputs.forEach(o -> {
+                Assert.assertEquals(o._content(), getResourceAsString("schema.graphql"));
+            });
         }
         catch (Exception e)
         {
