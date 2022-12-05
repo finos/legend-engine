@@ -703,7 +703,9 @@ function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:
       meta::pure::functions::math::percentile_Number_MANY__Float_1__Number_$0_1$_,
       meta::pure::functions::math::percentile_Number_MANY__Float_1__Boolean_1__Boolean_1__Number_$0_1$_,
       meta::pure::functions::collection::isDistinct_T_MANY__Boolean_1_,
-      meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_
+      meta::json::toJSON_T_MANY__LambdaFunction_MANY__String_1_,
+      meta::legend::service::get_ExecutionEnvironmentInstance_1__String_$0_1$__SingleExecutionParameters_1_, 
+      meta::legend::service::get_ExecutionEnvironmentInstance_1__String_$0_1$__String_1__SingleExecutionParameters_1_
     ]->concatenate($extensions.routerExtensions().shouldStopRouting)->contains($f);
 }
 
