@@ -70,16 +70,16 @@ jobs:
           MAVEN_OPTS: -Xmx4g
         run: |
           set -o pipefail
-          mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> summary.txt)
+          mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
       - name: Write Summary
         if: always()
         run: |
-          touch summary.txt
-          cat summary.txt >> $GITHUB_STEP_SUMMARY
+          touch sql_test_summary.txt
+          cat sql_test_summary.txt >> $GITHUB_STEP_SUMMARY
       - name: Upload Summary
         if: github.event.inputs.pullRequestId == ''
         uses: actions/upload-artifact@v3
         with:
           name: ${{github.workflow}}
-          path: summary.txt
+          path: sql_test_summary.txt
           retention-days: 1
