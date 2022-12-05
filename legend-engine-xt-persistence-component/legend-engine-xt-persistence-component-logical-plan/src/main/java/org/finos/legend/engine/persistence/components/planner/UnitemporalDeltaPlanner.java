@@ -263,7 +263,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
         }
     }
 
-    public Optional<Condition> getDataSplitInRangeCondition()
+    public Optional<Condition> getDataSplitInRangeConditionForStatistics()
     {
         return dataSplitInRangeCondition;
     }

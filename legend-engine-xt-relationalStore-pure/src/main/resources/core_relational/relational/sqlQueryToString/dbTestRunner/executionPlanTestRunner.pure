@@ -51,7 +51,7 @@ function meta::relational::dbTestRunner::getTestConnection(dbType:DatabaseType[1
 function meta::relational::dbTestRunner::findParameterizedTests(packOrFn: Any[*]): Function<{DbTestConfig[1] -> Boolean[1]}>[*]
 {
    $packOrFn->map(pof| $pof->match([
-      f:Function<Any>[1]| if($f.stereotypes->contains(meta::pure::test::paramTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> Boolean[1]}>), |[]),
+      f:Function<Any>[1]| if($f->instanceOf(AnnotatedElement) && $f->cast(@AnnotatedElement).stereotypes->contains(meta::pure::test::paramTest->stereotype('Test')), |$f->cast(@Function<{DbTestConfig[1] -> Boolean[1]}>), |[]),
       p:Package[1]| $p.children->findParameterizedTests(),
       x:Any[1]| []
    ]));

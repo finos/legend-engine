@@ -25,7 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_domain_Function;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.junit.Assert;
 import org.junit.Test;
@@ -64,7 +64,7 @@ public class TestRoundTripWithPureTransformation
     {
         String version = "vX_X_X";
         Class<?> cl = Class.forName("org.finos.legend.pure.generated.core_pure_protocol_" + version + "_transfers_metamodel");
-        Method graphFetchProtocolMethod = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_transformFunction_FunctionDefinition_1__Extension_MANY__Function_1_", FunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
+        Method graphFetchProtocolMethod = cl.getMethod("Root_meta_protocols_pure_" + version + "_transformation_fromPureGraph_transformFunction_ConcreteFunctionDefinition_1__Extension_MANY__Function_1_", ConcreteFunctionDefinition.class, RichIterable.class, org.finos.legend.pure.m3.execution.ExecutionSupport.class);
         Root_meta_protocols_pure_vX_X_X_metamodel_domain_Function pureFuctionAsProtocol = (Root_meta_protocols_pure_vX_X_X_metamodel_domain_Function) graphFetchProtocolMethod.invoke(null, pureFunction, FastList.newList(), executionSupport);
         return objectMapper.readValue(org.finos.legend.pure.generated.core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(pureFuctionAsProtocol, executionSupport), Function.class);
     }

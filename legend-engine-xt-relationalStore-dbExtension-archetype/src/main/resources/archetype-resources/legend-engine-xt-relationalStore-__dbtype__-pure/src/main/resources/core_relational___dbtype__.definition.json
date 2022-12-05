@@ -1,0 +1,5 @@
+{
+  "name" : "core_relational_${dbtype}",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::${dbType}|meta::relational::tests::sqlQueryToString::${dbType}|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies" : ["platform", "core", "core_relational"]
+}

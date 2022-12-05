@@ -549,8 +549,15 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::objectCreationCodes(var: Code[1], class: meta::external::language::java::metamodel::Class[1], set: InstanceSetImplementation[1], src: Code[1], propertyAssignments: Pair<Property<Nil,Any|*>, Code>[*], wrapAsGraphInstance: Boolean[1], conventions: Conventions[1]): Code[1..*]
 {
+   let rtEx = j_parameter(javaRuntimeException(), 'e');
    let initializationCodes = [$var->j_declare($class->j_new([])), $var->j_invoke($conventions->setterName(inMemorySource()), $src, javaVoid()), $var->j_invoke($conventions->setterName('setId$'), j_string($set.id), javaVoid())];
-   let assignmentCodes     = $propertyAssignments->map(p | $var->j_invoke($conventions->setterName($p.first), $p.second, javaVoid()));
+   let assignmentCodes     = $propertyAssignments->map(p | $var->j_invoke($conventions->setterName($p.first), $p.second, javaVoid())->j_try(j_catch($rtEx,
+                                                                                                                                                    j_new(javaRuntimeException(),j_string('Error instantiating property \''+ $p.first.name->toOne()+'\' on Target class \'' + $set.class->cast(@PackageableElement)->toOne()->elementToPath()+ ' [' + $set.id + ']\' on Mapping \'' + $set.parent->elementToPath() + '\'.\n')
+                                                                                                                                                    ->j_plus($rtEx->j_invoke('getMessage',[],javaString())))
+                                                                                                                                                    ->j_throw())
+                                                                                                                                                    )
+                                                                                                                                            );
+                                                                                                                                         
    let returnCodes         = if($wrapAsGraphInstance, | $conventions->createGraphInstance($class, $var), | $var)->j_return();
 
    $initializationCodes->concatenate($assignmentCodes)->concatenate($returnCodes)->toOneMany();

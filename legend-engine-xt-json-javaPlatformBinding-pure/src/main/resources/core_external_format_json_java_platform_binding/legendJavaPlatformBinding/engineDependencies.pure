@@ -16,19 +16,19 @@
  * Generated extension externalFormatJson class definitions: see org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension
  */
 
-import meta::external::format::json::executionPlan::engine::java::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
 
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 
-Class meta::external::format::json::executionPlan::engine::java::_IJsonDeserializeExecutionNodeSpecifics {}
+Class meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonDeserializeExecutionNodeSpecifics {}
 
 /*
  * This function should be assigned to the router extension:
  *
- *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
  */
-function meta::external::format::json::executionPlan::engine::java::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
 {
    let jIStoreStreamReader = $conventions->className(meta::pure::executionPlan::engine::StoreStreamReader);
 
@@ -36,5 +36,5 @@ function meta::external::format::json::executionPlan::engine::java::extendJavaEn
       ->addMethod(javaMethod('public', $jIStoreStreamReader, 'streamReader', [javaParam(javaClass('java.io.InputStream'), 'p0')]));
 
    $conventions
-      ->addProvidedType(meta::external::format::json::executionPlan::engine::java::_IJsonDeserializeExecutionNodeSpecifics, $jIJsonDeserializeExecutionNodeSpecifics);
+      ->addProvidedType(meta::external::format::json::executionPlan::platformBinding::legendJava::_IJsonDeserializeExecutionNodeSpecifics, $jIJsonDeserializeExecutionNodeSpecifics);
 }

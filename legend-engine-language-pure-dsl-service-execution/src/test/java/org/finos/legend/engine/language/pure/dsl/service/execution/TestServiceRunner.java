@@ -952,4 +952,38 @@ public class TestServiceRunner
         Assert.assertEquals(hitCount, cache.stats().hitCount());
         Assert.assertEquals(missCount, cache.stats().missCount());
     }
+
+    private static class TestUpdatedM2MErrorMessage extends AbstractServicePlanExecutor
+    {
+        TestUpdatedM2MErrorMessage()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleM2MService.pure", "test::M2MErrorMessage_String_1__String_1_"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.singletonList(new ServiceVariable("input", String.class, Multiplicity.PURE_ONE));
+        }
+    }
+
+    @Test
+    public void TestUpdatedM2MErrorMessage() throws Exception
+    {
+        try
+        {
+            TestUpdatedM2MErrorMessage testUpdatedM2MErrorMessage = new TestUpdatedM2MErrorMessage();
+            ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                    .newInstance()
+                    .withArgs(Collections.singletonList("s"))
+                    .withSerializationFormat(SerializationFormat.PURE);
+
+            String result = testUpdatedM2MErrorMessage.run(serviceRunnerInput);
+        }
+
+        catch (Exception e)
+        {
+            Assert.assertEquals("Error instantiating property 'name' on Target class 'test::targetPerson [test_targetPerson]' on Mapping 'test::Map'.\n" + "Cannot cast a collection of size 0 to multiplicity [1]", e.getMessage());
+        }
+    }
 }

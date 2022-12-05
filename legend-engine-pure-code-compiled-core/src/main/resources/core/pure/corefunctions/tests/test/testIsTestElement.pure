@@ -22,5 +22,5 @@ function <<test.Test>> meta::pure::functions::test::tests::isTestElement::testIs
 
 function <<test.Test>> meta::pure::functions::test::tests::isTestElement::testIsTestElementFailure():Boolean[1]
 {
-    assertFalse(meta::pure::functions::test::isTestElement_AnnotatedElement_1__Boolean_1_->isTestElement())
+    assertFalse(meta::pure::functions::test::isTestElement_Any_1__Boolean_1_->isTestElement())
 }

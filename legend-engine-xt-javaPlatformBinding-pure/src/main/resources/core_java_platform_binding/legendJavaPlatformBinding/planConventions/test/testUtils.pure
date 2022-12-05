@@ -238,7 +238,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPure
       ->concatenate(
          $generatedTestCalls->map(
             {p|
-               let name = $p.first->elementToPath();
+               let name = $p.first->cast(@PackageableElement)->elementToPath();
                let call = $p.second;
                         
                let ex   = j_parameter(javaException(), 'e');

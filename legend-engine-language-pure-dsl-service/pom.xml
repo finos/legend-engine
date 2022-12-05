@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.24.1-SNAPSHOT</version>
+        <version>3.27.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-dsl-service</artifactId>
@@ -164,6 +164,16 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
