@@ -67,23 +67,29 @@ In the case of a multi-execution service, the execution key parameter will be ev
 ## Execution
 To execute a Post Validation, a POST request can be made to **/service/v1/doValidation** providing appropriate PureModelContext, an assertion ID, and a serialization format for violations.
 
-The response can take the form of one of the following:
+`Violations` will be returned alongside the assertion ID and assertion message. The format of this is set by the serialization format in the request.
+
+An assertion is said to have passed if there are no violations. Evaluating the existence of violations is dependent on the serialization format:
+- **PURE_TDSOBJECT** - an empty collection
+- **PURE** - an empty `rows` collection
+- **DEFAULT** - an empty `rows` collection within the `result` object
+
+The response can take the form of one of the following (using PURE_TDSOBJECT serialization format):
 
 A passing response:
 ```json
 {
   "id": "noFirstNamesWithLetterT",
   "message": "Expected no first names to begin with the letter T",
-  "result": "PASSED"
+  "violations": []
 }
 ```
 
-A failing response (in this case with PURE_TDSOBJECT serialization format):
+A failing response:
 ```json
 {
   "id": "noFirstNamesWithLetterT",
   "message": "Expected no first names to begin with the letter T",
-  "result": "FAILED",
   "violations": [
     {
       "firstName": "Tom",
