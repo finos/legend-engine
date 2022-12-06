@@ -117,6 +117,13 @@ public class SqlExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
+        SingleExecutionPlan singleExecutionPlan = generateQueryPlan(request, projectId, sql, profiles);
+        long start = System.currentTimeMillis();
+        return this.execImpl(planExecutor, profiles, request.getRemoteUser(), SerializationFormat.defaultFormat, start, singleExecutionPlan);
+    }
+
+    private SingleExecutionPlan generateQueryPlan(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
+    {
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(sql);
 
@@ -132,8 +139,7 @@ public class SqlExecute
 
         Root_meta_pure_executionPlan_ExecutionPlan plan = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlansFromSQL_Service_MANY__Node_1__Extension_MANY__ExecutionPlan_1_(services, query, extensions.apply(pureModel), pureModel.getExecutionSupport());
         SingleExecutionPlan singleExecutionPlan = transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions.apply(pureModel), transformers);
-        long start = System.currentTimeMillis();
-        return this.execImpl(planExecutor, profiles, request.getRemoteUser(), SerializationFormat.defaultFormat, start, singleExecutionPlan);
+        return singleExecutionPlan;
     }
 
     protected PureModelContextData loadModelContextData(MutableList<CommonProfile> profiles, HttpServletRequest request, String project) throws PrivilegedActionException
