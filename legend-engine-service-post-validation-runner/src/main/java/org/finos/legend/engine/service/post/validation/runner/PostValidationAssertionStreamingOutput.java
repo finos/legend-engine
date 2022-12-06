@@ -39,8 +39,7 @@ public class PostValidationAssertionStreamingOutput implements StreamingOutput
     private final SerializationFormat format;
     private final byte[] b_id = "{\"id\": \"".getBytes();
     private final byte[] b_message = "\", \"message\": \"".getBytes();
-    private final byte[] b_result = "\", \"result\": ".getBytes();
-    private final byte[] b_violations = ", \"violations\":".getBytes();
+    private final byte[] b_violations = "\", \"violations\": ".getBytes();
     private final byte[] b_endResult = "}".getBytes();
 
     public PostValidationAssertionStreamingOutput(String assertionId, String assertionMessage, StreamingResult result, SerializationFormat format)
@@ -60,42 +59,34 @@ public class PostValidationAssertionStreamingOutput implements StreamingOutput
             stream.write(assertionId.getBytes());
             stream.write(b_message);
             stream.write(assertionMessage.getBytes());
-            stream.write(b_result);
+            stream.write(b_violations);
 
-            PostValidationAssertionResult validationResult = getValidationResult();
-            stream.write(("\"" + validationResult + "\"").getBytes());
-
-            if (PostValidationAssertionResult.FAILED.equals(validationResult))
+            if (result instanceof RelationalResult)
             {
-                stream.write(b_violations);
-
-                if (result instanceof RelationalResult)
+                switch (this.format)
                 {
-                    switch (this.format)
-                    {
-                        case PURE_TDSOBJECT:
-                            new RelationalResultToPureTDSToObjectSerializer((RelationalResult) result).stream(stream);
-                            break;
-                        case PURE:
-                            new RelationalResultToPureTDSSerializer((RelationalResult) result).stream(stream);
-                            break;
-                        case DEFAULT:
-                            new RelationalResultToJsonDefaultSerializer((RelationalResult) result).stream(stream);
-                            break;
-                        default:
-                            throw new RuntimeException(this.format + " format not currently supported for RelationalResult");
-                    }
+                    case PURE_TDSOBJECT:
+                        new RelationalResultToPureTDSToObjectSerializer((RelationalResult) result).stream(stream);
+                        break;
+                    case PURE:
+                        new RelationalResultToPureTDSSerializer((RelationalResult) result).stream(stream);
+                        break;
+                    case DEFAULT:
+                        new RelationalResultToJsonDefaultSerializer((RelationalResult) result).stream(stream);
+                        break;
+                    default:
+                        throw new RuntimeException(this.format + " format not currently supported for RelationalResult");
                 }
-                else if (result instanceof StreamingObjectResult)
+            }
+            else if (result instanceof StreamingObjectResult)
+            {
+                switch (this.format)
                 {
-                    switch (this.format)
-                    {
-                        case DEFAULT:
-                            new StreamingObjectResultJSONSerializer((StreamingObjectResult<?>) result).stream(stream);
-                            break;
-                        default:
-                            throw new RuntimeException(this.format + " format not currently supported for StreamingObjectResult");
-                    }
+                    case DEFAULT:
+                        new StreamingObjectResultJSONSerializer((StreamingObjectResult<?>) result).stream(stream);
+                        break;
+                    default:
+                        throw new RuntimeException(this.format + " format not currently supported for StreamingObjectResult");
                 }
             }
 
@@ -108,35 +99,6 @@ public class PostValidationAssertionStreamingOutput implements StreamingOutput
         finally
         {
             this.result.close();
-        }
-    }
-
-    private boolean resultHasRows(StreamingResult result) throws SQLException
-    {
-        if (result instanceof RelationalResult)
-        {
-            return !((RelationalResult) result).resultSet.isClosed() && ((RelationalResult) result).resultSet.isBeforeFirst();
-        }
-        else if (result instanceof StreamingObjectResult)
-        {
-            return !((RelationalResult) ((StreamingObjectResult<?>) result).getChildResult()).resultSet.isClosed() && ((RelationalResult) ((StreamingObjectResult<?>) result).getChildResult()).resultSet.isBeforeFirst();
-        }
-        else
-        {
-            throw new RuntimeException(result.getClass() + " not currently supported for Post Validation execution");
-        }
-    }
-
-    private PostValidationAssertionResult getValidationResult()
-    {
-        try
-        {
-            boolean hasRows = resultHasRows(this.result);
-            return hasRows ? PostValidationAssertionResult.FAILED : PostValidationAssertionResult.PASSED;
-        }
-        catch (SQLException e)
-        {
-            return PostValidationAssertionResult.ERROR;
         }
     }
 }
