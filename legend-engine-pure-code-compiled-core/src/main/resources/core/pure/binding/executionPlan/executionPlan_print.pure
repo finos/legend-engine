@@ -44,7 +44,7 @@ function meta::external::shared::format::executionPlan::toString::printPlanNodeT
          $node.implementation->printImplementation('implementation', $space+'  ', $extensions) +
          $space + ')\n'
       },
-      {node:UrlStreamExecutionNode[1] |
+      {node:UrlStreamExecutionNode[1] |   // TODO: TO BE REMOVED
          'UrlStream\n' +
          $space + '(' + header($node, $space, $extensions) + '\n' +
          $space + '  url = ' + $node.url + '\n' +

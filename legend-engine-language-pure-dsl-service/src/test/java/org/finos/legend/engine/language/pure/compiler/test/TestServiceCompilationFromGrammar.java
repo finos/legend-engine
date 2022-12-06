@@ -2886,23 +2886,6 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "  autoActivateUpdates: false;\n" +
                 "  execution: Single\n" +
                 "  {\n" +
-                "    query: url: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, ^Url(url = $url))->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
-                "  }\n" +
-                "  testSuites:\n" +
-                "  [\n" +
-                "\n" +
-                "  ]\n" +
-                "}\n");
-
-        test(resource +
-                "###Service\n" +
-                "Service test::firm::model::myService\n" +
-                "{\n" +
-                "  pattern: '/showcase/binding';\n" +
-                "  documentation: 'Showcase service with binding';\n" +
-                "  autoActivateUpdates: false;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
                 "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding2, #{test::firm::model::Firm{name, ranking}}#);\n" +
                 "  }\n" +
                 "  testSuites:\n" +
