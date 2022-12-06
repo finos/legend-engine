@@ -23,6 +23,7 @@ public enum FileGenerationType
     slang("Slang"),
     rosetta("Rosetta"),
     morphir("Morphir"),
+    daml("DAML"),
     graphql("GraphQL");
 
     private String label;

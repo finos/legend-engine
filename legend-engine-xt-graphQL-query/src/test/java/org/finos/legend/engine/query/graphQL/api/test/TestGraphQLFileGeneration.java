@@ -18,7 +18,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
-import org.finos.legend.engine.query.graphQL.api.format.GraphQLGenerationExtension;
+import org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
