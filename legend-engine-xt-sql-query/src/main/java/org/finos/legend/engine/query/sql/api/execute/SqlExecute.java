@@ -110,8 +110,8 @@ public class SqlExecute
     }
 
     @POST
-    @ApiOperation(value = "Generate plans from a GraphQL query in the context of a Mapping and a Runtime.")
-    @Path("test/{projectId}")
+    @ApiOperation(value = "Execute a SQL query in the context of a Mapping and a Runtime from a SDLC project")
+    @Path("execute/{projectId}")
     @Consumes({MediaType.APPLICATION_JSON})
     public Response executeSql(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
     {
