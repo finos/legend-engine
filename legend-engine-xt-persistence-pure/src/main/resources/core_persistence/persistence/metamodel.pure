@@ -600,3 +600,14 @@ Class meta::pure::persistence::metamodel::ConnectionTestData
 {
   data      : meta::pure::data::EmbeddedData[1];
 }
+
+Class meta::pure::persistence::metamodel::AllRowsEquivalentToJson extends meta::pure::test::assertion::TestAssertion
+{
+  expected    : meta::pure::data::EmbeddedData[1];
+}
+
+Class meta::pure::persistence::metamodel::AllRowsEquivalentToJsonAssertFail extends meta::pure::test::assertion::AssertFail
+{
+  expected    : String[1];
+  actual      : String[1];
+}

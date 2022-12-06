@@ -25,10 +25,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.AllRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 
 import java.util.List;
 import java.util.Map;
@@ -62,7 +66,17 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
                 // Persistence test
                 ProtocolSubTypeInfo.newBuilder(AtomicTest.class)
                         .withSubtype(PersistenceTest.class, "test")
-                        .build()
+                        .build(),
+
+                // Test assertion
+                ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
+                    .withSubtype(AllRowsEquivalentToJson.class, "allRowsEquivalentToJson")
+                    .build(),
+
+                // Test result
+                ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)
+                    .withSubtype(AllRowsEquivalentToJsonAssertFail.class, "allRowsEquivalentToJsonAssertFail")
+                    .build()
         ));
     }
 

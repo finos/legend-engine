@@ -21,6 +21,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
@@ -35,13 +36,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext_Impl;
@@ -57,6 +61,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trig
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_trigger_Trigger;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_ValidationResult;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_validation_ValidationRuleSet;
+import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 
 import java.util.Collections;
 import java.util.List;
@@ -183,6 +188,27 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
             }
             return null;
         });
+    }
+
+    @Override
+    public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
+    {
+        return Collections.singletonList(PersistenceCompilerExtension::compileTestAssertionTypesForPersistence);
+    }
+
+    private static Root_meta_pure_test_assertion_TestAssertion compileTestAssertionTypesForPersistence(TestAssertion testAssertion, CompileContext context, ProcessingContext processingContext)
+    {
+        if (testAssertion instanceof AllRowsEquivalentToJson)
+        {
+            AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
+
+            return new Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl("")
+                ._expected(allRowsEquivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test persistenceTest(PersistenceTest persistenceTest, CompileContext context, ProcessingContext processingContext)

@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.test.assertion.AllRowsEquivalentToJsonGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
@@ -29,6 +30,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceLexe
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.PersistenceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
@@ -86,6 +88,12 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
                     return null;
                 }
         );
+    }
+
+    @Override
+    public Iterable<? extends TestAssertionParser> getExtraTestAssertionParsers()
+    {
+        return org.eclipse.collections.api.factory.Lists.immutable.with(new AllRowsEquivalentToJsonGrammarParser());
     }
 
     private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)

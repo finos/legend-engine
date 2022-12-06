@@ -14,20 +14,27 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceParserExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.test.assertion.AllRowsEquivalentToJsonGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.PersistenceContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 import java.util.Collections;
 import java.util.List;
@@ -111,6 +118,31 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
                     }
                     return null;
                 });
+    }
+
+    @Override
+    public List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> getExtraTestAssertionComposers()
+    {
+        return Lists.mutable.with(PersistenceComposerExtension::composeTestAssertionForPersistence);
+    }
+
+    private static ContentWithType composeTestAssertionForPersistence(TestAssertion testAssertion, PureGrammarComposerContext context)
+    {
+        String indentedString = context.getIndentationString() + PureGrammarComposerUtility.getTabString(1);
+        PureGrammarComposerContext updatedContext = PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentedString).build();
+
+        if (testAssertion instanceof AllRowsEquivalentToJson)
+        {
+            AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
+            String content = context.getIndentationString() + "expected : \n"
+                + HelperEmbeddedDataGrammarComposer.composeEmbeddedData(allRowsEquivalentToJson.expected, updatedContext) + ";";
+
+            return new ContentWithType(AllRowsEquivalentToJsonGrammarParser.TYPE, content);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)
