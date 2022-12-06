@@ -2,7 +2,7 @@ import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 
-function meta::pure::alloy::connections::tests::testTableMapperPostProcessor():Boolean[1]
+function <<test.Test>> meta::pure::alloy::connections::tests::testTableMapperPostProcessor():Boolean[1]
 {
     let runtime = ^meta::pure::runtime::Runtime
         (
