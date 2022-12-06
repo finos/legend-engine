@@ -16,24 +16,24 @@
  * Generated extension externalShared class definitions: see org.finos.legend.engine.external.shared.ExternalFormatJavaCompilerExtension
  */
 
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 
-Class meta::external::shared::format::executionPlan::engine::java::_ExternalDataAdder {}
-Class meta::external::shared::format::executionPlan::engine::java::_ExternalDataBooleanAdder {}
-Class meta::external::shared::format::executionPlan::engine::java::_ExternalDataDoubleAdder {}
-Class meta::external::shared::format::executionPlan::engine::java::_ExternalDataLongAdder {}
-Class meta::external::shared::format::executionPlan::engine::java::_ExternalDataObjectAdder {}
-Class meta::external::shared::format::executionPlan::engine::java::_IExternalData {}
-Class meta::external::shared::format::executionPlan::engine::java::_IExternalDataFactory {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataAdder {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataBooleanAdder {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataDoubleAdder {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataLongAdder {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataObjectAdder {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_IExternalData {}
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::_IExternalDataFactory {}
 
 /*
  * This function should be assigned to the router extension:
  *
- *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_
+ *     plan_javaRuntime_enginePlatformDependencies_conventions = meta::external::shared::format::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_
  */
-function meta::external::shared::format::executionPlan::engine::java::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
 {
 
    let jIDefect = $conventions->className(meta::pure::dataQuality::Defect);
@@ -65,11 +65,11 @@ function meta::external::shared::format::executionPlan::engine::java::extendJava
       ->addMethod(javaMethod('public', $jIExternalData, 'newInstance', []));
 
    $conventions
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_ExternalDataAdder, $jExternalDataAdder)
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_ExternalDataBooleanAdder, $jExternalDataBooleanAdder)
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_ExternalDataDoubleAdder, $jExternalDataDoubleAdder)
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_ExternalDataLongAdder, $jExternalDataLongAdder)
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_ExternalDataObjectAdder, $jExternalDataObjectAdder)
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_IExternalData, $jIExternalData)
-      ->addProvidedType(meta::external::shared::format::executionPlan::engine::java::_IExternalDataFactory, $jIExternalDataFactory);
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataAdder, $jExternalDataAdder)
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataBooleanAdder, $jExternalDataBooleanAdder)
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataDoubleAdder, $jExternalDataDoubleAdder)
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataLongAdder, $jExternalDataLongAdder)
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_ExternalDataObjectAdder, $jExternalDataObjectAdder)
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_IExternalData, $jIExternalData)
+      ->addProvidedType(meta::external::shared::format::executionPlan::platformBinding::legendJava::_IExternalDataFactory, $jIExternalDataFactory);
 }
