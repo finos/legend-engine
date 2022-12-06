@@ -122,6 +122,18 @@ public class SqlExecute
         return this.execImpl(planExecutor, profiles, request.getRemoteUser(), SerializationFormat.defaultFormat, start, singleExecutionPlan);
     }
 
+    @POST
+    @ApiOperation(value = "Generate plans for a SQL query in the context of a Mapping and a Runtime from a SDLC project")
+    @Path("generatePlan/{projectId}")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response generatePlan(@Context HttpServletRequest request, @PathParam("projectId") String projectId, String sql, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo) throws Exception
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+
+        SingleExecutionPlan singleExecutionPlan = generateQueryPlan(request, projectId, sql, profiles);
+        return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(singleExecutionPlan).build();
+    }
+
     private SingleExecutionPlan generateQueryPlan(HttpServletRequest request, String projectId, String sql, MutableList<CommonProfile> profiles) throws PrivilegedActionException
     {
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
