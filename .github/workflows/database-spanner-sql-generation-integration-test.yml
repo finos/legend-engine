@@ -84,7 +84,7 @@ jobs:
           touch sql_test_summary.txt
           cat sql_test_summary.txt >> $GITHUB_STEP_SUMMARY
       - name: Upload Summary
-        if: github.event.inputs.pullRequestId == ''
+        if: always() && (github.event.inputs.pullRequestId == '')
         uses: actions/upload-artifact@v3
         with:
           name: ${{github.workflow}}
