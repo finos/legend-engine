@@ -228,7 +228,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
-                .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class);
+                .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
+                .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PureGrammarParserExtension>> getExpectedGrammarParserExtensions()
@@ -305,7 +306,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
-                .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class);
+                .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
+                .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class);
     }
 
     protected Iterable<? extends Class<? extends ArtifactGenerationExtension>> getExpectedArtifactGenerationExtensions()
@@ -330,6 +332,9 @@ public class TestExtensions
                 .with("core_external_format_json")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
+                .with("core_external_query_graphql")
+                .with("core_external_query_graphql_metamodel")
+                .with("core_external_compiler")
                 .with("core_persistence")
                 .with("core_mastery")
                 .with("core_persistence_cloud")

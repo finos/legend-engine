@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.graphQL.api.format;
 
+import org.eclipse.collections.api.RichIterable;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -24,10 +25,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.core_external_query_graphql_deprecated_generation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Deprecated
@@ -97,6 +100,14 @@ public class GraphQLGenerationExtension implements GenerationExtension
     @Override
     public List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext context)
     {
+        if (element instanceof FileGenerationSpecification)
+        {
+            FileGenerationSpecification specification = (FileGenerationSpecification) element;
+            GraphQLGenerationConfig graphQLGenerationConfig = GraphQLGenerationConfigFromFileGenerationSpecificationBuilder.build(specification);
+            RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output =
+                    core_external_query_graphql_deprecated_generation.Root_meta_external_query_graphQL_generation_generateGraphQL_GraphQLConfig_1__GraphQLOutput_MANY_(graphQLGenerationConfig.process(context.pureModel), context.pureModel.getExecutionSupport());
+            return new ArrayList<>(output.toList());
+        }
         return null;
     }
 }

@@ -1,81 +1,9 @@
 ###Diagram
 Diagram meta::external::shared::format::metamodel::MetamodelDiagram(width=0.0, height=0.0)
 {
-    TypeView cview_2(
-        type=meta::external::shared::format::metamodel::Schema,
-        position=(300.00000, 272.00000),
-        width=142.87988,
-        height=72.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_7(
-        type=meta::pure::data::DataElementReference,
-        position=(220.58948, 157.00000),
-        width=150.72266,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_9(
-        type=meta::pure::data::ModelStoreData,
-        position=(388.58948, 155.00000),
-        width=114.75146,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_4(
-        type=meta::external::shared::format::metamodel::data::ExternalFormatData,
-        position=(519.82153, 154.00000),
-        width=138.35742,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_8(
-        type=meta::pure::data::EmbeddedData,
-        position=(218.58948, 81.00000),
-        width=446.00000,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_6(
-        type=meta::pure::data::DataElement,
-        position=(-57.41052, 95.00000),
-        width=150.00000,
-        height=87.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_1(
         type=meta::external::shared::format::metamodel::SchemaSet,
-        position=(118.00000, 286.00000),
+        position=(1079.00000, 392.00000),
         width=108.00537,
         height=44.00000,
         stereotypesVisible=true,
@@ -85,9 +13,21 @@ Diagram meta::external::shared::format::metamodel::MetamodelDiagram(width=0.0, h
         color=#FFFFCC,
         lineWidth=1.0)
 
+    TypeView cview_2(
+        type=meta::external::shared::format::metamodel::Schema,
+        position=(1271.00000, 381.00000),
+        width=142.87988,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
     TypeView cview_3(
         type=meta::external::shared::format::metamodel::SchemaDetail,
-        position=(529.93994, 293.00000),
+        position=(1297.00000, 528.00000),
         width=98.70313,
         height=30.00000,
         stereotypesVisible=true,
@@ -97,78 +37,11 @@ Diagram meta::external::shared::format::metamodel::MetamodelDiagram(width=0.0, h
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_5(
-        type=meta::external::shared::format::metamodel::data::SchemaData,
-        position=(746.82153, 133.00000),
-        width=115.94922,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    GeneralizationView gview_0(
-        source=cview_4,
-        target=cview_8,
-        points=[(589.00024,183.00000),(589.58948,106.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_1(
-        source=cview_7,
-        target=cview_8,
-        points=[(295.95081,172.00000),(296.58948,94.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_2(
-        source=cview_9,
-        target=cview_8,
-        points=[(445.96521,177.00000),(444.58948,90.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
     PropertyView pview_0(
         property=meta::external::shared::format::metamodel::Schema.detail,
         source=cview_2,
         target=cview_3
-,        points=[(371.43994,308.00000),(579.29150,308.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_1(
-        property=meta::pure::data::DataElementReference.dataElement,
-        source=cview_7,
-        target=cview_6
-,        points=[(295.95081,172.00000),(89.58948,171.00000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_2(
-        property=meta::pure::data::DataElement.data,
-        source=cview_6,
-        target=cview_8
-,        points=[(68.58948,102.00000),(441.58948,103.00000)],
+,        points=[(1342.43994,417.00000),(1346.35156,543.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

@@ -1324,21 +1324,5 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "\n" +
                 "  ]\n" +
                 "}\n");
-
-        test("###Service\n" +
-                "Service meta::pure::myServiceSingle\n" +
-                "{\n" +
-                "  pattern: '/showcase/binding';\n" +
-                "  documentation: 'Showcase service with binding';\n" +
-                "  autoActivateUpdates: false;\n" +
-                "  execution: Single\n" +
-                "  {\n" +
-                "    query: url: String[1]|demo::Address->internalize(demo::InternalizeBinding, ^Url(url=$url))->externalize(demo::InternalizeBinding, #{demo::Address{street}}#);\n" +
-                "  }\n" +
-                "  testSuites:\n" +
-                "  [\n" +
-                "\n" +
-                "  ]\n" +
-                "}\n");
     }
 }

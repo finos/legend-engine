@@ -33,7 +33,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.pure.generated.Root_meta_external_shared_format_executionPlan_engine_java_ExternalFormatLegendJavaPlatformBindingDescriptor;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
@@ -66,17 +65,7 @@ public abstract class TestExternalFormatQueries
         return runTest(modelData, query, Maps.mutable.empty());
     }
 
-    protected String runTest(PureModelContextData modelData, String query, StreamProvider streamProvider)
-    {
-        return runTest(modelData, query, Maps.mutable.empty(), streamProvider);
-    }
-
     protected String runTest(PureModelContextData modelData, String query, Map<String, ?> params)
-    {
-        return runTest(modelData, query, params, null);
-    }
-
-    protected String runTest(PureModelContextData modelData, String query, Map<String, ?> params, StreamProvider streamProvider)
     {
         try
         {
@@ -95,7 +84,6 @@ public abstract class TestExternalFormatQueries
             PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs()
                     .withPlan(plan)
                     .withParams(params)
-                    .withInputAsStreamProvider(streamProvider)
                     .build();
             StreamingResult streamingResult = (StreamingResult) executor.executeWithArgs(executeArgs);
             return streamingResult.flush(streamingResult.getSerializer(SerializationFormat.DEFAULT));

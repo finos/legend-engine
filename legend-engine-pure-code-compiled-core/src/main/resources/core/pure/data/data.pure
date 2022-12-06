@@ -40,14 +40,13 @@ Class meta::pure::data::ModelStoreData extends EmbeddedData
   instances   : Map<Class<Any>, InstanceValue>[1];
 }
 
-//TODO: this should be moved to core_external_shared module, when users have shifted to binding/external formats entirely from JsonModelConnection/ XmlModelConnection
 Class meta::external::shared::format::metamodel::data::ExternalFormatData extends EmbeddedData
 {
   contentType : String[1];
   data        : String[1];
 }
 
-Class meta::external::shared::format::metamodel::data::SchemaData
+Class meta::external::shared::format::metamodel::data::SchemaData         // TODO: TO BE REMOVED
 {
   location : String[1];
   content  : String[1];
