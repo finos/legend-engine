@@ -96,6 +96,7 @@ public class TestPersistenceGrammarV2Roundtrip extends TestGrammarRoundtrip.Test
                 "  ]\n" +
                 "}\n");
     }
+
     @Test
     public void persistenceOptionalFieldsDefaulted()
     {
