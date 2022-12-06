@@ -277,6 +277,11 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-graphQL-query</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
         </dependency>
         <dependency>

@@ -14,6 +14,7 @@
 
 import meta::external::query::graphQL::generation::*;
 import meta::pure::generation::metamodel::*;
+import meta::pure::generation::*;
 
 Class meta::external::query::graphQL::generation::GraphQLConfig extends GenerationConfiguration
 {
@@ -48,7 +49,7 @@ function meta::external::query::graphQL::generation::generateGraphQLFromPure(con
    ^GraphQLOutput
    (
         content=$content,
-        fileName='schema.graphQL',
+        fileName=$class->elementToPath()->pathToFileName('graphql'),
         format='text'
    );
 }
