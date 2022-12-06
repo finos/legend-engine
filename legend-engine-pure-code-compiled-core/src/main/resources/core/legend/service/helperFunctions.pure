@@ -23,7 +23,7 @@ function meta::legend::service::isFromFunctionPresent(func: FunctionDefinition<A
   !$getExprList->isEmpty();
 }
 
-function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], key:String[0..1]):SingleExecutionParameters[1]
+function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], key:String[1]):SingleExecutionParameters[1]
 {
   assert($execEnv.executionParameters->at(0)->instanceOf(SingleExecutionParameters),| 'Please provide the subkey using function ->get(masterKey,subKey)');
   let singleExecParam = $execEnv.executionParameters->cast(@SingleExecutionParameters)->filter(x| $x.key == $key->toOne());
@@ -31,7 +31,7 @@ function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], ke
   $singleExecParam->at(0);
 }
 
-function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], masterKey:String[0..1], subKey:String[1]):SingleExecutionParameters[1]
+function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], masterKey:String[1], subKey:String[1]):SingleExecutionParameters[1]
 {
   assert($execEnv.executionParameters->at(0)->instanceOf(MultiExecutionParameters),| 'Please use the function ->get(key)');
   let multiExecParam = $execEnv.executionParameters->cast(@MultiExecutionParameters)->filter(x| $x.masterKey == $masterKey->toOne());
@@ -43,15 +43,15 @@ function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], ma
 
 function meta::legend::service::getKeyFromFunctionDefinition(func: FunctionDefinition<Any>[1]):String[1]
 {
-  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::legend::service::get_ExecutionEnvironmentInstance_1__String_$0_1$__SingleExecutionParameters_1_, 
-                                                                            meta::legend::service::get_ExecutionEnvironmentInstance_1__String_$0_1$__String_1__SingleExecutionParameters_1_]);
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_,
+                                                                            meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_]);
   $getExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(1)->evaluateAndDeactivate()->cast(@VariableExpression).name)->at(0)->cast(@String);
 }
 
 function meta::legend::service::getExecutionEnvironmentFromFunctionDefinition(func: FunctionDefinition<Any>[1]):meta::legend::service::metamodel::ExecutionEnvironmentInstance[1]
 {
-  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::legend::service::get_ExecutionEnvironmentInstance_1__String_$0_1$__SingleExecutionParameters_1_, 
-                                                                            meta::legend::service::get_ExecutionEnvironmentInstance_1__String_$0_1$__String_1__SingleExecutionParameters_1_]);
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_,
+                                                                            meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_]);
   $getExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values)->at(0)->cast(@meta::legend::service::metamodel::ExecutionEnvironmentInstance);
 }
 
