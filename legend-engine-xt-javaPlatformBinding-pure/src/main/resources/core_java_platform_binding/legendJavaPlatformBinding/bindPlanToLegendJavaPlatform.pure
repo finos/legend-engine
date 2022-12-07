@@ -80,7 +80,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
             g:GlobalGraphFetchExecutionNode[1]       | $g->prepareForGlobalGraphFetchNode($path, $updatedContextForChildren, $debug),
             p:PureExpressionPlatformExecutionNode[1] | $p->prepareForPlatformNode($path, $updatedContextForChildren, $extensions, $debug),
             p:PlatformMergeExecutionNode[1]          | $p->prepareForPlatformMergeNode($path, $updatedContextForChildren, $extensions, $debug),
-            p:PlatformUnionExecutionNode[1]          | $p->prepareForPlatformUnionNode($path, $updatedContextForChildren, $extensions, $debug),      
+            p:PlatformUnionExecutionNode[1]          | $p->prepareForPlatformUnionNode($path, $updatedContextForChildren, $extensions, $debug),
+            s:SequenceExecutionNode[1]               | $s->prepareForSequenceNode($path, $updatedContextForChildren, $debug),
             e:ExecutionNode[1]                       | $updatedContextForChildren
          ])
    );

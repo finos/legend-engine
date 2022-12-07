@@ -173,10 +173,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sybas
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::transformToTimestampSybaseIQ(params:String[2]):String[1]
 {
-  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
-   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');    
-   let timestampFormat = 121;   
-   'convert(datetime,'+$params->at(0)+','+$timestampFormat->toString() +')';
+  // Temporarily revert functionality to handle scenarios that have date string of the format yyyyMMdd
+  'cast('+$params->at(0)+' as timestamp)';
+
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
+  // assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+  // let timestampFormat = 121;
+  // 'convert(datetime,'+$params->at(0)+','+$timestampFormat->toString() +')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sybaseIQ::formatMostRecentSybase(p:String[1..2], defaultDay:String[1]):String[*]

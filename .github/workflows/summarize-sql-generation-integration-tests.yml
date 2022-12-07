@@ -38,42 +38,49 @@ jobs:
           workflow: database-bigquery-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Download Summary For Databricks
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: database-databricks-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Download Summary For MSSQLServer
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: database-mssqlserver-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Download Summary For Postgres
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: database-postgresql-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Download Summary For Redshift
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: database-redshift-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Download Summary For Snowflake
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: database-snowflake-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Download Summary For Spanner
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: database-spanner-sql-generation-integration-test.yml
           path: summaries
           if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Print Summary
         run: |
           find summaries -type f -name sql_test_summary.txt -exec dirname {}  \; -exec cat {} \; -exec echo \; | sed -E "s/summaries\/(.*)/**\1**/g" >> $GITHUB_STEP_SUMMARY

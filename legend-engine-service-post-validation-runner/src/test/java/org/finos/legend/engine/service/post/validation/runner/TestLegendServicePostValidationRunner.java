@@ -106,7 +106,7 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-tds-services-with-validation.json", "meta::validation::test::DemoPassingService", "noFirstNamesWithLetterX", SerializationFormat.PURE_TDSOBJECT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterX\", \"message\": \"Expected no first names to begin with the letter X\", \"result\": \"PASSED\"}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterX\", \"message\": \"Expected no first names to begin with the letter X\", \"violations\": []}", result);
     }
 
     @Test
@@ -114,7 +114,7 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-tds-services-with-validation.json", "meta::validation::test::DemoFailingService", "noFirstNamesWithLetterT", SerializationFormat.PURE_TDSOBJECT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"result\": \"FAILED\", \"violations\":[{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"violations\": [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
     }
 
     @Test
@@ -122,7 +122,7 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-object-services-with-validation.json", "meta::validation::test::DemoPassingService", "noFirstNamesWithLetterX", SerializationFormat.DEFAULT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterX\", \"message\": \"Expected no first names to begin with the letter X\", \"result\": \"PASSED\"}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterX\", \"message\": \"Expected no first names to begin with the letter X\", \"violations\": {\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"}, \"activities\": [{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'X%'\"}], \"objects\" : []}}", result);
     }
 
     @Test
@@ -130,7 +130,7 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-object-services-with-validation.json", "meta::validation::test::DemoFailingService", "noFirstNamesWithLetterT", SerializationFormat.DEFAULT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"result\": \"FAILED\", \"violations\":{\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"}, \"activities\": [{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'T%'\"}], \"objects\" : [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24,\"alloyStoreObjectReference$\":\"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDAzNzptZXRhOjp2YWxpZGF0aW9uOjp0ZXN0OjpQZXJzb25NYXBwaW5nOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDA1MDg6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCIsInRlc3REYXRhU2V0dXBTcWxzIjpbIkRST1AgVEFCTEUgSUYgRVhJU1RTIFBlcnNvblRhYmxlOyIsIkNSRUFURSBUQUJMRSBQZXJzb25UYWJsZSAoSUQgaW50LCBGSVJTVE5BTUUgdmFyY2hhcigyMDApLCBMQVNUTkFNRSB2YXJjaGFyKDIwMCksIEFHRSBpbnQpOyIsIklOU0VSVCBJTlRPIFBlcnNvblRhYmxlIFZBTFVFUyAoMSwgJ1RvbScsICdXaWxzb24nLCAyNCk7IiwiSU5TRVJUIElOVE8gUGVyc29uVGFibGUgVkFMVUVTICgyLCAnRGlodWknLCAnQmFvJywgMzIpOyJdfSwiZWxlbWVudCI6Im1ldGE6OnZhbGlkYXRpb246OnRlc3Q6OlRlc3REQiIsInBvc3RQcm9jZXNzb3JXaXRoUGFyYW1ldGVyIjpbXSwicG9zdFByb2Nlc3NvcnMiOltdLCJ0eXBlIjoiSDIifTowMDAwMDAwMDExOnsicGskXzAiOjF9\"}]}}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"violations\": {\"builder\": {\"_type\":\"classBuilder\",\"mapping\":\"meta::validation::test::PersonMapping\",\"classMappings\":[{\"setImplementationId\":\"meta_validation_test_Person\",\"properties\":[{\"property\":\"firstName\",\"type\":\"String\"},{\"property\":\"lastName\",\"type\":\"String\"},{\"property\":\"age\",\"type\":\"Integer\"}],\"class\":\"meta::validation::test::Person\"}],\"class\":\"meta::validation::test::Person\"}, \"activities\": [{\"_type\":\"RelationalExecutionActivity\",\"sql\":\"select \\\"root\\\".ID as \\\"pk_0\\\", \\\"root\\\".FIRSTNAME as \\\"firstName\\\", \\\"root\\\".LASTNAME as \\\"lastName\\\", \\\"root\\\".AGE as \\\"age\\\" from PersonTable as \\\"root\\\" where \\\"root\\\".FIRSTNAME like 'T%'\"}], \"objects\" : [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24,\"alloyStoreObjectReference$\":\"ASOR:MDAxOjAxMDowMDAwMDAwMDEwOlJlbGF0aW9uYWw6MDAwMDAwMDAzNzptZXRhOjp2YWxpZGF0aW9uOjp0ZXN0OjpQZXJzb25NYXBwaW5nOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDAwMjc6bWV0YV92YWxpZGF0aW9uX3Rlc3RfUGVyc29uOjAwMDAwMDA1MDg6eyJfdHlwZSI6IlJlbGF0aW9uYWxEYXRhYmFzZUNvbm5lY3Rpb24iLCJhdXRoZW50aWNhdGlvblN0cmF0ZWd5Ijp7Il90eXBlIjoiaDJEZWZhdWx0In0sImRhdGFzb3VyY2VTcGVjaWZpY2F0aW9uIjp7Il90eXBlIjoiaDJMb2NhbCIsInRlc3REYXRhU2V0dXBTcWxzIjpbIkRST1AgVEFCTEUgSUYgRVhJU1RTIFBlcnNvblRhYmxlOyIsIkNSRUFURSBUQUJMRSBQZXJzb25UYWJsZSAoSUQgaW50LCBGSVJTVE5BTUUgdmFyY2hhcigyMDApLCBMQVNUTkFNRSB2YXJjaGFyKDIwMCksIEFHRSBpbnQpOyIsIklOU0VSVCBJTlRPIFBlcnNvblRhYmxlIFZBTFVFUyAoMSwgJ1RvbScsICdXaWxzb24nLCAyNCk7IiwiSU5TRVJUIElOVE8gUGVyc29uVGFibGUgVkFMVUVTICgyLCAnRGlodWknLCAnQmFvJywgMzIpOyJdfSwiZWxlbWVudCI6Im1ldGE6OnZhbGlkYXRpb246OnRlc3Q6OlRlc3REQiIsInBvc3RQcm9jZXNzb3JXaXRoUGFyYW1ldGVyIjpbXSwicG9zdFByb2Nlc3NvcnMiOltdLCJ0eXBlIjoiSDIifTowMDAwMDAwMDExOnsicGskXzAiOjF9\"}]}}", result);
     }
 
     @Test
@@ -138,7 +138,7 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-services-with-validation-and-parameters.json", "meta::validation::test::DemoServiceWithStaticParam", "noFirstNamesWithLetterT", SerializationFormat.PURE_TDSOBJECT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"result\": \"FAILED\", \"violations\":[{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"violations\": [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
     }
 
     @Test
@@ -146,7 +146,7 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-services-with-validation-and-parameters.json", "meta::validation::test::DemoServiceWithQueryParam", "noFirstNamesWithLetterT", SerializationFormat.PURE_TDSOBJECT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"result\": \"FAILED\", \"violations\":[{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"violations\": [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
     }
 
     @Test
@@ -154,6 +154,6 @@ public class TestLegendServicePostValidationRunner
     {
         String result = responseAsString(test("legend-test-services-with-validation-multi-execution.json", "meta::validation::test::DemoServiceWithParamsMultiExecution", "noFirstNamesWithLetterT", SerializationFormat.PURE_TDSOBJECT));
 
-        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"result\": \"FAILED\", \"violations\":[{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
+        Assert.assertEquals("{\"id\": \"noFirstNamesWithLetterT\", \"message\": \"Expected no first names to begin with the letter T\", \"violations\": [{\"firstName\":\"Tom\",\"lastName\":\"Wilson\",\"age\":24}]}", result);
     }
 }
