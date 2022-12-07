@@ -447,8 +447,8 @@ We will now execute the generated sql against a real database instance, and make
     
     Since, we earlier used the dynamic connection based on docker, we will continue with same here, and add
 
-    ~~~json
-    dynamicTestConnectionCreators = {
+    ~~~
+    "dynamicTestConnectionCreators" : {
         "sqlServer" : "org.finos.legend.engine.dynamicTestConnections.SqlServerUsingTestContainer"
     }
     ~~~
