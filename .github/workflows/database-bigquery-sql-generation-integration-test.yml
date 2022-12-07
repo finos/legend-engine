@@ -69,4 +69,18 @@ jobs:
           MAVEN_OPTS: -Xmx4g
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_INTEGRATION_USER1_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
-        run: mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-bigquery-execution-tests -Dtest="Test_Relational_DbSpecific_BigQuery_UsingPureClientTestSuite" test
+        run: |
+          set -o pipefail
+          mvn -P run-bigquery-integration -pl legend-engine-xt-relationalStore-bigquery-execution-tests -Dtest="Test_Relational_DbSpecific_BigQuery_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
+      - name: Write Summary
+        if: always()
+        run: |
+          touch sql_test_summary.txt
+          cat sql_test_summary.txt >> $GITHUB_STEP_SUMMARY
+      - name: Upload Summary
+        if: always() && (github.event.inputs.pullRequestId == '')
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{github.workflow}}
+          path: sql_test_summary.txt
+          retention-days: 1

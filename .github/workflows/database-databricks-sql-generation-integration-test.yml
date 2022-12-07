@@ -68,4 +68,18 @@ jobs:
       - name: Run Sql Generation Tests
         env:
           MAVEN_OPTS: -Xmx4g
-        run: mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite" test
+        run: |
+          set -o pipefail
+          mvn -pl legend-engine-xt-relationalStore-test-server -Dtest="Test_Relational_DbSpecific_Databricks_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
+      - name: Write Summary
+        if: always()
+        run: |
+          touch sql_test_summary.txt
+          cat sql_test_summary.txt >> $GITHUB_STEP_SUMMARY
+      - name: Upload Summary
+        if: always() && (github.event.inputs.pullRequestId == '')
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{github.workflow}}
+          path: sql_test_summary.txt
+          retention-days: 1

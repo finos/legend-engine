@@ -32,7 +32,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
      enum:Enumeration<Any>[1]        | transformEnum($enum),
      meas:Measure[1]                 | transformMeasure($meas, $extensions),
      unit:Unit[1]                    | transformUnit($unit, $extensions),
-     func:FunctionDefinition<Any>[1] | transformFunction($func, $extensions),
+     func:ConcreteFunctionDefinition<Any>[1] | transformFunction($func, $extensions),
      prof:Profile[1]                 | transformProfile($prof, $extensions)
    ])
 }
@@ -228,7 +228,7 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
    );
 }
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Function[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformFunction(f:ConcreteFunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::domain::Function[1]
 {
 
    ^meta::protocols::pure::vX_X_X::metamodel::domain::Function

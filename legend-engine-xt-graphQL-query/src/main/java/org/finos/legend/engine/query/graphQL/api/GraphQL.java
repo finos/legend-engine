@@ -28,7 +28,9 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.Met
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Translator;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -56,15 +58,15 @@ public abstract class GraphQL
         return new Translator().translate(document, pureModel);
     }
 
-    protected PureModel loadModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String project, String branch) throws PrivilegedActionException
+    protected PureModel loadSDLCProjectModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace) throws PrivilegedActionException
     {
         Subject subject = ProfileManagerHelper.extractSubject(profiles);
         return subject == null ?
-                getPureModel(profiles, request, project, branch) :
-                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> getPureModel(profiles, request, project, branch));
+                getSDLCProjectPureModel(profiles, request, projectId, workspaceId, isGroupWorkspace) :
+                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> getSDLCProjectPureModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
     }
 
-    private PureModel getPureModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String project, String branch)
+    private PureModel getSDLCProjectPureModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace)
     {
         CookieStore cookieStore = new BasicCookieStore();
         ArrayIterate.forEach(request.getCookies(), c -> cookieStore.addCookie(new MyCookie(c)));
@@ -76,7 +78,7 @@ public abstract class GraphQL
             {
                 throw new EngineException("Please specify the metadataserver.sdlc information in the server configuration");
             }
-            HttpGet req = new HttpGet("http://" + metadataserver.getSdlc().host + ":" + metadataserver.getSdlc().port + "/api/projects/" + project + "/workspaces/" + branch + "/pureModelContextData");
+            HttpGet req = new HttpGet("http://" + metadataserver.getSdlc().host + ":" + metadataserver.getSdlc().port + "/api/projects/" + projectId + (isGroupWorkspace ? "/groupWorkspaces/" : "/workspaces/") + workspaceId + "/pureModelContextData");
             try (CloseableHttpResponse res = client.execute(req))
             {
                 ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
@@ -88,5 +90,19 @@ public abstract class GraphQL
         {
             throw new RuntimeException(e);
         }
+    }
+
+    protected PureModel loadProjectModel(MutableList<CommonProfile> profiles, HttpServletRequest request, String groupId, String artifactId, String versionId) throws PrivilegedActionException
+    {
+        Subject subject = ProfileManagerHelper.extractSubject(profiles);
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        AlloySDLC sdlcInfo = new AlloySDLC();
+        sdlcInfo.groupId = groupId;
+        sdlcInfo.artifactId = artifactId;
+        sdlcInfo.version = versionId;
+        pointer.sdlcInfo = sdlcInfo;
+        return subject == null ?
+                this.modelManager.loadModel(pointer, PureClientVersions.production, profiles, "") :
+                Subject.doAs(subject, (PrivilegedExceptionAction<PureModel>) () -> this.modelManager.loadModel(pointer, PureClientVersions.production, profiles, ""));
     }
 }

@@ -112,44 +112,6 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
    assertEquals($expected, $planString);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromRuntimeUrl(): Boolean[1]
-{
-  let binding    = testBinding();
-  let planString = buildPlan({url:String[1]| Person->internalize($binding, ^Url(url=$url))});
-
-  let expected ='Sequence\n' +
-                '(\n' +
-                '  type = Class[impls=]\n' +
-                '  resultSizeRange = *\n' +
-                '  (\n' +
-                '    FunctionParametersValidationNode\n' +
-                '    (\n' +
-                '      functionParameters = [url:String[1]]\n' +
-                '    )\n' +
-                '    ExternalFormat_Internalize\n' +
-                '    (\n' +
-                '      type = Class[impls=]\n' +
-                '      resultSizeRange = *\n' +
-                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-                '      enableConstraints = true\n' +
-                '      checked = false\n' +
-                '\n' +
-                '      (\n' +
-                '        UrlStream\n' +
-                '        (\n' +
-                '          type = ByteStream\n' +
-                '          requires = [url(String[1])]\n' +
-                '          url = ${url}\n' +
-                '\n' +
-                '        )\n' +
-                '      )\n' +
-                '    )\n' +
-                '  )\n' +
-                ')\n';
-
-   assertEquals($expected, $planString);
-}
-
 function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromConstantString(): Boolean[1]
 {
   let binding    = testBinding();
@@ -199,52 +161,36 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
    assertEquals($expected, $planString);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeFromConstantUrl(): Boolean[1]
-{
-  let binding    = testBinding();
-  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))});
-
-  let expected =      
-        'ExternalFormat_Internalize\n' +
-        '(\n' +
-        '  type = Class[impls=]\n' +
-        '  resultSizeRange = *\n' +
-        '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-        '  enableConstraints = true\n' +
-        '  checked = false\n' +
-        '\n' +
-        '  (\n' +
-        '    UrlStream\n' +
-        '    (\n' +
-        '      type = ByteStream\n' +
-        '      url = file:/path/filename.csv\n' +
-        '\n' +
-        '    )\n' +
-        '  )\n' +
-        ')\n';
-
-   assertEquals($expected, $planString);
-}
-
 function <<meta::pure::profiles::test.Test>> meta::external::shared::format::executionPlan::tests::planInternalizeCheck(): Boolean[1]
 {
   let binding    = testBinding();
-  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->checked()});
+  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->checked()});
 
-  let expected =  'ExternalFormat_Internalize\n' +
+  let expected =  'Sequence\n' +
                   '(\n' +
                   '  type = Class[impls=]\n' +
                   '  resultSizeRange = *\n' +
-                  '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-                  '  enableConstraints = true\n' +
-                  '  checked = true\n' +
-                  '\n' +
                   '  (\n' +
-                  '    UrlStream\n' +
+                  '    FunctionParametersValidationNode\n' +
                   '    (\n' +
-                  '      type = ByteStream\n' +
-                  '      url = file:/path/filename.csv\n' +
+                  '      functionParameters = [data:ByteStream[1]]\n' +
+                  '    )\n' +
+                  '    ExternalFormat_Internalize\n' +
+                  '    (\n' +
+                  '      type = Class[impls=]\n' +
+                  '      resultSizeRange = *\n' +
+                  '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                  '      enableConstraints = true\n' +
+                  '      checked = true\n' +
                   '\n' +
+                  '      (\n' +
+                  '        VariableResolution\n' +
+                  '        (\n' +
+                  '          type = ByteStream\n' +
+                  '          varName = data\n' +
+                  '\n' +
+                  '        )\n' +
+                  '      )\n' +
                   '    )\n' +
                   '  )\n' +
                   ')\n';
@@ -256,23 +202,34 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetch($gft)});
+  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetch($gft)});
 
-  let expected ='ExternalFormat_Internalize\n' +
+  let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
                 '  resultSizeRange = *\n' +
-                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = false\n' +
-                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
-                '\n' +
                 '  (\n' +
-                '    UrlStream\n' +
+                '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      type = ByteStream\n' +
-                '      url = file:/path/filename.csv\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = false\n' +
+                '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
                 '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
                 '    )\n' +
                 '  )\n' +
                 ')\n';
@@ -284,23 +241,34 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchUnexpanded($gft)});
+  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetchUnexpanded($gft)});
 
-  let expected ='ExternalFormat_Internalize\n' +
+  let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
                 '  resultSizeRange = *\n' +
-                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = false\n' +
-                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName}}#\n' +
-                '\n' +
                 '  (\n' +
-                '    UrlStream\n' +
+                '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      type = ByteStream\n' +
-                '      url = file:/path/filename.csv\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = false\n' +
+                '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName}}#\n' +
                 '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
                 '    )\n' +
                 '  )\n' +
                 ')\n';
@@ -312,26 +280,37 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchCheckedUnexpanded($gft)});
+  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($gft)});
 
-  let expected ='ExternalFormat_Internalize\n' +
-                '(\n' +
-                '  type = Class[impls=]\n' +
-                '  resultSizeRange = *\n' +
-                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = true\n' +
-                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName}}#\n' +
-                '\n' +
-                '  (\n' +
-                '    UrlStream\n' +
-                '    (\n' +
-                '      type = ByteStream\n' +
-                '      url = file:/path/filename.csv\n' +
-                '\n' +
-                '    )\n' +
-                '  )\n' +
-                ')\n';
+  let expected =  'Sequence\n' +
+                  '(\n' +
+                  '  type = Class[impls=]\n' +
+                  '  resultSizeRange = *\n' +
+                  '  (\n' +
+                  '    FunctionParametersValidationNode\n' +
+                  '    (\n' +
+                  '      functionParameters = [data:ByteStream[1]]\n' +
+                  '    )\n' +
+                  '    ExternalFormat_Internalize\n' +
+                  '    (\n' +
+                  '      type = Class[impls=]\n' +
+                  '      resultSizeRange = *\n' +
+                  '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                  '      enableConstraints = true\n' +
+                  '      checked = true\n' +
+                  '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName}}#\n' +
+                  '\n' +
+                  '      (\n' +
+                  '        VariableResolution\n' +
+                  '        (\n' +
+                  '          type = ByteStream\n' +
+                  '          varName = data\n' +
+                  '\n' +
+                  '        )\n' +
+                  '      )\n' +
+                  '    )\n' +
+                  '  )\n' +
+                  ')\n';
 
    assertEquals($expected, $planString);
 }
@@ -340,23 +319,34 @@ function <<meta::pure::profiles::test.Test>> meta::external::shared::format::exe
 {
   let binding    = testBinding();
   let gft = #{Person{firstName}}#;
-  let planString = buildPlan({| Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchChecked($gft)});
+  let planString = buildPlan({data:ByteStream[1]| Person->internalize($binding, $data)->graphFetchChecked($gft)});
 
-  let expected ='ExternalFormat_Internalize\n' +
+  let expected ='Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
                 '  resultSizeRange = *\n' +
-                '  binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = true\n' +
-                '  graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
-                '\n' +
                 '  (\n' +
-                '    UrlStream\n' +
+                '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      type = ByteStream\n' +
-                '      url = file:/path/filename.csv\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::shared::format::executionPlan::tests::MyBinding[application/x.flatdata]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = true\n' +
+                '      graphFetchTree = #{meta::external::shared::format::executionPlan::tests::Person{firstName,lastName}}#\n' +
                 '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
                 '    )\n' +
                 '  )\n' +
                 ')\n';

@@ -23,10 +23,7 @@ public class SpannerRelationalTestServerInvoker
   public static void main(String[] args) throws Exception
   {
     RelationalTestServer.execute(
-        args.length == 0 ? new String[] {"server",
-            "legend-engine-xt-relationalStore-spanner-execution-tests/src/test/resources/org/finos/legend/engine" 
-            + "/server/test/userTestConfig_withSpannerTestConnection.json"} :
-            args,
+        args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-spanner-execution-tests/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_withSpannerTestConnection.json"} : args,
         new NamedType(SpannerTestDatabaseAuthenticationFlowProviderConfiguration.class, "spannerTest")
     );
   }

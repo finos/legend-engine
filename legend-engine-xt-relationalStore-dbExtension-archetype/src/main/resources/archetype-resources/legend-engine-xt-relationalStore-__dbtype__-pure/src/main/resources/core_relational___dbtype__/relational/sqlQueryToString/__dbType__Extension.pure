@@ -1,0 +1,55 @@
+import meta::relational::functions::sqlQueryToString::${dbType}::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::metamodel::relation::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::relational::extension::*;
+
+function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::${dbType}::dbExtensionLoaderFor${DbType}():DbExtensionLoader[1]
+{
+  ^DbExtensionLoader(dbType = DatabaseType.${DbType}, loader = createDbExtensionFor${DbType}__DbExtension_1_);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::${dbType}::createDbExtensionFor${DbType}():DbExtension[1]
+{
+   let reservedWords = defaultReservedWords();
+   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsFor${DbType}());
+   let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
+   let dynaFuncDispatch = getDynaFunctionToSqlFor${DbType}()->groupBy(d| $d.funcName)->getDynaFunctionDispatcher();
+
+   ^DbExtension(
+      isBooleanLiteralSupported = true,
+      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      literalProcessor = $literalProcessor,
+      selectSQLQueryProcessor = processSelectSQLQueryFor${DbType}_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
+      dynaFuncDispatch = $dynaFuncDispatch
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::${dbType}::getLiteralProcessorsFor${DbType}():Map<Type,LiteralProcessor>[1]
+{
+   newMap([
+   ]->cast(@Pair<Type,LiteralProcessor>))
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::${dbType}::getDynaFunctionToSqlFor${DbType}(): DynaFunctionToSql[*]
+{
+  let allStates = allGenerationStates();
+
+  [
+  ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::${dbType}::processSelectSQLQueryFor${DbType}(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryFor${DbType}($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::${dbType}::processSelectSQLQueryFor${DbType}(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+  fail('[unsupported-api] select queries not supported'); '';
+}

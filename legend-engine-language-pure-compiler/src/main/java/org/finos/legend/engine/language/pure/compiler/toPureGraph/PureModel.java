@@ -290,7 +290,7 @@ public class PureModel implements IPureModel
             new EnumerationValidator().validate(this, pureModelContextData);
             new ClassValidator().validate(this, pureModelContextData);
             new AssociationValidator().validate(this, pureModelContextData);
-            new MappingValidator().validate(this, pureModelContextData);
+            new org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator().validate(this, pureModelContextData, extensions);
             extraPostValidators.forEach(validator -> validator.value(this, pureModelContextData));
             long postValidationFinished = System.currentTimeMillis();
             LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double) postValidationFinished - processingFinished).toString());
@@ -1247,7 +1247,7 @@ public class PureModel implements IPureModel
     {
         if (!(f instanceof UserDefinedFunctionHandler))
         {
-            String pkg = HelperModelBuilder.getElementFullPath(f.getFunc()._package(), this.getExecutionSupport());
+            String pkg = HelperModelBuilder.getElementFullPath(((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) f.getFunc())._package(), this.getExecutionSupport());
             org.finos.legend.pure.m3.coreinstance.Package n = getOrCreatePackage(root, pkg);
             org.finos.legend.pure.m3.coreinstance.Package o = getPackage((org.finos.legend.pure.m3.coreinstance.Package) METADATA_LAZY.getMetadata(M3Paths.Package, M3Paths.Root), pkg);
             n._childrenAdd(o._children().detect(c -> f.getFunctionSignature().equals(c._name())));

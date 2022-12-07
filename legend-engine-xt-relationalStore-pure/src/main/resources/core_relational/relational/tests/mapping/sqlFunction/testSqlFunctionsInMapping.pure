@@ -68,7 +68,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForSybaseIQ():Boolean[1]
 {
   let sybaseIqSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());  
-  assertEquals('select convert(datetime,"root".string2date,121) as "timestamp" from dataTable as "root"',$sybaseIqSql->sqlRemoveFormatting());
+  assertEquals('select cast("root".string2date as timestamp) as "timestamp" from dataTable as "root"',$sybaseIqSql->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateForH2():Boolean[1]
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate:
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringParseDateForSybaseIQ():Boolean[1]
 {
   let sybaseSQL = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampFormat], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-  assertEquals('select convert(datetime,"root".stringDateTimeFormat,121) as "timestamp" from dataTable as "root"',$sybaseSQL->sqlRemoveFormatting());
+  assertEquals('select cast("root".stringDateTimeFormat as timestamp) as "timestamp" from dataTable as "root"',$sybaseSQL->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::concat::testProject():Boolean[1]

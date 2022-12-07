@@ -116,7 +116,8 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         });
 
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> properties = ListIterate.collect(srcClass.properties, HelperModelBuilder.processProperty(this.context, _classGenericType, _class));
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> withMilestoningProperties = properties.withAll(Milestoning.generateMilestoningProperties(_class, this.context));
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> restrictedMilestoningProperties = Milestoning.restrictedMilestoningProperties(_class, srcClass, properties, this.context.pureModel);
+        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> withMilestoningProperties = properties.select(p -> !restrictedMilestoningProperties.contains(p)).withAll(Milestoning.generateMilestoningProperties(_class, this.context));
 
         ProcessingContext ctx = new ProcessingContext("Class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' Second Pass");
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name));

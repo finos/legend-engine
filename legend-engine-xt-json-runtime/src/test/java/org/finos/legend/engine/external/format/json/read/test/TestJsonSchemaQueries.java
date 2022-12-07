@@ -25,9 +25,6 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
-import org.finos.legend.engine.shared.core.url.InputStreamProvider;
-import org.finos.legend.engine.shared.core.url.NamedInputStream;
-import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -45,7 +42,7 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     {
         ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport();
         formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(executionSupport));
-        formatDescriptors = Collections.singletonList(core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_json_executionPlan_engine_java_jsonSchemaJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
+        formatDescriptors = Collections.singletonList(core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_json_executionPlan_platformBinding_legendJava_jsonSchemaJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }
 
     @Test
@@ -91,37 +88,6 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
         String result = runTest(generated,
                 "|test::firm::model::Person->internalize(test::gen::TestBinding, '" + data + "')->checked()->externalize(test::gen::TestBinding, checked(" + personTree() + ", test::gen::TestBinding))",
                 Maps.mutable.with("data", resourceAsString("queries/peopleTestData.json")));
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
-    }
-
-    @Test
-    public void testInternalizeWithDynamicUrl()
-    {
-        String modelGrammar = firmModel();
-        ModelUnit modelUnit = new ModelUnit();
-        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
-
-        String result = runTest(generated,
-                "url:String[1]|test::firm::model::Person->internalize(test::gen::TestBinding, ^Url(url = $url))->checked()->externalize(test::gen::TestBinding, checked(" + personTree() + ", test::gen::TestBinding))",
-                Maps.mutable.with("url", "executor:myUrl"),
-                new NamedInputStreamProvider(Collections.singletonList(new NamedInputStream("myUrl", resource("queries/peopleTestData.json")))));
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
-    }
-
-    @Test
-    public void testInternalizeWithStaticUrl()
-    {
-        String modelGrammar = firmModel();
-        ModelUnit modelUnit = new ModelUnit();
-        modelUnit.packageableElementIncludes = Lists.mutable.with("test::firm::model::Person", "test::firm::model::Address", "test::firm::model::AddressUse", "test::firm::model::GeographicPosition");
-        PureModelContextData generated = ModelToSchemaGenerationTest.generateSchema(modelGrammar, modelUnit, toJsonSchemaConfig(), true, "test::gen::TestBinding");
-
-        String result = runTest(generated,
-                "|test::firm::model::Person->internalize(test::gen::TestBinding, ^Url(url = 'executor:default'))->checked()->externalize(test::gen::TestBinding, checked(" + personTree() + ", test::gen::TestBinding))",
-                new InputStreamProvider(resource("queries/peopleTestData.json")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/peopleCheckedResult.json")));
     }

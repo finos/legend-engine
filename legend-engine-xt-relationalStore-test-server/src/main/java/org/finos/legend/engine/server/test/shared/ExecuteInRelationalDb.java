@@ -68,9 +68,7 @@ public class ExecuteInRelationalDb
 
             try
             {
-                Connection jdbcConn =
-                        this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null,
-                                input.connection);
+                Connection jdbcConn = this.connectionManagerSelector.getDatabaseConnection(profiles, input.connection);
 
                 Statement stmt = jdbcConn.createStatement();
 

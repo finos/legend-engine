@@ -23,7 +23,7 @@ public class Test_Pure_Relational_Custom_SqlServer
 {
     public static TestSuite suite()
     {
-        String testPackage = "meta::relational::tests::sqlQueryToString::sqlServer";
+        String testPackage = "meta::relational::sqlServer::tests";
         CompiledExecutionSupport executionSupport = PureTestBuilderHelper.getClassLoaderExecutionSupport();
         return PureTestBuilderHelper.buildSuite(TestCollection.collectTests(testPackage, executionSupport.getProcessorSupport(), ci -> PureTestBuilderHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport);
     }

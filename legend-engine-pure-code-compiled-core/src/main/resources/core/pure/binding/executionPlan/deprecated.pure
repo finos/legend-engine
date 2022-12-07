@@ -15,6 +15,8 @@
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::executionPlan::*;
 
+import meta::pure::runtime::*;
+
 import meta::pure::executionPlan::*;
 
 import meta::pure::extension::*;
@@ -35,4 +37,38 @@ function <<access.private>> meta::external::shared::format::executionPlan::gener
       resultType = ^DataTypeResultType(type = String),
       url        = $sourceUrl
    );
+}
+
+// ------------------------------------------------------------------------------------------------------------------------
+// Execution Nodes
+// ------------------------------------------------------------------------------------------------------------------------
+
+Class meta::external::shared::format::executionPlan::UrlStreamExecutionNode extends ExecutionNode
+{
+   url : String[1];
+}
+
+// ------------------------------------------------------------------------------------------------------------------------
+// External Source
+// ------------------------------------------------------------------------------------------------------------------------
+
+Class <<typemodifiers.abstract>> meta::external::shared::format::executionPlan::ExternalSource
+{
+}
+
+Class meta::external::shared::format::executionPlan::UrlStreamExternalSource extends ExternalSource
+{
+   url : String[1];
+}
+
+// ------------------------------------------------------------------------------------------------------------------------
+// Connections - Deprecated to be replaced by internalize
+// ------------------------------------------------------------------------------------------------------------------------
+
+Class meta::external::shared::format::executionPlan::ExternalFormatConnection extends Connection
+[
+   $this.element->instanceOf(Binding)
+]
+{
+   externalSource : ExternalSource[1];
 }

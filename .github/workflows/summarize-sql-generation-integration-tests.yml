@@ -1,0 +1,86 @@
+# Copyright 2022 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Summarize SQL Generation Integration Tests
+
+env:
+  CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # every day at 03:00 on default/base branch (sql gen integration tests are scheduled to run at 00:00)
+  workflow_dispatch:
+
+jobs:
+  build:
+    # NOTE: we cannot run this action in fork because secrets are not accessible from forks
+    # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
+    if: github.repository == 'finos/legend-engine'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Summary For BigQuery
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-bigquery-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Download Summary For Databricks
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-databricks-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Download Summary For MSSQLServer
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-mssqlserver-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Download Summary For Postgres
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-postgresql-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Download Summary For Redshift
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-redshift-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Download Summary For Snowflake
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-snowflake-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Download Summary For Spanner
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-spanner-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
+      - name: Print Summary
+        run: |
+          find summaries -type f -name sql_test_summary.txt -exec dirname {}  \; -exec cat {} \; -exec echo \; | sed -E "s/summaries\/(.*)/**\1**/g" >> $GITHUB_STEP_SUMMARY

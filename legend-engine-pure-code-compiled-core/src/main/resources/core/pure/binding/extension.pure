@@ -12,34 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::language::java::factory::*;
-import meta::external::language::java::transform::*;
-
-import meta::external::shared::format::*;
-import meta::external::shared::format::binding::*;
-import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::toString::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
-import meta::external::shared::format::functions::*;
-
-import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
-
-import meta::pure::graphFetch::*;
-
-import meta::pure::model::binding::*;
-import meta::pure::model::unit::*;
-
 import meta::pure::extension::*;
 
-// TODO: To be removed
-import meta::pure::runtime::*;
+// TO BE REMOVED
 
-import meta::pure::store::*;
-import meta::pure::router::clustering::*;
-import meta::pure::router::routing::*;
-import meta::external::shared::format::binding::validation::*;
-
+import meta::external::shared::format::executionPlan::*;
+import meta::external::shared::format::binding::*;
 
 function meta::external::shared::format::externalFormatExtension(): Extension[1]
 {
@@ -54,7 +33,7 @@ function <<access.private>> meta::external::shared::format::externalFormatExtens
       availableFeatures          = ^FeatureExtension
                                    (
                                      id = 'ExternalFormat',
-                                     printConnectionToString = printConnection_Extension_MANY__Function_MANY_,
+                                     printConnectionToString = meta::external::shared::format::printConnection_Extension_MANY__Function_MANY_,
                                      printPlanNodeToString = {space:String[1], extensions:Extension[*] | printPlanNodeToString($space, $extensions)}
                                   ),
       serializerExtension      = meta::external::shared::format::serializerExtensionName_String_1__String_1_
@@ -66,7 +45,7 @@ function <<access.private>> meta::external::shared::format::serializerExtensionN
    'meta::protocols::pure::' + $version + '::external::shared::format::serializerExtension_String_1__SerializerExtension_1_'
 }
 
-function meta::external::shared::format::printConnection(extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]
+function meta::external::shared::format::printConnection(extensions:Extension[*]): Function<{Nil[1]->String[1]}>[*]         // TODO: TO BE REMOVED
 {
    [
       {ext:ExternalFormatConnection[1] |
