@@ -63,14 +63,8 @@
         <!-- DRIVER -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded-local</artifactId>
             <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- DRIVER -->
         

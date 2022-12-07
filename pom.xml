@@ -773,7 +773,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded-local</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
