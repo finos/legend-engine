@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTestBatch;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.ActiveRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.ManualTrigger;
@@ -45,6 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_ActiveRowsEquivalentToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_PersistenceContext;
@@ -193,22 +195,27 @@ public class PersistenceCompilerExtension implements IPersistenceCompilerExtensi
     @Override
     public List<Function3<TestAssertion, CompileContext, ProcessingContext, Root_meta_pure_test_assertion_TestAssertion>> getExtraTestAssertionProcessors()
     {
-        return Collections.singletonList(PersistenceCompilerExtension::compileTestAssertionTypesForPersistence);
-    }
-
-    private static Root_meta_pure_test_assertion_TestAssertion compileTestAssertionTypesForPersistence(TestAssertion testAssertion, CompileContext context, ProcessingContext processingContext)
-    {
-        if (testAssertion instanceof AllRowsEquivalentToJson)
+        return Collections.singletonList((testAssertion, context, processingContext) ->
         {
-            AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
+            if (testAssertion instanceof AllRowsEquivalentToJson)
+            {
+                AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
 
-            return new Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl("")
-                ._expected(allRowsEquivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
-        }
-        else
-        {
-            return null;
-        }
+                return new Root_meta_pure_persistence_metamodel_AllRowsEquivalentToJson_Impl("")
+                    ._expected(allRowsEquivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+            }
+            else if (testAssertion instanceof ActiveRowsEquivalentToJson)
+            {
+                ActiveRowsEquivalentToJson activeRowsEquivalentToJson = (ActiveRowsEquivalentToJson) testAssertion;
+
+                return new Root_meta_pure_persistence_metamodel_ActiveRowsEquivalentToJson_Impl("")
+                    ._expected(activeRowsEquivalentToJson.expected.accept(new EmbeddedDataFirstPassBuilder(context, processingContext)));
+            }
+            else
+            {
+                return null;
+            }
+        });
     }
 
     private static org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test persistenceTest(PersistenceTest persistenceTest, CompileContext context, ProcessingContext processingContext)

@@ -21,6 +21,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
+import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.test.assertion.ActiveRowsEquivalentToJsonGrammarParser;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.test.assertion.AllRowsEquivalentToJsonGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -93,7 +94,9 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     @Override
     public Iterable<? extends TestAssertionParser> getExtraTestAssertionParsers()
     {
-        return org.eclipse.collections.api.factory.Lists.immutable.with(new AllRowsEquivalentToJsonGrammarParser());
+        return org.eclipse.collections.api.factory.Lists.immutable.with(
+            new AllRowsEquivalentToJsonGrammarParser(),
+            new ActiveRowsEquivalentToJsonGrammarParser());
     }
 
     private static Section parseSection(SectionSourceCode sectionSourceCode, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)

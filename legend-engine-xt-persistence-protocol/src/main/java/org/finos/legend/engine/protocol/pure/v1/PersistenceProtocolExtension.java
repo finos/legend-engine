@@ -25,7 +25,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.PersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.context.DefaultPersistencePlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.PersistenceTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.ActiveRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.ActiveRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.AllRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.trigger.CronTrigger;
@@ -71,11 +73,13 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
                 // Test assertion
                 ProtocolSubTypeInfo.newBuilder(TestAssertion.class)
                     .withSubtype(AllRowsEquivalentToJson.class, "allRowsEquivalentToJson")
+                    .withSubtype(ActiveRowsEquivalentToJson.class, "activeRowsEquivalentToJson")
                     .build(),
 
                 // Test result
                 ProtocolSubTypeInfo.newBuilder(AssertionStatus.class)
                     .withSubtype(AllRowsEquivalentToJsonAssertFail.class, "allRowsEquivalentToJsonAssertFail")
+                    .withSubtype(ActiveRowsEquivalentToJsonAssertFail.class, "activeRowsEquivalentToJsonAssertFail")
                     .build()
         ));
     }

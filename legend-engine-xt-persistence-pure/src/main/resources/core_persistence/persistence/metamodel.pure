@@ -611,3 +611,14 @@ Class meta::pure::persistence::metamodel::AllRowsEquivalentToJsonAssertFail exte
   expected    : String[1];
   actual      : String[1];
 }
+
+Class meta::pure::persistence::metamodel::ActiveRowsEquivalentToJson extends meta::pure::test::assertion::TestAssertion
+{
+  expected    : meta::pure::data::EmbeddedData[1];
+}
+
+Class meta::pure::persistence::metamodel::ActiveRowsEquivalentToJsonAssertFail extends meta::pure::test::assertion::AssertFail
+{
+  expected    : String[1];
+  actual      : String[1];
+}
