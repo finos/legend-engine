@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.query.graphQL.api.format;
+package org.finos.legend.engine.query.graphQL.api.format.generation;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;

@@ -183,78 +183,11 @@ public class TestGraphQLAPI
     }
 
     @Test
-    @Deprecated
-    public void testGraphQLExecuteDevAPIDeprecated() throws Exception
-    {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
-        GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)).flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
-        Query query = new Query();
-        query.query = "query Query {\n" +
-                "  allFirms {\n" +
-                "      legalName,\n" +
-                "      employees {\n" +
-                "        firstName,\n" +
-                "        lastName\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }";
-        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
-
-        String expected = "{" +
-                    "\"data\":{" +
-                        "\"allFirms\":[" +
-                            "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}," +
-                            "{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}," +
-                            "{\"legalName\":\"Firm B\",\"employees\":[{\"firstName\":\"Oliver\",\"lastName\":\"Hill\"},{\"firstName\":\"David\",\"lastName\":\"Harris\"}]}" +
-                        "]" +
-                    "}" +
-                "}";
-        Assert.assertEquals(expected, responseAsString(response));
-    }
-
-    @Test
     public void testGraphQLDebugGenerateGraphFetchDevAPI()
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLDebug graphQLDebug = new GraphQLDebug(modelManager, metaDataServerConfiguration, (pm) -> generatorExtensions.flatCollect(g -> g.getExtraExtensions(pm)));
-        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
-        Query query = new Query();
-        query.query = "query Query {\n" +
-                "  allFirms {\n" +
-                "      legalName,\n" +
-                "      employees {\n" +
-                "        firstName,\n" +
-                "        lastName\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }";
-        Response response = graphQLDebug.generateGraphFetchDev(mockRequest, "Workspace1", "Project1", "simple::model::Query", query, null);
-        Assert.assertTrue(response.getEntity() instanceof GraphFetchResult);
-        String expected = "#{\n" +
-                "  simple::model::Query{\n" +
-                "    allFirms{\n" +
-                "      legalName,\n" +
-                "      employees{\n" +
-                "        firstName,\n" +
-                "        lastName\n" +
-                "      }\n" +
-                "    }\n" +
-                "  }\n" +
-                "}#";
-        Assert.assertEquals(expected, DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build().processGraphFetchTree(((GraphFetchResult) response.getEntity()).graphFetchTree, 2));
-    }
-
-    @Test
-    @Deprecated
-    public void testGraphQLDebugGenerateGraphFetchDevAPIDeprecated()
-    {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
-        GraphQLDebug graphQLDebug = new GraphQLDebug(modelManager, metaDataServerConfiguration);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();

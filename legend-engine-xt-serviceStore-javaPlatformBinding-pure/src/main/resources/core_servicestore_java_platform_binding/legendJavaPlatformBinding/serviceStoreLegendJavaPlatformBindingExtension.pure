@@ -128,7 +128,7 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
    )
 }
 
-function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
+function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
    meta::external::store::service::extension::serviceStoreExtensions()->concatenate(
       meta::pure::executionPlan::platformBinding::platformBindingExtension([

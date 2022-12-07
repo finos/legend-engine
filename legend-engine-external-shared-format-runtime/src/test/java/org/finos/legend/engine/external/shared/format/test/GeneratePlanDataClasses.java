@@ -39,6 +39,6 @@ public class GeneratePlanDataClasses extends GenerateJavaProject
     @Override
     protected Root_meta_external_language_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport)
     {
-        return core_java_platform_binding_legendJavaPlatformBinding_binding_shared.Root_meta_external_shared_format_executionPlan_engine_java_generateDataTestProject_String_1__String_1__Project_1_(fromPurePackage, toJavaPackage, executionSupport);
+        return core_java_platform_binding_legendJavaPlatformBinding_binding_shared.Root_meta_external_shared_format_executionPlan_platformBinding_legendJava_generateDataTestProject_String_1__String_1__Project_1_(fromPurePackage, toJavaPackage, executionSupport);
     }
 }
