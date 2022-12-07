@@ -15,7 +15,7 @@
 import meta::external::shared::format::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
@@ -26,7 +26,7 @@ import meta::pure::extension::*;
 
 import meta::external::language::java::transform::*;
 
-Class meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor extends LegendJavaPlatformBindingAdhocExtension
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor extends LegendJavaPlatformBindingAdhocExtension
 {
    externalFormatContract     : ExternalFormatContract<Any>[1];
    enginePlatformDependencies : Function<{Conventions[1] -> Conventions[1]}>[1];
@@ -34,13 +34,13 @@ Class meta::external::shared::format::executionPlan::engine::java::ExternalForma
    internalizeDescriptor      : ExternalFormatInternalizeBindingDescriptor[0..1];
 }
 
-Class meta::external::shared::format::executionPlan::engine::java::ExternalFormatExternalizeBindingDescriptor
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatExternalizeBindingDescriptor
 {
    externalizePreparator  : Function<{ExternalFormatExternalizeExecutionNode[1], String[1], GenerationContext[1], DebugContext[1] -> TypeInfoSet[1]}>[0..1];
    externalizeGenerator   : Function<{ExternalFormatExternalizeExecutionNode[1], String[1], GenerationContext[1], DebugContext[1] -> GeneratedCode[1]}>[1];
 }
 
-Class meta::external::shared::format::executionPlan::engine::java::ExternalFormatInternalizeBindingDescriptor
+Class meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatInternalizeBindingDescriptor
 {
    internalizePreparator  : Function<{ExternalFormatInternalizeExecutionNode[1], String[1], GenerationContext[1], DebugContext[1] -> TypeInfoSet[1]}>[0..1];
    internalizeGenerator   : Function<{ExternalFormatInternalizeExecutionNode[1], String[1], GenerationContext[1], DebugContext[1] -> GeneratedCode[1]}>[1];
