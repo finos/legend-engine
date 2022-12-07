@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.testable.persistence.ingestmode.appendonly;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.AllRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestFailed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestPassed;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
@@ -60,7 +60,7 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         assertTrue(result instanceof TestFailed);
         Assert.assertEquals("test::TestPersistence", ((TestFailed) result).testable);
         TestFailed testFailed = (TestFailed) result;
-        EqualToJsonAssertFail batch1Status = (EqualToJsonAssertFail) testFailed.assertStatuses.get(0);
+        AllRowsEquivalentToJsonAssertFail batch1Status = (AllRowsEquivalentToJsonAssertFail) testFailed.assertStatuses.get(0);
         AssertPass batch2Status = (AssertPass) testFailed.assertStatuses.get(1);
 
         // no space

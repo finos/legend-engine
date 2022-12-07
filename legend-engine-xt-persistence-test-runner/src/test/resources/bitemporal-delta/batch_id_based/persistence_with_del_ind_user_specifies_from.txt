@@ -108,7 +108,7 @@ Persistence test::TestPersistence
          asserts:
          [
            assert1:
-             EqualToJson
+             AllRowsEquivalentToJson
              #{
                expected:
                  ExternalFormat
@@ -135,7 +135,7 @@ Persistence test::TestPersistence
          asserts:
          [
            assert1:
-             EqualToJson
+             AllRowsEquivalentToJson
              #{
                expected:
                  ExternalFormat
