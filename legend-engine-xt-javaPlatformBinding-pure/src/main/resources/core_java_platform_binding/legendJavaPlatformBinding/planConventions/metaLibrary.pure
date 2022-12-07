@@ -17,7 +17,6 @@ import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::platform::*;
 
 function meta::pure::executionPlan::engine::java::registerMetaLibrary(conventions: Conventions[1]): Conventions[1]
 {

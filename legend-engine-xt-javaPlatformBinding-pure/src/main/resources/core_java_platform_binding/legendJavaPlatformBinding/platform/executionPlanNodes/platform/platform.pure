@@ -23,14 +23,15 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 
 
 // Prepare
-function meta::pure::executionPlan::engine::java::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::prepareForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
    if($p.expression->cast(@FunctionExpression)->isSerialize(),
       | prepareForSerialize($p, $path, $context, $debug),
@@ -38,7 +39,7 @@ function meta::pure::executionPlan::engine::java::prepareForPlatformNode(p:PureE
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::prepareForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::prepareForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepareForPureExpression\n', |''));
 
@@ -56,7 +57,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::prepareForE
 }
 
 // Generate
-function meta::pure::executionPlan::engine::java::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForPlatformNode(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
 {   
    if($p.expression->cast(@FunctionExpression).func == now__DateTime_1_,
       | generateImplementionForNow($context.conventions),
@@ -73,7 +74,7 @@ function meta::pure::executionPlan::engine::java::generateImplementionForPlatfor
    ))));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForNow(conventions:Conventions[1]):GeneratedCode[1]
 {   
    ^GeneratedCode(
       implementation = ^JavaPlatformImplementation
@@ -84,7 +85,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateImp
    );   
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForCurrentUserId(conventions:Conventions[1]):GeneratedCode[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForCurrentUserId(conventions:Conventions[1]):GeneratedCode[1]
 {
    ^GeneratedCode(
       implementation = ^JavaPlatformImplementation
@@ -95,7 +96,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateImp
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateImplementionForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GeneratedCode[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::generateImplementionForExpression(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]):GeneratedCode[1]
 {
    let oldConventions  = $context.conventions;
    let newContext      = ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = []));
