@@ -10,13 +10,15 @@ Let's say we are adding the connector for microsoft's SqlServer.
 
     * Base command is: mvn archetype:generate. Based on how your maven is installed/and whether you are invoking using intellij/commandline, there might slight variations.
     * You can pass -DoutputDirectory=<path> to configure the location where your project modules will be generated.
+    * Choose the archetype mentioned in the beginning when prompted.
     * Archetype will ask for DbType property. Mention SqlServer there. (Note that it is in camel-case, and starts with a capital letter).
     * For the legendEngineVersion property, mention the latest released version of legend-engine.
     * Skip rest of the properties, defaults would be chosen for them.
     * Confirm the property values with a Y, when asked
     * The project will be generated for you. Now you can open the project in intellij.
     * Set your maven runner to use -Xmx4g as vm options, otherwise project may run out of heap space.
-    * Run clean + install on the project. It should succeed. Run maven refresh once clean + install is done, so that intellij recognizes generated-sources.
+    * Run clean + install on the project. It should succeed. If it complains of java version being out of range, use the appropriate java version.
+   Run maven refresh once clean + install is done, so that intellij recognizes generated-sources.
 
 2. **Jdbc Driver**: Go to the generated SqlServerDriver.java, and add the DRIVER_CLASSNAME as "com.microsoft.sqlserver.jdbc.SQLServerDriver".
 You will also need to add the following driver dependency to the pom.xml of sqlserver-execution module.
@@ -43,7 +45,7 @@ If yes, then choose the appropriate ones. Else go to the section on [Adding a ne
     For the sake of this tutorial lets continue with [StaticDatasourceSpecification](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/specification/StaticDatasourceSpecification.java) plus [UserNamePasswordAuthenticationStrategy](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/authentication/UserNamePasswordAuthenticationStrategy.java) to connect to our database.
 
 4. **Authentication Flow**: Now we will add an authentication flow for SqlServer using StaticDatasourceSpecification with UsernamePasswordAuthenticationStrategy.
-Let's create a class SqlServerStaticWithUserPasswordFlow in sqlserver-engine module.
+Let's create a class SqlServerStaticWithUserPasswordFlow in sqlserver-execution module.
 
     ~~~java
     // Copyright 2021 Goldman Sachs
@@ -243,6 +245,14 @@ If your database supports it, we can alternatively launch a test instance at run
         }
     }
     ~~~
+   
+    NOTE: You may need to change the initialization of mssqlserver container like below, if using Apple Silicon processor.
+
+    ~~~java
+    public MSSQLServerContainer mssqlserver = new MSSQLServerContainer(DockerImageName.parse("mcr.microsoft.com/azure-sql-edge")
+            .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
+            .acceptLicense();
+    ~~~
 
     You can go through the above code to understand how we use the container provided by test-containers library to launch an instance of SqlServer, and
     then use a properties vault to store its user name / password, so that we can model the authentication strategy as part of connection specification.
@@ -312,7 +322,7 @@ If your database supports it, we can alternatively launch a test instance at run
 
     If you run the above test with docker running in background, the test should pass.
 
-8. **Working With Pure Code**: Next, we will work with sql generation code, which is written in pure language.
+8. **Working With Pure Code**: Next, we will work with sql generation code, which is written in [PURE](https://legend.finos.org/docs/reference/legend-language) language.
 
     To edit pure code, you need to launch the pure ide. Find PureIDELight in src/test section of sqlserver-pure module, and run it. It will the print port on which the ide server is running (say 9200). Then you can hit localhost:9200/ide in browser to see the ide. Wait for loading process to complete.
 
@@ -346,9 +356,12 @@ If your database supports it, we can alternatively launch a test instance at run
      if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','));
      ~~~
  
-    Now if you run the tests from pure ide, you will see that some of the tests become green.
+    This implements basic select functionality supporting where, joins and orderBy. Now if you run the tests from pure ide, you will see that some of the tests become green.
+The framework is set in a way that as you incrementally implement more features, more tests will start passing, instead of being ignored.
+You don't need to implement all the features before you can deploy and use the connector.
 
-10. **Dyna Fn Sql Gen Code**: Dyna Fns are db agnostic abstractions over sql fns. We will implement some commons ones here. Populate the empty list in getDynaFnToSqlForSqlServer in sqlServerExtension.pure with the following
+10. **Dyna Fn Sql Gen Code**: Dyna Fns are db agnostic abstractions over sql fns. We will implement some commons ones here. For full list, look at enum DynaFunctionRegistry in this [file](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-pure/src/main/resources/core_relational/relational/sqlQueryToString/dbExtension.pure).
+Populate the empty list in getDynaFnToSqlForSqlServer in sqlServerExtension.pure with the following
 
     ~~~java
     [
@@ -436,10 +449,16 @@ If your database supports it, we can alternatively launch a test instance at run
                 + ')')->makeString(',') + ';';
     }
     ~~~
-    Now we can enable the DDL functionality by registering this fn in DbExtension like this
 
-    ~~~java
-    ddlCommandsTranslator = getDDLCommandsTranslatorForSqlServer()
+    Now we can enable the DDL functionality by registering it in createDbExtensionForSqlServer() of sqlServerExtension.pure like this
+
+    ~~~
+    ...
+    ^DbExtension(
+        ...
+        dynaFuncDispatch = $dynaFuncDispatch,
+        ddlCommandsTranslator = getDDLCommandsTranslatorForSqlServer()
+    );
     ~~~
 
     We can now do a clean+install on sqlserver-pure module, and run Test_Pure_Relational_DbSpecific_SqlServer to make sure that our generation code behaves the same way from java side, and pure to java compilation works as expected. You will see that some tests will go green now, instead of everything getting ignored. 
