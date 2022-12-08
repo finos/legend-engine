@@ -20,7 +20,9 @@ import com.google.common.collect.Streams;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.finos.legend.engine.protocol.pure.v1.extension.TestAssertionEvaluator;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.ActiveRowsEquivalentToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.ActiveRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.AllRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
@@ -54,7 +56,7 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
     {
         if (testAssertion instanceof AllRowsEquivalentToJson)
         {
-            System.out.println("I'm at the right place");
+            System.out.println("AllRowsEquivalentToJson - I'm at the right place");
             AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
             ExternalFormatData externalFormatData = allRowsEquivalentToJson.expected;
 
@@ -67,9 +69,9 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
             {
                 actualResult = mapper.writeValueAsString(result);
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
-                compareJsonObjects(result, expected, fieldsToIgnore, milestoningMap);
+                compareAllRows(result, expected, fieldsToIgnore);
                 assertionStatus = new AssertPass();
-                System.out.println("Happy path");
+                System.out.println("AllRowsEquivalentToJson - Happy path");
 
             }
             catch (AssertionError e)
@@ -79,39 +81,92 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
                 fail.actual = actualResult;
                 fail.message = e.getMessage();
                 assertionStatus = fail;
-                System.out.println("Unhappy path 1");
+                System.out.println("AllRowsEquivalentToJson - Unhappy path 1");
             }
             catch (Exception e)
             {
                 AssertFail fail = new AssertFail();
                 fail.message = e.getMessage();
                 assertionStatus = fail;
-                System.out.println("Unhappy path 2");
+                System.out.println("AllRowsEquivalentToJson - Unhappy path 2");
+            }
+            assertionStatus.id = testAssertion.id;
+            return assertionStatus;
+        }
+        else if (testAssertion instanceof ActiveRowsEquivalentToJson)
+        {
+            System.out.println("ActiveRowsEquivalentToJson - I'm at the right place");
+            ActiveRowsEquivalentToJson activeRowsEquivalentToJson = (ActiveRowsEquivalentToJson) testAssertion;
+            ExternalFormatData externalFormatData = activeRowsEquivalentToJson.expected;
+
+            String expectedDataString = externalFormatData.data;
+            AssertionStatus assertionStatus;
+            ObjectMapper mapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
+            String actualResult = "";
+
+            try
+            {
+                actualResult = mapper.writeValueAsString(result);
+                List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
+                compareActiveRows(result, expected, fieldsToIgnore, milestoningMap);
+                assertionStatus = new AssertPass();
+                System.out.println("ActiveRowsEquivalentToJson - Happy path");
+
+            }
+            catch (AssertionError e)
+            {
+                ActiveRowsEquivalentToJsonAssertFail fail = new ActiveRowsEquivalentToJsonAssertFail();
+                fail.expected = expectedDataString;
+                fail.actual = actualResult;
+                fail.message = e.getMessage();
+                assertionStatus = fail;
+                System.out.println("ActiveRowsEquivalentToJson - Unhappy path 1");
+            }
+            catch (Exception e)
+            {
+                AssertFail fail = new AssertFail();
+                fail.message = e.getMessage();
+                assertionStatus = fail;
+                System.out.println("ActiveRowsEquivalentToJson - Unhappy path 2");
             }
             assertionStatus.id = testAssertion.id;
             return assertionStatus;
         }
         else
         {
-            throw new UnsupportedOperationException("Only AllRowsEquivalentToJson Supported");
+            throw new UnsupportedOperationException("Only AllRowsEquivalentToJson and ActiveRowsEquivalentToJson Supported");
         }
     }
 
-    private boolean compareJsonObjects(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, Map<String, Object> milestoningMap)
+    private boolean compareAllRows(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore)
     {
-        List<Map<String, Object>> openRecords = new ArrayList<>(result);
+        return compareJsonObjects(result, expected, fieldsToIgnore);
+    }
+
+    private boolean compareActiveRows(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, Map<String, Object> milestoningMap)
+    {
+        result = findActiveRows(result, milestoningMap);
+        return compareJsonObjects(result, expected, fieldsToIgnore);
+    }
+
+    private List<Map<String, Object>> findActiveRows(List<Map<String, Object>> result, Map<String, Object> milestoningMap)
+    {
+        List<Map<String, Object>> activeRows = new ArrayList<>(result);
         for (Map<String, Object> row: result)
         {
             for (String milestoningColumn: milestoningMap.keySet())
             {
                 if (!row.get(milestoningColumn).toString().equals(milestoningMap.get(milestoningColumn).toString()))
                 {
-                    openRecords.remove(row);
+                    activeRows.remove(row);
                 }
             }
         }
-        result = openRecords;
+        return activeRows;
+    }
 
+    private boolean compareJsonObjects(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore)
+    {
         if (result.size() != expected.size())
         {
             throw new AssertionError(String.format("AssertionError: Number of rows in results [%d] does not match number of rows in expected data [%d]", result.size(), expected.size()));

@@ -17,11 +17,11 @@ package org.finos.legend.engine.testable.persistence.assertion;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.AllRowsEquivalentToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.test.assertion.status.AllRowsEquivalentToJsonAssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertFail;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.EqualToJsonAssertFail;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,13 +48,13 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
         Assert.assertTrue(status instanceof AssertPass);
     }
 
@@ -72,13 +72,13 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
         Assert.assertTrue(status instanceof AssertPass);
     }
 
@@ -97,13 +97,13 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
         Assert.assertTrue(status instanceof AssertPass);
     }
 
@@ -122,13 +122,13 @@ public class PersistenceTestAssertionEvaluatorTest
         milestoningMap.put("BATCH_ID_OUT", 999999999L);
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
         Assert.assertTrue(status instanceof AssertPass);
     }
 
@@ -146,18 +146,18 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
-        Assert.assertTrue(status instanceof EqualToJsonAssertFail);
-        EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail) status;
-        Assert.assertTrue(equalToJsonAssertFail.message.contains("AssertionError: Results do not match the expected data"));
-        Assert.assertEquals(expected, equalToJsonAssertFail.expected);
-        Assert.assertEquals(result, equalToJsonAssertFail.actual);
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
+        Assert.assertTrue(status instanceof AllRowsEquivalentToJsonAssertFail);
+        AllRowsEquivalentToJsonAssertFail allRowsEquivalentToJsonAssertFail = (AllRowsEquivalentToJsonAssertFail) status;
+        Assert.assertTrue(allRowsEquivalentToJsonAssertFail.message.contains("AssertionError: Results do not match the expected data"));
+        Assert.assertEquals(expected, allRowsEquivalentToJsonAssertFail.expected);
+        Assert.assertEquals(result, allRowsEquivalentToJsonAssertFail.actual);
     }
 
     @Test
@@ -174,16 +174,16 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
-        Assert.assertTrue(status instanceof EqualToJsonAssertFail);
-        EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail) status;
-        Assert.assertTrue(equalToJsonAssertFail.message.contains("Number of rows in results [4] does not match number of rows in expected data [3]"));
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
+        Assert.assertTrue(status instanceof AllRowsEquivalentToJsonAssertFail);
+        AllRowsEquivalentToJsonAssertFail allRowsEquivalentToJsonAssertFail = (AllRowsEquivalentToJsonAssertFail) status;
+        Assert.assertTrue(allRowsEquivalentToJsonAssertFail.message.contains("Number of rows in results [4] does not match number of rows in expected data [3]"));
     }
 
     @Test
@@ -200,13 +200,13 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
         Assert.assertTrue(status instanceof AssertFail);
         AssertFail assertFail = (AssertFail) status;
         Assert.assertTrue(assertFail.message.contains("Unexpected character ('}' (code 125)): was expecting double-quote to start field name"));
@@ -226,16 +226,16 @@ public class PersistenceTestAssertionEvaluatorTest
         Map<String, Object> milestoningMap = new HashMap<>();
 
         PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
-        EqualToJson equalToJson = new EqualToJson();
+        AllRowsEquivalentToJson allRowsEquivalentToJson = new AllRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
         data.data = expected;
 
-        equalToJson.expected = data;
-        AssertionStatus status = evaluator.visit(equalToJson);
-        Assert.assertTrue(status instanceof EqualToJsonAssertFail);
-        EqualToJsonAssertFail equalToJsonAssertFail = (EqualToJsonAssertFail) status;
-        Assert.assertTrue(equalToJsonAssertFail.message.contains("AssertionError: Results do not match the expected data"));
+        allRowsEquivalentToJson.expected = data;
+        AssertionStatus status = evaluator.visit(allRowsEquivalentToJson);
+        Assert.assertTrue(status instanceof AllRowsEquivalentToJsonAssertFail);
+        AllRowsEquivalentToJsonAssertFail allRowsEquivalentToJsonAssertFail = (AllRowsEquivalentToJsonAssertFail) status;
+        Assert.assertTrue(allRowsEquivalentToJsonAssertFail.message.contains("AssertionError: Results do not match the expected data"));
     }
 
 }
