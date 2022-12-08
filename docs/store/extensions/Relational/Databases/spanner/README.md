@@ -26,5 +26,5 @@ the [Google Google Cloud Spanner JDBC  Client for Java](https://cloud.google.com
 
 ## Database Authentication
 
-Google Cloud Auth same as [Big Query](../bigquery/bigquery-connector.md#database-authentication)
+Google Cloud Auth same as [Big Query](../bigquery/README.md#database-authentication)
 

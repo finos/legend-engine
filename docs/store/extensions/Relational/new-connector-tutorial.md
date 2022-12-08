@@ -1,5 +1,10 @@
 # Step by step tutorial for adding a new relational connector
 
+**Pre-requisite**: The dbType for which you are planning to add connector, should be included in the following DatabaseType enums
+[here](https://github.com/finos/legend-pure/blob/master/legend-pure-m2-store-relational/src/main/resources/platform/relational/relationalRuntime.pure)
+and [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/DatabaseType.java)
+and released. This is a temporary requirement till we replace these enums with a class instance.
+
 1. **Archetype Generation**: Use the maven archetype org.finos.legend.engine:legend-engine-xt-relationalStore-dbExtension-archetype in interactive mode to generate the base project for adding the connector.
 Let's say we are adding the connector for microsoft's SqlServer.
 
@@ -33,7 +38,7 @@ You will also need to add the following driver dependency to the pom.xml of sqls
 
 3. **Datasource and Authentication Specification**: See if one of the existing common DatasourceSpecification and AuthenticationStrategy subtypes work for connecting to databases within your use cases.
 Check the listing [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/RelationalProtocolExtension.java).
-If yes, then choose the appropriate ones. Else go to the section on "Adding a new Datasource/AuthenticationStrategy Specification".
+If yes, then choose the appropriate ones. Else go to the section on [Adding a new Datasource or AuthenticationStrategy Specification](#adding-a-new-datasource-or-authenticationstrategy-specification).
 
     For the sake of this tutorial lets continue with [StaticDatasourceSpecification](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/specification/StaticDatasourceSpecification.java) plus [UserNamePasswordAuthenticationStrategy](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/authentication/UserNamePasswordAuthenticationStrategy.java) to connect to our database.
 
@@ -466,4 +471,17 @@ We will now execute the generated sql against a real database instance, and make
     Now you can run the Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite with docker running in background. If no tests fails, you can be sure that we have successfully, 1) established the connection 2) generated the sql 3) executed the sql, and asserted expected results.
     
     **Congratulations on completing the connector!**
-    
+
+### Executing against database from Pure Ide
+
+In the tutorial, we test sql generation in pure ide, but for execution against db, we have to clean+install the sqlserver-pure module and then run the test from java.
+To speed up the development cycle, you can alternatively launch a test instance of engine server from java and link it with Pure Ide.
+Then, when you run the tests from Pure Ide, they will run both generation and execution against database. Here are the steps to do that:
+
+* Run SqlServerRelationalTestServerInvoker from sqlserver-execution-tests module. Say it is running at 6060.
+* Add following vm options to PureIDELight: -Dlegend.test.server.host=127.0.0.1 -Dlegend.test.server.port=6060 -Dlegend.test.clientVersion=vX_X_X -Dlegend.test.serverVersion=v1
+* Run PureIDELight
+
+### Adding a new Datasource or AuthenticationStrategy Specification
+
+TODO
