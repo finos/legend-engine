@@ -92,6 +92,8 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<String> batchIdPattern();
 
+    public abstract Optional<Long> infiniteBatchIdValue();
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -115,6 +117,7 @@ public abstract class RelationalGeneratorAbstract
             .executionTimestampClock(executionTimestampClock())
             .batchStartTimestampPattern(batchStartTimestampPattern())
             .batchEndTimestampPattern(batchEndTimestampPattern())
+            .infiniteBatchIdValue(infiniteBatchIdValue())
             .batchIdPattern(batchIdPattern());
 
         relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);
