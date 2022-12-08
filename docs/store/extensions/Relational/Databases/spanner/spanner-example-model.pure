@@ -1,4 +1,3 @@
-```
 ###Service
 Service foo::service::firmService
 {
@@ -275,5 +274,3 @@ Runtime foo::runtime::firmperson
     ]
   ];
 }
-
-```
