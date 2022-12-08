@@ -40,22 +40,22 @@ import meta::pure::milestoning::*;
 // --- Alloy platform dependencies (non-generated)
 // ----------------------------------------------------------------------------------------------------------
 
-function meta::pure::executionPlan::engine::java::platform::iExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
+function meta::pure::executionPlan::engine::java::iExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
 {
    j_parameter($conventions->className(IExecutionNodeContext), 'context');
 }
 
-function meta::pure::executionPlan::engine::java::platform::iStoreStreamReadingExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
+function meta::pure::executionPlan::engine::java::iStoreStreamReadingExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
 {
    j_parameter($conventions->className(IStoreStreamReadingExecutionNodeContext), 'context');
 }
 
-function meta::pure::executionPlan::engine::java::platform::graphFetchM2MContextParam(conventions: Conventions[1]): Code[1]
+function meta::pure::executionPlan::engine::java::graphFetchM2MContextParam(conventions: Conventions[1]): Code[1]
 {
    j_parameter($conventions->className(IGraphFetchM2MExecutionNodeContext), 'context');
 }
 
-function meta::pure::executionPlan::engine::java::platform::buildExecuteClass(body:Code[1], param:Code[1], path:String[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::engine::java::buildExecuteClass(body:Code[1], param:Code[1], path:String[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
 {
    let ex       = j_parameter(javaException(), 'e');   
    let fullBody = j_try(
@@ -71,7 +71,7 @@ function meta::pure::executionPlan::engine::java::platform::buildExecuteClass(bo
    $withImports->addMethod(javaMethod(['public', 'static'], $body.type, 'execute', $param->cast(@meta::external::language::java::metamodel::Parameter), $fullBody));
 }
 
-function meta::pure::executionPlan::engine::java::platform::graphInstanceOf(elementType:meta::external::language::java::metamodel::Type[1], conventions:Conventions[1]):meta::external::language::java::metamodel::ParameterizedType[1]
+function meta::pure::executionPlan::engine::java::graphInstanceOf(elementType:meta::external::language::java::metamodel::Type[1], conventions:Conventions[1]):meta::external::language::java::metamodel::ParameterizedType[1]
 { 
    javaParameterizedType($conventions->className(GraphInstance), $elementType);
 }

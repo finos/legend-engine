@@ -15,7 +15,6 @@
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::extension::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 
