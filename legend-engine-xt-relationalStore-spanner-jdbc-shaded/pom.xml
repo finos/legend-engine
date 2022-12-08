@@ -9,7 +9,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- this module should be used with -local postfix as a dependency which gets created on install phase-->
     <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
     <name>Legend Engine - XT - Relational Store - Spanner - JDBC Driver - Shaded</name>
 
@@ -48,10 +47,7 @@
                         </filter>
                     </filters>
                     <shadeSourcesContent>true</shadeSourcesContent>
-                    <shadedArtifactAttached>true</shadedArtifactAttached>
-                    <createDependencyReducedPom>true</createDependencyReducedPom>
-                    <useDependencyReducedPomInJar>true</useDependencyReducedPomInJar>
-                    <finalName>spanner-jdbc-shaded</finalName>
+                    <shadedArtifactAttached>false</shadedArtifactAttached>
                     <relocations>
                         <relocation>
                             <pattern>org.apache</pattern>
@@ -134,29 +130,6 @@
                         <goals>
                             <goal>analyze-only</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- installing shaded jar with dependency-reduced.pom-->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <configuration>
-                    <groupId>${groupId}</groupId>
-                    <artifactId>${artifactId}-local</artifactId>
-                    <version>${project.version}</version>
-                    <file>target/spanner-jdbc-shaded.jar</file>
-                    <packaging>jar</packaging>
-                    <generatePom>false</generatePom>
-                    <pomFile>dependency-reduced-pom.xml</pomFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install-shaded-jar</id>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <phase>install</phase>
                     </execution>
                 </executions>
             </plugin>
