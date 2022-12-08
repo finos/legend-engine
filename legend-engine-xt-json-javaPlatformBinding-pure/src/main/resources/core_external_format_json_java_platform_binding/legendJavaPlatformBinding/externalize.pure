@@ -44,8 +44,8 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
 import meta::pure::graphFetch::*;

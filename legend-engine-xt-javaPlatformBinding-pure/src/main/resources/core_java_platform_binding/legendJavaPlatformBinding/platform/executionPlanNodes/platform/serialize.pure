@@ -23,19 +23,19 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
 
-Class meta::pure::executionPlan::engine::java::serialize::SerializeData
+Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializeData
 {
    tree           : RootGraphFetchTree<Any>[1];
    auxiliaryTrees : RootGraphFetchTree<Any>[*];
    config         : AlloySerializationConfig[0..1];
 }
 
-function meta::pure::executionPlan::engine::java::serialize::prepareForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::prepareForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepareForSerialize\n', |''));
    
@@ -60,7 +60,7 @@ function meta::pure::executionPlan::engine::java::serialize::prepareForSerialize
    ^$context(typeInfos=$newInfo, nodeInfos=$context.nodeInfos->concatenate(^NodeInfo(path=$path, returnType=^SimpleJavaType(pureType=String, javaType=javaString()), data=$data, graphFetchTrees=$data.tree->concatenate($data.auxiliaryTrees))));
 }
 
-function meta::pure::executionPlan::engine::java::serialize::generateImplementionForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::generateImplementionForSerialize(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'generateImplementionForSerialize\n', |''));
 
@@ -73,12 +73,12 @@ function meta::pure::executionPlan::engine::java::serialize::generateImplementio
    generatedCode($project, $serializeClass);
 }
 
-function meta::pure::executionPlan::engine::java::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    createSerializeProject($path, $context, $context->nodeInfosForPath($path).data->cast(@SerializeData)->toOne(), $debug)
 }
 
-function meta::pure::executionPlan::engine::java::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], data:SerializeData[1], debug:DebugContext[1]): Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::createSerializeProject(path:String[1], context:GenerationContext[1], data:SerializeData[1], debug:DebugContext[1]): Project[1]
 {
    let conventions = $context.conventions;
 
@@ -102,7 +102,7 @@ function meta::pure::executionPlan::engine::java::serialize::createSerializeProj
    newProject()->addClasses([$serializeClass, $serializer]);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::prnt(tree:GraphFetchTree[1], indent:String[1]): Any[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::prnt(tree:GraphFetchTree[1], indent:String[1]): Any[*]
 {
    $tree->match([
       t:SerializeTopRootGraphFetchTree<Any>[1] | println($indent+'SerializeTopRootGraphFetchTree ' + $t.class.name->toOne());              $t.subTrees->map(st| $st->prnt($indent + '  '));,
@@ -113,19 +113,19 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
    ]);
 }
 
-Class meta::pure::executionPlan::engine::java::serialize::SerializeTop
+Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializeTop
 {
 }
 
-Class meta::pure::executionPlan::engine::java::serialize::SerializeTopRootGraphFetchTree<T> extends RootGraphFetchTree<T>, SerializeTop
+Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializeTopRootGraphFetchTree<T> extends RootGraphFetchTree<T>, SerializeTop
 {
 }
 
-Class meta::pure::executionPlan::engine::java::serialize::SerializeTopPropertyGraphFetchTree extends PropertyGraphFetchTree, SerializeTop
+Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializeTopPropertyGraphFetchTree extends PropertyGraphFetchTree, SerializeTop
 {
 }
 
-Class meta::pure::executionPlan::engine::java::serialize::SerializePropertyGraphFetchTree extends PropertyGraphFetchTree
+Class meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::SerializePropertyGraphFetchTree extends PropertyGraphFetchTree
 {
    fieldName : String[1];
    fieldSet  : PropertyGraphFetchTree[*];
@@ -152,7 +152,7 @@ Class meta::pure::executionPlan::engine::java::serialize::SerializePropertyGraph
    }: GraphFetchTree[*];
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::prepareTree(data:SerializeData[1], javaType:JavaType[1]): RootGraphFetchTree<Any>[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::prepareTree(data:SerializeData[1], javaType:JavaType[1]): RootGraphFetchTree<Any>[1]
 {
    let defectTree = #{Defect {id, externalId, message, enforcementLevel, ruleType, ruleDefinerPath, path { propertyName, index }}}#;
    
@@ -175,7 +175,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
 
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeForClass(data:SerializeData[1], class:meta::pure::metamodel::type::Class<Any>[1]): RootGraphFetchTree<Any>[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeForClass(data:SerializeData[1], class:meta::pure::metamodel::type::Class<Any>[1]): RootGraphFetchTree<Any>[1]
 {
    if($class->_subTypeOf($data.tree.class),
       | $data.tree,
@@ -186,7 +186,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
    ));               
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::toPropertyTree(root:RootGraphFetchTree<Any>[1], property:AbstractProperty<Any>[1]): PropertyGraphFetchTree[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::toPropertyTree(root:RootGraphFetchTree<Any>[1], property:AbstractProperty<Any>[1]): PropertyGraphFetchTree[1]
 {
    $root->match([
       st: SerializeTopRootGraphFetchTree<Any>[1] | ^SerializeTopPropertyGraphFetchTree(property=$property, subType=$root.class, subTrees=$root.subTrees),
@@ -194,7 +194,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
    ]);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::groupByFields(tree:GraphFetchTree[1]): GraphFetchTree[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::groupByFields(tree:GraphFetchTree[1]): GraphFetchTree[1]
 {
    let byFieldName        = $tree.subTrees->cast(@PropertyGraphFetchTree)->groupBy(st| $st->subTreeFieldName());
    let fieldNamesInOrder  = $tree.subTrees->cast(@PropertyGraphFetchTree)->map(st| $st->subTreeFieldName())->removeDuplicates();
@@ -221,7 +221,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
    ^$tree(subTrees=$grouped);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerializerClass(path:String[1], tree:RootGraphFetchTree<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerializerClass(path:String[1], tree:RootGraphFetchTree<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    print(if($debug.debug,|$debug.space+'treeSerializerClass\n', |''));
    
@@ -248,7 +248,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
 }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerialiseMethods(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethods(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[*]
 {
    let name = treeSerialiseMethodName($path, $class, false, $conventions);
    print(if($debug.debug,|$debug.space+'treeSerialiseMethods '+$name+'\n', |''));
@@ -291,7 +291,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerialiseMethod(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethod(jClass:meta::external::language::java::metamodel::Class[1], path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], tree:GraphFetchTree[1], conventions:Conventions[1], debug:DebugContext[1]): Pair<meta::external::language::java::metamodel::Method, Code>[1]
 {
    let name = treeSerialiseMethodName($path, $class, false, $conventions);
    
@@ -407,15 +407,15 @@ function <<access.private>> meta::pure::executionPlan::engine::java::serialize::
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::writerField(conventions:Conventions[1]):  meta::external::language::java::metamodel::Field[1] { javaField('private', $conventions->className(ISerializationWriter), 'writer'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::contextField(conventions:Conventions[1]): meta::external::language::java::metamodel::Field[1] { javaField('private', $conventions->className(IExecutionNodeContext), 'context'); }
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::writerField(conventions:Conventions[1]):  meta::external::language::java::metamodel::Field[1] { javaField('private', $conventions->className(ISerializationWriter), 'writer'); }
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::contextField(conventions:Conventions[1]): meta::external::language::java::metamodel::Field[1] { javaField('private', $conventions->className(IExecutionNodeContext), 'context'); }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::subTreeFieldName(tree:PropertyGraphFetchTree[1]): String[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::subTreeFieldName(tree:PropertyGraphFetchTree[1]): String[1]
 {      
    if($tree.alias->isEmpty(), |$tree.property.name->toOne() + if($tree.property->instanceOf(QualifiedProperty), | $tree.parameters->evaluateAndDeactivate()->map(x | $x->meta::pure::router::printer::asString())->joinStrings('(', ', ', ')'), | ''), |$tree.alias)->toOne();
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::serialize::treeSerialiseMethodName(path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], checked:Boolean[1], conventions:Conventions[1]): String[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::platform::serialize::treeSerialiseMethodName(path:String[*], class:meta::pure::metamodel::type::Class<Any>[1], checked:Boolean[1], conventions:Conventions[1]): String[1]
 {
    'write'+if($checked, |'Checked', |'')+$conventions->pureTypeToJavaType($class, PureOne)->cast(@meta::external::language::java::metamodel::Class).simpleName+'_'+$path->joinStrings('_');
 }
