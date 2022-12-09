@@ -15,9 +15,16 @@
 package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
-import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -34,69 +41,304 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
     4) dedup: AllowDuplicates, FilterDuplicates
 
     Valid Combinations:
-    1) No Delete Ind, No Data Splits
-    2) No Delete Ind, With Data Splits
-    3) With Delete Ind, No Data Splits
-    4) With Delete Ind, With Data Splits
+    1) BatchId Based, No Delete Ind, No Data Splits, Allow Duplicates
+    2) BatchId Based, No Delete Ind, With Data Splits, Allow Duplicates
+    3) BatchId Based, With Delete Ind, No Data Splits, Allow Duplicates
+    4) BatchId Based, With Delete Ind, With Data Splits, Allow Duplicates, Default temp table
+
+    5) BatchId Based, No Delete Ind, No Data Splits, Filter Duplicates
+    6) BatchId Based, No Delete Ind, With Data Splits, Filter Duplicates
+    3) BatchId Based, With Delete Ind, No Data Splits, Filter Duplicates
+    4) BatchId Based, With Delete Ind, With Data Splits, Filter Duplicates, Default temp table
+
+    9) BatchIdDateTime Based, No Delete Ind, No Data Splits, Allow Duplicates
+    10) DateTime Based, No Delete Ind, No Data Splits, Allow Duplicates
     */
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS()
     {
-        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
                 .build();
-        return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlySchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .build());
+        return testScenario;
     }
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__WITH_DATA_SPLITS()
     {
-        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
                 .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
                 .build();
 
-        return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlySchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDataSplit)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .build());
+        return testScenario;
     }
 
     public TestScenario BATCH_ID_BASED__WITH_DEL_IND__NO_DATA_SPLITS()
     {
-        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
                         .build())
                 .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
                 .build();
-        return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithDeleteIndicator, ingestMode);
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlySchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDeleteInd)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator)
+                .build());
+        return testScenario;
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__WITH_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__WITH_DATA_SPLITS__USING_DEFAULT_TEMP_TABLE()
     {
-        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
                 .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
                 .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
                 .build();
+        return new TestScenario(mainTableWithBitemporalFromOnlySchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithDataSplit, ingestMode);
+    }
 
-        return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);
+    public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__FILTER_DUPLICATES()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlySchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .stagingDatasetWithoutDuplicates(stagingTableBitemporalWithoutDuplicates)
+                .build());
+        return testScenario;
+    }
+
+    public TestScenario BATCH_ID_BASED__NO_DEL_IND__WITH_DATA_SPLITS__FILTER_DUPLICATES()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .dataSplitField(Optional.of(dataSplitField))
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
+
+        TestScenario testScenario = new TestScenario(ingestMode);
+        DatasetDefinition stagingTableWithoutDuplicates = DatasetDefinition.builder()
+                .database(stagingWithoutDuplicatesDbName)
+                .name(stagingTableWithoutDuplicatesName)
+                .alias(stagingTableWithoutDuplicatesAlias)
+                .schema(bitemporalFromOnlyStagingTableSchemaWithDataSplit)
+                .build();
+
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlySchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDataSplit)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates)
+                .build());
+        return testScenario;
+    }
+
+    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__NO_DATA_SPLITS__FILTER_DUPLICATES()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                        .deleteField(deleteIndicatorField)
+                        .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
+
+        TestScenario testScenario = new TestScenario(ingestMode);
+        DatasetDefinition stagingTableWithoutDuplicates = DatasetDefinition.builder()
+                .database(stagingWithoutDuplicatesDbName)
+                .name(stagingTableWithoutDuplicatesName)
+                .alias(stagingTableWithoutDuplicatesAlias)
+                .schema(bitemporalFromOnlyStagingTableSchemaWithDeleteIndicator)
+                .build();
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlySchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDeleteInd)
+                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .tempDatasetWithDeleteIndicator(tempTableWithDeleteIndicator)
+                .stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates)
+                .build());
+        return testScenario;
+    }
+
+    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__WITH_DATA_SPLITS__FILTER_DUPLICATES()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .dataSplitField(Optional.of(dataSplitField))
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
+                        .deleteField(deleteIndicatorField)
+                        .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
+
+        return new TestScenario(mainTableWithBitemporalFromOnlySchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithDataSplit, ingestMode);
+    }
+
+
+    public TestScenario BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DATA_SPLITS()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchIdAndDateTime.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .build();
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlyWithBatchIdAndTimeBasedSchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
+                .tempDataset(tempTableWithBitemporalFromOnlyWithBatchIdAndTimeBasedSchema)
+                .build());
+        return testScenario;
+    }
+
+    public TestScenario DATETIME_BASED__NO_DEL_IND__NO_DATA_SPLITS()
+    {
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+                .digestField(digestField)
+                .transactionMilestoning(TransactionDateTime.builder()
+                        .dateTimeInName(batchTimeInField)
+                        .dateTimeOutName(batchTimeOutField)
+                        .build())
+                .validityMilestoning(ValidDateTime.builder()
+                        .dateTimeFromName(validityFromTargetField)
+                        .dateTimeThruName(validityThroughTargetField)
+                        .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                                .sourceDateTimeFromField(validityFromReferenceField)
+                                .build())
+                        .build())
+                .build();
+        TestScenario testScenario = new TestScenario(ingestMode);
+        testScenario.setDatasets(Datasets.builder()
+                .mainDataset(mainTableWithBitemporalFromOnlyWithDateTimeBasedSchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchema)
+                .tempDataset(tempTableWithBitemporalFromOnlyWithDateTimeBasedSchema)
+                .build());
+        return testScenario;
     }
 }
