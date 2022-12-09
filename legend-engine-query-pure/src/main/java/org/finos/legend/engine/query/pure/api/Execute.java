@@ -223,16 +223,6 @@ public class Execute
 
     public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)
     {
-        return this.execStrategic(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, parameters);
-    }
-
-    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format)
-    {
-        return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, Maps.mutable.empty());
-    }
-
-    public Response execStrategic(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format, Map<String, ?> parameters)
-    {
         try
         {
             long start = System.currentTimeMillis();
@@ -246,6 +236,11 @@ public class Execute
             Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
             return response;
         }
+    }
+
+    public Response exec(Function<PureModel, LambdaFunction<?>> functionFunc, Function0<PureModel> pureModelFunc, PlanExecutor planExecutor, String mapping, Runtime runtime, ExecutionContext context, String clientVersion, MutableList<CommonProfile> pm, String user, SerializationFormat format)
+    {
+        return exec(functionFunc, pureModelFunc, planExecutor, mapping, runtime, context, clientVersion, pm, user, format, Maps.mutable.empty());
     }
 
     private Response execImpl(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan, Map<String, ?> parameters) throws Exception
