@@ -1,0 +1,221 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::document::metamodel::*;
+
+Class meta::external::store::document::metamodel::DocumentStore extends meta::pure::store::set::SetBasedStore
+{
+    collections : Collection[*];
+    collection(name:String[1])
+    {
+        $this.collections->filter(t|$t.name == $name)->first();
+    }:Collection[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::document::metamodel::DocumentStoreElement
+{
+
+}
+
+Class meta::external::store::document::metamodel::Relation extends DocumentStoreElement
+{
+   properties : DocumentStoreElement[*];   
+}
+
+
+Class meta::external::store::document::metamodel::NamedRelation extends Relation
+{
+   name     : String[1];
+   id       : String[0..1];
+}
+
+Class meta::external::store::document::metamodel::Collection extends meta::external::store::document::metamodel::NamedRelation
+{
+   primaryKey : meta::external::store::document::metamodel::Property[*];
+   property(propertyName:String[1])
+   {
+        $this.properties->cast(@meta::external::store::document::metamodel::Property)->filter(c | $c.name == $propertyName )->first();
+   }: meta::external::store::document::metamodel::Property[0..1];
+}
+
+Class meta::external::store::document::metamodel::CollectionFragment extends meta::external::store::document::metamodel::NamedRelation
+{
+   property(propertyName:String[1])
+   {
+        $this.properties->cast(@meta::external::store::document::metamodel::Property)->filter(c | $c.name == $propertyName )->first();
+   }: meta::external::store::document::metamodel::Property[0..1];
+}
+
+Class meta::external::store::document::metamodel::Property extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+    <<equality.Key>> name : String[1];
+    <<equality.Key>> type : meta::external::store::document::metamodel::TypeReference[1];
+    nullable : Boolean[0..1];
+    owner : NamedRelation[0..1];
+}
+
+
+Class <<typemodifiers.abstract>> meta::external::store::document::metamodel::TypeReference
+{
+  list     : Boolean[1];
+}
+
+Class meta::external::store::document::metamodel::CoreDataType extends meta::external::store::document::metamodel::TypeReference
+{
+}
+
+Class meta::external::store::document::metamodel::StringTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::BooleanTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::IntegerTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::LongTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::DateTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::DoubleTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::DecimalTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::ObjectIdTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+}
+
+Class meta::external::store::document::metamodel::ObjectTypeReference extends meta::external::store::document::metamodel::CoreDataType
+{
+   type    : Class<Any>[1];
+}
+
+
+
+Class meta::external::store::document::metamodel::CollectionAlias extends Alias
+{
+   setMappingOwner : meta::pure::mapping::PropertyMappingsImplementation[0..1];
+   documentStore    : DocumentStore[0..1];
+   collection(){$this.collectionElement->cast(@Collection)}:Collection[1];
+}
+
+Class meta::external::store::document::metamodel::Alias extends DocumentStoreElement
+{
+   <<equality.Key>> name : String[1];
+   <<equality.Key>> collectionElement : DocumentStoreElement[1];
+}
+
+//Equivalent of SQLQuery
+Class meta::external::store::document::metamodel::DocumentQuery extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+}
+
+
+Class {doc.doc = 'Equivalent of select query.  Projected fields come from parent Document class'}
+meta::external::store::document::metamodel::SelectDocumentQuery extends meta::external::store::document::metamodel::DocumentQuery, meta::external::store::document::metamodel::Relation
+{
+    distinct : Boolean[0..1];
+    data : RootJoinDocumentTreeNode[0..1];
+    filteringOperation : DocumentStoreElement[*];
+    //leftSideOfFilter : DocumentTreeNode[0..1];
+    // orderBy
+    // groupBy
+    // havingOperation
+}
+
+Class meta::external::store::document::metamodel::DocumentTreeNode extends meta::pure::functions::collection::TreeNode
+{
+    alias : CollectionAlias[1];
+    children()
+    {
+        $this.childrenData->cast(@JoinDocumentTreeNode)
+    }:JoinDocumentTreeNode[*];
+}
+
+Class meta::external::store::document::metamodel::RootJoinDocumentTreeNode extends DocumentTreeNode, Relation
+{
+// This is what you typically instantiate - so that you get the children from the DocumentTreeNode
+}
+
+Class meta::external::store::document::metamodel::JoinDocumentTreeNode extends DocumentTreeNode
+{
+// Not supporting, as we are not likely to need this unless we support joins across collections.
+}
+
+
+Class meta::external::store::document::metamodel::Literal extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+   <<equality.Key>> value:Any[1];
+}
+
+Class meta::external::store::document::metamodel::LiteralList extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+   <<equality.Key>> values:Literal[*];
+}
+
+Class meta::external::store::document::metamodel::DocumentNull
+{
+   //Used to make sure that any two Document field Null instances are equal
+   <<equality.Key>> key:Nil[0];
+   toString()
+   {
+      'DocumentNull'
+   }:String[1];
+}
+
+
+Class meta::external::store::document::metamodel::Function extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+}
+
+Class meta::external::store::document::metamodel::Operation extends meta::external::store::document::metamodel::Function
+{
+}
+
+Class meta::external::store::document::metamodel::DynaFunction extends meta::external::store::document::metamodel::Operation
+{
+    <<equality.Key>> name : String[1];
+    <<equality.Key>> parameters : DocumentStoreElement[*];
+}
+
+Class meta::external::store::document::metamodel::BinaryOperation extends meta::external::store::document::metamodel::Operation
+{
+    <<equality.Key>> left:DocumentStoreElement[1];
+    <<equality.Key>> right:DocumentStoreElement[1];
+}
+
+Class meta::external::store::document::metamodel::PropertyName extends meta::external::store::document::metamodel::DocumentStoreElement
+{
+    <<equality.Key>> name : String[1];
+}
+
+
+Class meta::external::store::document::metamodel::JoinStrings extends meta::external::store::document::metamodel::Operation
+{
+    strings:DocumentStoreElement[*];
+    prefix:DocumentStoreElement[0..1];
+    separator:DocumentStoreElement[0..1];
+    suffix:DocumentStoreElement[0..1];
+}

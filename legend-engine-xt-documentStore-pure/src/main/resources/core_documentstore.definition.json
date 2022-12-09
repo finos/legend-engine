@@ -1,0 +1,5 @@
+{
+  "name" : "core_documentstore",
+  "pattern" : "(meta::external::store::document|meta::external::store::document::tests|meta::protocols::pure|meta::pure::mapping|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::router|meta::pure::graphFetch)(::.*)?",
+  "dependencies" : ["platform", "core", "core_external_format_json"]
+}
