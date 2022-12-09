@@ -446,6 +446,7 @@ public class BaseTest
             .addFields(deleteIndicator)
             .build();
 
+
     protected SchemaDefinition bitemporalFromOnlyStagingTableSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
