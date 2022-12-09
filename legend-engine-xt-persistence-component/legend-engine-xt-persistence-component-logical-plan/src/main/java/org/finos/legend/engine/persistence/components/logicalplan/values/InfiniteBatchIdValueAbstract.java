@@ -12,12 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.query.graphQL.api.format;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.external.shared.format.generations.GenerationInput;
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
 
-@Deprecated
-public class GraphQLGenerationInput extends GenerationInput
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface InfiniteBatchIdValueAbstract extends Value
 {
-    public GraphQLGenerationConfig config;
 }

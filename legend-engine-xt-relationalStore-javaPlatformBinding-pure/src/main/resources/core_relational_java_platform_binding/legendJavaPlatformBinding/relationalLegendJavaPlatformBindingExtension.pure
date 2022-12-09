@@ -146,7 +146,7 @@ function meta::relational::executionPlan::platformBinding::legendJava::relationa
    relationalExtensionsWithLegendJavaPlatformBinding([])
 }
 
-function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
+function meta::relational::executionPlan::platformBinding::legendJava::relationalExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
    [
       meta::relational::extension::relationalExtension('relational'),

@@ -17,7 +17,7 @@ import meta::pure::executionPlan::engine::java::*;
 
 
 // Prepare
-function meta::pure::executionPlan::engine::java::prepareForPlatformMergeNode(p:PlatformMergeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::merge::prepareForPlatformMergeNode(p:PlatformMergeExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]
 {
    let childNodeInfos = $context->childNodeInfosForPath($path);
    ^$context(nodeInfos = $context.nodeInfos->concatenate(^NodeInfo(path = $path, returnType = $childNodeInfos->at(0).returnType, graphFetchTrees = $childNodeInfos.graphFetchTrees->removeDuplicatesBy(x | $x.class))));

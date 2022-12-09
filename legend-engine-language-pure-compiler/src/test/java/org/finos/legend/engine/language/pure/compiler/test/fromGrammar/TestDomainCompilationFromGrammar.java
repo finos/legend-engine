@@ -2258,6 +2258,45 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testMilestoningSimplePropertiesInNonMilestonedClassesAreNotRestricted()
+    {
+        String grammar = "###Pure\n" +
+                "Class test::ProcessingDate{processingDate: Date[1];}" +
+                "Class test::BusinessDate{businessDate: Date[1];}" +
+                "Class test::ProcessingTemporalAddress\n" +
+                "{\n" +
+                "  processingDate: Date[1];\n" +
+                "  processingDateComplex: test::ProcessingDate[1];" +
+                "}\n" +
+                "\n" +
+                "Class test::BusinessTemporalAddress\n" +
+                "{\n" +
+                "  businessDate: Date[1];\n" +
+                "  businessDateComplex: test::BusinessDate[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::BiTemporalAddress\n" +
+                "{\n" +
+                "  processingDate: Date[1];\n" +
+                "  businessDate: Date[1];\n" +
+                "  processingDateComplex: test::ProcessingDate[1];\n" +
+                "  businessDateComplex: test::BusinessDate[1];\n" +
+                "}\n";
+
+        PureModel pm = test(grammar, null, Lists.mutable.with()).getTwo();
+        RichIterable<? extends Property<?, ?>> processingTemporalAddressProperties = pm.getClass("test::ProcessingTemporalAddress")._properties();
+        RichIterable<? extends Property<?, ?>> businessTemporalAddressProperties = pm.getClass("test::BusinessTemporalAddress")._properties();
+        RichIterable<? extends Property<?, ?>> biTemporalAddressProperties = pm.getClass("test::BiTemporalAddress")._properties();
+
+        Assert.assertEquals(2, processingTemporalAddressProperties.size());
+        Assert.assertTrue(processingTemporalAddressProperties.allSatisfy(p -> Lists.immutable.with("processingDate", "processingDateComplex").contains(p.getName())));
+        Assert.assertEquals(2, businessTemporalAddressProperties.size());
+        Assert.assertTrue(businessTemporalAddressProperties.allSatisfy(p -> Lists.immutable.with("businessDate", "businessDateComplex").contains(p.getName())));
+        Assert.assertEquals(4, biTemporalAddressProperties.size());
+        Assert.assertTrue(biTemporalAddressProperties.allSatisfy(p -> Lists.immutable.with("processingDate", "processingDateComplex", "businessDate", "businessDateComplex").contains(p.getName())));
+    }
+
+    @Test
     public void testMilestoningSimplePropertiesAreNotOverridenByUserProperties()
     {
         String grammar = "###Pure\n" +
