@@ -56,7 +56,6 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
     {
         if (testAssertion instanceof AllRowsEquivalentToJson)
         {
-            System.out.println("AllRowsEquivalentToJson - I'm at the right place");
             AllRowsEquivalentToJson allRowsEquivalentToJson = (AllRowsEquivalentToJson) testAssertion;
             ExternalFormatData externalFormatData = allRowsEquivalentToJson.expected;
 
@@ -71,7 +70,6 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
                 compareAllRows(result, expected, fieldsToIgnore);
                 assertionStatus = new AssertPass();
-                System.out.println("AllRowsEquivalentToJson - Happy path");
 
             }
             catch (AssertionError e)
@@ -81,21 +79,18 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
                 fail.actual = actualResult;
                 fail.message = e.getMessage();
                 assertionStatus = fail;
-                System.out.println("AllRowsEquivalentToJson - Unhappy path 1");
             }
             catch (Exception e)
             {
                 AssertFail fail = new AssertFail();
                 fail.message = e.getMessage();
                 assertionStatus = fail;
-                System.out.println("AllRowsEquivalentToJson - Unhappy path 2");
             }
             assertionStatus.id = testAssertion.id;
             return assertionStatus;
         }
         else if (testAssertion instanceof ActiveRowsEquivalentToJson)
         {
-            System.out.println("ActiveRowsEquivalentToJson - I'm at the right place");
             ActiveRowsEquivalentToJson activeRowsEquivalentToJson = (ActiveRowsEquivalentToJson) testAssertion;
             ExternalFormatData externalFormatData = activeRowsEquivalentToJson.expected;
 
@@ -110,7 +105,6 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
                 compareActiveRows(result, expected, fieldsToIgnore, milestoningMap);
                 assertionStatus = new AssertPass();
-                System.out.println("ActiveRowsEquivalentToJson - Happy path");
 
             }
             catch (AssertionError e)
@@ -120,14 +114,12 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
                 fail.actual = actualResult;
                 fail.message = e.getMessage();
                 assertionStatus = fail;
-                System.out.println("ActiveRowsEquivalentToJson - Unhappy path 1");
             }
             catch (Exception e)
             {
                 AssertFail fail = new AssertFail();
                 fail.message = e.getMessage();
                 assertionStatus = fail;
-                System.out.println("ActiveRowsEquivalentToJson - Unhappy path 2");
             }
             assertionStatus.id = testAssertion.id;
             return assertionStatus;
