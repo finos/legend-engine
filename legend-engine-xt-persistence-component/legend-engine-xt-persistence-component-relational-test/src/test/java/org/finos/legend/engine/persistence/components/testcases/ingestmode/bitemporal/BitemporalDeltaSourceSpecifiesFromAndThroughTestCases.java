@@ -113,5 +113,22 @@ public abstract class BitemporalDeltaSourceSpecifiesFromAndThroughTestCases exte
 
     public abstract void verifyBitemporalDeltaBatchIdBasedWithUpperCaseOptimizer(GeneratorResult operations);
 
+    @Test
+    void testBitemporalDeltaBatchIdBasedWithUserDefinedInfiniteBatchId()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS();
+        RelationalGenerator generator = RelationalGenerator.builder()
+                .ingestMode(scenario.getIngestMode())
+                .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .infiniteBatchIdValue(123456L)
+                .collectStatistics(true)
+                .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyBitemporalDeltaBatchIdBasedWithUserDefinedInfiniteBatchId(operations);
+    }
+
+    public abstract void verifyBitemporalDeltaBatchIdBasedWithUserDefinedInfiniteBatchId(GeneratorResult operations);
+
     public abstract RelationalSink getRelationalSink();
 }
