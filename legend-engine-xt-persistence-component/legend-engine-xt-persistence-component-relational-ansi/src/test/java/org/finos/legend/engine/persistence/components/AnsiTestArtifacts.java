@@ -161,13 +161,36 @@ public class AnsiTestArtifacts
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
             "\"amount\" DOUBLE," +
-            "\"validity_from_reference\" DATETIME," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER," +
             "\"batch_id_out\" INTEGER," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER," +
+            "\"batch_id_out\" INTEGER," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyMainTableDateTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+            "\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_time_in\", \"validity_from_target\"))";
 
     public static String expectedBitemporalMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
             "(\"ID\" INTEGER," +
@@ -198,26 +221,74 @@ public class AnsiTestArtifacts
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
             "\"amount\" DOUBLE," +
-            "\"validity_from_reference\" DATETIME," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER," +
             "\"batch_id_out\" INTEGER," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"(" +
+            "\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_id_in\" INTEGER," +
+            "\"batch_id_out\" INTEGER," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"batch_time_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyTempTableDateTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"(" +
+            "\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"digest\" VARCHAR," +
+            "\"batch_time_in\" DATETIME," +
+            "\"batch_time_out\" DATETIME," +
+            "\"validity_from_target\" DATETIME," +
+            "\"validity_through_target\" DATETIME," +
+            "PRIMARY KEY (\"id\", \"name\", \"batch_time_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyStageWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
 
     public static String expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"tempWithDeleteIndicator\"" +
             "(\"id\" INTEGER," +
             "\"name\" VARCHAR," +
             "\"amount\" DOUBLE," +
-            "\"validity_from_reference\" DATETIME," +
             "\"digest\" VARCHAR," +
             "\"batch_id_in\" INTEGER," +
             "\"batch_id_out\" INTEGER," +
             "\"validity_from_target\" DATETIME," +
             "\"validity_through_target\" DATETIME," +
             "\"delete_indicator\" VARCHAR," +
-            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"batch_id_in\", \"validity_from_target\"))";
+            "PRIMARY KEY (\"id\", \"name\", \"batch_id_in\", \"validity_from_target\"))";
+
+    public static String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "\"data_split\" BIGINT," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\", \"data_split\"))";
+
+    public static String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"stagingWithoutDuplicates\"" +
+            "(\"id\" INTEGER," +
+            "\"name\" VARCHAR," +
+            "\"amount\" DOUBLE," +
+            "\"validity_from_reference\" DATETIME," +
+            "\"digest\" VARCHAR," +
+            "\"delete_indicator\" VARCHAR," +
+            "PRIMARY KEY (\"id\", \"name\", \"validity_from_reference\"))";
 
     public static String expectedStagingCleanupQuery = "DELETE FROM \"mydb\".\"staging\" as stage";
 
