@@ -446,7 +446,6 @@ public class BaseTest
             .addFields(deleteIndicator)
             .build();
 
-
     protected SchemaDefinition bitemporalFromOnlyStagingTableSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
@@ -653,7 +652,6 @@ public class BaseTest
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(bitemporalStagingTableSchemaWithDataSplit)
             .build();
-
 
     protected DatasetDefinition mainTableWithBitemporalFromOnlySchema = DatasetDefinition.builder()
             .database(mainDbName)
