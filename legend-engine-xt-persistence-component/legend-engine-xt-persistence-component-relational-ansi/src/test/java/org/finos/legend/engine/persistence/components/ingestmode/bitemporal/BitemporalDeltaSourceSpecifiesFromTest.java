@@ -181,7 +181,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(expectedTempToMain, operations.get(1).ingestSql().get(3));
         Assertions.assertEquals(getExpectedCleanupSql("\"mydb\".\"temp\"", "temp"), operations.get(1).ingestSql().get(4));
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedMetadataTableIngestQuery, operations.get(0).metadataIngestSql().get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
         String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";

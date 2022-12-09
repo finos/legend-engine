@@ -238,7 +238,8 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
     }
 
     @Override
-    public void verifyBitemporalDeltaBatchIdBasedWithUserDefinedInfiniteBatchId(GeneratorResult operations) {
+    public void verifyBitemporalDeltaBatchIdBasedWithUserDefinedInfiniteBatchId(GeneratorResult operations)
+    {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();

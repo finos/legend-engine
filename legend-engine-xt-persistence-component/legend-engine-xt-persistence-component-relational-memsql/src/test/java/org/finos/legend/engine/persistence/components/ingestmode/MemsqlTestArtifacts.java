@@ -135,4 +135,178 @@ public class MemsqlTestArtifacts
             "(`ID` INTEGER,`NAME` VARCHAR(256),`AMOUNT` DOUBLE,`BIZ_DATE` DATE,`DIGEST` VARCHAR(256)," +
             "`BATCH_TIME_IN` DATETIME,`BATCH_TIME_OUT` DATETIME,PRIMARY KEY (`ID`, `NAME`, `BATCH_TIME_IN`))";
 
+    public static String expectedBitemporalMainTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME," +
+            "`validity_through_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `batch_id_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME," +
+            "`validity_through_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`batch_time_in` DATETIME," +
+            "`batch_time_out` DATETIME," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `batch_id_in`, `batch_time_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME," +
+            "`validity_through_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "`batch_time_in` DATETIME," +
+            "`batch_time_out` DATETIME," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `batch_time_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyMainTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyMainTableBatchIdAndTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`batch_time_in` DATETIME," +
+            "`batch_time_out` DATETIME," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyMainTableDateTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`main`(" +
+            "`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_time_in` DATETIME," +
+            "`batch_time_out` DATETIME," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_time_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalMainTableCreateQueryUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+            "(`ID` INTEGER," +
+            "`NAME` VARCHAR(256)," +
+            "`AMOUNT` DOUBLE," +
+            "`VALIDITY_FROM_REFERENCE` DATETIME," +
+            "`VALIDITY_THROUGH_REFERENCE` DATETIME," +
+            "`DIGEST` VARCHAR(256)," +
+            "`BATCH_ID_IN` INTEGER," +
+            "`BATCH_ID_OUT` INTEGER," +
+            "`VALIDITY_FROM_TARGET` DATETIME," +
+            "`VALIDITY_THROUGH_TARGET` DATETIME," +
+            "PRIMARY KEY (`ID`, `NAME`, `VALIDITY_FROM_REFERENCE`, `BATCH_ID_IN`, `VALIDITY_FROM_TARGET`))";
+
+    public static String expectedBitemporalFromOnlyMainTableCreateQueryUpperCase = "CREATE REFERENCE TABLE IF NOT EXISTS `MYDB`.`MAIN`" +
+            "(`ID` INTEGER," +
+            "`NAME` VARCHAR(256)," +
+            "`AMOUNT` DOUBLE," +
+            "`VALIDITY_FROM_REFERENCE` DATETIME," +
+            "`DIGEST` VARCHAR(256)," +
+            "`BATCH_ID_IN` INTEGER," +
+            "`BATCH_ID_OUT` INTEGER," +
+            "`VALIDITY_FROM_TARGET` DATETIME," +
+            "`VALIDITY_THROUGH_TARGET` DATETIME," +
+            "PRIMARY KEY (`ID`, `NAME`, `VALIDITY_FROM_REFERENCE`, `BATCH_ID_IN`, `VALIDITY_FROM_TARGET`))";
+
+    public static String expectedBitemporalFromOnlyTempTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`temp`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`temp`(" +
+            "`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`batch_time_in` DATETIME," +
+            "`batch_time_out` DATETIME," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `batch_time_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyTempTableDateTimeBasedCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`temp`(" +
+            "`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_time_in` DATETIME," +
+            "`batch_time_out` DATETIME," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "PRIMARY KEY (`id`, `name`, `batch_time_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyStageWithoutDuplicatesTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
+
+    public static String expectedBitemporalFromOnlyTempTableWithDeleteIndicatorCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`tempWithDeleteIndicator`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`digest` VARCHAR(256)," +
+            "`batch_id_in` INTEGER," +
+            "`batch_id_out` INTEGER," +
+            "`validity_from_target` DATETIME," +
+            "`validity_through_target` DATETIME," +
+            "`delete_indicator` VARCHAR(256)," +
+            "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
+
+    public static String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "`data_split` BIGINT," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `data_split`))";
+
+    public static String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithoutDuplicatesTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
+            "(`id` INTEGER," +
+            "`name` VARCHAR(256)," +
+            "`amount` DOUBLE," +
+            "`validity_from_reference` DATETIME," +
+            "`digest` VARCHAR(256)," +
+            "`delete_indicator` VARCHAR(256)," +
+            "PRIMARY KEY (`id`, `name`, `validity_from_reference`))";
+
 }
