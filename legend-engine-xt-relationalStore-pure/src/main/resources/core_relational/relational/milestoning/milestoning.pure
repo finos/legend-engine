@@ -298,9 +298,12 @@ function meta::relational::milestoning::getTemporalMilestoneTableFilter(table:Ta
 
 function meta::relational::milestoning::getTemporalMilestoneTableRangeFilter(table:Table[1], tableAlias:TableAlias[1], milestoningStrategy:TemporalStrategy[1], dateRange: RelationalOperationElement[*]):Operation[1]
 {
-   let milestoneColumns = $tableAlias->getTemporalMilestoneColumns($milestoningStrategy);
-   let inclusive = $milestoningStrategy->getInclusive($table);
-   getTemporalMilestoneRangeFilter($table, $milestoningStrategy, $milestoneColumns->at(0), $milestoneColumns->at(1), $dateRange->at(0), $dateRange->at(1), $inclusive);
+   if($milestoningStrategy->instanceOf(BusinessTemporal) && $table->hasMilestoning(BusinessSnapshotMilestoning),
+      | getTemporalMilestoneRangeFilterForBusinessSnapshotMilestoning($tableAlias, $milestoningStrategy, $dateRange->at(0), $dateRange->at(1));,
+      | let milestoneColumns = $tableAlias->getTemporalMilestoneColumns($milestoningStrategy);
+        let inclusive = $milestoningStrategy->getInclusive($table);
+        getTemporalMilestoneRangeFilter($table, $milestoningStrategy, $milestoneColumns->at(0), $milestoneColumns->at(1), $dateRange->at(0), $dateRange->at(1), $inclusive);
+      );
 }
 
 function meta::relational::milestoning::getTemporalMilestoneColumns(tableAlias:TableAlias[1], milestoningStrategy:TemporalStrategy[1]):RelationalOperationElement[2]
@@ -384,6 +387,17 @@ function meta::relational::milestoning::getTemporalMilestoneRangeFilter(r:Relati
    let fromFilter = if ($inclusive,| ^DynaFunction(name = 'lessThan', parameters=[$from, $end]),| ^DynaFunction(name = 'lessThanEqual', parameters=[$from, $end]));
    let thruFilter = if ($inclusive,| ^DynaFunction(name = 'greaterThanEqual', parameters=[$thru, $start]),| ^DynaFunction(name = 'greaterThan', parameters=[$thru, $start]));
    newAndOrDynaFunctionRelaxedBrackets('and', [$fromFilter, $thruFilter]);
+}
+
+function meta::relational::milestoning::getTemporalMilestoneRangeFilterForBusinessSnapshotMilestoning(tableAlias:TableAlias[1], milestoningStrategy:TemporalStrategy[1], start: RelationalOperationElement[1], end: RelationalOperationElement[1]):Operation[1]
+{
+   assert(!$start->isLatestDate() && !$end->isLatestDate(), '%latest not a valid parameter for allVersionsInRange');
+   let snapshotDateColumn = $tableAlias.relationalElement->cast(@Table)->getSnapshotDateColumn()->toOne();
+   let snapshotDate = ^TableAliasColumn(alias=$tableAlias, column=$snapshotDateColumn);
+  
+   let lessThanFilter = ^DynaFunction(name = 'lessThanEqual', parameters=[$snapshotDate, $end]);
+   let greaterThanFilter = ^DynaFunction(name = 'greaterThanEqual', parameters=[$snapshotDate, $start]);
+   newAndOrDynaFunctionRelaxedBrackets('and', [$greaterThanFilter, $lessThanFilter]);
 }
 
 function meta::relational::milestoning::hasMilestoning(table:Table[1], milestoningType:Class<Milestoning>[1]):Boolean[1]
@@ -487,14 +501,13 @@ function meta::relational::milestoning::manageMilestoningContextPropogationForPr
    if(!$milestoningContext->isEmpty() && !$milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty(),|^$swc(milestoningContext=[]),|$swc);
 }
 
-function meta::relational::milestoning::updateMilestoningContextProcessingStateForProperties(swc: SelectWithCursor[1], milestoningProcessingState: MilestoningProcessingState[0..1]): SelectWithCursor[1]
-{
+function meta::relational::milestoning::updateMilestoningContextProcessingStateForProperties(swc: SelectWithCursor[1], milestoningProcessingState: MilestoningProcessingState[0..1]): SelectWithCursor[1]{
     let milestoningContext=$swc.milestoningContext;
-    if(!$milestoningContext->isEmpty() && !$milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty() && !$milestoningContext->toOne().isAllVersions(),
-       | let milestoningContextToOne = $milestoningContext->toOne();
-         let milestoningContextUpdated=^$milestoningContextToOne(currentProcessingState=$milestoningProcessingState);
-         ^$swc(milestoningContext=$milestoningContextUpdated);,
-       | $swc);
+    if(!$milestoningContext->isEmpty() && !$milestoningContext->toOne().currentProcessingStateIsMilestonedClassProperty(),|
+                                             let milestoningContextToOne = $milestoningContext->toOne();
+                                             let milestoningContextUpdated=^$milestoningContextToOne(currentProcessingState=$milestoningProcessingState);
+                                             ^$swc(milestoningContext=$milestoningContextUpdated);
+                                       ,| $swc);
 }
 
 function meta::relational::milestoning::unknownDefaultBusinessDate():Date[1]{

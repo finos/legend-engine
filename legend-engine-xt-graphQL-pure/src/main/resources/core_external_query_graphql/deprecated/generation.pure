@@ -14,33 +14,34 @@
 
 import meta::external::query::graphQL::generation::*;
 import meta::pure::generation::metamodel::*;
+import meta::pure::generation::*;
 
-Class meta::external::query::graphQL::generation::GraphQLConfig extends GenerationConfiguration
+Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLConfig extends GenerationConfiguration
 {
 }
 
-function <<access.private, Generation.Configuration>>  meta::external::query::graphQL::generation::describeConfiguration():GenerationParameter[*]
+function <<access.private, Generation.Configuration, doc.deprecated>>  meta::external::query::graphQL::generation::describeConfiguration():GenerationParameter[*]
 {
   meta::pure::generation::describeConfiguration(GraphQLConfig, meta::external::query::graphQL::generation::defaultConfig__GraphQLConfig_1_, []);
 }
 
-function meta::external::query::graphQL::generation::defaultConfig():GraphQLConfig[1]
+function <<doc.deprecated>> meta::external::query::graphQL::generation::defaultConfig():GraphQLConfig[1]
 {
     ^GraphQLConfig();
 }
 
-Class meta::external::query::graphQL::generation::GraphQLOutput extends GenerationOutput
+Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLOutput extends GenerationOutput
 {
 }
 
-function meta::external::query::graphQL::generation::generateGraphQL(config: GraphQLConfig[1]): GraphQLOutput[*]
+function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQL(config: GraphQLConfig[1]): GraphQLOutput[*]
 {
    $config.scopeElements->filter(e| !$e->instanceOf(Package))->map(e|assert($e->instanceOf(Type),' GraphQL generation of ' + $e->type().name->toOne()+ ' is not currently supported. Tried to generate GraphQL for '+ $e->elementToPath()) ;);
    let scopeElements = $config.allPackageScopeElements()->filter(p|$p->instanceOf(Class))->cast(@Class<Any>);
    $scopeElements->map(c| $config->meta::external::query::graphQL::generation::generateGraphQLFromPure($c));
 }
 
-function meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], class: Class<Any>[1]): GraphQLOutput[*]
+function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], class: Class<Any>[1]): GraphQLOutput[*]
 {
    let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($config.allPackageScopeElements())
                   ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
@@ -48,7 +49,7 @@ function meta::external::query::graphQL::generation::generateGraphQLFromPure(con
    ^GraphQLOutput
    (
         content=$content,
-        fileName='schema.graphQL',
+        fileName=$class->elementToPath()->pathToFileName('graphql'),
         format='text'
    );
 }

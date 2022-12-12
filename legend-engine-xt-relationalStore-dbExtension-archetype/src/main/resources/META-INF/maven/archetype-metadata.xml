@@ -1,0 +1,98 @@
+<archetype-descriptor name="legend-engine-xt-relationalStore-dbExtension-archetype">
+
+    <requiredProperties>
+        <requiredProperty key="DbType">
+        </requiredProperty>
+        <requiredProperty key="legendEngineVersion">
+        </requiredProperty>
+        <requiredProperty key="dbType">
+            <defaultValue>${DbType.substring(0,1).toLowerCase()}${DbType.substring(1)}</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="dbtype">
+            <defaultValue>${DbType.toLowerCase()}</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="groupId">
+            <defaultValue>org.finos.legend.engine</defaultValue>
+        </requiredProperty>
+        <requiredProperty key="artifactId">
+            <defaultValue>legend-engine-xt-relationalStore-${dbtype}</defaultValue>
+        </requiredProperty>
+    </requiredProperties>
+
+    <fileSets>
+        <fileSet encoding="UTF-8">
+            <directory></directory>
+            <includes>
+                <include>checkstyle.xml</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+    <modules>
+        <module name="Legend Engine - XT - Relational Store - ${DbType} - Execution"
+                id="legend-engine-xt-relationalStore-${dbtype}-execution"
+                dir="legend-engine-xt-relationalStore-__dbtype__-execution">
+            <fileSets>
+                <fileSet filtered="true" encoding="UTF-8">
+                    <directory></directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </fileSet>
+            </fileSets>
+        </module>
+
+        <module name="Legend Engine - XT - Relational Store - ${DbType} - Execution - Tests"
+                id="legend-engine-xt-relationalStore-${dbtype}-execution-tests"
+                dir="legend-engine-xt-relationalStore-__dbtype__-execution-tests">
+            <fileSets>
+                <fileSet filtered="true" encoding="UTF-8">
+                    <directory></directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </fileSet>
+            </fileSets>
+        </module>
+
+        <module name="Legend Engine - XT - Relational Store - ${DbType} - Grammar"
+                id="legend-engine-xt-relationalStore-${dbtype}-grammar"
+                dir="legend-engine-xt-relationalStore-__dbtype__-grammar">
+            <fileSets>
+                <fileSet filtered="true" encoding="UTF-8">
+                    <directory></directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </fileSet>
+            </fileSets>
+        </module>
+
+        <module name="Legend Engine - XT - Relational Store - ${DbType} - Protocol"
+                id="legend-engine-xt-relationalStore-${dbtype}-protocol"
+                dir="legend-engine-xt-relationalStore-__dbtype__-protocol">
+            <fileSets>
+                <fileSet filtered="true" encoding="UTF-8">
+                    <directory></directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </fileSet>
+            </fileSets>
+        </module>
+
+        <module name="Legend Engine - XT - Relational Store - ${DbType} - Pure"
+                id="legend-engine-xt-relationalStore-${dbtype}-pure"
+                dir="legend-engine-xt-relationalStore-__dbtype__-pure">
+            <fileSets>
+                <fileSet filtered="true" encoding="UTF-8">
+                    <directory></directory>
+                    <includes>
+                        <include>**/*.*</include>
+                    </includes>
+                </fileSet>
+            </fileSets>
+        </module>
+    </modules>
+
+</archetype-descriptor>

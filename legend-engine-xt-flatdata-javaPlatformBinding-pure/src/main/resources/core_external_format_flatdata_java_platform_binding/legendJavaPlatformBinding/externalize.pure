@@ -13,8 +13,8 @@
 // limitations under the License.
 
 import meta::external::format::flatdata::binding::validation::*;
-import meta::external::format::flatdata::executionPlan::engine::java::*;
-import meta::external::format::flatdata::executionPlan::engine::java::externalize::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::*;
 import meta::external::format::flatdata::metamodel::*;
 
 import meta::external::language::java::factory::*;
@@ -27,7 +27,7 @@ import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::shared::format::metamodel::*;
 
 import meta::pure::dataQuality::*;
@@ -46,7 +46,7 @@ import meta::pure::graphFetch::*;
 // Descriptor 
 // ========================================================================================================================================================
 
-function meta::external::format::flatdata::executionPlan::engine::java::externalize::getExternalFormatExternalizeJavaBindingDescriptor(): ExternalFormatExternalizeBindingDescriptor[1]
+function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::getExternalFormatExternalizeJavaBindingDescriptor(): ExternalFormatExternalizeBindingDescriptor[1]
 {
   ^ExternalFormatExternalizeBindingDescriptor
   (
@@ -58,13 +58,13 @@ function meta::external::format::flatdata::executionPlan::engine::java::external
 // Generate 
 // ========================================================================================================================================================
 
-Class <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::ExternalizeData
+Class <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::ExternalizeData
 {
    bindingDetail : FlatDataBindingDetail[1];
    classIn       : meta::pure::metamodel::type::Class<Any>[1];
 }
 
-Class <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::ParsedFlatDataCodes
+Class <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::ParsedFlatDataCodes
 {
    hasStringValue     : Pair<Code,Code>[*];
    hasBooleanValue    : Pair<Code,Code>[*];
@@ -82,7 +82,7 @@ Class <<access.private>> meta::external::format::flatdata::executionPlan::engine
    getInstant         : Pair<Code,Code>[*];
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::generateForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::generateForExternalize(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatExternalizeExecutionNode for FlatData \n', |''));
    assert($node.tree->isEmpty() || !$node.tree->toOne().class->instanceOf(Checked), | 'Checked results serialization not support with flatdata');
@@ -91,7 +91,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
    newProject()->addClasses($specificsClass)->generatedCode($specificsClass);
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::createExternalizeSpecificsClass(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::createExternalizeSpecificsClass(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {  
    assert($node.tree.subTrees->cast(@PropertyGraphFetchTree).property->filter(p | $p->functionReturnType().rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class))->isEmpty(), |'Multi Section serialization is not yet supported !!');
 
@@ -238,7 +238,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
       });
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::codeHasValue(clauses:Pair<Code,Code>[*]): Code[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::codeHasValue(clauses:Pair<Code,Code>[*]): Code[1]
 {
    if($clauses->isEmpty(),
       | j_return(j_false()),
@@ -246,7 +246,7 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
    );
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::externalize::codeGetValue(clauses:Pair<Code,Code>[*], fieldParam:Code[1], type:String[1]): Code[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::externalize::codeGetValue(clauses:Pair<Code,Code>[*], fieldParam:Code[1], type:String[1]): Code[1]
 {
    let throw = j_throw(j_new(javaIllegalArgumentException(), j_string('Cannot get ' + $type + ' value for field \'')->j_plus($fieldParam->j_invoke('getLabel', []))->j_plus(j_string('\''))));
    if($clauses->isEmpty(),

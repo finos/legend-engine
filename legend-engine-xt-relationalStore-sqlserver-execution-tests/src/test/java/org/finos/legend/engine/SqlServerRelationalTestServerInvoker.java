@@ -23,7 +23,7 @@ public class SqlServerRelationalTestServerInvoker
     public static void main(String[] args) throws Exception
     {
         RelationalTestServer.execute(
-                args.length == 0 ? new String[] {"server", "org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json"} : args,
+                args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-sqlserver-execution-tests/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_withSqlServerTestConnection.json"} : args,
                 new NamedType(SqlServerTestDatabaseAuthenticationFlowProviderConfiguration.class, "sqlServerTest")
         );
     }

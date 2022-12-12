@@ -32,7 +32,7 @@ function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::domain::
      enum:Enumeration<Any>[1]        | transformEnum($enum),
      meas:Measure[1]                 | transformMeasure($meas, $extensions),
      unit:Unit[1]                    | transformUnit($unit, $extensions),
-     func:FunctionDefinition<Any>[1] | transformFunction($func, $extensions),
+     func:ConcreteFunctionDefinition<Any>[1] | transformFunction($func, $extensions),
      prof:Profile[1]                 | transformProfile($prof, $extensions)
    ])
 }
@@ -212,14 +212,14 @@ function <<access.private>> meta::protocols::pure::v1_20_0::transformation::from
    );
 }
 
-function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::transformFunction(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_20_0::metamodel::domain::Function[1]
+function meta::protocols::pure::v1_20_0::transformation::fromPureGraph::transformFunction(f:ConcreteFunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::v1_20_0::metamodel::domain::Function[1]
 {
 
    ^meta::protocols::pure::v1_20_0::metamodel::domain::Function
    (
       _type = 'function',
       name = $f.name->toOne(),
-      package=$f.package->toOne()->elementToPath(),
+      package = $f.package->toOne()->elementToPath(),
       body = $f->meta::protocols::pure::v1_20_0::transformation::fromPureGraph::valueSpecification::transformFunctionBody(true, $extensions),
       parameters = $f->functionType().parameters->map(p |
          $p->meta::protocols::pure::v1_20_0::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], ^Map<String, meta::pure::functions::collection::List<Any>>(), true, true, $extensions)->cast(@meta::protocols::pure::v1_20_0::metamodel::valueSpecification::Variable)

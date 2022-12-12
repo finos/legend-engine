@@ -27,9 +27,9 @@ import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(): LegendJavaPlatformBindingExtension[1]
@@ -147,14 +147,14 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                [
                   {
                      json: JsonModelConnection[1] | 
-                        $conventions->meta::pure::executionPlan::engine::java::graphFetch::json::jsonReaderClass($path, $pureClass)
+                        $conventions->meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::jsonReaderClass($path, $pureClass)
                            ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($json.url))->j_invoke('openStream', []))
                            ->j_return()
                            ->j_ioExTryCatch()
                   },
                   {
                      xml: XmlModelConnection[1] | 
-                        $conventions->meta::pure::executionPlan::engine::java::graphFetch::xml::xmlReaderClass($path, $pureClass)
+                        $conventions->meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlReaderClass($path, $pureClass)
                            ->j_new($storeStreamReadingContext->j_invoke('createUrl', j_string($xml.url))->j_invoke('openStream', []))
                            ->j_return()
                            ->j_ioExTryCatch()
@@ -163,7 +163,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                      model: ModelConnection[1] | 
                         let varName = $model.instances->values()->at(0)->get(0)->cast(@RoutedVariablePlaceHolder).name;
                         let typeArg = $storeStreamReadingContext->j_invoke('streamType', $conventions->className($pureClass)->j_field('class', javaClassType()), javaReflectType());
-                        $conventions->meta::pure::executionPlan::engine::java::graphFetch::stream::streamReaderClass($path)
+                        $conventions->meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::streamReaderClass($path)
                            ->j_new($storeStreamReadingContext->j_invoke('getResult', [j_string($varName), $typeArg], javaStream($conventions->className($pureClass))))->j_return();
                   }
                ]

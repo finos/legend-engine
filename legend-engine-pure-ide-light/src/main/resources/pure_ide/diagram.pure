@@ -33,7 +33,8 @@ function meta::pure::ide::serialization::json::diagramToJSON(diagram:meta::pure:
     newJSONKeyValue('generalizationViews', ^JSONArray(values=$diagram.generalizationViews->map(v | $v->generalizationViewToJSON()))),
     newJSONKeyValue('rectangleGeometry', $diagram.rectangleGeometry->rectangleGeometryToJSON()),
     newJSONKeyValue('stereotypes', ^JSONArray(values=$diagram.stereotypes->map(s | $s->stereotypeToJSON()))),
-    newJSONKeyValue('taggedValues', ^JSONArray(values=$diagram.taggedValues->map(t | $t->taggedValueToJSON())))
+    newJSONKeyValue('taggedValues', ^JSONArray(values=$diagram.taggedValues->map(t | $t->taggedValueToJSON()))),
+    newJSONKeyValue('sourceInformation', $diagram->sourceInformation()->sourceInformationToJSON())
   ])
 }
 

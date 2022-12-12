@@ -19,7 +19,7 @@ import meta::external::format::json::metamodel::*;
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::tests::*;
-import meta::external::format::json::executionPlan::engine::java::test::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::test::*;
 import meta::external::shared::format::functions::*;
 import meta::external::shared::format::metamodel::*;
 import meta::external::shared::functions::*;
@@ -31,7 +31,7 @@ import meta::pure::mapping::modelToModel::*;
 import meta::pure::model::unit::*;
 import meta::pure::runtime::*;
 
-function <<access.private>> meta::external::format::json::executionPlan::engine::java::test::getExtensions(): meta::pure::extension::Extension[*]
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::getExtensions(): meta::pure::extension::Extension[*]
 {
    [
       meta::external::shared::format::externalFormatExtension(),
@@ -40,25 +40,25 @@ function <<access.private>> meta::external::format::json::executionPlan::engine:
          meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBinding([
             meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::inMemoryLegendJavaPlatformBindingExtension(),
             meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension([
-               meta::external::format::json::executionPlan::engine::java::jsonSchemaJavaBindingDescriptor()
+               meta::external::format::json::executionPlan::platformBinding::legendJava::jsonSchemaJavaBindingDescriptor()
             ])  
          ])
       ])
    ]
 }
 
-function <<access.private>> meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava(query:FunctionDefinition<Any>[1]): ExecutionPlan[1]
+function <<access.private>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava(query:FunctionDefinition<Any>[1]): ExecutionPlan[1]
 {
    let plan     = meta::external::shared::format::executionPlan::tests::buildPlan($query, getExtensions());
    $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), getExtensions());
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithSerialize(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithSerialize(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, 'stringConstant')->serialize($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, 'stringConstant')->serialize($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'PureExp\n' +
@@ -117,12 +117,12 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assertEquals($expectedPlan, $planString);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithCheckSerialize(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithCheckSerialize(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, 'stringConstant')->checked()->serialize($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, 'stringConstant')->checked()->serialize($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'PureExp\n' +
@@ -181,11 +181,11 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assertEquals($expectedPlan, $planString);
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithStringConstant(): Boolean[1]
 {
    let binding = getTestBinding();
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, 'stringConstant')});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, 'stringConstant')});
 
    let planString = $plan->planToString(false, getExtensions());
    let expectedPlan = 'ExternalFormat_Internalize\n' +
@@ -257,87 +257,45 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
 
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithUrlConstant(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithCheck(): Boolean[1]
 {
    let binding = getTestBinding();
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->checked()});
 
    let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
-                '(\n' +
-                '  type = Class[impls=]\n' +
-                '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = false\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
-                '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
-                '  )\n' +
-                ')\n';
-
-   assertEquals($expectedPlan, $planString);
-   
-   let impl = $plan.globalImplementationSupport->toOne()->cast(@JavaPlatformImplementation);
-   let allConstraintsSource = $impl.classes->filter(c| $c.name == 'meta_external_format_json_executionPlan_test_Person_Impl').source->toOne();
-   let expectedAllConstraintsMethod = '    public List<IDefect> allConstraints(GraphContext context)\n' +
-                '    {\n' +
-                '        List<IDefect> result = new ArrayList<IDefect>();\n' +
-                '        if (!context.visited.contains(this))\n' +
-                '        {\n' +
-                '            context.visited.add(this);\n' +
-                '            this.constraint_0().ifPresent(result::add);\n' +
-                '        }\n' +
-                '        return result;\n' +
-                '    }';
-   assert($allConstraintsSource->contains($expectedAllConstraintsMethod));
-
-   let readerSource = $impl.classes->filter(c| $c.name == 'Execute').source->toOne();
-   let expectedRaderMethod = '    public IStoreStreamReader streamReader(InputStream sourceStream)\n' +
-                '    {\n' +
-                '        return new _pure.plan.root.JsonDataReader_meta_external_format_json_executionPlan_test_Person(sourceStream);\n' +
-                '    }';
-   assert($readerSource->contains($expectedRaderMethod));
-}
-
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithCheck(): Boolean[1]
-{
-   let binding = getTestBinding();
-
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->checked()});
-
-   let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
-                '(\n' +
-                '  type = Class[impls=]\n' +
-                '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = true\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
-                '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
-                '  )\n' +
-                ')\n';
+   let expectedPlan = 'Sequence\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  (\n' +
+        '    FunctionParametersValidationNode\n' +
+        '    (\n' +
+        '      functionParameters = [data:ByteStream[1]]\n' +
+        '    )\n' +
+        '    ExternalFormat_Internalize\n' +
+        '    (\n' +
+        '      type = Class[impls=]\n' +
+        '      resultSizeRange = *\n' +
+        '      binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
+        '      enableConstraints = true\n' +
+        '      checked = true\n' +
+        '\n' +
+        '      (\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = ByteStream\n' +
+        '          varName = data\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '      implementation\n' +
+        '      (\n' +
+        '        calls = _pure.plan.root.n2.Execute\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        ')\n';
 
    assertEquals($expectedPlan, $planString);
 
@@ -356,36 +314,47 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assert($source->contains($expectedMethod));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithGraphFetch(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithGraphFetch(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetch($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetch($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
-                '(\n' +
-                '  type = Class[impls=]\n' +
-                '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = false\n' +
-                '  graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},firstName,lastName}}#\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
-                '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
-                '  )\n' +
-                ')\n';
+   let expectedPlan = 'Sequence\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  (\n' +
+        '    FunctionParametersValidationNode\n' +
+        '    (\n' +
+        '      functionParameters = [data:ByteStream[1]]\n' +
+        '    )\n' +
+        '    ExternalFormat_Internalize\n' +
+        '    (\n' +
+        '      type = Class[impls=]\n' +
+        '      resultSizeRange = *\n' +
+        '      binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
+        '      enableConstraints = true\n' +
+        '      checked = false\n' +
+        '      graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},firstName,lastName}}#\n' +
+        '\n' +
+        '      (\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = ByteStream\n' +
+        '          varName = data\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '      implementation\n' +
+        '      (\n' +
+        '        calls = _pure.plan.root.n2.Execute\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        ')\n';
 
    assertEquals($expectedPlan, $planString);
 
@@ -408,36 +377,47 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assert($source->contains($expectedMethod));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithGraphFetchUnexpanded(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithGraphFetchUnexpanded(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchUnexpanded($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchUnexpanded($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
-                '(\n' +
-                '  type = Class[impls=]\n' +
-                '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = false\n' +
-                '  graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},lastName}}#\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
-                '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
-                '  )\n' +
-                ')\n';
+   let expectedPlan = 'Sequence\n' +
+        '(\n' +
+        '  type = Class[impls=]\n' +
+        '  resultSizeRange = *\n' +
+        '  (\n' +
+        '    FunctionParametersValidationNode\n' +
+        '    (\n' +
+        '      functionParameters = [data:ByteStream[1]]\n' +
+        '    )\n' +
+        '    ExternalFormat_Internalize\n' +
+        '    (\n' +
+        '      type = Class[impls=]\n' +
+        '      resultSizeRange = *\n' +
+        '      binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
+        '      enableConstraints = true\n' +
+        '      checked = false\n' +
+        '      graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},lastName}}#\n' +
+        '\n' +
+        '      (\n' +
+        '        VariableResolution\n' +
+        '        (\n' +
+        '          type = ByteStream\n' +
+        '          varName = data\n' +
+        '\n' +
+        '        )\n' +
+        '      )\n' +
+        '      implementation\n' +
+        '      (\n' +
+        '        calls = _pure.plan.root.n2.Execute\n' +
+        '      )\n' +
+        '    )\n' +
+        '  )\n' +
+        ')\n';
 
    assertEquals($expectedPlan, $planString);
     
@@ -459,34 +439,45 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assert($source->contains($expectedMethod));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithGraphFetchCheckedUnexpanded(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithGraphFetchCheckedUnexpanded(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchCheckedUnexpanded($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchCheckedUnexpanded($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
+   let expectedPlan = 'Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
                 '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = true\n' +
-                '  graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},lastName}}#\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
                 '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = true\n' +
+                '      graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},lastName}}#\n' +
+                '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
+                '      implementation\n' +
+                '      (\n' +
+                '        calls = _pure.plan.root.n2.Execute\n' +
+                '      )\n' +
+                '    )\n' +
                 '  )\n' +
                 ')\n';
 
@@ -510,34 +501,45 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assert($source->contains($expectedMethod));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithGraphFetchChecked(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithGraphFetchChecked(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchChecked($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
+   let expectedPlan = 'Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
                 '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = true\n' +
-                '  graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},firstName,lastName}}#\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
                 '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = true\n' +
+                '      graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{firm{legalName},firstName,lastName}}#\n' +
+                '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
+                '      implementation\n' +
+                '      (\n' +
+                '        calls = _pure.plan.root.n2.Execute\n' +
+                '      )\n' +
+                '    )\n' +
                 '  )\n' +
                 ')\n';
 
@@ -562,34 +564,45 @@ function <<meta::pure::profiles::test.Test>> meta::external::format::json::execu
    assert($source->contains($expectedMethod));
 }
 
-function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::engine::java::test::planGenerationForInternalizeWithGraphFetchChecked2(): Boolean[1]
+function <<meta::pure::profiles::test.Test>> meta::external::format::json::executionPlan::platformBinding::legendJava::test::planGenerationForInternalizeWithGraphFetchChecked2(): Boolean[1]
 {
    let binding = getTestBinding();
    let tree = #{meta::external::format::json::executionPlan::test::Person {lastName, firm {legalName}, addresses {street}}}#;
 
-   let plan = meta::external::format::json::executionPlan::engine::java::test::buildPlanWithJava({| meta::external::format::json::executionPlan::test::Person->internalize($binding, ^Url(url='file:/path/filename.csv'))->graphFetchChecked($tree)});
+   let plan = meta::external::format::json::executionPlan::platformBinding::legendJava::test::buildPlanWithJava({data:ByteStream[1]| meta::external::format::json::executionPlan::test::Person->internalize($binding, $data)->graphFetchChecked($tree)});
 
    let planString = $plan->planToString(false, getExtensions());
-   let expectedPlan = 'ExternalFormat_Internalize\n' +
+   let expectedPlan = 'Sequence\n' +
                 '(\n' +
                 '  type = Class[impls=]\n' +
                 '  resultSizeRange = *\n' +
-                '  binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
-                '  enableConstraints = true\n' +
-                '  checked = true\n' +
-                '  graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{addresses{street},firm{legalName},firstName,lastName}}#\n' +
-                '\n'+
-                '  (\n'+
-                '    UrlStream\n'+
-                '    (\n'+
-                '      type = ByteStream\n'+
-                '      url = file:/path/filename.csv\n'+
-                '\n'+
-                '    )\n'+
-                '  )\n'+
-                '  implementation\n' +
                 '  (\n' +
-                '    calls = _pure.plan.root.Execute\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [data:ByteStream[1]]\n' +
+                '    )\n' +
+                '    ExternalFormat_Internalize\n' +
+                '    (\n' +
+                '      type = Class[impls=]\n' +
+                '      resultSizeRange = *\n' +
+                '      binding = meta::external::format::json::executionPlan::test::TestBinding[application/json]\n' +
+                '      enableConstraints = true\n' +
+                '      checked = true\n' +
+                '      graphFetchTree = #{meta::external::format::json::executionPlan::test::Person{addresses{street},firm{legalName},firstName,lastName}}#\n' +
+                '\n' +
+                '      (\n' +
+                '        VariableResolution\n' +
+                '        (\n' +
+                '          type = ByteStream\n' +
+                '          varName = data\n' +
+                '\n' +
+                '        )\n' +
+                '      )\n' +
+                '      implementation\n' +
+                '      (\n' +
+                '        calls = _pure.plan.root.n2.Execute\n' +
+                '      )\n' +
+                '    )\n' +
                 '  )\n' +
                 ')\n';
 

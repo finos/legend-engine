@@ -23,10 +23,9 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::graphFetch::inMemory::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
@@ -42,7 +41,7 @@ import meta::pure::milestoning::*;
 import meta::pure::extension::*;
 import meta::pure::runtime::*;
 
-Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::LegendJavaInMemoryGraphFetchExtension extends LegendJavaPlatformBindingAdhocExtension
+Class meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension extends LegendJavaPlatformBindingAdhocExtension
 {
    {doc.doc = 'Filter code generation'}
    filterCodeGenerator:  Function<{InstanceSetImplementation[1], Code[1], Code[1..*], GenerationContext[1], DebugContext[1]->Function<{Nil[1]->Code[1..*]}>[*]}>[*];
@@ -54,7 +53,7 @@ Class meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBind
    valueTransformerExtractors : Function<{Nil[1]->ValueTransformer<Any>[1]}>[*];
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::inMemory::prepareForInMemoryGraphFetch(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::prepareForInMemoryGraphFetch(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], debug: DebugContext[1]):GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepareForInMemory' + if($node->instanceOf(InMemoryRootGraphFetchExecutionNode),|if($node->instanceOf(InMemoryCrossStoreGraphFetchExecutionNode), |'CrossStore', |'Root'),|'Property') + 'GraphFetch\n', |''));
    let pureType        = $node->typeFromStoreLocalNode();
@@ -111,7 +110,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::inMemory::prepareF
    );
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreGraphFetchProject(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreGraphFetchProject(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
    $node->match([
       c : InMemoryCrossStoreGraphFetchExecutionNode[1]  | $c->generateInMemoryStoreRootNodeProject($path, $context, $extensions, $debug)->addInMemoryCrossStoreMethods($c, $path, $context, $extensions, $debug),
@@ -120,7 +119,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::inMemory::generate
    ])
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichForInMemoryGraphExecution(class: meta::external::language::java::metamodel::Class[1], node: InMemoryGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::enrichForInMemoryGraphExecution(class: meta::external::language::java::metamodel::Class[1], node: InMemoryGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Project[1]
 {
    let conventions  = $context.conventions;
    let currentClass = $node->typeFromStoreLocalNode();
@@ -137,11 +136,11 @@ function meta::pure::executionPlan::engine::java::graphFetch::inMemory::enrichFo
    [$qualifiersProject, $constraintsProject, newProject()->addClass($sourceReferenceClass)]->mergeProjects();
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreRootNodeProject(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreRootNodeProject(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryRootGraphFetch\n', |''));
    if($node->nodeIsMerged(),
-      | meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreMergeRootNodes($node,$path,$context,$extensions,$debug);,
+      | meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreMergeRootNodes($node,$path,$context,$extensions,$debug);,
       | let conventions    = $context.conventions;
         let graphFetchTree = $node.graphFetchTree->cast(@RoutedGraphFetchTree);
 
@@ -167,7 +166,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::getPropertiesBySourceID(fetchTrees: RoutedPropertyGraphFetchTree[*],id:String[1]):RoutedPropertyGraphFetchTree[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::getPropertiesBySourceID(fetchTrees: RoutedPropertyGraphFetchTree[*],id:String[1]):RoutedPropertyGraphFetchTree[*]
 {
 
    $fetchTrees->filter(s| $s.sets->cast(@PureInstanceSetImplementation).id==$id);
@@ -175,7 +174,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStoreMergeRootNodes(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreMergeRootNodes(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
 
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryRootGraphFetch for Merge\n', |''));
@@ -217,7 +216,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    $allProjects->mergeProjects();
  }
 
-Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::MergedPropertyHolder
+Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergedPropertyHolder
 {
    mergeOperation:Code[0..1];
    mergeMethod:Method[*];
@@ -229,7 +228,7 @@ Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::in
 
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateInMemoryStorePropertyNodeProject(node: InMemoryPropertyGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStorePropertyNodeProject(node: InMemoryPropertyGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryPropertyGraphFetch\n', |''));
 
@@ -369,7 +368,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
     $allProjects->mergeProjects();
 }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
 { 
   //if source is a mappingclass skip the filter
   let sourceClass = $targetSet->sourceClass($extensions);
@@ -385,7 +384,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::validateXStorePropertyMapping(xStorePropertyMapping: XStorePropertyMapping[1]):Boolean[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::validateXStorePropertyMapping(xStorePropertyMapping: XStorePropertyMapping[1]):Boolean[1]
 {
    let foundFunctionExpressions = $xStorePropertyMapping.crossExpression->findExpressionsForFunctionInFunctionDefinition([])->toOneMany().func;
    let allowedFunctions         = [and_Boolean_MANY__Boolean_1_, and_Boolean_1__Boolean_1__Boolean_1_,
@@ -395,7 +394,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    true;
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addInMemoryCrossStoreMethods(baseProject:Project[1], node: InMemoryCrossStoreGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addInMemoryCrossStoreMethods(baseProject:Project[1], node: InMemoryCrossStoreGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') addInMemoryCrossStoreMethods\n', |''));
 
@@ -483,12 +482,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Helper functions */
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::inMemorySource():String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::inMemorySource():String[1]
 {
    'src$'
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::addPropertyWithGetterAndSetter(class: meta::external::language::java::metamodel::Class[1], propertyName: String[1], propertyType: meta::external::language::java::metamodel::Type[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addPropertyWithGetterAndSetter(class: meta::external::language::java::metamodel::Class[1], propertyName: String[1], propertyType: meta::external::language::java::metamodel::Type[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    let propertyFieldName = $conventions->fieldName($propertyName);
    let propertyField     = $class->j_this()->j_field($propertyFieldName, $propertyType);
@@ -506,7 +505,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
       );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::setTransformerCodes(input: Code[1],path: String[1], set: InstanceSetImplementation[1], graphFetchTree: RoutedGraphFetchTree[1], graphImplClass: meta::external::language::java::metamodel::Class[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::setTransformerCodes(input: Code[1],path: String[1], set: InstanceSetImplementation[1], graphFetchTree: RoutedGraphFetchTree[1], graphImplClass: meta::external::language::java::metamodel::Class[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
 {
    let conventions       = $context.conventions;
    let primitiveSubTrees = $graphFetchTree.subTrees->cast(@RoutedPropertyGraphFetchTree)->filter(st | $st.property->instanceOf(Property) && $st.property->isPrimitiveValueProperty());
@@ -547,10 +546,17 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    [$src->j_declare($input->j_cast($srcJavaClass))]->concatenate($set->applyTypeFilter($path,$src, $transform, $context, $extensions, $debug->indent()))->toOneMany();
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::objectCreationCodes(var: Code[1], class: meta::external::language::java::metamodel::Class[1], set: InstanceSetImplementation[1], src: Code[1], propertyAssignments: Pair<Property<Nil,Any|*>, Code>[*], wrapAsGraphInstance: Boolean[1], conventions: Conventions[1]): Code[1..*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::objectCreationCodes(var: Code[1], class: meta::external::language::java::metamodel::Class[1], set: InstanceSetImplementation[1], src: Code[1], propertyAssignments: Pair<Property<Nil,Any|*>, Code>[*], wrapAsGraphInstance: Boolean[1], conventions: Conventions[1]): Code[1..*]
 {
+   let rtEx = j_parameter(javaRuntimeException(), 'e');
    let initializationCodes = [$var->j_declare($class->j_new([])), $var->j_invoke($conventions->setterName(inMemorySource()), $src, javaVoid()), $var->j_invoke($conventions->setterName('setId$'), j_string($set.id), javaVoid())];
-   let assignmentCodes     = $propertyAssignments->map(p | $var->j_invoke($conventions->setterName($p.first), $p.second, javaVoid()));
+   let assignmentCodes     = $propertyAssignments->map(p | $var->j_invoke($conventions->setterName($p.first), $p.second, javaVoid())->j_try(j_catch($rtEx,
+                                                                                                                                                    j_new(javaRuntimeException(),j_string('Error instantiating property \''+ $p.first.name->toOne()+'\' on Target class \'' + $set.class->cast(@PackageableElement)->toOne()->elementToPath()+ ' [' + $set.id + ']\' on Mapping \'' + $set.parent->elementToPath() + '\'.\n')
+                                                                                                                                                    ->j_plus($rtEx->j_invoke('getMessage',[],javaString())))
+                                                                                                                                                    ->j_throw())
+                                                                                                                                                    )
+                                                                                                                                            );
+                                                                                                                                         
    let returnCodes         = if($wrapAsGraphInstance, | $conventions->createGraphInstance($class, $var), | $var)->j_return();
 
    $initializationCodes->concatenate($assignmentCodes)->concatenate($returnCodes)->toOneMany();
@@ -559,7 +565,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Property mapping helpers */
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[0..1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[0..1]
 {  
    print(if($debug.debug,|$debug.space+'generatePropertyMappingTransform: \''+$property.name->toOne()+'\'\n', |''));
    
@@ -623,7 +629,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Filter helpers */
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::applyTypeFilter(set: InstanceSetImplementation[1],path: String[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::applyTypeFilter(set: InstanceSetImplementation[1],path: String[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
 {
    print(if($debug.debug,|$debug.space+'filter generation\n', |''));
 
@@ -636,7 +642,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Value transformer helpers */
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::applyTransformer(expression: Code[1], transformer: ValueTransformer<Any>[1], conventions: Conventions[1], debug: DebugContext[1]): Code[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::applyTransformer(expression: Code[1], transformer: ValueTransformer<Any>[1], conventions: Conventions[1], debug: DebugContext[1]): Code[1]
 {
    assert($transformer->instanceOf(EnumerationMapping), |'Unsupported transformer type: ' + $transformer->type()->elementToPath());
    
@@ -652,7 +658,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    $transformrCode->dependsOn($transformerClass->typeToString()->newDependency($transformerClass));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::generateTransformer(transformer: ValueTransformer<Any>[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateTransformer(transformer: ValueTransformer<Any>[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    assert($transformer->instanceOf(EnumerationMapping), |'Unsupported transformer type: ' + $transformer->type()->elementToPath());
 
@@ -694,7 +700,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::enumerationType(conventions:Conventions[1], transformer: ValueTransformer<Any>[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::enumerationType(conventions:Conventions[1], transformer: ValueTransformer<Any>[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className($transformer->cast(@EnumerationMapping<Any>).enumeration)
 }
@@ -702,17 +708,17 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 /* Property explosion helpers */
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::hasExplodeProperty(set: InstanceSetImplementation[1]): Boolean[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::hasExplodeProperty(set: InstanceSetImplementation[1]): Boolean[1]
 {
    $set->collectExplodeProperties()->size() > 0
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::collectExplodeProperties(set: InstanceSetImplementation[1]): Property<Nil,Any|*>[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::collectExplodeProperties(set: InstanceSetImplementation[1]): Property<Nil,Any|*>[*]
 {
    $set.allPropertyMappings()->filter(pm | $pm->isExplodeMapping()).property
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::isExplodeMapping(pm: PropertyMapping[1]): Boolean[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::isExplodeMapping(pm: PropertyMapping[1]): Boolean[1]
 {
    $pm->match([
       ppm : PurePropertyMapping[1] | $ppm.explodeProperty->isTrue(),
@@ -720,12 +726,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ])
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::explodePropertyListName(conventions: Conventions[1], prop: Property<Nil, Any|*>[1]): String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::explodePropertyListName(conventions: Conventions[1], prop: Property<Nil, Any|*>[1]): String[1]
 {
    $conventions->fieldName($prop) + '_ExplodePropertyList$'
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::propertyExplosionCodes(set: PureInstanceSetImplementation[1], primitiveSubTrees: RoutedPropertyGraphFetchTree[*], var: Code[1], class: meta::external::language::java::metamodel::Class[1], src: Code[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::propertyExplosionCodes(set: PureInstanceSetImplementation[1], primitiveSubTrees: RoutedPropertyGraphFetchTree[*], var: Code[1], class: meta::external::language::java::metamodel::Class[1], src: Code[1], wrapAsGraphInstance: Boolean[1], resolveToList: Boolean[1], conventions: Conventions[1], extensions: Extension[*], debug: DebugContext[1]): Code[1..*]
 {
    let javaIntStream       = javaClass('java.util.stream.IntStream');
    let explodeProperties   = $set->collectExplodeProperties();
@@ -765,7 +771,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::inMemory::updateConventionsForExplosion(conventions:Conventions[1]):Conventions[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::updateConventionsForExplosion(conventions:Conventions[1]):Conventions[1]
 {
   let libToBeReplaced = $conventions.libraries->filter(l|$l.functionCoders->get('map_T_MANY__Function_1__V_MANY_')->isNotEmpty())->toOne();
   let funcCodersToBeAdded = [fc2(map_T_MANY__Function_1__V_MANY_,                                    {ctx,collection,func          | $collection->j_streamOf()->js_mapAllowingNullValues($func)}),

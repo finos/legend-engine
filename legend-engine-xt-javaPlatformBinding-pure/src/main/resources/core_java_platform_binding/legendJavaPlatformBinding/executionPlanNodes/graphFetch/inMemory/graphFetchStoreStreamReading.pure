@@ -21,12 +21,11 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
-import meta::pure::executionPlan::engine::java::graphFetch::json::*;
-import meta::pure::executionPlan::engine::java::graphFetch::stream::*;
-import meta::pure::executionPlan::engine::java::graphFetch::xml::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::*;
 import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::platform::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
@@ -34,14 +33,14 @@ import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStream
 import meta::pure::runtime::*;
 
 // To be removed when external format is ready
-Class <<doc.deprecated>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::LegendJavaGraphFetchStoreStreamReadingExtension extends LegendJavaPlatformBindingAdhocExtension
+Class <<doc.deprecated>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::LegendJavaGraphFetchStoreStreamReadingExtension extends LegendJavaPlatformBindingAdhocExtension
 {
    dataRecordClassFromConnectionExtractors: Function<{Nil[1] -> meta::pure::metamodel::type::Class<Any>[1]}>[*];
    dataRecordTreeFromConnectionExtractors: Function<{Nil[1] -> meta::pure::graphFetch::RootGraphFetchTree<Any>[0..1]}>[*];
    streamReaderMethodCodeGenerators: Function<{Conventions[1], String[1], meta::pure::metamodel::type::Class<Any>[1], Code[1] -> Function<{Nil[1] -> Code[1]}>[*]}>[0..1];
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::prepareForStoreStreamReading(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug: DebugContext[1]):GenerationContext[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::prepareForStoreStreamReading(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions:meta::pure::extension::Extension[*], debug: DebugContext[1]):GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepareStoreStreamReading\n', |''));
 
@@ -69,7 +68,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
    ^$context(typeInfos = $newTypeInfos, nodeInfos = $context.nodeInfos->concatenate($currentNodeInfo));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::extension::Extension[*]): JavaType[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::extension::Extension[*]): JavaType[1]
 {
    let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
    let dataRecordClass = $connection->match($streamReadingAdhocExtensions.dataRecordClassFromConnectionExtractors->concatenate([a : Any[1] | JsonDataRecord])->toOneMany());
@@ -77,7 +76,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ^SimpleJavaType(pureType = $dataRecordClass, javaType = $conventions->className($dataRecordClass));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::generateCodeForStoreStreamReadingExecutionNode(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]):GeneratedCode[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::generateCodeForStoreStreamReadingExecutionNode(node: StoreStreamReadingExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]):GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateStoreStreamReading\n', |''));
    
@@ -130,18 +129,18 @@ function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading
    $allProjects->mergeProjects()->generatedCode($executeClass);
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::streamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::streamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->planNodeClass([], $path, $conventions->identifier($class->elementToPath('_')) + '_Impl');
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::readMethodName(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): String[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::readMethodName(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): String[1]
 {
    let javaClass  = $conventions->className($type);
    'read_'+ $conventions->identifier($type->elementToPath('_'));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::createStreamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[0..1], debug:DebugContext[1]): Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::createStreamReadingDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[0..1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
 

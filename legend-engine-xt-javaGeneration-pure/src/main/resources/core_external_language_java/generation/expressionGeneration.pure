@@ -213,7 +213,7 @@ function <<access.private>> meta::external::language::java::transform::processFu
          assert($toEval->isNotEmpty() || $fe.func->instanceOf(ConcreteFunctionDefinition), 
                 {|
                    let f = $fe.func->toOne();
-                   let p = $f.package;
+                   let p = if($f->instanceOf(PackageableElement), |$f->cast(@PackageableElement).package, |[]);
                    if($p->isEmpty(), |'', |$p->toOne()->elementToPath()+'::')+$f.name->toOne()+' is not supported yet!';
                 });
          if($toEval->isNotEmpty(),

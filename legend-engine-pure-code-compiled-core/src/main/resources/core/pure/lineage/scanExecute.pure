@@ -95,7 +95,7 @@ function <<access.private>> meta::pure::lineage::scanExecutes::scan(val:Any[1], 
 
                                 // ---------------------------------
                                 let f = $fe.func;
-                                let step2 = if(!$f->isEmpty() && $f->elementToPath()->startsWith('meta::pure::router'),
+                                let step2 = if(!$f->isEmpty() && $f->instanceOf(PackageableFunction) && $f->cast(@PackageableFunction<Any>)->elementToPath()->startsWith('meta::pure::router'),
                                    |let ps = $fe.parametersValues->evaluateAndDeactivate();
                                     let e = ^Execute
                                     (
@@ -175,5 +175,5 @@ function <<access.private>> meta::pure::lineage::scanExecutes::inLine(v:Any[1], 
 
 function <<access.private>> meta::pure::lineage::scanExecutes::shouldScan(f:Function<Any>[1]):Boolean[1]
 {
-   $f.package->isEmpty() || !$f.package->toOne()->elementToPath()->startsWith('meta');
+   !$f->instanceOf(PackageableElement) || $f->cast(@PackageableElement).package->isEmpty() || !$f->cast(@PackageableElement).package->toOne()->elementToPath()->startsWith('meta');
 }

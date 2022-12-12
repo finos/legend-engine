@@ -14,8 +14,8 @@
 
 import meta::external::format::flatdata::binding::validation::*;
 import meta::external::format::flatdata::executionPlan::model::*;
-import meta::external::format::flatdata::executionPlan::engine::java::*;
-import meta::external::format::flatdata::executionPlan::engine::java::internalize::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::*;
 import meta::external::format::flatdata::metamodel::*;
 
 import meta::external::language::java::factory::*;
@@ -28,7 +28,7 @@ import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::shared::format::metamodel::*;
 
 import meta::pure::executionPlan::*;
@@ -48,7 +48,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 // Descriptor 
 // ========================================================================================================================================================
 
-function meta::external::format::flatdata::executionPlan::engine::java::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
+function meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
 {
   ^ExternalFormatInternalizeBindingDescriptor
   (
@@ -60,7 +60,7 @@ function meta::external::format::flatdata::executionPlan::engine::java::internal
 // Generate 
 // ========================================================================================================================================================
 
-Class <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::SchemaPropertyDetails
+Class <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::SchemaPropertyDetails
 {
    property          : AbstractProperty<Any>[1];
    fieldName         : String[1];
@@ -78,7 +78,7 @@ Class <<access.private>> meta::external::format::flatdata::executionPlan::engine
    isViaAssociation() {$this.property.owner->instanceOf(Association)}: Boolean[1];
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for FlatData \n', |''));
 
@@ -105,14 +105,14 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
       ->generatedCode($specificsClass);  
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createInternalizeSpecificsClass(node:ExternalFormatInternalizeExecutionNode[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createInternalizeSpecificsClass(node:ExternalFormatInternalizeExecutionNode[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
     let rootClass     = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
     let schemaSet     = $node.binding.schemaSet->toOne();
     createInternalizeSpecificsClass($rootClass, $schemaSet, $bindingDetail, $path, $context);
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createInternalizeSpecificsClass(rootClass:meta::pure::metamodel::type::Class<Any>[1], schemaSet:SchemaSet[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createInternalizeSpecificsClass(rootClass:meta::pure::metamodel::type::Class<Any>[1], schemaSet:SchemaSet[1], bindingDetail:FlatDataBindingDetail[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions             = $context.conventions;
    let rootInterface           = $conventions->className($rootClass);
@@ -399,12 +399,12 @@ function <<access.private>> meta::external::format::flatdata::executionPlan::eng
       });
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::propertyForField(bindingDetail:SectionBindingDetail[1], field:FlatDataRecordField[1]): AbstractProperty<Any>[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::propertyForField(bindingDetail:SectionBindingDetail[1], field:FlatDataRecordField[1]): AbstractProperty<Any>[1]
 {
    $bindingDetail.details->filter(c| $c.field == $field).property->toOne();
 }
 
-function <<access.private>> meta::external::format::flatdata::executionPlan::engine::java::internalize::createSchemaDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext: ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::external::format::flatdata::executionPlan::platformBinding::legendJava::internalize::createSchemaDataClass(class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1], constraintContext: ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createFileDataClass for '+$class->elementToPath()+'\n', |''));
 
