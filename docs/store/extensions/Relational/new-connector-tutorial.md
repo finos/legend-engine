@@ -990,4 +990,7 @@ Flows can potentially be created using all possible combinations of DatasourceSp
     </dependency>
     ~~~
    
-6. **TODO**: TODO
+6. **Keys for Connection Pooling**: TODO
+
+7. **Connection Runtime**: TODO.
+Finally, you can follow steps 5, 6, 7 of the main tutorial to test connectivity to a test db instance with newly implemented data source and auth strategy specifications.
