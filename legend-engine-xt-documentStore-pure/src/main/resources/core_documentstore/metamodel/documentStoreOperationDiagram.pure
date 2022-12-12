@@ -1,0 +1,328 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::store::document::metamodel::DocumentStoreOperationDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_6(
+        type=meta::external::store::document::metamodel::JoinDocumentTreeNode,
+        position=(1108.44868, 780.18813),
+        width=158.02344,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::store::document::metamodel::DocumentTreeNode,
+        position=(1086.12944, 642.24008),
+        width=215.58838,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::store::document::metamodel::CollectionAlias,
+        position=(280.29419, 636.65577),
+        width=327.43066,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::store::document::metamodel::Literal,
+        position=(572.00600, 368.09670),
+        width=90.91455,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::store::document::metamodel::Alias,
+        position=(315.00000, 466.00000),
+        width=262.04297,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::store::document::metamodel::DocumentQuery,
+        position=(626.97094, 430.11962),
+        width=113.35156,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::store::document::metamodel::SelectDocumentQuery,
+        position=(499.00600, 542.11461),
+        width=228.41992,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::store::document::metamodel::Function,
+        position=(687.00600, 346.95634),
+        width=70.65430,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::external::store::document::metamodel::DocumentStoreElement,
+        position=(566.00000, 141.00000),
+        width=156.02539,
+        height=65.83025,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::store::document::metamodel::LiteralList,
+        position=(604.85395, 277.26629),
+        width=77.34570,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::store::document::metamodel::BinaryOperation,
+        position=(732.31310, 838.64862),
+        width=191.13379,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::store::document::metamodel::Operation,
+        position=(705.27832, 707.64513),
+        width=76.67188,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::store::document::metamodel::DynaFunction,
+        position=(659.60559, 993.42891),
+        width=102.51611,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_3,
+        target=cview_1,
+        points=[(565.00600,470.11461),(572.00600,206.09407)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_5,
+        target=cview_3,
+        points=[(444.00952,672.65577),(446.02148,495.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_6,
+        target=cview_2,
+        points=[(1187.46040,795.18813),(1186.61152,696.01276)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_7,
+        target=cview_1,
+        points=[(683.64673,445.11962),(683.00600,186.87147)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_8,
+        target=cview_7,
+        points=[(682.93589,550.28657),(683.64673,445.11962)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_9,
+        target=cview_1,
+        points=[(594.00600,368.95634),(600.00600,194.87147)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_10,
+        target=cview_1,
+        points=[(643.52681,292.26629),(644.01270,173.91512)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_11,
+        target=cview_1,
+        points=[(716.00600,351.09407),(716.00600,185.95634)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_13,
+        target=cview_11,
+        points=[(743.61425,722.64513),(744.00600,370.09407)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_15,
+        target=cview_13,
+        points=[(766.20189,844.61624),(763.03567,735.90912)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_16,
+        target=cview_13,
+        points=[(710.86364,1015.42891),(718.70849,993.42891),(717.65308,736.96453)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::store::document::metamodel::DocumentTreeNode.alias,
+        source=cview_2,
+        target=cview_5
+,        points=[(1193.92363,671.24008),(444.00952,672.65577)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::store::document::metamodel::SelectDocumentQuery.filteringOperation,
+        source=cview_8,
+        target=cview_1
+,        points=[(613.21596,578.11461),(1169.00600,576.11461),(1170.00600,170.11461),(644.01270,173.91512)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::store::document::metamodel::LiteralList.values,
+        source=cview_10,
+        target=cview_9
+,        points=[(655.85395,305.26629),(656.14717,368.20787)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::store::document::metamodel::DynaFunction.parameters,
+        source=cview_16,
+        target=cview_1
+,        points=[(710.86364,1015.42891),(219.50005,1027.20200),(223.59245,173.81271),(644.01270,173.91512)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

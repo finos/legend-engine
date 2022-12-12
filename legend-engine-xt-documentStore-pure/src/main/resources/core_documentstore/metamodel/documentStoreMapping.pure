@@ -1,0 +1,116 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::metamodel::path::*;
+import meta::pure::router::routing::*;
+import meta::pure::runtime::*;
+import meta::pure::extension::*;
+import meta::external::shared::format::metamodel::*;
+import meta::external::store::document::metamodel::*;
+import meta::external::store::document::metamodel::mapping::*;
+import meta::external::store::document::mapping::functions::*;
+import meta::external::store::document::metamodel::runtime::*;
+import meta::external::store::document::extension::*;
+
+
+Class meta::external::store::document::metamodel::mapping::DocumentInstanceSetImplementation extends InstanceSetImplementation
+{
+   primaryKey : DocumentStoreElement[*];
+}
+
+Class meta::external::store::document::metamodel::mapping::DocumentMappingSpecification
+{
+    userDefinedPrimaryKey : Boolean[1];
+    mainCollectionAlias : CollectionAlias[1];
+
+    mainRelation(){$this.mainCollectionAlias.collection}:Relation[1];
+
+    mainCollection(){$this.mainCollectionAlias.collectionElement->match([c:Collection[1]|$c])}:Collection[1];
+}
+
+Class meta::external::store::document::metamodel::mapping::RootDocumentInstanceSetImplementation extends DocumentInstanceSetImplementation, DocumentMappingSpecification
+{
+    resolveUserDefinedPrimaryKey()
+    {
+        if ($this.userDefinedPrimaryKey == true,
+            | true,
+            | let superMapping = $this.superMapping()->cast(@RootDocumentInstanceSetImplementation);
+              if ($superMapping->isEmpty(),
+                  | false,
+                  | $superMapping->toOne().resolveUserDefinedPrimaryKey()
+              );
+        );
+    }:Boolean[1];
+
+    resolvePrimaryKey()
+    {
+        let superMapping = $this.superMapping()->cast(@RootDocumentInstanceSetImplementation);
+        if ($superMapping->isEmpty(),
+            | $this.primaryKey,
+            | let thisPrimaryKey = $this.primaryKey;
+              let thisHasUserDefinedPrimaryKey = $this.userDefinedPrimaryKey;
+
+              let superPrimaryKey = $superMapping.resolvePrimaryKey();
+              let superHasUserDefinedPrimaryKey = $superMapping->toOne().resolveUserDefinedPrimaryKey();
+
+              let primaryKeyLogicalOrder = [pair($thisHasUserDefinedPrimaryKey, list($this.primaryKey)),
+                                            pair($superHasUserDefinedPrimaryKey, list($superPrimaryKey)),
+                                            pair(true, list($this.primaryKey))];
+
+              $primaryKeyLogicalOrder->filter(x|$x.first==true)->first().second.values;
+        );
+    }:DocumentStoreElement[*];
+}
+
+
+Class meta::external::store::document::metamodel::mapping::DocumentPropertyMapping extends PropertyMapping
+{
+   documentStoreElement : DocumentStoreElement[1];
+   transformer: ValueTransformer<Any>[0..1];
+   transform(sourceValue: Any[1])
+   {
+        if($this.transformer->isEmpty(),
+            | $sourceValue ,
+            | $this.transformer->toOne()->cast(@EnumerationMapping<Any> ).toDomainValue($sourceValue)
+        );
+   } : Any[1];
+}
+
+
+Class meta::external::store::document::metamodel::mapping::DocumentActivity extends meta::pure::mapping::Activity
+{
+   qryString : String[1];
+   executionTimeInNanoSecond : Integer[0..1];
+   qryGenerationTimeInNanoSecond : Integer[0..1];
+   connectionAcquisitionTimeInNanoSecond : Integer[0..1];
+   executionPlanInformation : String[0..1];
+   dataSource : meta::external::store::document::metamodel::runtime::DataSource[0..1];
+}
+
+Class meta::external::store::document::metamodel::mapping::EmbeddedDocumentInstanceSetImplementation extends EmbeddedSetImplementation, DocumentInstanceSetImplementation
+{
+    setMappingOwner : RootDocumentInstanceSetImplementation[1];
+}
+
+Class meta::external::store::document::metamodel::mapping::OtherwiseEmbeddedDocumentInstanceSetImplementation extends EmbeddedDocumentInstanceSetImplementation,OtherwiseEmbeddedSetImplementation
+{
+
+}
+
+Class meta::external::store::document::metamodel::mapping::InlineEmbeddedDocumentInstanceSetImplementation extends EmbeddedDocumentInstanceSetImplementation,InlineEmbeddedSetImplementation
+{
+
+}
+
