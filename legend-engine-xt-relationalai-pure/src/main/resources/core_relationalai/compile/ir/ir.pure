@@ -921,6 +921,35 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
               });
             });
         }),
+        case($other == meta::pure::functions::meta::extractEnumValue_Enumeration_1__String_1__T_1_, {|
+          $func.parametersValues
+            ->at(0)
+            ->tryCast(@InstanceValue)
+            ->andThen({value: InstanceValue[1] |
+              let enum = $value.values
+                ->at(0)
+                ->cast(@Enumeration<Any>);
+
+              $func.parametersValues
+                ->at(1)
+                ->tryCast(@InstanceValue)
+                ->then({val: InstanceValue[1] |
+                  let enumValue = $val.values
+                    ->at(0)
+                    ->cast(@String);
+
+                  compilationStep({callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1], state: meta::rel::compile::CompilationState[1] |
+                    ^$state(current=
+                      $enum
+                        ->enumName()
+                        ->meta::rel::metamodel::rel()
+                        ->appl(meta::rel::metamodel::label($enumValue))
+                    )
+                    ->ok();
+                  });
+                });
+            });
+        }),
         case($other == meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_, {| 
           meta::rel::compile::ir::tds::intoPExpr($func);
         }),
@@ -928,6 +957,7 @@ function meta::rel::compile::ir::intoPExpr(func: FunctionExpression[1], set: Rel
           meta::rel::compile::ir::tds::intoPExpr($func);
         }),
         case($other == meta::rel::query::def_String_1__FunctionDefinition_1__Any_MANY_, {| 
+          // TODO not implemented yet
           let query = $func.parametersValues->at(1)->intoScoped()->unwrap()->inspect();
 
           meta::rel::compile::ir::const(1)->ok();
