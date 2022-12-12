@@ -37,8 +37,8 @@ import meta::external::shared::format::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::json::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
