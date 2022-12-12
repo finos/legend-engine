@@ -990,7 +990,366 @@ Flows can potentially be created using all possible combinations of DatasourceSp
     </dependency>
     ~~~
    
-6. **Keys for Connection Pooling**: TODO
+6. **Keys for Connection Pooling**: To do connection pooling we need to use the connection information to create a unique key.
+Since connection is composed of data source and authentication strategy, we need to create 2 classes representing key for each of them.
 
-7. **Connection Runtime**: TODO.
-Finally, you can follow steps 5, 6, 7 of the main tutorial to test connectivity to a test db instance with newly implemented data source and auth strategy specifications.
+    ~~~java
+    // Copyright 2021 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys;
+    
+    import java.util.Objects;
+    
+    public class SqlServerTutorialAuthenticationStrategyKey implements AuthenticationStrategyKey
+    {
+        private final String userNameVaultReference;
+        private final String passwordVaultReference;
+    
+        public SqlServerTutorialAuthenticationStrategyKey(String userNameVaultReference, String passwordVaultReference)
+        {
+            this.userNameVaultReference = userNameVaultReference;
+            this.passwordVaultReference = passwordVaultReference;
+        }
+    
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass())
+            {
+                return false;
+            }
+    
+            SqlServerTutorialAuthenticationStrategyKey that = (SqlServerTutorialAuthenticationStrategyKey) o;
+            return Objects.equals(userNameVaultReference, that.userNameVaultReference) &&
+                    Objects.equals(passwordVaultReference, that.passwordVaultReference);
+        }
+    
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(userNameVaultReference, passwordVaultReference);
+        }
+    
+        @Override
+        public String shortId()
+        {
+            return "type:" + type() +
+                    "_username:" + userNameVaultReference +
+                    "_password:" + passwordVaultReference;
+        }
+    
+        @Override
+        public String type()
+        {
+            return "SqlServerTutorialAuth";
+        }
+    }
+    ~~~
+
+    ~~~java
+    // Copyright 2021 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys;
+    
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+    
+    import java.util.Objects;
+    
+    public class SqlServerTutorialDatasourceSpecificationKey implements DataSourceSpecificationKey
+    {
+        private final String host;
+        private final int port;
+        private final String databaseName;
+    
+        public SqlServerTutorialDatasourceSpecificationKey(String host, int port, String databaseName)
+        {
+            this.host = host;
+            this.port = port;
+            this.databaseName = databaseName;
+        }
+    
+        public String getHost()
+        {
+            return host;
+        }
+    
+        public int getPort()
+        {
+            return port;
+        }
+    
+        public String getDatabaseName()
+        {
+            return databaseName;
+        }
+    
+        @Override
+        public String toString()
+        {
+            return "SqlServerTutorialDatasourceSpecificationKey{" +
+                    "host='" + host + '\'' +
+                    ", port=" + port +
+                    ", databaseName='" + databaseName + '\'' +
+                    '}';
+        }
+    
+        @Override
+        public String shortId()
+        {
+            return "SqlServerTutorial_" +
+                    "host:" + host + "_" +
+                    "port:" + port + "_" +
+                    "db:" + databaseName;
+        }
+    
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o)
+            {
+                return true;
+            }
+            if (!(o instanceof SqlServerTutorialDatasourceSpecificationKey))
+            {
+                return false;
+            }
+            SqlServerTutorialDatasourceSpecificationKey that = (SqlServerTutorialDatasourceSpecificationKey) o;
+            return port == that.port &&
+                    Objects.equals(host, that.host) &&
+                    Objects.equals(databaseName, that.databaseName);
+        }
+    
+        @Override
+        public int hashCode()
+        {
+            return Objects.hash(host, port, databaseName);
+        }
+    }
+    ~~~
+
+    Further, we need to register how to create these keys from their respective protocol specifications in SqlServerConnectionExtension.
+
+    ~~~java
+    @Override
+    public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
+    {
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof SqlServerTutorialAuthenticationStrategy)
+            {
+                SqlServerTutorialAuthenticationStrategy tutorialAuthenticationStrategy = (SqlServerTutorialAuthenticationStrategy) authenticationStrategy;
+                String userNameVaultReference = tutorialAuthenticationStrategy.baseVaultReference == null ? tutorialAuthenticationStrategy.userNameVaultReference : tutorialAuthenticationStrategy.baseVaultReference + tutorialAuthenticationStrategy.userNameVaultReference;
+                String passwordVaultReference = tutorialAuthenticationStrategy.baseVaultReference == null ? tutorialAuthenticationStrategy.passwordVaultReference : tutorialAuthenticationStrategy.baseVaultReference + tutorialAuthenticationStrategy.passwordVaultReference;
+                return new SqlServerTutorialAuthenticationStrategyKey(userNameVaultReference, passwordVaultReference);
+            }
+            return null;
+        };
+    }
+    
+    @Override
+    public Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>> getExtraDataSourceSpecificationKeyGenerators(int testDbPort)
+    {
+        return connection -> datasourceSpecification ->
+        {
+            if (datasourceSpecification instanceof SqlServerTutorialDatasourceSpecification)
+            {
+                SqlServerTutorialDatasourceSpecification tutorialDatasourceSpecification = (SqlServerTutorialDatasourceSpecification) datasourceSpecification;
+                return new SqlServerTutorialDatasourceSpecificationKey(
+                    tutorialDatasourceSpecification.host,
+                    tutorialDatasourceSpecification.port,
+                    tutorialDatasourceSpecification.databaseName);
+            }
+            return null;
+        };
+    }
+    ~~~
+
+7. **Connection Runtime**: Connection Runtime does the task of combining information from Driver (jdbc url), Auth Flow (authentication credentials) and Identity to created final connection object (java.sql.Connection) with pooling.
+It is a combination of 2 runtime classes, one for data source and other for auth strategy as described below.
+
+    ~~~java
+    // Copyright 2021 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
+    
+    import org.eclipse.collections.api.tuple.Pair;
+    import org.eclipse.collections.impl.tuple.Tuples;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SqlServerTutorialAuthenticationStrategyKey;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
+    import org.finos.legend.engine.shared.core.identity.Identity;
+    import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+    
+    import java.sql.Connection;
+    import java.sql.SQLException;
+    import java.util.Properties;
+    
+    public class SqlServerTutorialAuthenticationStrategyRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy
+    {
+        private final String userNameVaultReference;
+        private final String passwordVaultReference;
+    
+        public SqlServerTutorialAuthenticationStrategyRuntime(String userNameVaultReference, String passwordVaultReference)
+        {
+            this.userNameVaultReference = userNameVaultReference;
+            this.passwordVaultReference = passwordVaultReference;
+        }
+    
+        @Override
+        public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
+        {
+            try
+            {
+                return ds.getDataSource().getConnection();
+            }
+            catch (SQLException e)
+            {
+                throw new ConnectionException(e);
+            }
+        }
+    
+        @Override
+        public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
+        {
+            Properties connectionProperties = new Properties();
+            connectionProperties.putAll(properties);
+            IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+            PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
+            connectionProperties.put("user", credential.getUser());
+            connectionProperties.put("password", credential.getPassword());
+            return Tuples.pair(url, connectionProperties);
+        }
+    
+        @Override
+        public AuthenticationStrategyKey getKey()
+        {
+            return new SqlServerTutorialAuthenticationStrategyKey(this.userNameVaultReference, this.passwordVaultReference);
+        }
+    }
+    ~~~
+   
+    ~~~java
+    // Copyright 2021 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
+    
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SqlServerTutorialDatasourceSpecificationKey;
+    
+    import java.util.Properties;
+    
+    public class SqlServerTutorialDatasourceSpecificationRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification
+    {
+        public SqlServerTutorialDatasourceSpecificationRuntime(SqlServerTutorialDatasourceSpecificationKey key, DatabaseManager driver, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy authenticationStrategyRuntime)
+        {
+            super(key, driver, authenticationStrategyRuntime, new Properties());
+        }
+    
+        @Override
+        protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)
+        {
+            // usually defaults for host, port and databaseName are passed to this method in the original call.
+            // This method is supposed to reset to correct values, if required, and construct the jdbc url by relaying to super class, which in turn relays to Driver.
+            SqlServerTutorialDatasourceSpecificationKey key = (SqlServerTutorialDatasourceSpecificationKey) this.datasourceKey;
+            return super.getJdbcUrl(key.getHost(), key.getPort(), key.getDatabaseName(), properties);
+        }
+    }
+    ~~~
+
+   Now, we will register how to create these runtimes from their respective protocol specifications in SqlServerConnectionExtension.
+
+    ~~~java
+    @Override
+    public AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
+    {
+        return authenticationStrategy ->
+        {
+            if (authenticationStrategy instanceof SqlServerTutorialAuthenticationStrategy)
+            {
+                SqlServerTutorialAuthenticationStrategy tutorialAuthenticationStrategy = (SqlServerTutorialAuthenticationStrategy) authenticationStrategy;
+                return new SqlServerTutorialAuthenticationStrategyRuntime(
+                        tutorialAuthenticationStrategy.baseVaultReference == null ? tutorialAuthenticationStrategy.userNameVaultReference : tutorialAuthenticationStrategy.baseVaultReference + tutorialAuthenticationStrategy.userNameVaultReference,
+                        tutorialAuthenticationStrategy.baseVaultReference == null ? tutorialAuthenticationStrategy.passwordVaultReference : tutorialAuthenticationStrategy.baseVaultReference + tutorialAuthenticationStrategy.passwordVaultReference
+                );
+            }
+            return null;
+        };
+    }
+    
+    @Override
+    public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(Function<RelationalDatabaseConnection, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> authenticationStrategyRuntimeProvider)
+    {
+        return (connection, connectionKey) -> datasourceSpecification ->
+        {
+            if (datasourceSpecification instanceof SqlServerTutorialDatasourceSpecification)
+            {
+                return new SqlServerTutorialDatasourceSpecificationRuntime(
+                    (SqlServerTutorialDatasourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
+                    new SqlServerManager(),
+                    authenticationStrategyRuntimeProvider.apply(connection)
+                );
+            }
+            return null;
+        };
+    }
+    ~~~
+
+    Clean + install the sqlserver-execution module. If it builds fine, we are done. **Congratulations!**
+
+    Finally, you can follow steps 5, 6, 7 of the main tutorial to test connectivity to a test db instance with newly implemented data source and auth strategy specifications.
