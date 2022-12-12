@@ -503,4 +503,491 @@ Then, when you run the tests from Pure Ide, they will run both generation and ex
 
 ### Adding a new Datasource or AuthenticationStrategy Specification
 
-TODO
+Let's say we want to support a new data source specification specific to SqlServer called SqlServerTutorialDatasourceSpecification, which behaves similar to StaticDatasourceSpecification.
+Similarly, we will add a new authentication strategy specification specific to SqlServer called SqlServerTutorialAuthenticationStrategy, which behaves similar to UserNamePasswordAuthenticationStrategy.
+
+1. **Protocol Classes**: Define the following classes in sqlserver-protocol module:
+
+    ~~~java
+    // Copyright 2020 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
+    
+    public class SqlServerTutorialDatasourceSpecification extends DatasourceSpecification
+    {
+        public String host;
+        public int port;
+        public String databaseName;
+    
+        @Override
+        public <T> T accept(DatasourceSpecificationVisitor<T> datasourceSpecificationVisitor)
+        {
+            return datasourceSpecificationVisitor.visit(this);
+        }
+    }
+    ~~~
+
+    ~~~java
+    // Copyright 2021 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication;
+    
+    public class SqlServerTutorialAuthenticationStrategy extends AuthenticationStrategy
+    {
+        public String baseVaultReference;
+        public String userNameVaultReference;
+        public String passwordVaultReference;
+    
+        @Override
+        public <T> T accept(AuthenticationStrategyVisitor<T> authenticationStrategyVisitor)
+        {
+            return authenticationStrategyVisitor.visit(this);
+        }
+    }
+    ~~~
+
+    Next register these classes in SqlServerProtocolExtension
+
+    ~~~java
+    return Lists.fixedSize.with(() -> Lists.fixedSize.with(
+                //DatasourceSpecification
+                ProtocolSubTypeInfo.newBuilder(DatasourceSpecification.class)
+                    .withSubtype(SqlServerTutorialDatasourceSpecification.class, "sqlServerTutorial")
+                    .build(),
+                // AuthenticationStrategy
+                ProtocolSubTypeInfo.newBuilder(AuthenticationStrategy.class)
+                    .withSubtype(SqlServerTutorialAuthenticationStrategy.class, "sqlServerTutorialAuth")
+                    .build()
+            ));
+    ~~~
+
+    If in future, you want to add more DataSource/AuthStratgey specs, you can add them by calling withSubType() again.
+    Also, note that we are adding these specs in sqlserver-protocol because they are associated with SqlServer.
+    For generic specs that can be used across dbTypes, legend-engine-xt-relationalStore-protocol would be the right place.
+
+    Clean + install the sqlserver-protocol module before moving on.
+
+2. **Pure Metamodel and Protocol**: Create a pure file core_relational_sqlserver/relational/connection/metamodel.pure with following content
+
+    ~~~java
+    Class meta::pure::alloy::connections::alloy::specification::SqlServerTutorialDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+    {
+       host: String[1];
+       port: Integer[1];
+       databaseName: String[1];
+    }
+    
+    Class meta::pure::alloy::connections::alloy::authentication::SqlServerTutorialAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+    {
+        baseVaultReference: String[0..1];
+        userNameVaultReference: String[1];
+        passwordVaultReference: String[1];
+    }
+    ~~~
+
+    Next, we will convert these metamodel classes to semantically versioned protocol classes. First define the latest version (vX_X_X) of protocol classes in core_relational_sqlserver/relational/protocols/pure/vX_X_X/model/metamodel_connection.pure
+
+    ~~~java
+    Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SqlServerTutorialDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+    {
+       host: String[1];
+       port: Integer[1];
+       databaseName: String[1];
+    }
+    
+    Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::SqlServerTutorialAuthenticationStrategy extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+    {
+        baseVaultReference: String[0..1];
+        userNameVaultReference: String[1];
+        passwordVaultReference: String[1];
+    }
+    ~~~
+
+    Then define the conversion logic in sqlServerSerializerExtension() function within core_relational_sqlserver/relational/protocols/pure/vX_X_X/extension/extension_sqlServer.pure
+
+    ~~~java
+    ^meta::protocols::pure::vX_X_X::extension::RelationalModuleSerializerExtension(
+        module = 'sqlServer',
+        transfers_connection_transformAuthenticationStrategy = [
+            u:meta::pure::alloy::connections::alloy::authentication::SqlServerTutorialAuthenticationStrategy[1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::SqlServerTutorialAuthenticationStrategy(
+                         _type = 'sqlServerTutorialAuth',
+                         baseVaultReference = $u.baseVaultReference,
+                         userNameVaultReference = $u.userNameVaultReference,
+                         passwordVaultReference = $u.passwordVaultReference
+                      )
+        ],
+        transfers_connection_transformDatasourceSpecification = [
+            s:meta::pure::alloy::connections::alloy::specification::SqlServerTutorialDatasourceSpecification[1] |
+                     ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SqlServerTutorialDatasourceSpecification(
+                        _type = 'sqlServerTutorial',
+                        host = $s.host,
+                        port = $s.port,
+                        databaseName = $s.databaseName
+                     )
+        ],
+        reverse_transfers_typeLookups = [
+            pair('sqlServerTutorial', 'SqlServerTutorialDatasourceSpecification'),
+            pair('sqlServerTutorialAuth', 'SqlServerTutorialAuthenticationStrategy')
+        ],
+        reverse_transfers_connection_transformAuthenticationStrategy = [
+            u:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::SqlServerTutorialAuthenticationStrategy[1] |
+                      ^meta::pure::alloy::connections::alloy::authentication::SqlServerTutorialAuthenticationStrategy(
+                          baseVaultReference = $u.baseVaultReference,
+                          userNameVaultReference = $u.userNameVaultReference,
+                          passwordVaultReference = $u.passwordVaultReference
+                        )
+        ],
+        reverse_transfers_connection_transformDatasourceSpecification = [
+            s:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::SqlServerTutorialDatasourceSpecification[1] |
+                     ^meta::pure::alloy::connections::alloy::specification::SqlServerTutorialDatasourceSpecification(
+                        host = $s.host,
+                        port = $s.port,
+                        databaseName = $s.databaseName
+                     )
+        ]
+      )
+    ~~~
+
+    Clean + install the sqlserver-pure module.
+
+3. **DSLs for Specifications**: We will work within sqlserver-grammar module to implement the DSLs, using [ANTLR](https://www.antlr.org). End users write DSLs in Studio instead of working with protocol classes. Write the following in SqlServerLexerGrammar.g4 to parse tokens from DSL text.
+
+    ~~~antlrv4
+    SQL_SERVER_TUTORIAL_DSP:                    'SqlServerTutorial';
+    HOST:                                       'host';
+    PORT:                                       'port';
+    NAME:                                       'name';
+    
+    SQL_SERVER_TUTORIAL_AUTH:                   'SqlServerTutorialAuth';
+    BASE_VAULT_REF:                             'baseVaultReference';
+    USERNAME_VAULT_REF:                         'userNameVaultReference';
+    PASSWORD_VAULT_REF:                         'passwordVaultReference';
+    ~~~
+
+    Then write the following in SqlServerParserGrammar.g4 to create parse trees out of tokens obtained from lexer.
+
+    ~~~antlrv4
+    sqlServerTutorialDsp:                       SQL_SERVER_TUTORIAL_DSP
+                                                    BRACE_OPEN
+                                                        (
+                                                            dbName
+                                                            | dbHost
+                                                            | dbPort
+                                                        )*
+                                                    BRACE_CLOSE
+    ;
+    dbPort:                                     PORT COLON INTEGER SEMI_COLON
+    ;
+    dbHost:                                     HOST COLON STRING SEMI_COLON
+    ;
+    dbName:                                     NAME COLON STRING SEMI_COLON
+    ;
+    
+    sqlServerTutorialAuth:                  SQL_SERVER_TUTORIAL_AUTH
+                                                BRACE_OPEN
+                                                    (
+                                                        baseVaultRef
+                                                        | userNameVaultRef
+                                                        | passwordVaultRef
+                                                    )*
+                                                BRACE_CLOSE
+    ;
+    baseVaultRef:                           BASE_VAULT_REF COLON STRING SEMI_COLON
+    ;
+    userNameVaultRef:                       USERNAME_VAULT_REF COLON STRING SEMI_COLON
+    ;
+    passwordVaultRef:                       PASSWORD_VAULT_REF COLON STRING SEMI_COLON
+    ;
+    ~~~
+   
+    Clean + install the module so that java classes for the parser are generated by ANTLR.
+
+    Now, we will implement SqlServerGrammarParserExtension, which converts DSLs to protocol classes using the parser generated by ANTLR.
+
+    ~~~java
+    @Override
+    public List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers()
+    {
+        return Collections.singletonList(code ->
+        {
+            if ("SqlServerTutorialAuth".equals(code.getType()))
+            {
+                return IRelationalGrammarParserExtension.parse(code, SqlServerLexerGrammar::new, SqlServerParserGrammar::new,
+                        p -> visitSqlServerTutorialAuth(code, p.sqlServerTutorialAuth()));
+            }
+            return null;
+        });
+    }
+    
+    private SqlServerTutorialAuthenticationStrategy visitSqlServerTutorialAuth(AuthenticationStrategySourceCode code, SqlServerParserGrammar.SqlServerTutorialAuthContext authCtx)
+    {
+        SqlServerTutorialAuthenticationStrategy authStrategy = new SqlServerTutorialAuthenticationStrategy();
+        authStrategy.sourceInformation = code.getSourceInformation();
+        SqlServerParserGrammar.BaseVaultRefContext baseVaultRef = PureGrammarParserUtility.validateAndExtractOptionalField(authCtx.baseVaultRef(), "baseVaultReference", authStrategy.sourceInformation);
+        authStrategy.baseVaultReference = baseVaultRef == null ? null : PureGrammarParserUtility.fromGrammarString(baseVaultRef.STRING().getText(), true);
+        SqlServerParserGrammar.UserNameVaultRefContext userNameVaultRef = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.userNameVaultRef(), "userNameVaultReference", authStrategy.sourceInformation);
+        authStrategy.userNameVaultReference = PureGrammarParserUtility.fromGrammarString(userNameVaultRef.STRING().getText(), true);
+        SqlServerParserGrammar.PasswordVaultRefContext passwordVaultRef = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.passwordVaultRef(), "passwordVaultReference", authStrategy.sourceInformation);
+        authStrategy.passwordVaultReference = PureGrammarParserUtility.fromGrammarString(passwordVaultRef.STRING().getText(), true);
+        return authStrategy;
+    }
+    
+    @Override
+    public List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> getExtraDataSourceSpecificationParsers()
+    {
+        return Collections.singletonList(code ->
+        {
+            if ("SqlServerTutorial".equals(code.getType()))
+            {
+                return IRelationalGrammarParserExtension.parse(code, SqlServerLexerGrammar::new, SqlServerParserGrammar::new,
+                        p -> visitSqlServerTutorialDsp(code, p.sqlServerTutorialDsp()));
+            }
+            return null;
+        });
+    }
+    
+    private SqlServerTutorialDatasourceSpecification visitSqlServerTutorialDsp(DataSourceSpecificationSourceCode code, SqlServerParserGrammar.SqlServerTutorialDspContext dbSpecCtx)
+    {
+        SqlServerTutorialDatasourceSpecification dsSpec = new SqlServerTutorialDatasourceSpecification();
+        dsSpec.sourceInformation = code.getSourceInformation();
+        // host
+        SqlServerParserGrammar.DbHostContext hostCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbHost(), "host", dsSpec.sourceInformation);
+        dsSpec.host = PureGrammarParserUtility.fromGrammarString(hostCtx.STRING().getText(), true);
+        // port
+        SqlServerParserGrammar.DbPortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbPort(), "port", dsSpec.sourceInformation);
+        dsSpec.port = Integer.parseInt(portCtx.INTEGER().getText());
+        // database name
+        SqlServerParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
+        dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
+        return dsSpec;
+    }
+    ~~~
+   
+    As the above code references protocol classes, we will also need to add the following dependency in pom.xml of sqlserver-grammar
+
+    ~~~xml
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-relationalStore-sqlserver-protocol</artifactId>
+    </dependency>
+    ~~~
+   
+    What we did till now allows us to parse DSLs into protocol classes, but we need to implement code for conversion in other direction too. In SqlServerGrammarComposerExtension, we can write
+
+    ~~~java
+    @Override
+    public List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers()
+    {
+        return Lists.mutable.with((_strategy, context) ->
+        {
+            if (_strategy instanceof SqlServerTutorialAuthenticationStrategy)
+            {
+                SqlServerTutorialAuthenticationStrategy auth = (SqlServerTutorialAuthenticationStrategy) _strategy;
+                int baseIndentation = 1;
+                return "SqlServerTutorialAuth" +
+                        "\n" +
+                        context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                        (auth.baseVaultReference == null ? "" : context.getIndentationString() + getTabString(baseIndentation + 1) + "baseVaultReference: " + convertString(auth.baseVaultReference, true) + ";\n") +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "userNameVaultReference: " + convertString(auth.userNameVaultReference, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "passwordVaultReference: " + convertString(auth.passwordVaultReference, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation) + "}";
+            }
+            return null;
+        });
+    }
+    
+    @Override
+    public List<Function2<DatasourceSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers()
+    {
+        return Lists.mutable.with((_spec, context) ->
+        {
+            if (_spec instanceof SqlServerTutorialDatasourceSpecification)
+            {
+                SqlServerTutorialDatasourceSpecification spec = (SqlServerTutorialDatasourceSpecification) _spec;
+                int baseIndentation = 1;
+                return "SqlServerTutorial\n" +
+                        context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "name: " + convertString(spec.databaseName, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "host: " + convertString(spec.host, true) + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation + 1) + "port: " + spec.port + ";\n" +
+                        context.getIndentationString() + getTabString(baseIndentation) + "}";
+            }
+            return null;
+        });
+    }
+    ~~~
+
+    We can now complete TestSqlServerConnectionGrammarRoundtrip.testConnectionGrammar() to test both of the above conversions (DSLs to protocol classes and vice-versa) via a round-trip test.
+
+    ~~~java
+    @Test
+    public void testConnectionGrammar()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: SqlServer;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: UserNamePassword\n" +
+                "  {\n" +
+                "    userNameVaultReference: 'user';\n" +
+                "    passwordVaultReference: 'pwd';\n" +
+                "  };\n" +
+                "}\n");
+    }
+    ~~~
+   
+    If you run the test, it should pass.
+
+4. **Java Protocol to Pure Bridge**: Write the following code in SqlServerCompilerExtension of sqlserver-grammar module to implement the bridge. We will convert java protocol classes to pure metamodel classes.
+
+    ~~~java
+    @Override
+    public List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>> getExtraAuthenticationStrategyProcessors()
+    {
+        return Lists.mutable.with((authenticationStrategy, context) ->
+        {
+            if (authenticationStrategy instanceof SqlServerTutorialAuthenticationStrategy)
+            {
+                SqlServerTutorialAuthenticationStrategy tutorialAuthenticationStrategy = (SqlServerTutorialAuthenticationStrategy) authenticationStrategy;
+                return new Root_meta_pure_alloy_connections_alloy_authentication_SqlServerTutorialAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::SqlServerTutorialAuthenticationStrategy"))
+                        ._baseVaultReference(tutorialAuthenticationStrategy.baseVaultReference)
+                        ._userNameVaultReference(tutorialAuthenticationStrategy.userNameVaultReference)
+                        ._passwordVaultReference(tutorialAuthenticationStrategy.passwordVaultReference);
+            }
+            return null;
+        });
+    }
+    
+    @Override
+    public List<Function2<DatasourceSpecification, CompileContext, Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>> getExtraDataSourceSpecificationProcessors()
+    {
+        return Lists.mutable.with((datasourceSpecification, context) ->
+        {
+            if (datasourceSpecification instanceof SqlServerTutorialDatasourceSpecification)
+            {
+                SqlServerTutorialDatasourceSpecification tutorialDatasourceSpecification = (SqlServerTutorialDatasourceSpecification) datasourceSpecification;
+                return new Root_meta_pure_alloy_connections_alloy_specification_SqlServerTutorialDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::SqlServerTutorialDatasourceSpecification"))
+                        ._host(tutorialDatasourceSpecification.host)
+                        ._port(tutorialDatasourceSpecification.port)
+                        ._databaseName(tutorialDatasourceSpecification.databaseName);
+            }
+            return null;
+        });
+    }
+    ~~~
+   
+    Since above code references Pure metamodel classes, we need the following dependency in pom.xml of sqlserver-grammar module.
+
+    ~~~xml
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-relationalStore-sqlserver-pure</artifactId>
+    </dependency>
+    ~~~
+   
+    Clean + install the sqlserver-grammar module to complete the step.
+
+5. **Authentication Flow**: In sqlserver-execution module, we can create a new class to specify how to authenticate SqlServer with SqlServerTutorialDatasourceSpecification and SqlServerTutorialAuthenticationStrategy.
+It is similar to how we added flow for authenticating using pre-existing StaticDatasourceSpecification and UserNamePasswordAuthenticationStrategy, in earlier part of the tutorial.
+Flows can potentially be created using all possible combinations of DatasourceSpecification impls and AuthenticationStrategy impls. The flow we are implementing below is just one such possible flow.
+
+    ~~~java
+    // Copyright 2021 Goldman Sachs
+    //
+    // Licensed under the Apache License, Version 2.0 (the "License");
+    // you may not use this file except in compliance with the License.
+    // You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    // Unless required by applicable law or agreed to in writing, software
+    // distributed under the License is distributed on an "AS IS" BASIS,
+    // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    // See the License for the specific language governing permissions and
+    // limitations under the License.
+    
+    package org.finos.legend.engine.authentication.flows;
+    
+    import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+    import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+    import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SqlServerTutorialAuthenticationStrategy;
+    import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SqlServerTutorialDatasourceSpecification;
+    import org.finos.legend.engine.shared.core.identity.Credential;
+    import org.finos.legend.engine.shared.core.identity.Identity;
+    import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+    import org.finos.legend.engine.shared.core.vault.Vault;
+    
+    public class SqlServerTutorialAuthFlow implements DatabaseAuthenticationFlow<SqlServerTutorialDatasourceSpecification, SqlServerTutorialAuthenticationStrategy>
+    {
+        @Override
+        public Class<SqlServerTutorialDatasourceSpecification> getDatasourceClass()
+        {
+            return SqlServerTutorialDatasourceSpecification.class;
+        }
+    
+        @Override
+        public Class<SqlServerTutorialAuthenticationStrategy> getAuthenticationStrategyClass()
+        {
+            return SqlServerTutorialAuthenticationStrategy.class;
+        }
+    
+        @Override
+        public DatabaseType getDatabaseType()
+        {
+            return DatabaseType.SqlServer;
+        }
+    
+        @Override
+        public Credential makeCredential(Identity identity, SqlServerTutorialDatasourceSpecification datasourceSpecification, SqlServerTutorialAuthenticationStrategy authStrategy) throws Exception
+        {
+            String userNameVaultKey = authStrategy.baseVaultReference == null ? authStrategy.userNameVaultReference : authStrategy.baseVaultReference + authStrategy.userNameVaultReference;
+            String passwordVaultKey = authStrategy.baseVaultReference == null ? authStrategy.passwordVaultReference : authStrategy.baseVaultReference + authStrategy.passwordVaultReference;
+            String userName = Vault.INSTANCE.getValue(userNameVaultKey);
+            String password = Vault.INSTANCE.getValue(passwordVaultKey);
+            return new PlaintextUserPasswordCredential(userName, password);
+        }
+    }
+    ~~~
+   
+    Since, above code references protocol classes, we would need to add the following dependency, for it to compile.
+
+    ~~~xml
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-relationalStore-sqlserver-protocol</artifactId>
+    </dependency>
+    ~~~
+   
+6. **TODO**: TODO
