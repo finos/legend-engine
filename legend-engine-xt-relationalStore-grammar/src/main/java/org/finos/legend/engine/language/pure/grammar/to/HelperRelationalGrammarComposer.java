@@ -772,7 +772,7 @@ public class HelperRelationalGrammarComposer
         return null;
     }
 
-    public static String writeMappersPostProcessor(String mapperName, List<Mapper> mappers, PureGrammarComposerContext context)
+    public static String writeMappersPostProcessor(String mapperName, List<Mapper> mappers, int order, PureGrammarComposerContext context)
     {
         List<String> mapperStrings = ListIterate.collect(mappers, mapper -> visitMapper(mapper, context));
 
@@ -784,12 +784,13 @@ public class HelperRelationalGrammarComposer
                 getTabString(baseIndent + 1) + "[\n" +
                 String.join(",\n" + context.getIndentationString(), mapperStrings) +
                 "\n" + getTabString(baseIndent + 1) + "];\n" +
+                (order != Integer.MIN_VALUE ?  getTabString(baseIndent + 1) + "order: " + order + ";\n" : "") +
                 getTabString(baseIndent) + "}";
     }
 
     public static String visitMapperPostProcessor(MapperPostProcessor mapperPostProcessor, PureGrammarComposerContext context)
     {
-        return writeMappersPostProcessor("mapper", mapperPostProcessor.mappers, context);
+        return writeMappersPostProcessor("mapper", mapperPostProcessor.mappers, mapperPostProcessor.order, context);
     }
 
     private static String visitMapper(Mapper mapper, PureGrammarComposerContext context)

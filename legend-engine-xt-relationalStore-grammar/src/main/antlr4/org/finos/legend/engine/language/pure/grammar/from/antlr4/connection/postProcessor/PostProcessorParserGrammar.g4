@@ -14,7 +14,13 @@ identifier:                      VALID_STRING
 mapperPostProcessor:             identifier
                                  BRACE_OPEN
                                     mappers
+                                    (
+                                        order
+                                    )*
                                  BRACE_CLOSE
+;
+
+order:                           ORDER COLON INTEGER SEMI_COLON
 ;
 
 mappers:                         MAPPERS COLON BRACKET_OPEN

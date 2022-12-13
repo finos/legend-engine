@@ -349,7 +349,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraDataSourceSpecificationProcessors),
                                 context);
 
-                        List<PostProcessor> postProcessors = relationalDatabaseConnection.postProcessors == null ? FastList.newList() : relationalDatabaseConnection.postProcessors;
+                        List<PostProcessor> postProcessors = relationalDatabaseConnection.postProcessors == null ? FastList.newList() : relationalDatabaseConnection.getPostProcessors();
 
                         MutableList<Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>> pp = ListIterate.collect(postProcessors, p -> IRelationalCompilerExtension.process(
                                 relationalDatabaseConnection,

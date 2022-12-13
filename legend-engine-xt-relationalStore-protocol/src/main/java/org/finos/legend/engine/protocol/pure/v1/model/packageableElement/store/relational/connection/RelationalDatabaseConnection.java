@@ -20,7 +20,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RelationalDatabaseConnection extends DatabaseConnection
 {
@@ -39,6 +41,11 @@ public class RelationalDatabaseConnection extends DatabaseConnection
         this.datasourceSpecification = datasourceSpecification;
         this.authenticationStrategy = authenticationStrategy;
         this.databaseType = databaseType;
+    }
+
+    public List<PostProcessor> getPostProcessors()
+    {
+        return this.postProcessors != null ?  this.postProcessors.stream().sorted(Comparator.comparingInt(PostProcessor::getOrder)).collect(Collectors.toList()) : Collections.emptyList();
     }
 
     @Override
