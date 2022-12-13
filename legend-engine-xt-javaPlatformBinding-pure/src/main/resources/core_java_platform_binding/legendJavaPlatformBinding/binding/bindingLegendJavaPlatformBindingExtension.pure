@@ -22,7 +22,6 @@ import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::extension::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
 
 function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingLegendJavaPlatformBindingExtension(formatDescriptors: ExternalFormatLegendJavaPlatformBindingDescriptor[*]): LegendJavaPlatformBindingExtension[1]
 {
@@ -95,7 +94,7 @@ function meta::external::shared::format::executionPlan::platformBinding::legendJ
    )
 }
 
-function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
    meta::pure::extension::defaultExtensions()->concatenate(
       meta::pure::executionPlan::platformBinding::platformBindingExtension([

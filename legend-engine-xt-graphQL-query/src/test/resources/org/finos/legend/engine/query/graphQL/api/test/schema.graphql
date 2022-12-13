@@ -1,0 +1,21 @@
+type Address {
+  street: String!
+}
+type Firm {
+  legalName: String!
+  employees: [Person!]!
+  addresses: [Address!]!
+  count: Int!
+}
+type OtherClass {
+  stuff: String!
+}
+type Person {
+  firstName: String!
+  lastName: String!
+  addresses: [Address!]!
+  firm: Firm
+}
+schema {
+
+}

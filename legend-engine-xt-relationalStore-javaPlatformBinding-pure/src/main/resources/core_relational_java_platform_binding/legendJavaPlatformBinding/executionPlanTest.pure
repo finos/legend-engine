@@ -126,7 +126,136 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    assertEquals($expectedJava, $withJava->planToString(meta::relational::extension::relationalExtensions()));
 }
 
+function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJava::tests::withNestedSequenceNode() : Boolean[1]
+{
+   let tree = #{
+      meta::relational::graphFetch::tests::chain::Target_Firm {
+         firmName,
+         employeeCount
+      }
+   }#;
+   
+   let query = {|meta::relational::graphFetch::tests::chain::Target_Firm.all()->graphFetch($tree)->serialize($tree)};
+  
+   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
+      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+      mappings = [meta::relational::tests::simpleRelationalMapping]
+   );
+   let runtime = ^meta::pure::runtime::Runtime(
+      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   );
 
+   let res = meta::pure::executionPlan::executionPlan($query, meta::relational::graphFetch::tests::chain::M2M_Mapping, $runtime, meta::relational::extension::relationalExtensions());
+
+   let root = $res.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode);
+   let globalGraphFetch = $root.executionNodes->toOne()->cast(@GlobalGraphFetchExecutionNode);
+   let localGraphFetch = $globalGraphFetch.localGraphFetchExecutionNode;
+
+   let newLocalGraphFetchWithSequence = ^$localGraphFetch(executionNodes = ^SequenceExecutionNode(executionNodes = $localGraphFetch.executionNodes, resultType = $localGraphFetch.executionNodes->last()->toOne().resultType));
+   let newGlobalGraphFetchWithSequence = ^$globalGraphFetch(localGraphFetchExecutionNode = $newLocalGraphFetchWithSequence);
+   let newRoot = ^$root(executionNodes = $newGlobalGraphFetchWithSequence);
+
+   let plan = ^$res(rootExecutionNode = $newRoot);  
+
+   let expected =
+    'PureExp\n'+
+    '(\n'+
+    '  type = String\n'+
+    '  expression =  -> serialize(#{meta::relational::graphFetch::tests::chain::Target_Firm {firmName, employeeCount}}#)\n'+
+    '  (\n'+
+    '    GlobalGraphFetch\n'+
+    '    (\n'+
+    '      type = PartialClass[impls=[(meta::relational::graphFetch::tests::chain::Target_Firm | M2M_Mapping.meta_relational_graphFetch_tests_chain_Target_Firm)], propertiesWithParameters = [employeeCount, firmName]]\n'+
+    '      resultSizeRange = *\n'+
+    '      store = MODEL\n'+
+    '      localGraphFetchExecutionNode = \n'+
+    '         InMemoryRootGraphFetch\n'+
+    '         (\n'+
+    '           type = PartialClass[impls=[(meta::relational::graphFetch::tests::chain::Target_Firm | M2M_Mapping.meta_relational_graphFetch_tests_chain_Target_Firm)], propertiesWithParameters = [employeeCount, firmName]]\n'+
+    '           graphFetchTree = [meta_relational_graphFetch_tests_chain_Target_Firm/meta::relational::graphFetch::tests::chain::Target_Firm]{@(meta_relational_graphFetch_tests_chain_Target_Firm->)@[/employeeCount],@(meta_relational_graphFetch_tests_chain_Target_Firm->)@[/firmName]}\n'+
+    '           nodeIndex = 0\n'+
+    '           batchSize = 1\n'+
+    '           checked = false\n'+
+    '           (\n'+
+    '             Sequence\n'+
+    '             (\n'+
+    '               type = PartialClass[impls=[(meta::relational::tests::model::simple::Firm | simpleRelationalMappingInc.meta_relational_tests_model_simple_Firm)], propertiesWithParameters = [employees, legalName]]\n'+
+    '               (\n'+
+    '                 GlobalGraphFetch\n'+
+    '                 (\n'+
+    '                   type = PartialClass[impls=[(meta::relational::tests::model::simple::Firm | simpleRelationalMappingInc.meta_relational_tests_model_simple_Firm)], propertiesWithParameters = [employees, legalName]]\n'+
+    '                   resultSizeRange = *\n'+
+    '                   store = meta::relational::tests::db\n'+
+    '                   localGraphFetchExecutionNode = \n'+
+    '                      RelationalGraphFetch\n'+
+    '                      (\n'+
+    '                        type = PartialClass[impls=[(meta::relational::tests::model::simple::Firm | simpleRelationalMappingInc.meta_relational_tests_model_simple_Firm)], propertiesWithParameters = [employees, legalName]]\n'+
+    '                        nodeIndex = 0\n'+
+    '                        relationalNode = \n'+
+    '                           SQL\n'+
+    '                           (\n'+
+    '                             type = meta::pure::metamodel::type::Any\n'+
+    '                             resultColumns = [("pk_0", INT), ("legalName", VARCHAR(200))]\n'+
+    '                             sql = select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root"\n'+
+    '                             connection = TestDatabaseConnection(type = "H2")\n'+
+    '                           )\n'+
+    '                        children = [\n'+
+    '                           RelationalGraphFetch\n'+
+    '                           (\n'+
+    '                             type = PartialClass[impls=[(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)], propertiesWithParameters = []]\n'+
+    '                             nodeIndex = 1\n'+
+    '                             relationalNode = \n'+
+    '                                SQL\n'+
+    '                                (\n'+
+    '                                  type = meta::pure::metamodel::type::Any\n'+
+    '                                  resultColumns = [("parent_key_gen_0", INT), ("pk_0", INT)]\n'+
+    '                                  sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "persontable_0".ID as "pk_0" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join firmTable as "root" on ("temp_table_node_0_0".pk_0 = "root".ID) left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "persontable_0".ID is not null\n'+
+    '                                  connection = TestDatabaseConnection(type = "H2")\n'+
+    '                                )\n'+
+    '                             children = [\n'+
+    '                                \n'+
+    '                             ]\n'+
+    '                             implementation\n'+
+    '                             (\n'+
+    '                               calls = _pure.plan.root.n1.localGraph.n1.n1.localGraph.localChild0.Execute\n'+
+    '                             )\n'+
+    '                           )\n'+
+    '\n'+
+    '                        ]\n'+
+    '                        implementation\n'+
+    '                        (\n'+
+    '                          calls = _pure.plan.root.n1.localGraph.n1.n1.localGraph.Execute\n'+
+    '                        )\n'+
+    '                      )\n'+
+    '                   children = [\n'+
+    '                      \n'+
+    '                   ]\n'+
+    '                 )\n'+
+    '               )\n'+
+    '             )\n'+
+    '           )\n'+
+    '           children = [\n'+
+    '              \n'+
+    '           ]\n'+
+    '           implementation\n'+
+    '           (\n'+
+    '             calls = _pure.plan.root.n1.localGraph.Execute\n'+
+    '           )\n'+
+    '         )\n'+
+    '      children = [\n'+
+    '         \n'+
+    '      ]\n'+
+    '    )\n'+
+    '  )\n'+
+    '  implementation\n'+
+    '  (\n'+
+    '    calls = _pure.plan.root.Serialize\n'+
+    '  )\n'+
+    ')\n';
+
+   let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
+   assertEquals($expected, $withJava->planToString(meta::relational::extension::relationalExtensions()));
+}
 
 function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJava::tests::letVariableFunctionAdjustNow() : Boolean[1]
 {
@@ -352,73 +481,72 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
 
    let expectedJava =
    'Sequence\n'+
-   '(\n'+
-   '  type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n'+
-   '  (\n'+
-   '    FunctionParametersValidationNode\n'+
-   '    (\n'+
-   '      functionParameters = [businessDate:StrictDate[0..1], CLSFtype:String[1]]\n'+
-   '    )\n'+
-   '    Allocation\n'+
-   '    (\n'+
-   '      type = Date\n'+
+   '(\n' +
+   '  type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [businessDate:StrictDate[0..1], CLSFtype:String[1]]\n' +
+   '    )\n' +
+   '    Allocation\n' +
+   '    (\n' +
+   '      type = Date\n' +
    '      resultSizeRange = 1\n'+
-   '      name = asOf\n'+
-   '      value = \n'+
-   '        (\n'+
-   '          PureExp\n'+
-   '          (\n'+
-   '            type = Date\n'+
+   '      name = asOf\n' +
+   '      value = \n' +
+   '        (\n' +
+   '          PureExp\n' +
+   '          (\n' +
+   '            type = Date\n' +
    '            resultSizeRange = 1\n'+
-   '            requires = [businessDate(StrictDate[0..1])]\n'+
-   '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n'+
-   '            implementation\n'+
-   '            (\n'+
+   '            requires = [businessDate(StrictDate[0..1])]\n' +
+   '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
+   '            implementation\n' +
+   '            (\n' +
    '              calls = _pure.plan.root.n2.n1.Execute.execute\n'+
-   '            )\n'+
-   '          )\n'+
-   '        )\n'+
-   '    )\n'+
-   '    Relational\n'+
-   '    (\n'+
-   '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n'+
-   '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n'+
-   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n'+
-   '      connection = TestDatabaseConnection(type = \"H2\")\n'+
-   '    )\n'+
-   '  )\n'+
-   ')\n'+
-   'globalImplementationSupport\n'+
-   '(\n'+
-   '  classes =\n'+
-   '      _pure.plan.root.n2.n1.Execute\n'+
-   '      0001 package _pure.plan.root.n2.n1;\n'+
-   '      0002 \n'+
-   '      0003 import java.util.Date;\n'+
-   '      0004 import java.util.function.Supplier;\n'+
-   '      0005 import org.finos.legend.engine.plan.dependencies.domain.date.AbstractPureDate;\n'+
-   '      0006 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n'+
-   '      0007 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n'+
-   '      0008 import org.finos.legend.engine.plan.dependencies.util.Library;\n'+
-   '      0009 \n'+
-   '      0010 public class Execute\n'+
-   '      0011 {\n'+
-   '      0012     public static AbstractPureDate execute(IExecutionNodeContext context)\n'+
-   '      0013     {\n'+
-   '      0014         try\n'+
-   '      0015         {\n'+
-   '      0016             PureDate businessDate = context.getResult(\"businessDate\", PureDate.class);\n'+
-   '      0017             return businessDate != null ? ((Supplier<AbstractPureDate>) () -> Library.toOne(businessDate))\n'+
-   '      0018                                                                                      .get()\n'+
-   '      0019                                         : ((Supplier<AbstractPureDate>) () -> PureDate.fromDate(new Date()))\n'+
-   '      0020                                                                                       .get();\n'+
-   '      0021         }\n'+
-   '      0022         catch (Exception e)\n'+
-   '      0023         {\n'+
-   '      0024             throw new RuntimeException(\"Failed in node: root.n2.n1\", e);\n'+
-   '      0025         }\n'+
-   '      0026     }\n'+
-    '      0027 }\n'+
+   '            )\n' +
+   '          )\n' +
+   '        )\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
+   '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n' +
+   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n' +
+   '      connection = TestDatabaseConnection(type = \"H2\")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n' +
+   'globalImplementationSupport\n' +
+   '(\n' +
+   '  classes =\n' +
+   '      _pure.plan.root.n2.n1.Execute\n' +
+   '      0001 package _pure.plan.root.n2.n1;\n' +
+   '      0002 \n' +
+   '      0003 import java.util.Date;\n' +
+   '      0004 import java.util.function.Supplier;\n' +
+   '      0005 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n' +
+   '      0006 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n' +
+   '      0007 import org.finos.legend.engine.plan.dependencies.util.Library;\n' +
+   '      0008 \n' +
+   '      0009 public class Execute\n' +
+   '      0010 {\n' +
+   '      0011     public static PureDate execute(IExecutionNodeContext context)\n' +
+   '      0012     {\n' +
+   '      0013         try\n' +
+   '      0014         {\n' +
+   '      0015             PureDate businessDate = context.getResult(\"businessDate\", PureDate.class);\n' +
+   '      0016             return businessDate != null ? ((Supplier<PureDate>) () -> Library.toOne(businessDate))\n' +
+   '      0017                                                                              .get()\n' +
+   '      0018                                         : ((Supplier<PureDate>) () -> PureDate.fromDate(new Date()))\n' +
+   '      0019                                                                               .get();\n' +
+   '      0020         }\n' +
+   '      0021         catch (Exception e)\n' +
+   '      0022         {\n' +
+   '      0023             throw new RuntimeException(\"Failed in node: root.n2.n1\", e);\n' +
+   '      0024         }\n' +
+   '      0025     }\n' +
+   '      0026 }\n' +
    ')\n';
    assertEquals($expectedJava, $withJava->planToString(true, meta::relational::extension::relationalExtensions()));
 }

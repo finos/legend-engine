@@ -55,34 +55,33 @@ function meta::pure::alloy::connections::postProcessor::tableMapperPostProcessor
 
 function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SQLQuery[1],m:Mapping[0..1], runtime:Runtime[1],store:Database[0..1],exeCtx:ExecutionContext[1],params:	meta::relational::runtime::PostProcessorParameter[*]):PostProcessorResult[1]
 {
-   let pairs = $params->map(p |
-      $p->match([
-         t:meta::pure::alloy::connections::TableNameMapper[1] |
-            let schema = $store.schema($t.schema.from);
-            let table = $schema.table($t.from);
+   let tableMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
+   let schemaMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
 
-            assert($schema->isNotEmpty() && $table->isNotEmpty(), | 'Table not found "' + $t.schema.from + '.' + $t.from + '"');
+   let processedMappers = meta::pure::alloy::connections::postProcessTablesFn($tableMappers, $schemaMappers);
+   let result = meta::relational::postProcessor::transform($sql, $processedMappers);
+   ^meta::relational::mapping::PostProcessorResult(query = $result->cast(@SQLQuery));
+}
 
-            let schemaOne = $schema->toOne();
-            let tableOne = $table->toOne();
+function meta::pure::alloy::connections::postProcessTablesFn(tableNameMappers: meta::pure::alloy::connections::TableNameMapper[*], schemaNameMappers: meta::pure::alloy::connections::SchemaNameMapper[*]):meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1] {
+     {r:RelationalOperationElement[1]| $r->match([ t:meta::relational::metamodel::relation::Table[1] | if(!$t.isTemporaryTable(),| let nt = processTableMappers($t, $tableNameMappers);
+                                                                                                                                if(!$nt->isEmpty(),| $nt->toOne();
+                                                                                                                                                  ,| let ns = processSchemaMappers($t.schema, $schemaNameMappers);
+                                                                                                                                                    if(!$ns->isEmpty(),|^$t(schema=$ns->toOne());
+                                                                                                                                                                      ,|$t);
+                                                                                                                                  );
+                                                                                                          ,|$t);,
+                                                    r:RelationalOperationElement[1] | $r]);}
+}
 
-            pair($tableOne, ^$tableOne(schema = ^$schemaOne(name = $t.schema.to), name = $t.to));,
-         s:meta::pure::alloy::connections::SchemaNameMapper[1] |
-            let schema = $store.schema($s.from);
+function <<access.private>> meta::pure::alloy::connections::processTableMappers(t:meta::relational::metamodel::relation::Table[1], tableNameMappers:meta::pure::alloy::connections::TableNameMapper[*]):meta::relational::metamodel::relation::Table[0..1]{
+    $tableNameMappers->map(m| if($t.name==$m.from && ($m.schema.from->toLower() == $t.schema.name->toLower()),| let processedSchema = meta::pure::alloy::connections::processSchemaMappers($t.schema, $m.schema);
+                                                  if(!$processedSchema->isEmpty(),|^$t(name=$m.to, schema=$processedSchema->toOne()),|^$t(name=$m.to));
+                                                  ,|[]))->last()
+}
 
-            assert($schema->isNotEmpty(), | 'Schema not found "' + $s.from + '"');
-
-            let schemaOne = $schema->toOne();
-
-            $schema.tables->map(table |
-               pair($table, ^$table(schema = ^$schemaOne(name = $s.to)))
-            );
-      ])
-   );
-
-   let result = meta::relational::postProcessor::replaceTables($sql->cast(@meta::relational::metamodel::relation::SelectSQLQuery), $pairs);
-
-   ^meta::relational::mapping::PostProcessorResult(query = $result.values);
+function <<access.private>> meta::pure::alloy::connections::processSchemaMappers(schema:Schema[1], schemaNameMappers : meta::pure::alloy::connections::SchemaNameMapper[*]):Schema[0..1]{
+    $schemaNameMappers->map(m|if($schema.name == $m.from,| ^$schema(name=$m.to),|[]))->last()
 }
 
 Class meta::relational::postProcessor::SchemaNameMapper extends meta::relational::runtime::PostProcessorParameter {

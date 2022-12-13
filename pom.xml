@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.25.1-SNAPSHOT</version>
+    <version>3.29.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -211,11 +211,12 @@
         <module>legend-engine-xt-relationalStore-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-serviceStore-javaPlatformBinding-pure</module>
         <module>legend-engine-pure-code-compiled-core-configuration</module>
+        <module>legend-engine-xt-relationalStore-dbExtension-archetype</module>
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.0</legend.pure.version>
+        <legend.pure.version>3.8.1</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->

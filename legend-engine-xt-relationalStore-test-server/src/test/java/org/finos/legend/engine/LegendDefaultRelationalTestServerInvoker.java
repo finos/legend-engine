@@ -23,7 +23,7 @@ public class LegendDefaultRelationalTestServerInvoker
     public static void main(String[] args) throws Exception
     {
         RelationalTestServer.execute(
-                args.length == 0 ? new String[] {"server", "org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json"} : args,
+                args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-test-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_withH2TestConnection.json"} : args,
                 new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault")
         );
     }

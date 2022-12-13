@@ -74,8 +74,7 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(
                                         handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "String".equals(ps.get(2)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "ByteStream".equals(ps.get(2)._genericType()._rawType()._name()))),
-                                        handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__Url_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && ps.get(2)._genericType()._rawType()._name().endsWith("Url")))
+                                        handlers.m(handlers.h("meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_", false, ps -> handlers.res(ps.get(0)._genericType()._typeArguments().getFirst(), "zeroMany"), ps -> ps.size() == 3 && "ByteStream".equals(ps.get(2)._genericType()._rawType()._name())))
                                 )
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,

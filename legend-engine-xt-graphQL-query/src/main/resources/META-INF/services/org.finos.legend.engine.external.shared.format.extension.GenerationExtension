@@ -1,1 +1,1 @@
-org.finos.legend.engine.query.graphQL.api.format.GraphQLGenerationExtension
+org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension

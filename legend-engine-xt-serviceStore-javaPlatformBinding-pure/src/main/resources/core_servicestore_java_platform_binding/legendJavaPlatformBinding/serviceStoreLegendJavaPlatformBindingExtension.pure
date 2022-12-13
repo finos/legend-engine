@@ -61,7 +61,7 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
 
       adhocExtensions = [
 
-         ^meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::LegendJavaInMemoryGraphFetchExtension
+         ^meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension
          (
             filterCodeGenerator = {set: InstanceSetImplementation[1], src: Code[1], withoutFilter: Code[1..*], context: GenerationContext[1], debug:DebugContext[1] |
                [
@@ -128,7 +128,7 @@ function meta::external::store::service::executionPlan::platformBinding::legendJ
    )
 }
 
-function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::engine::java::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
+function meta::external::store::service::executionPlan::platformBinding::legendJava::serviceStoreExtensionsWithLegendJavaPlatformBinding(externalFormatDescriptors: meta::external::shared::format::executionPlan::platformBinding::legendJava::ExternalFormatLegendJavaPlatformBindingDescriptor[*]): Extension[*]
 {
    meta::external::store::service::extension::serviceStoreExtensions()->concatenate(
       meta::pure::executionPlan::platformBinding::platformBindingExtension([

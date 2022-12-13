@@ -184,16 +184,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::gener
                                                                                                                              resultType      = ^DataTypeResultType(type = String),
                                                                                                                              resultSizeRange = PureOne);
 
-                                                                    ^SequenceExecutionNode(executionNodes = [$allocationNode, $varResolutionNode], resultType = ^DataTypeResultType(type = String), resultSizeRange = PureOne);,
-                                        fe:FunctionExpression[1]  | assert($fe.func == new_Class_1__String_1__KeyExpression_MANY__T_1_, 'Url must be created using new (^)');
-                                                                    let url = $fe.parametersValues->at(2)->cast(@InstanceValue).values
-                                                                                                          ->cast(@KeyExpression)
-                                                                                                          ->filter(kv|$kv.key.values == 'url')
-                                                                                                          ->toOne().expression;
-                                                                    $url->match([
-                                                                      var:VariableExpression[1] | ^UrlStreamExecutionNode(url='${' + $var.name->toOne() + '}', resultType = ^DataTypeResultType(type = ByteStream), requiredVariableInputs = ^VariableInput(name = $var.name->toOne(), multiplicity = $var.multiplicity, type = $var.genericType.rawType->toOne())),
-                                                                      ins:InstanceValue[1]      | ^UrlStreamExecutionNode(url=$ins.values->cast(@String)->toOne(), resultType = ^DataTypeResultType(type = ByteStream))
-                                                                    ]);
+                                                                    ^SequenceExecutionNode(executionNodes = [$allocationNode, $varResolutionNode], resultType = ^DataTypeResultType(type = String), resultSizeRange = PureOne);
                                       ]);
 }
 
@@ -211,8 +202,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::getFu
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchUnexpanded_T_MANY__RootGraphFetchTree_1__T_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::pure::graphFetch::execution::graphFetchCheckedUnexpanded_T_MANY__RootGraphFetchTree_1__Checked_MANY_, second = graphFetchFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
         ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__String_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_),
-        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__Url_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
+        ^PureFunctionToProcessFunctionPair(first = meta::external::shared::format::functions::internalize_Class_1__Binding_1__ByteStream_1__T_MANY_, second = internalizeFunctionProcessor_FunctionExpression_1__ExternalFormatPlanGenerationState_1__Extension_MANY__DebugContext_1__ExecutionNode_1_)
       ]);
    
    if($specificProcessorsForFunctions->get($f.func)->isNotEmpty(),

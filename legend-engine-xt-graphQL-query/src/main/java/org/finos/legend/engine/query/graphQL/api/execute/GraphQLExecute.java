@@ -106,27 +106,12 @@ public class GraphQLExecute extends GraphQL
     private final MutableList<PlanTransformer> transformers;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc;
 
-    @Deprecated
-    public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, MutableList<PlanTransformer> transformers)
-    {
-        this(modelManager, planExecutor, metadataserver, null, transformers);
-    }
-
     public GraphQLExecute(ModelManager modelManager, PlanExecutor planExecutor, MetaDataServerConfiguration metadataserver, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc, MutableList<PlanTransformer> transformers)
     {
         super(modelManager, metadataserver);
         this.planExecutor = planExecutor;
         this.transformers = transformers;
-
-        if (extensionsFunc != null)
-        {
-            this.extensionsFunc = extensionsFunc;
-        }
-        else
-        {
-            MutableList<PlanGeneratorExtension> planGeneratorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
-            this.extensionsFunc = (PureModel pureModel) -> planGeneratorExtensions.flatCollect(e -> e.getExtraExtensions(pureModel));
-        }
+        this.extensionsFunc = extensionsFunc;
     }
 
     private Response generateQueryPlans(String queryClassPath, String mappingPath, Query query, PureModel pureModel) throws IOException

@@ -15,18 +15,6 @@
 ###Diagram
 Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedExecutionNodeDiagram(width=0.0, height=0.0)
 {
-    TypeView cview_4(
-        type=meta::external::shared::format::executionPlan::UrlStreamExecutionNode,
-        position=(551.00000, 666.00000),
-        width=165.00000,
-        height=60.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
     TypeView cview_1(
         type=meta::pure::executionPlan::ExecutionNode,
         position=(621.00000, 461.00000),
@@ -41,45 +29,9 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
 
     TypeView cview_11(
         type=meta::external::shared::format::executionPlan::ExternalFormatExternalizeExecutionNode,
-        position=(753.86328, 665.75000),
+        position=(324.86328, 791.75000),
         width=258.73438,
-        height=58.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_10(
-        type=meta::external::shared::format::executionPlan::UrlStreamExternalSource,
-        position=(813.53906, 1061.50000),
-        width=165.39453,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_8(
-        type=meta::external::shared::format::executionPlan::ExternalSource,
-        position=(841.53906, 928.50000),
-        width=108.03711,
-        height=44.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
-
-    TypeView cview_6(
-        type=meta::external::shared::format::executionPlan::ExternalFormatConnection,
-        position=(1118.53906, 920.50000),
-        width=202.18750,
-        height=58.00000,
+        height=72.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -89,9 +41,9 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
 
     TypeView cview_12(
         type=meta::external::shared::format::executionPlan::ExternalFormatInternalizeExecutionNode,
-        position=(1056.86328, 649.75000),
+        position=(963.86328, 779.75000),
         width=257.14453,
-        height=72.00000,
+        height=100.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -99,54 +51,21 @@ Diagram meta::external::shared::format::executionPlan::diagram::ExternalSharedEx
         color=#FFFFCC,
         lineWidth=1.0)
 
-
-    GeneralizationView gview_1(
-        source=cview_4,
-        target=cview_1,
-        points=[(633.50000,696.00000),(753.26119,546.00000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_2(
-        source=cview_10,
-        target=cview_8,
-        points=[(896.23633,1083.50000),(895.55762,950.50000)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    GeneralizationView gview_3(
+    GeneralizationView gview_0(
         source=cview_11,
         target=cview_1,
-        points=[(883.23047,694.75000),(753.26119,546.00000)],
+        points=[(454.23047,827.75000),(753.26119,546.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_4(
+    GeneralizationView gview_1(
         source=cview_12,
         target=cview_1,
-        points=[(1185.43555,685.75000),(753.26119,546.00000)],
+        points=[(1092.43555,829.75000),(753.26119,546.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
-        lineStyle=SIMPLE)
-
-    PropertyView pview_0(
-        property=meta::external::shared::format::executionPlan::ExternalFormatConnection.externalSource,
-        source=cview_6,
-        target=cview_8
-,        points=[(1219.63281,949.50000),(895.55762,950.50000)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
         lineStyle=SIMPLE)
 }

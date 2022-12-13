@@ -177,8 +177,7 @@ meta::pure::executionPlan::engine::java::tests::testPureDateRunPureTests() : Boo
       //meta::pure::functions::date::tests::testQuarter__Boolean_1_,        // TODO Requires eval
       //meta::pure::functions::date::tests::testYear__Boolean_1_,           // TODO Requires eval
       //meta::pure::functions::date::tests::testHasYear__Boolean_1_,        // TODO Requires eval
-      meta::pure::functions::date::tests::testDaysOfMonth__Boolean_1_,
-      meta::pure::functions::date::tests::testDatepart__Boolean_1_
+      meta::pure::functions::date::tests::testDaysOfMonth__Boolean_1_
    ])->runTests();
 }
 

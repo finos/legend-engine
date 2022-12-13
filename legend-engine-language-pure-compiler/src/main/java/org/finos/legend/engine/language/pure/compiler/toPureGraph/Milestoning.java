@@ -476,6 +476,18 @@ public class Milestoning
         return p -> p._stereotypes().anySatisfy(s -> s._value().equals(GeneratedMilestoningStereotype.generatedmilestoningproperty.name()));
     }
 
+    public static MutableList<Property<?, ?>> restrictedMilestoningProperties(Class _class, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class srcClass, MutableList<Property<?, ?>> properties, PureModel pureModel)
+    {
+        MilestoningStereotype ms = Milestoning.temporalStereotypes(_class._stereotypes());
+        if (ms != null)
+        {
+            MutableList<Property<?, ?>> restrictedMilestoningProperties = properties.select(p -> ms.getTemporalDatePropertyNames().contains(p.getName()));
+            pureModel.addWarnings(!restrictedMilestoningProperties.isEmpty() ? Lists.mutable.with(new Warning(srcClass.sourceInformation, "Class " + pureModel.buildPackageString(srcClass._package, srcClass.name) + " has temporal specification: [" + ms.getPurePlatformStereotypeName() + "] properties: " + ms.getTemporalDatePropertyNames().toString() + " are reserved and should not be explicit in the Model")) : Lists.immutable.empty());
+            return restrictedMilestoningProperties;
+        }
+        return Lists.mutable.empty();
+    }
+
     public static MilestoningStereotype temporalStereotypes(RichIterable<? extends Stereotype> stereotypes)
     {
         List<MilestoningStereotype> milestoningStereotypes = ArrayIterate.select(MilestoningStereotypeEnum.values(), e -> stereotypes.anySatisfy(s -> s._value().equals(e.getPurePlatformStereotypeName())));
