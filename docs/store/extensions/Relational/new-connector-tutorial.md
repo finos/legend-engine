@@ -849,17 +849,17 @@ Similarly, we will add a new authentication strategy specification specific to S
     public void testConnectionGrammar()
     {
         test("###Connection\n" +
-                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "RelationalDatabaseConnection simple::SqlServerTutorialConnection\n" +
                 "{\n" +
                 "  store: apps::pure::studio::relational::tests::dbInc;\n" +
                 "  type: SqlServer;\n" +
-                "  specification: Static\n" +
+                "  specification: SqlServerTutorial\n" +
                 "  {\n" +
                 "    name: 'name';\n" +
                 "    host: 'host';\n" +
                 "    port: 1234;\n" +
                 "  };\n" +
-                "  auth: UserNamePassword\n" +
+                "  auth: SqlServerTutorialAuth\n" +
                 "  {\n" +
                 "    userNameVaultReference: 'user';\n" +
                 "    passwordVaultReference: 'pwd';\n" +
