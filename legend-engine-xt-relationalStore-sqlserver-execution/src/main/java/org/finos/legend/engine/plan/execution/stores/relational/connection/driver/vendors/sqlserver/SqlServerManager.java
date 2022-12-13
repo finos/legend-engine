@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 
@@ -31,7 +31,7 @@ public class SqlServerManager extends DatabaseManager
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
         String hostWithPort = host + ":" + port;
         return "jdbc:sqlserver://" + hostWithPort + ";databaseName=" + databaseName;

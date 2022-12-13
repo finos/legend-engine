@@ -1,4 +1,4 @@
-// Copyright 2021 Databricks
+// Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,33 +14,32 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.ApiTokenAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
-import org.finos.legend.engine.shared.core.vault.Vault;
+import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
+public class UserNamePasswordAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
+    private final String userNameVaultReference;
+    private final String passwordVaultReference;
 
-    private final String apiToken;
-
-    public ApiTokenAuthenticationStrategy(String apiToken)
+    public UserNamePasswordAuthenticationStrategyRuntime(String userNameVaultReference, String passwordVaultReference)
     {
-        this.apiToken = apiToken;
+        this.userNameVaultReference = userNameVaultReference;
+        this.passwordVaultReference = passwordVaultReference;
     }
 
     @Override
@@ -59,32 +58,18 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        ApiTokenCredential apiTokenCredential = this.resolveCredential(properties, this.apiToken);
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("PWD", apiTokenCredential.getApiToken());
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
+        connectionProperties.put("user", credential.getUser());
+        connectionProperties.put("password", credential.getPassword());
         return Tuples.pair(url, connectionProperties);
     }
 
     @Override
     public AuthenticationStrategyKey getKey()
     {
-        return new ApiTokenAuthenticationStrategyKey(this.apiToken);
+        return new UserNamePasswordAuthenticationStrategyKey(this.userNameVaultReference, this.passwordVaultReference);
     }
-
-    private ApiTokenCredential resolveCredential(Properties properties, String apiTokenKey)
-    {
-        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
-        if (!identityState.getCredentialSupplier().isPresent())
-        {
-            String apiToken = Vault.INSTANCE.getValue(apiTokenKey);
-            if (StringUtils.isEmpty(apiToken))
-            {
-                throw new ConnectionException(new Exception("Could not retrieve API token from default Vault"));
-            }
-            return new ApiTokenCredential(apiToken);
-        }
-        return (ApiTokenCredential) super.getDatabaseCredential(identityState);
-    }
-
 }

@@ -16,11 +16,11 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
 import org.junit.Test;
 
@@ -47,18 +47,18 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
         testLocalTestConnection(c -> c.getConnectionUsingProfiles(null));
     }
 
-    private void testLocalTestConnection(Function<DataSourceSpecification, Connection> toDBConnection, AuthenticationStrategy authenticationStrategy) throws Exception
+    private void testLocalTestConnection(Function<DataSourceSpecificationRuntime, Connection> toDBConnection, AuthenticationStrategyRuntime authenticationStrategyRuntime) throws Exception
     {
-        LocalH2DataSourceSpecification ds = buildLocalDataSourceSpecification(authenticationStrategy);
+        LocalH2DataSourceSpecificationRuntime ds = buildLocalDataSourceSpecification(authenticationStrategyRuntime);
         try (Connection connection = toDBConnection.valueOf(ds))
         {
             testConnection(connection, "SELECT * FROM PersonTable");
         }
     }
 
-    private LocalH2DataSourceSpecification buildLocalDataSourceSpecification(AuthenticationStrategy authenticationStrategy)
+    private LocalH2DataSourceSpecificationRuntime buildLocalDataSourceSpecification(AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        return new LocalH2DataSourceSpecification(
+        return new LocalH2DataSourceSpecificationRuntime(
                 Lists.mutable.with("drop table if exists PersonTable;",
                         "create table PersonTable(id INT, firmId INT, firstName VARCHAR(200), lastName VARCHAR(200));",
                         "insert into PersonTable (id, firmId, firstName, lastName) values (1, 1, 'pierre', 'de belen');",
@@ -66,12 +66,12 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
                         "create table FirmTable(id INT, legalName VARCHAR(200));",
                         "insert into FirmTable (id, legalName) values (1, 'firm')"),
                 new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager(),
-                authenticationStrategy);
+                authenticationStrategyRuntime);
     }
 
-    private void testLocalTestConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
+    private void testLocalTestConnection(Function<DataSourceSpecificationRuntime, Connection> toDBConnection) throws Exception
     {
-        testLocalTestConnection(toDBConnection, new TestDatabaseAuthenticationStrategy());
+        testLocalTestConnection(toDBConnection, new TestDatabaseAuthenticationStrategyRuntime());
     }
 
     @Test
@@ -86,14 +86,14 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
         testEmbeddedH2Connection(c -> c.getConnectionUsingProfiles(null));
     }
 
-    private void testEmbeddedH2Connection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
+    private void testEmbeddedH2Connection(Function<DataSourceSpecificationRuntime, Connection> toDBConnection) throws Exception
     {
-        EmbeddedH2DataSourceSpecification ds =
-                new EmbeddedH2DataSourceSpecification(
+        EmbeddedH2DataSourceSpecificationRuntime ds =
+                new EmbeddedH2DataSourceSpecificationRuntime(
                         new EmbeddedH2DataSourceSpecificationKey(
                                 "testDB", tempFolder.newFolder()),
                         new org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager(),
-                        new TestDatabaseAuthenticationStrategy());
+                        new TestDatabaseAuthenticationStrategyRuntime());
         try (Connection connection = toDBConnection.valueOf(ds))
         {
             testConnection(connection, "SELECT * FROM INFORMATION_SCHEMA.TABLES");

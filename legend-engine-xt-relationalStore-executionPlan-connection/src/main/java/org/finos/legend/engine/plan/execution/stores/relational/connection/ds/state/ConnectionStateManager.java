@@ -23,7 +23,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -311,16 +311,16 @@ public class ConnectionStateManager implements Closeable
         }
     }
 
-    public DataSourceWithStatistics getDataSourceForIdentityIfAbsentBuild(IdentityState identityState, DataSourceSpecification dataSourceSpecification, Supplier<DataSource> dataSourceBuilder)
+    public DataSourceWithStatistics getDataSourceForIdentityIfAbsentBuild(IdentityState identityState, DataSourceSpecificationRuntime dataSourceSpecificationRuntime, Supplier<DataSource> dataSourceBuilder)
     {
 
         String principal = identityState.getIdentity().getName();
-        String poolName = poolNameFor(identityState.getIdentity(), dataSourceSpecification.getConnectionKey());
-        ConnectionKey connectionKey = dataSourceSpecification.getConnectionKey();
+        String poolName = poolNameFor(identityState.getIdentity(), dataSourceSpecificationRuntime.getConnectionKey());
+        ConnectionKey connectionKey = dataSourceSpecificationRuntime.getConnectionKey();
         //why do we need getIfAbsentPut?  the first ever pool creation request will create a new Hikari Data Source
         //because we have configured hikari to fail fast a new connection will be created.
         //This will invoke the DriverWrapper connect method, for this method to create that test connection we need to pass minimal state
-        Function0<DataSourceWithStatistics> dsSupplier = () -> new DataSourceWithStatistics(poolName, identityState, dataSourceSpecification);
+        Function0<DataSourceWithStatistics> dsSupplier = () -> new DataSourceWithStatistics(poolName, identityState, dataSourceSpecificationRuntime);
         DataSource dataSource = this.connectionPools.getIfAbsentPut(poolName, dsSupplier).getDataSource();
         //why this thread safety pattern?  Consider this scenario: poolOne does not exist, then two threads concurrently request poolOne
         //both threads check if pool has been created and both evaluate to true
@@ -338,7 +338,7 @@ public class ConnectionStateManager implements Closeable
                     LOGGER.info("Pool not found for [{}] for datasource [{}], creating one", principal, connectionKey.shortId());
                     try
                     {
-                        DataSourceWithStatistics dataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecification);
+                        DataSourceWithStatistics dataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecificationRuntime);
                         this.connectionPools.put(poolName, dataSourceWithStatistics);
                         LOGGER.info("Pool created for [{}] for datasource [{}], name {}", principal, connectionKey.shortId(), poolName);
                     }
@@ -369,7 +369,7 @@ public class ConnectionStateManager implements Closeable
                     //since, Hikari is configured to fail fast, a new test connection will be created which invokes the DriverWrapper#connect method
                     //for that method to successfully create the new test connection, we need to update the data source for the current pool in this.connectionPools
                     this.connectionPools.put(poolName, dsSupplier.get());
-                    DataSourceWithStatistics newDataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecification);
+                    DataSourceWithStatistics newDataSourceWithStatistics = new DataSourceWithStatistics(poolName, dataSourceBuilder.get(), identityState, dataSourceSpecificationRuntime);
                     this.connectionPools.put(poolName, newDataSourceWithStatistics);
                     LOGGER.info("DataSource re-created for [{}] for datasource [{}], name {}", principal, connectionKey.shortId(), poolName);
                     dataSourceWithStatistics.close();

@@ -17,29 +17,40 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
-/*
-    This class represents authentication using GCP ADC (Application Default Credentials).
-    Basically, this means that when Legend executes in a GCP environment (like GKE), GCP injects credentials for a service account in the environment.
-    BigQuery client libraries and drivers detect this credentials and use them when connecting to the database.
-
-   See https://cloud.google.com/docs/authentication/production
-   See BigQueryManager.java
- */
-public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends AuthenticationStrategy
+public class GCPWorkloadIdentityFederationAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
-    public GCPApplicationDefaultCredentialsAuthenticationStrategy()
+    private String serviceAccountEmail;
+    private List<String> additionalGcpScopes;
+
+    public GCPWorkloadIdentityFederationAuthenticationStrategyRuntime(String serviceAccountEmail, List<String> additionalGcpScopes)
     {
+        this.serviceAccountEmail = serviceAccountEmail;
+        this.additionalGcpScopes = additionalGcpScopes;
+    }
+
+    public String getServiceAccountEmail()
+    {
+        return serviceAccountEmail;
+    }
+
+    public List<String> getAdditionalGcpScopes()
+    {
+        return additionalGcpScopes;
     }
 
     @Override
@@ -55,18 +66,30 @@ public class GCPApplicationDefaultCredentialsAuthenticationStrategy extends Auth
         }
     }
 
+    @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
+        OAuthCredential oAuthCredential = this.resolveCredential(properties);
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("OAuthType", "3");
+        connectionProperties.put("OAuthAccessToken", oAuthCredential.getAccessToken());
+        connectionProperties.put("OAuthType", "2");
         return Tuples.pair(url, connectionProperties);
+    }
+
+    private OAuthCredential resolveCredential(Properties properties)
+    {
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        if (!identityState.getCredentialSupplier().isPresent())
+        {
+            throw new RuntimeException("Credential Supplier missing for GCPWorkloadIdentityFederationAuthenticationStrategy");
+        }
+        return (OAuthCredential) super.getDatabaseCredential(identityState);
     }
 
     @Override
     public AuthenticationStrategyKey getKey()
     {
-        return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
+        return new GCPWorkloadIdentityFederationAuthenticationStrategyKey(this.serviceAccountEmail, this.additionalGcpScopes);
     }
 }
-

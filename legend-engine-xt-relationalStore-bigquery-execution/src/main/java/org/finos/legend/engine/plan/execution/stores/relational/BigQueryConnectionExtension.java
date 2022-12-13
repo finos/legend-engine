@@ -18,16 +18,16 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.bigquery.BigQueryManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.BigQueryDataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -63,7 +63,7 @@ public class BigQueryConnectionExtension implements RelationalConnectionExtensio
     }
 
     @Override
-    public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
+    public AuthenticationStrategyVisitor<AuthenticationStrategyRuntime> getExtraAuthenticationStrategyRuntimeGenerators(List<OAuthProfile> oauthProfiles)
     {
         return authenticationStrategy -> null;
     }
@@ -87,16 +87,16 @@ public class BigQueryConnectionExtension implements RelationalConnectionExtensio
     }
 
     @Override
-    public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
+    public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>> getExtraDataSourceSpecificationRuntimeGenerators(Function<RelationalDatabaseConnection, AuthenticationStrategyRuntime> authenticationStrategyRuntimeProvider)
     {
         return (connection, connectionKey) -> datasourceSpecification ->
         {
             if (datasourceSpecification instanceof BigQueryDatasourceSpecification)
             {
-                return new BigQueryDataSourceSpecification(
+                return new BigQueryDataSourceSpecificationRuntime(
                         (BigQueryDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
                         new BigQueryManager(),
-                        authenticationStrategyProvider.apply(connection)
+                        authenticationStrategyRuntimeProvider.apply(connection)
                 );
             }
             return null;

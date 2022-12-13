@@ -18,10 +18,11 @@ import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.AlloyH2Server;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.StaticDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
@@ -159,7 +160,7 @@ public class TestDatasourceCreation
 
         this.connectionManagerSelector.getDatabaseConnection(identity1, database1);
 
-        DataSourceSpecification ds = builStaticDataSourceSpecification("127.0.0.1", server.getPort(), "db4");
+        DataSourceSpecificationRuntime ds = builStaticDataSourceSpecification("127.0.0.1", server.getPort(), "db4");
         assertEquals(ds.getConnectionKey(), connectionKey);
 
         // We have a single data source
@@ -204,11 +205,11 @@ public class TestDatasourceCreation
         return ConnectionStateManager.getInstance().get(pool);
     }
 
-    public StaticDataSourceSpecification builStaticDataSourceSpecification(String host, int port, String databaseName)
+    public StaticDataSourceSpecificationRuntime builStaticDataSourceSpecification(String host, int port, String databaseName)
     {
-        return new StaticDataSourceSpecification(
+        return new StaticDataSourceSpecificationRuntime(
                 new StaticDataSourceSpecificationKey(host, port, databaseName),
                 new H2Manager(),
-                new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy());
+                new TestDatabaseAuthenticationStrategyRuntime());
     }
 }

@@ -14,25 +14,25 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 
 import java.util.Properties;
 
-public class RedshiftDataSourceSpecification extends DataSourceSpecification
+public class RedshiftDataSourceSpecificationRuntime extends DataSourceSpecificationRuntime
 {
 
-    public RedshiftDataSourceSpecification(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    public RedshiftDataSourceSpecificationRuntime(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        this(key, databaseManager, authenticationStrategy, addPropertiesFromDataSource(key));
+        this(key, databaseManager, authenticationStrategyRuntime, addPropertiesFromDataSource(key));
     }
 
-    private RedshiftDataSourceSpecification(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
+    private RedshiftDataSourceSpecificationRuntime(RedshiftDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties);
+        super(key, databaseManager, authenticationStrategyRuntime, extraUserProperties);
     }
 
     private static Properties addPropertiesFromDataSource(RedshiftDataSourceSpecificationKey key)

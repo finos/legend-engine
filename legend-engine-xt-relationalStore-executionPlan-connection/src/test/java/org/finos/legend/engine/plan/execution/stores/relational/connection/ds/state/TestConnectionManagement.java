@@ -15,11 +15,11 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecificationRuntime;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.junit.Assert;
@@ -54,23 +54,23 @@ public abstract class TestConnectionManagement
         field.set(null, null);
     }
 
-    Connection requestConnection(Identity identity, DataSourceSpecification dataSourceSpecification)
+    Connection requestConnection(Identity identity, DataSourceSpecificationRuntime dataSourceSpecificationRuntime)
     {
-        return dataSourceSpecification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
+        return dataSourceSpecificationRuntime.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
     }
 
-    Connection requestConnection(String user, DataSourceSpecification dataSourceSpecification)
+    Connection requestConnection(String user, DataSourceSpecificationRuntime dataSourceSpecificationRuntime)
     {
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentityForTesting(user);
-        return requestConnection(identity, dataSourceSpecification);
+        return requestConnection(identity, dataSourceSpecificationRuntime);
     }
 
-    LocalH2DataSourceSpecification buildLocalDataSourceSpecification(List<String> initSQLS)
+    LocalH2DataSourceSpecificationRuntime buildLocalDataSourceSpecification(List<String> initSQLS)
     {
-        return new LocalH2DataSourceSpecification(
+        return new LocalH2DataSourceSpecificationRuntime(
                 initSQLS,
                 new H2Manager(),
-                new TestDatabaseAuthenticationStrategy());
+                new TestDatabaseAuthenticationStrategyRuntime());
     }
 
 

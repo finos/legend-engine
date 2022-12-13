@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.LocalH2DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
@@ -28,20 +28,20 @@ import java.util.Properties;
 import java.util.function.Supplier;
 
 
-public class LocalH2DataSourceSpecification extends StaticDataSourceSpecification
+public class LocalH2DataSourceSpecificationRuntime extends StaticDataSourceSpecificationRuntime
 {
 
     private static final int MAX_POOL_SIZE = 100;
     private static final int MIN_POOL_SIZE = 0;
 
-    public LocalH2DataSourceSpecification(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    public LocalH2DataSourceSpecificationRuntime(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategy, new Properties(), MAX_POOL_SIZE, MIN_POOL_SIZE);
+        super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategyRuntime, new Properties(), MAX_POOL_SIZE, MIN_POOL_SIZE);
     }
 
-    public LocalH2DataSourceSpecification(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties properties)
+    public LocalH2DataSourceSpecificationRuntime(List<String> setupSQLs, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties properties)
     {
-        super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategy, properties, MAX_POOL_SIZE, MIN_POOL_SIZE);
+        super(new LocalH2DataSourceSpecificationKey(setupSQLs), databaseManager, authenticationStrategyRuntime, properties, MAX_POOL_SIZE, MIN_POOL_SIZE);
     }
 
     @Override

@@ -24,9 +24,10 @@ import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
@@ -58,9 +59,9 @@ public class RelationalConnectionManager implements ConnectionManager
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalConnectionManager.class);
     private final int testDbPort;
     private MutableList<AuthenticationStrategyVisitor<AuthenticationStrategyKey>> authenticationStrategyKeyVisitors;
-    private MutableList<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>> authenticationStrategyTrans;
+    private MutableList<AuthenticationStrategyVisitor<AuthenticationStrategyRuntime>> authenticationStrategyTrans;
     private MutableList<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>> dataSourceKeys;
-    private MutableList<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>> dataSourceTrans;
+    private MutableList<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>>> dataSourceTrans;
     private Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder;
 
     public RelationalConnectionManager(int testDbPort, List<OAuthProfile> oauthProfiles)
@@ -79,26 +80,26 @@ public class RelationalConnectionManager implements ConnectionManager
                         .withAll(extensions.collect(StrategicConnectionExtension::getExtraAuthenticationKeyGenerators));
 
         this.authenticationStrategyTrans =
-                Lists.mutable.<AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy>>with(new AuthenticationStrategyTransformer(oauthProfiles))
-                        .withAll(extensions.collect(extension -> extension.getExtraAuthenticationStrategyTransformGenerators(oauthProfiles)));
+                Lists.mutable.<AuthenticationStrategyVisitor<AuthenticationStrategyRuntime>>with(new AuthenticationStrategyRuntimeGenerator(oauthProfiles))
+                        .withAll(extensions.collect(extension -> extension.getExtraAuthenticationStrategyRuntimeGenerators(oauthProfiles)));
 
         this.dataSourceKeys =
                 Lists.mutable.<Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>>>with(c -> new DataSourceSpecificationKeyGenerator(testDbPort, c))
                         .withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationKeyGenerators(testDbPort)));
 
-        Function<RelationalDatabaseConnection, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> authenticationStrategyProvider =
+        Function<RelationalDatabaseConnection, AuthenticationStrategyRuntime> authenticationStrategyProvider =
                 r -> ListIterate.collect(this.authenticationStrategyTrans, visitor -> r.authenticationStrategy.accept(visitor))
                         .select(Objects::nonNull)
                         .getFirstOptional()
                         .orElseThrow(() -> new UnsupportedOperationException("No transformer provided for Authentication Strategy - " + r.authenticationStrategy.getClass().getName()));
 
         this.dataSourceTrans =
-                Lists.mutable.<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecification>>>with(
-                        (r, c) -> new DataSourceSpecificationTransformer(
+                Lists.mutable.<Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>>>with(
+                        (r, c) -> new DataSourceSpecificationRuntimeGenerator(
                                 c.getDataSourceSpecificationKey(),
                                 authenticationStrategyProvider.apply(r),
                                 r)
-                ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationTransformerGenerators(authenticationStrategyProvider)));
+                ).withAll(extensions.collect(a -> a.getExtraDataSourceSpecificationRuntimeGenerators(authenticationStrategyProvider)));
     }
 
     private DataSourceSpecificationKey buildDataSourceKey(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection)
@@ -121,9 +122,9 @@ public class RelationalConnectionManager implements ConnectionManager
         return key;
     }
 
-    private DataSourceSpecification buildDataSourceTrans(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection, ConnectionKey connectionKey)
+    private DataSourceSpecificationRuntime buildDataSourceTrans(DatasourceSpecification datasourceSpecification, RelationalDatabaseConnection relationalDatabaseConnection, ConnectionKey connectionKey)
     {
-        DataSourceSpecification key = this.dataSourceTrans.collect(f -> datasourceSpecification.accept(f.value(relationalDatabaseConnection, connectionKey))).detect(Objects::nonNull);
+        DataSourceSpecificationRuntime key = this.dataSourceTrans.collect(f -> datasourceSpecification.accept(f.value(relationalDatabaseConnection, connectionKey))).detect(Objects::nonNull);
         if (key == null)
         {
             throw new RuntimeException(datasourceSpecification.getClass() + " is not supported!");
@@ -197,7 +198,7 @@ public class RelationalConnectionManager implements ConnectionManager
         return null;
     }
 
-    public DataSourceSpecification getDataSourceSpecification(DatabaseConnection connection)
+    public DataSourceSpecificationRuntime getDataSourceSpecification(DatabaseConnection connection)
     {
         if (connection instanceof RelationalDatabaseConnection)
         {

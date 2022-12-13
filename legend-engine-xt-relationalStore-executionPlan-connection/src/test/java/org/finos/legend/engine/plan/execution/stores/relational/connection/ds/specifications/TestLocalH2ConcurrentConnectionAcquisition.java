@@ -18,7 +18,7 @@ import com.zaxxer.hikari.pool.HikariProxyConnection;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
@@ -123,10 +123,10 @@ public class TestLocalH2ConcurrentConnectionAcquisition
 
         private Connection initConnection()
         {
-            LocalH2DataSourceSpecification specification = new LocalH2DataSourceSpecification(
+            LocalH2DataSourceSpecificationRuntime specification = new LocalH2DataSourceSpecificationRuntime(
                     Lists.mutable.empty(),
                     new H2Manager(),
-                    new TestDatabaseAuthenticationStrategy());
+                    new TestDatabaseAuthenticationStrategyRuntime());
             Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
             return specification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());
         }

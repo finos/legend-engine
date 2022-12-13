@@ -19,11 +19,11 @@ import java.util.Properties;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.StringIterate;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.SpannerDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.SpannerDataSourceSpecificationRuntime;
 
 public class SpannerManager extends DatabaseManager
 {
@@ -35,13 +35,13 @@ public class SpannerManager extends DatabaseManager
 
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties,
-                           AuthenticationStrategy authenticationStrategy)
+                           AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("jdbc:cloudspanner:");
 
-        String proxyHost = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROXY_HOST);
-        String proxyPort = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROXY_PORT);
+        String proxyHost = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecificationRuntime.SPANNER_PROXY_HOST);
+        String proxyPort = extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecificationRuntime.SPANNER_PROXY_PORT);
 
         // constructing "proxyHost:proxyPort;" url routine
         if (!StringIterate.isEmptyOrWhitespace(proxyHost))
@@ -54,14 +54,14 @@ public class SpannerManager extends DatabaseManager
         }
         stringBuilder.append("/");
 
-        Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_PROJECT_ID))
+        Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecificationRuntime.SPANNER_PROJECT_ID))
                 .ifPresent(projectId -> stringBuilder.append("projects/").append(projectId).append("/"));
-        Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_INSTANCE_ID))
+        Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecificationRuntime.SPANNER_INSTANCE_ID))
                 .ifPresent(instanceId -> stringBuilder.append("instances/").append(instanceId).append("/"));
-        Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecification.SPANNER_DATABASE_ID))
+        Optional.ofNullable(extraUserDataSourceProperties.getProperty(SpannerDataSourceSpecificationRuntime.SPANNER_DATABASE_ID))
                 .ifPresent(database -> stringBuilder.append("databases/").append(database).append("?"));
 
-        if (authenticationStrategy == null || authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
+        if (authenticationStrategyRuntime == null || authenticationStrategyRuntime instanceof TestDatabaseAuthenticationStrategyRuntime)
         {
             stringBuilder.append("usePlainText=true;");
         }

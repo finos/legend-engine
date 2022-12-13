@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zaxxer.hikari.HikariDataSource;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -33,9 +33,9 @@ public class DataSourceWithStatistics
     private final DataSourceStatistics statistics;
     private final DataSource dataSource;
     private final IdentityState identityState;
-    private final DataSourceSpecification dataSourceSpecification;
+    private final DataSourceSpecificationRuntime dataSourceSpecificationRuntime;
 
-    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecification dataSourceSpecification, DataSourceStatistics statistics)
+    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecificationRuntime dataSourceSpecificationRuntime, DataSourceStatistics statistics)
     {
         this.poolName = poolName;
         this.statistics = statistics;
@@ -46,17 +46,17 @@ public class DataSourceWithStatistics
         }
         this.identityState = identityState;
 
-        this.dataSourceSpecification = dataSourceSpecification;
+        this.dataSourceSpecificationRuntime = dataSourceSpecificationRuntime;
     }
 
-    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecification dataSourceSpecification)
+    public DataSourceWithStatistics(String poolName, DataSource dataSource, IdentityState identityState, DataSourceSpecificationRuntime dataSourceSpecificationRuntime)
     {
-        this(poolName, dataSource, identityState, dataSourceSpecification, new DataSourceStatistics());
+        this(poolName, dataSource, identityState, dataSourceSpecificationRuntime, new DataSourceStatistics());
     }
 
-    public DataSourceWithStatistics(String poolName, IdentityState identityState, DataSourceSpecification dataSourceSpecification)
+    public DataSourceWithStatistics(String poolName, IdentityState identityState, DataSourceSpecificationRuntime dataSourceSpecificationRuntime)
     {
-        this(poolName, null, identityState, dataSourceSpecification);
+        this(poolName, null, identityState, dataSourceSpecificationRuntime);
     }
 
     public DataSource getDataSource()
@@ -111,14 +111,14 @@ public class DataSourceWithStatistics
         return identityState.getCredentialSupplier();
     }
 
-    public AuthenticationStrategy getAuthenticationStrategy()
+    public AuthenticationStrategyRuntime getAuthenticationStrategy()
     {
-        return dataSourceSpecification.getAuthenticationStrategy();
+        return dataSourceSpecificationRuntime.getAuthenticationStrategy();
     }
 
     public DatabaseManager getDatabaseManager()
     {
-        return dataSourceSpecification.getDatabaseManager();
+        return dataSourceSpecificationRuntime.getDatabaseManager();
     }
 
     public int buildConnection()
@@ -133,12 +133,12 @@ public class DataSourceWithStatistics
 
     public ConnectionKey getConnectionKey()
     {
-        return dataSourceSpecification.getConnectionKey();
+        return dataSourceSpecificationRuntime.getConnectionKey();
     }
 
-    public DataSourceSpecification getDataSourceSpecification()
+    public DataSourceSpecificationRuntime getDataSourceSpecification()
     {
-        return dataSourceSpecification;
+        return dataSourceSpecificationRuntime;
     }
 
     public boolean hasActiveConnections()

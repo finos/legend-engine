@@ -14,15 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.BigQueryDataSourceSpecificationKey;
 
 import java.util.Optional;
 import java.util.Properties;
 
-public class BigQueryDataSourceSpecification extends DataSourceSpecification
+public class BigQueryDataSourceSpecificationRuntime extends DataSourceSpecificationRuntime
 {
     public static String BIGQUERY_PROJECT_ID = "bigquery_projectId";
     public static String BIGQUERY_DATASET_NAME = "bigquery_defaultDataset";
@@ -30,9 +30,9 @@ public class BigQueryDataSourceSpecification extends DataSourceSpecification
     public static String BIGQUERY_PROXY_PORT = "bigquery_proxyPort";
 
 
-    public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
+    public BigQueryDataSourceSpecificationRuntime(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties);
+        super(key, databaseManager, authenticationStrategyRuntime, extraUserProperties);
         this.extraDatasourceProperties.put(BIGQUERY_PROJECT_ID, key.getProjectId());
         this.extraDatasourceProperties.put(BIGQUERY_DATASET_NAME, key.getDefaultDataset());
         putIfNotEmpty(this.extraDatasourceProperties, BIGQUERY_PROXY_HOST, key.getProxyHost());
@@ -47,8 +47,8 @@ public class BigQueryDataSourceSpecification extends DataSourceSpecification
         Optional.ofNullable(propValue).ifPresent(x -> connectionProperties.put(propName, propValue));
     }
 
-    public BigQueryDataSourceSpecification(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    public BigQueryDataSourceSpecificationRuntime(BigQueryDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        this(key, databaseManager, authenticationStrategy, new Properties());
+        this(key, databaseManager, authenticationStrategyRuntime, new Properties());
     }
 }

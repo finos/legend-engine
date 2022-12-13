@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -39,14 +39,14 @@ public class ConnectionPoolTestUtils
 
     public static List<DataSourceWithStatistics> getConnectionPoolByUser(String identityName) throws Exception
     {
-        ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> specifications = getDataSourceSpecifications();
+        ConcurrentMutableMap<ConnectionKey, DataSourceSpecificationRuntime> specifications = getDataSourceSpecifications();
         List<DataSourceWithStatistics> connectionPoolsForUser = getAllConnectionPoolsForUser(identityName, specifications.keySet());
         return connectionPoolsForUser;
     }
 
-    public static ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> getDataSourceSpecifications() throws Exception
+    public static ConcurrentMutableMap<ConnectionKey, DataSourceSpecificationRuntime> getDataSourceSpecifications() throws Exception
     {
-        ConcurrentMutableMap<ConnectionKey, DataSourceSpecification> dataSourceSpecifications = ConcurrentHashMap.newMap();
+        ConcurrentMutableMap<ConnectionKey, DataSourceSpecificationRuntime> dataSourceSpecifications = ConcurrentHashMap.newMap();
         getConnectionPools().valuesView().forEach(pool -> dataSourceSpecifications.putIfAbsent(pool.getConnectionKey(), pool.getDataSourceSpecification()));
 
         return dataSourceSpecifications;

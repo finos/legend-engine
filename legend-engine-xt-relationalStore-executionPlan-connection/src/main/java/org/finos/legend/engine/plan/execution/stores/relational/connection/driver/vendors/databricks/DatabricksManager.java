@@ -16,10 +16,10 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecificationRuntime;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -34,16 +34,16 @@ public class DatabricksManager extends DatabaseManager
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PORT) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_PORT + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL) != null, () -> DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL + " is not set");
-        String httpPath = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HTTP_PATH).trim();
-        String hostname = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_HOSTNAME).trim();
-        String dbport = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PORT).trim();
-        String protocol = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROTOCOL).trim();
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_HTTP_PATH) != null, () -> DatabricksDataSourceSpecificationRuntime.DATABRICKS_HTTP_PATH + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_HOSTNAME) != null, () -> DatabricksDataSourceSpecificationRuntime.DATABRICKS_HOSTNAME + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_PORT) != null, () -> DatabricksDataSourceSpecificationRuntime.DATABRICKS_PORT + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_PROTOCOL) != null, () -> DatabricksDataSourceSpecificationRuntime.DATABRICKS_PROTOCOL + " is not set");
+        String httpPath = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_HTTP_PATH).trim();
+        String hostname = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_HOSTNAME).trim();
+        String dbport = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_PORT).trim();
+        String protocol = extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecificationRuntime.DATABRICKS_PROTOCOL).trim();
 
         String transportMode = "http";
         int useSSL = 1;

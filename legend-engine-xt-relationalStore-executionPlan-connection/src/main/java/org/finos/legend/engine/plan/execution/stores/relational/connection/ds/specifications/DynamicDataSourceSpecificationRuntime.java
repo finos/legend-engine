@@ -14,17 +14,17 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 
 import java.util.Properties;
 
-public abstract class DynamicDataSourceSpecification extends DataSourceSpecification
+public abstract class DynamicDataSourceSpecificationRuntime extends DataSourceSpecificationRuntime
 {
-    public DynamicDataSourceSpecification(DataSourceSpecificationKey key, DatabaseManager databaseDriver, AuthenticationStrategy authenticationStrategy, Properties extraUserDataSourceProperties)
+    public DynamicDataSourceSpecificationRuntime(DataSourceSpecificationKey key, DatabaseManager databaseDriver, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties extraUserDataSourceProperties)
     {
-        super(key, databaseDriver, authenticationStrategy, extraUserDataSourceProperties);
+        super(key, databaseDriver, authenticationStrategyRuntime, extraUserDataSourceProperties);
     }
 }

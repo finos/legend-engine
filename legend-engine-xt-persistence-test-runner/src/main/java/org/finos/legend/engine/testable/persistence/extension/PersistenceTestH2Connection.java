@@ -19,9 +19,9 @@ import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.demoflows.H2LocalWithDefaultUserPasswordFlow;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecificationRuntime;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 
@@ -43,10 +43,10 @@ public class PersistenceTestH2Connection
         closeConnection();
         Properties properties = new Properties();
         properties.put("DATABASE_TO_UPPER", false);
-        LocalH2DataSourceSpecification specification = new LocalH2DataSourceSpecification(
+        LocalH2DataSourceSpecificationRuntime specification = new LocalH2DataSourceSpecificationRuntime(
             Lists.mutable.empty(),
             new H2Manager(),
-            new TestDatabaseAuthenticationStrategy(),
+            new TestDatabaseAuthenticationStrategyRuntime(),
             properties);
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity((Subject) null);
         this.connection = specification.getConnectionUsingIdentity(identity, plainTextCredentialSupplier());

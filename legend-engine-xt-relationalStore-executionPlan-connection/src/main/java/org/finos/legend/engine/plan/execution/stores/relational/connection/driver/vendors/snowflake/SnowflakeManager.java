@@ -16,10 +16,10 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeAccountType;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
@@ -38,18 +38,18 @@ public class SnowflakeManager extends DatabaseManager
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME) != null, () -> SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION) != null, () -> SnowflakeDataSourceSpecification.SNOWFLAKE_REGION + " is not set");
-        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME) != null, () -> SnowflakeDataSourceSpecification.SNOWFLAKE_WAREHOUSE_NAME + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_ACCOUNT_NAME) != null, () -> SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_ACCOUNT_NAME + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_REGION) != null, () -> SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_REGION + " is not set");
+        Assert.assertTrue(extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_WAREHOUSE_NAME) != null, () -> SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_WAREHOUSE_NAME + " is not set");
 
-        String accountName = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME);
-        String region = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION);
-        String cloudType = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE);
-        String organisation = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ORGANIZATION_NAME);
+        String accountName = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_ACCOUNT_NAME);
+        String region = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_REGION);
+        String cloudType = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_CLOUD_TYPE);
+        String organisation = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_ORGANIZATION_NAME);
 
-        String accountTypeName = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_TYPE_NAME);
+        String accountTypeName = extraUserDataSourceProperties.getProperty(SnowflakeDataSourceSpecificationRuntime.SNOWFLAKE_ACCOUNT_TYPE_NAME);
         SnowflakeAccountType accountType = accountTypeName != null ? SnowflakeAccountType.valueOf(accountTypeName) : null;
 
 

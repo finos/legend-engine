@@ -14,20 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.redshift.RedshiftManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.RedshiftDataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.DatabricksDataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.RedshiftDataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.StaticDataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.RedshiftDataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
@@ -42,22 +42,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 
-public class DataSourceSpecificationTransformer implements DatasourceSpecificationVisitor<DataSourceSpecification>
+public class DataSourceSpecificationRuntimeGenerator implements DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>
 {
 
     private final DataSourceSpecificationKey key;
     private final RelationalDatabaseConnection connection;
-    private final AuthenticationStrategy authenticationStrategy;
+    private final AuthenticationStrategyRuntime authenticationStrategyRuntime;
 
-    public DataSourceSpecificationTransformer(DataSourceSpecificationKey key, AuthenticationStrategy authenticationStrategy, RelationalDatabaseConnection connection)
+    public DataSourceSpecificationRuntimeGenerator(DataSourceSpecificationKey key, AuthenticationStrategyRuntime authenticationStrategyRuntime, RelationalDatabaseConnection connection)
     {
         this.key = key;
-        this.authenticationStrategy = authenticationStrategy;
+        this.authenticationStrategyRuntime = authenticationStrategyRuntime;
         this.connection = connection;
     }
 
     @Override
-    public DataSourceSpecification visit(DatasourceSpecification datasourceSpecification)
+    public DataSourceSpecificationRuntime visit(DatasourceSpecification datasourceSpecification)
     {
         if (datasourceSpecification instanceof EmbeddedH2DatasourceSpecification)
         {
@@ -68,50 +68,50 @@ public class DataSourceSpecificationTransformer implements DatasourceSpecificati
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
             if (localH2DatasourceSpecification.testDataSetupSqls != null && !localH2DatasourceSpecification.testDataSetupSqls.isEmpty())
             {
-                return new LocalH2DataSourceSpecification(
+                return new LocalH2DataSourceSpecificationRuntime(
                         localH2DatasourceSpecification.testDataSetupSqls,
                         new H2Manager(),
-                        new TestDatabaseAuthenticationStrategy()
+                        new TestDatabaseAuthenticationStrategyRuntime()
                 );
             }
             else
             {
-                return new StaticDataSourceSpecification(
+                return new StaticDataSourceSpecificationRuntime(
                         (StaticDataSourceSpecificationKey) key,
                         new H2Manager(),
-                        this.authenticationStrategy
+                        this.authenticationStrategyRuntime
                 );
             }
         }
         else if (datasourceSpecification instanceof StaticDatasourceSpecification)
         {
-            return new StaticDataSourceSpecification(
+            return new StaticDataSourceSpecificationRuntime(
                     (StaticDataSourceSpecificationKey) key,
                     DatabaseManager.fromString(connection.type.name()),
-                    authenticationStrategy
+                    authenticationStrategyRuntime
             );
         }
         else if (datasourceSpecification instanceof DatabricksDatasourceSpecification)
         {
-            return new DatabricksDataSourceSpecification(
+            return new DatabricksDataSourceSpecificationRuntime(
                     (DatabricksDataSourceSpecificationKey) key,
                     new DatabricksManager(),
-                    authenticationStrategy
+                    authenticationStrategyRuntime
             );
         }
         else if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
         {
-            return new SnowflakeDataSourceSpecification(
+            return new SnowflakeDataSourceSpecificationRuntime(
                     (SnowflakeDataSourceSpecificationKey) key,
                     new SnowflakeManager(),
-                    authenticationStrategy);
+                    authenticationStrategyRuntime);
         }
         else if (datasourceSpecification instanceof RedshiftDatasourceSpecification)
         {
-            return new RedshiftDataSourceSpecification(
+            return new RedshiftDataSourceSpecificationRuntime(
                     (RedshiftDataSourceSpecificationKey) key,
                     new RedshiftManager(),
-                    authenticationStrategy
+                    authenticationStrategyRuntime
             );
         }
 

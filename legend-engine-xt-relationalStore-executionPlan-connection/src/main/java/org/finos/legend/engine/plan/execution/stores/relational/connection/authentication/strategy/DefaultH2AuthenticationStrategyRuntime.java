@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DefaultH2AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-public class DefaultH2AuthenticationStrategy extends AuthenticationStrategy
+public class DefaultH2AuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
     private static final String SA_USER = "sa";
     private static final String SA_PASSWORD = "";

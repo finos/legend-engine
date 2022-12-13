@@ -1215,6 +1215,7 @@ It is a combination of 2 runtime classes, one for data source and other for auth
     import org.eclipse.collections.api.tuple.Pair;
     import org.eclipse.collections.impl.tuple.Tuples;
     import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
     import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
     import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SqlServerTutorialAuthenticationStrategyKey;
     import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -1228,7 +1229,7 @@ It is a combination of 2 runtime classes, one for data source and other for auth
     import java.sql.SQLException;
     import java.util.Properties;
     
-    public class SqlServerTutorialAuthenticationStrategyRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy
+    public class SqlServerTutorialAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
     {
         private final String userNameVaultReference;
         private final String passwordVaultReference;
@@ -1289,14 +1290,16 @@ It is a combination of 2 runtime classes, one for data source and other for auth
     
     package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
     
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
     import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
+    import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
     import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SqlServerTutorialDatasourceSpecificationKey;
     
     import java.util.Properties;
     
-    public class SqlServerTutorialDatasourceSpecificationRuntime extends org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification
+    public class SqlServerTutorialDatasourceSpecificationRuntime extends DataSourceSpecificationRuntime
     {
-        public SqlServerTutorialDatasourceSpecificationRuntime(SqlServerTutorialDatasourceSpecificationKey key, DatabaseManager driver, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy authenticationStrategyRuntime)
+        public SqlServerTutorialDatasourceSpecificationRuntime(SqlServerTutorialDatasourceSpecificationKey key, DatabaseManager driver, AuthenticationStrategyRuntime authenticationStrategyRuntime)
         {
             super(key, driver, authenticationStrategyRuntime, new Properties());
         }
@@ -1316,7 +1319,7 @@ It is a combination of 2 runtime classes, one for data source and other for auth
 
     ~~~java
     @Override
-    public AuthenticationStrategyVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(List<OAuthProfile> oauthProfiles)
+    public AuthenticationStrategyVisitor<AuthenticationStrategyRuntime> getExtraAuthenticationStrategyRuntimeGenerators(List<OAuthProfile> oauthProfiles)
     {
         return authenticationStrategy ->
         {
@@ -1333,7 +1336,7 @@ It is a combination of 2 runtime classes, one for data source and other for auth
     }
     
     @Override
-    public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(Function<RelationalDatabaseConnection, org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy> authenticationStrategyRuntimeProvider)
+    public Function2<RelationalDatabaseConnection, ConnectionKey, DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>> getExtraDataSourceSpecificationRuntimeGenerators(Function<RelationalDatabaseConnection, AuthenticationStrategyRuntime> authenticationStrategyRuntimeProvider)
     {
         return (connection, connectionKey) -> datasourceSpecification ->
         {

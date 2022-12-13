@@ -17,59 +17,72 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.UserNamePasswordAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.Optional;
 import java.util.Properties;
 
-public class UserNamePasswordAuthenticationStrategy extends AuthenticationStrategy
+public class DelegatedKerberosAuthenticationStrategyRuntime extends InteractiveAuthenticationStrategyRuntime
 {
-    private final String userNameVaultReference;
-    private final String passwordVaultReference;
+    private final String serverPrincipal;
 
-    public UserNamePasswordAuthenticationStrategy(String userNameVaultReference, String passwordVaultReference)
+    public DelegatedKerberosAuthenticationStrategyRuntime(String serverPrincipal)
     {
-        this.userNameVaultReference = userNameVaultReference;
-        this.passwordVaultReference = passwordVaultReference;
+        this.serverPrincipal = serverPrincipal;
+    }
+
+    public DelegatedKerberosAuthenticationStrategyRuntime()
+    {
+        this(null);
     }
 
     @Override
     public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
     {
-        try
+        Optional<LegendKerberosCredential> kerberosHolder = identity.getCredential(LegendKerberosCredential.class);
+        if (!kerberosHolder.isPresent())
         {
-            return ds.getDataSource().getConnection();
+            throw new UnsupportedOperationException("Expected Kerberos credential was not found");
         }
-        catch (SQLException e)
-        {
-            throw new ConnectionException(e);
-        }
+        Properties properties = ds.getProperties();
+        LegendKerberosCredential legendKerberosCredential = this.resolveCredential(properties);
+        return getConnectionUsingKerberos(ds.getDataSource(), legendKerberosCredential.getSubject());
     }
 
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        Properties connectionProperties = new Properties();
-        connectionProperties.putAll(properties);
+        return Tuples.pair(url, properties);
+    }
+
+    private LegendKerberosCredential resolveCredential(Properties properties)
+    {
         IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
-        PlaintextUserPasswordCredential credential = (PlaintextUserPasswordCredential) getDatabaseCredential(identityState);
-        connectionProperties.put("user", credential.getUser());
-        connectionProperties.put("password", credential.getPassword());
-        return Tuples.pair(url, connectionProperties);
+        if (identityState.getCredentialSupplier().isPresent())
+        {
+            return (LegendKerberosCredential) super.getDatabaseCredential(identityState);
+        }
+        else
+        {
+            return identityState.getIdentity().getCredential(LegendKerberosCredential.class).get();
+        }
     }
 
     @Override
-    public AuthenticationStrategyKey getKey()
+    public DelegatedKerberosAuthenticationStrategyKey getKey()
     {
-        return new UserNamePasswordAuthenticationStrategyKey(this.userNameVaultReference, this.passwordVaultReference);
+        return new DelegatedKerberosAuthenticationStrategyKey(this.serverPrincipal);
+    }
+
+    public String getServerPrincipal()
+    {
+        return serverPrincipal;
     }
 }

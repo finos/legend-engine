@@ -23,7 +23,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.RelationalConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -66,7 +66,7 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
     {
-        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
+        DataSourceSpecificationRuntime datasource = getDataSourceSpecification(databaseConnection);
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
     }
@@ -78,14 +78,14 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(Subject subject, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
     {
-        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
+        DataSourceSpecificationRuntime datasource = getDataSourceSpecification(databaseConnection);
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(subject);
         return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
     }
 
-    private DataSourceSpecification getDataSourceSpecification(DatabaseConnection databaseConnection)
+    private DataSourceSpecificationRuntime getDataSourceSpecification(DatabaseConnection databaseConnection)
     {
-        DataSourceSpecification datasource = this.connectionManagers.collect(c -> c.getDataSourceSpecification(databaseConnection)).detect(Objects::nonNull);
+        DataSourceSpecificationRuntime datasource = this.connectionManagers.collect(c -> c.getDataSourceSpecification(databaseConnection)).detect(Objects::nonNull);
         if (datasource == null)
         {
             throw new RuntimeException("Not Supported! " + databaseConnection.getClass());
@@ -100,11 +100,11 @@ public class ConnectionManagerSelector
 
     public Connection getDatabaseConnection(Identity identity, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
     {
-        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
+        DataSourceSpecificationRuntime datasource = getDataSourceSpecification(databaseConnection);
         return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
     }
 
-    public Connection getDatabaseConnectionImpl(Identity identity, DatabaseConnection databaseConnection, DataSourceSpecification datasource, StoreExecutionState.RuntimeContext runtimeContext)
+    public Connection getDatabaseConnectionImpl(Identity identity, DatabaseConnection databaseConnection, DataSourceSpecificationRuntime datasource, StoreExecutionState.RuntimeContext runtimeContext)
     {
         if (databaseConnection instanceof RelationalDatabaseConnection)
         {

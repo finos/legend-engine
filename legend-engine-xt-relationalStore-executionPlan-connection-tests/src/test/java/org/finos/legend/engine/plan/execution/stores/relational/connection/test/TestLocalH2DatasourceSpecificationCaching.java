@@ -18,8 +18,8 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.test.utils.ConnectionPoolTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -82,21 +82,21 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests
         Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec1);
 
         assertEquals(1, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
-        LocalH2DataSourceSpecification localH2DatasourceSpecification1 = (LocalH2DataSourceSpecification) (ConnectionPoolTestUtils.getDataSourceSpecifications().stream().findFirst().get());
+        LocalH2DataSourceSpecificationRuntime localH2DatasourceSpecification1 = (LocalH2DataSourceSpecificationRuntime) (ConnectionPoolTestUtils.getDataSourceSpecifications().stream().findFirst().get());
 
         // User gets a connection
         RelationalDatabaseConnection spec2 = this.buildLocalH2DatasourceSpec();
         Connection conn2 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec2);
 
         assertEquals(1, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
-        LocalH2DataSourceSpecification localH2DatasourceSpecification2 = (LocalH2DataSourceSpecification) (ConnectionPoolTestUtils.getDataSourceSpecifications().stream().findFirst().get());
+        LocalH2DataSourceSpecificationRuntime localH2DatasourceSpecification2 = (LocalH2DataSourceSpecificationRuntime) (ConnectionPoolTestUtils.getDataSourceSpecifications().stream().findFirst().get());
 
         // User gets a connection
         RelationalDatabaseConnection spec3 = this.buildLocalH2DatasourceSpec();
         Connection conn3 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec3);
 
         assertEquals(1, ConnectionPoolTestUtils.getDataSourceSpecifications().size());
-        LocalH2DataSourceSpecification localH2DatasourceSpecification3 = (LocalH2DataSourceSpecification) (ConnectionPoolTestUtils.getDataSourceSpecifications().stream().findFirst().get());
+        LocalH2DataSourceSpecificationRuntime localH2DatasourceSpecification3 = (LocalH2DataSourceSpecificationRuntime) (ConnectionPoolTestUtils.getDataSourceSpecifications().stream().findFirst().get());
 
         assertSame(localH2DatasourceSpecification1, localH2DatasourceSpecification2);
         assertSame(localH2DatasourceSpecification2, localH2DatasourceSpecification3);
@@ -126,28 +126,28 @@ public class TestLocalH2DatasourceSpecificationCaching extends DbSpecificTests
         Connection conn1 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec1);
 
 
-        LocalH2DataSourceSpecification localH2DatasourceSpecification1 = (LocalH2DataSourceSpecification) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec1));
+        LocalH2DataSourceSpecificationRuntime localH2DatasourceSpecification1 = (LocalH2DataSourceSpecificationRuntime) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec1));
 
         // User gets a connection
         RelationalDatabaseConnection spec2 = this.buildLocalH2DatasourceSpecWithTableName("PERSON2");
         Connection conn2 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec2);
 
 
-        LocalH2DataSourceSpecification localH2DatasourceSpecification2 = (LocalH2DataSourceSpecification) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec2));
+        LocalH2DataSourceSpecificationRuntime localH2DatasourceSpecification2 = (LocalH2DataSourceSpecificationRuntime) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec2));
 
         // User gets a connection
         RelationalDatabaseConnection spec3 = this.buildLocalH2DatasourceSpecWithTableName("PERSON3");
         Connection conn3 = this.connectionManagerSelector.getDatabaseConnection(identity1, spec3);
 
 
-        LocalH2DataSourceSpecification localH2DatasourceSpecification3 = (LocalH2DataSourceSpecification) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec3));
+        LocalH2DataSourceSpecificationRuntime localH2DatasourceSpecification3 = (LocalH2DataSourceSpecificationRuntime) getDatasourceSpecification(this.connectionManagerSelector.generateKeyFromDatabaseConnection(spec3));
 
         assertNotSame(localH2DatasourceSpecification1, localH2DatasourceSpecification2);
         assertNotSame(localH2DatasourceSpecification2, localH2DatasourceSpecification3);
         assertNotSame(localH2DatasourceSpecification1, localH2DatasourceSpecification3);
     }
 
-    public DataSourceSpecification getDatasourceSpecification(ConnectionKey connectionKey) throws Exception
+    public DataSourceSpecificationRuntime getDatasourceSpecification(ConnectionKey connectionKey) throws Exception
     {
         return ConnectionPoolTestUtils.getConnectionPools().valuesView().detect(pool -> pool.getConnectionKey().equals(connectionKey)).getDataSourceSpecification();
     }

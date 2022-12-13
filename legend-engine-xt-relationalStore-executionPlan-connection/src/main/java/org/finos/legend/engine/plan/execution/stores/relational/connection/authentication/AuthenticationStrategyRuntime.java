@@ -26,19 +26,17 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
-import javax.security.auth.kerberos.KerberosTicket;
 import javax.sql.DataSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.util.Optional;
 import java.util.Properties;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public abstract class AuthenticationStrategy
+public abstract class AuthenticationStrategyRuntime
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuthenticationStrategy.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(AuthenticationStrategyRuntime.class);
     private static final int CONNECTION_TIMEOUT = Math.toIntExact(SECONDS.toMillis(30L));
     public static String AUTHENTICATION_STRATEGY_KEY = "AUTHENTICATION_STRATEGY_KEY";
     protected AuthenticationStatistics authenticationStatistics = new AuthenticationStatistics();

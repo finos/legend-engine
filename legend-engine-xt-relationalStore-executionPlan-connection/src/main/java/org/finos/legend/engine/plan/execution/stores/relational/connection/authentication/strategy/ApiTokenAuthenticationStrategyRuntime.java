@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2021 Databricks
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,43 +14,33 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.ApiTokenAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
+import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
+import org.finos.legend.engine.shared.core.vault.Vault;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Properties;
 
-public class GCPWorkloadIdentityFederationAuthenticationStrategy extends AuthenticationStrategy
+public class ApiTokenAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
-    private String serviceAccountEmail;
-    private List<String> additionalGcpScopes;
 
-    public GCPWorkloadIdentityFederationAuthenticationStrategy(String serviceAccountEmail, List<String> additionalGcpScopes)
-    {
-        this.serviceAccountEmail = serviceAccountEmail;
-        this.additionalGcpScopes = additionalGcpScopes;
-    }
+    private final String apiToken;
 
-    public String getServiceAccountEmail()
+    public ApiTokenAuthenticationStrategyRuntime(String apiToken)
     {
-        return serviceAccountEmail;
-    }
-
-    public List<String> getAdditionalGcpScopes()
-    {
-        return additionalGcpScopes;
+        this.apiToken = apiToken;
     }
 
     @Override
@@ -69,27 +59,32 @@ public class GCPWorkloadIdentityFederationAuthenticationStrategy extends Authent
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
-        OAuthCredential oAuthCredential = this.resolveCredential(properties);
+        ApiTokenCredential apiTokenCredential = this.resolveCredential(properties, this.apiToken);
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        connectionProperties.put("OAuthAccessToken", oAuthCredential.getAccessToken());
-        connectionProperties.put("OAuthType", "2");
+        connectionProperties.put("PWD", apiTokenCredential.getApiToken());
         return Tuples.pair(url, connectionProperties);
-    }
-
-    private OAuthCredential resolveCredential(Properties properties)
-    {
-        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
-        if (!identityState.getCredentialSupplier().isPresent())
-        {
-            throw new RuntimeException("Credential Supplier missing for GCPWorkloadIdentityFederationAuthenticationStrategy");
-        }
-        return (OAuthCredential) super.getDatabaseCredential(identityState);
     }
 
     @Override
     public AuthenticationStrategyKey getKey()
     {
-        return new GCPWorkloadIdentityFederationAuthenticationStrategyKey(this.serviceAccountEmail, this.additionalGcpScopes);
+        return new ApiTokenAuthenticationStrategyKey(this.apiToken);
     }
+
+    private ApiTokenCredential resolveCredential(Properties properties, String apiTokenKey)
+    {
+        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
+        if (!identityState.getCredentialSupplier().isPresent())
+        {
+            String apiToken = Vault.INSTANCE.getValue(apiTokenKey);
+            if (StringUtils.isEmpty(apiToken))
+            {
+                throw new ConnectionException(new Exception("Could not retrieve API token from default Vault"));
+            }
+            return new ApiTokenCredential(apiToken);
+        }
+        return (ApiTokenCredential) super.getDatabaseCredential(identityState);
+    }
+
 }

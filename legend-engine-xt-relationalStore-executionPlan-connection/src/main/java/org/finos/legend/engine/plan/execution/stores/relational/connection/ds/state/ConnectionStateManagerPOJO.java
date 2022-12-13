@@ -19,8 +19,8 @@ import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.HikariPoolMXBean;
 import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 
@@ -34,19 +34,19 @@ import java.util.stream.Stream;
 public class ConnectionStateManagerPOJO
 {
     private final ConcurrentMutableMap<String, DataSourceWithStatistics> pools;
-    private final Set<DataSourceSpecification> dataSourceSpecifications;
+    private final Set<DataSourceSpecificationRuntime> dataSourceSpecificationRuntimes;
 
     public ConnectionStateManagerPOJO(ConcurrentMutableMap<String, DataSourceWithStatistics> pools)
     {
         this.pools = pools;
-        this.dataSourceSpecifications = buildDataSourceSpecifications();
+        this.dataSourceSpecificationRuntimes = buildDataSourceSpecifications();
     }
 
-    private Set<DataSourceSpecification> buildDataSourceSpecifications()
+    private Set<DataSourceSpecificationRuntime> buildDataSourceSpecifications()
     {
-        Set<DataSourceSpecification> dataSourceSpecificationSet = new HashSet<>();
-        this.pools.forEach(pool -> dataSourceSpecificationSet.add(pool.getDataSourceSpecification()));
-        return dataSourceSpecificationSet;
+        Set<DataSourceSpecificationRuntime> dataSourceSpecificationRuntimeSet = new HashSet<>();
+        this.pools.forEach(pool -> dataSourceSpecificationRuntimeSet.add(pool.getDataSourceSpecification()));
+        return dataSourceSpecificationRuntimeSet;
     }
 
     public static class RelationalStoreInfo
@@ -54,24 +54,24 @@ public class ConnectionStateManagerPOJO
         public final String connectionKeyShortId;
         public final String datasourceName;
         public final ConnectionKey connectionKey;
-        public final AuthenticationStrategy authenticationStrategy;
+        public final AuthenticationStrategyRuntime authenticationStrategyRuntime;
         public final PoolDynamic aggregatedPoolStats;
 
-        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification)
+        public RelationalStoreInfo(DataSourceSpecificationRuntime dataSourceSpecificationRuntime)
         {
-            this.connectionKey = dataSourceSpecification.getConnectionKey();
+            this.connectionKey = dataSourceSpecificationRuntime.getConnectionKey();
             this.connectionKeyShortId = connectionKey.shortId();
-            this.datasourceName = dataSourceSpecification.toString();
-            this.authenticationStrategy = dataSourceSpecification.getAuthenticationStrategy();
+            this.datasourceName = dataSourceSpecificationRuntime.toString();
+            this.authenticationStrategyRuntime = dataSourceSpecificationRuntime.getAuthenticationStrategy();
             this.aggregatedPoolStats = null;
         }
 
-        public RelationalStoreInfo(DataSourceSpecification dataSourceSpecification, Stream<DataSourceWithStatistics> poolsForDatasource)
+        public RelationalStoreInfo(DataSourceSpecificationRuntime dataSourceSpecificationRuntime, Stream<DataSourceWithStatistics> poolsForDatasource)
         {
-            this.connectionKey = dataSourceSpecification.getConnectionKey();
+            this.connectionKey = dataSourceSpecificationRuntime.getConnectionKey();
             this.connectionKeyShortId = connectionKey.shortId();
-            this.datasourceName = dataSourceSpecification.toString();
-            this.authenticationStrategy = dataSourceSpecification.getAuthenticationStrategy();
+            this.datasourceName = dataSourceSpecificationRuntime.toString();
+            this.authenticationStrategyRuntime = dataSourceSpecificationRuntime.getAuthenticationStrategy();
             this.aggregatedPoolStats = buildAggregatedPoolStats(poolsForDatasource);
         }
 
@@ -188,13 +188,13 @@ public class ConnectionStateManagerPOJO
     @JsonProperty(value = "totalDataSourceSpecifications", required = true)
     public int getDataSourceSpecificationSize()
     {
-        return dataSourceSpecifications != null ? dataSourceSpecifications.size() : 0;
+        return dataSourceSpecificationRuntimes != null ? dataSourceSpecificationRuntimes.size() : 0;
     }
 
     @JsonProperty(value = "stores", required = true)
     public Set<RelationalStoreInfo> getStores()
     {
-        return this.dataSourceSpecifications.stream().map(k -> new RelationalStoreInfo(k, this.pools.values().stream().filter(pool -> pool.getConnectionKey().equals(k.getConnectionKey())))).collect(Collectors.toSet());
+        return this.dataSourceSpecificationRuntimes.stream().map(k -> new RelationalStoreInfo(k, this.pools.values().stream().filter(pool -> pool.getConnectionKey().equals(k.getConnectionKey())))).collect(Collectors.toSet());
     }
 
     @JsonProperty(value = "pools", required = true)
@@ -221,7 +221,7 @@ public class ConnectionStateManagerPOJO
                 ds.getIdleTimeout(),
                 ds.getMaximumPoolSize(),
                 ds.getMinimumIdle(),
-                Long.getLong(DataSourceSpecification.HIKARICP_HOUSEKEEPING_PERIOD_MS, 0),
+                Long.getLong(DataSourceSpecificationRuntime.HIKARICP_HOUSEKEEPING_PERIOD_MS, 0),
                 ds.getMaxLifetime(),
                 ds.getLeakDetectionThreshold());
     }

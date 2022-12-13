@@ -18,19 +18,17 @@ import java.util.List;
 import java.util.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic.StrategicConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver.SpannerManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.SpannerDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.SpannerDataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.keys.SpannerDataSourceSpecificationKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 
@@ -43,7 +41,7 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
     }
 
     @Override
-    public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(
+    public AuthenticationStrategyVisitor<AuthenticationStrategyRuntime> getExtraAuthenticationStrategyRuntimeGenerators(
         List<OAuthProfile> oauthProfiles)
     {
         return authenticationStrategy -> null;
@@ -73,19 +71,19 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
 
     @Override
     public Function2<RelationalDatabaseConnection, ConnectionKey,
-        DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(
-        Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
+        DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>> getExtraDataSourceSpecificationRuntimeGenerators(
+        Function<RelationalDatabaseConnection, AuthenticationStrategyRuntime> authenticationStrategyRuntimeProvider)
     {
-        return (relationalDatabaseConnection, connectionKey) -> (DatasourceSpecificationVisitor<DataSourceSpecification>) datasourceSpecification ->
+        return (relationalDatabaseConnection, connectionKey) -> (DatasourceSpecificationVisitor<DataSourceSpecificationRuntime>) datasourceSpecification ->
         {
             if (datasourceSpecification instanceof SpannerDatasourceSpecification)
             {
-                AuthenticationStrategy authenticationStrategy = authenticationStrategyProvider.apply(relationalDatabaseConnection);
+                AuthenticationStrategyRuntime authenticationStrategyRuntime = authenticationStrategyRuntimeProvider.apply(relationalDatabaseConnection);
 
-                return new SpannerDataSourceSpecification(
+                return new SpannerDataSourceSpecificationRuntime(
                     (SpannerDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
                     new SpannerManager(),
-                    authenticationStrategy
+                        authenticationStrategyRuntime
                 );
             }
             return null;

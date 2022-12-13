@@ -27,7 +27,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.SnowflakePublicAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
@@ -50,13 +50,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class SnowflakePublicAuthenticationStrategy extends AuthenticationStrategy
+public class SnowflakePublicAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
     private final String privateKeyVaultReference;
     private final String passPhraseVaultReference;
     private final String publicUserName;
 
-    public SnowflakePublicAuthenticationStrategy(String privateKeyVaultReference, String passPhraseVaultReference, String publicUserName)
+    public SnowflakePublicAuthenticationStrategyRuntime(String privateKeyVaultReference, String passPhraseVaultReference, String publicUserName)
     {
         this.privateKeyVaultReference = privateKeyVaultReference;
         this.passPhraseVaultReference = passPhraseVaultReference;

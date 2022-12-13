@@ -16,12 +16,12 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.span
 
 import java.util.Optional;
 import java.util.Properties;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.ds.specifications.keys.SpannerDataSourceSpecificationKey;
 
-public class SpannerDataSourceSpecification extends DataSourceSpecification
+public class SpannerDataSourceSpecificationRuntime extends DataSourceSpecificationRuntime
 {
 
     public static String SPANNER_PROJECT_ID = "spanner_projectId";
@@ -30,13 +30,13 @@ public class SpannerDataSourceSpecification extends DataSourceSpecification
     public static String SPANNER_PROXY_HOST = "spanner_proxyHost";
     public static String SPANNER_PROXY_PORT = "spanner_proxyPort";
 
-    public SpannerDataSourceSpecification(
+    public SpannerDataSourceSpecificationRuntime(
             SpannerDataSourceSpecificationKey key,
             DatabaseManager databaseManager,
-            AuthenticationStrategy authenticationStrategy,
+            AuthenticationStrategyRuntime authenticationStrategyRuntime,
             Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties);
+        super(key, databaseManager, authenticationStrategyRuntime, extraUserProperties);
         this.extraDatasourceProperties.put(SPANNER_PROJECT_ID, key.getProjectId());
         this.extraDatasourceProperties.put(SPANNER_INSTANCE_ID, key.getInstanceId());
         this.extraDatasourceProperties.put(SPANNER_DATABASE_ID, key.getDatabaseId());
@@ -44,12 +44,12 @@ public class SpannerDataSourceSpecification extends DataSourceSpecification
         putIfNotEmpty(this.extraDatasourceProperties, SPANNER_PROXY_PORT, key.getProxyPort());
     }
 
-    public SpannerDataSourceSpecification(
+    public SpannerDataSourceSpecificationRuntime(
             SpannerDataSourceSpecificationKey key,
             DatabaseManager databaseManager,
-            AuthenticationStrategy authenticationStrategy)
+            AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        this(key, databaseManager, authenticationStrategy, new Properties());
+        this(key, databaseManager, authenticationStrategyRuntime, new Properties());
     }
 
     private void putIfNotEmpty(Properties connectionProperties, String propName, Object propValue)

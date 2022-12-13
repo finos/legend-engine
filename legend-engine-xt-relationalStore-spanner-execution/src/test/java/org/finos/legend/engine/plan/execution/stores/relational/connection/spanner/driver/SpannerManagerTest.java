@@ -15,9 +15,9 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver;
 
 import java.util.Properties;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -36,7 +36,7 @@ public class SpannerManagerTest
         properties.put("spanner_databaseId", "test-database");
         properties.put("spanner_proxyHost", "test-host");
 
-        assertThat(buildUrl(spannerManager, properties, new GCPApplicationDefaultCredentialsAuthenticationStrategy()),
+        assertThat(buildUrl(spannerManager, properties, new GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime()),
                 is("jdbc:cloudspanner://test-host/projects/test-project/instances/test-instance/databases/test-database?lenient=true;"));
     }
 
@@ -50,7 +50,7 @@ public class SpannerManagerTest
         properties.put("spanner_proxyHost", "test-host");
         properties.put("spanner_proxyPort", "test-port");
 
-        assertThat(buildUrl(spannerManager, properties, new GCPApplicationDefaultCredentialsAuthenticationStrategy()),
+        assertThat(buildUrl(spannerManager, properties, new GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime()),
                 is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?lenient=true;"));
     }
 
@@ -62,7 +62,7 @@ public class SpannerManagerTest
         properties.put("spanner_instanceId", "test-instance");
         properties.put("spanner_databaseId", "test-database");
 
-        assertThat(buildUrl(spannerManager, properties, new GCPApplicationDefaultCredentialsAuthenticationStrategy()),
+        assertThat(buildUrl(spannerManager, properties, new GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime()),
                 is("jdbc:cloudspanner:/projects/test-project/instances/test-instance/databases/test-database?lenient=true;"));
     }
 
@@ -76,14 +76,14 @@ public class SpannerManagerTest
         properties.put("spanner_proxyHost", "test-host");
         properties.put("spanner_proxyPort", "test-port");
 
-        assertThat(buildUrl(spannerManager, properties, new TestDatabaseAuthenticationStrategy()),
+        assertThat(buildUrl(spannerManager, properties, new TestDatabaseAuthenticationStrategyRuntime()),
                 is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true;lenient=true;"));
         assertThat(buildUrl(spannerManager, properties, null),
                 is("jdbc:cloudspanner://test-host:test-port/projects/test-project/instances/test-instance/databases/test-database?usePlainText=true;lenient=true;"));
     }
 
-    private String buildUrl(SpannerManager spannerManager, Properties properties, AuthenticationStrategy authenticationStrategy)
+    private String buildUrl(SpannerManager spannerManager, Properties properties, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        return spannerManager.buildURL(null, -1, null, properties, authenticationStrategy);
+        return spannerManager.buildURL(null, -1, null, properties, authenticationStrategyRuntime);
     }
 }

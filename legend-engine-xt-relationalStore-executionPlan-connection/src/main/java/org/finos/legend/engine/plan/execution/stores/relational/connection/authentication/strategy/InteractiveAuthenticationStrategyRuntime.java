@@ -16,7 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.shared.core.operational.Assert;
 
@@ -24,7 +24,7 @@ import javax.security.auth.Subject;
 import java.security.AccessController;
 import java.util.Properties;
 
-public abstract class InteractiveAuthenticationStrategy extends AuthenticationStrategy
+public abstract class InteractiveAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
     @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)

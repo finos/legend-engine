@@ -17,31 +17,29 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.MiddleTierUserNamePasswordAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class MiddleTierUserNamePasswordAuthenticationStrategy extends AuthenticationStrategy
+/*
+    This class represents authentication using GCP ADC (Application Default Credentials).
+    Basically, this means that when Legend executes in a GCP environment (like GKE), GCP injects credentials for a service account in the environment.
+    BigQuery client libraries and drivers detect this credentials and use them when connecting to the database.
+
+   See https://cloud.google.com/docs/authentication/production
+   See BigQueryManager.java
+ */
+public class GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime extends AuthenticationStrategyRuntime
 {
-    private final String vaultReference;
-
-    public MiddleTierUserNamePasswordAuthenticationStrategy(String vaultReference)
+    public GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime()
     {
-        this.vaultReference = vaultReference;
-    }
-
-    public MiddleTierUserNamePasswordAuthenticationStrategy()
-    {
-        this(null);
     }
 
     @Override
@@ -57,26 +55,18 @@ public class MiddleTierUserNamePasswordAuthenticationStrategy extends Authentica
         }
     }
 
-    @Override
     public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
     {
         Properties connectionProperties = new Properties();
         connectionProperties.putAll(properties);
-        IdentityState identityState = ConnectionStateManager.getInstance().getIdentityStateUsing(properties);
-        MiddleTierUserPasswordCredential credential = (MiddleTierUserPasswordCredential) getDatabaseCredential(identityState);
-        connectionProperties.put("user", credential.getUser());
-        connectionProperties.put("password", credential.getPassword());
+        connectionProperties.put("OAuthType", "3");
         return Tuples.pair(url, connectionProperties);
     }
 
     @Override
-    public MiddleTierUserNamePasswordAuthenticationStrategyKey getKey()
+    public AuthenticationStrategyKey getKey()
     {
-        return new MiddleTierUserNamePasswordAuthenticationStrategyKey(this.vaultReference);
-    }
-
-    public String getVaultReference()
-    {
-        return this.vaultReference;
+        return new GCPApplicationDefaultCredentialsAuthenticationStrategyKey();
     }
 }
+

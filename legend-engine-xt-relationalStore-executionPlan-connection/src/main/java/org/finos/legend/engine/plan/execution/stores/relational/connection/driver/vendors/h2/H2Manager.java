@@ -16,10 +16,10 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecificationRuntime;
 
 import java.util.Properties;
 
@@ -34,12 +34,12 @@ public class H2Manager extends DatabaseManager
     }
 
     @Override
-    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
+    public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
         if (isEmbeddedMode(extraUserDataSourceProperties))
         {
-            String dataDirectoryPath = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH).replace("\\", "/");
-            String autoServerMode = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
+            String dataDirectoryPath = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecificationRuntime.H2_DATA_DIRECTORY_PATH).replace("\\", "/");
+            String autoServerMode = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecificationRuntime.H2_AUTO_SERVER_MODE);
             return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
         }
         if (extraUserDataSourceProperties.contains(DATABASE_TO_UPPER))
@@ -63,7 +63,7 @@ public class H2Manager extends DatabaseManager
 
     private boolean isEmbeddedMode(Properties properties)
     {
-        return properties.containsKey(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH);
+        return properties.containsKey(EmbeddedH2DataSourceSpecificationRuntime.H2_DATA_DIRECTORY_PATH);
     }
 
     @Override

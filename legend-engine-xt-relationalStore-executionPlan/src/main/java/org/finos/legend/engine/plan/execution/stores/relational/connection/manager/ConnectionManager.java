@@ -15,14 +15,14 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 
 import java.sql.Connection;
 
 public interface ConnectionManager
 {
-    DataSourceSpecification getDataSourceSpecification(DatabaseConnection databaseConnection);
+    DataSourceSpecificationRuntime getDataSourceSpecification(DatabaseConnection databaseConnection);
 
     ConnectionKey generateKeyFromDatabaseConnection(DatabaseConnection databaseConnection);
 

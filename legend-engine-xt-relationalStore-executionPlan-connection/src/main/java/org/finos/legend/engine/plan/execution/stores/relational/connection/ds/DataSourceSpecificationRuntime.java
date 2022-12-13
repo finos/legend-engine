@@ -26,7 +26,7 @@ import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.IdentityState;
@@ -48,9 +48,9 @@ import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-public abstract class DataSourceSpecification
+public abstract class DataSourceSpecificationRuntime
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataSourceSpecification.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataSourceSpecificationRuntime.class);
 
     // HikariCP Parameters:
     // Information parameters and its defaults: https://github.com/brettwooldridge/HikariCP#gear-configuration-knobs-baby
@@ -75,23 +75,23 @@ public abstract class DataSourceSpecification
     private final ConnectionStateManager connectionStateManager = ConnectionStateManager.getInstance();
     private final ConnectionKey connectionKey;
     private final DatabaseManager databaseManager;
-    private final AuthenticationStrategy authenticationStrategy;
+    private final AuthenticationStrategyRuntime authenticationStrategyRuntime;
     protected final Properties extraDatasourceProperties = new Properties();
     protected final org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey datasourceKey;
     private final int minPoolSize;
     private final int maxPoolSize;
 
-    protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
+    protected DataSourceSpecificationRuntime(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties extraUserProperties)
     {
-        this(key, databaseManager, authenticationStrategy, extraUserProperties, HIKARICP_DEFAULT_MAX_POOL_SIZE, HIKARICP_DEFAULT_MIN_IDLE);
+        this(key, databaseManager, authenticationStrategyRuntime, extraUserProperties, HIKARICP_DEFAULT_MAX_POOL_SIZE, HIKARICP_DEFAULT_MIN_IDLE);
     }
 
-    protected DataSourceSpecification(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties, int maxPoolSize, int minPoolSize)
+    protected DataSourceSpecificationRuntime(org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties extraUserProperties, int maxPoolSize, int minPoolSize)
     {
         this.datasourceKey = key;
         this.databaseManager = databaseManager;
-        this.authenticationStrategy = authenticationStrategy;
-        this.connectionKey = new ConnectionKey(this.datasourceKey, this.authenticationStrategy.getKey());
+        this.authenticationStrategyRuntime = authenticationStrategyRuntime;
+        this.connectionKey = new ConnectionKey(this.datasourceKey, this.authenticationStrategyRuntime.getKey());
         this.extraDatasourceProperties.putAll(extraUserProperties);
         this.maxPoolSize = maxPoolSize;
         this.minPoolSize = minPoolSize;
@@ -110,9 +110,9 @@ public abstract class DataSourceSpecification
         return this.connectionKey;
     }
 
-    public AuthenticationStrategy getAuthenticationStrategy()
+    public AuthenticationStrategyRuntime getAuthenticationStrategy()
     {
-        return authenticationStrategy;
+        return authenticationStrategyRuntime;
     }
 
     public DatabaseManager getDatabaseManager()
@@ -166,7 +166,7 @@ public abstract class DataSourceSpecification
                 scope.span().setTag("Pool", poolName);
                 int requests = dataSourceWithStatistics.requestConnection();
                 LOGGER.info("Principal [{}] has requested [{}] connections for pool [{}]", principal, requests, poolName);
-                return authenticationStrategy.getConnection(dataSourceWithStatistics, identityState.getIdentity());
+                return authenticationStrategyRuntime.getConnection(dataSourceWithStatistics, identityState.getIdentity());
             }
             catch (ConnectionException ce)
             {
@@ -193,12 +193,12 @@ public abstract class DataSourceSpecification
         {
             Properties properties = new Properties();
             String poolName = poolNameFor(identity);
-            properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategy, identity));
+            properties.putAll(this.databaseManager.getExtraDataSourceProperties(this.authenticationStrategyRuntime, identity));
             properties.putAll(this.extraDatasourceProperties);
 
-            properties.put(AuthenticationStrategy.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategy.getKey().shortId());
+            properties.put(AuthenticationStrategyRuntime.AUTHENTICATION_STRATEGY_KEY, this.authenticationStrategyRuntime.getKey().shortId());
             properties.put(ConnectionStateManager.POOL_NAME_KEY, poolName);
-            properties.putAll(authenticationStrategy.getAuthenticationPropertiesForConnection());
+            properties.putAll(authenticationStrategyRuntime.getAuthenticationPropertiesForConnection());
             LOGGER.info("Building pool [{}] for [{}] ", poolName, identity.getName());
             HikariConfig jdbcConfig = new HikariConfig();
             jdbcConfig.setDriverClassName(databaseManager.getDriver());
@@ -206,7 +206,7 @@ public abstract class DataSourceSpecification
             jdbcConfig.setMaximumPoolSize(maxPoolSize);
             jdbcConfig.setMinimumIdle(minPoolSize);
             jdbcConfig.setJdbcUrl(getJdbcUrl(host, port, databaseName, properties));
-            jdbcConfig.setConnectionTimeout(authenticationStrategy.getConnectionTimeout());
+            jdbcConfig.setConnectionTimeout(authenticationStrategyRuntime.getConnectionTimeout());
             jdbcConfig.addDataSourceProperty("cachePrepStmts", false);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSize", 0);
             jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
@@ -230,7 +230,7 @@ public abstract class DataSourceSpecification
 
     protected String getJdbcUrl(String host, int port, String databaseName, Properties properties)
     {
-        return this.databaseManager.buildURL(host, port, databaseName, properties, this.authenticationStrategy);
+        return this.databaseManager.buildURL(host, port, databaseName, properties, this.authenticationStrategyRuntime);
     }
 
 
@@ -240,6 +240,6 @@ public abstract class DataSourceSpecification
         return "DataSourceSpecification[" +
                 this.getClass().getSimpleName() + "," +
                 this.datasourceKey.shortId() + "," +
-                this.authenticationStrategy.getKey().shortId() + "]";
+                this.authenticationStrategyRuntime.getKey().shortId() + "]";
     }
 }

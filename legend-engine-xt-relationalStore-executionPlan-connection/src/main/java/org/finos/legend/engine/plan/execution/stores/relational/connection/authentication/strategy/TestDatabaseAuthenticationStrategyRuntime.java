@@ -17,7 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.auth
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.TestDatabaseAuthenticationStrategyKey;
 
-public class TestDatabaseAuthenticationStrategy extends DefaultH2AuthenticationStrategy
+public class TestDatabaseAuthenticationStrategyRuntime extends DefaultH2AuthenticationStrategyRuntime
 {
     @Override
     public AuthenticationStrategyKey getKey()

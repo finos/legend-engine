@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -66,9 +66,9 @@ public class TestConnectionStateManager extends TestConnectionManagement
     @Test
     public void testDataSourceConnectionsRequest()
     {
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
-        DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T2"));
-        DataSourceSpecification ds3 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        DataSourceSpecificationRuntime ds2 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T2"));
+        DataSourceSpecificationRuntime ds3 = buildLocalDataSourceSpecification(Collections.emptyList());
         assertPoolExists(false, "user1", ds1.getConnectionKey());
         assertPoolExists(false, "user2", ds2.getConnectionKey());
         assertPoolExists(false, "user3", ds3.getConnectionKey());
@@ -91,7 +91,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
 
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
         assertPoolExists(false, user1.getName(), ds1.getConnectionKey());
         Assert.assertEquals(0, connectionStateManager.size());
 
@@ -104,7 +104,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
         assertPoolStateExists(pool1);
         Assert.assertEquals(1, connectionStateManager.size());
 
-        DataSourceSpecification ds11 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds11 = buildLocalDataSourceSpecification(Collections.emptyList());
         requestConnection(user2, ds11);
         Assert.assertEquals(ds11.getConnectionKey(), ds1.getConnectionKey());
         Assert.assertEquals(2, connectionStateManager.size());
@@ -121,8 +121,8 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
 
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
-        DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        DataSourceSpecificationRuntime ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
 
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
         String pool2 = connectionStateManager.poolNameFor(user2, ds2.getConnectionKey());
@@ -178,8 +178,8 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
 
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
-        DataSourceSpecification ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1"));
+        DataSourceSpecificationRuntime ds2 = buildLocalDataSourceSpecification(Collections.emptyList());
 
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
         String pool2 = connectionStateManager.poolNameFor(user2, ds2.getConnectionKey());
@@ -246,7 +246,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
 
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
 
         requestConnection(user1, ds1);
         requestConnection(user2, ds1);
@@ -269,7 +269,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user2");
         Identity user3 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("user3");
 
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
 
         requestConnection(user1, ds1);
         requestConnection(user2, ds1);
@@ -290,7 +290,7 @@ public class TestConnectionStateManager extends TestConnectionManagement
         Credential mockCredential = mock(Credential.class);
         Identity identityOne = new Identity("mock", mockCredential);
         when(mockCredential.isValid()).thenReturn(true);
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Collections.emptyList());
         String poolName = connectionStateManager.poolNameFor(identityOne, ds1.getConnectionKey());
         Assert.assertNotNull(poolName);
 

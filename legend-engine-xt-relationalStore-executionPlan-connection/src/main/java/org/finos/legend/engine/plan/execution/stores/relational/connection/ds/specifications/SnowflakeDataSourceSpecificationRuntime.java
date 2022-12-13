@@ -14,15 +14,15 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 
 import java.util.Optional;
 import java.util.Properties;
 
-public class SnowflakeDataSourceSpecification extends DataSourceSpecification
+public class SnowflakeDataSourceSpecificationRuntime extends DataSourceSpecificationRuntime
 {
 
     public static final String SNOWFLAKE_ACCOUNT_NAME = "legend_snowflake_accountName";
@@ -41,9 +41,9 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_USE_PROXY = "useProxy";
     public static final String SNOWFLAKE_ROLE = "role";
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
+    public SnowflakeDataSourceSpecificationRuntime(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime, Properties extraUserProperties)
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties);
+        super(key, databaseManager, authenticationStrategyRuntime, extraUserProperties);
 
         String warehouseName = updateSnowflakeIdentifiers(key.getWarehouseName(), key.getQuoteIdentifiers());
         String databaseName = updateSnowflakeIdentifiers(key.getDatabaseName(), key.getQuoteIdentifiers());
@@ -75,9 +75,9 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put(SNOWFLAKE_USE_PROXY, this.extraDatasourceProperties.get(SNOWFLAKE_PROXY_HOST) != null);
     }
 
-    public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    public SnowflakeDataSourceSpecificationRuntime(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        this(key, databaseManager, authenticationStrategy, new Properties());
+        this(key, databaseManager, authenticationStrategyRuntime, new Properties());
     }
 
     private static void putIfNotEmpty(Properties connectionProperties, String propName, String propValue)

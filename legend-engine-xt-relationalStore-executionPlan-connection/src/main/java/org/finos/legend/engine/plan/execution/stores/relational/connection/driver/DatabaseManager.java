@@ -19,7 +19,7 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionExtension;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks.DatabricksManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
@@ -81,9 +81,9 @@ public abstract class DatabaseManager
 
     public abstract MutableList<String> getIds();
 
-    public abstract String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy);
+    public abstract String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategyRuntime authenticationStrategyRuntime);
 
-    public Properties getExtraDataSourceProperties(AuthenticationStrategy authenticationStrategy, Identity identity)
+    public Properties getExtraDataSourceProperties(AuthenticationStrategyRuntime authenticationStrategyRuntime, Identity identity)
     {
         return new Properties();
     }

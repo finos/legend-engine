@@ -14,14 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.DatabricksDataSourceSpecificationKey;
 
 import java.util.Properties;
 
-public class DatabricksDataSourceSpecification extends DataSourceSpecification
+public class DatabricksDataSourceSpecificationRuntime extends DataSourceSpecificationRuntime
 {
 
     public static String DATABRICKS_HOSTNAME = "legend_databricks_hostname";
@@ -29,14 +29,14 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public static String DATABRICKS_PROTOCOL = "legend_databricks_protocol";
     public static String DATABRICKS_HTTP_PATH = "legend_databricks_http_path";
 
-    public DatabricksDataSourceSpecification(
+    public DatabricksDataSourceSpecificationRuntime(
             DatabricksDataSourceSpecificationKey key,
             DatabaseManager databaseManager,
-            AuthenticationStrategy authenticationStrategy,
+            AuthenticationStrategyRuntime authenticationStrategyRuntime,
             Properties extraUserProperties
     )
     {
-        super(key, databaseManager, authenticationStrategy, extraUserProperties);
+        super(key, databaseManager, authenticationStrategyRuntime, extraUserProperties);
 
         this.extraDatasourceProperties.put(DATABRICKS_HOSTNAME, key.getHostname());
         this.extraDatasourceProperties.put(DATABRICKS_PORT, key.getPort());
@@ -48,9 +48,9 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("httpPath", key.getHttpPath());
     }
 
-    public DatabricksDataSourceSpecification(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy)
+    public DatabricksDataSourceSpecificationRuntime(DatabricksDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategyRuntime authenticationStrategyRuntime)
     {
-        this(key, databaseManager, authenticationStrategy, new Properties());
+        this(key, databaseManager, authenticationStrategyRuntime, new Properties());
     }
 
     public Properties getConnectionProperties()

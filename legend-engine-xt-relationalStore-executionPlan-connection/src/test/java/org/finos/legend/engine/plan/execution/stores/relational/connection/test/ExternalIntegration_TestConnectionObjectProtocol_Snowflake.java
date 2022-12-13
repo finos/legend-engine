@@ -15,10 +15,10 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.eclipse.collections.api.block.function.Function;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake.SnowflakeManager;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
@@ -47,19 +47,19 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
         testSnowflakePublicConnection(c -> c.getConnectionUsingProfiles(null));
     }
 
-    private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
+    private void testSnowflakePublicConnection(Function<DataSourceSpecificationRuntime, Connection> toDBConnection) throws Exception
     {
 
         Vault.INSTANCE.registerImplementation(new EnvironmentVaultImplementation());
 
-        SnowflakeDataSourceSpecification ds =
-                new SnowflakeDataSourceSpecification(
+        SnowflakeDataSourceSpecificationRuntime ds =
+                new SnowflakeDataSourceSpecificationRuntime(
                         new SnowflakeDataSourceSpecificationKey("ki79827", "us-east-2",
                                 "INTEGRATION_WH1",
                                 "INTEGRATION_DB1", "aws", null,
                                 "INTEGRATION_ROLE1"),
                         new SnowflakeManager(),
-                        new SnowflakePublicAuthenticationStrategy("SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY", "SNOWFLAKE_INTEGRATION_USER1_PASSWORD", "INTEGRATION_USER1"));
+                        new SnowflakePublicAuthenticationStrategyRuntime("SNOWFLAKE_INTEGRATION_USER1_PRIVATEKEY", "SNOWFLAKE_INTEGRATION_USER1_PASSWORD", "INTEGRATION_USER1"));
         try (Connection connection = toDBConnection.valueOf(ds))
         {
             testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");

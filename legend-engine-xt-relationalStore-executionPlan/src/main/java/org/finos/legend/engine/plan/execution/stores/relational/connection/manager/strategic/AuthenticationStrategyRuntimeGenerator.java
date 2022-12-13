@@ -14,10 +14,19 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager.strategic;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.ApiTokenAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DefaultH2AuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.MiddleTierUserNamePasswordAuthenticationStrategyRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategyRuntime;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserNamePasswordAuthenticationStrategyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
@@ -29,59 +38,59 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.List;
 
-public class AuthenticationStrategyTransformer implements AuthenticationStrategyVisitor<AuthenticationStrategy>
+public class AuthenticationStrategyRuntimeGenerator implements AuthenticationStrategyVisitor<AuthenticationStrategyRuntime>
 {
     private final List<OAuthProfile> oauthProfiles;
 
-    public AuthenticationStrategyTransformer(List<OAuthProfile> oauthProfiles)
+    public AuthenticationStrategyRuntimeGenerator(List<OAuthProfile> oauthProfiles)
     {
         this.oauthProfiles = oauthProfiles;
     }
 
     @Override
-    public AuthenticationStrategy visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy authenticationStrategy)
+    public AuthenticationStrategyRuntime visit(AuthenticationStrategy authenticationStrategy)
     {
         if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
         {
             DelegatedKerberosAuthenticationStrategy delegatedKerberosAuthenticationStrategy = (DelegatedKerberosAuthenticationStrategy) authenticationStrategy;
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategy(
+            return new DelegatedKerberosAuthenticationStrategyRuntime(
                     delegatedKerberosAuthenticationStrategy.serverPrincipal
             );
         }
         else if (authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
         {
             MiddleTierUserNamePasswordAuthenticationStrategy middleTierUserNameAuthenticationStrategy = (MiddleTierUserNamePasswordAuthenticationStrategy) authenticationStrategy;
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.MiddleTierUserNamePasswordAuthenticationStrategy(
+            return new MiddleTierUserNamePasswordAuthenticationStrategyRuntime(
                     middleTierUserNameAuthenticationStrategy.vaultReference
             );
         }
         else if (authenticationStrategy instanceof UserNamePasswordAuthenticationStrategy)
         {
             UserNamePasswordAuthenticationStrategy userNamePasswordAuthenticationStrategy = (UserNamePasswordAuthenticationStrategy) authenticationStrategy;
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.UserNamePasswordAuthenticationStrategy(
+            return new UserNamePasswordAuthenticationStrategyRuntime(
                     userNamePasswordAuthenticationStrategy.baseVaultReference == null ? userNamePasswordAuthenticationStrategy.userNameVaultReference : userNamePasswordAuthenticationStrategy.baseVaultReference + userNamePasswordAuthenticationStrategy.userNameVaultReference,
                     userNamePasswordAuthenticationStrategy.baseVaultReference == null ? userNamePasswordAuthenticationStrategy.passwordVaultReference : userNamePasswordAuthenticationStrategy.baseVaultReference + userNamePasswordAuthenticationStrategy.passwordVaultReference
             );
         }
         else if (authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
         {
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.TestDatabaseAuthenticationStrategy();
+            return new TestDatabaseAuthenticationStrategyRuntime();
         }
         else if (authenticationStrategy instanceof DefaultH2AuthenticationStrategy)
         {
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DefaultH2AuthenticationStrategy();
+            return new DefaultH2AuthenticationStrategyRuntime();
         }
         else if (authenticationStrategy instanceof ApiTokenAuthenticationStrategy)
         {
             ApiTokenAuthenticationStrategy apiTokenStrategy = (ApiTokenAuthenticationStrategy) authenticationStrategy;
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.ApiTokenAuthenticationStrategy(
+            return new ApiTokenAuthenticationStrategyRuntime(
                     apiTokenStrategy.apiToken
             );
         }
         else if (authenticationStrategy instanceof SnowflakePublicAuthenticationStrategy)
         {
             SnowflakePublicAuthenticationStrategy snowflakePublicAuthenticationStrategy = (SnowflakePublicAuthenticationStrategy) authenticationStrategy;
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.SnowflakePublicAuthenticationStrategy(
+            return new SnowflakePublicAuthenticationStrategyRuntime(
                     snowflakePublicAuthenticationStrategy.privateKeyVaultReference,
                     snowflakePublicAuthenticationStrategy.passPhraseVaultReference,
                     snowflakePublicAuthenticationStrategy.publicUserName
@@ -89,12 +98,12 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
         }
         else if (authenticationStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy)
         {
-            return new GCPApplicationDefaultCredentialsAuthenticationStrategy();
+            return new GCPApplicationDefaultCredentialsAuthenticationStrategyRuntime();
         }
         else if (authenticationStrategy instanceof GCPWorkloadIdentityFederationAuthenticationStrategy)
         {
             GCPWorkloadIdentityFederationAuthenticationStrategy gcpWorkloadIdentityFederationAuthenticationStrategy = (GCPWorkloadIdentityFederationAuthenticationStrategy) authenticationStrategy;
-            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationAuthenticationStrategy(
+            return new GCPWorkloadIdentityFederationAuthenticationStrategyRuntime(
                     gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
                     gcpWorkloadIdentityFederationAuthenticationStrategy.additionalGcpScopes
             );

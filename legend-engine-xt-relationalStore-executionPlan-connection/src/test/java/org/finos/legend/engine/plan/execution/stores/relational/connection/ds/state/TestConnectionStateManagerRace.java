@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationRuntime;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
@@ -55,7 +55,7 @@ public class TestConnectionStateManagerRace extends TestConnectionManagement
         // cache has 2 state objects
         Identity user1 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool1");
         Identity user2 = IdentityFactoryProvider.getInstance().makeIdentityForTesting("pool2");
-        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1;"));
+        DataSourceSpecificationRuntime ds1 = buildLocalDataSourceSpecification(Arrays.asList("DROP TABLE IF EXISTS T1;"));
         String pool1 = connectionStateManager.poolNameFor(user1, ds1.getConnectionKey());
         String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
 
