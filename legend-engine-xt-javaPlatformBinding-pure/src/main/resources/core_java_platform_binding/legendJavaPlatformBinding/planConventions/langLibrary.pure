@@ -20,6 +20,7 @@ import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 
 function meta::pure::executionPlan::engine::java::registerLangLibrary(conventions: Conventions[1]): Conventions[1]
 {
@@ -208,9 +209,9 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
 
             assert($clsTypeInfo->size() == 1, 'Error: found multiple type infos for class');
 
-            let nestedDeps = meta::pure::executionPlan::engine::java::generateInterfacesAndEnums($conventions, $typeInfo, $debug);
+            let nestedDeps = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
 
-            let interface = $clsTypeInfo->toOne()->meta::pure::executionPlan::engine::java::generateInterfaceForClass($conventions,$debug);
+            let interface = $clsTypeInfo->toOne()->generateInterfaceForClass($conventions,$debug);
             let implementationWithProps = $props->fold({p,c| let var = $conventions->fieldName($p);
                                            let javaType = $conventions->pureTypeToJavaType($p);
                                            let f = javaField(['private'], $javaType, $var);
@@ -234,7 +235,7 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
 
             let implementationProject = mergeProjects([
                                                        newProject()->addClass($implementationWithProps),
-                                                       $implementationWithProps-> meta::pure::executionPlan::engine::java::createQualifiedPropertiesForClass($cls.qualifiedProperties, $conventions, $debug)
+                                                       $implementationWithProps->createQualifiedPropertiesForClass($cls.qualifiedProperties, $conventions, $debug)
                                                     ]);
 
             let implementation = $implementationProject->getClass($implementationWithProps)->toOne();

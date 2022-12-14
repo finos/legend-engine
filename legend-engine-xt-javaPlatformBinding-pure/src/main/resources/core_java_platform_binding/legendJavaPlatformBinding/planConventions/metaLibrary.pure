@@ -17,6 +17,7 @@ import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 
 function meta::pure::executionPlan::engine::java::registerMetaLibrary(conventions: Conventions[1]): Conventions[1]
 {
@@ -60,7 +61,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::enumTypeDep
    let dep = newDependency(
       $name,
         {state |    let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::platformBinding::typeInfo::addForType($type);
-                    let project = meta::pure::executionPlan::engine::java::generateInterfacesAndEnums($conventions, $typeInfo, $debug);
+                    let project = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
                     $state->addDependencyProject($name, $project);
         });  
 }

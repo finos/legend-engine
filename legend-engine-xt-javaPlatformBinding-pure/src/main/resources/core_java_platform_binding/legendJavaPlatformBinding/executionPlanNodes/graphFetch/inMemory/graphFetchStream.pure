@@ -21,8 +21,9 @@ import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::*;
-import meta::pure::executionPlan::engine::java::naming::*;
 
 // TODO This depends on meta::pure::executionPlan::engine::java::generateResultBasedConstructor being used for this specific purpose.  The approach should be generalized and the specifics moved to this package
 

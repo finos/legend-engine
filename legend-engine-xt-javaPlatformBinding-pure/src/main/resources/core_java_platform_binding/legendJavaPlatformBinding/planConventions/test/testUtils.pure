@@ -228,7 +228,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPure
    let failures = j_variable(javaStringBuilder(), 'failures');  
    let result   = j_variable(javaStringBuilder(), 'result');  
 
-   let typesProject = meta::pure::executionPlan::engine::java::generateTypes($tests.context, $debug);
+   let typesProject = meta::pure::executionPlan::platformBinding::legendJava::shared::generateTypes($tests.context, $debug);
 
    let executeCode = 
       [

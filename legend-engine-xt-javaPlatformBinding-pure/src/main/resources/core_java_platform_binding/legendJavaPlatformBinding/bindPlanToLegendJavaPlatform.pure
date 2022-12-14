@@ -21,6 +21,7 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::merge::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::union::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::engine::java::*;
