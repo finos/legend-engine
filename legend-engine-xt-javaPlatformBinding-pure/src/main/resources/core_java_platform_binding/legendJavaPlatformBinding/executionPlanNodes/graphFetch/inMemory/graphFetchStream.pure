@@ -21,22 +21,22 @@ import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::stream::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 
 // TODO This depends on meta::pure::executionPlan::engine::java::generateResultBasedConstructor being used for this specific purpose.  The approach should be generalized and the specifics moved to this package
 
-function meta::pure::executionPlan::engine::java::graphFetch::stream::createStreamReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::createStreamReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    newProject()->addClasses(createStreamReadingClass($pureClass, $javaInterface, $path, $context, $debug));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::stream::streamReaderClass(conventions:Conventions[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::streamReaderClass(conventions:Conventions[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->planNodeClass('public', $path, 'StreamReader');
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::createStreamReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::createStreamReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let itr  = javaField('private', javaIterator($javaInterface), 'itr');
 
@@ -51,7 +51,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
       ->addReadCheckedObjects($pureClass, $javaInterface, $path, $context, $itr);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::addConstructor(class:meta::external::language::java::metamodel::Class[1], sourceClass:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::addConstructor(class:meta::external::language::java::metamodel::Class[1], sourceClass:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let in    = j_parameter(javaStream($sourceClass),'in');
    let jThis = j_this($class);
@@ -64,7 +64,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::addIsFinished(class:meta::external::language::java::metamodel::Class[1], itr:meta::external::language::java::metamodel::Field[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::addIsFinished(class:meta::external::language::java::metamodel::Class[1], itr:meta::external::language::java::metamodel::Field[1]): meta::external::language::java::metamodel::Class[1]
 {
    $class->addMethod(javaMethod(['public'], javaBoolean(), 'isFinished', [],
       [
@@ -73,7 +73,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::stream::addReadCheckedObjects(class:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], itr:meta::external::language::java::metamodel::Field[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::addReadCheckedObjects(class:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], itr:meta::external::language::java::metamodel::Field[1]): meta::external::language::java::metamodel::Class[1]
 {
    let checkedClass  = $context.baseProject->toOne()->resolve($context.conventions->className(Checked));
    let checkedSource = javaParameterizedType($checkedClass, $javaInterface);

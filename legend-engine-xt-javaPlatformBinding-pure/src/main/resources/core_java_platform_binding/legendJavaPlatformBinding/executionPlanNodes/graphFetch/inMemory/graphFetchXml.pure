@@ -21,15 +21,15 @@ import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::xml::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
-function meta::pure::executionPlan::engine::java::xmlParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
 {
    let pureDate = $conventions->className(PureDate);
 
@@ -70,19 +70,19 @@ function meta::pure::executionPlan::engine::java::xmlParserGetter(conventions:Co
    )))))))))));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::xml::xmlReaderClass(conventions:Conventions[1], path:String[1], srcTreeClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlReaderClass(conventions:Conventions[1], path:String[1], srcTreeClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->planNodeClass('public', $path, 'XmlDataReader' + $conventions->identifier($srcTreeClass->elementToPath('_')));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::xml::createXmlReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::createXmlReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    newProject()
       ->addClasses(createReadingClass($pureClass, $javaInterface, $path, $readableClasses, $readableEnums, $context, $debug))
       ->addMavenDependency('com.fasterxml.jackson.dataformat', 'jackson-dataformat-xml', '2.10.3');
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::xml::createReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::createReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let fetchClass      = $context.conventions->xmlReaderClass($path, $pureClass);
    let conventions     = $context.conventions;
@@ -144,12 +144,12 @@ function meta::pure::executionPlan::engine::java::graphFetch::xml::createReading
       ->addReadCheckedObjects($pureClass, $javaInterface, $path, $context);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addClassReadMethods(self:meta::external::language::java::metamodel::Class[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addClassReadMethods(self:meta::external::language::java::metamodel::Class[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
   $readableClasses->fold({c, ths | $ths->addClassReadMethod($c, $path, $context)}, $self);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addClassReadMethod(self:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addClassReadMethod(self:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
   let cgi           = $self->classGenInfo($class, $path, $context);
   let checked       = $cgi.conventions->className(Checked);
@@ -165,7 +165,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::defineClassPreParseVariables(cgi:ClassGenInfo[1]): Code[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::defineClassPreParseVariables(cgi:ClassGenInfo[1]): Code[*]
 {
   $cgi.allProperties->map({p|
     let pgi   = $cgi.propertyGenInfoFor($p);
@@ -181,7 +181,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    });
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::acceptProperties(cgi:ClassGenInfo[1]): Code[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::acceptProperties(cgi:ClassGenInfo[1]): Code[*]
 {
   let fieldname = j_variable(javaString(), 'fieldname');
 
@@ -252,7 +252,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ];
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::validateMultiplicities(cgi:ClassGenInfo[1]): Code[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::validateMultiplicities(cgi:ClassGenInfo[1]): Code[*]
 {
   $cgi.allProperties->map({p|
     let pgi          = $cgi.propertyGenInfoFor($p);
@@ -285,7 +285,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    });
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::returnCheckedObject(cgi:ClassGenInfo[1]): Code[*]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::returnCheckedObject(cgi:ClassGenInfo[1]): Code[*]
 {
   let objectAccess  = $cgi.stackPeek->j_cast($cgi.dataClass);
 
@@ -316,7 +316,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ];
 }
 
-Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::ClassGenInfo
+Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::ClassGenInfo
 {
   thisClass        : meta::external::language::java::metamodel::Class[1];
   path             : String[1];
@@ -326,7 +326,7 @@ Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xm
   class            : meta::pure::metamodel::type::Class<Any>[1];
   javaInterface    : meta::external::language::java::metamodel::Class[1];
   dataClass        : meta::external::language::java::metamodel::Class[1];
-  propertyGenInfos : meta::pure::executionPlan::engine::java::graphFetch::xml::PropertyGenInfo[*];
+  propertyGenInfos : meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::PropertyGenInfo[*];
 
   conventions()
   {
@@ -369,7 +369,7 @@ Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xm
   }: Code[1];
 }
 
-Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::PropertyGenInfo
+Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::PropertyGenInfo
 {
   property    : Property<Nil, Any|*>[1];
   fieldName   : String[1];
@@ -396,7 +396,7 @@ Class <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xm
   }: Code[1];
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::classGenInfo(self:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1]): ClassGenInfo[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::classGenInfo(self:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1], context:GenerationContext[1]): ClassGenInfo[1]
 {
   let conventions   = $context.conventions;
   let jThis         = j_this($self);
@@ -443,19 +443,19 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   );
 }
 
-Enum meta::pure::executionPlan::engine::java::graphFetch::xml::XmlType
+Enum meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::XmlType
 {
   Element, Attribute, Text
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addAcceptTypeMethods(self:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addAcceptTypeMethods(self:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
   $self->addAcceptType($type, XmlType.Attribute, $conventions)
        ->addAcceptType($type, XmlType.Text,      $conventions)
        ->addAcceptType($type, XmlType.Element,   $conventions);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addAcceptType(self:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], xmlType:XmlType[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addAcceptType(self:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], xmlType:XmlType[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
   let javaType      = $conventions->pureTypeToJavaType($type, PureOne);
   let value         = j_variable($javaType->toBoxed(), 'value');
@@ -519,12 +519,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addEnumReadMethods(self:meta::external::language::java::metamodel::Class[1], enums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addEnumReadMethods(self:meta::external::language::java::metamodel::Class[1], enums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
   $enums->fold({e, ths| $ths->addEnumReadMethod($e, $context)}, $self);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addEnumReadMethod(self:meta::external::language::java::metamodel::Class[1], enum:meta::pure::metamodel::type::Enumeration<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addEnumReadMethod(self:meta::external::language::java::metamodel::Class[1], enum:meta::pure::metamodel::type::Enumeration<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
   let jThis     = j_this($self);
   let text      = j_variable(javaString(), 'text');
@@ -542,12 +542,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addUnitAcceptMethods(self:meta::external::language::java::metamodel::Class[1], unitTypes:meta::pure::metamodel::type::Type[*], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addUnitAcceptMethods(self:meta::external::language::java::metamodel::Class[1], unitTypes:meta::pure::metamodel::type::Type[*], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
   $unitTypes->fold({t, ths| $ths->addUnitAcceptMethod($t, $conventions)}, $self);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addUnitAcceptMethod(self:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addUnitAcceptMethod(self:meta::external::language::java::metamodel::Class[1], type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
   let jThis     = j_this($self);
   let unitValue = j_variable(javaDouble(), 'unitValue');
@@ -569,7 +569,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addReadCheckedObjects(fetchClass:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addReadCheckedObjects(fetchClass:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conv            = $context.conventions;
    let checkedClass    = $context.baseProject->toOne()->resolve($conv->className(Checked));
@@ -619,7 +619,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addInitReading(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addInitReading(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let jThis  = j_this($self);
    let parser = $jThis->j_field('parser');
@@ -636,7 +636,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addGetField(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addGetField(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let field      = javaClass('java.lang.reflect.Field');
   let clazz      = j_parameter(javaClassType(), 'clazz');
@@ -660,7 +660,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addIsFinished(self:meta::external::language::java::metamodel::Class[1], sourceClassName:String[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addIsFinished(self:meta::external::language::java::metamodel::Class[1], sourceClassName:String[1]): meta::external::language::java::metamodel::Class[1]
 {
   let jThis            = j_this($self);
   let getCurrentToken  = $jThis->j_invoke('getCurrentToken', [], javaInt());
@@ -681,7 +681,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addDestroyReading(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addDestroyReading(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let parser = j_this($self)->j_field('parser');
 
@@ -692,7 +692,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addConstructor(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addConstructor(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let in = j_parameter(javaInputStream(),'in');
 
@@ -705,7 +705,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addGetCurrentToken(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addGetCurrentToken(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let tokenStream = j_this($self)->j_field('xmlTokenStream');
 
@@ -714,7 +714,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addCurrentFieldName(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addCurrentFieldName(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let jThis            = j_this($self);
   let getCurrentToken  = $jThis->j_invoke('getCurrentToken', [], javaInt());
@@ -742,7 +742,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addAcceptToken(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addAcceptToken(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let expectedToken    = j_parameter(javaInt(), 'expectedToken');
   let jThis            = j_this($self);
@@ -754,7 +754,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addAcceptToken_Message(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addAcceptToken_Message(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let expectedToken = j_parameter(javaInt(), 'expectedToken');
   let errorMessage  = j_parameter(javaString(), 'errorMessage');
@@ -768,7 +768,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addAcceptAppendToRecord(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addAcceptAppendToRecord(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let append        = j_parameter(javaBoolean(), 'appendToRecord');
   let jThis         = j_this($self);
@@ -784,7 +784,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addAppendToRecord(self:meta::external::language::java::metamodel::Class[1], sourceClassName:String[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addAppendToRecord(self:meta::external::language::java::metamodel::Class[1], sourceClassName:String[1]): meta::external::language::java::metamodel::Class[1]
 {
   let jThis         = j_this($self);
   let isNewRecord   = $jThis->j_field('isNewRecord');
@@ -829,7 +829,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
 
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addSkip(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addSkip(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let jThis            = j_this($self);
   let getCurrentToken  = $jThis->j_invoke('getCurrentToken', [], javaInt());
@@ -875,7 +875,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addCheckToken(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addCheckToken(self:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
   let expectedToken   = j_parameter(javaInt(), 'expectedToken');
   let jThis           = j_this($self);
@@ -887,7 +887,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::addCheckToken_Message(self:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::addCheckToken_Message(self:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
   let expectedToken   = j_parameter(javaInt(), 'expectedToken');
   let errorMessage    = j_parameter(javaString(), 'errorMessage');
@@ -901,20 +901,20 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
   ));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::xml::nextToken(parser:Code[1]): Code[1] { $parser->j_invoke('nextToken', [], jsonToken()); }
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::nextToken(parser:Code[1]): Code[1] { $parser->j_invoke('nextToken', [], jsonToken()); }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlFactory()         : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.XmlFactory'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlTokenStream()     : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.XmlTokenStream'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlBuilderFactory()  : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.XmlFactoryBuilder'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::jsonXmlParser()      : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlInputFactory()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLInputFactory'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlStreamReader()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamReader'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlStreamWriter()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamWriter'); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlStreamException() : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamException'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlFactory()         : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.XmlFactory'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlTokenStream()     : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.XmlTokenStream'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlBuilderFactory()  : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.XmlFactoryBuilder'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::jsonXmlParser()      : meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.dataformat.xml.deser.FromXmlParser'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlInputFactory()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLInputFactory'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlStreamReader()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamReader'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlStreamWriter()    : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamWriter'); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlStreamException() : meta::external::language::java::metamodel::Class[1] { javaClass('javax.xml.stream.XMLStreamException'); }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlStartElement()   : Code[1]  { xmlTokenStream()->j_field('XML_START_ELEMENT',   javaInt()); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlEndElement()     : Code[1]  { xmlTokenStream()->j_field('XML_END_ELEMENT',     javaInt()); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlAttributeName()  : Code[1]  { xmlTokenStream()->j_field('XML_ATTRIBUTE_NAME',  javaInt()); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlAttributeValue() : Code[1]  { xmlTokenStream()->j_field('XML_ATTRIBUTE_VALUE', javaInt()); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlText()           : Code[1]  { xmlTokenStream()->j_field('XML_TEXT',            javaInt()); }
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::xml::xmlEnd()            : Code[1]  { xmlTokenStream()->j_field('XML_END',             javaInt()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlStartElement()   : Code[1]  { xmlTokenStream()->j_field('XML_START_ELEMENT',   javaInt()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlEndElement()     : Code[1]  { xmlTokenStream()->j_field('XML_END_ELEMENT',     javaInt()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlAttributeName()  : Code[1]  { xmlTokenStream()->j_field('XML_ATTRIBUTE_NAME',  javaInt()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlAttributeValue() : Code[1]  { xmlTokenStream()->j_field('XML_ATTRIBUTE_VALUE', javaInt()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlText()           : Code[1]  { xmlTokenStream()->j_field('XML_TEXT',            javaInt()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::xmlEnd()            : Code[1]  { xmlTokenStream()->j_field('XML_END',             javaInt()); }
