@@ -25,7 +25,7 @@ import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::commo
 import meta::relational::executionPlan::platformBinding::legendJava::*;
 import meta::relational::executionPlan::platformBinding::legendJava::classResult::*;
 import meta::relational::executionPlan::platformBinding::legendJava::graphFetch::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::relational::graphFetch::executionPlan::*;
 import meta::relational::mapping::*;
 
