@@ -1,0 +1,5 @@
+{
+  "name" : "core_external_language_java_compiler",
+  "pattern" : "meta::external::language::java::compiler(::.*)?",
+  "dependencies" : ["platform", "core_external_language_java"]
+}
