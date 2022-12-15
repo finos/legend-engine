@@ -22,37 +22,39 @@ import meta::json::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::json::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
-function meta::pure::executionPlan::engine::java::graphFetch::json::jsonReaderClass(conventions:Conventions[1], path:String[1], srcTreeClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::jsonReaderClass(conventions:Conventions[1], path:String[1], srcTreeClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->planNodeClass('public', $path, 'JsonDataReader_' + $conventions->identifier($srcTreeClass->elementToPath('_')));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    createJsonReading($pureClass, $javaInterface, $path, [], $readableClasses, $readableEnums, $context, $debug);
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createJsonReading(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    newProject()
       ->addClasses(createJsonReadingClass($pureClass, $javaInterface, $path, $pathOffset, $readableClasses, $readableEnums, $context, $debug))
       ->addMavenDependency('com.fasterxml.jackson.core', 'jackson-core', '2.10.3');
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::json::hasDecimal(typeInfos:TypeInfoSet[1]):Boolean[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::hasDecimal(typeInfos:TypeInfoSet[1]):Boolean[1]
 {
   $typeInfos.typeInfos->filter(ti | $ti->instanceOf(ClassTypeInfo))->cast(@ClassTypeInfo)->exists(cti| $cti.properties->exists(p | $p.genericType.rawType == Decimal));
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createJsonReadingClass(pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], pathOffset:String[0..1], readableClasses:meta::pure::metamodel::type::Class<Any>[*], readableEnums:meta::pure::metamodel::type::Enumeration<Any>[*], context:GenerationContext[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let proto = $context.conventions->jsonReaderClass($path, $pureClass)
       ->implements($context.conventions->className(StoreStreamReader))
@@ -191,7 +193,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::json::createJsonRe
       ->addReadCheckedObjects($pureClass, $javaInterface, $path, $context);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::acceptManyMethod(conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::acceptManyMethod(conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    let jsonNode = j_parameter(jsonNode(), 'node');
    let result   = j_variable(javaList(javaTypeVar('T')), 'result');
@@ -221,7 +223,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
             );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createClassReadMethod(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createClassReadMethod(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], readableClasses:meta::pure::metamodel::type::Class<Any>[*]): meta::external::language::java::metamodel::Method[1]
 {
    let conventions   = $context.conventions;
    let javaClass     = $conventions->className($class);
@@ -271,7 +273,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::defineClassPreParseVariables(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::defineClassPreParseVariables(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): String[1]
 {
    let conventions = $context.conventions;
    $context.typeInfos->allProperties($class)->map({p|
@@ -294,7 +296,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    })->joinStrings('');
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::acceptProperties(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::acceptProperties(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]): String[1]
 {
    let conventions     = $context.conventions;
    let jsonToken       = $conventions->codeType(javaClass('com.fasterxml.jackson.core.JsonToken'))->codeToString($proto);
@@ -346,7 +348,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    $propertyClauses->joinStrings('\n');
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::validateMultiplicities(class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::validateMultiplicities(class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): String[1]
 {
    $context.typeInfos->allProperties($class)->map({p|
       let variable = '_'+$context.conventions->fieldName($p);
@@ -390,12 +392,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    })->joinStrings('');
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): String[1]
 {
    'this.stack.push(new '+$context.conventions->codeType($class->streamReadingDataClass($path, $context.conventions))->codeToString($proto)+'());\n'
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::returnCheckedObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): String[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::returnCheckedObject(class:meta::pure::metamodel::type::Class<Any>[1], proto:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): String[1]
 {
    let conventions            = $context.conventions;
    let dataClass              = $class->streamReadingDataClass($path, $conventions);
@@ -429,7 +431,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    '}';
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createAcceptMethod(type:meta::pure::metamodel::type::Type[1], proto:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createAcceptMethod(type:meta::pure::metamodel::type::Type[1], proto:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    let javaType         = $conventions->pureTypeToJavaType($type, PureOne);
    let acceptableNodes  = $conventions->jsonNodeTypesFor($type);
@@ -448,7 +450,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createEnumReadMethod(enum:meta::pure::metamodel::type::Enumeration<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createEnumReadMethod(enum:meta::pure::metamodel::type::Enumeration<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[1]
 {
    let conventions    = $context.conventions;
    let javaClass      = $conventions->className($enum);
@@ -462,7 +464,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::createUnitAcceptMethod(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::createUnitAcceptMethod(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
     let javaType                = $conventions->pureTypeToJavaType($type, PureOne);
     let simpleJavaName          = $type.name->toOne()->sanitizeIdentifier();
@@ -488,7 +490,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
     );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addReadCheckedObjects(proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::addReadCheckedObjects(proto:meta::external::language::java::metamodel::Class[1], pureClass:meta::pure::metamodel::type::Class<Any>[1], javaInterface:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conv            = $context.conventions;
    let checkedClass    = $context.baseProject->toOne()->resolve($conv->className(Checked));
@@ -525,7 +527,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::addConstructor(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let in = j_parameter(javaInputStream(),'in');
 
@@ -538,7 +540,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addInitReading(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[0..1], pathOffset:String[0..1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::addInitReading(class:meta::external::language::java::metamodel::Class[1], useBigDecimalForFloats:Boolean[0..1], pathOffset:String[0..1]): meta::external::language::java::metamodel::Class[1]
 {
    let jThis  = j_this($class);
    let parser = $jThis->j_field('parser');
@@ -566,7 +568,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
            ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addMethodExist(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::addMethodExist(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let methodName = j_parameter(javaString(), 'name');
    
@@ -580,7 +582,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::addMethodInvoke(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::addMethodInvoke(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let methodName = j_parameter(javaString(), 'name');
    let jsonNode   = j_parameter(jsonNode(), 'node');
@@ -598,4 +600,4 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    ));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::json::nextToken(parser:Code[1]): Code[1] { $parser->j_invoke('nextToken', [], jsonToken()); }
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::nextToken(parser:Code[1]): Code[1] { $parser->j_invoke('nextToken', [], jsonToken()); }

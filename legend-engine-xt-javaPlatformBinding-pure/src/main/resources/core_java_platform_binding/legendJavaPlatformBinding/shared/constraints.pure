@@ -22,8 +22,11 @@ import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
@@ -37,7 +40,7 @@ import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::milestoning::*;
 
-Class meta::pure::executionPlan::engine::java::ConstraintCheckingGenerationContext
+Class meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::ConstraintCheckingGenerationContext
 {
    enableConstraints    : Boolean[1];
    topLevelOnly         : Boolean[1];                       //TODO: This would be removed, once we have shifted from legacy flow
@@ -45,12 +48,12 @@ Class meta::pure::executionPlan::engine::java::ConstraintCheckingGenerationConte
    graphFetchTree       : RootGraphFetchTree<Any>[0..1];    //TODO: This would be made mandatory, once we have shifted from legacy flow
 }
 
-function <<doc.deprecated>> meta::pure::executionPlan::engine::java::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+function <<doc.deprecated>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
    createConstraintCheckingForClass($jClass, $class, [], $context, ^ConstraintCheckingGenerationContext(constraintsToExclude=$constraintsToExclude, enableConstraints=true, topLevelOnly=false), $debug);
 }
 
-function meta::pure::executionPlan::engine::java::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[0..1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForClass(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[0..1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'createConstraintCheckingForClass: \''+$class.name->toOne()+'\'\n',|''));
 
@@ -120,7 +123,7 @@ function meta::pure::executionPlan::engine::java::createConstraintCheckingForCla
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethods(infos:ConstraintInfo[*], javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], constraintsToExclude: String[*], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateConstraintMethods\n',|''));
    $infos->filter(c | !$c.constraint.name->in($constraintsToExclude))->fold(
@@ -133,7 +136,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateCon
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateConstraintMethod(javaClass:meta::external::language::java::metamodel::Class[1], info:ConstraintInfo[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::generateConstraintMethod(javaClass:meta::external::language::java::metamodel::Class[1], info:ConstraintInfo[1], class:meta::pure::metamodel::type::Class<Any>[1], conventions:Conventions[1], debug:DebugContext[1]): Project[1]
 {
    let constraint     = $info.constraint;
    print(if($debug.debug,|$debug.space+'- generateConstraintMethod \''+$info.id+'\'\n',|''));
@@ -181,12 +184,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateCon
    ]);
 }
 
-function meta::pure::executionPlan::engine::java::constraintMethodName(info:ConstraintInfo[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::constraintMethodName(info:ConstraintInfo[1]): String[1]
 {
    'constraint_' + $info.id;
 }
 
-Class meta::pure::executionPlan::engine::java::ConstraintCheckingState
+Class meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::ConstraintCheckingState
 {
    conventions  : Conventions[1];
    path         : String[1];
@@ -201,7 +204,7 @@ Class meta::pure::executionPlan::engine::java::ConstraintCheckingState
    pathNodes    : Code[*];
 }
 
-function meta::pure::executionPlan::engine::java::createConstraintCheckingForTree(jClass:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], tree:RootGraphFetchTree<Any>[1], debug:DebugContext[1]) : Pair<Method, Project>[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForTree(jClass:meta::external::language::java::metamodel::Class[1], path:String[1], context:GenerationContext[1], tree:RootGraphFetchTree<Any>[1], debug:DebugContext[1]) : Pair<Method, Project>[1]
 {
    let conventions   = $context.conventions;
    let defect        = $conventions->defectClass();
@@ -234,7 +237,7 @@ function meta::pure::executionPlan::engine::java::createConstraintCheckingForTre
    pair($allConstraintsMethod, $dependantProject);
 }
 
-function meta::pure::executionPlan::engine::java::createConstraintCheckingForTree_recurse(state:ConstraintCheckingState[1], debug:DebugContext[1]): Pair<Code, Project>[*]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createConstraintCheckingForTree_recurse(state:ConstraintCheckingState[1], debug:DebugContext[1]): Pair<Code, Project>[*]
 {
    let typeInfo         = $state.typeInfos->forClass($state.class);
    let allConstraints   = $typeInfo.constraints->map(c | pair($c, $state.class))->concatenate($typeInfo.supertypes->map(super| $state.typeInfos->forClass($super).constraints->map(c | pair($c, $super))));
@@ -328,7 +331,7 @@ function meta::pure::executionPlan::engine::java::createConstraintCheckingForTre
 }
 
 // Legacy
-function meta::pure::executionPlan::engine::java::createLegacyAllConstraintsMethod(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]) : Method[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::createLegacyAllConstraintsMethod(jClass: meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]) : Method[1]
 {
    print(if($debug.debug,|$debug.space+'createLegacyAllConstraintsMethod: \''+$class.name->toOne()+'\'\n',|''));
 

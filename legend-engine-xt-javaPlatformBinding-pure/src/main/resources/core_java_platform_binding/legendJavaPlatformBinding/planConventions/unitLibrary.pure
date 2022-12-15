@@ -15,7 +15,7 @@
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 
 function meta::pure::executionPlan::engine::java::registerUnitLibrary(conventions: Conventions[1]): Conventions[1]
 {

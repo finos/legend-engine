@@ -21,11 +21,12 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::merge::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::union::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
