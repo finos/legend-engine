@@ -775,8 +775,10 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
                 <version>${project.version}</version>
-                <!-- need to exclude everything as long is this submodule is not extracted to separate project
-                in order to satisfy enforser plugin-->
+                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module 
+                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of 
+                it's published pom.xml. As expected, the problem goes away when the same dependency comes 
+                from a different project.-->
                 <exclusions>
                     <exclusion>
                         <groupId>*</groupId>
