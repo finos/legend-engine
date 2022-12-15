@@ -20,7 +20,7 @@ Class meta::relational::memsql::tests::db::A
   window : Integer[1];
 }
 
-function meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
+function <<test.Test>> meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1]
 {
   let result = toSQLString(
     | meta::relational::memsql::tests::db::A.all()->project([s | $s.window], ['WINDOW']), 
@@ -31,7 +31,7 @@ function meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1
   assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
-function meta::relational::memsql::tests::db::testBooleanConversion() : Boolean[1]
+function <<test.Test>> meta::relational::memsql::tests::db::testBooleanConversion() : Boolean[1]
 {
   let result = toSQLString(
     | meta::relational::memsql::tests::db::A.all()->filter(s|if($s.window->in([1,2]), |true, |false))->project([s | $s.window], ['WINDOW']), 
