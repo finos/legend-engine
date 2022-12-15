@@ -15,7 +15,9 @@
 package org.finos.legend.engine.protocol.pure.v1.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SourceInformation
 {
     public String sourceId;

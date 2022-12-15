@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
+import org.finos.legend.engine.protocol.pure.v1.model.ElementBasedSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -42,6 +43,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class PureGrammarParser
@@ -75,6 +77,11 @@ public class PureGrammarParser
     }
 
     public PureModelContextData parseModel(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    {
+        return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    public PureModelContextData parseElements(Map<String, String> code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
         return this.parse(code, this.parsers, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
@@ -129,6 +136,60 @@ public class PureGrammarParser
         return builder.withElement(sectionIndex).build();
     }
 
+    private PureModelContextData parse(Map<String, String> code, DEPRECATED_PureGrammarParserLibrary parserLibrary, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+    {
+        // create the PureModelContextData builder
+        PureModelContextData.Builder builder = new PureModelContextData.Builder();
+        // create the section index
+        SectionIndex sectionIndex = new SectionIndex();
+        // NOTE: we intentionally set section index name and package like this since we don't want to expose this feature yet to end user
+        // in the consumer, we should ensure this does not leak and gets persisted to SDLC or Services per se
+        sectionIndex.name = "SectionIndex";
+        sectionIndex._package = "__internal__";
+        code.forEach((key, c) ->
+        {
+            try
+            {
+                String fullCode = DEFAULT_SECTION_BEGIN + c;
+                PureGrammarParserContext parserContext = new PureGrammarParserContext(this.extensions);
+                ParseTreeWalkerSourceInformation walkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(sourceId, lineOffset, columnOffset, key).withReturnSourceInfo(returnSourceInfo).build();
+                // init the parser
+                ParserErrorListener errorListener = new ParserErrorListener(walkerSourceInformation);
+                CodeLexerGrammar lexer = new CodeLexerGrammar(CharStreams.fromString(fullCode));
+                lexer.removeErrorListeners();
+                lexer.addErrorListener(errorListener);
+                CodeParserGrammar parser = new CodeParserGrammar(new CommonTokenStream(lexer));
+                parser.removeErrorListeners();
+                parser.addErrorListener(errorListener);
+                sectionIndex.sections.addAll(ListIterate.collect(parser.definition().section(), sectionCtx ->
+                {
+                    Integer currentElements = builder.noOfElements();
+                    Section currentSection =  this.visitSection(sectionCtx, parserLibrary, walkerSourceInformation, parserContext, builder::addElement, returnSourceInfo);
+                    if (builder.noOfElements() - currentElements > 1)
+                    {
+                        throw new EngineException("Cannot have more than one packageable element in one section",  walkerSourceInformation.getSourceInformation(sectionCtx), EngineErrorType.PARSER);
+                    }
+                    return currentSection;
+                }));
+            }
+            catch (Exception e)
+            {
+                if (e instanceof EngineException)
+                {
+                    EngineException exception = (EngineException) e;
+                    if (EngineErrorType.PARSER.equals(exception.getErrorType()))
+                    {
+                       SourceInformation sourceInformation = exception.getSourceInformation();
+                       ElementBasedSourceInformation newSourceInfo = new ElementBasedSourceInformation(sourceInformation.sourceId, sourceInformation.startLine, sourceInformation.startColumn, sourceInformation.endLine, sourceInformation.endColumn, key);
+                       throw new EngineException(exception.getMessage(), newSourceInfo, exception.getErrorType(), exception.getCause(), exception.getErrorCategory());
+                    }
+                }
+                throw e;
+            }
+        });
+        return builder.withElement(sectionIndex).build();
+    }
+
     private Section visitSection(CodeParserGrammar.SectionContext ctx, DEPRECATED_PureGrammarParserLibrary parserLibrary, ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext parserContext, Consumer<PackageableElement> elementConsumer, boolean returnSourceInfo)
     {
         String parserName = ctx.SECTION_START().getText().substring(4); // the prefix is `\n###` hence 4 characters
@@ -136,7 +197,7 @@ public class PureGrammarParser
         // since the CODE_BLOCK_START is `\n###` we have to subtract 1 more line than usual
         // also, we account for the line offset
         int lineOffset = ctx.SECTION_START().getSymbol().getLine() - 2 + walkerSourceInformation.getLineOffset();
-        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, 0).withReturnSourceInfo(returnSourceInfo).build();
+        ParseTreeWalkerSourceInformation sectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, 0, walkerSourceInformation.getElementPath()).withReturnSourceInfo(returnSourceInfo).build();
         SourceInformation sectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         if (ctx.sectionContent() != null)
         {

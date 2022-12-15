@@ -14,16 +14,25 @@
 
 package org.finos.legend.engine.language.pure.grammar.api.grammarToJson;
 
+import io.opentracing.Scope;
+import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
+import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
+import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -36,6 +45,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
@@ -57,6 +67,33 @@ public class GrammarToJson extends GrammarAPI
     {
         PureGrammarParserExtensions.logExtensionList();
         return grammarToJson(text, (a) -> PureGrammarParser.newInstance().parseModel(a, sourceId, lineOffset, 0, returnSourceInformation), pm, "Grammar to Json : Model");
+    }
+
+    @POST
+    @Path("elements")
+    @ApiOperation(value = "Generates Pure protocol JSON from Pure language text")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response elements(Map<String, String> input,
+                          @DefaultValue("") @ApiParam("The source ID to be used by the parser") @QueryParam("sourceId") String sourceId,
+                          @DefaultValue("0") @ApiParam("The line number the parser will offset by") @QueryParam("lineOffset") int lineOffset,
+                          @DefaultValue("true") @QueryParam("returnSourceInformation") boolean returnSourceInformation,
+                          @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        PureGrammarParserExtensions.logExtensionList();
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        try (Scope scope = GlobalTracer.get().buildSpan("Grammar to Json : Elements").startActive(true))
+        {
+            try
+            {
+                PureModelContextData data = PureGrammarParser.newInstance().parseElements(input, sourceId, lineOffset, 0, returnSourceInformation);
+                return ManageConstantResult.manageResult(profiles, data, ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports());
+            }
+            catch (Exception e)
+            {
+                return ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, Response.Status.BAD_REQUEST, profiles);
+            }
+        }
     }
 
     @POST

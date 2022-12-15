@@ -274,6 +274,11 @@ public class PureModelContextData extends PureModelContext
             return this.elements.add(element);
         }
 
+        public Integer noOfElements()
+        {
+            return this.elements.size();
+        }
+
         public boolean addElements(Iterable<? extends PackageableElement> elements)
         {
             return this.elements.addAllIterable(elements);

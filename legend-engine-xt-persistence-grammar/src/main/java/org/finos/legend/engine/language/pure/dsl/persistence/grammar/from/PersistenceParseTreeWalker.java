@@ -189,7 +189,7 @@ public class PersistenceParseTreeWalker
             int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
             // only add current walker source information column offset if this is the first line
             int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + triggerValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + triggerValueContext.ISLAND_OPEN().getSymbol().getText().length();
-            ParseTreeWalkerSourceInformation triggerValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+            ParseTreeWalkerSourceInformation triggerValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset, walkerSourceInformation.getElementPath()).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
             SourceInformation triggerValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
             TriggerSourceCode sourceCode = new TriggerSourceCode(textToParse, ctx.triggerType().getText(), triggerValueSourceInformation, triggerValueWalkerSourceInformation);

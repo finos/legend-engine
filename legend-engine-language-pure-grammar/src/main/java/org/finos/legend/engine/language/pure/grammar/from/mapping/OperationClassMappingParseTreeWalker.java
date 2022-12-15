@@ -87,7 +87,7 @@ public class OperationClassMappingParseTreeWalker
                 int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
                 // only add current walker source information column offset if this is the first line
                 int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + mappingContext.getStart().getCharPositionInLine();
-                ParseTreeWalkerSourceInformation combinedExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+                ParseTreeWalkerSourceInformation combinedExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset, walkerSourceInformation.getElementPath()).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
 
                 String lambdaString = mappingContext.mergeParameters().validationLambda().getText();
                 ValueSpecification valueSpecification = new DomainParser().parseCombinedExpression(lambdaString, combinedExpressionSourceInformation, this.parserContext);

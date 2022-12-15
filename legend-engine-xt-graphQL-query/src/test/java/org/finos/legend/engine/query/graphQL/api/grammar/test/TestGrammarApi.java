@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ExecutableDocument;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -127,13 +128,13 @@ public class TestGrammarApi extends TestGrammar<ExecutableDocument>
     }
 
     @Override
-    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB()
+    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonBatch()
     {
         return (a) -> graphQLGrammar.grammarToJsonBatch(a, null);
     }
 
     @Override
-    public Function2<Map<String, ExecutableDocument>, RenderStyle, Response> jsonToGrammarB()
+    public Function2<Map<String, ExecutableDocument>, RenderStyle, Response> jsonToGrammarBatch()
     {
         return (a, b) -> graphQLGrammar.jsonToGrammarBatch(a, b, null);
     }

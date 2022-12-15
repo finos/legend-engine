@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
 import org.finos.legend.engine.language.pure.grammar.api.jsonToGrammar.JsonToGrammar;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.shared.core.api.TestGrammar;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
@@ -107,13 +108,13 @@ public class TestGrammarValueSpecificationApi extends TestGrammar<ValueSpecifica
     }
 
     @Override
-    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB()
+    public Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonBatch()
     {
         return (a) -> grammarToJson.valueSpecificationBatch(a, null);
     }
 
     @Override
-    public Function2<Map<String, ValueSpecification>, RenderStyle, Response> jsonToGrammarB()
+    public Function2<Map<String, ValueSpecification>, RenderStyle, Response> jsonToGrammarBatch()
     {
         return (a, b) -> jsonToGrammar.valueSpecificationBatch(a, b, null);
     }

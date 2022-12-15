@@ -34,6 +34,7 @@ import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Map;
 
 public class GrammarAPI
@@ -90,12 +91,12 @@ public class GrammarAPI
     }
 
 
-    protected <T> Response jsonToGrammar(T graphFetchTree, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
+    protected <T> Response jsonToGrammar(T input, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
-            return Response.ok(func.apply(graphFetchTree, renderStyle)).build();
+            return Response.ok(func.apply(input, renderStyle)).build();
         }
         catch (Exception ex)
         {

@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -41,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -105,6 +107,55 @@ public class PureGrammarComposer
         return composedSections.select(section -> !section.isEmpty()).makeString("\n\n");
     }
 
+    public Map<String, String> renderPureModelContextDataForEachElement(PureModelContextData pureModelContextData)
+    {
+        List<PackageableElement> elements = pureModelContextData.getElements();
+        Set<PackageableElement> elementsToCompose = new HashSet<>(elements);
+        Map<String, String> composedSections = Maps.mutable.empty();
+        if (ListIterate.anySatisfy(elements, e -> e instanceof SectionIndex))
+        {
+            Map<String, PackageableElement> elementByPath = new HashMap<>();
+            // NOTE: here we handle duplication, first element with the duplicated path wins
+            elements.forEach(element -> elementByPath.putIfAbsent(element.getPath(), element));
+            LazyIterate.selectInstancesOf(elements, SectionIndex.class).forEach(sectionIndex -> this.renderSectionIndexForEachElement(sectionIndex, elementByPath, elementsToCompose, composedSections));
+        }
+
+        for (Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult> composer : this.context.extraFreeSectionComposers)
+        {
+            for (PackageableElement element: elements)
+            {
+                MutableList<String> composedSection = Lists.mutable.empty();
+                List<PackageableElement> els = org.eclipse.collections.impl.factory.Lists.mutable.of(element);
+                PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult result = composer.value(ListIterate.select(els, elementsToCompose::contains), this.context, composedSection);
+                if (result != null)
+                {
+                    composedSections.put(element.getPath(), result.value);
+                    // mark that the elements already been rendered by one of the extensions
+                    result.composedElements.forEach(elementsToCompose::remove);
+                }
+            }
+        }
+
+        // FIXME: the following logic should be removed completely when we move to use extensions
+        Predicate<PackageableElement> isDomainElement = e ->
+                (e instanceof Class) ||
+                        (e instanceof Association) ||
+                        (e instanceof Enumeration) ||
+                        (e instanceof Function) ||
+                        (e instanceof Profile) ||
+                        (e instanceof Measure);
+        if (ListIterate.anySatisfy(elements, isDomainElement))
+        {
+            this.DEPRECATED_renderSectionForEachElement(DomainParser.name, ListIterate.select(elements, isDomainElement), elementsToCompose, composedSections);
+        }
+        this.DEPRECATED_renderSectionForEachElement(MappingParser.name, pureModelContextData.getElementsOfType(Mapping.class), elementsToCompose, composedSections);
+        this.DEPRECATED_renderSectionForEachElement(ConnectionParser.name, pureModelContextData.getElementsOfType(PackageableConnection.class), elementsToCompose, composedSections);
+        this.DEPRECATED_renderSectionForEachElement(RuntimeParser.name, pureModelContextData.getElementsOfType(PackageableRuntime.class), elementsToCompose, composedSections);
+
+
+        return composedSections;
+    }
+
     private void DEPRECATED_renderSection(String parserName, List<? extends PackageableElement> elements, Set<PackageableElement> elementsToCompose, List<String> composedSections)
     {
         List<? extends PackageableElement> els = ListIterate.select(elements, elementsToCompose::contains);
@@ -117,6 +168,54 @@ public class PureGrammarComposer
             builder.append("\n");
             composedSections.add(builder.toString());
         }
+    }
+
+    private void DEPRECATED_renderSectionForEachElement(String parserName,  List<? extends PackageableElement> elements, Set<PackageableElement> elementsToCompose, Map<String, String> composedSections)
+    {
+        for (PackageableElement element: elements)
+        {
+            if (elementsToCompose.contains(element))
+            {
+                elementsToCompose.remove(element);
+                List<PackageableElement> els = org.eclipse.collections.impl.factory.Lists.mutable.of(element);
+                StringBuilder builder = new StringBuilder();
+                builder.append(!parserName.equals(DEFAULT_SECTION_NAME) ? ("###" + parserName + "\n") : "");
+                builder.append(LazyIterate.collect(els, this::DEPRECATED_renderElement).makeString("\n\n"));
+                builder.append("\n");
+                composedSections.put(element.getPath(), builder.toString());
+            }
+        }
+    }
+
+    private void renderSectionIndexForEachElement(SectionIndex sectionIndex, Map<String, PackageableElement> elementByPath, Set<PackageableElement> elementsToCompose, Map<String, String> composedSections)
+    {
+        List<Section> sections = sectionIndex.sections;
+        ListIterate.forEach(sections, section ->
+        {
+            List<PackageableElement> elements = ListIterate.distinct(section.elements).collect(path ->
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.append(("###" + section.parserName + "\n"));
+                // NOTE: here we remove duplicates in both the imports and the content
+                List<String> imports = section instanceof ImportAwareCodeSection ? ListIterate.distinct(((ImportAwareCodeSection) section).imports) : new ArrayList<>();
+                if (!imports.isEmpty())
+                {
+                    builder.append(LazyIterate.collect(imports, _import -> ("import " + PureGrammarComposerUtility.convertPath(_import) + "::*;")).makeString("\n"));
+                    builder.append("\n");
+                }
+                PackageableElement element = elementByPath.get(path);
+                // mark that the elements already been rendered in one of the section
+                elementsToCompose.remove(element);
+                if (element != null)
+                {
+                    List<PackageableElement> els = org.eclipse.collections.impl.factory.Lists.mutable.of(element);
+                    builder.append(this.context.extraSectionComposers.stream().map(composer -> composer.value(els, this.context, section.parserName)).filter(Objects::nonNull).findFirst()
+                    .orElseGet(() -> LazyIterate.collect(els, this::DEPRECATED_renderElement).makeString("\n\n")));
+                }
+                composedSections.put(element.getPath(), builder.toString());
+                return element;
+            }).select(Objects::nonNull);
+        });
     }
 
     private void renderSectionIndex(SectionIndex sectionIndex, Map<String, PackageableElement> elementByPath, Set<PackageableElement> elementsToCompose, List<String> composedSections)

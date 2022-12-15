@@ -21,7 +21,9 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.MapIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.ElementBasedSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.BatchResult;
 import org.finos.legend.engine.shared.core.api.grammar.GrammarAPI;
@@ -47,9 +49,9 @@ public abstract class TestGrammar<Z>
 
     public abstract Function2<Z, RenderStyle, Response> jsonToGrammar();
 
-    public abstract Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonB();
+    public abstract Function<Map<String, GrammarAPI.ParserInput>, Response> grammarToJsonBatch();
 
-    public abstract Function2<Map<String, Z>, RenderStyle, Response> jsonToGrammarB();
+    public abstract Function2<Map<String, Z>, RenderStyle, Response> jsonToGrammarBatch();
 
     protected void test(String str, boolean returnSourceInfo)
     {
@@ -91,7 +93,7 @@ public abstract class TestGrammar<Z>
     {
         try
         {
-            Map<String, Z> fullResult = objectMapper.readValue(grammarToJsonB().apply(input).getEntity().toString(), getBatchResultSpecializedClass()).result;
+            Map<String, Z> fullResult = objectMapper.readValue(grammarToJsonBatch().apply(input).getEntity().toString(), getBatchResultSpecializedClass()).result;
             MapIterate.forEachKeyValue(input, (a, b) ->
             {
                 assertEquals(b.value, jsonToGrammar().apply(fullResult.get(a), RenderStyle.PRETTY)
@@ -109,7 +111,7 @@ public abstract class TestGrammar<Z>
     {
         try
         {
-            Response result = grammarToJsonB().apply(input);
+            Response result = grammarToJsonBatch().apply(input);
             BatchResult<Z> fullResult = objectMapper.readValue(result.getEntity().toString(), getBatchResultSpecializedClass());
             MapIterate.forEachKeyValue(expected, (a, b) ->
             {
@@ -157,6 +159,13 @@ public abstract class TestGrammar<Z>
             input.value = val.getTwo();
             res.put(val.getOne(), input);
         });
+        return res;
+    }
+
+    protected Map<String, String> createElementInput(Pair<String, String>... pairs)
+    {
+        Map<String, String> res = Maps.mutable.empty();
+        ArrayIterate.forEach(pairs, val -> res.put(val.getOne(), val.getTwo()));
         return res;
     }
 }

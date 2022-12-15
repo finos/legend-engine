@@ -102,7 +102,7 @@ public class PersistenceContextParseTreeWalker
             int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
             // only add current walker source information column offset if this is the first line
             int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + platformValueContext.ISLAND_OPEN().getSymbol().getCharPositionInLine() + platformValueContext.ISLAND_OPEN().getSymbol().getText().length();
-            ParseTreeWalkerSourceInformation platformValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+            ParseTreeWalkerSourceInformation platformValueWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset, walkerSourceInformation.getElementPath()).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
             SourceInformation platformValueSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
             PersistencePlatformSourceCode sourceCode = new PersistencePlatformSourceCode(textToParse, ctx.platformType().getText(), platformValueSourceInformation, platformValueWalkerSourceInformation);
@@ -162,7 +162,7 @@ public class PersistenceContextParseTreeWalker
         int startLine = ctx.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
-        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset, walkerSourceInformation.getElementPath()).build();
 
         PrimitiveTypeValue primitiveTypeValue = new PrimitiveTypeValue();
         primitiveTypeValue.primitiveType = parser.parsePrimitiveValue(ctx.getText(), serviceParamSourceInformation, null);
@@ -207,7 +207,7 @@ public class PersistenceContextParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.ISLAND_OPEN().getSymbol().getCharPositionInLine() + ctx.ISLAND_OPEN().getSymbol().getText().length();
-        ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        ParseTreeWalkerSourceInformation embeddedConnectionWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset, walkerSourceInformation.getElementPath()).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         SourceInformation embeddedConnectionSourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return this.connectionParser.parseEmbeddedRuntimeConnections(embeddedConnectionParsingText, embeddedConnectionWalkerSourceInformation, embeddedConnectionSourceInformation);
     }

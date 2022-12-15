@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
+import org.finos.legend.engine.protocol.pure.v1.model.ElementBasedSourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 /**
@@ -57,17 +58,25 @@ public class ParseTreeWalkerSourceInformation
 
     private final boolean returnSourceInfo;
 
+    private final String elementPath;
+
     private ParseTreeWalkerSourceInformation(ParseTreeWalkerSourceInformation.Builder builder)
     {
         this.sourceId = builder.sourceId;
         this.lineOffset = builder.lineOffset;
         this.columnOffset = builder.columnOffset;
         this.returnSourceInfo = builder.returnSourceInfo;
+        this.elementPath = builder.elementPath;
     }
 
     public String getSourceId()
     {
         return this.sourceId;
+    }
+
+    public String getElementPath()
+    {
+        return this.elementPath;
     }
 
     public int getLineOffset()
@@ -87,17 +96,17 @@ public class ParseTreeWalkerSourceInformation
 
     public SourceInformation getSourceInformation(ParserRuleContext parserRuleContext)
     {
-        return getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset);
+        return getSourceInformation(this.sourceId, parserRuleContext.getStart(), parserRuleContext.getStop(), this.lineOffset, this.columnOffset, this.elementPath);
     }
 
     public SourceInformation getSourceInformation(Token token)
     {
-        return getSourceInformation(this.sourceId, token, token, this.lineOffset, this.columnOffset);
+        return getSourceInformation(this.sourceId, token, token, this.lineOffset, this.columnOffset, this.elementPath);
     }
 
     public SourceInformation getSourceInformation(Token startToken, Token endToken)
     {
-        return getSourceInformation(this.sourceId, startToken, endToken, this.lineOffset, this.columnOffset);
+        return getSourceInformation(this.sourceId, startToken, endToken, this.lineOffset, this.columnOffset, this.elementPath);
     }
 
     private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset)
@@ -110,6 +119,23 @@ public class ParseTreeWalkerSourceInformation
             int endLine = endToken.getLine() + lineOffset;
             int endColumn = endToken.getCharPositionInLine() + endToken.getText().length() + (endToken.getLine() == 1 ? columnOffset : 0);
             return new SourceInformation(sourceId, startLine, startColumn, endLine, endColumn);
+        }
+        return null;
+    }
+
+    private SourceInformation getSourceInformation(String sourceId, Token startToken, Token endToken, int lineOffset, int columnOffset, String elementPath)
+    {
+        if (returnSourceInfo)
+        {
+            SourceInformation sourceInformation = this.getSourceInformation(sourceId, startToken, endToken, lineOffset, columnOffset);
+            if (elementPath != null)
+            {
+                return new ElementBasedSourceInformation(sourceInformation.sourceId, sourceInformation.startLine, sourceInformation.startColumn, sourceInformation.endLine, sourceInformation.endColumn, elementPath);
+            }
+            else
+            {
+                return sourceInformation;
+            }
         }
         return null;
     }
@@ -137,6 +163,7 @@ public class ParseTreeWalkerSourceInformation
         private int lineOffset;
         private int columnOffset;
         private boolean returnSourceInfo;
+        private String elementPath;
 
         public Builder(String sourceId, int lineOffset, int columnOffset)
         {
@@ -146,12 +173,22 @@ public class ParseTreeWalkerSourceInformation
             this.returnSourceInfo = true;
         }
 
+        public Builder(String sourceId, int lineOffset, int columnOffset, String elementPath)
+        {
+            this.sourceId = sourceId;
+            this.lineOffset = lineOffset;
+            this.columnOffset = columnOffset;
+            this.returnSourceInfo = true;
+            this.elementPath = elementPath;
+        }
+
         public Builder(ParseTreeWalkerSourceInformation walkerSourceInformation)
         {
             this.sourceId = walkerSourceInformation.sourceId;
             this.columnOffset = walkerSourceInformation.columnOffset;
             this.lineOffset = walkerSourceInformation.lineOffset;
             this.returnSourceInfo = walkerSourceInformation.returnSourceInfo;
+            this.elementPath = walkerSourceInformation.elementPath;
         }
 
         public ParseTreeWalkerSourceInformation.Builder withSourceId(String sourceId)
