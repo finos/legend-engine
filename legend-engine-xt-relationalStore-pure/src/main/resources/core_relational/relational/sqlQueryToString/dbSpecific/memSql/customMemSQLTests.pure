@@ -31,6 +31,17 @@ function meta::relational::memsql::tests::db::testReservedKeywords() : Boolean[1
   assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root`', $result);
 }
 
+function meta::relational::memsql::tests::db::testBooleanConversion() : Boolean[1]
+{
+  let result = toSQLString(
+    | meta::relational::memsql::tests::db::A.all()->filter(s|if($s.window->in([1,2]), |true, |false))->project([s | $s.window], ['WINDOW']), 
+      meta::relational::memsql::tests::db::simpleRelationalMappingForMemSQLWindowKeyword,
+      meta::relational::runtime::DatabaseType.MemSQL, 
+      meta::relational::extension::relationalExtensions());  
+
+  assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root` where case when `root`.`window` in (1, 2) then true else false end', $result);      
+}
+
 ###Relational
 Database meta::relational::memsql::tests::db::schema1
 (
