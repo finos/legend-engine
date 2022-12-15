@@ -73,7 +73,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[2]|$p->transformRegexpParams()})),
+    //TODO: Fix broken implementation before enabling matches
+    //dynaFnToSql('matches',                $allStates,            ^ToSql(format='rlike(%s)', transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
