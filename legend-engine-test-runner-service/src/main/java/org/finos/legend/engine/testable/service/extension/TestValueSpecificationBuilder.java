@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PrimitiveType;
@@ -204,6 +205,12 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
     public ValueSpecification visit(CFloat cFloat)
     {
         return cFloat;
+    }
+
+    @Override
+    public ValueSpecification visit(CByteStream cByteStream)
+    {
+        return cByteStream;
     }
 
     @Override
