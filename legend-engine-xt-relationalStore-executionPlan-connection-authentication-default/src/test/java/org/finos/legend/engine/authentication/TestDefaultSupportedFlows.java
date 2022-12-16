@@ -29,7 +29,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.RedshiftDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,7 +59,6 @@ public class TestDefaultSupportedFlows
                 {DatabaseType.Snowflake, SnowflakeDatasourceSpecification.class, SnowflakePublicAuthenticationStrategy.class},
                 {DatabaseType.BigQuery, BigQueryDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class},
                 {DatabaseType.BigQuery, BigQueryDatasourceSpecification.class, GCPWorkloadIdentityFederationAuthenticationStrategy.class},
-                {DatabaseType.Spanner, SpannerDatasourceSpecification.class, GCPApplicationDefaultCredentialsAuthenticationStrategy.class},
                 {DatabaseType.SqlServer, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
                 {DatabaseType.Databricks, DatabricksDatasourceSpecification.class, ApiTokenAuthenticationStrategy.class},
                 {DatabaseType.Redshift, RedshiftDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class},
