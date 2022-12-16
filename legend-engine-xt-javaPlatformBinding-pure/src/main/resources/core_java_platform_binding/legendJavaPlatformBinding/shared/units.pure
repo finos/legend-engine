@@ -22,7 +22,8 @@ import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::execution::*;
@@ -34,7 +35,7 @@ import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::milestoning::*;
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfaceForUnit(typeInfo:UnitTypeInfo[1], unitIface:meta::external::language::java::metamodel::Class[1],conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[*]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::units::generateInterfaceForUnit(typeInfo:UnitTypeInfo[1], unitIface:meta::external::language::java::metamodel::Class[1],conventions:Conventions[1], debug:DebugContext[1]): meta::external::language::java::metamodel::Class[*]
 {
    print(if($debug.debug,|$debug.space+'generateInterfaceForUnit: \''+$typeInfo.type.name->toOne()+'\'\n', |''));
    let measure = $typeInfo.unit().measure->toOne();
@@ -43,12 +44,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateInt
       ->concatenate($measureInterface);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfaceForMeasure(measure: meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::units::generateInterfaceForMeasure(measure: meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let result = $conventions->className($measure)->addModifiers(['public', 'interface']);
 }
 
-function meta::pure::executionPlan::engine::java::unitImplementationClasses(context:GenerationContext[1]): meta::external::language::java::metamodel::Class[*]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::units::unitImplementationClasses(context:GenerationContext[1]): meta::external::language::java::metamodel::Class[*]
 {
 
    $context.typeInfos->allUnitInfos()
@@ -57,7 +58,7 @@ function meta::pure::executionPlan::engine::java::unitImplementationClasses(cont
       ->map(uc| $context.baseProject->match([p0:Project[0]|$uc, p:Project[1]|$p->resolve($uc)]));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::createUnitClasses(context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::units::createUnitClasses(context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
     let conventions = $context.conventions;
     let unitTypesInMapping = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
@@ -124,7 +125,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::createUnitC
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::createUnitDependencies(context:GenerationContext[1], debug:DebugContext[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::units::createUnitDependencies(context:GenerationContext[1], debug:DebugContext[1]): Code[1]
 {
    let conventions = $context.conventions;
    let unitTypesInMapping = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
