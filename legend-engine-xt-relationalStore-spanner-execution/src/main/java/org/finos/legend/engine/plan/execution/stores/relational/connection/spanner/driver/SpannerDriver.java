@@ -19,7 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 public class SpannerDriver extends DriverWrapper
 {
 
-    public static String DRIVER_CLASSNAME = "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcDriver";
+    public static String DRIVER_CLASSNAME = "com.google.cloud.spanner.jdbc.JdbcDriver";
 
     @Override
     protected String getClassName()
