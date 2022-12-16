@@ -17,11 +17,11 @@ import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPureDateLiteral() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests::testPureDateLiteral() : Boolean[1]
 {
    let conventions = engineConventions([]);
    javaExpressionTests($conventions)
@@ -32,7 +32,7 @@ meta::pure::executionPlan::engine::java::tests::testPureDateLiteral() : Boolean[
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPureDateGetUnits() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests::testPureDateGetUnits() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Year', {| %2018-12-31->year()}, '(long) org.finos.legend.engine.plan.dependencies.domain.date.PureDate.parsePureDate("2018-12-31").getYear()', javaLong())
@@ -44,7 +44,7 @@ meta::pure::executionPlan::engine::java::tests::testPureDateGetUnits() : Boolean
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPureDateCompare() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests::testPureDateCompare() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Greater Than', {| %2019-12-31 > %2018-12-31}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThan(org.finos.legend.engine.plan.dependencies.domain.date.PureDate.parsePureDate("2019-12-31"), org.finos.legend.engine.plan.dependencies.domain.date.PureDate.parsePureDate("2018-12-31"))', javaBoolean())
@@ -68,7 +68,7 @@ meta::pure::executionPlan::engine::java::tests::testPureDateCompare() : Boolean[
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPureDateDerivations() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests::testPureDateDerivations() : Boolean[1]
 {
    let conventions = engineConventions([]);
    javaExpressionTests($conventions)
@@ -113,7 +113,7 @@ meta::pure::executionPlan::engine::java::tests::testPureDateDerivations() : Bool
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPureDateToday() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests::testPureDateToday() : Boolean[1]
 {
    let conventions = engineConventions([]);
    let today = today();
@@ -128,7 +128,7 @@ meta::pure::executionPlan::engine::java::tests::testPureDateToday() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPureDateRunPureTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::tests::testPureDateRunPureTests() : Boolean[1]
 {
    javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
       meta::pure::functions::date::tests::testDateDiffYears__Boolean_1_,

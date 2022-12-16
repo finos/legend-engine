@@ -111,7 +111,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::generat
    let units = if($unitInfos->isEmpty(),
                   | [],
                   {|
-                     let iface = $conventions->meta::pure::executionPlan::engine::java::unitInterface();
+                     let iface = $conventions->meta::pure::executionPlan::platformBinding::legendJava::library::unit::unitInterface();
                      $unitInfos->map(uti | $uti->generateInterfaceForUnit($iface, $conventions, $debug->indent()))->concatenate($iface);
                   }
                );

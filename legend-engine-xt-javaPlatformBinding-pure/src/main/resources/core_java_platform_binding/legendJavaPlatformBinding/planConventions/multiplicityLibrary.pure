@@ -18,8 +18,9 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::*;
 
-function meta::pure::executionPlan::engine::java::registerMultiplicityLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::registerMultiplicityLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')
@@ -36,7 +37,7 @@ function meta::pure::executionPlan::engine::java::registerMultiplicityLibrary(co
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::engine::java::toOne(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::toOne(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
 {
    let params = $fe.parametersValues->evaluateAndDeactivate();
 
@@ -51,7 +52,7 @@ function meta::pure::executionPlan::engine::java::toOne(fe:FunctionExpression[1]
    $conventions->className(Library)->j_invoke('toOne', $collection, $oneType);
 }
 
-function meta::pure::executionPlan::engine::java::toOneMany(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::toOneMany(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
 {
    let params = $fe.parametersValues->evaluateAndDeactivate();
 
