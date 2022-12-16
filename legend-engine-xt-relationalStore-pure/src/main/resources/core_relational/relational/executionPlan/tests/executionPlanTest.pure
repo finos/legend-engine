@@ -2000,7 +2000,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testTemporalDateVariabl
 function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimple() : Boolean[1]
 {
    let res = executionPlan(
-                  |meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalName']),
+                  |meta::pure::mapping::modelToModel::test::shared::dest::Firm.all()->project([f|$f.legalName], ['legalName'])->olapGroupBy(['legalName'],'legalName'->func(x|$x->count()),'Firm Instance Count'),
                   meta::pure::mapping::modelToModel::test::simple::simpleModelMappingWithAssociation,
                   ^Runtime(connections = [^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(),
                                                                                                    mappings = meta::pure::mapping::modelToModel::test::shared::relationalMapping),
@@ -2009,9 +2009,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimp
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(legalName, String, "", "")]\n'+
-      '  resultColumns = [("legalName", VARCHAR(200))]\n'+
-      '  sql = select "root".name as "legalName" from Firm as "root"\n'+
+      '  type = TDS[(legalName, String, "", ""), (Firm Instance Count, Integer, INT, "")]\n'+
+      '  resultColumns = [("legalName", VARCHAR(200)), ("Firm Instance Count", "")]\n'+
+      '  sql = select "root".name as "legalName", count("root".name) OVER (Partition By "root".name ) as "Firm Instance Count" from Firm as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
       ')\n';
    assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));

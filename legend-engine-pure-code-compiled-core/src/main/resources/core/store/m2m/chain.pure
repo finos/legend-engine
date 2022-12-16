@@ -193,7 +193,8 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                     let newTypeParams =  $fe.genericType.typeArguments->map(t| let typeParam = $t.rawType->toOne();
                                                                                                                if($typeParam->instanceOf(DataType), 
                                                                                                                   | if($typeParam->instanceOf(Enumeration),| ^GenericType(rawType=String),| $t),
-                                                                                                                  | ^GenericType(rawType=sourceClassFromFunction($fe).srcClass);
+                                                                                                                  | let sc = sourceClassFromFunction($fe);
+                                                                                                                    if($sc->isNotEmpty(),|^GenericType(rawType=$sc.srcClass),|$t);
                                                                                                                 );
                                                                                                           );
                                                     let type = $fe.genericType.rawType->toOne();
@@ -221,7 +222,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                   );,
          r:FunctionRoutedValueSpecification[1]|$r.value->reprocess($e, $mapping, $mappings, $r);,
          e:StoreMappingRoutedValueSpecification[1]|$e.value->reprocess($e, $mapping, $mappings, []);,
-         v:VariableExpression[1]|     let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
+         v:VariableExpression[1]|     let newGenericType = if($v.genericType.rawType->toOne()->instanceOf(Class) && $e.sets->isNotEmpty(),| ^GenericType(rawType=$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass), | $v.genericType);
                                           ^Res(
                                        newExpression = ^$v(genericType=$newGenericType),
                                        vars = newMap(pair($v.name, $newGenericType))
@@ -315,11 +316,11 @@ function meta::pure::mapping::modelToModel::chain::createEvalFunctionExpression(
    );
 }
 
-function  meta::pure::mapping::modelToModel::chain::sourceClassFromFunction(fe:FunctionExpression[1]):PureInstanceSetImplementation[1]
+function meta::pure::mapping::modelToModel::chain::sourceClassFromFunction(v:ValueSpecification[1]):PureInstanceSetImplementation[0..1]
 {
-   if($fe.parametersValues->at(0)->instanceOf(FunctionExpression),
-              |meta::pure::mapping::modelToModel::chain::sourceClassFromFunction($fe.parametersValues->at(0)->cast(@FunctionExpression)),
-              |$fe.parametersValues->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation););
+   $v->match([f:FunctionExpression[1]|$f.parametersValues->at(0)->meta::pure::mapping::modelToModel::chain::sourceClassFromFunction(),
+              s:StoreMappingRoutedValueSpecification[1]|$s.sets->at(0)->cast(@PureInstanceSetImplementation),
+              v:ValueSpecification[1]|[]])
 }
 
 function meta::pure::mapping::modelToModel::chain::identifyTDSColumns(originalStoreQueryExpression:FunctionExpression[1], extensions:meta::pure::extension::Extension[*]):TDSColumn[*]
@@ -401,30 +402,34 @@ function meta::pure::mapping::modelToModel::chain::buildLambdaType(lambda:Lambda
 {
    let fType = $lambda->toOne()->genericType().typeArguments.rawType->cast(@FunctionType)->toOne();
    let ret = $lambda.expressionSequence->last().genericType.rawType->toOne();
-   let returnType = if ($ret->instanceOf(DataType), |$ret, |$lambda.expressionSequence->last()->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass->toOne());
-   ^GenericType
-   (
-      rawType = LambdaFunction,
-      typeArguments = ^GenericType
-                      (
-                         rawType = ^$fType
-                                   (
-                                      parameters = $fType.parameters->map(p|if($m->isEmpty(),
-                                                                               |if ($r->isEmpty(),
-                                                                                    |// We can find a value for the new type
-                                                                                     // Most likely because the lambda function's body is a constant (or not leveraging the variable)
-                                                                                     // We assume that the type is Any at this point ... because the variable is not used anyway...
-                                                                                     ^$p(genericType=^GenericType(rawType=Any)),
-                                                                                    |let cl = $r.builtPropertyMap->toOne()->get($p.name)->toOne()->cast(@PureInstanceSetImplementation).srcClass;
-                                                                                     ^$p(genericType=^GenericType(rawType=$cl->toOne()));
-                                                                                ),
-                                                                               |^$p(genericType=$m->toOne()->get($p.name)->toOne()))
-                                                                          ),
-                                      returnType = if($fType.returnType.rawType->toOne()->instanceOf(PrimitiveType),|$fType.returnType,|^GenericType(rawType=$returnType)),
-                                      returnMultiplicity= $fType.returnMultiplicity
-                                   )
-                      )
-   );
+   if(!$ret->instanceOf(DataType) && !$lambda.expressionSequence->last()->toOne()->instanceOf(StoreMappingRoutedValueSpecification)
+          ,|$lambda.classifierGenericType->toOne()
+          ,|let returnType = if ($ret->instanceOf(DataType),|$ret
+                                                           ,|$lambda.expressionSequence->last()->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass->toOne());
+            ^GenericType
+            (
+                rawType = LambdaFunction,
+                typeArguments = ^GenericType
+                                (
+                                  rawType = ^$fType
+                                            (
+                                                parameters = $fType.parameters->map(p|if($m->isEmpty(),
+                                                                                        |if ($r->isEmpty(),
+                                                                                              |// We can find a value for the new type
+                                                                                              // Most likely because the lambda function's body is a constant (or not leveraging the variable)
+                                                                                              // We assume that the type is Any at this point ... because the variable is not used anyway...
+                                                                                              ^$p(genericType=^GenericType(rawType=Any)),
+                                                                                              |let cl = $r.builtPropertyMap->toOne()->get($p.name)->toOne()->cast(@PureInstanceSetImplementation).srcClass;
+                                                                                              ^$p(genericType=^GenericType(rawType=$cl->toOne()));
+                                                                                          ),
+                                                                                        |^$p(genericType=$m->toOne()->get($p.name)->toOne()))
+                                                                                    ),
+                                                returnType = if($fType.returnType.rawType->toOne()->instanceOf(PrimitiveType),|$fType.returnType,|^GenericType(rawType=$returnType)),
+                                                returnMultiplicity= $fType.returnMultiplicity
+                                            )
+                                )
+            );
+      );
 }
 
 Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::chain::Dummy
