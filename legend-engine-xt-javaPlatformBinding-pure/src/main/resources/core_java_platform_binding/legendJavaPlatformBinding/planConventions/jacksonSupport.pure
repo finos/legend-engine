@@ -20,8 +20,9 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
 import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 
-function meta::pure::executionPlan::engine::java::addJacksonSupport(conventions:Conventions[1]):Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::addJacksonSupport(conventions:Conventions[1]):Conventions[1]
 {
    // For now ensure conventions agree with expected types here.  If in future we need to support other choices
    // we would extend conventions here to be adaptive.
@@ -42,7 +43,7 @@ function meta::pure::executionPlan::engine::java::addJacksonSupport(conventions:
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::engine::java::jsonNodeGetter(conventions:Conventions[1], node:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonNodeGetter(conventions:Conventions[1], node:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
 {
    let pureDate = $conventions->className(PureDate);
 
@@ -84,7 +85,7 @@ function meta::pure::executionPlan::engine::java::jsonNodeGetter(conventions:Con
 }
 
 
-function meta::pure::executionPlan::engine::java::jacksonXmlParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jacksonXmlParserGetter(conventions:Conventions[1], parser:String[1], type:meta::pure::metamodel::type::Type[1]): String[1]
 {
    let pureDate = $conventions->className(PureDate);
 
@@ -125,7 +126,7 @@ function meta::pure::executionPlan::engine::java::jacksonXmlParserGetter(convent
    )))))))))));
 }
 
-function meta::pure::executionPlan::engine::java::jacksonXmlParserGetter(conventions:Conventions[1], parser:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jacksonXmlParserGetter(conventions:Conventions[1], parser:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
 {
   let pureDate = $conventions->className(PureDate);
   let text     = $parser->j_invoke('getText', [], javaString());
@@ -167,7 +168,7 @@ function meta::pure::executionPlan::engine::java::jacksonXmlParserGetter(convent
    )))))))))));
 }
 
-function meta::pure::executionPlan::engine::java::jacksonGeneratorWrite(conventions:Conventions[1], generator:Code[1], data:Code[1], type:meta::pure::metamodel::type::Type[1], config: AlloySerializationConfig[0..1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jacksonGeneratorWrite(conventions:Conventions[1], generator:Code[1], data:Code[1], type:meta::pure::metamodel::type::Type[1], config: AlloySerializationConfig[0..1]): Code[1]
 {
    if($type == String,
       | $generator->j_invoke('writeString', $data, javaVoid()),
@@ -212,7 +213,7 @@ function meta::pure::executionPlan::engine::java::jacksonGeneratorWrite(conventi
    ))))))))))));
 }
 
-function meta::pure::executionPlan::engine::java::fullyQualifiedEnumName(generator:Code[1], data:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::fullyQualifiedEnumName(generator:Code[1], data:Code[1], type:meta::pure::metamodel::type::Type[1]): Code[1]
 {
    $generator->j_invoke('writeString', j_string('')
                 ->j_invoke('concat', j_string($type->elementToPath()), javaString())
@@ -220,7 +221,7 @@ function meta::pure::executionPlan::engine::java::fullyQualifiedEnumName(generat
                 ->j_invoke('concat', [$data->j_invoke('name', [], javaString())], javaString()))
 }
 
-function meta::pure::executionPlan::engine::java::jacksonTokenTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): String[*]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jacksonTokenTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): String[*]
 {
    if($type == String, 
       | $conventions->tokenType('VALUE_STRING'), 
@@ -256,7 +257,7 @@ function meta::pure::executionPlan::engine::java::jacksonTokenTypesFor(conventio
    ))))))))));
 }
 
-function meta::pure::executionPlan::engine::java::jsonNodeTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): Code[*]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonNodeTypesFor(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1]): Code[*]
 {
    if($type == String, 
       | $conventions->nodeType('STRING'), 
@@ -291,7 +292,7 @@ function meta::pure::executionPlan::engine::java::jsonNodeTypesFor(conventions:C
 
 
 
-function meta::pure::executionPlan::engine::java::jsonGenerator(): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonGenerator(): meta::external::language::java::metamodel::Class[1]
 {
    javaClass('com.fasterxml.jackson.core.JsonGenerator')
       ->addMethod(javaMethod(javaVoid(), 'writeStartArray',  []))
@@ -304,23 +305,23 @@ function meta::pure::executionPlan::engine::java::jsonGenerator(): meta::externa
       ->addMethod(javaMethod(javaVoid(), 'writeNumber',      javaParam(javaLong(), 'x')));
 }
 
-function meta::pure::executionPlan::engine::java::jsonFactory():                               meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonFactory'); }
-function meta::pure::executionPlan::engine::java::jsonParser():                                meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonParser'); }
-function meta::pure::executionPlan::engine::java::jsonPointerBasedFilter():                    meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.filter.JsonPointerBasedFilter'); }
-function meta::pure::executionPlan::engine::java::jsonFilteringParserDelegate():               meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.filter.FilteringParserDelegate'); }
-function meta::pure::executionPlan::engine::java::jsonToken():                                 meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonToken'); }
-function meta::pure::executionPlan::engine::java::objectMapper():                              meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.ObjectMapper'); }
-function meta::pure::executionPlan::engine::java::jsonNode():                                  meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.JsonNode'); }
-function meta::pure::executionPlan::engine::java::jsonNodeType():                              meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.node.JsonNodeType'); }
-function meta::pure::executionPlan::engine::java::deserializationFeatureBigDecimalForFloats(): meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.DeserializationFeature'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonFactory():                               meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonFactory'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonParser():                                meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonParser'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonPointerBasedFilter():                    meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.filter.JsonPointerBasedFilter'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonFilteringParserDelegate():               meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.filter.FilteringParserDelegate'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonToken():                                 meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.core.JsonToken'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::objectMapper():                              meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.ObjectMapper'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonNode():                                  meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.JsonNode'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::jsonNodeType():                              meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.node.JsonNodeType'); }
+function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::deserializationFeatureBigDecimalForFloats(): meta::external::language::java::metamodel::Class[1] { javaClass('com.fasterxml.jackson.databind.DeserializationFeature'); }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::tokenType(conventions:Conventions[1], name:String[1]): String[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::jackson::tokenType(conventions:Conventions[1], name:String[1]): String[1]
 {
    let tokenClass = javaClass('com.fasterxml.jackson.core.JsonToken');
    $conventions->codeType($tokenClass)->codeToString()+'.'+$name;
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::nodeType(conventions:Conventions[1], name:String[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::jackson::nodeType(conventions:Conventions[1], name:String[1]): Code[1]
 {
    jsonNodeType()->j_invoke('valueOf', j_string($name), jsonNodeType());   
 }

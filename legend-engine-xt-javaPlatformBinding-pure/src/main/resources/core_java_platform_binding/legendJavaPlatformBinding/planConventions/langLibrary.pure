@@ -20,9 +20,10 @@ import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::lang::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 
-function meta::pure::executionPlan::engine::java::registerLangLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::registerLangLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
 
@@ -55,7 +56,7 @@ function meta::pure::executionPlan::engine::java::registerLangLibrary(convention
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::engine::java::castCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::castCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
 {
    let type   = resolveHackedUnit($ctx, $ctx.params->at(1));
 
@@ -67,7 +68,7 @@ function meta::pure::executionPlan::engine::java::castCoder(ctx:FuncCoderContext
    $collection->j_cast($castTo);
 }
 
-function meta::pure::executionPlan::engine::java::whenSubTypeCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::whenSubTypeCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
 {
    let type   = resolveHackedUnit($ctx, $ctx.params->at(1));
    
@@ -80,7 +81,7 @@ function meta::pure::executionPlan::engine::java::whenSubTypeCoder(ctx:FuncCoder
    $collection->j_streamOf()->js_filter($isInstance);   
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::resolveHackedUnit(ctx:FuncCoderContext[1], exmpl:ValueSpecification[1]) : meta::external::language::java::metamodel::Type[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::lang::resolveHackedUnit(ctx:FuncCoderContext[1], exmpl:ValueSpecification[1]) : meta::external::language::java::metamodel::Type[1]
 {
    let isHackedUnit = $exmpl->type()->instanceOf(Unit);
 
@@ -90,7 +91,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::resolveHack
   );
 }
 
-function meta::pure::executionPlan::engine::java::matchPredicates(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::matchPredicates(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
 {
    assert($ctx.params->at(1)->instanceOf(InstanceValue), 'Only inline lambdas currently supported');
    let x          = j_parameter(javaObject(), 'x');
@@ -119,7 +120,7 @@ function meta::pure::executionPlan::engine::java::matchPredicates(ctx:FuncCoderC
 
 }
 
-function meta::pure::executionPlan::engine::java::adaptLambdas(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::adaptLambdas(ctx:FuncCoderContext[1], object:Code[1]) : Code[1]
 {
    assert($ctx.params->at(1)->instanceOf(InstanceValue), 'Only inline lambdas currently supported');
 
@@ -161,7 +162,7 @@ function meta::pure::executionPlan::engine::java::adaptLambdas(ctx:FuncCoderCont
 
 }
 
-function meta::pure::executionPlan::engine::java::ifCoder(ctx:FuncCoderContext[1], condition:Code[1], then:Code[1], else:Code[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::ifCoder(ctx:FuncCoderContext[1], condition:Code[1], then:Code[1], else:Code[1]) : Code[1]
 {
    let returnType = $ctx.returnType();
    let supplier   = javaSupplier($returnType); 
@@ -173,14 +174,14 @@ function meta::pure::executionPlan::engine::java::ifCoder(ctx:FuncCoderContext[1
    );
 }
 
-function meta::pure::executionPlan::engine::java::letCoder(ctx:FuncCoderContext[1], name:Code[1], expression:Code[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::letCoder(ctx:FuncCoderContext[1], name:Code[1], expression:Code[1]) : Code[1]
 {
    let varName = $ctx.params->at(0)->cast(@InstanceValue).values->at(0)->cast(@String); 
 
    j_variable($ctx.returnType(), $ctx.conventions->identifier($varName))->j_declare($expression);
 }
 
-function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::processNew(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
    print(if($debug.debug,|$debug.space+'processNew: \n',|''));
    let args = $fe.parametersValues->evaluateAndDeactivate();
@@ -193,7 +194,7 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
          
-   let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::engine::java::enrichTypeInfos($cls, []);
+   let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->enrichTypeInfos($cls, []);
     
    let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
    
@@ -256,7 +257,7 @@ function meta::pure::executionPlan::engine::java::processNew(fe: FunctionExpress
    $invoke->dependsOn($dep);
 }
 
-function meta::pure::executionPlan::engine::java::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::enrichTypeInfos(infos:meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1], for:meta::pure::metamodel::type::Class<Any>[1], seen:meta::pure::metamodel::type::Class<Any>[*]): meta::pure::executionPlan::platformBinding::typeInfo::TypeInfoSet[1]
 {
    if($seen->contains($for),
       | $infos,
@@ -266,7 +267,7 @@ function meta::pure::executionPlan::engine::java::enrichTypeInfos(infos:meta::pu
             ->meta::pure::executionPlan::platformBinding::typeInfo::addForClassWithAllPropertiesViaAssociations($for);
 
          let nowSeen = $seen->concatenate($for);
-         $withCls->meta::pure::executionPlan::platformBinding::typeInfo::forClass($for).supertypes->fold({super, inf| $inf->meta::pure::executionPlan::engine::java::enrichTypeInfos($super, $nowSeen)}, $withCls);
+         $withCls->meta::pure::executionPlan::platformBinding::typeInfo::forClass($for).supertypes->fold({super, inf| $inf->enrichTypeInfos($super, $nowSeen)}, $withCls);
       }
    );
 }

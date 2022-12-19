@@ -33,7 +33,7 @@ public class Test_ExecutionPlan_JavaPlatform_UsingPureClient extends TestSuite
                 {
                     CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::executionPlan::engine::java", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::pure::executionPlan::platformBinding::legendJava::library", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
                 });
     }

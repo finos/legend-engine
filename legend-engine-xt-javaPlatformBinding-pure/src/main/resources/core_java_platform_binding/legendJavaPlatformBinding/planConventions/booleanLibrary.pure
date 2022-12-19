@@ -18,8 +18,9 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::boolean::*;
 
-function meta::pure::executionPlan::engine::java::registerBooleanLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::registerBooleanLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
 
@@ -50,7 +51,7 @@ function meta::pure::executionPlan::engine::java::registerBooleanLibrary(convent
    $conventions->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::engine::java::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1]): Code[1]
 {
    let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
       | $left->j_eq($right),

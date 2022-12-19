@@ -14,11 +14,11 @@
 
 import meta::external::language::java::factory::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testToOne() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::tests::testToOne() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('toOne from one', {|5->toOne()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOne(5L)', javaLong())
@@ -30,7 +30,7 @@ meta::pure::executionPlan::engine::java::tests::testToOne() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testToOneMany() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::tests::testToOneMany() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('toOneMany from one', {|5->toOneMany()}, 'org.finos.legend.engine.plan.dependencies.util.Library.toOneMany(5L)', javaLong()->javaList())
