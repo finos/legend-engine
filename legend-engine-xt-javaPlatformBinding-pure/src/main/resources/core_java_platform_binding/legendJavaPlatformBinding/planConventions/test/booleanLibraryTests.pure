@@ -14,11 +14,11 @@
 
 import meta::external::language::java::factory::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0', doc.todo='empty equalities' }
-meta::pure::executionPlan::engine::java::tests::testEquals() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testEquals() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('equalities on one primitive true', {|5 == 5}, '5L == 5L', javaBoolean())
@@ -51,7 +51,7 @@ meta::pure::executionPlan::engine::java::tests::testEquals() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testBooleanInQualities() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testBooleanInQualities() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('true > null', {|true > []}, 'org.finos.legend.engine.plan.dependencies.util.Library.greaterThan(true, (Boolean) null)', javaBoolean())
@@ -73,7 +73,7 @@ meta::pure::executionPlan::engine::java::tests::testBooleanInQualities() : Boole
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
-meta::pure::executionPlan::engine::java::tests::pureBooleanTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::pureBooleanTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
       meta::pure::functions::boolean::tests::testIsPrimitive__Boolean_1_,

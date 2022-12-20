@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
-meta::pure::executionPlan::engine::java::tests::pureMetaTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::meta::tests::pureMetaTests() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
       // instanceOf

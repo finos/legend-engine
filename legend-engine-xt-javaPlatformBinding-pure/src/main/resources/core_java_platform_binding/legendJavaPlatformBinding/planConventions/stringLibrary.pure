@@ -19,8 +19,9 @@ import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::engine::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::string::*;
 
-function meta::pure::executionPlan::engine::java::registerStringLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::string::registerStringLibrary(conventions: Conventions[1]): Conventions[1]
 {   
    let library  = $conventions->className(Library);
    
@@ -84,7 +85,7 @@ function meta::pure::executionPlan::engine::java::registerStringLibrary(conventi
 }
 
 
-function <<access.private>> meta::pure::executionPlan::engine::java::addPureToStringMethod(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::string::addPureToStringMethod(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    let any           = j_parameter(javaObject(), 'any');
    let dateClasses = [Date, StrictDate, DateTime]->map(t| $conventions->pureTypeToJavaType($t, PureOne))->cast(@meta::external::language::java::metamodel::Class)->removeDuplicates();
@@ -113,7 +114,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addPureToSt
    )->nonNull());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::addToRepresentationMethod(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::string::addToRepresentationMethod(class:meta::external::language::java::metamodel::Class[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    let any         = j_parameter(javaObject(), 'any');
    let dateClasses = [Date, StrictDate, DateTime]->map(t| $conventions->pureTypeToJavaType($t, PureOne))->cast(@meta::external::language::java::metamodel::Class)->removeDuplicates();
@@ -136,7 +137,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::addToRepres
    ));   
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::codeDateToString(conventions: Conventions[1], date:Code[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::string::codeDateToString(conventions: Conventions[1], date:Code[1]): Code[1]
 {
    let pureDate = $conventions->className(PureDate);
    if($conventions->dateType() == $pureDate,
@@ -145,7 +146,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::codeDateToS
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::codeDateFormat(conventions: Conventions[1], date:Code[1], formatString:Code[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::string::codeDateFormat(conventions: Conventions[1], date:Code[1], formatString:Code[1]): Code[1]
 {
    let pureDate = $conventions->className(PureDate);
    if($conventions->dateType() == $pureDate,
