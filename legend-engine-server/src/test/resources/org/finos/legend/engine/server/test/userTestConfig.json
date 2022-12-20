@@ -62,6 +62,10 @@
     "alloy" : {
       "host": "127.0.0.1",
       "port": 8075
+    },
+    "sdlc": {
+      "host": "localhost",
+      "port": 6100
     }
   },
   "temporarytestdb": {
