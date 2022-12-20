@@ -27,8 +27,6 @@ import meta::external::shared::format::metamodel::*;
 import meta::external::shared::format::utils::*;
 
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 

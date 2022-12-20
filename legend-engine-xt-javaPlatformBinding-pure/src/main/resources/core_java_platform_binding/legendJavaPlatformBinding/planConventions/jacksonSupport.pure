@@ -17,9 +17,8 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::jackson::addJacksonSupport(conventions:Conventions[1]):Conventions[1]

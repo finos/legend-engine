@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 
 // Prepare
 function meta::pure::executionPlan::platformBinding::legendJava::platform::union::prepareForPlatformUnionNode(p:PlatformUnionExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GenerationContext[1]

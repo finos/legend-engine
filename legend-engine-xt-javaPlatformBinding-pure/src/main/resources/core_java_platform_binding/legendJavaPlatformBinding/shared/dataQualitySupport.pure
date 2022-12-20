@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.acc
 
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
-import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::addDataQualitySupport(conventions:Conventions[1]):Conventions[1]
 {

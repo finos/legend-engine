@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::external::language::java::factory::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::*;
 import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
@@ -236,7 +236,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLangPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+   javaPureTests(engineConventions([]), [
       meta::pure::functions::lang::tests::match::testMatchOneWithZeroOne__Boolean_1_,
       meta::pure::functions::lang::tests::match::testMatchOneWith__Boolean_1_,
       meta::pure::functions::lang::tests::match::testMatchOneWithMany__Boolean_1_,
