@@ -1174,6 +1174,30 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::base64::te
     assertEquals('select cast(to_base64(`root`.alphaNumericString) as char) as `res1`, cast(from_base64(cast(to_base64(`root`.alphaNumericString) as char)) as char) as `res2` from dataTable as `root`', $s);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::splitPart::testToSQLSplitPartWithoutH2():Boolean[1]
+{
+    let prestoSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+    let sybaseIQSql = toSQLString(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select split_part("root".stringDateFormat,\'-\',2) as "Part" from dataTable as "root"', $prestoSql);
+    assertEquals('select isnull((select row_value from sa_split_list("root".stringDateFormat,\'-\') where line_num = 2), \'\') as "Part" from dataTable as "root"', $sybaseIQSql);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::sqlFunction::splitPart::testToSQLSplitPartWithH2():Boolean[1]
+{
+    let H2result = execute(
+      |SqlFunctionDemo.all()->project([s | $s.splitResult], ['Part']), 
+      testMapping, 
+      testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
+    assertEquals(['06', '02'], $H2result.values->at(0).rows.values);
+}
+
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testDayOfWeekNumberWithFirstDay():Boolean[1]
 {
     let mon = toSQLString(|SqlFunctionDemo.all()->project([p | $p.dayOfWeekNumber],['Day Of Week Number']),
@@ -1222,6 +1246,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    string2Integer : Integer[1];
    floatModResult : Integer[1];
    floatRemResult : Integer[1];
+   splitResult :String[1];
 
    string2Date: Date[1];
    string2TimestampStr: String[1];   
@@ -1358,6 +1383,7 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           date : datePart(dateTime),
           dayOfWeekNumber: dayOfWeekNumber(dateTime,'Monday'),
           dayOfWeek: dayOfWeek(dateTime),
+          splitResult: splitPart(stringDateFormat, '-', 2),
 
           encodeBase64Result : encodeBase64(alphaNumericString),
           decodeBase64Result : decodeBase64(encodeBase64(alphaNumericString))

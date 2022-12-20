@@ -559,3 +559,20 @@ function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNu
   assertEquals('select DAY_OF_WEEK("root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where (ISO_DAY_OF_WEEK("root".tradeDate) <> \'2\' OR ISO_DAY_OF_WEEK("root".tradeDate) is null)', $result->sqlRemoveFormatting(0));
 }
 
+function <<test.Test>> meta::relational::tests::query::function::testFilterUsingSplitPartFunctionWithoutH2():Boolean[1]
+{
+   let fn = {|Person.all()->project([s | $s.firm->toOne().nameAndAddress()->splitPart(',', 2)], ['splitRes'])};
+
+   let sqlPresto = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
+   assertEquals('select split_part(concat("firmTable_d#2_dy0_d_q_d#2_d_m1".LEGALNAME, \',\', "addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r".NAME),\',\',2) as "splitRes" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d_q_d#2_d_m1" on ("firmTable_d#2_dy0_d_q_d#2_d_m1".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r" on ("addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r".ID = "firmTable_d#2_dy0_d_q_d#2_d_m1".ADDRESSID)', $sqlPresto);
+
+   let sqlSybaseIQ = toSQLString($fn, simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
+   assertEquals('select isnull((select row_value from sa_split_list("firmTable_d#2_dy0_d_q_d#2_d_m1".LEGALNAME+\',\'+"addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r".NAME,\',\') where line_num = 2), \'\') as "splitRes" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d_q_d#2_d_m1" on ("firmTable_d#2_dy0_d_q_d#2_d_m1".ID = "root".FIRMID) left outer join addressTable as "addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r" on ("addressTable_d#2_dy0_d#2_i2_d#3_d#2_dy0_d#2_m2_md_d_m1_r".ID = "firmTable_d#2_dy0_d_q_d#2_d_m1".ADDRESSID)', $sqlSybaseIQ);
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::function::testFilterUsingSplitPartFunctionWithH2():Boolean[1]
+{
+   let H2result = execute(|Person.all()->project([s | $s.firm->toOne().nameAndAddress()->splitPart(',', 2)], ['splitRes']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameElements(['', 'Cupertino', 'Mountain View', 'Mountain View', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'Tokyo', 'Tokyo'], $H2result.values.rows.values);
+   assertSameSQL('select legend_h2_extension_split_part(concat("firmtable_0".LEGALNAME, \',\', "addresstable_0".NAME),\',\',2) as "splitRes" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "firmtable_0".ADDRESSID)', $H2result);
+}

@@ -354,6 +354,18 @@ function meta::relational::functions::sqlQueryToString::default::processLimit(s:
       );
 }
 
+function meta::relational::functions::sqlQueryToString::processSplitPart():LambdaFunction<{String[3]->String[1]}>[1]
+{
+    {p:String[3]
+                | let string = $p->at(0);
+                  let separator = $p->at(1);
+                  let position = $p ->at(2) -> meta::pure::functions::string::parseInteger();
+                  assert($position>0, 'SplitPart supports only index values greater than or equal to 1');
+                  assert($separator->replace('\'', '')->length() > 0,'SplitPart does not support empty separators');
+                  $string+','+$separator+','+($p->at(2));
+    }
+}
+
 function meta::relational::functions::sqlQueryToString::default::processSliceOrDropDefault(s:SelectSQLQuery[1], format:Format[1], size:Any[1]):String[1]
 {
    '%s limit %s,%s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake(), $size]);

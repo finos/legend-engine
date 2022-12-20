@@ -296,3 +296,10 @@ function {doc.doc ='Validates a string is a UUID as per RFC4122'}  meta::pure::f
 {
    $value->makeString()->matches('^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$');
 }
+
+function meta::pure::functions::string::splitPart(string: String[1], separator: String[1], position: Integer[1]):String[1]
+{
+    assert($position>0, 'SplitPart supports only index values greater than or equal to 1');
+    assert($separator->length() > 0,'SplitPart does not support empty separators');
+    $string->split($separator)->at($position-1);
+}

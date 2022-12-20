@@ -95,6 +95,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::g
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='legend_h2_extension_split_part(%s)', transform=processSplitPart())),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
