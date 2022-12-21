@@ -208,6 +208,7 @@ function meta::external::format::protobuf::transformation::fromPure::classToMess
                                                   field=$subClasses->map(s | ^Field(name=$s.name->toOne()->meta::pure::functions::string::splitOnCamelCase()->joinStrings('_')->toLower(), 
                                                                                     type=$typesMap->get($s)->toOne(),
                                                                                     number=$subClasses->indexOf($s)+1,
+                                                                                    optional=false,
                                                                                     repeated=false
                                                                                     ))
                                                 ););
@@ -259,6 +260,7 @@ function meta::external::format::protobuf::transformation::fromPure::propertyToF
                                                                          valueType=$typesMap->get($property.genericType.typeArguments->at(1).rawType->toOne())->toOne())
                                                               ,| $typesMap->get($property.genericType.rawType->toOne())->toOne()),
       number = $index,
+      optional = (!$property.multiplicity->hasLowerBound() || ($property.multiplicity.lowerBound->toOne().value == 0)) && ($property.multiplicity->hasUpperBound() || ($property.multiplicity.upperBound->toOne().value == 1)),
       repeated = !$property.multiplicity->hasUpperBound() || ($property.multiplicity.upperBound->toOne().value > 1)
    );
 }

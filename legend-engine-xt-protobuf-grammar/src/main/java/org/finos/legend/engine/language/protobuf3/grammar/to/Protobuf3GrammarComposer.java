@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.protobuf3.grammar.to;
 
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.eclipse.collections.impl.utility.StringIterate;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BlockLiteral;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Bool;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.BoolLiteral;
@@ -303,7 +302,7 @@ public class Protobuf3GrammarComposer
 
     public String renderField(Field field, String currentPackage)
     {
-        return "  " + (field.repeated ? "repeated " : "") + renderProtoBufType(field.type, currentPackage) + " " + field.name + " = " + field.number + ";";
+        return "  " + (field.optional ? "optional " : "") + (field.repeated ? "repeated " : "") + renderProtoBufType(field.type, currentPackage) + " " + field.name + " = " + field.number + ";";
     }
 
     public String renderEnumeration(Enumeration enumeration, String currentPackage)
