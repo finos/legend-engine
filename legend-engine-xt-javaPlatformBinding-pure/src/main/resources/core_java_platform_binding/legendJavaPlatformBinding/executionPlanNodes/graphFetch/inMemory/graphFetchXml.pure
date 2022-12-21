@@ -19,8 +19,7 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
@@ -503,7 +502,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
                           ]
                       ));
 
-  let parseException = $conventions->className(meta::pure::executionPlan::engine::DataParsingException); 
+  let parseException = $conventions->className(DataParsingException); 
   let parseEx        = j_parameter($parseException, 'ex');
   let illegalArgEx   = j_parameter(javaIllegalArgumentException(), 'ex');
 
@@ -899,7 +898,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
   $self->addMethod(javaMethod('private', javaVoid(), 'check', [$expectedToken, $errorMessage],
     j_if($getCurrentToken->j_ne($expectedToken),
-      j_throw(j_new($conventions->className(meta::pure::executionPlan::engine::DataParsingException), $errorMessage))
+      j_throw(j_new($conventions->className(DataParsingException), $errorMessage))
     )
   ));
 }

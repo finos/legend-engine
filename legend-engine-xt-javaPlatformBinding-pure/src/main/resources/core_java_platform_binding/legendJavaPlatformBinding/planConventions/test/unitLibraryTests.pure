@@ -15,6 +15,7 @@
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 import meta::pure::functions::asserts::*;
 import meta::pure::unit::*;
@@ -23,7 +24,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::unitPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+   javaPureTests(engineConventions([]), [
       meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testNewUnit__Boolean_1_,
       meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitType__Boolean_1_,
       meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitValue__Boolean_1_,

@@ -111,7 +111,7 @@ import java.util.stream.Stream;
  */
 public class GeneratePureConfig
 {
-    private static final String PURE_PACKAGE = "meta::pure::executionPlan::engine::";
+    private static final String PURE_PACKAGE = "meta::pure::executionPlan::platformBinding::legendJava::";
 
     static final Map<String, Class<?>> MAIN_DEPENDENCIES = new LinkedHashMap<>();
 
