@@ -44,6 +44,13 @@
                             </excludes>
                         </filter>
                     </filters>
+                    <shadedArtifactAttached>true</shadedArtifactAttached>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>org.finos.legend.engine.server.Server</mainClass>
+                        </transformer>
+                    </transformers>
                 </configuration>
                 <executions>
                     <execution>
@@ -51,15 +58,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.finos.legend.engine.server.Server</mainClass>
-                                </transformer>
-                            </transformers>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -534,11 +532,11 @@
             <artifactId>jul-to-slf4j</artifactId>
             <scope>runtime</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.slf4j</groupId>-->
-<!--            <artifactId>slf4j-log4j12</artifactId>-->
-<!--            <scope>runtime</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.slf4j</groupId>-->
+        <!--            <artifactId>slf4j-log4j12</artifactId>-->
+        <!--            <scope>runtime</scope>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
@@ -606,11 +604,11 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.pure</groupId>-->
-<!--            <artifactId>legend-pure</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.finos.legend.pure</groupId>-->
+        <!--            <artifactId>legend-pure</artifactId>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-configuration-external</artifactId>
@@ -646,7 +644,8 @@
                             <tag>${project.version}</tag>
                             <username>${env.DOCKER_USERNAME}</username>
                             <password>${env.DOCKER_PASSWORD}</password>
-                            <repository>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</repository>
+                            <repository>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}
+                            </repository>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -674,7 +673,8 @@
                             <tag>snapshot</tag>
                             <username>${env.DOCKER_USERNAME}</username>
                             <password>${env.DOCKER_PASSWORD}</password>
-                            <repository>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}</repository>
+                            <repository>registry.hub.docker.com/${env.DOCKER_USERNAME}/${project.artifactId}
+                            </repository>
                         </configuration>
                     </plugin>
                 </plugins>
