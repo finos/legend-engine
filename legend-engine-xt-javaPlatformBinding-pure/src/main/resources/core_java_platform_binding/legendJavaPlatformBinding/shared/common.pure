@@ -21,8 +21,6 @@ import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
@@ -169,10 +167,10 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createG
          
          let propertyMultiplicity     = $mp.multiplicity;
          let bodyWithMultiplicityCast = if($propertyMultiplicity->isToOne(),
-                                           | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('toOne', $body, $returnType),
+                                           | $conventions->className(Library)->j_invoke('toOne', $body, $returnType),
                                            |
                                            if($propertyMultiplicity->isZeroOne(),
-                                              | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('first', $body, $returnType),
+                                              | $conventions->className(Library)->j_invoke('first', $body, $returnType),
                                               | $body));
 
          let newProject = newProject()->addClass($class->addMethod(

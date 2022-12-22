@@ -363,7 +363,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         }
         catch (Exception e)
         {
-            Assert.assertEquals("Assert failure at (resource:/core_external_format_flatdata_java_platform_binding/legendJavaPlatformBinding/externalize.pure line:96 column:4), \"Multi Section serialization is not yet supported !!\"", e.getMessage());
+            Assert.assertEquals("Assert failure at (resource:/core_external_format_flatdata_java_platform_binding/legendJavaPlatformBinding/externalize.pure line:95 column:4), \"Multi Section serialization is not yet supported !!\"", e.getMessage());
         }
     }
 

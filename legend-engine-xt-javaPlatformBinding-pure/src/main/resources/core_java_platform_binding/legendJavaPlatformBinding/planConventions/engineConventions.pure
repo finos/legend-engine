@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::extension::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 
@@ -30,7 +28,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatform
    platformDependencyUpdate: Function<{Conventions[1], Extension[*]->Conventions[1]}>[0..1];
 }
 
-function meta::pure::executionPlan::engine::java::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
 {
    let extraProhibitedFunctions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaProhibitedFunctionsExtension).prohibitedFunctions;
 
