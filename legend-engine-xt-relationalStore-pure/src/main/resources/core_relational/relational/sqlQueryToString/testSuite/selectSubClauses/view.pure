@@ -25,7 +25,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let result = executeViaPlan(|OrderPnl.all()->project(#/OrderPnl/pnl#), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
   
   runDataAssertion($result, $config,
-  | assertSameElements(['100.0,200.0,150.0'], $result.values.rows->map(r|$r.values)->makeString(','));
+  | assertSameElements(['100.0', '200.0', '150.0'], $result.values.rows->map(r|$r.values->toString()));
   );
 }
 
@@ -33,12 +33,12 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let result = executeViaPlan(|OrderPnl.all()->project([o|$o.order.id, o|$o.pnl],['orderId','pnl']), unionOnViewsMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  runDataAssertion($result, $config,| assertSameElements(['1,100.0, 2,200.0, 4,150.0, 3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', ')););
+  runDataAssertion($result, $config,| assertSameElements(['1,100.0', '2,200.0', '4,150.0', '3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))););
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::view::testViewOnView(config:DbTestConfig[1]):Boolean[1]
 {
   let result = executeViaPlan(|OrderPnl.all()->project([o|$o.order.id, o|$o.pnl],['orderId','pnl']), unionOnViewOnViewMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
 
-  runDataAssertion($result, $config,| assertSameElements(['1,100.0, 2,200.0, 4,150.0, 3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))->makeString(', ')););
+  runDataAssertion($result, $config,| assertSameElements(['1,100.0', '2,200.0', '4,150.0', '3,0.0'], $result.values.rows->map(r|$r.values->makeString(','))););
 }
