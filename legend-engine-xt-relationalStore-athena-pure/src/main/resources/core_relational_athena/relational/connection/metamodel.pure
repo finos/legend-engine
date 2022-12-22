@@ -1,0 +1,6 @@
+Class meta::pure::alloy::connections::alloy::specification::AthenaDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
+{
+   awsRegion: String[1];
+   s3OutputLocation: String[1];
+   databaseName: String[1];
+}
