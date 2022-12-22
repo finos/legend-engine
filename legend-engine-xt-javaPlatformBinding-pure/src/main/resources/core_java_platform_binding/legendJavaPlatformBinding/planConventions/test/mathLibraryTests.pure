@@ -14,7 +14,7 @@
 
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testNumberLiterals() : Boolean[1]
@@ -143,7 +143,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testLimitations() : Boolean[1]
 {
-   javaExpressionTests(meta::pure::executionPlan::engine::java::engineConventions([]))
+   javaExpressionTests(engineConventions([]))
       // Number
       ->addTest('Number Max', {| [10.0,1,-2]->max()}, 'java.util.Arrays.<Number>asList(10.0, 1L, -2L).stream().reduce(org.finos.legend.engine.plan.dependencies.util.Library::max).orElse(null)', javaNumber())
          ->assert('%s.doubleValue() == 10.0')
@@ -224,7 +224,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testInequalities() : Boolean[1]
 {
-   javaExpressionTests(meta::pure::executionPlan::engine::java::engineConventions([]))
+   javaExpressionTests(engineConventions([]))
       // >
       ->addTest('Number : [1]   ,[1]    : 1 > 1',          {|1 > 1}, '1L > 1L', javaBoolean())->assert('(%s)==false')
       ->addTest('Number : [1]   ,[1]    : 1 > 2',          {|1 > 2}, '1L > 2L', javaBoolean())->assert('(%s)==false')
@@ -304,7 +304,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testMathsPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+   javaPureTests(engineConventions([]), [
       meta::pure::functions::lang::tests::greaterThan::testGreaterThan_Number__Boolean_1_,
       meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_Number__Boolean_1_,
       meta::pure::functions::lang::tests::lessThan::testLessThan_Number__Boolean_1_,

@@ -19,9 +19,9 @@ import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legend
 import meta::pure::graphFetch::routing::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::transform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 import meta::pure::extension::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::external::language::java::metamodel::*;
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergeOperationForProperty(property:PropertyMapping[0..1]):MergeOperationSetImplementation[0..1]

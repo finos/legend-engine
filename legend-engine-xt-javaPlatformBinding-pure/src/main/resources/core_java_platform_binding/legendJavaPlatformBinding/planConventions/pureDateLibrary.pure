@@ -16,7 +16,7 @@ import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::registerPureDateLibrary(conventions: Conventions[1]): Conventions[1]
 {

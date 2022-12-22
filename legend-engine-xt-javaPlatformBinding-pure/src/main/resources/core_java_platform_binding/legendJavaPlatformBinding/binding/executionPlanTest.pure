@@ -18,7 +18,7 @@ import meta::pure::graphFetch::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::metamodel::project::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::external::shared::format::executionPlan::platformBinding::legendJava::tests::*;

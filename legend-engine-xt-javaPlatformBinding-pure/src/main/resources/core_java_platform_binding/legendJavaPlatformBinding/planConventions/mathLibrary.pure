@@ -17,8 +17,7 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::math::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary(conventions: Conventions[1]): Conventions[1]

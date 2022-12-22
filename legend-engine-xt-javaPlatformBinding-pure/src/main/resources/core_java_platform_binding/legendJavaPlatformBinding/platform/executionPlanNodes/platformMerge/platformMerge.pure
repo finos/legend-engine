@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 
 
 // Prepare
