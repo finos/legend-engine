@@ -119,6 +119,7 @@ public class ConnectionStateManager implements Closeable
     private static final String SEPARATOR = "_";
     private static final String DBPOOL = "DBPool_";
     private static ConnectionStateManager INSTANCE;
+    private static long evictionDurationInSeconds;
 
     static
     {
@@ -126,7 +127,7 @@ public class ConnectionStateManager implements Closeable
                 .namingPattern("ConnectionStateManager.Housekeeper")
                 .daemon(true)
                 .build();
-        long evictionDurationInSeconds = resolveEvictionDuration();
+        evictionDurationInSeconds = resolveEvictionDuration();
         ConnectionStateHousekeepingTask connectionStateHousekeepingTask = new ConnectionStateHousekeepingTask(evictionDurationInSeconds);
         EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1, threadFactory);
         EXECUTOR_SERVICE.scheduleWithFixedDelay(connectionStateHousekeepingTask, 0, evictionDurationInSeconds, TimeUnit.SECONDS);
@@ -356,13 +357,14 @@ public class ConnectionStateManager implements Closeable
         //Example: for kerberos based identities, creating a hikari pool is done as a PrivilegedAction which sets the subject for that security context
         //since each hikari pool run on its own thread, the pool implicit's subject is the creating one.
         //eventually kerberos credentials will expire(ie invalid) so we need to recreate the pool with the latest subject from the incoming request
-        if (!this.connectionPools.get(poolName).getIdentityState().isValid())
+        DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
+        if (!dataSourceWithStatistics.getIdentityState().isValid() || (dataSourceWithStatistics.getStatistics().getLastConnectionRequestAge() > (evictionDurationInSeconds * 1000) && !dataSourceWithStatistics.hasActiveConnections()))
         {
             LOGGER.info("Pool [{}] for datasource [{}] does not have a valid identity state", principal, connectionKey.shortId());
             synchronized (poolLockManager.getLock(poolName))
             {
-                DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
-                if (!dataSourceWithStatistics.getIdentityState().isValid())
+                dataSourceWithStatistics = this.connectionPools.get(poolName);
+                if (!dataSourceWithStatistics.getIdentityState().isValid() || (dataSourceWithStatistics.getStatistics().getLastConnectionRequestAge() > (evictionDurationInSeconds * 1000) && !dataSourceWithStatistics.hasActiveConnections()))
                 {
                     //at this point, the data source for the current pool in this.connectionPools has an invalid identity state
                     //recreation of pool will create a new Hikari data source
