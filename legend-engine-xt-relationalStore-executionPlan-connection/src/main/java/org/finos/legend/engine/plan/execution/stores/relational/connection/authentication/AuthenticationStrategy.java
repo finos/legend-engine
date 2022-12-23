@@ -128,4 +128,9 @@ public abstract class AuthenticationStrategy
         return new Properties();
     }
 
+    public boolean isValid()
+    {
+        return true;
+    }
+
 }

@@ -90,6 +90,11 @@ public class DataSourceWithStatistics
         return identityState;
     }
 
+    public boolean isValid()
+    {
+        return dataSourceSpecification.getAuthenticationStrategy().isValid() && identityState.isValid();
+    }
+
     public void close()
     {
         try

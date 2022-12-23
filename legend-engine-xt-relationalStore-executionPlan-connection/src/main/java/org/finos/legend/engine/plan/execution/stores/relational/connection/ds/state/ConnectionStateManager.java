@@ -356,13 +356,13 @@ public class ConnectionStateManager implements Closeable
         //Example: for kerberos based identities, creating a hikari pool is done as a PrivilegedAction which sets the subject for that security context
         //since each hikari pool run on its own thread, the pool implicit's subject is the creating one.
         //eventually kerberos credentials will expire(ie invalid) so we need to recreate the pool with the latest subject from the incoming request
-        if (!this.connectionPools.get(poolName).getIdentityState().isValid())
+        if (!this.connectionPools.get(poolName).isValid())
         {
             LOGGER.info("Pool [{}] for datasource [{}] does not have a valid identity state", principal, connectionKey.shortId());
             synchronized (poolLockManager.getLock(poolName))
             {
                 DataSourceWithStatistics dataSourceWithStatistics = this.connectionPools.get(poolName);
-                if (!dataSourceWithStatistics.getIdentityState().isValid())
+                if (!dataSourceWithStatistics.isValid())
                 {
                     //at this point, the data source for the current pool in this.connectionPools has an invalid identity state
                     //recreation of pool will create a new Hikari data source
