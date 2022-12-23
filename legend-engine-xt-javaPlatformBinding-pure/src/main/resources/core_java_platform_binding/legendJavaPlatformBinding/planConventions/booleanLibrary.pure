@@ -55,6 +55,17 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
    let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
       | $left->j_eq($right),
       |
+   if ($left->instanceOf(MethodCall) && $right->instanceOf(MethodCall),
+      | j_or(j_and($left->j_eq(j_null()), $right->j_eq(j_null())), 
+             j_and(j_and($left->j_ne(j_null()), $right->j_ne(j_null())), 
+                   $left->j_invoke('equals', $right))),
+      |
+   if ($left->instanceOf(MethodCall),
+      | j_and($left->j_ne(j_null()), $left->j_invoke('equals', $right)),
+      |
+   if ($right->instanceOf(MethodCall),
+      | j_and($right->j_ne(j_null()), $right->j_invoke('equals', $left)),
+      |
    if (($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
       | $left->j_eq($right),
       |
@@ -64,6 +75,6 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
    if ($left.type->isPrimitive(),
       | $right->j_invoke('equals', $left),
       | $left->j_invoke('equals', $right)
-   ))));
+   )))))));
 }
 
