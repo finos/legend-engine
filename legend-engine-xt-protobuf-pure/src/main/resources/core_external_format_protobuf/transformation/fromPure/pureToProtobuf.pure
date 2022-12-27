@@ -260,7 +260,7 @@ function meta::external::format::protobuf::transformation::fromPure::propertyToF
                                                                          valueType=$typesMap->get($property.genericType.typeArguments->at(1).rawType->toOne())->toOne())
                                                               ,| $typesMap->get($property.genericType.rawType->toOne())->toOne()),
       number = $index,
-      optional = (!$property.multiplicity->hasLowerBound() || ($property.multiplicity.lowerBound->toOne().value == 0)) && ($property.multiplicity->hasUpperBound() && $property.multiplicity.upperBound->toOne().value == 1),
+      optional = $property.multiplicity->meta::pure::functions::multiplicity::isZeroOne(),
       repeated = !$property.multiplicity->hasUpperBound() || ($property.multiplicity.upperBound->toOne().value > 1)
    );
 }
