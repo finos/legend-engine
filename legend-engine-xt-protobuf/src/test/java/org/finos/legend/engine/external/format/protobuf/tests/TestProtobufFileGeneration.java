@@ -72,7 +72,7 @@ public class TestProtobufFileGeneration
                     "  string first_name = 1;\n" +
                     "  string last_name = 2;\n" +
                     "  repeated Address addresses = 3;\n" +
-                    "  Firm firm = 4;\n" +
+                    "  optional Firm firm = 4;\n" +
                     "}", outputs.get(1)._content());
         }
         catch (Exception e)
