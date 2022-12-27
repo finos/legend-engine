@@ -16,6 +16,20 @@ import meta::relational::metamodel::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::literals::string::testApostrophe(config:DbTestConfig[1]):Boolean[1]
+{
+  let literal = ^Literal(value = 'John\'s');
+  let expected = ^Literal(value = 'John\'s');
+  runLiteralDatabaseTest($literal, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::literals::string::testAmpersand(config:DbTestConfig[1]):Boolean[1]
+{
+  let literal = ^Literal(value = 'John & John');
+  let expected = ^Literal(value = 'John & John');
+  runLiteralDatabaseTest($literal, $expected, $config);
+}
+
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::concat::testSpaceBeforeSecondString(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='concat', parameters=[^Literal(value='Joe'),^Literal(value=' Bloggs')]);
