@@ -37,6 +37,23 @@ function meta::relational::dbTestRunner::runDynaFunctionDatabaseTest(dynaFunc:Dy
   $sqlQuery->runSqlQueryTest($expectedResult, $equalityComparator, $testConfig);
 }
 
+function meta::relational::dbTestRunner::runLiteralDatabaseTest(literal:Literal[1], expectedResult:Literal[1], testConfig:DbTestConfig[1]): Boolean[1]
+{
+  runLiteralDatabaseTest($literal, $expectedResult, [] , $testConfig);
+} 
+
+function meta::relational::dbTestRunner::runLiteralDatabaseTest(literal:Literal[1], expectedResult:Literal[1], equalityComparator: Function<{Any[1..*],Any[1..*]->Boolean[1]}>[0..1] , testConfig:DbTestConfig[1]): Boolean[1]
+{ 
+  //sqlQueryGenerator
+  let sqlQuery = defaultLiteralSqlQueryGenerator($literal);
+  $sqlQuery->runSqlQueryTest($expectedResult, $equalityComparator, $testConfig);
+}
+
+function meta::relational::dbTestRunner::defaultLiteralSqlQueryGenerator(literal:Literal[1]): SQLQuery[1]
+{ 
+  ^SelectSQLQuery(columns=[$literal])
+}
+
 function meta::relational::dbTestRunner::runSqlQueryTest(sqlQuery:SQLQuery[1], expectedResult:Literal[1..*], equalityComparator: Function<{Any[1..*],Any[1..*]->Boolean[1]}>[0..1] , testConfig:DbTestConfig[1]): Boolean[1]
 {
   let newExpectedResult = overwriteDynaFunctionExpectedResult($expectedResult, $testConfig);
