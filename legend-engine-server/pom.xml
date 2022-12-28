@@ -355,6 +355,27 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-query</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-spanner-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-spanner-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-spanner-execution</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Shared Drop Wizard Bundles -->
