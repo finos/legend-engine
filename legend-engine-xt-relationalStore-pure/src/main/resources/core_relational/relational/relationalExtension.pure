@@ -85,14 +85,10 @@ function meta::relational::runtime::dataSourceEquality(a:DataSource[1],b:DataSou
 
 }
 
+
 function meta::relational::functions::typeInference::inferDynaFunctionReturnType(d: DynaFunction[1], failOnMatchFailure:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
    let dfToReturnFunctionMap = meta::relational::functions::typeInference::getDynaFunctionTypeInferenceMap();
-   meta::relational::functions::typeInference::inferDynaFunctionReturnType($d, $failOnMatchFailure, $dfToReturnFunctionMap);
-}
-
-function meta::relational::functions::typeInference::inferDynaFunctionReturnType(d: DynaFunction[1], failOnMatchFailure:Boolean[1], dfToReturnFunctionMap:Map<String, List<Pair<meta::pure::metamodel::function::Function<{RelationalOperationElement[*]->Boolean[1]}>, meta::pure::metamodel::function::Function<{RelationalOperationElement[*]->meta::relational::metamodel::datatype::DataType[0..1]}>>>>[1]):meta::relational::metamodel::datatype::DataType[0..1]
-{
    let candidateMatchAndDTypePairs = $dfToReturnFunctionMap->get($d.name).values;
    let filteredMatchAndDTypePairs = $candidateMatchAndDTypePairs->filter(p | $p.first->eval($d.parameters));
    if($failOnMatchFailure, | assert($filteredMatchAndDTypePairs->size() >= 1, 'Type inference not supported yet! Dyna function: ' + $d.name);, | []);
@@ -118,17 +114,21 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-  let dfToReturnFunctionMap = meta::relational::functions::typeInference::getDynaFunctionTypeInferenceMap();
-  meta::relational::functions::typeInference::inferRelationalType($rop, $failOnMatchFailure, $dfToReturnFunctionMap);
+  meta::relational::functions::typeInference::inferRelationalType($rop, $failOnMatchFailure, false);
 }
 
-function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1], dynaFunctionTypeInferenceMap:Map<String, List<Pair<meta::pure::metamodel::function::Function<{RelationalOperationElement[*]->Boolean[1]}>, meta::pure::metamodel::function::Function<{RelationalOperationElement[*]->meta::relational::metamodel::datatype::DataType[0..1]}>>>>[1]):meta::relational::metamodel::datatype::DataType[0..1]
+function meta::relational::functions::typeInference::inferRelationalTypeExceptForDynaFunction(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]
+{
+  meta::relational::functions::typeInference::inferRelationalType($rop, $failOnMatchFailure, true);
+}
+
+function <<access.private>> meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1], failOnMatchFailure:Boolean[1], ignoreDynaFunction:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
    $rop->match([
-      t : TableAliasColumn[1] | if($t.column.owner->isNotEmpty() && $t.column.owner->toOne()->instanceOf(View),| $t.column.owner->toOne()->cast(@View).columnMappings->filter(cm | $cm.columnName == $t.column.name)->toOne().relationalOperationElement->inferRelationalType($failOnMatchFailure, $dynaFunctionTypeInferenceMap), | $t.column.type),
-      j : RelationalOperationElementWithJoin[1] | $j.relationalOperationElement->toOne()->inferRelationalType($failOnMatchFailure, $dynaFunctionTypeInferenceMap),
-      d : DynaFunction[1] | $d->inferDynaFunctionReturnType($failOnMatchFailure, $dynaFunctionTypeInferenceMap),
-      d : Alias[1] | $d.relationalElement->inferRelationalType($failOnMatchFailure, $dynaFunctionTypeInferenceMap),
+      t : TableAliasColumn[1] | if($t.column.owner->isNotEmpty() && $t.column.owner->toOne()->instanceOf(View),| $t.column.owner->toOne()->cast(@View).columnMappings->filter(cm | $cm.columnName == $t.column.name)->toOne().relationalOperationElement->inferRelationalType($failOnMatchFailure), | $t.column.type),
+      j : RelationalOperationElementWithJoin[1] | $j.relationalOperationElement->toOne()->inferRelationalType($failOnMatchFailure),
+      d : DynaFunction[1] | if($ignoreDynaFunction, | [], | $d->inferDynaFunctionReturnType($failOnMatchFailure)),
+      d : Alias[1] | $d.relationalElement->inferRelationalType($failOnMatchFailure),
       l : Literal[1] | $l.value->match([
          s: String[1]  | ^meta::relational::metamodel::datatype::Varchar(size = $s->length()),
          b: Boolean[1] |  ^meta::relational::metamodel::datatype::Bit(),
@@ -158,7 +158,7 @@ function meta::relational::functions::typeInference::inferRelationalType(rop: Re
             ),
          a: Any[1]     | if($failOnMatchFailure, | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();, |[]);
       ]),
-      j : meta::relational::metamodel::operation::JoinStrings[1] | ^meta::relational::metamodel::datatype::Varchar(size = $j.strings->concatenate($j.prefix)->concatenate($j.separator)->concatenate($j.suffix)->map(x | $x->inferRelationalType($failOnMatchFailure, $dynaFunctionTypeInferenceMap)->toOne()->getSize())->sum()),
+      j : meta::relational::metamodel::operation::JoinStrings[1] | ^meta::relational::metamodel::datatype::Varchar(size = $j.strings->concatenate($j.prefix)->concatenate($j.separator)->concatenate($j.suffix)->map(x | $x->inferRelationalType($failOnMatchFailure)->toOne()->getSize())->sum()),
       c:Column[1] | $c.type,
       l : Any[1] | if($failOnMatchFailure, | fail('Not supported yet!'); ^meta::relational::metamodel::datatype::DataType();, |[]);
    ]);
