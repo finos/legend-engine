@@ -18,6 +18,8 @@ This document lists the integration tests run against various supported database
 
 ![Spanner](https://github.com/finos/legend-engine/actions/workflows/database-spanner-integration-test.yml/badge.svg)
 
+![Athena](https://github.com/finos/legend-engine/actions/workflows/database-athena-integration-test.yml/badge.svg)
+
 **Sql Generation and Execution Tests**
 
 ![BigQuery](https://github.com/finos/legend-engine/actions/workflows/database-bigquery-sql-generation-integration-test.yml/badge.svg)
@@ -33,6 +35,8 @@ This document lists the integration tests run against various supported database
 ![Snowflake](https://github.com/finos/legend-engine/actions/workflows/database-snowflake-sql-generation-integration-test.yml/badge.svg)
 
 ![Spanner](https://github.com/finos/legend-engine/actions/workflows/database-spanner-sql-generation-integration-test.yml/badge.svg)
+
+![Athena](https://github.com/finos/legend-engine/actions/workflows/database-athena-sql-generation-integration-test.yml/badge.svg)
 
 **Tests Run Summary With More Details**
 

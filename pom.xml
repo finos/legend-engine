@@ -115,6 +115,19 @@
         <module>legend-engine-xt-relationalStore-bigquery-pure</module>
         <module>legend-engine-xt-relationalStore-bigquery-execution-tests</module>
 
+        <module>legend-engine-xt-relationalStore-spanner-execution</module>
+        <module>legend-engine-xt-relationalStore-spanner-pure</module>
+        <module>legend-engine-xt-relationalStore-spanner-grammar</module>
+        <module>legend-engine-xt-relationalStore-spanner-protocol</module>
+        <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
+
+        <module>legend-engine-xt-relationalStore-athena-execution</module>
+        <module>legend-engine-xt-relationalStore-athena-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-athena-grammar</module>
+        <module>legend-engine-xt-relationalStore-athena-protocol</module>
+        <module>legend-engine-xt-relationalStore-athena-pure</module>
+
         <module>legend-engine-xt-avro</module>
         <module>legend-engine-xt-avro-pure</module>
 
@@ -196,12 +209,6 @@
         <module>legend-engine-extensions-collection-execution</module>
         <module>legend-engine-extensions-collection-generation</module>
         <module>legend-engine-testable</module>
-        <module>legend-engine-xt-relationalStore-spanner-execution</module>
-        <module>legend-engine-xt-relationalStore-spanner-pure</module>
-        <module>legend-engine-xt-relationalStore-spanner-grammar</module>
-        <module>legend-engine-xt-relationalStore-spanner-protocol</module>
-        <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
-        <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
         <module>legend-engine-executionPlan-execution-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
@@ -224,7 +231,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.1</legend.pure.version>
+        <legend.pure.version>3.8.2</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -826,6 +833,32 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-postgres-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-execution-tests</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-athena-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
