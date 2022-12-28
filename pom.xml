@@ -120,6 +120,7 @@
         <module>legend-engine-xt-relationalStore-spanner-grammar</module>
         <module>legend-engine-xt-relationalStore-spanner-protocol</module>
         <module>legend-engine-xt-relationalStore-spanner-execution-tests</module>
+        <module>legend-engine-xt-relationalStore-spanner-jdbc-shaded</module>
 
         <module>legend-engine-xt-relationalStore-athena-execution</module>
         <module>legend-engine-xt-relationalStore-athena-execution-tests</module>
@@ -263,7 +264,6 @@
         <databricks.version>2.6.25</databricks.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
         <postgres.version>9.4.1208.jre7</postgres.version>
-        <google-cloud-spanner-jdbc.version>2.7.3</google-cloud-spanner-jdbc.version>
 
         <!-- Dependency versions -->
         <junit.version>4.13.1</junit.version>
@@ -322,7 +322,7 @@
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
-        <maven.shade.plugin.version>3.2.1</maven.shade.plugin.version>
+        <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
@@ -784,6 +784,21 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-spanner-grammar</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+                <version>${project.version}</version>
+                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module 
+                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of 
+                it's published pom.xml. As expected, the problem goes away when the same dependency comes 
+                from a different project.-->
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -2287,31 +2302,6 @@
                 <version>${postgres.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <dependency>
-                <groupId>com.google.cloud</groupId>
-                <artifactId>google-cloud-spanner-jdbc</artifactId>
-                <version>${google-cloud-spanner-jdbc.version}</version>
-                <scope>runtime</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>commons-logging</groupId>
-                        <artifactId>commons-logging</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>javax.annotation-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.checkerframework</groupId>
-                        <artifactId>checker-qual</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.google.errorprone</groupId>
-                        <artifactId>error_prone_annotations</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
             <!-- Database -->
 
             <!-- Test Containers -->

@@ -12,18 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.plan.execution.stores.relational.connection.spanner.driver;
+package org.finos.legend.engine.spanner.jdbc;
 
-import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DriverWrapper;
-
-public class SpannerDriver extends DriverWrapper
+/**
+ * Placeholder class required for sonatype requirements of sources and javadoc jars
+ */
+public class JavaPlaceholder
 {
-
-    public static String DRIVER_CLASSNAME = "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcDriver";
-
-    @Override
-    protected String getClassName()
+    public JavaPlaceholder()
     {
-        return DRIVER_CLASSNAME;
     }
 }
