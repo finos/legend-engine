@@ -19,10 +19,10 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::platform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::functions::hash::*;
 import meta::pure::mapping::*;
@@ -33,7 +33,7 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::extension::*;
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::prepareForGlobalGraphFetchNode(node: GlobalGraphFetchExecutionNode[1], path: String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::prepareForGlobalGraphFetchNode(node: GlobalGraphFetchExecutionNode[1], path: String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
 {
    if ($node.parentIndex->isEmpty(),
        |
@@ -50,7 +50,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::prepareFor
    )
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::prepareForSequenceNode(node: SequenceExecutionNode[1], path: String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::prepareForSequenceNode(node: SequenceExecutionNode[1], path: String[1], context:GenerationContext[1], debug:DebugContext[1]):GenerationContext[1]
 {
    let lastOnSequence = $context->childNodeInfosForPath($path)->last();
    if($lastOnSequence->isEmpty(),
@@ -59,19 +59,19 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::prepareFor
    );
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::localGraphFetchNodePathPrefix():String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::localGraphFetchNodePathPrefix():String[1]
 {
    '.localGraph'
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::generateBaseProjectForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], debug:DebugContext[1]): Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::generateBaseProjectForLocalGraphFetchNode(node: LocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], debug:DebugContext[1]): Project[1]
 {
    let implProject   = if($node.resultType->instanceOf(ClassResultType)  &&!$node->meta::pure::graphFetch::executionPlan::nodeIsMerged() ,| generateGraphNodeImplementation($node, $context, $path, $storeSpecificGraphImplUpdates, $debug), | []);
    let globalProject = if($node.parentIndex->isNotEmpty(), | newProject(), | generateTypes($context, $debug)); // Avoid generating interfaces and enums multiple times and merging later. Do it only at root nodes (which do not have parent index)
    $implProject->concatenate($globalProject)->toOneMany()->mergeProjects();
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::typeFromStoreLocalNode(storeLocalNode: LocalGraphFetchExecutionNode[1]):meta::pure::metamodel::type::Class<Any>[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::typeFromStoreLocalNode(storeLocalNode: LocalGraphFetchExecutionNode[1]):meta::pure::metamodel::type::Class<Any>[1]
 {
    if ($storeLocalNode.resultType->cast(@ClassResultType).setImplementations->size() != 1,
        | $storeLocalNode.resultType->cast(@ClassResultType).type->cast(@meta::pure::metamodel::type::Class<Any>),
@@ -80,12 +80,12 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::typeFromSt
    )
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplClass(storeLocalNode: LocalGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::graphImplClass(storeLocalNode: LocalGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
 {
    graphImplClass($storeLocalNode.nodeIndex, $context.conventions->className($storeLocalNode->typeFromStoreLocalNode()), $path, $context)
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplClass(nodeIndex: Integer[1], interface: meta::external::language::java::metamodel::Class[1], path: String[1], context: GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::graphImplClass(nodeIndex: Integer[1], interface: meta::external::language::java::metamodel::Class[1], path: String[1], context: GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
 {
    $context.conventions
       ->planNodeClass('public', $path, 'GraphFetch_Node' + $nodeIndex->toString() + '_' + $interface.simpleName + '_Impl')
@@ -94,7 +94,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::graphImplC
       ->implements($interface);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::generateGraphNodeImplementation(node: LocalGraphFetchExecutionNode[1], context: GenerationContext[1], path: String[1], storeSpecificGraphImplUpdates: Function<{meta::external::language::java::metamodel::Class[1] -> Project[1]}>[1], debug: DebugContext[1]):Project[1]
 {
    let resultClass       = $node->typeFromStoreLocalNode();
    let implClass         = graphImplClass($node, $path, $context);
@@ -109,7 +109,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    mergeProjects([$mergedProjectWithSizeMethods, $withSerializableMethods]);
 }
 
-function meta::pure::executionPlan::engine::java::graphFetch::common::createGraphInstance(conventions: Conventions[1], impl: meta::external::language::java::metamodel::Class[1], value: Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::createGraphInstance(conventions: Conventions[1], impl: meta::external::language::java::metamodel::Class[1], value: Code[1]): Code[1]
 {
    j_newAnon(
       graphInstanceOf($impl, $conventions), [],
@@ -120,7 +120,7 @@ function meta::pure::executionPlan::engine::java::graphFetch::common::createGrap
    )
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithProperties(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::updateImplementationClassWithProperties(implClass: meta::external::language::java::metamodel::Class[1], node: LocalGraphFetchExecutionNode[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
 {
    let conventions   = $context.conventions;
    let allProperties = $context.typeInfos->allProperties($nodeType);
@@ -173,12 +173,12 @@ function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch:
    newProject()->addClasses($withProperties);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
 {
    $setImpl->meta::pure::mapping::modelToModel::inMemory::isNoMappingPassThru($property)
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::graphFetch::common::updateImplementationClassWithSerializableMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::updateImplementationClassWithSerializableMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
 {
    let codeString  = $implClass->meta::external::language::java::serialization::classToString();
    let codeHash    = $codeString->hash(HashType.SHA256);

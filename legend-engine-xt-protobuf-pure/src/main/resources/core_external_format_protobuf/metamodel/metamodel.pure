@@ -115,6 +115,7 @@ Class meta::external::format::protobuf::metamodel::Field extends meta::external:
    number:Integer[1];
    name:String[1];
    type:ProtoBufType[1];
+   optional:Boolean[1];
    repeated:Boolean[1];
    options:Option[*];
 }

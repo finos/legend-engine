@@ -18,7 +18,6 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::extension::*;
-import meta::pure::executionPlan::engine::java::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(): String[1]
 {

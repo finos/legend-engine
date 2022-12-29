@@ -19,15 +19,15 @@ import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::pure::runtime::*;
 
-Class meta::pure::executionPlan::engine::java::tests::JavaExpressionTest
+Class meta::pure::executionPlan::platformBinding::legendJava::tests::utils::JavaExpressionTest
 {
    name              : String[1];
    lambda            : FunctionDefinition<{->Any[*]}>[1];
@@ -37,18 +37,18 @@ Class meta::pure::executionPlan::engine::java::tests::JavaExpressionTest
    project           : Project[1];
 }
 
-Class meta::pure::executionPlan::engine::java::tests::JavaExpressionTestSet
+Class meta::pure::executionPlan::platformBinding::legendJava::tests::utils::JavaExpressionTestSet
 {
    conventions : Conventions[1];
    tests       : JavaExpressionTest[*];
 }
 
-function meta::pure::executionPlan::engine::java::tests::javaExpressionTests(conventions:Conventions[1]): JavaExpressionTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaExpressionTests(conventions:Conventions[1]): JavaExpressionTestSet[1]
 {
    ^JavaExpressionTestSet(conventions = $conventions);
 }
 
-function meta::pure::executionPlan::engine::java::tests::addTest(tests:JavaExpressionTestSet[1], name:String[1], lambda:Function<{->Any[*]}>[1], expectedCode:Code[1]): JavaExpressionTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::addTest(tests:JavaExpressionTestSet[1], name:String[1], lambda:Function<{->Any[*]}>[1], expectedCode:Code[1]): JavaExpressionTestSet[1]
 {
    let test = ^JavaExpressionTest(
       name          = $name,
@@ -61,7 +61,7 @@ function meta::pure::executionPlan::engine::java::tests::addTest(tests:JavaExpre
    ^$tests(tests=$tests.tests->add($test));
 }
 
-function meta::pure::executionPlan::engine::java::tests::addTest(tests:JavaExpressionTestSet[1], name:String[1], lambda:Function<{->Any[*]}>[1], expectedCode:String[1], expectedType:meta::external::language::java::metamodel::Type[1]): JavaExpressionTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::addTest(tests:JavaExpressionTestSet[1], name:String[1], lambda:Function<{->Any[*]}>[1], expectedCode:String[1], expectedType:meta::external::language::java::metamodel::Type[1]): JavaExpressionTestSet[1]
 {
    let test = ^JavaExpressionTest(
       name          = $name,
@@ -74,45 +74,45 @@ function meta::pure::executionPlan::engine::java::tests::addTest(tests:JavaExpre
    ^$tests(tests=$tests.tests->add($test));
 }
 
-function meta::pure::executionPlan::engine::java::tests::assert(tests:JavaExpressionTestSet[1], assertionPattern:String[1]): JavaExpressionTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::assert(tests:JavaExpressionTestSet[1], assertionPattern:String[1]): JavaExpressionTestSet[1]
 {
    let test    = $tests.tests->last()->toOne();
    let newTest = ^$test(assertionPatterns=$test.assertionPatterns->concatenate($assertionPattern));
    ^$tests(tests=$tests.tests->init()->add($newTest));
 }
 
-function meta::pure::executionPlan::engine::java::tests::withConventions(test:JavaExpressionTest[1], conventions:Conventions[1]): JavaExpressionTest[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::withConventions(test:JavaExpressionTest[1], conventions:Conventions[1]): JavaExpressionTest[1]
 {
    ^$test(conventions=$conventions);
 }
 
-function meta::pure::executionPlan::engine::java::tests::generate(test:JavaExpressionTest[1], enum:meta::pure::metamodel::type::Enumeration<Any>[1]): JavaExpressionTest[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::generate(test:JavaExpressionTest[1], enum:meta::pure::metamodel::type::Enumeration<Any>[1]): JavaExpressionTest[1]
 {
    let generated = $test.conventions->codeClass($enum, ClassPurpose.ENUMERATION, noDebug());
    ^$test(project=$test.project->addClass($generated));
 }
 
-function meta::pure::executionPlan::engine::java::tests::assert(test:JavaExpressionTest[1], assertionPattern:String[1]): JavaExpressionTest[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::assert(test:JavaExpressionTest[1], assertionPattern:String[1]): JavaExpressionTest[1]
 {
    ^$test(assertionPatterns=$test.assertionPatterns->concatenate($assertionPattern));
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpressionTestSet[1]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaExpressionTestSet[1]): Boolean[1]
 {
    runTests($tests.tests, [], noDebug());
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpressionTestSet[1], debug:DebugContext[1]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaExpressionTestSet[1], debug:DebugContext[1]): Boolean[1]
 {
    runTests($tests.tests, [], $debug);
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpressionTest[*]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaExpressionTest[*]): Boolean[1]
 {
    runTests($tests, [], noDebug());
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpressionTest[*], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaExpressionTest[*], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
 {
    let failures = j_variable(javaStringBuilder(), 'failures');  
    let result   = j_variable(javaStringBuilder(), 'result');  
@@ -172,13 +172,13 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaExpr
    executeTests(mergeProjects($tests.project->concatenate($functionTests)->concatenate($allAssertions->dependencies()->resolveAndGetProjects())->toOneMany()), [], $debug);
 }
 
-Class meta::pure::executionPlan::engine::java::tests::JavaPureTestSet
+Class meta::pure::executionPlan::platformBinding::legendJava::tests::utils::JavaPureTestSet
 {
    pureTests   : FunctionDefinition<{->Boolean[1]}>[*];
    context     : GenerationContext[1];
 }
 
-function meta::pure::executionPlan::engine::java::tests::javaPureTests(conventions:Conventions[1], pureTests:FunctionDefinition<{->Boolean[1]}>[*]): JavaPureTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTests(conventions:Conventions[1], pureTests:FunctionDefinition<{->Boolean[1]}>[*]): JavaPureTestSet[1]
 {
    ^JavaPureTestSet(
       pureTests = $pureTests, 
@@ -186,30 +186,30 @@ function meta::pure::executionPlan::engine::java::tests::javaPureTests(conventio
    );
 }
 
-function meta::pure::executionPlan::engine::java::tests::addTestsWithin(set:JavaPureTestSet[1], pkg:Package[1]): JavaPureTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::addTestsWithin(set:JavaPureTestSet[1], pkg:Package[1]): JavaPureTestSet[1]
 {
    let tests = $pkg->getAllConcreteFunctionDefinitionsInPackage(true)->filter(f| $f->isTest())->cast(@FunctionDefinition<{->Boolean[1]}>);
    ^$set(pureTests=$set.pureTests->concatenate($tests)->removeDuplicates());
 }
 
-function meta::pure::executionPlan::engine::java::tests::excludeTest(set:JavaPureTestSet[1], test:FunctionDefinition<{->Boolean[1]}>[1]): JavaPureTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::excludeTest(set:JavaPureTestSet[1], test:FunctionDefinition<{->Boolean[1]}>[1]): JavaPureTestSet[1]
 {
    ^$set(pureTests=$set.pureTests->remove($test));
 }
 
-function meta::pure::executionPlan::engine::java::tests::generate(set:JavaPureTestSet[1], type:meta::pure::metamodel::type::Type[1]): JavaPureTestSet[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::generate(set:JavaPureTestSet[1], type:meta::pure::metamodel::type::Type[1]): JavaPureTestSet[1]
 {
    let context   = $set.context;
    let typeInfos = $context.typeInfos->addForType($type);
    ^$set(context=^$context(typeInfos=$typeInfos));
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPureTestSet[1]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaPureTestSet[1]): Boolean[1]
 {
    runTests($tests, [], noDebug());
 }
 
-function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPureTestSet[1], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaPureTestSet[1], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
 {
    let generatedTestCalls = $tests.pureTests->map(
       {t|
@@ -228,7 +228,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPure
    let failures = j_variable(javaStringBuilder(), 'failures');  
    let result   = j_variable(javaStringBuilder(), 'result');  
 
-   let typesProject = meta::pure::executionPlan::engine::java::generateTypes($tests.context, $debug);
+   let typesProject = meta::pure::executionPlan::platformBinding::legendJava::shared::generateTypes($tests.context, $debug);
 
    let executeCode = 
       [
@@ -276,7 +276,7 @@ function meta::pure::executionPlan::engine::java::tests::runTests(tests:JavaPure
    executeTests($merged, [], $debug);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::tests::executeTests(tests:Project[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]): Boolean[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::tests::utils::executeTests(tests:Project[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]): Boolean[1]
 {
    let node = ^PureExpressionPlatformExecutionNode(
       expression     = ^InstanceValue(genericType = ^GenericType(rawType = String), multiplicity = PureOne, values = ''),
@@ -291,7 +291,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::tests::exec
    let plan = ^ExecutionPlan
    (
       func              = {|true},
-      mapping           = meta::pure::executionPlan::engine::java::tests::dummyMapping,
+      mapping           = meta::pure::executionPlan::platformBinding::legendJava::tests::utils::dummyMapping,
       runtime           = ^Runtime(),
       rootExecutionNode = $node,
       authDependent     = false,
@@ -316,10 +316,10 @@ function <<access.private>> meta::pure::executionPlan::engine::java::tests::exec
    );
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::tests::testClass(): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::tests::utils::testClass(): meta::external::language::java::metamodel::Class[1]
 {
    javaClass('public', 'org.finos.test.TestMain')
 }
 
 ###Mapping
-Mapping meta::pure::executionPlan::engine::java::tests::dummyMapping ()
+Mapping meta::pure::executionPlan::platformBinding::legendJava::tests::utils::dummyMapping ()

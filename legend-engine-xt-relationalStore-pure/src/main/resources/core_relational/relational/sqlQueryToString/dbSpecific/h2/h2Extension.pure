@@ -21,7 +21,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::c
    ^DbExtension(
       isBooleanLiteralSupported = true,
       aliasLimit = 1000,
-      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,

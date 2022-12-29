@@ -1,0 +1,5 @@
+{
+  "name" : "core_relational_athena",
+  "pattern" : "(meta::relational::functions::sqlQueryToString::athena|meta::relational::tests::sqlQueryToString::athena|meta::pure::alloy::connections|meta::protocols::pure)(::.*)?",
+  "dependencies" : ["platform", "core", "core_relational"]
+}
