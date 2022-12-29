@@ -289,6 +289,7 @@ public class IngestModeVisitors
         {
             HashMap<String, Object> milestoningMap = new HashMap<>();
             milestoningMap.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
+            milestoningMap.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
             return milestoningMap;
         }
     };
