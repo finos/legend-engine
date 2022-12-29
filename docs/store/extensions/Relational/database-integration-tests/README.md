@@ -68,7 +68,7 @@ The process can be repeated until you are happy with your fixes.
     If you want to mark a broken feature as unsupported/ignored, you need to fail the pure code with a message starting with '[unsupported-api] '.
 
     If the feature works, but is not in line with standard defined in test suite, you can mention the appropriate test suite fn as deviating from standard in \<dbType\>TestSuiteInvoker.pure.
-You should use this procedure only if a lot of users depend on that feature, and fixing could break existing use cases. Feature should be gradually deprecated and removed.
+You should use this procedure only if a lot of users depend on that feature, and fixing could break existing use cases. Such feature should be gradually deprecated and removed.
 
     Sometimes, test-suite test could be failing, because it is not written in a dbType agnostic manner. In those cases, fixing the suite itself would be the right thing to do.
 
