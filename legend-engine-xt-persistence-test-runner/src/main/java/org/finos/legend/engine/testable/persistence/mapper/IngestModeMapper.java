@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.testable.persistence.mapper;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.Persistence;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.BatchPersister;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.Persister;
@@ -71,10 +70,10 @@ public class IngestModeMapper
         return ingestMode.accept(IngestModeVisitors.EXTRACT_FIELDS_TO_EXCLUDE);
     }
 
-    public static Map<String, Object> getMilestoningMap(Persistence persistence) throws Exception
+    public static Map<String, Object> getActiveRowsFilterConditions(Persistence persistence) throws Exception
     {
         IngestMode ingestMode = getIngestMode(persistence);
-        return ingestMode.accept(IngestModeVisitors.EXTRACT_MILESTONING_MAP);
+        return ingestMode.accept(IngestModeVisitors.EXTRACT_ACTIVE_ROWS_FILTER_CONDITIONS);
     }
 
     public static boolean isTransactionMilestoningTimeBased(Persistence persistence) throws Exception

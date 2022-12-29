@@ -45,9 +45,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -69,9 +69,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -94,9 +94,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         });
         Set<String> fieldsToIgnore = new HashSet<>();
         fieldsToIgnore.add("digest");
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -108,7 +108,7 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
     }
 
     @Test
-    public void testEvaluatorActiveRowsEquivalentWithMilestoningMap() throws Exception
+    public void testEvaluatorActiveRowsEquivalentWithActiveRowsFilterConditions() throws Exception
     {
         String result = "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":1}," + "{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"NAME\":\"CATHY\", \"ID\":3, \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"ID\":4, \"NAME\":\"TOM\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":1}]";
         String expected = "[{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"ID\":3, \"NAME\":\"CATHY\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}]";
@@ -118,10 +118,10 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
-        milestoningMap.put("BATCH_ID_OUT", 999999999L);
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
+        activeRowsFilterConditions.put("BATCH_ID_OUT", 999999999L);
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -143,9 +143,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -171,9 +171,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -197,9 +197,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";
@@ -223,9 +223,9 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
         {
         });
         Set<String> fieldsToIgnore = new HashSet<>();
-        Map<String, Object> milestoningMap = new HashMap<>();
+        Map<String, Object> activeRowsFilterConditions = new HashMap<>();
 
-        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, milestoningMap);
+        PersistenceTestAssertionEvaluator evaluator = new PersistenceTestAssertionEvaluator(resultData, fieldsToIgnore, activeRowsFilterConditions);
         ActiveRowsEquivalentToJson activeRowsEquivalentToJson = new ActiveRowsEquivalentToJson();
         ExternalFormatData data = new ExternalFormatData();
         data.contentType = "application/json";

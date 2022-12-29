@@ -95,7 +95,7 @@ public class PersistenceTestRunner implements TestRunner
 
             List<AssertionStatus> assertStatuses = new ArrayList<>();
             Set<String> fieldsToIgnore = IngestModeMapper.getFieldsToIgnore(persistence);
-            Map<String, Object> milestoningMap = IngestModeMapper.getMilestoningMap(persistence);
+            Map<String, Object> activeRowsFilterConditions = IngestModeMapper.getActiveRowsFilterConditions(persistence);
             boolean isTransactionMilestoningTimeBased = IngestModeMapper.isTransactionMilestoningTimeBased(persistence);
 
             if (!(persistenceTest.isTestDataFromServiceOutput))
@@ -118,7 +118,7 @@ public class PersistenceTestRunner implements TestRunner
                         invokePersistence(targetDataset, persistence, testDataString, connection);
                         List<Map<String, Object>> output = persistenceTestH2Connection.readTable(datasetDefinition);
 
-                        batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore, milestoningMap));
+                        batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore, activeRowsFilterConditions));
                     }
                     assertStatuses.add(batchAssertionStatus);
                     if (isTransactionMilestoningTimeBased && ++batchId < testBatches.size())

@@ -42,13 +42,13 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
 {
     private List<Map<String, Object>> result;
     private Set<String> fieldsToIgnore;
-    private Map<String, Object> milestoningMap;
+    private Map<String, Object> activeRowsFilterConditions;
 
-    public PersistenceTestAssertionEvaluator(List<Map<String, Object>> result, Set<String> fieldsToIgnore, Map<String, Object> milestoningMap)
+    public PersistenceTestAssertionEvaluator(List<Map<String, Object>> result, Set<String> fieldsToIgnore, Map<String, Object> activeRowsFilterConditions)
     {
         this.result = result;
         this.fieldsToIgnore = fieldsToIgnore;
-        this.milestoningMap = milestoningMap;
+        this.activeRowsFilterConditions = activeRowsFilterConditions;
     }
 
     @Override
@@ -103,7 +103,7 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
             {
                 actualResult = mapper.writeValueAsString(result);
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
-                compareActiveRows(result, expected, fieldsToIgnore, milestoningMap);
+                compareActiveRows(result, expected, fieldsToIgnore, activeRowsFilterConditions);
                 assertionStatus = new AssertPass();
 
             }
@@ -135,20 +135,20 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
         return compareJsonObjects(result, expected, fieldsToIgnore);
     }
 
-    private boolean compareActiveRows(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, Map<String, Object> milestoningMap)
+    private boolean compareActiveRows(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, Map<String, Object> activeRowsFilterConditions)
     {
-        result = findActiveRows(result, milestoningMap);
+        result = findActiveRows(result, activeRowsFilterConditions);
         return compareJsonObjects(result, expected, fieldsToIgnore);
     }
 
-    private List<Map<String, Object>> findActiveRows(List<Map<String, Object>> result, Map<String, Object> milestoningMap)
+    private List<Map<String, Object>> findActiveRows(List<Map<String, Object>> result, Map<String, Object> activeRowsFilterConditions)
     {
         List<Map<String, Object>> activeRows = new ArrayList<>(result);
         for (Map<String, Object> row: result)
         {
-            for (String milestoningColumn: milestoningMap.keySet())
+            for (String column: activeRowsFilterConditions.keySet())
             {
-                if (!row.get(milestoningColumn).toString().equals(milestoningMap.get(milestoningColumn).toString()))
+                if (!row.get(column).toString().equals(activeRowsFilterConditions.get(column).toString()))
                 {
                     activeRows.remove(row);
                 }

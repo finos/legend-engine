@@ -117,7 +117,7 @@ public class IngestModeVisitors
         }
     };
 
-    public static final IngestModeVisitor<Map<String, Object>> EXTRACT_MILESTONING_MAP = new IngestModeVisitor<Map<String, Object>>()
+    public static final IngestModeVisitor<Map<String, Object>> EXTRACT_ACTIVE_ROWS_FILTER_CONDITIONS = new IngestModeVisitor<Map<String, Object>>()
     {
         @Override
         public Map<String, Object> visit(AppendOnly appendOnly)
@@ -128,13 +128,13 @@ public class IngestModeVisitors
         @Override
         public Map<String, Object> visit(BitemporalDelta bitemporalDelta)
         {
-            return bitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+            return bitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
         }
 
         @Override
         public Map<String, Object> visit(BitemporalSnapshot bitemporalSnapshot)
         {
-            return bitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+            return bitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
         }
 
         @Override
@@ -152,13 +152,13 @@ public class IngestModeVisitors
         @Override
         public Map<String, Object> visit(UnitemporalDelta unitemporalDelta)
         {
-            return unitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+            return unitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
         }
 
         @Override
         public Map<String, Object> visit(UnitemporalSnapshot unitemporalSnapshot)
         {
-            return unitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_MILESTONING_MAP);
+            return unitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
         }
     };
 
@@ -266,31 +266,31 @@ public class IngestModeVisitors
         }
     };
 
-    public static final TransactionMilestoningVisitor<Map<String, Object>> EXTRACT_TX_MILESTONING_MAP = new TransactionMilestoningVisitor<Map<String, Object>>()
+    public static final TransactionMilestoningVisitor<Map<String, Object>> EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS = new TransactionMilestoningVisitor<Map<String, Object>>()
     {
         @Override
         public Map<String, Object> visit(BatchIdTransactionMilestoning val)
         {
-            HashMap<String, Object> milestoningMap = new HashMap<>();
-            milestoningMap.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
-            return milestoningMap;
+            HashMap<String, Object> activeRowsFilterConditions = new HashMap<>();
+            activeRowsFilterConditions.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
+            return activeRowsFilterConditions;
         }
 
         @Override
         public Map<String, Object> visit(DateTimeTransactionMilestoning val)
         {
-            HashMap<String, Object> milestoningMap = new HashMap<>();
-            milestoningMap.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
-            return milestoningMap;
+            HashMap<String, Object> activeRowsFilterConditions = new HashMap<>();
+            activeRowsFilterConditions.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
+            return activeRowsFilterConditions;
         }
 
         @Override
         public Map<String, Object> visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
-            HashMap<String, Object> milestoningMap = new HashMap<>();
-            milestoningMap.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
-            milestoningMap.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
-            return milestoningMap;
+            HashMap<String, Object> activeRowsFilterConditions = new HashMap<>();
+            activeRowsFilterConditions.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
+            activeRowsFilterConditions.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
+            return activeRowsFilterConditions;
         }
     };
 }
