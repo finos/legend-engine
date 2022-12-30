@@ -42,6 +42,17 @@ function <<test.Test>> meta::relational::memsql::tests::db::testBooleanConversio
   assertEquals('select `root`.`window` as `WINDOW` from `test table` as `root` where case when `root`.`window` in (1, 2) then true else false end', $result);      
 }
 
+function <<test.Test>> meta::relational::memsql::tests::db::testWeekOfYear() : Boolean[1]
+{
+    let result = toSQLString(
+        |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project([s|$s.date->weekOfYear()], ['week']),
+        meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping,
+        meta::relational::runtime::DatabaseType.MemSQL,
+        meta::relational::extension::relationalExtensions());
+
+    assertEquals('select weekofyear(date(`root`.dateTime)) as `week` from dataTable as `root`', $result);
+}
+
 ###Relational
 Database meta::relational::memsql::tests::db::schema1
 (
