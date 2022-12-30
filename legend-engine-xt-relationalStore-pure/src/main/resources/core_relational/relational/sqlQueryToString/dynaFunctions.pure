@@ -1,0 +1,72 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Relational
+
+DynaFunction meta::relational::dynaFunction::abs
+  :: (x Float) -> Float
+
+DynaFunction meta::relational::dynaFunction::acos
+  :: (x Float) -> Float
+
+DynaFunction meta::relational::dynaFunction::add
+  :: (x Float Arr) or (x1 Float, x2 Float, x3 Float ...) -> Float
+
+DynaFunction meta::relational::dynaFunction::adjust
+  :: (interval String Const, duration Integer, dateOrTime DateTime) -> DateTime
+  ~restrict $interval is 'YEARS' or 'MONTHS' or 'WEEKS' or 'DAYS' or 'HOURS' or 'MINUTES' or 'SECONDS' or 'MILLISECONDS' or 'MICROSECONDS'
+
+DynaFunction meta::relational::dynaFunction::andFn
+  and :: (x1 Bit, x2 Bit, x3 Bit ...) -> Bit
+
+DynaFunction meta::relational::dynaFunction::asin
+  :: (x Float) -> Float
+
+DynaFunction meta::relational::dynaFunction::atan
+  :: (x Float) -> Float
+
+DynaFunction meta::relational::dynaFunction::atan2
+  :: (x Float, y Float) -> Float
+
+DynaFunction meta::relational::dynaFunction::average
+  :: (x Float Arr) -> Float
+
+DynaFunction meta::relational::dynaFunction::averageRank
+  :: () -> Integer
+
+DynaFunction meta::relational::dynaFunction::case
+  :: (expr1 Bit, expr2 Any, expr3 Any, more Any ...) -> Any
+
+DynaFunction meta::relational::dynaFunction::ceiling
+  :: (x Float) -> Integer
+
+DynaFunction meta::relational::dynaFunction::coalesce
+  :: (x1 Any, x2 Any, x3 Any ...) -> Any
+
+DynaFunction meta::relational::dynaFunction::concat
+  :: (s1 String, s2 String, s3 String ...) -> String
+
+DynaFunction meta::relational::dynaFunction::contains
+  :: (s1 String, s2 String Const) -> Bit
+
+DynaFunction meta::relational::dynaFunction::convertDate
+  :: (dateStr String, format String Const) -> Date
+  ~restrict $format matches '[MDY][MDY][/\\-\\.,MDY ]*[MDY][MDY]' 
+
+DynaFunction meta::relational::dynaFunction::convertDateTime
+  :: (dateTimeStr String, format String Const) -> DateTime
+  ~restrict $format matches '[MDY][MDY][/\\-\\.,MDY ]*[MDY][MDY].+'
+
+DynaFunction meta::relational::dynaFunction::convertVarchar128
+  :: (x Any) -> String
