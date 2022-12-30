@@ -989,7 +989,7 @@ function meta::external::language::java::transform::newConventions(extensions : 
    let result = ^Conventions
    (
       fieldNameStrategy          = {p:String[1] | $p},
-      getterNameStrategy         = {p:String[1] | 'get' + $p->toUpperFirstCharacter()->toOne()},
+      getterNameStrategy         = {p:String[1] | 'get' + (if(checkForReservedWordsForGet($p),|'_' + $p->toUpperFirstCharacter()->toOne(),|$p->toUpperFirstCharacter()->toOne()))},
       setterNameStrategy         = {p:String[1] | 'set' + $p->toUpperFirstCharacter()->toOne()},
       defaultClassPurpose        = ClassPurpose.MODEL,
 
@@ -1248,4 +1248,10 @@ function meta::external::language::java::transform::sanitizeJavaKeywords(name: S
 function <<access.private>> meta::external::language::java::transform::startsWithNumber(s: String[1]): Boolean[1]
 {
    ['0','1','2','3','4','5','6','7','8','9']->contains($s->substring(0, 1))
+}
+
+function meta::external::language::java::transform::checkForReservedWordsForGet(propertyName : String[1]): Boolean[1]
+{
+  let collection =['class','Class'];
+  $collection->contains($propertyName);
 }
