@@ -22,6 +22,8 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -40,28 +42,48 @@ public class ResultManager
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final JsonStringEncoder jsonStringEncoder = JsonStringEncoder.getInstance();
 
+    @Deprecated
     public static Response manageResult(MutableList<CommonProfile> pm, Result result, LoggingEventType loggingEventType)
     {
         return manageResult(pm, result, SerializationFormat.defaultFormat, loggingEventType);
     }
 
+    public static Response manageResult(String user, Result result, LoggingEventType loggingEventType)
+    {
+        return manageResult(user, result, SerializationFormat.defaultFormat, loggingEventType);
+    }
+
+    @Deprecated
     public static Response manageResult(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
     {
-        return manageResultWithCustomErrorCodeImpl(pm, result, false, format, loggingEventType);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manageResultWithCustomErrorCodeImpl(user, result, false, format, loggingEventType);
     }
 
+    public static Response manageResult(String user, Result result, SerializationFormat format, LoggingEventType loggingEventType)
+    {
+        return manageResultWithCustomErrorCodeImpl(user, result, false, format, loggingEventType);
+    }
+
+    @Deprecated
     public static Response manageResultWithCustomErrorCode(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
     {
-        return manageResultWithCustomErrorCodeImpl(pm, result, true, format, loggingEventType);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manageResultWithCustomErrorCodeImpl(user, result, true, format, loggingEventType);
     }
 
-    private static Response manageResultWithCustomErrorCodeImpl(MutableList<CommonProfile> pm, Result result, boolean propagateErrorCode, SerializationFormat format, LoggingEventType loggingEventType)
+    public static Response manageResultWithCustomErrorCode(String user, Result result, SerializationFormat format, LoggingEventType loggingEventType)
+    {
+        return manageResultWithCustomErrorCodeImpl(user, result, true, format, loggingEventType);
+    }
+
+    private static Response manageResultWithCustomErrorCodeImpl(String user, Result result, boolean propagateErrorCode, SerializationFormat format, LoggingEventType loggingEventType)
     {
         if (result instanceof ErrorResult)
         {
             ErrorResult errorResult = (ErrorResult) result;
             String message = errorResult.getMessage();
-            LOGGER.info(new LogInfo(pm, loggingEventType, message).toString());
+            LOGGER.info(new LogInfo(user, loggingEventType, message).toString());
             // Not sure about the history behind the 20 error code. We are keep it as is for backwards compatibility
             int errorMessageCode = !propagateErrorCode ? 20 : errorResult.getCode();
             return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE).entity(new ErrorMessage(errorMessageCode, "{\"message\":\"" + new String(jsonStringEncoder.quoteAsString(message)) + "\"}")).build();
@@ -72,7 +94,7 @@ public class ResultManager
         }
         else if (result instanceof ConstantResult)
         {
-            return ManageConstantResult.manageResult(pm, ((ConstantResult) result).getValue());
+            return ManageConstantResult.manageResult(user, ((ConstantResult) result).getValue());
         }
         else
         {

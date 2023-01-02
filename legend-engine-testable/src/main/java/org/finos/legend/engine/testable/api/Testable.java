@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -69,16 +70,17 @@ public class Testable
     public Response doTests(RunTestsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
         try
         {
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_START, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.TESTABLE_DO_TESTS_START, "").toString());
             RunTestsResult runTestsResult = testableRunner.doTests(input, profiles);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_STOP, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.TESTABLE_DO_TESTS_STOP, "").toString());
             return ManageConstantResult.manageResult(profiles, runTestsResult, objectMapper);
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.TESTABLE_DO_TESTS_ERROR, null);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.TESTABLE_DO_TESTS_ERROR, user);
         }
     }
 }

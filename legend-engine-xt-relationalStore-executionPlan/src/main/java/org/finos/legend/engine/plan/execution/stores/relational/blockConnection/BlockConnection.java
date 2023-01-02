@@ -412,7 +412,7 @@ public class BlockConnection implements Connection
                 {
                     long executeSqlStart = System.currentTimeMillis();
                     statement.execute(sql);
-                    LOGGER.info(new LogInfo(null, loggingEventType, sql, (double) System.currentTimeMillis() - executeSqlStart).toString());
+                    LOGGER.info(new LogInfo((String)null, loggingEventType, sql, (double) System.currentTimeMillis() - executeSqlStart).toString());
                 }
             }
         }

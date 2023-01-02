@@ -52,6 +52,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -120,6 +121,8 @@ public class Execute
     public Response execute(@Context HttpServletRequest request, ExecuteInput executeInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+
         long start = System.currentTimeMillis();
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Execute").startActive(true))
         {
@@ -151,7 +154,7 @@ public class Execute
         }
         catch (Exception ex)
         {
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
             MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
             return response;
         }
@@ -164,12 +167,14 @@ public class Execute
     public Response generatePlan(@Context HttpServletRequest request, ExecuteInput executeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         long start = System.currentTimeMillis();
         try
         {
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_START, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_GENERATION_START, "").toString());
             SingleExecutionPlan plan = buildPlan(executeInput, profiles, false).plan;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_GENERATION_STOP, (double) System.currentTimeMillis() - start).toString());
             MetricsHandler.observe("generate plan", start, System.currentTimeMillis());
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
             return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(plan).build();
@@ -177,7 +182,7 @@ public class Execute
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.GENERATE_PLAN_ERROR, ex, null);
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_ERROR, user);
             return response;
         }
 
@@ -190,12 +195,14 @@ public class Execute
     public Response generatePlanDebug(@Context HttpServletRequest request, ExecuteInput executeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         long start = System.currentTimeMillis();
         try
         {
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_START, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_START, "").toString());
             PlanWithDebug plan = buildPlan(executeInput, profiles, true);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_STOP, (double) System.currentTimeMillis() - start).toString());
             MetricsHandler.observe("generate plan", start, System.currentTimeMillis());
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
             return Response.ok().type(MediaType.APPLICATION_JSON_TYPE).entity(plan).build();
@@ -203,7 +210,7 @@ public class Execute
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.GENERATE_PLAN_ERROR, ex, null);
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_GENERATION_DEBUG_ERROR, user);
             return response;
         }
     }
@@ -268,14 +275,14 @@ public class Execute
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
             try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
             {
-                return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+                return manageResult(user, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
             }
 
         }
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
             return response;
         }
     }
@@ -285,14 +292,14 @@ public class Execute
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTE_INTERACTIVE_START, "").toString());
             SingleExecutionPlan plan = this.buildPlan(functionFunc, pureModelFunc, mapping, runtime, context, clientVersion, pm);
             return this.execImpl(planExecutor, pm, user, format, start, plan, parameters);
         }
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.PURE_QUERY_EXECUTE_ERROR, ex, null);
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, pm);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
             return response;
         }
     }
@@ -317,8 +324,8 @@ public class Execute
         // Plan failed authorization.
         if (!authorizationResult.isAuthorized())
         {
-            LOGGER.info(new LogInfo(pm, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, "Plan failed middle tier authorization").toString());
-            Response response = ExceptionTool.exceptionManager(authorizationResult.toJSON(), 403, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, pm);
+            LOGGER.info(new LogInfo(user, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, "Plan failed middle tier authorization").toString());
+            Response response = ExceptionTool.exceptionManager(authorizationResult.toJSON(), 403, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, user);
             return response;
         }
 
@@ -345,6 +352,7 @@ public class Execute
 
     private PlanExecutionAuthorizerOutput authorizePlan(MutableList<CommonProfile> pm, SingleExecutionPlan plan) throws Exception
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
         Identity identity = this.identityFactory.makeIdentity(pm);
 
         // Note : For interactive executions we do not have to provide a resource context. The resource context is derived from the plan
@@ -360,7 +368,7 @@ public class Execute
             scope.span().setTag("plan authorization", executionAuthorizationJSON);
         }
 
-        LOGGER.info(new LogInfo(pm, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, String.format("Middle tier plan execution authorization result = %s", executionAuthorization.toJSON())).toString());
+        LOGGER.info(new LogInfo(user, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, String.format("Middle tier plan execution authorization result = %s", executionAuthorization.toJSON())).toString());
         return executionAuthorization;
     }
 
@@ -391,7 +399,7 @@ public class Execute
                 .build();
 
         String logMessage = String.format("Middle tier interactive execution invoked with custom runtime context. Context=%s", runtimeContext.getContextParams());
-        LOGGER.info(new LogInfo(pm, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, logMessage).toString());
+        LOGGER.info(new LogInfo(user, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, logMessage).toString());
 
         Result result = planExecutor.executeWithArgs(executeArgs);
         return this.wrapInResponse(pm, format, start, result);
@@ -399,11 +407,12 @@ public class Execute
 
     private Response wrapInResponse(MutableList<CommonProfile> pm, SerializationFormat format, long start, Result result)
     {
-        LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
         MetricsHandler.observe("execute", start, System.currentTimeMillis());
         try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
-            return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+            return manageResult(user, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
     }
 }

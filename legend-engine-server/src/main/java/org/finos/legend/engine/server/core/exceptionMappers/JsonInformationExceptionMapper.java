@@ -35,6 +35,6 @@ public class JsonInformationExceptionMapper implements ExceptionMapper<JsonProce
         {
             entity.put("location", String.format("line %d, column %d", exception.getLocation().getLineNr(), exception.getLocation().getColumnNr()));
         }
-        return ExceptionTool.exceptionManager(exception, LoggingEventType.JSON_PARSING_ERROR, null);
+        return ExceptionTool.exceptionManager(exception, LoggingEventType.JSON_PARSING_ERROR, (String)null);
     }
 }

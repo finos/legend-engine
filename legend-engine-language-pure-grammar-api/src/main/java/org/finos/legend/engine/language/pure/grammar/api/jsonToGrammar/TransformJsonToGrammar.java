@@ -33,6 +33,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -61,7 +62,7 @@ public class TransformJsonToGrammar
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response transformJsonToGrammar(JsonToGrammarInput jsonInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarComposerExtensionLoader.logExtensionList();
@@ -78,11 +79,11 @@ public class TransformJsonToGrammar
             {
                 symmetricResult.code = grammarTransformer.renderPureModelContextData(jsonInput.modelDataContext);
             }
-            return ManageConstantResult.manageResult(profiles, symmetricResult);
+            return ManageConstantResult.manageResult(user, symmetricResult);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, user);
         }
     }
 }

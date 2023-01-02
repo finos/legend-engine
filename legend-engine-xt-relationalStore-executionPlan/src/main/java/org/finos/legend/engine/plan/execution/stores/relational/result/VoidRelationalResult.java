@@ -19,6 +19,8 @@ import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -38,16 +40,16 @@ public class VoidRelationalResult extends Result
     public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, MutableList<CommonProfile> profiles)
     {
         super("VOID");
-
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
         try
         {
             String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
             this.connection = connection;
             this.statement = connection.createStatement();
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.statement.execute(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
         }
         catch (SQLException e)
         {

@@ -181,7 +181,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         }
         catch (Exception e)
         {
-            LOGGER.warn(new LogInfo(null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
+            LOGGER.warn(new LogInfo((String)null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
             throw e;
         }
         FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());

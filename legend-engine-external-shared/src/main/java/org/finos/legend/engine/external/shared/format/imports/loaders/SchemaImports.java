@@ -54,11 +54,11 @@ public class SchemaImports
     {
         try
         {
-            return ManageConstantResult.manageResult(null, schemaConfigurationDescriptions);
+            return ManageConstantResult.manageResult((String)null, schemaConfigurationDescriptions);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.SCHEMA_GENERATION_ERROR, null);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.SCHEMA_GENERATION_ERROR, (String)null);
         }
     }
 }

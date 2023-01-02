@@ -34,6 +34,7 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -92,18 +93,18 @@ public class ExecutePlan
     public Response doExecutePlanLegacy(HttpServletRequest request, ExecutionPlan execPlan, SerializationFormat format, ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
         try
         {
             if (execPlan instanceof SingleExecutionPlan)
             {
-                LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
+                LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
                 // Assume that the input exec plan has no variables
                 Result result = planExecutor.execute((SingleExecutionPlan) execPlan, Maps.mutable.empty(), null, profiles);
                 try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
                 {
-                    LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
-                    return ResultManager.manageResult(profiles, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
+                    LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
+                    return ResultManager.manageResult(user, result, format, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR);
                 }
             }
             else
@@ -113,12 +114,14 @@ public class ExecutePlan
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, user);
         }
     }
 
     public Response doExecutePlanImpl(ExecutionPlan execPlan, SerializationFormat format, MutableList<CommonProfile> profiles)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         if (!(execPlan instanceof SingleExecutionPlan))
         {
             return Response.status(500).type(MediaType.TEXT_PLAIN).entity(new ResultManager.ErrorMessage(20, "Only SingleExecutionPlan is supported")).build();
@@ -127,20 +130,22 @@ public class ExecutePlan
         long start = System.currentTimeMillis();
         try
         {
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
             Response response = execImpl(execPlan, profiles, format, start);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_PLAN_EXEC_STOP, "").toString());
             return response;
         }
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.EXECUTION_PLAN_EXEC_ERROR, ex, null);
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
         }
     }
 
     private Response execImpl(ExecutionPlan execPlan, MutableList<CommonProfile> profiles, SerializationFormat format, long start) throws Exception
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         // Authorizer has not been configured. So we execute the plan with the default push down authorization behavior.
         if (planExecutionAuthorizer == null)
         {
@@ -159,8 +164,8 @@ public class ExecutePlan
         // Plan failed authorization.
         if (!authorizationResult.isAuthorized())
         {
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, "Plan failed middle tier authorization").toString());
-            Response response = ExceptionTool.exceptionManager(authorizationResult.toJSON(), 403, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, profiles);
+            LOGGER.info(new LogInfo(user, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, "Plan failed middle tier authorization").toString());
+            Response response = ExceptionTool.exceptionManager(authorizationResult.toJSON(), 403, LoggingEventType.MIDDLETIER_INTERACTIVE_EXECUTION, user);
             return response;
         }
 
@@ -219,10 +224,11 @@ public class ExecutePlan
 
     private Response wrapInResponse(MutableList<CommonProfile> pm, SerializationFormat format, long start, Result result)
     {
-        LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
         try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
-            return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+            return manageResult(user, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
     }
 }

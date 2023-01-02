@@ -190,12 +190,11 @@ public class SqlExecute
     private Response execImpl(PlanExecutor planExecutor, MutableList<CommonProfile> pm, String user, SerializationFormat format, long start, SingleExecutionPlan plan)
     {
         Result result = planExecutor.execute(plan, Maps.mutable.empty(), user, pm);
-        LOGGER.info(new LogInfo(pm, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
+        LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
         MetricsHandler.observe("execute", start, System.currentTimeMillis());
         try (Scope scope = GlobalTracer.get().buildSpan("Manage Results").startActive(true))
         {
-            return manageResult(pm, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
+            return manageResult(user, result, format, LoggingEventType.EXECUTE_INTERACTIVE_ERROR);
         }
     }
-
 }

@@ -42,6 +42,7 @@ import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_GraphFetchResult;
@@ -129,13 +130,15 @@ public class GraphQLDebug extends GraphQL
     public Response generateGraphFetchDev(@Context HttpServletRequest request, @PathParam("workspaceId") String workspaceId, @PathParam("projectId") String projectId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
             return this.generateGraphFetch(queryClassPath, query, loadSDLCProjectModel(profiles, request, projectId, workspaceId, false));
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
         }
     }
 
@@ -147,13 +150,15 @@ public class GraphQLDebug extends GraphQL
     public Response generateGraphFetchProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
             return this.generateGraphFetch(queryClassPath, query, loadProjectModel(profiles, request, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
         }
     }
 
@@ -171,6 +176,8 @@ public class GraphQLDebug extends GraphQL
     public Response generatePureInstanceBuilder(@Context HttpServletRequest request, String json, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Pure Instance Builder").startActive(true))
         {
             Document document = new ObjectMapper().readValue(json, ExecutableDocument.class);
@@ -179,7 +186,7 @@ public class GraphQLDebug extends GraphQL
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, user);
         }
     }
 

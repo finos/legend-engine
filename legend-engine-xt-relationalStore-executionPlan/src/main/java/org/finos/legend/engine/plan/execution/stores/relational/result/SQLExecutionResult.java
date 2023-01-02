@@ -26,6 +26,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -68,6 +70,8 @@ public class SQLExecutionResult extends Result
     {
         super("success", activities);
 
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseType = databaseType;
         this.databaseTimeZone = databaseTimeZone;
@@ -88,9 +92,9 @@ public class SQLExecutionResult extends Result
 
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.get(activities.size() - 1)).sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
 
             this.resultSetMetaData = resultSet.getMetaData();

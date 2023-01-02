@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -86,17 +87,18 @@ public class MorphirGenerationService
 
     private Response exec(MorphirGenerationConfig morphirGenerationConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
         try
         {
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_START : LoggingEventType.GENERATE_MORPHIR_START).toString());
+            LOGGER.info(new LogInfo(user, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_START : LoggingEventType.GENERATE_MORPHIR_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_language_morphir_transformation_integration.Root_meta_external_language_morphir_generation_generateMorphirIRFromPureWithScope_MorphirConfig_1__GenerationOutput_MANY_(morphirGenerationConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_STOP : LoggingEventType.GENERATE_MORPHIR_STOP).toString());
-            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(user, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_STOP : LoggingEventType.GENERATE_MORPHIR_STOP).toString());
+            return ManageConstantResult.manageResult(user, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MORPHIR_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MORPHIR_ERROR, user);
         }
     }
 }

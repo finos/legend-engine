@@ -52,11 +52,11 @@ public class CodeImports
     {
         try
         {
-            return ManageConstantResult.manageResult(null, codeConfigurationDescriptions);
+            return ManageConstantResult.manageResult((String)null, codeConfigurationDescriptions);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.CODE_GENERATION_ERROR, null);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CODE_GENERATION_ERROR, (String)null);
         }
     }
 }

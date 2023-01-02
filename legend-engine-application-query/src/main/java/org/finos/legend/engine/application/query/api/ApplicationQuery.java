@@ -24,6 +24,7 @@ import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -66,6 +67,7 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response searchQueries(QuerySearchSpecification searchSpecification, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profileManager));
         try
         {
             return Response.ok().entity(this.queryStoreManager.getQueries(searchSpecification, getCurrentUser(profileManager))).build();
@@ -76,7 +78,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERIES_ERROR, null);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERIES_ERROR, user);
         }
     }
 
@@ -84,8 +86,10 @@ public class ApplicationQuery
     @Path("{queryId}")
     @ApiOperation(value = "Get the query with specified ID")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQuery(@PathParam("queryId") String queryId)
+    public Response getQuery(@PathParam("queryId") String queryId, @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profileManager));
+
         try
         {
             return Response.ok(this.queryStoreManager.getQuery(queryId)).build();
@@ -96,7 +100,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, null);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, user);
         }
     }
 
@@ -105,9 +109,10 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response createQuery(Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profileManager));
         try (Scope scope = GlobalTracer.get().buildSpan("Query: Create Query").startActive(true))
         {
-            return Response.ok().entity(this.queryStoreManager.createQuery(query, getCurrentUser(profileManager))).build();
+            return Response.ok().entity(this.queryStoreManager.createQuery(query, user)).build();
         }
         catch (Exception e)
         {
@@ -115,7 +120,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.CREATE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.CREATE_QUERY_ERROR, user);
         }
     }
 
@@ -125,9 +130,10 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response updateQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profileManager));
         try (Scope scope = GlobalTracer.get().buildSpan("Query: Update Query").startActive(true))
         {
-            return Response.ok().entity(this.queryStoreManager.updateQuery(queryId, query, getCurrentUser(profileManager))).build();
+            return Response.ok().entity(this.queryStoreManager.updateQuery(queryId, query, user)).build();
         }
         catch (Exception e)
         {
@@ -135,7 +141,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, user);
         }
     }
 
@@ -145,9 +151,10 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response deleteQuery(@PathParam("queryId") String queryId, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profileManager));
         try (Scope scope = GlobalTracer.get().buildSpan("Query: Delete Query").startActive(true))
         {
-            this.queryStoreManager.deleteQuery(queryId, getCurrentUser(profileManager));
+            this.queryStoreManager.deleteQuery(queryId, user);
             return Response.noContent().build();
         }
         catch (Exception e)
@@ -156,7 +163,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.DELETE_QUERY_ERROR, user);
         }
     }
 
@@ -171,6 +178,8 @@ public class ApplicationQuery
                                    @QueryParam("limit") @ApiParam("Limit the number of events returned") Integer limit,
                                    @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profileManager));
+
         try
         {
             return Response.ok().entity(this.queryStoreManager.getQueryEvents(queryId, eventType, since, until, limit)).build();
@@ -181,7 +190,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_EVENTS_ERROR, null);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_EVENTS_ERROR, user);
         }
     }
 }

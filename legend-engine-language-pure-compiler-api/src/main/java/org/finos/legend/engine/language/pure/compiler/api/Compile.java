@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -72,6 +73,7 @@ public class Compile
     public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
         long start = System.currentTimeMillis();
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
@@ -87,7 +89,7 @@ public class Compile
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.COMPILE_MODEL_ERROR, ex, null);
-            return handleException(uriInfo, profiles, start, ex);
+            return handleException(uriInfo, user, start, ex);
         }
     }
 
@@ -99,6 +101,7 @@ public class Compile
     public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
         long start = System.currentTimeMillis();
         try
         {
@@ -116,14 +119,14 @@ public class Compile
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
-            return handleException(uriInfo, profiles, start, ex);
+            return handleException(uriInfo, user, start, ex);
         }
     }
 
-    private Response handleException(UriInfo uriInfo, MutableList<CommonProfile> profiles, long start, Exception ex)
+    private Response handleException(UriInfo uriInfo, String user, long start, Exception ex)
     {
         Response.Status status = ex instanceof EngineException ? Response.Status.BAD_REQUEST : Response.Status.INTERNAL_SERVER_ERROR;
-        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, profiles);
+        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, user);
         return errorResponse;
     }
 }

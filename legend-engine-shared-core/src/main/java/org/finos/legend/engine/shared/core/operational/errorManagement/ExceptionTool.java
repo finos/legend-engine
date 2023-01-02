@@ -18,6 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.util.GlobalTracer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -31,34 +33,69 @@ public class ExceptionTool
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
     private static final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapper();
 
+    @Deprecated
     public static Response exceptionManager(Exception exception, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, exception), Response.Status.INTERNAL_SERVER_ERROR);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manage(eventType, user, new ExceptionError(-1, exception), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    public static Response exceptionManager(Exception exception, LoggingEventType eventType, String user)
+    {
+        return manage(eventType, user, new ExceptionError(-1, exception), Response.Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Deprecated
     public static Response exceptionManager(String message, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, message), Response.Status.INTERNAL_SERVER_ERROR);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manage(eventType, user, new ExceptionError(-1, message), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    public static Response exceptionManager(String message, LoggingEventType eventType, String user)
+    {
+        return manage(eventType, user, new ExceptionError(-1, message), Response.Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Deprecated
     public static Response exceptionManager(String message, int errorCode, LoggingEventType eventType, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(errorCode, message), Response.Status.INTERNAL_SERVER_ERROR);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manage(eventType, user, new ExceptionError(errorCode, message), Response.Status.INTERNAL_SERVER_ERROR);
     }
 
+    public static Response exceptionManager(String message, int errorCode, LoggingEventType eventType, String user)
+    {
+        return manage(eventType, user, new ExceptionError(errorCode, message), Response.Status.INTERNAL_SERVER_ERROR);
+    }
+
+    @Deprecated
     public static Response exceptionManager(Exception exception, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, exception), status);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manage(eventType, user, new ExceptionError(-1, exception), status);
     }
 
+    public static Response exceptionManager(Exception exception, LoggingEventType eventType, Response.Status status, String user)
+    {
+        return manage(eventType, user, new ExceptionError(-1, exception), status);
+    }
+
+    @Deprecated
     public static Response exceptionManager(String message, LoggingEventType eventType, Response.Status status, Iterable<? extends CommonProfile> pm)
     {
-        return manage(eventType, pm, new ExceptionError(-1, message), status);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manage(eventType, user, new ExceptionError(-1, message), status);
     }
 
-    private static Response manage(LoggingEventType eventType, Iterable<? extends CommonProfile> pm, ExceptionError error, Response.Status status)
+    public static Response exceptionManager(String message, LoggingEventType eventType, Response.Status status, String user)
     {
-        LOGGER.error(new LogInfo(pm, eventType, error).toString());
+        return manage(eventType, user, new ExceptionError(-1, message), status);
+    }
+
+    private static Response manage(LoggingEventType eventType, String user, ExceptionError error, Response.Status status)
+    {
+        LOGGER.error(new LogInfo(user, eventType, error).toString());
         String text;
         try
         {
@@ -74,4 +111,6 @@ public class ExceptionTool
         }
         return Response.status(status).type(MediaType.APPLICATION_JSON_TYPE).entity(error).build();
     }
+
+
 }

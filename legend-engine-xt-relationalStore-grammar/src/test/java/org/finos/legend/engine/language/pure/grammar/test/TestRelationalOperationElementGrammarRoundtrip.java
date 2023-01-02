@@ -45,7 +45,7 @@ public class TestRelationalOperationElementGrammarRoundtrip
         }
         catch (Exception e)
         {
-            LogInfo errorResponse = new LogInfo(null, LoggingEventType.PARSE_ERROR, e);
+            LogInfo errorResponse = new LogInfo((String)null, LoggingEventType.PARSE_ERROR, e);
             Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
             Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation, EngineErrorType.PARSER));
         }

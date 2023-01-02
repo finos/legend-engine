@@ -55,7 +55,7 @@ public class TemporaryFile implements Closeable
     public void writeFile(Serializer source) throws Exception
     {
 
-        LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
+        LOGGER.info(new LogInfo((String)null, LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
         MetricsHandler.observeCount("temp file created");
         MetricsHandler.incrementTempFileCount();
         try (OutputStream outputStream = new FileOutputStream(path.toString()))
@@ -81,13 +81,13 @@ public class TemporaryFile implements Closeable
         try
         {
             Files.deleteIfExists(path);
-            LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
+            LOGGER.info(new LogInfo((String)null, LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
             MetricsHandler.decrementTempFileCount();
             MetricsHandler.decrementCount("temp file created");
         }
         catch (Exception e)
         {
-            LOGGER.error(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETE_ERROR, new ErrorResult(1, e).getMessage()).toString());
+            LOGGER.error(new LogInfo((String)null, LoggingEventType.TEMP_FILE_DELETE_ERROR, new ErrorResult(1, e).getMessage()).toString());
         }
     }
 

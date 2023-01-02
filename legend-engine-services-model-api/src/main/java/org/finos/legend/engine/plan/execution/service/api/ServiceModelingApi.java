@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -80,6 +81,8 @@ public class ServiceModelingApi
     public Response doTest(PureModelContext service, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         long start = System.currentTimeMillis();
         try
         {
@@ -87,7 +90,7 @@ public class ServiceModelingApi
             {
                 throw new RuntimeException("Only Full Interactive mode currently supported.  Received " + service.getClass().getName());
             }
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
             String metricContext = uriInfo != null ? uriInfo.getPath() : null;
             List<TestResult> results = this.serviceModeling.testService(profiles, service, metricContext);
             MetricsHandler.observe("service test", start, System.currentTimeMillis());
@@ -103,7 +106,7 @@ public class ServiceModelingApi
                 Service invokedService = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
                 servicePattern = invokedService == null ? null : invokedService.pattern;
             }
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, user);
             MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, ex, servicePattern);
             return response;
         }
@@ -121,13 +124,14 @@ public class ServiceModelingApi
                                  @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
         try
         {
             if (!(service instanceof PureModelContextData))
             {
                 throw new RuntimeException("Only Full Interactive mode currently supported.  Received " + service.getClass().getName());
             }
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
             String metricContext = uriInfo != null ? uriInfo.getPath() : null;
 
             return this.serviceModeling.validateService(profiles, service, metricContext, assertionId, format);
@@ -141,7 +145,7 @@ public class ServiceModelingApi
                 Service invokedService = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
                 servicePattern = invokedService == null ? null : invokedService.pattern;
             }
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, user);
             MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, ex, servicePattern);
             return response;
         }

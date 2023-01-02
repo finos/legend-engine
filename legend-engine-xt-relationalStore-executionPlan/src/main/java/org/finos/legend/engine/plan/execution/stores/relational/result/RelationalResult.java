@@ -76,6 +76,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSCo
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -117,6 +119,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         this.temporaryTables = temporaryTables;
         this.topSpan = topSpan;
 
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
+
         try
         {
             this.connection = connection;
@@ -127,10 +131,10 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             }
             long start = System.currentTimeMillis();
             String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
             this.resultSet = this.statement.executeQuery(sql);
             this.executedSQl = sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(user, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.resultSetMetaData = resultSet.getMetaData();
             this.columnCount = this.resultSetMetaData.getColumnCount();
             this.resultColumns = sqlResultColumns;

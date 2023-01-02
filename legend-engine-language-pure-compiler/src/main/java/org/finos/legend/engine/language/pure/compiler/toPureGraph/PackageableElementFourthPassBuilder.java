@@ -105,7 +105,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
             }
             catch (Exception e)
             {
-                LOGGER.warn(new LogInfo(null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build derived property '" + property.name + " of class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' - stack: " + ctx.getStack()).toString());
+                LOGGER.warn(new LogInfo((String)null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build derived property '" + property.name + " of class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' - stack: " + ctx.getStack()).toString());
                 if (e instanceof EngineException)
                 {
                     throw e;

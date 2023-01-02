@@ -16,6 +16,8 @@ package org.finos.legend.engine.shared.core.api.result;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
@@ -26,12 +28,25 @@ import java.io.IOException;
 
 public class ManageConstantResult
 {
+    @Deprecated
     public static Response manageResult(Iterable<? extends CommonProfile> pm, Object value)
     {
         return manageResult(pm, value, ObjectMapperFactory.getNewStandardObjectMapper());
     }
 
+    public static Response manageResult(String user, Object value)
+    {
+        return manageResult(user, value, ObjectMapperFactory.getNewStandardObjectMapper());
+    }
+
+    @Deprecated
     public static Response manageResult(Iterable<? extends CommonProfile> pm, Object value, ObjectMapper objectMapper)
+    {
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+        return manageResult(user, value, objectMapper);
+    }
+
+    public static Response manageResult(String user, Object value, ObjectMapper objectMapper)
     {
         try
         {
@@ -39,7 +54,7 @@ public class ManageConstantResult
         }
         catch (IOException exception)
         {
-            return ExceptionTool.exceptionManager(exception, LoggingEventType.EXECUTE_CONSTANT_RESPONSE_ERROR, pm);
+            return ExceptionTool.exceptionManager(exception, LoggingEventType.EXECUTE_CONSTANT_RESPONSE_ERROR, user);
         }
     }
 }

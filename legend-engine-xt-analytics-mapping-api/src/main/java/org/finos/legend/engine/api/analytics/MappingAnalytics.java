@@ -35,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -104,6 +105,8 @@ public class MappingAnalytics
                                                        @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        String user = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(pm));
+
         PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
         PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
         Mapping mapping = input.mapping == null ? null : pureModel.getMapping(input.mapping);
@@ -111,7 +114,7 @@ public class MappingAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, new MappingRuntimeCompatibilityAnalysisResult(
+                return ManageConstantResult.manageResult(user, new MappingRuntimeCompatibilityAnalysisResult(
                         ListIterate.collect(HelperRuntimeBuilder.getMappingCompatibleRuntimes(
                                 mapping,
                                 ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class),
@@ -119,7 +122,7 @@ public class MappingAnalytics
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, user);
             }
         }
     }

@@ -28,6 +28,6 @@ public class CatchAllExceptionMapper implements ExceptionMapper<Exception>
     @Override
     public Response toResponse(Exception exception)
     {
-        return ExceptionTool.exceptionManager(exception, LoggingEventType.CATCH_ALL, null);
+        return ExceptionTool.exceptionManager(exception, LoggingEventType.CATCH_ALL, (String)null);
     }
 }
