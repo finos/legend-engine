@@ -179,28 +179,14 @@ public class LogInfo
 
     public LogInfo(String user, LoggingEventType eventType, Throwable t)
     {
-        this(user, eventType);
+        this(user, eventType.toString(), t);
         this.t  = t;
     }
 
     @Deprecated
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, Throwable t)
     {
-        this(SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles)), eventType.toString());
-        StringWriter out = new StringWriter();
-        PrintWriter writer = new PrintWriter(out);
-        t.printStackTrace(writer);
-        int index = ExceptionUtils.indexOfThrowable(t, EngineException.class);
-        this.message = index == -1 ? ExceptionUtils.getRootCauseMessage(t) : ExceptionUtils.getThrowables(t)[index].getMessage();
-        this.trace = out.toString();
-        if (t instanceof EngineException && ((EngineException) t).getSourceInformation() != SourceInformation.getUnknownSourceInformation())
-        {
-            this.sourceInformation = ((EngineException) t).getSourceInformation();
-        }
-        if (index != -1 && ExceptionUtils.getThrowables(t)[index] instanceof EngineException && ((EngineException) ExceptionUtils.getThrowables(t)[index]).getSourceInformation() != SourceInformation.getUnknownSourceInformation())
-        {
-            this.sourceInformation = ((EngineException) ExceptionUtils.getThrowables(t)[index]).getSourceInformation();
-        }
+        this(SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(userProfiles)), eventType, t);
     }
 
     public LogInfo(String user, String eventType, Throwable t)
