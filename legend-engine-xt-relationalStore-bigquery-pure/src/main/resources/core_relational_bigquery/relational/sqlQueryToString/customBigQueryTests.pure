@@ -167,7 +167,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testParseDateOnQueryVa
       '    (\n'+
       '      type = TDS[(date, StrictDate, DATE, \"\")]\n'+
       '      resultColumns = [(\"date\", DATE)]\n'+
-      '      sql = select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < PARSE_DATE(\'%Y-%m-%d\', \'${date}\')\n'+
+      '      sql = select `root`.tradeDate as `date` from tradeTable as `root` where `root`.tradeDate < PARSE_DATE(\'%Y-%m-%d\', \'${escapeSql(date)}\')\n'+
       '      connection = DatabaseConnection(type = \"BigQuery\")\n'+
       '    )\n'+
       '  )\n'+
@@ -195,7 +195,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testParseDateTimeOnQue
       '    (\n'+
       '      type = TDS[(settlementDateTime, DateTime, TIMESTAMP, "")]\n'+
       '      resultColumns = [("settlementDateTime", TIMESTAMP)]\n'+
-      '      sql = select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'${dateTime}\')\n'+
+      '      sql = select `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where `root`.settlementDateTime < PARSE_DATETIME(\'%Y-%m-%d %H:%M:%E6S\', \'${escapeSql(dateTime)}\')\n'+
       '      connection = DatabaseConnection(type = \"BigQuery\")\n'+
       '    )\n'+
       '  )\n'+
@@ -505,7 +505,7 @@ function <<test.Test>> meta::relational::bigQuery::tests::testFilterEqualsWithOp
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(escapeSql(optionalID![]), \'`root`.ID = ${varPlaceHolderToString(escapeSql(optionalID![]) "\\\'" "\\\'" "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(escapeSql(optionalActive![]), \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(escapeSql(optionalActive![]) "\\\'" "\\\'" "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "BigQuery")\n'+
                      '    )\n'+
                      '  )\n'+

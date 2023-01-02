@@ -79,7 +79,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${escapeSql(x)}\' > dateadd(DAY, -1, current_timestamp())\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -117,7 +117,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${escapeSql(x)}\' > dateadd(DAY, -1, current_timestamp())\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +
@@ -288,7 +288,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${escapeSql(x)}\' > dateadd(DAY, -1, current_timestamp())\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -326,7 +326,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${escapeSql(x)}\' > dateadd(DAY, -1, current_timestamp())\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +
@@ -395,7 +395,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n'+
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, \'2005-10-10\')\n'+
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${escapeSql(x)}\' > dateadd(DAY, -1, \'2005-10-10\')\n'+
    '      connection = TestDatabaseConnection(type = "H2")\n'+
    '    )\n'+
    '  )\n'+
@@ -433,7 +433,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
    '      resultColumns = [("firstName", VARCHAR(200))]\n' +
-   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${x}\' > dateadd(DAY, -1, \'2005-10-10\')\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where \'${escapeSql(x)}\' > dateadd(DAY, -1, \'2005-10-10\')\n' +
    '      connection = TestDatabaseConnection(type = "H2")\n' +
    '    )\n' +
    '  )\n' +
@@ -512,7 +512,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
    '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n' +
-   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n' +
+   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${escapeSql(asOf)}\' and \"productclassificationtable_0\".thru_z > \'${escapeSql(asOf)}\') where \"productclassificationtable_0\".type = \'${escapeSql(CLSFtype)}\' and \"root\".from_z <= \'${escapeSql(asOf)}\' and \"root\".thru_z > \'${escapeSql(asOf)}\'\n' +
    '      connection = TestDatabaseConnection(type = \"H2\")\n' +
    '    )\n' +
    '  )\n' +

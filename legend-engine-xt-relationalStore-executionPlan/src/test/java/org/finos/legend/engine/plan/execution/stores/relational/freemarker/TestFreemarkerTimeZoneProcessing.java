@@ -14,22 +14,26 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.freemarker;
 
-import freemarker.core.TemplateDateFormatFactory;
-import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
-import org.finos.legend.engine.plan.execution.result.freemarker.PlanDateParameterDateFormatFactory;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
+import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.pure.generated.core_relational_relational_relationalMappingExecution;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.internal.matchers.ThrowableMessageMatcher;
 import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Map;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
 
 public class TestFreemarkerTimeZoneProcessing
 {
@@ -38,33 +42,15 @@ public class TestFreemarkerTimeZoneProcessing
 
     private static String getTemplateFunctions()
     {
-        return "<#function UTCtoTZ tz paramDate>" +
-                "    <#return (tz+\" \"+paramDate)?date.@alloyDate>" +
-                "</#function>" +
-                "<#function renderCollectionWithTz collection timeZone separator prefix suffix defaultValue>" +
-                "<#assign result = [] />" +
-                "<#list collection as c>" +
-                "<#assign result = [prefix + (timeZone+\" \"+c)?date.@alloyDate + suffix] + result>" +
-                "</#list>" +
-                "<#return result?reverse?join(separator, defaultValue)>" +
-                "</#function>";
-    }
-
-    private static Template getTemplateConfiguredForDateProcessing(String textToProcess) throws IOException
-    {
-        Template t = new Template("sqlTemplate", new StringReader(getTemplateFunctions() + textToProcess));
-        Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
-        t.setCustomDateFormats(customDateFormats);
-        t.setDateFormat("@alloyDate");
-        return t;
+        return core_relational_relational_relationalMappingExecution.Root_meta_relational_mapping_utcToTimeZoneSupportFunction__String_1_(null);
     }
 
     private static String processTemplate(String textToProcess, MutableMap<String, Object> freeMarkerParameters) throws IOException, TemplateException
     {
-        StringWriter stringWriter = new StringWriter();
-        Template t = getTemplateConfiguredForDateProcessing(textToProcess);
-        t.process(freeMarkerParameters, stringWriter);
-        return stringWriter.toString();
+        Map<String, Result> res = Maps.mutable.ofInitialCapacity(freeMarkerParameters.size());
+        freeMarkerParameters.forEach((key, value) -> res.put(String.valueOf(key), new ConstantResult(value)));
+        ExecutionState state = new ExecutionState(res, Lists.mutable.with(getTemplateFunctions()), Lists.mutable.empty());
+        return FreeMarkerExecutor.process(textToProcess, state);
     }
 
     @Test
@@ -124,8 +110,13 @@ public class TestFreemarkerTimeZoneProcessing
     @Test
     public void testNoTimeZoneSpecifiedThrowsException() throws Exception
     {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Plan parsing error; unable to process Date: [] 2018-10-15T20:00:00.123, expecting: \\[(\\S+)\\]\\s(\\S+([\\sT]\\S+)?) e.g.: '[EST] + $date', where $date is of format: [yyyy-MM-dd, yyyy-MM-dd'T'HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSSZ, yyyy-MM-dd'T'HH:mm:ssZ] , e.g. : [EST] 2018-10-15T20:00:00.123");
+        expectedException.expect(RuntimeException.class);
+        expectedException.expectMessage("Issue processing freemarker function.  Template with error: ");
+        expectedException.expectCause(allOf(
+                instanceOf(IllegalArgumentException.class),
+                ThrowableMessageMatcher.hasMessage(is("Plan parsing error; unable to process Date: [] 2018-10-15T20:00:00.123, expecting: \\[(\\S+)\\]\\s(\\S+([\\sT]\\S+)?) e.g.: '[EST] + $date', where $date is of format: [yyyy-MM-dd, yyyy-MM-dd'T'HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss.SSS, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss.SSSZ, yyyy-MM-dd'T'HH:mm:ssZ] , e.g. : [EST] 2018-10-15T20:00:00.123"))
+                )
+        );
         MutableMap<String, Object> freeMarkerDateParameters = Maps.mutable.with("dateParam", "2018-10-15T20:00:00.123");
         processDateConstantTimeZoneNoConversion("", freeMarkerDateParameters);
     }
@@ -139,7 +130,7 @@ public class TestFreemarkerTimeZoneProcessing
 
     private String processDateConstantTimeZoneNoConversion(String tz, MutableMap<String, Object> freeMarkerDateParameters) throws Exception
     {
-        String sql = "${UTCtoTZ( \"[" + tz + "]\" dateParam )}";
+        String sql = "${GMTtoTZ( \"[" + tz + "]\" dateParam )}";
         return processTemplate(sql, freeMarkerDateParameters);
     }
 

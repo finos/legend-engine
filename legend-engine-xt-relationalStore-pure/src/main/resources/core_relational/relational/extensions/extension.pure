@@ -85,8 +85,9 @@ function meta::relational::extension::relationalExtension(type:String[1]) : meta
                                                                                                                 //Need to remove quotes to allow execution of freemarkerConditional node and cases like strtsWith where we remove quotes in sqlQueryToString
                                                                                                                 let removeQuotePadding    = ($freemarkerTemplate->startsWith('\'') && $freemarkerTemplate->endsWith('\'')) && ($freemarkerValue->startsWith('\'') && $freemarkerValue->endsWith('\''));
                                                                                                                 let processedTemplate     = if($removeQuotePadding, | $freemarkerTemplate->substring(1, $freemarkerTemplate->length()-1), |$freemarkerTemplate);
+                                                                                                                let genericTemplate       = '${' + $paramName + '}';
                                                                                                                 let processedValue        = if($removeQuotePadding, | $freemarkerValue->substring(1, $freemarkerValue->length()-1), |$freemarkerValue);
-                                                                                                                $sizeProcessedSql->replace($processedTemplate, $processedValue);,
+                                                                                                                $sizeProcessedSql->replace($processedTemplate, $processedValue)->replace($genericTemplate, $processedValue);,
                                                                                                                |$sizeProcessedSql);}
                                                                                                       , $r.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery);
 
