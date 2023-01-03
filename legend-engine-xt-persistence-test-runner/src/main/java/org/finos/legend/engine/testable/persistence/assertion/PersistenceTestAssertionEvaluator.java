@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.Asse
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertPass;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
 import org.finos.legend.engine.testable.assertion.TestAssertionHelper;
+import org.finos.legend.engine.testable.persistence.model.ActiveRowsFilterCondition;
 
 import java.util.List;
 import java.util.Map;
@@ -42,13 +43,13 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
 {
     private List<Map<String, Object>> result;
     private Set<String> fieldsToIgnore;
-    private Map<String, Object> activeRowsFilterConditions;
+    private ActiveRowsFilterCondition activeRowsFilterCondition;
 
-    public PersistenceTestAssertionEvaluator(List<Map<String, Object>> result, Set<String> fieldsToIgnore, Map<String, Object> activeRowsFilterConditions)
+    public PersistenceTestAssertionEvaluator(List<Map<String, Object>> result, Set<String> fieldsToIgnore, ActiveRowsFilterCondition activeRowsFilterCondition)
     {
         this.result = result;
         this.fieldsToIgnore = fieldsToIgnore;
-        this.activeRowsFilterConditions = activeRowsFilterConditions;
+        this.activeRowsFilterCondition = activeRowsFilterCondition;
     }
 
     @Override
@@ -103,7 +104,7 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
             {
                 actualResult = mapper.writeValueAsString(result);
                 List<Map<String, Object>> expected = mapper.readValue(expectedDataString, new TypeReference<List<Map<String, Object>>>() {});
-                compareActiveRows(result, expected, fieldsToIgnore, activeRowsFilterConditions);
+                compareActiveRows(result, expected, fieldsToIgnore, activeRowsFilterCondition);
                 assertionStatus = new AssertPass();
 
             }
@@ -135,23 +136,20 @@ public class PersistenceTestAssertionEvaluator implements TestAssertionEvaluator
         return compareJsonObjects(result, expected, fieldsToIgnore);
     }
 
-    private boolean compareActiveRows(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, Map<String, Object> activeRowsFilterConditions)
+    private boolean compareActiveRows(List<Map<String, Object>> result, List<Map<String, Object>> expected, Set<String> fieldsToIgnore, ActiveRowsFilterCondition activeRowsFilterCondition)
     {
-        result = findActiveRows(result, activeRowsFilterConditions);
+        result = findActiveRows(result, activeRowsFilterCondition);
         return compareJsonObjects(result, expected, fieldsToIgnore);
     }
 
-    private List<Map<String, Object>> findActiveRows(List<Map<String, Object>> result, Map<String, Object> activeRowsFilterConditions)
+    private List<Map<String, Object>> findActiveRows(List<Map<String, Object>> result, ActiveRowsFilterCondition activeRowsFilterCondition)
     {
         List<Map<String, Object>> activeRows = new ArrayList<>(result);
         for (Map<String, Object> row: result)
         {
-            for (String column: activeRowsFilterConditions.keySet())
+            if (activeRowsFilterCondition != null && !row.get(activeRowsFilterCondition.getColumn()).toString().equals(activeRowsFilterCondition.getValue().toString()))
             {
-                if (!row.get(column).toString().equals(activeRowsFilterConditions.get(column).toString()))
-                {
-                    activeRows.remove(row);
-                }
+                activeRows.remove(row);
             }
         }
         return activeRows;

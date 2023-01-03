@@ -25,8 +25,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.BitemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.NontemporalSnapshot;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
+import org.finos.legend.engine.testable.persistence.model.ActiveRowsFilterCondition;
 
-import java.util.Map;
 import java.util.Set;
 
 public class IngestModeMapper
@@ -70,10 +70,10 @@ public class IngestModeMapper
         return ingestMode.accept(IngestModeVisitors.EXTRACT_FIELDS_TO_EXCLUDE);
     }
 
-    public static Map<String, Object> getActiveRowsFilterConditions(Persistence persistence) throws Exception
+    public static ActiveRowsFilterCondition getActiveRowsFilterConditions(Persistence persistence) throws Exception
     {
         IngestMode ingestMode = getIngestMode(persistence);
-        return ingestMode.accept(IngestModeVisitors.EXTRACT_ACTIVE_ROWS_FILTER_CONDITIONS);
+        return ingestMode.accept(IngestModeVisitors.EXTRACT_ACTIVE_ROWS_FILTER_CONDITION);
     }
 
     public static boolean isTransactionMilestoningTimeBased(Persistence persistence) throws Exception

@@ -45,6 +45,7 @@ import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.persistence.assertion.PersistenceTestAssertionEvaluator;
 import org.finos.legend.engine.testable.persistence.mapper.DatasetMapper;
 import org.finos.legend.engine.testable.persistence.mapper.IngestModeMapper;
+import org.finos.legend.engine.testable.persistence.model.ActiveRowsFilterCondition;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_Persistence;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
@@ -95,7 +96,7 @@ public class PersistenceTestRunner implements TestRunner
 
             List<AssertionStatus> assertStatuses = new ArrayList<>();
             Set<String> fieldsToIgnore = IngestModeMapper.getFieldsToIgnore(persistence);
-            Map<String, Object> activeRowsFilterConditions = IngestModeMapper.getActiveRowsFilterConditions(persistence);
+            ActiveRowsFilterCondition activeRowsFilterCondition = IngestModeMapper.getActiveRowsFilterConditions(persistence);
             boolean isTransactionMilestoningTimeBased = IngestModeMapper.isTransactionMilestoningTimeBased(persistence);
 
             if (!(persistenceTest.isTestDataFromServiceOutput))
@@ -118,7 +119,7 @@ public class PersistenceTestRunner implements TestRunner
                         invokePersistence(targetDataset, persistence, testDataString, connection);
                         List<Map<String, Object>> output = persistenceTestH2Connection.readTable(datasetDefinition);
 
-                        batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore, activeRowsFilterConditions));
+                        batchAssertionStatus = testAssertion.accept(new PersistenceTestAssertionEvaluator(output, fieldsToIgnore, activeRowsFilterCondition));
                     }
                     assertStatuses.add(batchAssertionStatus);
                     if (isTransactionMilestoningTimeBased && ++batchId < testBatches.size())

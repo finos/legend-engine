@@ -29,11 +29,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.BatchIdTransactionMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.DateTimeTransactionMilestoning;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.transactionmilestoning.TransactionMilestoningVisitor;
+import org.finos.legend.engine.testable.persistence.model.ActiveRowsFilterCondition;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -117,48 +116,48 @@ public class IngestModeVisitors
         }
     };
 
-    public static final IngestModeVisitor<Map<String, Object>> EXTRACT_ACTIVE_ROWS_FILTER_CONDITIONS = new IngestModeVisitor<Map<String, Object>>()
+    public static final IngestModeVisitor<ActiveRowsFilterCondition> EXTRACT_ACTIVE_ROWS_FILTER_CONDITION = new IngestModeVisitor<ActiveRowsFilterCondition>()
     {
         @Override
-        public Map<String, Object> visit(AppendOnly appendOnly)
+        public ActiveRowsFilterCondition visit(AppendOnly appendOnly)
         {
-            return new HashMap<>();
+            return null;
         }
 
         @Override
-        public Map<String, Object> visit(BitemporalDelta bitemporalDelta)
+        public ActiveRowsFilterCondition visit(BitemporalDelta bitemporalDelta)
         {
-            return bitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
+            return bitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITION);
         }
 
         @Override
-        public Map<String, Object> visit(BitemporalSnapshot bitemporalSnapshot)
+        public ActiveRowsFilterCondition visit(BitemporalSnapshot bitemporalSnapshot)
         {
-            return bitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
+            return bitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITION);
         }
 
         @Override
-        public Map<String, Object> visit(NontemporalDelta nontemporalDelta)
+        public ActiveRowsFilterCondition visit(NontemporalDelta nontemporalDelta)
         {
-            return new HashMap<>();
+            return null;
         }
 
         @Override
-        public Map<String, Object> visit(NontemporalSnapshot nontemporalSnapshot)
+        public ActiveRowsFilterCondition visit(NontemporalSnapshot nontemporalSnapshot)
         {
-            return new HashMap<>();
+            return null;
         }
 
         @Override
-        public Map<String, Object> visit(UnitemporalDelta unitemporalDelta)
+        public ActiveRowsFilterCondition visit(UnitemporalDelta unitemporalDelta)
         {
-            return unitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
+            return unitemporalDelta.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITION);
         }
 
         @Override
-        public Map<String, Object> visit(UnitemporalSnapshot unitemporalSnapshot)
+        public ActiveRowsFilterCondition visit(UnitemporalSnapshot unitemporalSnapshot)
         {
-            return unitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS);
+            return unitemporalSnapshot.transactionMilestoning.accept(EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITION);
         }
     };
 
@@ -266,31 +265,24 @@ public class IngestModeVisitors
         }
     };
 
-    public static final TransactionMilestoningVisitor<Map<String, Object>> EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITIONS = new TransactionMilestoningVisitor<Map<String, Object>>()
+    public static final TransactionMilestoningVisitor<ActiveRowsFilterCondition> EXTRACT_TX_ACTIVE_ROWS_FILTER_CONDITION = new TransactionMilestoningVisitor<ActiveRowsFilterCondition>()
     {
         @Override
-        public Map<String, Object> visit(BatchIdTransactionMilestoning val)
+        public ActiveRowsFilterCondition visit(BatchIdTransactionMilestoning val)
         {
-            HashMap<String, Object> activeRowsFilterConditions = new HashMap<>();
-            activeRowsFilterConditions.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
-            return activeRowsFilterConditions;
+            return new ActiveRowsFilterCondition(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
         }
 
         @Override
-        public Map<String, Object> visit(DateTimeTransactionMilestoning val)
+        public ActiveRowsFilterCondition visit(DateTimeTransactionMilestoning val)
         {
-            HashMap<String, Object> activeRowsFilterConditions = new HashMap<>();
-            activeRowsFilterConditions.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
-            return activeRowsFilterConditions;
+            return new ActiveRowsFilterCondition(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
         }
 
         @Override
-        public Map<String, Object> visit(BatchIdAndDateTimeTransactionMilestoning val)
+        public ActiveRowsFilterCondition visit(BatchIdAndDateTimeTransactionMilestoning val)
         {
-            HashMap<String, Object> activeRowsFilterConditions = new HashMap<>();
-            activeRowsFilterConditions.put(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
-            activeRowsFilterConditions.put(val.dateTimeOutName, IngestModeMapper.INFINITE_BATCH_TIME);
-            return activeRowsFilterConditions;
+            return new ActiveRowsFilterCondition(val.batchIdOutName, IngestModeMapper.INFINITE_BATCH_ID);
         }
     };
 }
