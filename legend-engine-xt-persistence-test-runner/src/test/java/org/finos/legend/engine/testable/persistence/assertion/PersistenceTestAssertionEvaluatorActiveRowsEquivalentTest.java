@@ -108,7 +108,7 @@ public class PersistenceTestAssertionEvaluatorActiveRowsEquivalentTest
     }
 
     @Test
-    public void testEvaluatorActiveRowsEquivalentWithActiveRowsFilterConditions() throws Exception
+    public void testEvaluatorActiveRowsEquivalentWithActiveRowsFilterCondition() throws Exception
     {
         String result = "[{\"ID\":1, \"NAME\":\"ANDY\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":1}," + "{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"NAME\":\"CATHY\", \"ID\":3, \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"ID\":4, \"NAME\":\"TOM\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":1}]";
         String expected = "[{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}," + "{\"ID\":3, \"NAME\":\"CATHY\", \"BATCH_ID_IN\":1, \"BATCH_ID_OUT\":999999999}]";
