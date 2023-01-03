@@ -170,13 +170,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- JACKSON -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <!-- JACKSON -->
-
         <!-- For String Manipulation -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -185,6 +178,11 @@
         <!-- For String Manipulation -->
 
         <!-- TEST -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

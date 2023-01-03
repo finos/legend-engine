@@ -110,6 +110,11 @@
         </dependency>
         <!-- JACKSON -->
 
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

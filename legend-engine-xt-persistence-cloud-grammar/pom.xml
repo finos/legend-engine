@@ -56,7 +56,6 @@
                         <configuration>
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
-                                <dependency>org.finos.legend.pure:legend-pure-m3-core</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-protocol</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-protocol-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>

@@ -31,6 +31,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <!-- The dependency plugin analyzer raises these as false positives -->
+                    <ignoredUsedUndeclaredDependencies>
+                        <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-mapping</dependency>
+                        <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping</dependency>
+                        <dependency>org.finos.legend.pure:legend-pure-runtime-java-engine-compiled</dependency>
+                    </ignoredUsedUndeclaredDependencies>
+                </configuration>
                 <executions>
                     <execution>
                         <id>copy-antlr-core-grammar</id>
@@ -49,18 +57,6 @@
                                     <includes>antlr/*.g4</includes>
                                 </artifactItem>
                             </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>dependency-analyze</id>
-                        <configuration>
-                            <!-- The dependency plugin analyzer raises these as false positives -->
-                            <ignoredUsedUndeclaredDependencies>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-dsl-mapping
-                                </dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping</dependency>
-                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-engine-compiled</dependency>
-                            </ignoredUsedUndeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>

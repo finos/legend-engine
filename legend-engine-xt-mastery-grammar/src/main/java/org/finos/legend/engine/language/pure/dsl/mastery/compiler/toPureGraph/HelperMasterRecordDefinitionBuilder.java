@@ -91,8 +91,8 @@ public class HelperMasterRecordDefinitionBuilder
         public Root_meta_pure_mastery_metamodel_identity_IdentityResolution visit(IdentityResolution protocolVal)
         {
             Root_meta_pure_mastery_metamodel_identity_IdentityResolution_Impl resImpl = new Root_meta_pure_mastery_metamodel_identity_IdentityResolution_Impl("");
-            resImpl._modelClass(context.resolveClass(protocolVal.modelClass));
-            resImpl._resolutionQueriesAddAll(ListIterate.flatCollect(protocolVal.resolutionQueries, this::visitResolutionQuery));
+            //resImpl._modelClass(context.resolveClass(protocolVal.modelClass));
+            //resImpl._resolutionQueriesAddAll(ListIterate.flatCollect(protocolVal.resolutionQueries, this::visitResolutionQuery));
             return resImpl;
         }
 

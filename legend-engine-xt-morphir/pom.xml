@@ -91,17 +91,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- JACKSON -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-        </dependency>
-        <!-- JACKSON -->
-
         <!-- OPEN TRACING -->
         <dependency>
             <groupId>io.opentracing</groupId>
@@ -132,6 +121,16 @@
         <!-- PAC4J -->
 
         <!-- TEST -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

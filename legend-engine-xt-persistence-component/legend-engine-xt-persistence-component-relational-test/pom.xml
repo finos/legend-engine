@@ -25,15 +25,6 @@
     <name>Legend Engine - XT - Persistence - Component - Relational Test</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-persistence-component-relational-core</artifactId>
-        </dependency>
-
         <!-- IMMUTABLES -->
         <dependency>
             <groupId>org.immutables</groupId>
@@ -41,6 +32,16 @@
         </dependency>
 
         <!-- TEST -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-persistence-component-relational-core</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
