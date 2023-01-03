@@ -39,11 +39,92 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       joinStringsProcessor = processJoinStringsOperationForSqlServer_JoinStrings_1__SqlGenerationContext_1__String_1_,
-      selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
+      selectSQLQueryProcessor = processSelectSQLQueryForSqlServer_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForSqlServer()
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processSelectSQLQueryForSqlServer(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $s->processSelectSQLQueryForSqlServer($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processSelectSQLQueryForSqlServer(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
+{
+   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+    let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+
+    assert($s.fromRow == [] && $s.toRow == [], '[unsupported-api] slice/limit operations are not implemented');
+    assert($s.groupBy == [] && $havingStr == '', '[unsupported-api] groupBy/having operations are not implemented');
+
+    $format.separator + 'select ' + processTop($s, $format) + if($s.distinct == true,|'distinct ',|'') +
+    processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+    if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+    if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+    if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::getDDLCommandsTranslatorForSqlServer(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForSqlServer_CreateSchemaSQL_1__String_MANY_,
+                dropSchema =  translateDropSchemaStatementForSqlServer_DropSchemaSQL_1__String_MANY_,
+                createTable =  translateCreateTableStatementForSqlServer_CreateTableSQL_1__DbConfig_1__String_MANY_,
+                dropTable = translateDropTableStatementForSqlServer_DropTableSQL_1__String_MANY_,
+                loadTable =  loadValuesToDbTableForSqlServer_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateCreateSchemaStatementForSqlServer(createSchemaSQL:CreateSchemaSQL[1]) : String[*]
+{
+   // sql is enclosed in [] to signify that its failure due to schema already existing should not stop us from running other DDL commands
+   if($createSchemaSQL.schema.name == 'default', |[], |'[Create Schema ' + $createSchemaSQL.schema.name + ';]');
+}
+ 
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateDropSchemaStatementForSqlServer(dropSchemaSQL:DropSchemaSQL[1]) : String[*]
+{
+   // dropping the schema is not needed for test setup
+   [];
+}
+ 
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateDropTableStatementForSqlServer(dropTableSQL:DropTableSQL[1]) : String[*]
+{
+  let t = $dropTableSQL.table;
+  'Drop table if exists '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+';';
+}
+ 
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateCreateTableStatementForSqlServer(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[*]
+{
+  let t = $createTableSQL.table;
+  let applyConstraints = $createTableSQL.applyConstraints;
+  'Create Table '+if($t.schema.name == 'default',|'',|$t.schema.name+'.')+$t.name+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForSqlServer($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' )))
+        ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ')')
+      +');';
+}
+ 
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::getColumnTypeSqlTextForSqlServer(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      s : meta::relational::metamodel::datatype::Timestamp[1] | 'datetime',
+      a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
+   ])
+}
+ 
+function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::loadValuesToDbTableForSqlServer(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+    'insert into ' + if($loadTableSQL.table.schema.name=='default', |'' ,|$loadTableSQL.table.schema.name + '.') + $loadTableSQL.table.name + ' ('
+        + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
+        + ') values '
+        + $loadTableSQL.parsedData.values->map(row | '('
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + ')')->makeString(',') + ';';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::getDynaFunctionToSqlForSqlServer(): DynaFunctionToSql[*]
@@ -55,36 +136,37 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(%s as date)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='datepart(dw, %s)')),
-    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(day, -(day(cast(%s as date)) - 1), cast(%s as date))', transform={p:String[1] | $p->repeat(2)})),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(day, -(day(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(qq, datediff(qq, 0, %s), 0)')),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(day, -(day(cast(getdate() as date)) - 1), cast(getdate() as date))')),
     dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='dateadd(qq, datediff(qq, 0, getdate()), 0)')),
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, getdate()), 0)')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, %s), 0)')),
-    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='datepart(hour, %s)')),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='len(%s)')),
+    dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
-    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='datepart(minute, %s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='getdate()')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='charindex(%s, %s)')),
-    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
-    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='datepart(quarter, %s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='datepart(quarter, %s)')),
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, 0)')),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
-    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='datepart(second, %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stdevp(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stdev(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(getdate() as date)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(wk, %s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }
 
