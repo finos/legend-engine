@@ -23,6 +23,9 @@
                         <exclude>**/ExternalIntegration*.java</exclude>
                         <exclude>**/Test_Relational_DbSpecific_Athena_UsingPureClientTestSuite.java</exclude>
                     </excludes>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${project.basedir}/athenaDriver.jar</additionalClasspathElement>
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
         </plugins>
