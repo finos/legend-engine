@@ -20,8 +20,8 @@ import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
 import meta::json::*;
 import meta::pure::dataQuality::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::jackson::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
@@ -186,7 +186,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                     ],
              'if (!expectedNodes.contains(currentNode))\n' +
              '{\n' +
-             '    throw new '+$conventions->codeType($conventions->className(meta::pure::executionPlan::engine::DataParsingException))->codeToString($proto)+'(errorMessage);\n' +
+             '    throw new '+$conventions->codeType($conventions->className(DataParsingException))->codeToString($proto)+'(errorMessage);\n' +
              '}'
          )
       )
@@ -201,7 +201,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
    let acceptor       = j_parameter(javaFunction(jsonNode(), javaTypeVar('T')), 'acceptor');
    let defectRecorder = j_parameter(javaConsumer(javaString()), 'defectRecorder');
-   let exception      = j_parameter($conventions->className(meta::pure::executionPlan::engine::DataParsingException), 'ex');
+   let exception      = j_parameter($conventions->className(DataParsingException), 'ex');
 
 
    javaMethod('private', javaTypeVar('T'), javaList(javaTypeVar('T')), 'acceptMany',
@@ -446,7 +446,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
         $jThis->j_invoke('check', [javaArrays()->j_invoke('asList', $acceptableNodes, javaList(jsonNodeType())), $nodeParameter->j_invoke('getNodeType', [], jsonNodeType()), $errorMessage], javaVoid()),
 
         j_return($conventions->jsonNodeGetter($nodeParameter, $type))
-      ]->j_try(j_catch($exception, $conventions->className(meta::pure::executionPlan::engine::DataParsingException)->j_new($exception->j_invoke('getMessage', [], javaString()))->j_throw()))
+      ]->j_try(j_catch($exception, $conventions->className(DataParsingException)->j_new($exception->j_invoke('getMessage', [], javaString()))->j_throw()))
    );
 }
 

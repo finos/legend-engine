@@ -63,6 +63,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedQualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.UnknownAppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CBoolean;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CByteStream;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDateTime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CFloat;
@@ -869,6 +870,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(CLatestDate cLatestDate)
     {
         return "%latest";
+    }
+
+    @Override
+    public String visit(CByteStream cByteStream)
+    {
+        return "byteStream(" + HelperValueSpecificationGrammarComposer.renderString(cByteStream.value, this) + ")";
     }
 
     @Override

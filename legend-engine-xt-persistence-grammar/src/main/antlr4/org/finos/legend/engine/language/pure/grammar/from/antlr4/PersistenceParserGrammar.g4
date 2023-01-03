@@ -10,7 +10,8 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                                 VALID_STRING | STRING
-                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE      // from M3Parser
+                                            | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE
+                                            | BYTE_STREAM_FUNCTION      // from M3Parser
                                             | TRUE | FALSE | IMPORT | DERIVATION | NONE | DATE_TIME
                                             | CONTEXT | CONTEXT_PERSISTENCE | CONTEXT_PLATFORM | CONTEXT_SERVICE_PARAMETERS | CONTEXT_SINK_CONNECTION
                                             | PERSISTENCE | PERSISTENCE_DOC | PERSISTENCE_TRIGGER | PERSISTENCE_SERVICE | PERSISTENCE_PERSISTER | PERSISTENCE_NOTIFIER

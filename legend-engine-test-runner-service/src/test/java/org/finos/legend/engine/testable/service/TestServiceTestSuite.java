@@ -1673,6 +1673,248 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testServiceTestSuiteWithBindingServices()
+    {
+        ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
+
+        String grammar = "###Pure\n" +
+                "Enum test::firm::model::AddressType\n" +
+                "{\n" +
+                "   Headquarters,\n" +
+                "   RegionalOffice,\n" +
+                "   Home,\n" +
+                "   Holiday\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Firm\n" +
+                "{\n" +
+                "   name      : String[1];\n" +
+                "   ranking   : Integer[0..1];\n" +
+                "   addresses : test::firm::model::AddressUse[1..*];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Address\n" +
+                "{\n" +
+                "   firstLine  : String[1];\n" +
+                "   secondLine : String[0..1];\n" +
+                "   city       : String[0..1];\n" +
+                "   region     : String[0..1];\n" +
+                "   country    : String[1];\n" +
+                "   position   : test::firm::model::GeographicPosition[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::GeographicPosition\n" +
+                "[\n" +
+                "   validLatitude: ($this.latitude >= -90) && ($this.latitude <= 90),\n" +
+                "   validLongitude: ($this.longitude >= -180) && ($this.longitude <= 180)\n" +
+                "]\n" +
+                "{\n" +
+                "   latitude  : Decimal[1];\n" +
+                "   longitude : Decimal[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::AddressUse\n" +
+                "{\n" +
+                "   addressType : test::firm::model::AddressType[1];\n" +
+                "   address     : test::firm::model::Address[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::firm::model::Person\n" +
+                "{\n" +
+                "   firstName      : String[1];\n" +
+                "   lastName       : String[1];\n" +
+                "   dateOfBirth    : StrictDate[0..1];   \n" +
+                "   addresses      : test::firm::model::AddressUse[*];\n" +
+                "   isAlive        : Boolean[1];\n" +
+                "   heightInMeters : Float[1];\n" +
+                "}\n" +
+                "\n" +
+                "Association test::firm::model::Firm_Person\n" +
+                "{\n" +
+                "   firm      : test::firm::model::Firm[1];\n" +
+                "   employees : test::firm::model::Person[*];\n" +
+                "}\n" +
+                "\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::firm::model::TestBinding1\n" +
+                "{\n" +
+                "   contentType   : 'application/json';\n" +
+                "   modelIncludes : [ test::firm::model::Firm, test::firm::model::Person, test::firm::model::Address, test::firm::model::AddressUse, test::firm::model::GeographicPosition ];" +
+                "}\n" +
+                "Binding test::firm::model::TestBinding2\n" +
+                "{\n" +
+                "   contentType   : 'application/json';\n" +
+                "   modelIncludes : [ test::firm::model::Address, test::firm::model::GeographicPosition ];" +
+                "}\n" +
+                "\n\n";
+
+        String serviceWithStringParam = "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = '[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"builder\" : {\"_type\" : \"json\"},\"values\" : {\"name\" : \"Firm A\", \"ranking\" : 1}}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        PureModelContextData modelDataForServiceWithStringParam = PureGrammarParser.newInstance().parseModel(grammar + serviceWithStringParam);
+        PureModel pureModelForServiceWithStringParam = Compiler.compile(modelDataForServiceWithStringParam, DeploymentMode.TEST, null);
+
+        Root_meta_legend_service_metamodel_Service pureServiceWithStringParam = (Root_meta_legend_service_metamodel_Service) pureModelForServiceWithStringParam.getPackageableElement("test::firm::model::myService");
+        List<TestResult> resultsWithStringParam = serviceTestableRunnerExtension.executeAllTest(pureServiceWithStringParam, pureModelForServiceWithStringParam, modelDataForServiceWithStringParam);
+
+        Assert.assertEquals(1, resultsWithStringParam.size());
+        Assert.assertTrue(resultsWithStringParam.get(0) instanceof TestPassed);
+        Assert.assertEquals("test::firm::model::myService", resultsWithStringParam.get(0).testable);
+        Assert.assertEquals("testSuite1", resultsWithStringParam.get(0).atomicTestId.testSuiteId);
+        Assert.assertEquals("test1", resultsWithStringParam.get(0).atomicTestId.atomicTestId);
+
+        String serviceWithByteStreamParam = "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: ByteStream[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = byteStream('[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]')\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"builder\" : {\"_type\" : \"json\"},\"values\" : {\"name\" : \"Firm A\", \"ranking\" : 1}}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        PureModelContextData modelDataForServiceWithByteStreamParam = PureGrammarParser.newInstance().parseModel(grammar + serviceWithByteStreamParam);
+        PureModel pureModelForServiceWithByteStreamParam = Compiler.compile(modelDataForServiceWithByteStreamParam, DeploymentMode.TEST, null);
+
+        Root_meta_legend_service_metamodel_Service pureServiceWithByteStreamParam = (Root_meta_legend_service_metamodel_Service) pureModelForServiceWithByteStreamParam.getPackageableElement("test::firm::model::myService");
+        List<TestResult> resultsWithByteStreamParam = serviceTestableRunnerExtension.executeAllTest(pureServiceWithByteStreamParam, pureModelForServiceWithByteStreamParam, modelDataForServiceWithByteStreamParam);
+
+        Assert.assertEquals(1, resultsWithByteStreamParam.size());
+        Assert.assertTrue(resultsWithByteStreamParam.get(0) instanceof TestPassed);
+        Assert.assertEquals("test::firm::model::myService", resultsWithByteStreamParam.get(0).testable);
+        Assert.assertEquals("testSuite1", resultsWithByteStreamParam.get(0).atomicTestId.testSuiteId);
+        Assert.assertEquals("test1", resultsWithByteStreamParam.get(0).atomicTestId.atomicTestId);
+
+        String serviceWithTestFailing = "###Service\n" +
+                "Service test::firm::model::myService\n" +
+                "{\n" +
+                "  pattern: '/showcase/binding';\n" +
+                "  documentation: 'Showcase service with binding';\n" +
+                "  autoActivateUpdates: false;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: data: String[1]|test::firm::model::Firm->internalize(test::firm::model::TestBinding1, $data)->externalize(test::firm::model::TestBinding1, #{test::firm::model::Firm{name, ranking}}#);\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite1:\n" +
+                "    {\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          parameters:\n" +
+                "          [\n" +
+                "            data = '[{\"name\":\"Firm A\", \"ranking\":1, \"addresses\":{\"address\":{\"firstLine\":\"Address Line 1\", \"country\":\"Country A\"}, \"addressType\":\"Headquarters\"}}]'\n" +
+                "          ]\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            assert1:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected : \n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '{\"builder\" : {\"_type\" : \"json\"},\"values\" : {\"name\" : \"Firm A\", \"ranking\" : 2}}';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        PureModelContextData modelDataForServiceWithTestFailing = PureGrammarParser.newInstance().parseModel(grammar + serviceWithTestFailing);
+        PureModel pureModelForServiceWithTestFailing = Compiler.compile(modelDataForServiceWithTestFailing, DeploymentMode.TEST, null);
+
+        Root_meta_legend_service_metamodel_Service pureServiceWithTestFailing = (Root_meta_legend_service_metamodel_Service) pureModelForServiceWithTestFailing.getPackageableElement("test::firm::model::myService");
+        List<TestResult> resultsWithTestFailing = serviceTestableRunnerExtension.executeAllTest(pureServiceWithTestFailing, pureModelForServiceWithTestFailing, modelDataForServiceWithTestFailing);
+
+        Assert.assertEquals(1, resultsWithTestFailing.size());
+        Assert.assertTrue(resultsWithTestFailing.get(0) instanceof TestFailed);
+        Assert.assertEquals("test::firm::model::myService", resultsWithTestFailing.get(0).testable);
+        Assert.assertEquals("testSuite1", resultsWithTestFailing.get(0).atomicTestId.testSuiteId);
+        Assert.assertEquals("test1", resultsWithTestFailing.get(0).atomicTestId.atomicTestId);
+        Assert.assertEquals(1, ((TestFailed) resultsWithTestFailing.get(0)).assertStatuses.size());
+        Assert.assertTrue(((TestFailed) resultsWithTestFailing.get(0)).assertStatuses.get(0) instanceof EqualToJsonAssertFail);
+        Assert.assertEquals("assert1", ((TestFailed) resultsWithTestFailing.get(0)).assertStatuses.get(0).id);
+        Assert.assertEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 1\n  }\n}", ((EqualToJsonAssertFail) ((TestFailed) resultsWithTestFailing.get(0)).assertStatuses.get(0)).actual);
+        Assert.assertEquals("{\n  \"builder\" : {\n    \"_type\" : \"json\"\n  },\n  \"values\" : {\n    \"name\" : \"Firm A\",\n    \"ranking\" : 2\n  }\n}", ((EqualToJsonAssertFail) ((TestFailed) resultsWithTestFailing.get(0)).assertStatuses.get(0)).expected);
+        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) ((TestFailed) resultsWithTestFailing.get(0)).assertStatuses.get(0)).message);
+    }
+
+    @Test
     public void testServiceTestSuiteWithXStore()
     {
         ServiceTestableRunnerExtension serviceTestableRunnerExtension = new ServiceTestableRunnerExtension();
@@ -2494,10 +2736,18 @@ public class TestServiceTestSuite
                 "}", ((EqualToJsonAssertFail) ((TestFailed) uatTestResultWithTestFailing).assertStatuses.get(0)).expected);
     }
 
-    @Test(expected = EngineException.class)
+    @Test
     public void testFailsWithKeysInSingleExec()
     {
-        List<TestResult> SingleExecWithKeysTestResult = executeServiceTest("testable/service/", "serviceGrammarForFailedTestModel.pure","serviceGrammarWithFailedServiceTestKeys.pure", "testServiceStoreTestSuites::TestService");
+        try
+        {
+            executeServiceTest("testable/service/", "serviceGrammarForFailedTestModel.pure", "serviceGrammarWithFailedServiceTestKeys.pure", "testServiceStoreTestSuites::TestService");
+            Assert.fail("Expected EngineException");
+        }
+        catch (EngineException e)
+        {
+            Assert.assertEquals("Service Test cannot have keys for SingleExecution Tests", e.getMessage());
+        }
     }
 
     @Test

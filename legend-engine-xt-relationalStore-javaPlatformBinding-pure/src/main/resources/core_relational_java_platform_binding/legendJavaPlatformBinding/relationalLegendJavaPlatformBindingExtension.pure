@@ -20,7 +20,6 @@ import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 import meta::relational::executionPlan::platformBinding::legendJava::*;
 import meta::relational::executionPlan::platformBinding::legendJava::classResult::*;

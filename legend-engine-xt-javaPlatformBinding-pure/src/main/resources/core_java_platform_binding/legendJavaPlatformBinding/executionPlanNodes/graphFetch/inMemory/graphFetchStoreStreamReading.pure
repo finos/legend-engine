@@ -23,8 +23,6 @@ import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::*;
