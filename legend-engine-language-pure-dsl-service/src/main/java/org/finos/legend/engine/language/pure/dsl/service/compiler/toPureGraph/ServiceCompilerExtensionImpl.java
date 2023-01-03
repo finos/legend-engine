@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
@@ -119,6 +120,10 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                             }
                             return pureServiceTestSuite;
                         }));
+                    }
+                    if (service.testSuites != null && service.test != null)
+                    {
+                        context.pureModel.addWarnings(Collections.singletonList(new Warning(service.sourceInformation, "Service uses both legacy and strategic test flow. please shift to strategic test flow using test suites.")));
                     }
                     //post validation
                     if (service.postValidations != null)
