@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
@@ -32,6 +31,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class TestRelationalCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -147,6 +148,8 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "    Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
             "    \n" +
             "    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, CEOID INT)\n" +
+            "    Table PersonToFirm(PERSONID INT PRIMARY KEY, FIRMID INT PRIMARY KEY)\n" +
+
             "    Table otherFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT)\n" +
             "    \n" +
             "    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))\n" +
@@ -196,6 +199,10 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "    Join Person_Manager(personTable.MANAGERID = {target}.ID)\n" +
             "    Join location_PlaceOfInterest(locationTable.ID  = placeOfInterestTable.locationID)\n" +
             "    Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)\n" +
+            "    Join Person_PersonFirm(personTable.ID = PersonToFirm.PERSONID)\n" +
+            "    Join Firm_PersonFirm(firmTable.ID = PersonToFirm.FIRMID)\n" +
+            "    Join OtherFirm_PersonFirm(otherFirmTable.ID = PersonToFirm.FIRMID)\n" +
+
             "\n" +
             ")\n\n";
 
@@ -250,7 +257,8 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         String[] productSchemaTablesDb = HelperRelationalBuilder.getAllTablesInSchema(db, "productSchema", SourceInformation.getUnknownSourceInformation()).collect(x -> x._schema()._name() + '.' + x._name()).toSortedList().toArray(new String[0]);
         String[] defaultTablesDbInc = HelperRelationalBuilder.getAllTablesInSchema(dbInc, "default", SourceInformation.getUnknownSourceInformation()).collect(x -> x._schema()._name() + '.' + x._name()).toSortedList().toArray(new String[0]);
 
-        Assert.assertArrayEquals(new String[]{
+        Assert.assertArrayEquals(new String[] {
+                "default.PersonToFirm",
                 "default.accountTable",
                 "default.addressTable",
                 "default.differentPersonTable",
@@ -267,10 +275,11 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "default.tradeEventTable",
                 "default.tradeTable",
                 "productSchema.productTable",
-                "productSchema.synonymTable"
+                "productSchema.synonymTable",
         }, tablesDb);
 
-        Assert.assertArrayEquals(new String[]{
+        Assert.assertArrayEquals(new String[] {
+                "default.PersonToFirm",
                 "default.addressTable",
                 "default.differentPersonTable",
                 "default.firmTable",
@@ -280,7 +289,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "default.placeOfInterestTable"
         }, defaultTablesDbInc);
 
-        Assert.assertArrayEquals(new String[]{
+        Assert.assertArrayEquals(new String[] {
                 "productSchema.productTable",
                 "productSchema.synonymTable"
         }, productSchemaTablesDb);
@@ -424,6 +433,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "COMPILATION error at [6:37-62]: Can't find column 'FIRMID_MISSING'");
     }
 
+
     @Test
     public void testRelationalMapping()
     {
@@ -559,6 +569,8 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   }" +
                 ")"
         );
+        //association with source and target IDs
+
 
         // association mapping on milestoned models
         PureModel model = test("\n" +
@@ -684,7 +696,136 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "                name:[model::db]personTb.name\n" +
                 "            }\n" +
                 ")\n");
+        //test multiple databases with identical elements
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "Database model::relational::tests::dbInc2\n" +
+                "(\n" +
+                "    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+                "    Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+                "    \n" +
+                "    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT, CEOID INT)\n" +
+                "    Table PersonToFirm(PERSONID INT PRIMARY KEY, FIRMID INT PRIMARY KEY)\n" +
+
+                "    Table otherFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), ADDRESSID INT)\n" +
+                "    \n" +
+                "    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))\n" +
+                "    Table locationTable(ID INT PRIMARY KEY, PERSONID INT, PLACE VARCHAR(200),date DATE)\n" +
+                "    Table placeOfInterestTable(ID INT PRIMARY KEY,locationID INT PRIMARY KEY, NAME VARCHAR(200))  \n" +
+                "\n" +
+                "    View PersonFirmView\n" +
+                "    (\n" +
+                "        ~filter LastNameFilter\n" +
+                "        PERSON_ID: personTable.ID PRIMARY KEY, \n" +
+                "        lastName:  personTable.LASTNAME,\n" +
+                "        firm_name :  @Firm_Person | firmTable.LEGALNAME\n" +
+                "\n" +
+                "   )\n" +
+                "   \n" +
+                "   View personViewWithGroupBy\n" +
+                "   (\n" +
+                "      ~groupBy(personTable.ID)\n" +
+                "      id: personTable.ID PRIMARY KEY,\n" +
+                "      maxage: max(personTable.AGE)\n" +
+                "   )\n" +
+                "   \n" +
+                "    View PersonViewWithDistinct\n" +
+                "   (\n" +
+                "      ~distinct\n" +
+                "      id: @PersonWithPersonView| personTable.ID PRIMARY KEY,\n" +
+                "      firstName: @PersonWithPersonView| personTable.FIRSTNAME,\n" +
+                "      lastName: @PersonWithPersonView|personTable.LASTNAME, \n" +
+                "      firmId: @PersonWithPersonView|personTable.FIRMID\n" +
+                "   )\n" +
+                "   \n" +
+                "    Schema productSchema\n" +
+                "    (\n" +
+                "       Table productTable(ID INT PRIMARY KEY, NAME VARCHAR(200))\n" +
+                "    )\n" +
+                "    \n" +
+                "    Filter FirmXFilter(firmTable.LEGALNAME = 'Firm X')\n" +
+                "    Filter LastNameFilter(personTable.LASTNAME = 'Uyaguari')\n" +
+                "\n" +
+                "    Join personViewWithFirmTable(firmTable.ID = PersonViewWithDistinct.firmId)\n" +
+                "    Join PersonWithPersonView(personTable.ID = personViewWithGroupBy.id and personTable.AGE = personViewWithGroupBy.maxage)\n" +
+                "    Join Address_Firm(addressTable.ID = firmTable.ADDRESSID)\n" +
+                "    Join Address_Person(addressTable.ID = personTable.ADDRESSID = personTable.ADDRESSID)\n" +
+                "    Join Firm_Ceo(firmTable.CEOID = personTable.ID)\n" +
+                "    Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
+                "    Join Person_Location(personTable.ID = locationTable.PERSONID)\n" +
+                "    Join Person_Manager(personTable.MANAGERID = {target}.ID)\n" +
+                "    Join location_PlaceOfInterest(locationTable.ID  = placeOfInterestTable.locationID)\n" +
+                "    Join Person_OtherFirm(personTable.FIRMID = otherFirmTable.ID)\n" +
+                "    Join Person_PersonFirm(personTable.ID = PersonToFirm.PERSONID)\n" +
+                "    Join Firm_PersonFirm(firmTable.ID = PersonToFirm.FIRMID)\n" +
+                "    Join OtherFirm_PersonFirm(otherFirmTable.ID = PersonToFirm.FIRMID))\n" +
+
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees : [model::relational::tests::dbInc]@Firm_Person,\n" +
+                "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")"
+        );
+
+
     }
+
+
+    @Test
+    public void testMappingWithSourceTargetID()
+    {
+        PureModel modelIds = test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm[firm]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees[firm,person] : [model::relational::tests::dbInc]@Firm_Person,\n" +
+                "         firm[person,firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")"
+        ).getTwo();
+    }
+
 
     @Test
     public void testFaultyRelationalMapping()
@@ -713,7 +854,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    name : [model::relational::tests::dbInc]firmTable.LEGALNAME,\n" +
                 "    propertyMissing : [model::relational::tests::dbInc]firmTable.ADDRESSID\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [88:21-74]: Can't find property 'propertyMissing' in [Firm, LegalEntity, Any]"
+                ")", "COMPILATION error at [92:21-74]: Can't find property 'propertyMissing' in [Firm, LegalEntity, Any]"
         );
 
         // missing association
@@ -759,7 +900,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
                 "      )\n" +
                 "   }" +
-                ")", "COMPILATION error at [103:10-35]: Can't find property 'missingAssociationProperty' in association 'model::Employment'"
+                ")", "COMPILATION error at [107:10-35]: Can't find property 'missingAssociationProperty' in association 'model::Employment'"
         );
 
         // Property Mapping join does not have mainTable
@@ -892,7 +1033,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "       missingEmbeddedProperty: [model::relational::tests::dbInc]@Firm_Person| personTable.FIRSTNAME\n" +
                 "    )\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [88:31-100]: Can't find property 'missingEmbeddedProperty' in [Person, Any]"
+                ")", "COMPILATION error at [92:31-100]: Can't find property 'missingEmbeddedProperty' in [Person, Any]"
         );
 
         // Incorrect filter
@@ -905,7 +1046,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    ~filter [model::relational::tests::dbInc]MissingFilter\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [86:5-58]: Can't find filter 'MissingFilter' in database 'dbInc'"
+                ")", "COMPILATION error at [90:5-58]: Can't find filter 'MissingFilter' in database 'dbInc'"
         );
     }
 
@@ -924,7 +1065,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  {\n" +
                 "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
                 "  }\n" +
-                ")", "COMPILATION error at [88:3-91:3]: Can't find extends class mapping 'entity1' in mapping 'model::myRelationalMapping'"
+                ")", "COMPILATION error at [92:3-95:3]: Can't find extends class mapping 'entity1' in mapping 'model::myRelationalMapping'"
         );
 
         test(MODEL + DB_INC +
@@ -992,7 +1133,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]';\n" +
                 "    )\n" +
                 "  ]\n" +
-                ")", "COMPILATION error at [95:9-242]: Can't find store 'test::DB'"
+                ")", "COMPILATION error at [99:9-242]: Can't find store 'test::DB'"
         );
     }
 
@@ -1120,7 +1261,11 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    ADDRESSID INTEGER,\n" +
                 "    CEOID INTEGER\n" +
                 "  )\n" +
+                "   Table PersonToFirm(PERSONID INT PRIMARY KEY, FIRMID INT PRIMARY KEY)\n" +
                 "  Join Firm_Person(firmTable.ID = personTable.FIRMID)\n" +
+                "  Join Person_PersonFirm(personTable.ID = PersonToFirm.PERSONID)\n" +
+                "  Join Firm_PersonFirm(firmTable.ID = PersonToFirm.FIRMID)\n" +
+
                 ")\n" +
                 "\n" +
                 "\n";
@@ -1129,10 +1274,15 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "###Mapping\n" +
                 "Mapping simple::simpleRelationalMappingInc\n" +
                 "(\n" +
+                "  simple::Person: Relational\n" +
+                "  {\n" +
+                "    ~mainTable [simple::dbInc]personTable\n" +
+                "    firstName: [simple::dbInc]personTable.FIRSTNAME\n" +
+                "  }\n" +
                 "  simple::Firm[simple_Firm]: Relational\n" +
                 "  {\n" +
                 "    ~mainTable [simple::dbInc]firmTable\n" +
-                "    employees: [simple::dbInc] @Firm_Person > (INNER) [simple::dbInc] @Firm_Person\n" +
+                "    employees: [simple::dbInc] @Firm_PersonFirm > (INNER) [simple::dbInc] @Person_PersonFirm\n" +
                 "  }\n" +
                 "\n" +
                 ")");
@@ -1147,7 +1297,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    employees: [simple::dbInc] (INNER) @Firm_Person > (INNER) [simple::dbInc] @Firm_Person\n" +
                 "  }\n" +
                 "\n" +
-                ")", "COMPILATION error at [52:14-90]: Do not support specifying join type for the first join in the classMapping.");
+                ")", "COMPILATION error at [55:14-90]: Do not support specifying join type for the first join in the classMapping.");
     }
 
     @Test
@@ -1363,7 +1513,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    lastName: [simple::dbInc]personTable.LASTNAME, \n" +
                 "    firm[x]: [simple::dbInc]@personSelfJoin\n" +
                 "  }\n" +
-                ")\n");
+                ")\n", null, Arrays.asList("COMPILATION error at [30:12-43]: Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc"));
 
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(1, warnings.size());
@@ -1375,21 +1525,21 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     {
         PureModel model = test(
                 "###Pure\n" +
-                    "Class simple::Item\n" +
-                    "{\n" +
-                    "   id: Integer[0..1];\n" +
-                    "}\n" +
-                    "###Relational\n" +
-                    "Database simple::DB\n" +
-                    "(\n" +
-                    "   Table \"tableNameInQuotes.With.Dots\"\n" +
-                    "   (\n" +
-                    "       ID INTEGER PRIMARY KEY\n" +
-                    "   )\n" +
-                    ")\n" +
-                    "###Mapping\n" +
-                    "Mapping simple::ItemMapping\n" +
-                    "(\n" +
+                        "Class simple::Item\n" +
+                        "{\n" +
+                        "   id: Integer[0..1];\n" +
+                        "}\n" +
+                        "###Relational\n" +
+                        "Database simple::DB\n" +
+                        "(\n" +
+                        "   Table \"tableNameInQuotes.With.Dots\"\n" +
+                        "   (\n" +
+                        "       ID INTEGER PRIMARY KEY\n" +
+                        "   )\n" +
+                        ")\n" +
+                        "###Mapping\n" +
+                        "Mapping simple::ItemMapping\n" +
+                        "(\n" +
                         "simple::Item: Relational\n" +
                         "  {\n" +
                         "    ~primaryKey\n" +
@@ -1399,7 +1549,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                         "    ~mainTable [simple::DB]\"tableNameInQuotes.With.Dots\"\n" +
                         "    id: [simple::DB]\"tableNameInQuotes.With.Dots\".ID\n" +
                         "  }\n" +
-                    ")"
+                        ")"
         ).getTwo();
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mmMapping = model.getMapping("simple::ItemMapping");
         RootRelationalInstanceSetImplementation rootRelationalInstanceSetImplementation = ((RootRelationalInstanceSetImplementation) mmMapping._classMappings().getFirst());
@@ -1521,4 +1671,371 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   }   \n" +
                 ")", "COMPILATION error at [47:4-49:4]: Duplicated class mappings found with ID 'id' in mapping 'simple::merged'; parent mapping for duplicated: 'simple::gen1::map', 'simple::gen2::map'");
     }
+
+
+    @Test
+    public void testAssociationAndComplexPropertyCompilerErrors()
+    {
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees : [model::relational::tests::dbInc]@Address_Person,\n" + // wrong Join (the table on the other side of join is not the main  table of the employees set
+                "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [107:20-69]: Mapping error: model::myRelationalMapping the join Address_Person does not contain the source table [dbInc]firmTable"));
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees : [model::relational::tests::dbInc]@OtherFirm_PersonFirm >@Firm_Person\n" + //Join chain doesn't start on correct Table
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [107:20-89]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not contain the source table [dbInc]firmTable"));
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees : [model::relational::tests::dbInc]@Firm_PersonFirm > @OtherFirm_PersonFirm\n" +  // Join chain doesn't end  on correct Table
+                //  "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [107:20-94]: Mapping error: model::myRelationalMapping the join OtherFirm_PersonFirm does not connect from the source table [dbInc]PersonToFirm to the target table [dbInc]personTable; instead it connects to [dbInc]otherFirmTable"));
+
+
+        test(MODEL +
+                "Class model::OtherFirm extends model::LegalEntity \n" +
+                "{\n" +
+                "   legalName: String[1];\n" +
+                "   address: Integer[1];\n" +
+                "   employee: model::Person[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "  model::OtherFirm[OtherFirm]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees : [model::relational::tests::dbInc]@Firm_Person,\n" +
+                "         firm[OtherFirm] : [model::relational::tests::dbInc]@Firm_Person\n" + //id exists but it's the wrong  type (Join is correct)
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [119:26-72]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm[firm]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees[wrongID, person] : [model::relational::tests::dbInc]@Firm_Person,\n" + // source ID is incorrect
+                "         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [107:37-83]: Unable to find source class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm[firm]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees[firm,wrongID] : [model::relational::tests::dbInc]@Firm_Person,\n" + // target ID is incorrect
+                "         firm[person, firm] : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [107:34-80]: Unable to find target class mapping (id:wrongID) for property 'employees' in Association mapping 'model::Employment'. Make sure that you have specified a valid Class mapping id as the source id and target id, using the syntax 'property[sourceId, targetId]'."));
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE\n" +
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "   model::Employment : Relational\n" +
+                "   {\n" +
+                "      AssociationMapping\n" +
+                "      (\n" +
+                "         employees : [model::relational::tests::dbInc]firmTable.LEGALNAME,\n" + // Not a Join
+                "         firm : [model::relational::tests::dbInc]@Firm_Person\n" +
+                "      )\n" +
+                "   }" +
+                ")", null, Arrays.asList("COMPILATION error at [107:20-73]: Mapping Error! on model::myRelationalMapping Expected a Join"));
+
+
+        test(MODEL +
+                "Class model::PersonExtended extends model::Person \n" +
+                "{\n" +
+                "    firmID : String[1];\n" +
+                "}\n" +
+                DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::PersonExtended[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
+                "    firmID: [model::relational::tests::dbInc]@Firm_PersonFirm | firmTable.ID\n" + //Wrong table used in join on LHS
+                "  }\n" +
+                ")", "COMPILATION error at [97:11-76]: Mapping error: the join Firm_PersonFirm does not contain the source table personTable");
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]@Firm_Person\n" + //not a property
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [97:8-54]: Mapping error on mapping model::myRelationalMapping. The property 'age' returns a data type. However it's mapped to a Join."));
+
+        test(MODEL +
+                "Class model::OtherFirm extends model::LegalEntity \n" +
+                "{\n" +
+                "   legalName: String[1];\n" +
+                "   address: Integer[1];\n" +
+                "   employee: model::Person[0..1];\n" +
+                "}\n" +
+                "\n" +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" + DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
+                "    firm[OtherFirm]:[model::relational::tests::dbInc] @Person_OtherFirm \n" +  //wrong target ID and Join
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                "  model::OtherFirm[OtherFirm]: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [105:20-71]: Mapping Error: on model::myRelationalMapping The setImplementationId 'OtherFirm' is implementing the class 'OtherFirm' which is not a subType of 'Firm' return type of the mapped property 'firm'"));
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" +
+                DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
+                "    firm:[model::relational::tests::dbInc]@Firm_Person | firmTable.ID \n" +  //Should be a JOIN
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The property 'firm' doesn't return a data type. However it's mapped to a column or a function."));
+
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" +
+                DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
+                "    firm:[model::relational::tests::dbInc] personTable.FIRMID \n" +  //Should be a JOIN
+                "  }\n" +
+                "  model::Firm: Relational\n" +
+                "  {\n" +
+                "    legalName: [model::relational::tests::dbInc]firmTable.LEGALNAME\n" +
+                "  }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [93:3-99:3]: Mapping Error: on model::myRelationalMapping The target type:'Firm' on property firm is not a data type and a join is expected"));
+
+        test(MODEL +
+                "Association model::Employment\n" +
+                "{\n" +
+                "    firm : model::Firm[0..1];\n" +
+                "    employees : model::Person[*];\n" +
+                "}\n" +
+                DB_INC +
+                "###Mapping\n" +
+                "Mapping model::myRelationalMapping\n" +
+                "(\n" +
+                "  model::Person[person]: Relational\n" +
+                "  {\n" +
+                "    firstName: [model::relational::tests::dbInc]personTable.FIRSTNAME,\n" +
+                "    lastName: [model::relational::tests::dbInc]personTable.LASTNAME,\n" +
+                "    age: [model::relational::tests::dbInc]personTable.AGE,\n" +
+                "    firm:[model::relational::tests::dbInc]@Firm_Person \n" +  //Missing firm mapping  (Warning on properties)
+                "  }\n" +
+                ")", null, Arrays.asList("COMPILATION error at [98:9-54]: Error 'model_Firm' can't be found in the mapping model::myRelationalMapping"));
+
+    }
+
 }

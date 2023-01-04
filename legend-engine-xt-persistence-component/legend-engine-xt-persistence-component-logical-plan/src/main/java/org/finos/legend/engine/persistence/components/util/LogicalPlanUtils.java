@@ -33,7 +33,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
@@ -49,7 +49,6 @@ import java.util.Optional;
 
 public class LogicalPlanUtils
 {
-    public static final long INFINITE_BATCH_ID = 999999999L;
     public static final String INFINITE_BATCH_TIME = "9999-12-31 23:59:59";
     public static final String DEFAULT_META_TABLE = "batch_metadata";
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
@@ -67,9 +66,9 @@ public class LogicalPlanUtils
         return tableName + UNDERSCORE + suffix + UNDERSCORE + uuid;
     }
 
-    public static NumericalValue INFINITE_BATCH_ID()
+    public static Value INFINITE_BATCH_ID()
     {
-        return NumericalValue.of(LogicalPlanUtils.INFINITE_BATCH_ID);
+        return InfiniteBatchIdValue.builder().build();
     }
 
     public static StringValue INFINITE_BATCH_TIME()
@@ -213,6 +212,17 @@ public class LogicalPlanUtils
         fieldsList.removeIf(field ->
             field instanceof FieldValue && ((FieldValue) field).fieldName().equalsIgnoreCase(fieldName)
         );
+    }
+
+    public static void replaceField(List<Value> fieldsList, String oldFieldName, String newFieldName)
+    {
+        fieldsList.forEach(field ->
+        {
+            if (field instanceof FieldValue && ((FieldValue) field).fieldName().equals(oldFieldName))
+            {
+                fieldsList.set(fieldsList.indexOf(field), ((FieldValue) field).withFieldName(newFieldName));
+            }
+        });
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)

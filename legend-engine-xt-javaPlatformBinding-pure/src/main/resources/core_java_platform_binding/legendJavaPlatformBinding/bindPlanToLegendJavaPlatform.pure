@@ -18,11 +18,14 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::merge::*;
+import meta::pure::executionPlan::platformBinding::legendJava::platform::union::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::executionPlan::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
-import meta::pure::executionPlan::engine::java::graphFetch::common::*;
+import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegendJavaPlatform(plan: ExecutionPlan[1], platformBindingConfig: PlatformBindingConfig[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionPlan[1]
 {
@@ -57,7 +60,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 
    let initialContext  = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$pathAdjusted);
 
-   let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->meta::pure::executionPlan::engine::java::fillNewFunctionProhibitedList();
+   let preparedContext = $plan.rootExecutionNode->prepareForLegendJavaPlatformBinding('root', $initialContext, $extensions, $debug)->fillNewFunctionProhibitedList();
    
    // TODO Move Interface/Enum/Unit generation to here
    ^$preparedContext(baseProject=$preparedContext.conventions->fundamentals($debug));
@@ -80,7 +83,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
             g:GlobalGraphFetchExecutionNode[1]       | $g->prepareForGlobalGraphFetchNode($path, $updatedContextForChildren, $debug),
             p:PureExpressionPlatformExecutionNode[1] | $p->prepareForPlatformNode($path, $updatedContextForChildren, $extensions, $debug),
             p:PlatformMergeExecutionNode[1]          | $p->prepareForPlatformMergeNode($path, $updatedContextForChildren, $extensions, $debug),
-            p:PlatformUnionExecutionNode[1]          | $p->prepareForPlatformUnionNode($path, $updatedContextForChildren, $extensions, $debug),      
+            p:PlatformUnionExecutionNode[1]          | $p->prepareForPlatformUnionNode($path, $updatedContextForChildren, $extensions, $debug),
+            s:SequenceExecutionNode[1]               | $s->prepareForSequenceNode($path, $updatedContextForChildren, $debug),
             e:ExecutionNode[1]                       | $updatedContextForChildren
          ])
    );

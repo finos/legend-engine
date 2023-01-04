@@ -33,6 +33,23 @@ Class test::Traffic
   vehicleCount: Integer[1];
 }
 
+Class test::sourcePerson
+{
+  legalName: String[0..1];
+  age: Integer[1];
+}
+
+Class test::targetPerson
+{
+  name: String[1];
+  age: Integer[1];
+}
+
+function test::M2MErrorMessage(input: String[1]): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{name,age}}#)->serialize(#{test::targetPerson{name,age}}#)
+}
+
 function test::function(input: String[1]): String[1]
 {
    test::Person.all()->graphFetch(#{test::Person{firstName,lastName}}#)->serialize(#{test::Person{firstName,lastName}}#)
@@ -74,6 +91,13 @@ Mapping test::Map
      ~src test::Traffic
       wheels: $src.vehicleCount->test::wheelsSum()
    }
+
+  *test::targetPerson: Pure
+   {
+     ~src test::sourcePerson
+      name: $src.legalName->toOne(),
+      age: $src.age
+   }
 )
 
 ###Runtime
@@ -101,6 +125,14 @@ Runtime test::Runtime
          {
            class: test::Traffic;
            url: 'data:application/json,{"vehicleCount" : 8}';
+         }
+       }#,
+      connection_3:
+       #{
+         JsonModelConnection
+         {
+           class: test::sourcePerson;
+           url: 'data:application/json,{"age":25}';
          }
        }#
     ]

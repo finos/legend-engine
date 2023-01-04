@@ -1,0 +1,17 @@
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::mapping::*;
+
+function <<test.Test>> meta::pure::alloy::connections::tests::testTableMapperPostProcessor():Boolean[1]
+{
+    let runtime = ^meta::pure::runtime::Runtime
+        (
+            connections = ^TestDatabaseConnection(
+                                element = meta::relational::tests::db,
+                                type = DatabaseType.Sybase,
+                                queryPostProcessorsWithParameter = meta::pure::alloy::connections::tableMapperPostProcessor(^meta::pure::alloy::connections::MapperPostProcessor(mappers = ^meta::pure::alloy::connections::SchemaNameMapper(from = 'productSchema', to = 'productSchemaTransformed')))
+                            )
+        );
+        let result = meta::pure::executionPlan::executionPlan({|Product.all()->filter(p|$p.name == 'ok')}, meta::relational::tests::simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
+        assertEquals('select "root".ID as "pk_0", "root".NAME as "name" from productSchemaTransformed.productTable as "root" where "root".NAME = \'ok\'', $result.rootExecutionNode.executionNodes->filter(p|$p->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode).sqlQuery);
+}

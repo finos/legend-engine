@@ -20,9 +20,6 @@ import org.finos.legend.engine.external.shared.runtime.test.TestExternalFormatQu
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.shared.core.url.InputStreamProvider;
-import org.finos.legend.engine.shared.core.url.NamedInputStream;
-import org.finos.legend.engine.shared.core.url.NamedInputStreamProvider;
 import org.finos.legend.pure.generated.core_external_format_xml_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -40,7 +37,7 @@ public class TestXmlQueries extends TestExternalFormatQueries
     {
         ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, null).getExecutionSupport();
         formatExtensions = Collections.singletonList(core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_extension_xsdFormatExtension__Extension_1_(executionSupport));
-        formatDescriptors = Collections.singletonList(core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_xml_executionPlan_engine_java_xsdJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
+        formatDescriptors = Collections.singletonList(core_external_format_xml_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_xml_executionPlan_platformBinding_legendJava_xsdJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }
 
     @Test
@@ -78,33 +75,6 @@ public class TestXmlQueries extends TestExternalFormatQueries
         String data = resourceAsString("queries/oneFirm.xml").replace("\n", "\\n").replace("'", "\\'");
         String result = runTest(modelData,
                 "|test::firm::model::Firm->internalize(test::firm::Binding, '" + data + "')->checked()->serialize(" + firmTree() + ")");
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/oneFirmCheckedResult.json")));
-    }
-
-    @Test
-    public void testInternalizeWithDynamicUrl()
-    {
-        String grammar = firmModel() + schemalessBinding();
-        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
-
-        String result = runTest(modelData,
-                "url:String[1]|test::firm::model::Firm->internalize(test::firm::Binding, ^Url(url = $url))->checked()->serialize(" + firmTree() + ")",
-                Maps.mutable.with("url", "executor:myUrl"),
-                new NamedInputStreamProvider(Collections.singletonList(new NamedInputStream("myUrl", resource("queries/oneFirm.xml")))));
-
-        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/oneFirmCheckedResult.json")));
-    }
-
-    @Test
-    public void testInternalizeWithStaticUrl()
-    {
-        String grammar = firmModel() + schemalessBinding();
-        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
-
-        String result = runTest(modelData,
-                "|test::firm::model::Firm->internalize(test::firm::Binding, ^Url(url = 'executor:default'))->checked()->serialize(" + firmTree() + ")",
-                new InputStreamProvider(resource("queries/oneFirm.xml")));
 
         MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/oneFirmCheckedResult.json")));
     }

@@ -14,10 +14,10 @@
 
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::pure::executionPlan::engine::java::tests::testNumberLiterals() : Boolean[1]
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testNumberLiterals() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number literal', {|5.2->cast(@Number)}, 'new java.math.BigDecimal("5.2")', javaNumber())
@@ -33,7 +33,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.ToFix>> m
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testBasicOperators() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testBasicOperators() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       // Number
@@ -100,7 +100,7 @@ meta::pure::executionPlan::engine::java::tests::testBasicOperators() : Boolean[1
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testPow() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testPow() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number Pow (double numbers)', {|pow(5.0, 2.0)}, '(Number) new Double(StrictMath.pow(new Double(5.0).doubleValue(), new Double(2.0).doubleValue()))', javaNumber())
@@ -113,7 +113,7 @@ meta::pure::executionPlan::engine::java::tests::testPow() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testAverage() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testAverage() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number Average', {| average([5.0,1,2.0,8,3])}, 'org.finos.legend.engine.plan.dependencies.util.Library.average(java.util.Arrays.<Number>asList(5.0, 1L, 2.0, 8L, 3L))', javaDouble())
@@ -127,7 +127,7 @@ meta::pure::executionPlan::engine::java::tests::testAverage() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testRound() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testRound() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number Round 1', {| round(2.5)}, 'org.finos.legend.engine.plan.dependencies.util.Library.round(2.5)', javaLong())
@@ -141,9 +141,9 @@ meta::pure::executionPlan::engine::java::tests::testRound() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testLimitations() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testLimitations() : Boolean[1]
 {
-   javaExpressionTests(meta::pure::executionPlan::engine::java::engineConventions([]))
+   javaExpressionTests(engineConventions([]))
       // Number
       ->addTest('Number Max', {| [10.0,1,-2]->max()}, 'java.util.Arrays.<Number>asList(10.0, 1L, -2L).stream().reduce(org.finos.legend.engine.plan.dependencies.util.Library::max).orElse(null)', javaNumber())
          ->assert('%s.doubleValue() == 10.0')
@@ -197,7 +197,7 @@ meta::pure::executionPlan::engine::java::tests::testLimitations() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testTrigs() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testTrigs() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number Sin 1', {| sin(0)}, 'Math.sin(new Long(0L).doubleValue())', javaDouble())
@@ -222,9 +222,9 @@ meta::pure::executionPlan::engine::java::tests::testTrigs() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testInequalities() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testInequalities() : Boolean[1]
 {
-   javaExpressionTests(meta::pure::executionPlan::engine::java::engineConventions([]))
+   javaExpressionTests(engineConventions([]))
       // >
       ->addTest('Number : [1]   ,[1]    : 1 > 1',          {|1 > 1}, '1L > 1L', javaBoolean())->assert('(%s)==false')
       ->addTest('Number : [1]   ,[1]    : 1 > 2',          {|1 > 2}, '1L > 2L', javaBoolean())->assert('(%s)==false')
@@ -302,9 +302,9 @@ meta::pure::executionPlan::engine::java::tests::testInequalities() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testMathsPureTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::math::tests::testMathsPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+   javaPureTests(engineConventions([]), [
       meta::pure::functions::lang::tests::greaterThan::testGreaterThan_Number__Boolean_1_,
       meta::pure::functions::lang::tests::greaterThanEqual::testGreaterThanEqual_Number__Boolean_1_,
       meta::pure::functions::lang::tests::lessThan::testLessThan_Number__Boolean_1_,

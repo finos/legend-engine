@@ -37,6 +37,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Funct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -55,7 +57,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.mappingTest.RelationalInputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
@@ -103,6 +104,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
@@ -594,6 +596,12 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
     {
         return Collections.singletonList(RelationalEmbeddedDataCompiler::compileRelationalEmbeddedDataCompiler);
+    }
+
+    @Override
+    public List<BiConsumer<PureModel, MappingValidatorContext>> getExtraMappingPostValidators()
+    {
+        return Collections.singletonList(RelationalValidator::validateRelationalMapping);
     }
 
 }

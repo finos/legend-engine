@@ -66,16 +66,16 @@ public class ExecuteInRelationalDb
         {
             LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
 
+            String currentSql = null;
             try
             {
-                Connection jdbcConn =
-                        this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null,
-                                input.connection);
+                Connection jdbcConn = this.connectionManagerSelector.getDatabaseConnection(profiles, input.connection);
 
                 Statement stmt = jdbcConn.createStatement();
 
                 for (String sql : input.sqls)
                 {
+                    currentSql = sql;
                     if (sql.startsWith("["))
                     {
                         try
@@ -98,7 +98,7 @@ public class ExecuteInRelationalDb
             catch (SQLException e)
             {
                 return Response.status(500).type(MediaType.APPLICATION_JSON_TYPE)
-                        .entity(new ResultManager.ErrorMessage(20, "{\"message\":\"" + e.getMessage() + "\"}")).build();
+                        .entity(new ResultManager.ErrorMessage(20, "{\"message\":\"" + e.getMessage() + "\", \"sql\":\"" + currentSql + "\"}")).build();
             }
         }
         catch (Exception ex)

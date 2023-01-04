@@ -159,8 +159,8 @@ function <<access.private>> meta::pure::ide::display_ide(elem:Any[1]):String[1]
                                                                                                 |'"/ide/pure/icons/modelElements/function.png"'
                                                                                                  );
 
-                                                                              '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f)->replace('<','&lt;') + '", "icon":'+$icon+'}';,
-                                               f:NativeFunction<Any>[1] | '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f)->replace('<','&lt;') + '", "icon":"/ide/pure/icons/modelElements/function_parenthesis.png"}',
+                                                                              '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":'+$icon+'}';,
+                                               f:NativeFunction<Any>[1] | '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":"/ide/pure/icons/modelElements/function_parenthesis.png"}',
                                                e:Enumeration<Any>[1] | '{"li_attr":' + display_ide_attr($e) + ', "id":"'+$p->buildKey()+ '","text":"' + $e->id() + '", "icon":"/ide/pure/icons/modelElements/enumeration.gif"}',
                                                p:PrimitiveType[1] | '{"li_attr":' + display_ide_attr($p) + ', "id":"'+$p->buildKey()+ '","text":"' + $p->id() + '", "icon":"/ide/pure/icons/modelElements/primitive.png"}',
                                                c:Class<Any>[1] | '{"li_attr":' + display_ide_attr($c) + ', "id":"'+$p->buildKey()+ '","text":"' + $c->id() + '", "icon":"/ide/pure/icons/modelElements/class.png", "children":true}',
@@ -191,6 +191,11 @@ function <<access.private>> meta::pure::ide::getName(pe:PackageableElement[1]):S
                          nf:NativeFunction<Any>[1]    | $nf.functionName,
                          p:PackageableElement[1]      | $p.name]);
    if($name->isEmpty(),|'',|$name->toOne());
+}
+
+function meta::pure::ide::display_ide_attr(element:FunctionDefinition<Any>[1]):String[1]
+{
+    $element->cast(@PackageableElement)->display_ide_attr();
 }
 
 function meta::pure::ide::display_ide_attr(element:PackageableElement[1]):String[1]

@@ -101,7 +101,7 @@ function meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpe
 
                                                        ,|   if($passToTransformAny->contains($fe.func) || (new_Class_1__String_1__KeyExpression_MANY__T_1_ == $fe.func && $fe.parametersValues->at(0).genericType.typeArguments.rawType->cast(@Class<Any>)->at(0)->isWithinPackage(meta::pure)),
                                                                        |$fe->reactivate($fe->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::scan()->map(o|pair($o,^List<Any>()))->newMap())->meta::protocols::pure::v1_27_0::transformation::fromPureGraph::valueSpecification::transformAny($inScope, $open, PureOne, 0, $fe, $extensions);,
-                                                                       |let package = $fe.func.package->toOne();
+                                                                       |let package = if($fe.func->instanceOf(PackageableFunction), |$fe.func->cast(@PackageableFunction<Any>).package->toOne(), |::);
                                                                         if($fe.func->instanceOf(FunctionDefinition) && $useAppliedFunction && (!$package->isWithinPackage(meta) && !$package->meta::alloy::isMetaAlloyTestDependency() || $package->meta::alloy::isMetaAlloyTestDependencyForGeneration() ),
                                                                            |let functionName = $fe.functionName->toOne();
                                                                             let packagePath = $package->elementToPath() + '::';

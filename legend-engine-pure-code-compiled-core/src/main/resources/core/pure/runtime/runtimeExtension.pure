@@ -78,15 +78,18 @@ function meta::pure::runtime::getConstraintsManager(exeCtx:ExecutionContext[1]):
 
 function meta::pure::runtime::connectionByElement(runtime:Runtime[1], store:Store[1]):Connection[1]
 {
+   assert($runtime.connections->size() >= 1, | 'No connections were found in runtime.');
+
    if ($store->instanceOf(ModelStore),
-       |$runtime.connections->filter(c|$c.element->instanceOf(ModelStore))->toOne(),
-       |let connection = $runtime.connections->filter(c|$c.element == $store);
+       |let connections = $runtime.connections->filter(c|$c.element->instanceOf(ModelStore));
+        $connections->toOne($connections->size()->toString()+' connection(s) for "ModelStore" were found in the runtime. Expected 1 connection.');,
+       |let connections = $runtime.connections->filter(c|$c.element == $store);
         //meta::pure::functions::asserts::assertSize($connection, 1, |$connection->size()->toString()+' connection(s) for store "'+$store.name->toOne()+'" were found in the runtime');
-        if ($connection->size() == 0,
+        if ($connections->size() == 0,
             | $runtime.connections->at(0),
-            | $connection->toOne()
+            | $connections->toOne($connections->size()->toString()+' connection(s) for store "'+$store.name->toOne()+'" were found in the runtime. Expected 1 connection.')
         );
-   )
+   );
 }
 
 function meta::pure::runtime::getMappingsFromRuntime(runtime:Runtime[0..1]):Mapping[*]

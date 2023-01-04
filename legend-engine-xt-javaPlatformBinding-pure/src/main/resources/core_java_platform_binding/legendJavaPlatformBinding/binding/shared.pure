@@ -22,14 +22,11 @@ import meta::external::shared::format::*;
 import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::shared::format::metamodel::*;
 import meta::external::shared::format::utils::*;
 
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 
@@ -39,6 +36,10 @@ import meta::pure::metamodel::type::*;
 import meta::pure::extension::*;
 
 import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 
 import meta::pure::graphFetch::routing::*;
 import meta::pure::router::routing::*;
@@ -52,18 +53,18 @@ import meta::external::shared::format::*;
 import meta::external::shared::format::binding::validation::*;
 import meta::pure::model::unit::*;
 
-function meta::external::shared::format::executionPlan::engine::java::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    createDataClassesProject($classes, $bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), $debug)
 }
 
-function meta::external::shared::format::executionPlan::engine::java::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClassesProject(classes:meta::pure::metamodel::type::Class<Any>[*], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClassesProject\n', |''));
    mergeProjects($classes->map(c| $c->createDataClass($bindingDetail, $path, $context, $constraintContext, $debug->indent()))->toOneMany());
 }
 
-function meta::external::shared::format::executionPlan::engine::java::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::generateDataTestProject(packageName:String[1], baseJavaPackage:String[1]): Project[1]
 {
    let extensions = meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);
    let conventions = engineConventions($extensions)->setBasePackageName($baseJavaPackage);
@@ -79,7 +80,7 @@ function meta::external::shared::format::executionPlan::engine::java::generateDa
    newProject()->addClasses($project->allClasses()->map(cl | $cl->inferImports()));
 }
 
-function meta::external::shared::format::executionPlan::engine::java::prepareExternalFormatInternalizeExecutionNode(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::prepareExternalFormatInternalizeExecutionNode(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatInternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
 
@@ -118,7 +119,7 @@ function meta::external::shared::format::executionPlan::engine::java::prepareExt
    $contextWithNodeInfo->setTypeInfos($newTypeInfos);
 }
 
-function meta::external::shared::format::executionPlan::engine::java::prepareExternalFormatExternalizeExecutionNode(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::prepareExternalFormatExternalizeExecutionNode(node:ExternalFormatExternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], externalFormatContract:ExternalFormatContract<Any>[1], extensions:Extension[*], debug:DebugContext[1]): GenerationContext[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') prepare ExternalFormatExternalizeExecutionNode for ' + $externalFormatContract.id + ' \n', |''));
 
@@ -144,7 +145,7 @@ function meta::external::shared::format::executionPlan::engine::java::prepareExt
    $contextWithNodeInfo->setTypeInfos($newTypeInfos);
 }
 
-Class <<access.private>> meta::external::shared::format::executionPlan::engine::java::PropertyDetails
+Class <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::PropertyDetails
 {
    property          : AbstractProperty<Any>[1];
    fieldName         : String[1];
@@ -161,12 +162,12 @@ Class <<access.private>> meta::external::shared::format::executionPlan::engine::
    isViaAssociation() {$this.property.owner->instanceOf(Association)}: Boolean[1];
 }
 
-function meta::external::shared::format::executionPlan::engine::java::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    createDataClass($class, $bindingDetail, $path, $context, ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false), $debug)
 }
 
-function meta::external::shared::format::executionPlan::engine::java::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::createDataClass(class:meta::pure::metamodel::type::Class<Any>[1], bindingDetail:SuccessfulBindingDetail[1], path:String[1], context:GenerationContext[1], constraintContext:ConstraintCheckingGenerationContext[1], debug:DebugContext[1]): Project[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') createDataClass for '+$class->elementToPath()+'\n', |''));
    
@@ -330,7 +331,7 @@ function meta::external::shared::format::executionPlan::engine::java::createData
    mergeProjects(newProject()->concatenate([$constraintChecking, $instanceSizing])->toOneMany());
 }
 
-function meta::external::shared::format::executionPlan::engine::java::addIExternalData(javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::addIExternalData(javaClass:meta::external::language::java::metamodel::Class[1], class:meta::pure::metamodel::type::Class<Any>[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
 
@@ -348,13 +349,13 @@ function meta::external::shared::format::executionPlan::engine::java::addIExtern
         );
 }
 
-Class <<access.private>> meta::external::shared::format::executionPlan::engine::java::AdderValue
+Class <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::AdderValue
 {
    create: Code[*];
    access: Code[1];
 }
 
-function <<access.private>> meta::external::shared::format::executionPlan::engine::java::adderMethods(jc:meta::external::language::java::metamodel::Class[1], prop: PropertyDetails[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[*]
+function <<access.private>> meta::external::shared::format::executionPlan::platformBinding::legendJava::adderMethods(jc:meta::external::language::java::metamodel::Class[1], prop: PropertyDetails[1], conventions:Conventions[1]): meta::external::language::java::metamodel::Method[*]
 {
    let pureDate    = $conventions->className(PureDate);
    let field       = j_this($jc)->j_field($prop.fieldName);
@@ -425,7 +426,7 @@ function <<access.private>> meta::external::shared::format::executionPlan::engin
    );
 }
 
-function meta::external::shared::format::executionPlan::engine::java::occursFromMultiplicity(mult:Multiplicity[1]): Pair<Code, Code>[1]
+function meta::external::shared::format::executionPlan::platformBinding::legendJava::occursFromMultiplicity(mult:Multiplicity[1]): Pair<Code, Code>[1]
 {
    if($mult == PureOne,
       | pair(j_long(1), j_long(1)),

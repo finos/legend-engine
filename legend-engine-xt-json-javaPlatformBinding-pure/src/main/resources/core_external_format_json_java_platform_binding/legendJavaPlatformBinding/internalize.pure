@@ -14,8 +14,8 @@
 
 import meta::external::format::json::binding::validation::*;
 import meta::external::format::json::executionPlan::model::*;
-import meta::external::format::json::executionPlan::engine::java::*;
-import meta::external::format::json::executionPlan::engine::java::internalize::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::*;
 
 import meta::external::format::json::metamodel::*;
 import meta::external::format::json::metamodel::internalize::*;
@@ -30,16 +30,16 @@ import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::shared::format::functions::*;
 import meta::external::shared::format::metamodel::*;
 
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::graphFetch::json::*;
-import meta::pure::executionPlan::engine::java::graphFetch::storeStreamReading::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::*;
+import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
 import meta::pure::dataQuality::*;
@@ -57,7 +57,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 // Descriptor
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
 {
   ^ExternalFormatInternalizeBindingDescriptor
   (
@@ -69,7 +69,7 @@ function meta::external::format::json::executionPlan::engine::java::internalize:
 // generate
 // ========================================================================================================================================================
 
-function meta::external::format::json::executionPlan::engine::java::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+function meta::external::format::json::executionPlan::platformBinding::legendJava::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for JsonSchema \n', |''));
 

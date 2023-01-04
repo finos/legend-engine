@@ -14,15 +14,14 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.Milestoning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_Impl;
@@ -31,14 +30,18 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Concre
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -256,13 +259,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   tags : [doc, doc];\n" +
                 "   stereotypes : [modifier, modifier, accessorType, accessorType];\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(3, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated tag 'doc' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated stereotype 'modifier' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":1,\"startColumn\":1,\"endLine\":5,\"endColumn\":1},\"message\":\"Found duplicated stereotype 'accessorType' in profile 'test::A'\"}", mapper.writeValueAsString(warnings.get(2)));
+                "}\n",null,Arrays.asList("COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'accessorType' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated stereotype 'modifier' in profile 'test::A'", "COMPILATION error at [1:1-5:1]: Found duplicated tag 'doc' in profile 'test::A'"));
     }
 
     @Test
@@ -271,12 +268,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         Pair<PureModelContextData, PureModel> res = test("Enum test::A\n" +
                 "{\n" +
                 "   TEA,COFFEE,TEA,TEA,COFFEE\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(2, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":8,\"endLine\":3,\"endColumn\":13},\"message\":\"Found duplicated value 'COFFEE' in enumeration 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":6},\"message\":\"Found duplicated value 'TEA' in enumeration 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
+                "}\n",null, Arrays.asList("COMPILATION error at [3:4-6]: Found duplicated value 'TEA' in enumeration 'test::A'", "COMPILATION error at [3:8-13]: Found duplicated value 'COFFEE' in enumeration 'test::A'"));
     }
 
     @Test
@@ -288,11 +280,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   property1: test::A[0..1];\n" +
                 "   property1: test::B[1];\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(1, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":28},\"message\":\"Found duplicated property 'property1' in association 'test::C'\"}", mapper.writeValueAsString(warnings.get(0)));
+                "}\n",null,Arrays.asList("COMPILATION error at [5:4-28]: Found duplicated property 'property1' in association 'test::C'"));
     }
 
     @Test
@@ -305,12 +293,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   other : String[1];\n" +
                 "   ok : String[1];\n" +
                 "   other: String[1];\n" +
-                "}\n");
-        MutableList<Warning> warnings = res.getTwo().getWarnings();
-        Assert.assertEquals(2, warnings.size());
-        ObjectMapper mapper = new ObjectMapper();
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":5,\"startColumn\":4,\"endLine\":5,\"endColumn\":21},\"message\":\"Found duplicated property 'other' in class 'test::A'\"}", mapper.writeValueAsString(warnings.get(0)));
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":3,\"startColumn\":4,\"endLine\":3,\"endColumn\":28},\"message\":\"Found duplicated property 'property' in class 'test::A'\"}", mapper.writeValueAsString(warnings.get(1)));
+                "}\n",null, Arrays.asList("COMPILATION error at [3:4-28]: Found duplicated property 'property' in class 'test::A'", "COMPILATION error at [5:4-21]: Found duplicated property 'other' in class 'test::A'"));
     }
 
     @Test
@@ -2272,6 +2255,113 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty> singleDateQPWithArgAndNoArg = collectionsQPs.select(p -> p.getName().equals("productType"));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty singleDateQP = singleDateQPWithArgAndNoArg.getFirst();
         Assert.assertTrue("The productType property for Class in my::domainModel::migration::test::product::Classification _qualifiedProperties should contain one argument for Date", ((Root_meta_pure_metamodel_type_FunctionType_Impl) singleDateQP._classifierGenericType()._typeArguments().getFirst()._rawType())._parameters.size() == 2);
+    }
+
+    @Test
+    public void testMilestoningSimplePropertiesInNonMilestonedClassesAreNotRestricted()
+    {
+        String grammar = "###Pure\n" +
+                "Class test::ProcessingDate{processingDate: Date[1];}" +
+                "Class test::BusinessDate{businessDate: Date[1];}" +
+                "Class test::ProcessingTemporalAddress\n" +
+                "{\n" +
+                "  processingDate: Date[1];\n" +
+                "  processingDateComplex: test::ProcessingDate[1];" +
+                "}\n" +
+                "\n" +
+                "Class test::BusinessTemporalAddress\n" +
+                "{\n" +
+                "  businessDate: Date[1];\n" +
+                "  businessDateComplex: test::BusinessDate[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::BiTemporalAddress\n" +
+                "{\n" +
+                "  processingDate: Date[1];\n" +
+                "  businessDate: Date[1];\n" +
+                "  processingDateComplex: test::ProcessingDate[1];\n" +
+                "  businessDateComplex: test::BusinessDate[1];\n" +
+                "}\n";
+
+        PureModel pm = test(grammar, null, Lists.mutable.with()).getTwo();
+        RichIterable<? extends Property<?, ?>> processingTemporalAddressProperties = pm.getClass("test::ProcessingTemporalAddress")._properties();
+        RichIterable<? extends Property<?, ?>> businessTemporalAddressProperties = pm.getClass("test::BusinessTemporalAddress")._properties();
+        RichIterable<? extends Property<?, ?>> biTemporalAddressProperties = pm.getClass("test::BiTemporalAddress")._properties();
+
+        Assert.assertEquals(2, processingTemporalAddressProperties.size());
+        Assert.assertTrue(processingTemporalAddressProperties.allSatisfy(p -> Lists.immutable.with("processingDate", "processingDateComplex").contains(p.getName())));
+        Assert.assertEquals(2, businessTemporalAddressProperties.size());
+        Assert.assertTrue(businessTemporalAddressProperties.allSatisfy(p -> Lists.immutable.with("businessDate", "businessDateComplex").contains(p.getName())));
+        Assert.assertEquals(4, biTemporalAddressProperties.size());
+        Assert.assertTrue(biTemporalAddressProperties.allSatisfy(p -> Lists.immutable.with("processingDate", "processingDateComplex", "businessDate", "businessDateComplex").contains(p.getName())));
+    }
+
+    @Test
+    public void testMilestoningSimplePropertiesAreNotOverridenByUserProperties()
+    {
+        String grammar = "###Pure\n" +
+                "Class <<temporal.processingtemporal>> test::ProcessingTemporalAddress\n" +
+                "{\n" +
+                "  processingDate: Date[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::BusinessTemporalAddress\n" +
+                "{\n" +
+                "  businessDate: Date[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.bitemporal>> test::BiTemporalAddress\n" +
+                "{\n" +
+                "  processingDate: Date[1];\n" +
+                "  businessDate: Date[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  processingTemporalAddress : test::ProcessingTemporalAddress[1];\n" +
+                "  businessTemporalAddress : test::BusinessTemporalAddress[1];\n" +
+                "  biTemporalAddress : test::BiTemporalAddress[1];\n" +
+                "}";
+        PureModel pm = test(grammar, null, Lists.mutable.with(
+                "COMPILATION error at [2:1-5:1]: Class test::ProcessingTemporalAddress has temporal specification: [processingtemporal] properties: [processingDate] are reserved and should not be explicit in the Model",
+                "COMPILATION error at [7:1-10:1]: Class test::BusinessTemporalAddress has temporal specification: [businesstemporal] properties: [businessDate] are reserved and should not be explicit in the Model",
+                "COMPILATION error at [12:1-16:1]: Class test::BiTemporalAddress has temporal specification: [bitemporal] properties: [processingDate, businessDate] are reserved and should not be explicit in the Model"
+
+        )).getTwo();
+
+        java.util.function.Function<Property, Boolean> isGeneratedMilestoningProperty = p -> p._stereotypes().anySatisfy(s -> s._value().equals(Milestoning.GeneratedMilestoningStereotype.generatedmilestoningdateproperty.name()));
+
+        Property processingDateProperty = pm.getClass("test::ProcessingTemporalAddress")._properties().select(p -> p.getName().equals("processingDate")).getOnly();
+        Property businessDateProperty = pm.getClass("test::BusinessTemporalAddress")._properties().select(p -> p.getName().equals("businessDate")).getOnly();
+
+        Assert.assertTrue(isGeneratedMilestoningProperty.apply(processingDateProperty));
+        Assert.assertTrue(isGeneratedMilestoningProperty.apply(businessDateProperty));
+        RichIterable<? extends QualifiedProperty<?>> personQualifiedProperties = pm.getClass("test::Person")._qualifiedProperties();
+
+        boolean classProcessingDatePropertyIsUsedInMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(processingDateProperty, personQualifiedProperties.detect(p -> p.getName().equals("processingTemporalAddress")));
+        boolean classBusinessPropertyIsUsedInMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(businessDateProperty, personQualifiedProperties.detect(p -> p.getName().equals("businessTemporalAddress")));
+        Assert.assertTrue("Class generated milestoning processingDate property should be used in the generated milestoning expression", classProcessingDatePropertyIsUsedInMiletoningExpression);
+        Assert.assertTrue("Class generated milestoning businessDate property should be used in the generated milestoning expression", classBusinessPropertyIsUsedInMiletoningExpression);
+
+        RichIterable<? extends Property<?, ?>> biTemporalMilestoningDateProperties = pm.getClass("test::BiTemporalAddress")._properties().select(p -> Arrays.asList("businessDate", "processingDate").contains(p.getName()));
+        Assert.assertTrue(biTemporalMilestoningDateProperties.size() == 2 && biTemporalMilestoningDateProperties.anySatisfy(p -> p.getName().equals("businessDate")) && biTemporalMilestoningDateProperties.anySatisfy(p -> p.getName().equals("processingDate")));
+        Assert.assertTrue(biTemporalMilestoningDateProperties.allSatisfy(p -> isGeneratedMilestoningProperty.apply(p)));
+        boolean classProcessingDatePropertyIsUsedInBiTemporalMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(biTemporalMilestoningDateProperties.detect(p -> p.getName().equals("processingDate")), personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress")));
+        boolean classBusinessPropertyIsUsedInBiTemporalMiletoningExpression = generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(biTemporalMilestoningDateProperties.detect(p -> p.getName().equals("businessDate")), personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress")));
+        Assert.assertTrue("Class generated milestoning processingDate property should be used in the generated milestoning expression", classProcessingDatePropertyIsUsedInBiTemporalMiletoningExpression);
+        Assert.assertTrue("Class generated milestoning businessDate property should be used in the generated milestoning expression", classBusinessPropertyIsUsedInBiTemporalMiletoningExpression);
+    }
+
+    private boolean generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(Property generatedMilestoningClassSimpleProperty, QualifiedProperty generatedMilestoningClassQualifiedProperty)
+    {
+        FunctionExpression topLevelExpression = (FunctionExpression) ((LambdaFunction) ((InstanceValue) ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst())._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
+        if (topLevelExpression._func()._functionName().equals("and"))
+        {
+            int idx = generatedMilestoningClassSimpleProperty.getName().equals("processingDate") ? 0 : 1;
+            topLevelExpression = (FunctionExpression) topLevelExpression._parametersValues().toList().get(idx);
+        }
+        Property filterMilestoningDateProperty = (Property) ((FunctionExpression) topLevelExpression._parametersValues().toList().get(0))._func();
+        return generatedMilestoningClassSimpleProperty.equals(filterMilestoningDateProperty);
     }
 
     @Test

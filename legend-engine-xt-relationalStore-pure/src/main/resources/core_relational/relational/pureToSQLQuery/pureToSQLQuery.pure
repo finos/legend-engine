@@ -3323,7 +3323,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                u:Union[1] | $u,
                v:View[1]  | let selectWithCursor = processRelationalMappingSpecification($v, $c, $nodeId, $addPk, $pkOffset, true, $milestoningContext, ^$state(inFilter=false), $context, $extensions);
                             let select = $selectWithCursor.select;
-                            let selectWithFiltersProcessed = ^$select(filteringOperation=$select.filteringOperation->concatenate($select.extraFilteringOperation))->pushSavedFilteringOperation($extensions);
+                            let selectWithFiltersProcessed = $select->pushExtraFilteringOperation($extensions)->pushSavedFilteringOperation($extensions);
                             ^ViewSelectSQLQuery(view=$v, name=$v.name, columns = $selectWithFiltersProcessed.columns, selectSQLQuery = $selectWithFiltersProcessed, schema=$v.mainTable.schema);,
                s:SemiStructuredArrayFlatten[1] | $s
              ]);

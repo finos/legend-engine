@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.24.1-SNAPSHOT</version>
+        <version>3.30.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-services-model-api</artifactId>
@@ -46,6 +46,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution</artifactId>
         </dependency>
         <!-- ENGINE -->
 

@@ -23,7 +23,7 @@ public class BigQueryRelationalTestServerInvoker
     public static void main(String[] args) throws Exception
     {
         RelationalTestServer.execute(
-                args.length == 0 ? new String[] {"server", "org/finos/legend/engine/server/test/userTestConfig_withBigQueryTestConnection.json"} : args,
+                args.length == 0 ? new String[] {"server", "legend-engine-xt-relationalStore-bigquery-execution-tests/src/test/resources/org/finos/legend/engine/server/test/userTestConfig_withBigQueryTestConnection.json"} : args,
                 new NamedType(BigQueryTestDatabaseAuthenticationFlowProviderConfiguration.class, "bigQueryTest")
         );
     }

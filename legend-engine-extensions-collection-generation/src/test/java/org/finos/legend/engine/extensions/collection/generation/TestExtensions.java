@@ -211,11 +211,13 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.MasteryProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.RelationalProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.BigQueryProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.SpannerProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.ServiceStoreProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class);
     }
 
@@ -227,7 +229,9 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.avro.extension.AvroGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.jsonSchema.extension.JSONSchemaGenerationExtension.class)
                 .with(org.finos.legend.engine.external.format.rosetta.extension.RosettaGenerationExtension.class)
-                .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class);
+                .with(org.finos.legend.engine.external.language.morphir.extension.MorphirGenerationExtension.class)
+                .with(org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenerationExtension.class)
+                .with(org.finos.legend.engine.external.format.daml.generation.DAMLGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends PureGrammarParserExtension>> getExpectedGrammarParserExtensions()
@@ -245,6 +249,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from.PersistenceCloudParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension.class)
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class);
     }
@@ -263,8 +268,10 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to.PersistenceCloudComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.RelationalGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.pure.grammar.to.SpannerGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension.class)
                 .with(org.finos.legend.engine.language.pure.grammar.to.ServiceStoreGrammarComposerExtension.class)
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class);
     }
 
@@ -285,6 +292,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph.PersistenceCloudCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationalCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.BigQueryCompilerExtension.class)
+                .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.SpannerCompilerExtension.class)
+                .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class);
     }
 
@@ -302,7 +311,9 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
-                .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class);
+                .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
+                .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class)
+                .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class);
     }
 
     protected Iterable<? extends Class<? extends ArtifactGenerationExtension>> getExpectedArtifactGenerationExtensions()
@@ -327,11 +338,17 @@ public class TestExtensions
                 .with("core_external_format_json")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
+                .with("core_external_query_graphql")
+                .with("core_external_query_graphql_metamodel")
+                .with("core_external_compiler")
                 .with("core_persistence")
                 .with("core_mastery")
+                .with("core_external_language_daml")
+                .with("core_external_language_haskell")
                 .with("core_persistence_cloud")
                 .with("core_relational")
                 .with("core_relational_bigquery")
+                .with("core_relational_spanner")
                 .with("core_servicestore")
                 .with("core_text")
                 .with("core_external_language_java")

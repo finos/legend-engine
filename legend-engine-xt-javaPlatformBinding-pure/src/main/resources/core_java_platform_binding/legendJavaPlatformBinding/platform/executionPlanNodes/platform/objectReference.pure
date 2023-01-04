@@ -21,11 +21,8 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::naming::*;
-import meta::pure::executionPlan::engine::java::platform::*;
-import meta::pure::executionPlan::engine::java::serialize::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 
@@ -39,12 +36,12 @@ Class meta::pure::executionPlan::platformBinding::legendJava::platform::objectRe
    generateObjectReferenceParserImpl: Function<{Any[*], String[1], GenerationContext[1], DebugContext[1] -> meta::external::language::java::metamodel::Class[1]}>[1];
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::isParseObjectReferences(fe:FunctionExpression[1]):Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::isParseObjectReferences(fe:FunctionExpression[1]):Boolean[1]
 {
    $fe.func == parseObjectReferences_String_MANY__String_1__Any_MANY__Any_MANY_;
 }
 
-function meta::pure::executionPlan::engine::java::getObjectReferenceParserHelperInterface(path:String[1], context:GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::getObjectReferenceParserHelperInterface(path:String[1], context:GenerationContext[1]):meta::external::language::java::metamodel::Class[1]
 {
    let objectReferenceParam = j_parameter(javaString(), 'objectReferences');
    
@@ -53,7 +50,7 @@ function meta::pure::executionPlan::engine::java::getObjectReferenceParserHelper
                        ->addMethod(javaMethod(['public'], javaObject(), 'parseObjectReference', [$objectReferenceParam]));
 }
 
-function meta::pure::executionPlan::engine::java::generateImplementationForParseObjectReferences(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
+function meta::pure::executionPlan::platformBinding::legendJava::platform::objectReference::generateImplementationForParseObjectReferences(p:PureExpressionPlatformExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]):GeneratedCode[1]
 {
    let conventions    	     = $context.conventions;
 

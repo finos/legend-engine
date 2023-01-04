@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PackageableEle
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.service.test.JavaCode;
 import org.finos.legend.engine.plan.execution.service.test.SingleTestRun;
 import org.finos.legend.engine.plan.execution.service.test.TestResult;
@@ -37,12 +38,16 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.service.post.validation.runner.LegendServicePostValidationRunner;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -55,11 +60,14 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Servic
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.pac4j.core.profile.CommonProfile;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
+
+import static org.finos.legend.pure.generated.core_relational_relational_extensions_extension.Root_meta_relational_extension_relationalExtensions__Extension_MANY_;
 
 public class ServiceModeling
 {
@@ -145,5 +153,24 @@ public class ServiceModeling
             results.put(entry.getKey(), testResult);
         }
         return new SingleTestRun(richServiceTestResult.getExecutionPlan(), new JavaCode(richServiceTestResult.getJavaCodeString()), results);
+    }
+
+    @Prometheus(name = "service validation model resolve", doc = "Model resolution duration summary within service validation execution")
+    public Response validateService(MutableList<CommonProfile> profiles, PureModelContext context, String metricsContext, String assertionId, SerializationFormat format)
+    {
+        long start = System.currentTimeMillis();
+        PureModelContextData data = ((PureModelContextData) context).shallowCopy();
+        Service service = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
+        PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
+        PureModel pureModel = new PureModel(dataWithoutService, profiles, deploymentMode);
+        long end = System.currentTimeMillis();
+        MetricsHandler.observe("service validation model resolve", start, end);
+        MetricsHandler.observeServerOperation("model_resolve", metricsContext, start, end);
+
+        Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
+        List<Variable> rawParams = ((PureExecution) service.execution).func.parameters;
+
+        LegendServicePostValidationRunner postValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, rawParams, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, PureClientVersions.production, profiles, format);
+        return postValidationRunner.runValidationAssertion(assertionId);
     }
 }

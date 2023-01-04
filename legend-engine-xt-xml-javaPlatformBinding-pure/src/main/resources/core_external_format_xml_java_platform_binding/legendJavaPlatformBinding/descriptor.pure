@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 
 import meta::external::format::xml::contract::*;
 import meta::external::format::xml::executionPlan::*;
-import meta::external::format::xml::executionPlan::engine::java::*;
-import meta::external::format::xml::executionPlan::engine::java::internalize::*;
-import meta::external::format::xml::executionPlan::engine::java::serialize::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::serialize::*;
 
-function meta::external::format::xml::executionPlan::engine::java::xsdJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
+function meta::external::format::xml::executionPlan::platformBinding::legendJava::xsdJavaBindingDescriptor():ExternalFormatLegendJavaPlatformBindingDescriptor[1]
 {
   ^ExternalFormatLegendJavaPlatformBindingDescriptor
   (
     externalFormatContract     = xsdFormatContract(),
-    enginePlatformDependencies = meta::external::format::xml::executionPlan::engine::java::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
+    enginePlatformDependencies = meta::external::format::xml::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies_Conventions_1__Conventions_1_,
     internalizeDescriptor      = getExternalFormatInternalizeJavaBindingDescriptor()
   )
 }

@@ -43,6 +43,7 @@ public class TestPersistenceBitemporalDelta extends TestPersistenceBase
         String persistenceSpec = readPureCode(path);
 
         TestResult result = testPersistence(persistenceSpec).results.get(0);
+
         assertTrue(result instanceof TestPassed);
         Assert.assertEquals("test::TestPersistence", ((TestPassed) result).testable);
     }

@@ -119,8 +119,8 @@ function meta::pure::router::printer::asString(f:FunctionExpression[1], pref:Pre
 
 function meta::pure::router::printer::functionName(f:Function<Any>[1], pref:Pref[1]):String[1]
 {
-  if($pref->efq(),
-    |$f.package->toOne()->elementToPath()+'::'+$f.functionName->toOne(),
+  if($pref->efq() && $f->instanceOf(PackageableElement),
+    |$f->cast(@PackageableElement).package->toOne()->elementToPath()+'::'+$f.functionName->toOne(),
     |$f.functionName->toOne()
   );
 }

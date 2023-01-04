@@ -75,6 +75,8 @@ import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.query.sql.api.execute.SqlExecute;
+import org.finos.legend.engine.query.sql.api.grammar.SqlGrammar;
 import org.finos.legend.engine.server.core.bundles.ErrorHandlingBundle;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
@@ -220,8 +222,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());
-        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor, serverConfiguration.metadataserver, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
-        environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver));
+        environment.jersey().register(new GraphQLExecute(modelManager, planExecutor, serverConfiguration.metadataserver, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
+        environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver, routerExtensions));
+
+        // SQL
+        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), serverConfiguration.metadataserver, serverConfiguration.deployment.mode));
+        environment.jersey().register(new SqlGrammar());
 
         // Service
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode));

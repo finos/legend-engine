@@ -23,11 +23,7 @@ import meta::pure::graphFetch::*;
 
 import meta::pure::model::binding::*;
 
-Class meta::external::shared::format::functions::ExternalFormatOption
-{   
-}
-
-function meta::external::shared::format::functions::externalize<T>(collection: T[*], binding:Binding[1]):String[1]
+function meta::external::shared::format::functions::externalize<T>(collection: T[*], binding:Binding[1]):String[1]                // TODO: TO BE REMOVED
 {
    fail('Implemented by execution plans');
    'Not impemented!';
@@ -39,7 +35,7 @@ function meta::external::shared::format::functions::externalize<T>(collection: T
    'Not impemented!';
 }
 
-function meta::external::shared::format::functions::externalize<T>(collection: Checked<T>[*], binding:Binding[1]):String[1]
+function meta::external::shared::format::functions::externalize<T>(collection: Checked<T>[*], binding:Binding[1]):String[1]         // TODO: TO BE REMOVED
 {
    fail('Implemented by execution plans');
    'Not impemented!';
@@ -57,12 +53,6 @@ function meta::external::shared::format::functions::internalize<T>(toClass:Class
    [];
 }
 
-function meta::external::shared::format::functions::internalize<T>(toClass:Class<T>[1], binding:Binding[1], url:Url[1]):T[*]
-{
-   fail('Implemented by execution plans');
-   [];
-}
-
 function meta::external::shared::format::functions::checked(valueTree: RootGraphFetchTree<Any>[1], binding: Binding[1]):RootGraphFetchTree<Checked<Any>>[1]
 {
    fail('To be evaluated as part of plan generation only');
@@ -73,8 +63,7 @@ function meta::external::shared::format::functions::internalizeFunctions():Funct
 {
    [
       internalize_Class_1__Binding_1__String_1__T_MANY_,
-      internalize_Class_1__Binding_1__ByteStream_1__T_MANY_,
-      internalize_Class_1__Binding_1__Url_1__T_MANY_
+      internalize_Class_1__Binding_1__ByteStream_1__T_MANY_
    ]
 }
 

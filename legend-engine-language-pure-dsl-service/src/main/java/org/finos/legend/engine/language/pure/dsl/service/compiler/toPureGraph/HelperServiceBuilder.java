@@ -117,10 +117,6 @@ public class HelperServiceBuilder
             else
             {
                 lambda = HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context);
-                if (!org.finos.legend.pure.generated.core_legend_service_serviceValidationHelper.Root_meta_legend_service_validateServiceLambda_FunctionDefinition_1__Boolean_1_(lambda, context.getExecutionSupport()))
-                {
-                    throw new EngineException("Mapping, runtime has not been provided. Either provide via the 'from' function or as separate 'mapping', 'runtime' attributes", pureSingleExecution.sourceInformation, EngineErrorType.COMPILATION);
-                }
             }
             return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureSingleExecution"))
                     ._func(lambda)

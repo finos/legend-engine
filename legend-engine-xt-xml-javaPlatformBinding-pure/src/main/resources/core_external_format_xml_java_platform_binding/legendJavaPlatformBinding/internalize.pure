@@ -15,8 +15,8 @@
 import meta::external::format::xml::binding::validation::*;
 import meta::external::format::xml::executionPlan::*;
 import meta::external::format::xml::executionPlan::model::*;
-import meta::external::format::xml::executionPlan::engine::java::*;
-import meta::external::format::xml::executionPlan::engine::java::internalize::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::*;
+import meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::*;
 import meta::external::format::xml::metamodel::*;
 
 import meta::external::language::java::factory::*;
@@ -29,13 +29,14 @@ import meta::external::shared::format::binding::*;
 import meta::external::shared::format::binding::validation::*;
 import meta::external::shared::format::executionPlan::*;
 import meta::external::shared::format::executionPlan::engine::*;
-import meta::external::shared::format::executionPlan::engine::java::*;
+import meta::external::shared::format::executionPlan::platformBinding::legendJava::*;
 import meta::external::shared::format::metamodel::*;
 
 import meta::pure::executionPlan::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
 import meta::pure::extension::*;
@@ -49,7 +50,7 @@ import meta::pure::metamodel::serialization::grammar::*;
 // Descriptor
 // ========================================================================================================================================================
 
-function meta::external::format::xml::executionPlan::engine::java::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
+function meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::getExternalFormatInternalizeJavaBindingDescriptor(): ExternalFormatInternalizeBindingDescriptor[1]
 {
   ^ExternalFormatInternalizeBindingDescriptor
   (
@@ -61,7 +62,7 @@ function meta::external::format::xml::executionPlan::engine::java::internalize::
 // Generate
 // ========================================================================================================================================================
 
-function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
+function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::generateForInternalize(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1], debug:DebugContext[1]): GeneratedCode[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generate ExternalFormatInternalizeExecutionNode for XSD\n', |''));
 
@@ -83,7 +84,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
    $project->addClasses($readerClass)->generatedCode($readerClass);
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::createReaderClass(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::createReaderClass(node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
    let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
@@ -94,7 +95,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
       ->addReadNoSchemaMethod($ctxParam, $node, $path, $context);
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::addReadNoSchemaMethod(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
+function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::addReadNoSchemaMethod(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], node:ExternalFormatInternalizeExecutionNode[1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    let conventions = $context.conventions;
    let rootClass   = $node.resultType.type->cast(@meta::pure::metamodel::type::Class<Any>)->toOne();
@@ -113,7 +114,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
         ->addMethods(c| $c->createClassElementNoSchemaMethods($ctxParam, $rootClass, [], $path, $context));
 }
 
-Class <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::PropertyCodes
+Class <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::PropertyCodes
 {
    elementVar    : Code[1];
    elementInit   : Code[1];
@@ -125,7 +126,7 @@ Class <<access.private>> meta::external::format::xml::executionPlan::engine::jav
    attributeDeclare() { $this.attributeVar->map(v| $v->j_declare($this.attributeInit->toOne())); }: Code[0..1];
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::createClassElementNoSchemaMethods(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], class:meta::pure::metamodel::type::Class<Any>[1], property:Property<Nil,Any|*>[0..1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[*]
+function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::createClassElementNoSchemaMethods(jc:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], class:meta::pure::metamodel::type::Class<Any>[1], property:Property<Nil,Any|*>[0..1], path:String[1], context:GenerationContext[1]): meta::external::language::java::metamodel::Method[*]
 {
    let conventions = $context.conventions;
    let reverseProp = if($property->isNotEmpty() && $property.owner->toOne()->instanceOf(Association),
@@ -197,7 +198,7 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
    )->concatenate($propertyCodes.calledMethods)->removeDuplicatesBy(m| $m.name);
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::codePrimitivePropertyNoSchema(prop:Property<Nil,Any|*>[1], dataClass:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], context:GenerationContext[1]): PropertyCodes[1]
+function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::codePrimitivePropertyNoSchema(prop:Property<Nil,Any|*>[1], dataClass:meta::external::language::java::metamodel::Class[1], ctxParam:Code[1], context:GenerationContext[1]): PropertyCodes[1]
 {
    let conventions = $context.conventions;
    let pureDate    = $conventions->className(PureDate);
@@ -277,12 +278,12 @@ function <<access.private>> meta::external::format::xml::executionPlan::engine::
    );
 }
 
-function <<access.private>> meta::external::format::xml::executionPlan::engine::java::internalize::elementMethodName(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1]): String[1]
+function <<access.private>> meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::elementMethodName(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1]): String[1]
 {
    'element_' + $conventions->identifier($class->elementToPath('_'));
 }
 
-function meta::external::format::xml::executionPlan::engine::java::internalize::readerClass(conventions:Conventions[1], path:String[1], cls:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
+function meta::external::format::xml::executionPlan::platformBinding::legendJava::internalize::readerClass(conventions:Conventions[1], path:String[1], cls:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->planNodeClass('public', $path, 'XmlReader_' + $conventions->identifier($cls->elementToPath('_')));
 }

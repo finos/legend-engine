@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>legend-engine</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>3.24.1-SNAPSHOT</version>
+        <version>3.30.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -60,6 +61,14 @@
         </dependency>
         <!-- LEGEND ENGINE -->
 
+        <!-- DRIVER -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- DRIVER -->
+
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -94,6 +103,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-spanner-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-javaPlatformBinding-pure</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
