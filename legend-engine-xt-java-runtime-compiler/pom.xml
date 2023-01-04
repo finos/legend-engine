@@ -27,6 +27,13 @@
 
     <artifactId>legend-engine-xt-java-runtime-compiler</artifactId>
     <name>Legend Engine - XT - Java - Runtime - Compiler</name>
+    <description>
+        This provides native functions that allow runtime compilation and execution of Java code. This is intended
+        primarily to support development of Java generation code by providing access to compilation and execution in a
+        Pure IDE Light. Please note that native functions provided here are extremely unsafe for general usage as they
+        allow compilation and execution of arbitrary user supplied Java code. They should only be used in environments
+        where there are no concerns about users running unsafe code (such as a user running a local Pure IDE Light).
+    </description>
 
     <build>
         <plugins>

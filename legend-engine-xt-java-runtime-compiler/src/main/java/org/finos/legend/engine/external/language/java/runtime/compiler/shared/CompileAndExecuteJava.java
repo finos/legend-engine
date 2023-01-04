@@ -40,6 +40,11 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
+/**
+ * Note that this implementation is EXTREMELY UNSAFE, as it allows runtime compilation and execution of arbitrary user
+ * provided Java code. It is only suitable for use in situations where there are no concerns about users running unsafe
+ * code (such as a user running a local Pure IDE Light).
+ */
 public class CompileAndExecuteJava
 {
     public static CompilationResult compile(Collection<? extends JavaFileObject> javaSources, Iterable<String> options)
