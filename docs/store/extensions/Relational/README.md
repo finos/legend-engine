@@ -23,4 +23,4 @@ Module structure of a relational connector:
 
 [Step by step tutorial for adding a new connector](new-connector-tutorial.md)
 
-[See list of currently supported connectors here](database-integration-tests/README.md)
+[See list of currently supported connectors and their integration tests here](database-integration-tests/README.md)

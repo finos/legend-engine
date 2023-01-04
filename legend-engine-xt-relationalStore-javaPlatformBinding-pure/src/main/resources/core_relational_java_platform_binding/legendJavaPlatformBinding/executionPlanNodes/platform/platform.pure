@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;

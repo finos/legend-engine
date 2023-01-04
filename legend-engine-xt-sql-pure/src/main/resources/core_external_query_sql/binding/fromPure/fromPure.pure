@@ -1,0 +1,175 @@
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::legend::service::metamodel::*;
+import meta::pure::executionPlan::*;
+
+function meta::external::query::sql::transformation::queryToPure::getPlansFromSQL(
+                                                                          services: meta::legend::service::metamodel::Service[*],
+                                                                          query: meta::external::query::sql::metamodel::Node[1],
+                                                                          extensions: meta::pure::extension::Extension[*]
+                                                                      ): meta::pure::executionPlan::ExecutionPlan[1]
+{
+  let context = ^SqlTransformContext(services = $services, extensions = $extensions);
+  let sqlTransformContext = $query->cast(@Query)->processQuery($context);
+  let executionOptionContext = ^ExecutionOptionContext(executionOptions = $sqlTransformContext.singleExecution.executionOptions);
+  meta::pure::executionPlan::executionPlan($sqlTransformContext.lambda(), $sqlTransformContext.singleExecution->toOne().mapping->toOne(), $sqlTransformContext.singleExecution->toOne().runtime->toOne(), $executionOptionContext, $extensions);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::findService(services: Service[*], serviceId: String[1]): Service[1] {
+  let servicesFound = $services->filter(x | $x.pattern == $serviceId);
+  let servicesFoundSize = $servicesFound->size();
+  
+  assertNotEquals(0, $servicesFoundSize, 'No service found with pattern ' + $serviceId);
+  assertFalse($servicesFoundSize > 1, 'Multiple services found with pattern ' + $serviceId);
+  
+  $servicesFound->toOne();
+}
+
+function meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let queryContext = $query.queryBody->processNode($context);
+  let orderByContext = if($query.orderBy->isEmpty(), |$queryContext, |$query.orderBy->toOne()->processNode($queryContext));
+  if($query.limit->isEmpty(), |$orderByContext, |$query.limit->toOne()->processNode($orderByContext));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNode(node: Node[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  $node->match([
+    limit: Limit[1]                   | $limit->processLimit($context),
+    orderBy: OrderBy[*]               | $orderBy->processOrderBy($context),
+    querySpec: QuerySpecification[1]  | $querySpec->processQuerySpec($context)
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuerySpec(querySpec: QuerySpecification[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  // TODO: fix logic for multiple tables in from
+  let newContextAfterFrom = $querySpec.from->toOne()->match([
+    table: Table[1] | $table->processTable($context)
+  ]);
+  // group by goes here
+  // filter goes here
+
+  let newContextAfterSelect = $querySpec.select->processSelect($newContextAfterFrom);
+
+  $newContextAfterSelect;
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(orderBy: meta::external::query::sql::metamodel::OrderBy[*], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let sortInformation = $orderBy.sortItems->fold({k,a| 
+    let column = $k.sortKey->cast(@Identifier)->at(0).value;
+    let sortFunc = if($k.ordering == SortItemOrdering.ASCENDING, |asc_String_1__SortInformation_1_, |desc_String_1__SortInformation_1_);
+    $a->add(
+      ^SimpleFunctionExpression(
+        func = $sortFunc,
+        genericType = $sortFunc->functionReturnType(),
+        importGroup = system::imports::coreImport,
+        multiplicity = $sortFunc->functionReturnMultiplicity(),
+        parametersValues = $column->wrapAsInstanceValue()
+      )
+    );
+  }, []);
+  let newExp = if($sortInformation->isEmpty(),
+    | $context.exp1->toOne(),
+    | appendTdsFunc($context.exp1->toOne(), sort_TabularDataSet_1__SortInformation_MANY__TabularDataSet_1_, ^List<Any>(values=$sortInformation))
+  );
+  ^$context(exp1 = $newExp);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLimit(limit: meta::external::query::sql::metamodel::Limit[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let newExp = $limit.rowCount->match([
+    l: LongLiteral[1] | appendTdsFunc($context.exp1->toOne(), limit_TabularDataSet_1__Integer_1__TabularDataSet_1_, ^List<Any>(values=$l.value)),
+    a: AllRows[1]     | $context.exp1->toOne()
+  ]);
+  ^$context(exp1 = $newExp);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTable(table: Table[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  assertEquals(2, $table.name->size(), 'Expected table name to contain two parts <schema>.<name>, but got ' + $table.name.value->joinStrings('.'));
+  
+  let schema = $table.name->at(0).value;
+  assertEquals('service', $schema, 'Only \'service\' schema is supported. ' + $schema + ' is not supported');
+
+  let serviceId = $table.name->at(1).value;
+  let service = $context.services->findService($serviceId);
+  let singleExecution = $service.execution->cast(@PureSingleExecution); // TODO: handle multi executions
+
+  let expression = $singleExecution.func->cast(@FunctionDefinition<{->TabularDataSet[1]}>)->evaluateAndDeactivate().expressionSequence->cast(@FunctionExpression)->toOne();
+  ^$context(singleExecution = $singleExecution, exp1 = $expression);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::getColumns(selectItems: SelectItem[*], columns: TDSColumn[*]): String[*]
+{
+  let newCols = $selectItems->fold({k:SelectItem[1],a:String[*]|$k->match([
+    s: AllColumns[1]    | $columns->fold({
+      ck,ca | $ca->concatenate($ck.name);
+    }, $a),
+    c: SingleColumn[1]  | $a->concatenate($c.expression->cast(@Identifier)->at(0).value)
+  ])
+  }, [])->cast(@String);
+  $newCols;
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], context: SqlTransformContext[1]): SqlTransformContext[1]
+{
+  let columnTypes = $context.columns()
+    ->map(x|^Pair<String,DataType>(first = $x.name, second = $x.type->toOne()))
+    ->newMap();
+
+  let newColumnsToProject = $select.selectItems->getColumns($context.columns());
+  let args = ^List<String>(values=$newColumnsToProject);
+  
+  let restrictExp = appendTdsFunc($context.exp1->toOne(), restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, $args);
+  
+  // figure out the right place to do sort, limit, and distinct
+
+  let newExp = if($select.distinct, 
+    | appendTdsFunc($restrictExp, distinct_TabularDataSet_1__TabularDataSet_1_, []), 
+    | $restrictExp);
+  ^$context(exp1 = $newExp);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::appendTdsFunc(func: FunctionExpression[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): FunctionExpression[1]
+{
+  let pvs = $args->fold(
+    { k,a:ValueSpecification[*] | $a->concatenate($k.values->wrapAsInstanceValue()) },
+    [ $func ]
+  );
+  ^SimpleFunctionExpression(
+    func = $execFunc,
+    genericType = $execFunc->functionReturnType(),
+    importGroup = system::imports::coreImport,
+    multiplicity = $execFunc->functionReturnMultiplicity(),
+    parametersValues = $pvs
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapAsInstanceValue(res: Any[*]): InstanceValue[1]
+{
+  // check preeval for mult func, move to metaextension if required
+  if($res->isEmpty(),
+    |let multVal = ^MultiplicityValue(value=0);
+      ^InstanceValue(multiplicity=PureZero, genericType=^GenericType(rawType=Nil), values=[]);,
+    |let size = $res->size();
+      let mult = if($size == 1,
+                  |PureOne,
+                  |let multVal = ^MultiplicityValue(value=$size);
+                    ^Multiplicity(lowerBound=$multVal, upperBound=$multVal);
+                );
+      ^InstanceValue(multiplicity=$mult, genericType=$res->genericType(), values=$res);
+  );
+}
+
+Class meta::external::query::sql::transformation::queryToPure::SqlTransformContext
+{
+  services: Service[*];
+  singleExecution: PureSingleExecution[0..1];
+  exp1: FunctionExpression[0..1];
+  extensions: meta::pure::extension::Extension[*];
+  columns(){ meta::pure::tds::schema::resolveSchema($this.lambda(), $this.extensions) }: TDSColumn[*];
+  columnByName(s:String[1]){$this.columns()->filter(c|$c.name == $s)->first() }: TDSColumn[0..1];
+  lambda(){ ^LambdaFunction<{->TabularDataSet[1]}>(expressionSequence = $this.exp1->toOne()) }: LambdaFunction<{->TabularDataSet[1]}>[1];
+}

@@ -12,37 +12,37 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.acc
 
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::transform::*;
 import meta::external::language::java::serialization::*;
-import meta::pure::executionPlan::engine::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
 
-function meta::pure::executionPlan::engine::java::addDataQualitySupport(conventions:Conventions[1]):Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::addDataQualitySupport(conventions:Conventions[1]):Conventions[1]
 {
    assert($conventions->pureTypeToJavaType(String,  PureOne) == javaString(),     |'Expected PURE String to be represented by '  + javaString()->typeToString());
    assert($conventions->pureTypeToJavaType(Integer, PureOne) == javaLong(),       |'Expected PURE Integer to be represented by ' + javaLong()->typeToString());
    $conventions;
 }
 
-function meta::pure::executionPlan::engine::java::checkedClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::checkedClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className(meta::pure::dataQuality::Checked);   
 }
 
-function meta::pure::executionPlan::engine::java::checkedProperty(name:String[1]): AbstractProperty<Any>[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::checkedProperty(name:String[1]): AbstractProperty<Any>[1]
 {
    meta::pure::dataQuality::Checked->propertyByName($name)->toOne();   
 }
 
-function meta::pure::executionPlan::engine::java::defectClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::defectClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className(meta::pure::dataQuality::Defect);   
 }
 
-function meta::pure::executionPlan::engine::java::constrainedImports(conventions:Conventions[1]):meta::external::language::java::metamodel::Importable[*]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::constrainedImports(conventions:Conventions[1]):meta::external::language::java::metamodel::Importable[*]
 {
    [
       $conventions->className(DataQualityConstrainedInterface),
@@ -50,42 +50,42 @@ function meta::pure::executionPlan::engine::java::constrainedImports(conventions
    ]->concatenate($conventions->defectClassAndRelated());
 }
 
-function meta::pure::executionPlan::engine::java::defectClassAndRelated(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[*]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::defectClassAndRelated(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[*]
 {
    [$conventions->defectClass(), $conventions->enforcementLevelClass(), $conventions->ruleTypeClass(), $conventions->relativePathNodeClass()];   
 }
 
-function meta::pure::executionPlan::engine::java::defectProperty(name:String[1]): AbstractProperty<Any>[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::defectProperty(name:String[1]): AbstractProperty<Any>[1]
 {
    meta::pure::dataQuality::Defect->propertyByName($name)->toOne();   
 }
 
-function meta::pure::executionPlan::engine::java::enforcementLevelClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::enforcementLevelClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className(meta::pure::dataQuality::EnforcementLevel);   
 }
 
-function meta::pure::executionPlan::engine::java::ruleTypeClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::ruleTypeClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className(meta::pure::dataQuality::RuleType);   
 }
 
-function meta::pure::executionPlan::engine::java::relativePathNodeClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::relativePathNodeClass(conventions:Conventions[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->className(meta::pure::dataQuality::RelativePathNode);   
 }
 
-function meta::pure::executionPlan::engine::java::relativePathNodeProperty(name:String[1]): AbstractProperty<Any>[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::relativePathNodeProperty(name:String[1]): AbstractProperty<Any>[1]
 {
    meta::pure::dataQuality::RelativePathNode->propertyByName($name)->toOne();   
 }
 
-function meta::pure::executionPlan::engine::java::dynamicChecked(conventions:Conventions[1], valueClass:meta::external::language::java::metamodel::Class[1], defectsVar:String[1], sourceVar:String[1], valueVar:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::dynamicChecked(conventions:Conventions[1], valueClass:meta::external::language::java::metamodel::Class[1], defectsVar:String[1], sourceVar:String[1], valueVar:String[1]): String[1]
 {
    $conventions->dynamicChecked($valueClass, $defectsVar, $sourceVar, $valueVar, '');
 }
 
-function meta::pure::executionPlan::engine::java::dynamicChecked(conventions:Conventions[1], valueClass:meta::external::language::java::metamodel::Class[1], defectsVar:String[1], sourceVar:String[1], valueVar:String[1], indent:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::dynamicChecked(conventions:Conventions[1], valueClass:meta::external::language::java::metamodel::Class[1], defectsVar:String[1], sourceVar:String[1], valueVar:String[1], indent:String[1]): String[1]
 {
    let defectList = javaList($conventions->defectClass());
    
@@ -96,7 +96,7 @@ function meta::pure::executionPlan::engine::java::dynamicChecked(conventions:Con
    $indent+'}';
 }
 
-function meta::pure::executionPlan::engine::java::dynamicChecked(conventions:Conventions[1], defects:Code[1], source:Code[1], value:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::dynamicChecked(conventions:Conventions[1], defects:Code[1], source:Code[1], value:Code[1]): Code[1]
 {
    let checkedClass = $conventions->checkedClass();
    let checked      = javaParameterizedType($checkedClass, $value.type);
@@ -109,107 +109,107 @@ function meta::pure::executionPlan::engine::java::dynamicChecked(conventions:Con
    ]);
 }
                     
-function meta::pure::executionPlan::engine::java::accessCheckedDefects(conventions:Conventions[1], checked:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessCheckedDefects(conventions:Conventions[1], checked:String[1]): String[1]
 {
    $conventions->accessChecked($checked, 'defects');
 }
                         
-function meta::pure::executionPlan::engine::java::accessCheckedValue(conventions:Conventions[1], checked:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessCheckedValue(conventions:Conventions[1], checked:String[1]): String[1]
 {
    $conventions->accessChecked($checked, 'value');
 }
                         
-function meta::pure::executionPlan::engine::java::accessCheckedSource(conventions:Conventions[1], checked:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessCheckedSource(conventions:Conventions[1], checked:String[1]): String[1]
 {
    $conventions->accessChecked($checked, 'source');
 }
                         
-function <<access.private>> meta::pure::executionPlan::engine::java::accessChecked(conventions:Conventions[1], checked:String[1], property:String[1]): String[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessChecked(conventions:Conventions[1], checked:String[1], property:String[1]): String[1]
 {
    $checked+'.'+$conventions->getterName(checkedProperty($property))+'()';
 }
                     
-function meta::pure::executionPlan::engine::java::elCritical(conventions:Conventions[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::elCritical(conventions:Conventions[1]): Code[1]
 {
    $conventions->enforcementLevelClass()->j_field('Critical', $conventions->enforcementLevelClass());
 }
                     
-function meta::pure::executionPlan::engine::java::elError(conventions:Conventions[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::elError(conventions:Conventions[1]): Code[1]
 {
    $conventions->enforcementLevelClass()->j_field('Error', $conventions->enforcementLevelClass());
 }
                     
-function meta::pure::executionPlan::engine::java::elWarning(conventions:Conventions[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::elWarning(conventions:Conventions[1]): Code[1]
 {
    $conventions->enforcementLevelClass()->j_field('Warning', $conventions->enforcementLevelClass());
 }
                         
-function meta::pure::executionPlan::engine::java::checkedGetDefects(conventions:Conventions[1], checked:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::checkedGetDefects(conventions:Conventions[1], checked:Code[1]): Code[1]
 {
    $checked->j_invoke($conventions->getterName('defects'), [], javaList($conventions->defectClass()));
 }
                         
-function meta::pure::executionPlan::engine::java::checkedGetValue(conventions:Conventions[1], checked:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::checkedGetValue(conventions:Conventions[1], checked:Code[1]): Code[1]
 {
    $checked->j_invoke($conventions->getterName('value'), [], $checked.type->elementType());
 }
                         
-function meta::pure::executionPlan::engine::java::checkedGetSource(conventions:Conventions[1], checked:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::checkedGetSource(conventions:Conventions[1], checked:Code[1]): Code[1]
 {
    $checked->j_invoke($conventions->getterName('source'), [], javaObject());
 }
                         
-function meta::pure::executionPlan::engine::java::defectGetMessage(conventions:Conventions[1], defect:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::defectGetMessage(conventions:Conventions[1], defect:Code[1]): Code[1]
 {
    $defect->j_invoke($conventions->getterName('message'), [], javaString());
 }
                         
-function meta::pure::executionPlan::engine::java::defectGetEnforcemetLevel(conventions:Conventions[1], defect:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::defectGetEnforcemetLevel(conventions:Conventions[1], defect:Code[1]): Code[1]
 {
    $defect->j_invoke($conventions->getterName('enforcementLevel'), [], $conventions->enforcementLevelClass());
 }
                         
-function meta::pure::executionPlan::engine::java::accessDefectMessage(conventions:Conventions[1], defect:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessDefectMessage(conventions:Conventions[1], defect:String[1]): String[1]
 {
    $conventions->accessDefect($defect, 'message');
 }
                         
-function meta::pure::executionPlan::engine::java::accessDefectEnforcementLevel(conventions:Conventions[1], defect:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessDefectEnforcementLevel(conventions:Conventions[1], defect:String[1]): String[1]
 {
    $conventions->accessDefect($defect, 'enforcementLevel');
 }
                         
-function meta::pure::executionPlan::engine::java::accessDefect(conventions:Conventions[1], defect:String[1], property:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::accessDefect(conventions:Conventions[1], defect:String[1], property:String[1]): String[1]
 {
    $defect+'.'+$conventions->getterName(defectProperty($property))+'()';
 }
 
-function meta::pure::executionPlan::engine::java::newClassStructureDefect(conventions:Conventions[1], message:String[1], definer:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::newClassStructureDefect(conventions:Conventions[1], message:String[1], definer:String[1]): String[1]
 {
    $conventions->codeType($conventions->className(DataQualityBasicDefectClass))->codeToString()+'.newClassStructureDefect('+$message+', '+$definer+')';
 }
 
-function meta::pure::executionPlan::engine::java::newClassStructureDefect(conventions:Conventions[1], message:Code[1], definer:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::newClassStructureDefect(conventions:Conventions[1], message:Code[1], definer:Code[1]): Code[1]
 {
    $conventions->className(DataQualityBasicDefectClass)->j_invoke('newClassStructureDefect', [$message, $definer]);
 }
 
-function meta::pure::executionPlan::engine::java::newNoInputDefect(conventions:Conventions[1], definer:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::newNoInputDefect(conventions:Conventions[1], definer:String[1]): String[1]
 {
    $conventions->codeType($conventions->className(DataQualityBasicDefectClass))->codeToString()+'.newNoInputDefect('+$definer+')';
 }
 
-function meta::pure::executionPlan::engine::java::newRelativePathNode(conventions:Conventions[1], propertyName:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::newRelativePathNode(conventions:Conventions[1], propertyName:Code[1]): Code[1]
 {
    $conventions->className(DataQualityBasicRelativePathNodeClass)->j_invoke('newRelativePathNode', $propertyName);
 }
 
-function meta::pure::executionPlan::engine::java::newRelativePathNode(conventions:Conventions[1], propertyName:Code[1], index:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::newRelativePathNode(conventions:Conventions[1], propertyName:Code[1], index:Code[1]): Code[1]
 {
    $conventions->className(DataQualityBasicRelativePathNodeClass)->j_invoke('newRelativePathNode', [$propertyName, $index]);
 }
 
-function meta::pure::executionPlan::engine::java::prefixDefectPath(conventions:Conventions[1], defect:Code[1], pathNode:Code[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataQuality::prefixDefectPath(conventions:Conventions[1], defect:Code[1], pathNode:Code[1]): Code[1]
 {
    $conventions->className(DataQualityBasicDefectClass)->j_invoke('prefixPath', [$defect, $pathNode]);
 }

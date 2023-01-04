@@ -74,7 +74,7 @@ function meta::external::format::protobuf::metamodel::serialization::toString(s:
 
 function meta::external::format::protobuf::metamodel::serialization::toString(field:Field[1],currentPackage:String[1]):String[1]
 {
-   '  ' + if($field.repeated, | 'repeated ', | '') + meta::external::format::protobuf::metamodel::serialization::toString($field.type, $currentPackage)+ ' ' + $field.name + ' = ' + $field.number->toString() + ';'
+   '  ' + if($field.optional, | 'optional ', | '') + if($field.repeated, | 'repeated ', | '') + meta::external::format::protobuf::metamodel::serialization::toString($field.type, $currentPackage)+ ' ' + $field.name + ' = ' + $field.number->toString() + ';'
 }
 
 function meta::external::format::protobuf::metamodel::serialization::toString(rn:ReservedFieldNames[1]):String[1]

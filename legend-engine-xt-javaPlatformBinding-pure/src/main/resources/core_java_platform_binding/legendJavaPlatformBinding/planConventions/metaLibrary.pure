@@ -16,9 +16,10 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::java::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::meta::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
 
-function meta::pure::executionPlan::engine::java::registerMetaLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::registerMetaLibrary(conventions: Conventions[1]): Conventions[1]
 {
     let lib = newConventionsLibrary()
       ->addFunctionCoders([
@@ -31,11 +32,11 @@ function meta::pure::executionPlan::engine::java::registerMetaLibrary(convention
    
     $conventions->registerClassCoder(
          ClassPurpose.ENUMERATION,
-         meta::pure::executionPlan::engine::java::generateEnumeration_Type_1__Conventions_1__DebugContext_1__Class_1_
+         generateEnumeration_Type_1__Conventions_1__DebugContext_1__Class_1_
       )->registerLibrary($lib);
 }
 
-function meta::pure::executionPlan::engine::java::extractEnumValue(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::extractEnumValue(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
 {
    let params    = $fe.parametersValues->evaluateAndDeactivate();
    let type      = $params->at(0).genericType.typeArguments->at(0).rawType->toOne();
@@ -45,7 +46,7 @@ function meta::pure::executionPlan::engine::java::extractEnumValue(fe:FunctionEx
    $enumType->j_field($enumValue, $enumType)->dependsOn(enumTypeDependency($type, $conventions, $debug));
 }
 
-function meta::pure::executionPlan::engine::java::enumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
 {
    let params    = $fe.parametersValues->evaluateAndDeactivate();
    let type      = $params->at(0).genericType.typeArguments->at(0).rawType->toOne();
@@ -54,18 +55,18 @@ function meta::pure::executionPlan::engine::java::enumValues(fe:FunctionExpressi
    javaArrays()->j_invoke('asList', $enumType->j_invoke('values', [], javaArray($enumType)), javaList($enumType))->dependsOn(enumTypeDependency($type, $conventions, $debug));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::enumTypeDependency(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1], debug:DebugContext[1]) : CodeDependency[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::enumTypeDependency(type:meta::pure::metamodel::type::Type[1], conventions:Conventions[1], debug:DebugContext[1]) : CodeDependency[1]
 {
    let name = $type->elementToPath();
    let dep = newDependency(
       $name,
         {state |    let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->meta::pure::executionPlan::platformBinding::typeInfo::addForType($type);
-                    let project = meta::pure::executionPlan::engine::java::generateInterfacesAndEnums($conventions, $typeInfo, $debug);
+                    let project = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
                     $state->addDependencyProject($name, $project);
         });  
 }
 
-function meta::pure::executionPlan::engine::java::generateEnumeration(type:meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::generateEnumeration(type:meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    print(if($debug.debug,|$debug.space+'generateEnumeration: \''+$type.name->toOne()+'\'\n', |''));
    let pkgAndName=$conventions->className($type);

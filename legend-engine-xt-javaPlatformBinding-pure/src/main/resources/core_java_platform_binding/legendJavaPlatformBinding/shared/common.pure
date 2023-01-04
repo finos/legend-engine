@@ -21,10 +21,10 @@ import meta::external::language::java::transform::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::*;
-import meta::pure::executionPlan::engine::java::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::naming::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -40,22 +40,22 @@ import meta::pure::milestoning::*;
 // --- Alloy platform dependencies (non-generated)
 // ----------------------------------------------------------------------------------------------------------
 
-function meta::pure::executionPlan::engine::java::iExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::iExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
 {
    j_parameter($conventions->className(IExecutionNodeContext), 'context');
 }
 
-function meta::pure::executionPlan::engine::java::iStoreStreamReadingExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::iStoreStreamReadingExecutionNodeContextParam(conventions: Conventions[1]):Code[1]
 {
    j_parameter($conventions->className(IStoreStreamReadingExecutionNodeContext), 'context');
 }
 
-function meta::pure::executionPlan::engine::java::graphFetchM2MContextParam(conventions: Conventions[1]): Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::graphFetchM2MContextParam(conventions: Conventions[1]): Code[1]
 {
    j_parameter($conventions->className(IGraphFetchM2MExecutionNodeContext), 'context');
 }
 
-function meta::pure::executionPlan::engine::java::buildExecuteClass(body:Code[1], param:Code[1], path:String[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::buildExecuteClass(body:Code[1], param:Code[1], path:String[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Class[1]
 {
    let ex       = j_parameter(javaException(), 'e');   
    let fullBody = j_try(
@@ -71,7 +71,7 @@ function meta::pure::executionPlan::engine::java::buildExecuteClass(body:Code[1]
    $withImports->addMethod(javaMethod(['public', 'static'], $body.type, 'execute', $param->cast(@meta::external::language::java::metamodel::Parameter), $fullBody));
 }
 
-function meta::pure::executionPlan::engine::java::graphInstanceOf(elementType:meta::external::language::java::metamodel::Type[1], conventions:Conventions[1]):meta::external::language::java::metamodel::ParameterizedType[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::graphInstanceOf(elementType:meta::external::language::java::metamodel::Type[1], conventions:Conventions[1]):meta::external::language::java::metamodel::ParameterizedType[1]
 { 
    javaParameterizedType($conventions->className(GraphInstance), $elementType);
 }
@@ -80,7 +80,7 @@ function meta::pure::executionPlan::engine::java::graphInstanceOf(elementType:me
 // --- Implementation
 // ----------------------------------------------------------------------------------------------------------
     
-function meta::pure::executionPlan::engine::java::generateTypes(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::generateTypes(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateTypes\n', |''));
 
@@ -91,12 +91,12 @@ function meta::pure::executionPlan::engine::java::generateTypes(context:Generati
    ]);
 }
    
-function meta::pure::executionPlan::engine::java::generateInterfacesAndEnums(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacesAndEnums(context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
     generateInterfacesAndEnums($context.conventions, $context.typeInfos, $debug);  
 }
 
-function meta::pure::executionPlan::engine::java::generateInterfacesAndEnums(conventions:Conventions[1], typeInfos:TypeInfoSet[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacesAndEnums(conventions:Conventions[1], typeInfos:TypeInfoSet[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'generateInterfacesAndEnums\n', |''));
 
@@ -109,7 +109,7 @@ function meta::pure::executionPlan::engine::java::generateInterfacesAndEnums(con
    let units = if($unitInfos->isEmpty(),
                   | [],
                   {|
-                     let iface = $conventions->meta::pure::executionPlan::engine::java::unitInterface();
+                     let iface = $conventions->meta::pure::executionPlan::platformBinding::legendJava::library::unit::unitInterface();
                      $unitInfos->map(uti | $uti->generateInterfaceForUnit($iface, $conventions, $debug->indent()))->concatenate($iface);
                   }
                );
@@ -119,12 +119,12 @@ function meta::pure::executionPlan::engine::java::generateInterfacesAndEnums(con
 }
 
 //TODO: remove and refactor to use the one using conventions directly below
-function meta::pure::executionPlan::engine::java::createQualifiedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], qualifiedProperties:QualifiedProperty<Any>[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::createQualifiedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], qualifiedProperties:QualifiedProperty<Any>[*], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
    createQualifiedPropertiesForClass($class, $qualifiedProperties, $context.conventions, $debug);
 }
 
-function meta::pure::executionPlan::engine::java::createQualifiedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], qualifiedProperties:QualifiedProperty<Any>[*], conventions:Conventions[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::createQualifiedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], qualifiedProperties:QualifiedProperty<Any>[*], conventions:Conventions[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'createQualifiedPropertiesForClass: \''+$class->typeToString()+'\'\n',|''));
 
@@ -142,7 +142,7 @@ function meta::pure::executionPlan::engine::java::createQualifiedPropertiesForCl
    );
 }
 
-function meta::pure::executionPlan::engine::java::createGeneratedMilestonedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], milestonedProperties:QualifiedProperty<Any>[*], varName: String[1], set: PureInstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::createGeneratedMilestonedPropertiesForClass(class: meta::external::language::java::metamodel::Class[1], milestonedProperties:QualifiedProperty<Any>[*], varName: String[1], set: PureInstanceSetImplementation[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'createGeneratedMilestonedPropertiesForClass: \''+$class->typeToString()+'\'\n',|''));
 
@@ -167,10 +167,10 @@ function meta::pure::executionPlan::engine::java::createGeneratedMilestonedPrope
          
          let propertyMultiplicity     = $mp.multiplicity;
          let bodyWithMultiplicityCast = if($propertyMultiplicity->isToOne(),
-                                           | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('toOne', $body, $returnType),
+                                           | $conventions->className(Library)->j_invoke('toOne', $body, $returnType),
                                            |
                                            if($propertyMultiplicity->isZeroOne(),
-                                              | $conventions->className(meta::pure::executionPlan::engine::Library)->j_invoke('first', $body, $returnType),
+                                              | $conventions->className(Library)->j_invoke('first', $body, $returnType),
                                               | $body));
 
          let newProject = newProject()->addClass($class->addMethod(
@@ -183,13 +183,13 @@ function meta::pure::executionPlan::engine::java::createGeneratedMilestonedPrope
    );
 }
 
-function meta::pure::executionPlan::engine::java::createAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::createAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1], debug:DebugContext[1]) : Project[1]
 {
    print(if($debug.debug,|$debug.space+'createAlloyStoreObjectReferenceMethodsForClass: \''+$class->typeToString()+'\'\n',|''));
    let newProject = newProject()->addClass($class->addAlloyStoreObjectReferenceMethodsForClass($context));
 }
 
-function meta::pure::executionPlan::engine::java::addAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]) : meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::addAlloyStoreObjectReferenceMethodsForClass(class:meta::external::language::java::metamodel::Class[1], context:GenerationContext[1]) : meta::external::language::java::metamodel::Class[1]
 {
    let iface      = $context.conventions->className(IReferencedObject);
    let methodName = $iface.methods->toOne().name;
@@ -199,7 +199,7 @@ function meta::pure::executionPlan::engine::java::addAlloyStoreObjectReferenceMe
       ->addMethod(javaMethod('public', javaString(), $methodName, [], j_null()->j_return()));
 }
 
-function meta::pure::executionPlan::engine::java::referencedObjectReference(conventions:Conventions[1]):String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::referencedObjectReference(conventions:Conventions[1]):String[1]
 {
    let methodName = $conventions->className(IReferencedObject).methods->toOne().name;
    let identifier = $methodName->substring(3, 4)->toLower()+$methodName->substring(4);
@@ -213,7 +213,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaDataReco
    dataRecordClasses: meta::pure::metamodel::type::Class<Any>[*];
 }  
 
-function meta::pure::executionPlan::engine::java::generateInterfaceForClass(typeInfo: ClassTypeInfo[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfaceForClass(typeInfo: ClassTypeInfo[1], conventions: Conventions[1], debug: DebugContext[1]): meta::external::language::java::metamodel::Class[1]
 {
    print(if($debug.debug,|$debug.space+'generateInterfaceForClass: \''+$typeInfo.type.name->toOne()+'\'\n', |''));
    let pkg   = $conventions->className($typeInfo.type).package;
@@ -244,12 +244,12 @@ function meta::pure::executionPlan::engine::java::generateInterfaceForClass(type
       |$withQualifiedPropertyGetters->implements($iReferencedObject)->addMethod(javaMethod(javaString(), $iReferencedObject.methods->toOne().name, [])));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfacePropertyGetter(p: AbstractProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfacePropertyGetter(p: AbstractProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    javaMethod($conventions->pureTypeToJavaType($p), $conventions->getterName($p), []);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateInterfaceQualifiedPropertyGetter(q: QualifiedProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::shared::generateInterfaceQualifiedPropertyGetter(q: QualifiedProperty<Any>[1], conventions: Conventions[1]): meta::external::language::java::metamodel::Method[1]
 {
    javaMethod(
       $conventions->pureTypeToJavaType($q),
@@ -258,7 +258,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::generateInt
    );
 }
 
-function meta::pure::executionPlan::engine::java::generateAndAddGetterMethods(class:meta::external::language::java::metamodel::Class[1], typeInfo:ClassTypeInfo[1], context:GenerationContext[1],  varName:String[1]):meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::generateAndAddGetterMethods(class:meta::external::language::java::metamodel::Class[1], typeInfo:ClassTypeInfo[1], context:GenerationContext[1],  varName:String[1]):meta::external::language::java::metamodel::Class[1]
 {
    let class1 = $typeInfo.properties->fold(
       {p,c|
@@ -270,7 +270,7 @@ function meta::pure::executionPlan::engine::java::generateAndAddGetterMethods(cl
    $typeInfo.supertypes->fold({p,c | generateAndAddGetterMethods($c,$context.typeInfos->forClass($p), $context, $varName) }, $class1);
 }
 
-function meta::pure::executionPlan::engine::java::updateImplementationClassWithInstanceSizeMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::updateImplementationClassWithInstanceSizeMethods(implClass: meta::external::language::java::metamodel::Class[1], context: GenerationContext[1]): Project[1]
 {
    let conventions = $context.conventions;
 
@@ -333,17 +333,17 @@ function meta::pure::executionPlan::engine::java::updateImplementationClassWithI
    newProject()->addClasses($implClass->addMethods([$classSizeMethod, $instanceSizeMethod]));
 }
 
-function meta::pure::executionPlan::engine::java::classSizeIdentifier():String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::classSizeIdentifier():String[1]
 {
    'classSize$'
 }
 
-function meta::pure::executionPlan::engine::java::instanceSizeIdentifier():String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::instanceSizeIdentifier():String[1]
 {
    'instanceSize$'
 }
 
-function meta::pure::executionPlan::engine::java::dataClass(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
+function meta::pure::executionPlan::platformBinding::legendJava::shared::dataClass(conventions:Conventions[1], class:meta::pure::metamodel::type::Class<Any>[1], path:String[1]): meta::external::language::java::metamodel::Class[1]
 {
    $conventions->planNodeClass([], $path, $conventions->identifier($class->elementToPath('_')) + '_Impl');
 }
