@@ -1617,7 +1617,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
 
    let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@TestDatabaseConnection);
 
-   assertSize($resultConnection.testDataSetupSqls, 44);
+   assertSize($resultConnection.testDataSetupSqls, 48);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulation():Boolean[1]
@@ -1636,7 +1636,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionS
       .connection->cast(@meta::pure::alloy::connections::RelationalDatabaseConnection).datasourceSpecification
                  ->cast(@meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification);
 
-   assertSize($resultConnection.testDataSetupSqls, 44);
+   assertSize($resultConnection.testDataSetupSqls, 48);
 }
 
 function <<test.Test>> meta::pure::executionPlan::tests::tdsJoinOneDBOneExpression():Boolean[1]

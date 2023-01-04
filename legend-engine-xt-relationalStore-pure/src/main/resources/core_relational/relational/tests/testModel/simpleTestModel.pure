@@ -600,3 +600,59 @@ Class meta::relational::tests::model::simple::PersonWithConstraints extends Pers
                           ~message: 'First name has to be test')
 ]
 {}
+
+Class meta::relational::tests::model::simple::testReservedWords
+{
+  quantity: Integer[1];
+  class: String[1];
+  boolean: Integer[1];
+  abstract: Integer[1];
+  assert: Integer[1];
+  break: Integer[1];
+  byte: Integer[1];
+  catch: Integer[1];
+  char: Integer[1];
+  const: Integer[1];
+  continue: Integer[1];
+  default: Integer[1];
+  do: Integer[1];
+  double: Integer[1];
+  else: Integer[1];
+  enum: Integer[1];  
+  final: Integer[1];
+  finally: Integer[1];
+  float: Integer[1];
+  goto: Integer[1];
+  implements: Integer[1];  
+  instanceof: Integer[1];
+  int: Integer[1];
+  interface: String[1];
+  long: String[1];  
+  new: String[1];
+  package: String[1];
+  private: String[1];
+  protected: String[1];
+  public: String[1];
+  return: String[1];
+  short: String[1];
+  static: String[1];
+  strictfp: String[1];
+  super: String[1];
+  switch: String[1];
+  synchronized: String[1];
+  this: String[1];
+  throw: String[1];
+  throws: String[1];
+  transient: String[1];
+  try: String[1];
+  void: String[1];
+  volatile: String[1];
+  while: String[1];  
+}
+
+Class meta::relational::tests::model::simple::class
+{
+  desks: Integer[1];
+  students: Integer[1];
+}
+ 
