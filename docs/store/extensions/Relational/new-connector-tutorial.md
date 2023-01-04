@@ -329,6 +329,10 @@ If your database supports it, we can alternatively launch a test instance at run
     Open the files tab, and you can see core_relational_sqlserver/relational/sqlQueryToString folder.
     Folder would have 2 files, sqlServerExtension.pure (which contains sql generation code), and sqlServerTestSuiteInvoker (which contains the code to invoke the standard test suite against the sql generation code).
     Standard test suite contains generic tests parametrized against dbType and connection. You can browse them at core_relational/relational/sqlQueryToString/testSuite.
+    
+    You can run the parameterized tests directly by calling them in welcome.pure and passing ^DbTestConfig(dbType=DatabaseType.SqlServer).
+    It will perform the sql generation, without executing against db. Further, by passing ^DbTestConfig(dbType=DatabaseType.SqlServer, expectedSql='') to the test fn, you can make it assert the generated sql against empty string, causing it to fail and print the actual sql.
+    This can be used to view the generated sql quickly, when debugging a particular test.
 
     Few helpful key-bindings: F9 saves/interprets pure code. Ctrl-b, jumps to the definition. Ctrl-Shift-n can be used to search for a file.
     
