@@ -15,19 +15,20 @@
 import meta::external::language::java::factory::*;
 import meta::external::language::java::serialization::*;
 import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 import meta::pure::functions::asserts::*;
 import meta::pure::unit::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_20_0' }
-meta::pure::executionPlan::engine::java::tests::unitPureTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::unitPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
-      meta::pure::executionPlan::engine::java::tests::testNewUnit__Boolean_1_,
-      meta::pure::executionPlan::engine::java::tests::testUnitType__Boolean_1_,
-      meta::pure::executionPlan::engine::java::tests::testUnitValue__Boolean_1_,
-      meta::pure::executionPlan::engine::java::tests::testUnitConvert__Boolean_1_
+   javaPureTests(engineConventions([]), [
+      meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testNewUnit__Boolean_1_,
+      meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitType__Boolean_1_,
+      meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitValue__Boolean_1_,
+      meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitConvert__Boolean_1_
    ])
       ->generate(Mass~Kilogram)
       ->generate(Mass~Pound)
@@ -37,22 +38,22 @@ meta::pure::executionPlan::engine::java::tests::unitPureTests() : Boolean[1]
 // TODO Does not work for literal units is used here
 
 
-function meta::pure::executionPlan::engine::java::tests::testUnitType():Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitType():Boolean[1]
 {
    assertEquals('meta::pure::unit::Mass~Kilogram', newUnit(Mass~Kilogram, 5.5)->unitType());
 }
 
-function meta::pure::executionPlan::engine::java::tests::testUnitValue():Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitValue():Boolean[1]
 {
    assertEquals(5.5, newUnit(Mass~Kilogram, 5.5)->unitValue());
 }
 
-function meta::pure::executionPlan::engine::java::tests::testNewUnit():Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testNewUnit():Boolean[1]
 {
    assert(newUnit(Mass~Kilogram, 5.5)->instanceOf(Mass~Kilogram));
 }
 
-function meta::pure::executionPlan::engine::java::tests::testUnitConvert():Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::unit::tests::testUnitConvert():Boolean[1]
 {
    let pounds = newUnit(Mass~Kilogram, 5.5)->convert(Mass~Pound);
    assert($pounds->instanceOf(Mass~Pound));

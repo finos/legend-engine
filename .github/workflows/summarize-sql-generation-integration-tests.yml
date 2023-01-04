@@ -81,6 +81,13 @@ jobs:
           path: summaries
           if_no_artifact_found: warn
           workflow_conclusion: ''
+      - name: Download Summary For Athena
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: database-athena-sql-generation-integration-test.yml
+          path: summaries
+          if_no_artifact_found: warn
+          workflow_conclusion: ''
       - name: Print Summary
         run: |
           find summaries -type f -name sql_test_summary.txt -exec dirname {}  \; -exec cat {} \; -exec echo \; | sed -E "s/summaries\/(.*)/**\1**/g" >> $GITHUB_STEP_SUMMARY

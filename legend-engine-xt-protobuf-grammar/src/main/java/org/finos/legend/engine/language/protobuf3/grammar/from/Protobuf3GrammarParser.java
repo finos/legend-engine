@@ -52,8 +52,8 @@ import org.finos.legend.engine.protocol.protobuf3.metamodel.Literal;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.Message;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.MessagePtr;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.MessageType;
-import org.finos.legend.engine.protocol.protobuf3.metamodel.Option;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.OneOf;
+import org.finos.legend.engine.protocol.protobuf3.metamodel.Option;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoBufType;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoFile;
 import org.finos.legend.engine.protocol.protobuf3.metamodel.ProtoImport;
@@ -335,6 +335,12 @@ public class Protobuf3GrammarParser
                 field.name = elementContext.field().fieldName().ident().getText();
                 field.number = visitIntLitContext(elementContext.field().fieldNumber().intLit());
                 field.repeated = elementContext.field().REPEATED() != null;
+                field.optional = elementContext.field().OPTIONAL() != null;
+
+                if (field.optional && field.repeated)
+                {
+                    throw new RuntimeException("Field - " + field.name + " cannot be both optional and repeated");
+                }
                 content.add(field);
             }
             else if (elementContext.messageDef() != null)

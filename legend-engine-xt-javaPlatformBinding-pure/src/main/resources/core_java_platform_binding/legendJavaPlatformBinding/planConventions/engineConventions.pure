@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::extension::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 
@@ -30,21 +28,21 @@ Class meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatform
    platformDependencyUpdate: Function<{Conventions[1], Extension[*]->Conventions[1]}>[0..1];
 }
 
-function meta::pure::executionPlan::engine::java::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::engineConventions(extensions:meta::pure::extension::Extension[*]): Conventions[1]
 {
    let extraProhibitedFunctions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaProhibitedFunctionsExtension).prohibitedFunctions;
 
    newConventions($extensions, $extraProhibitedFunctions)
       ->applyJavaEngineDependencies($extensions)
-      ->registerBooleanLibrary()
-      ->registerCollectionsLibrary()
-      ->registerPureDateLibrary()
-      ->registerLangLibrary()
-      ->registerAssertLibrary()
-      ->registerMathsLibrary()
-      ->registerMetaLibrary()
-      ->registerMultiplicityLibrary()
-      ->registerStringLibrary()
-      ->registerUnitLibrary()
-      ->registerRuntimeLibrary();
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::boolean::registerBooleanLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::pureDate::registerPureDateLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::lang::registerLangLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::assert::registerAssertLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::math::registerMathsLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::meta::registerMetaLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::multiplicity::registerMultiplicityLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::string::registerStringLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::unit::registerUnitLibrary()
+      ->meta::pure::executionPlan::platformBinding::legendJava::library::runtime::registerRuntimeLibrary();
 }

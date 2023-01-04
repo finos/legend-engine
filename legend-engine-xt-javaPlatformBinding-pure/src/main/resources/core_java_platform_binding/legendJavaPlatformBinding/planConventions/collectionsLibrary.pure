@@ -18,11 +18,11 @@ import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
 import meta::external::language::java::transform::*;
-import meta::pure::executionPlan::engine::*;
-import meta::pure::executionPlan::engine::java::*;
 import meta::pure::functions::reportDelta::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::collection::*;
 
-function meta::pure::executionPlan::engine::java::registerCollectionsLibrary(conventions: Conventions[1]): Conventions[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::registerCollectionsLibrary(conventions: Conventions[1]): Conventions[1]
 {
    let library  = $conventions->className(Library);
 
@@ -100,31 +100,31 @@ function meta::pure::executionPlan::engine::java::registerCollectionsLibrary(con
 
 
 
-function meta::pure::executionPlan::engine::java::sortComp(ctx:FuncCoderContext[1], collection:Code[1], comp:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::sortComp(ctx:FuncCoderContext[1], collection:Code[1], comp:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    let adapted = $library->j_invoke('adaptPureComparator',$comp, javaComparator($collection.type->elementType()));
    $library->j_invoke($collection.type->elementType(), 'sort', [$collection, $adapted], javaList($collection.type->elementType()));   
 }
 
-function meta::pure::executionPlan::engine::java::sortBy(collection:Code[1], key:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::sortBy(collection:Code[1], key:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    let newComp = javaComparator()->j_invoke('comparing', [$key], javaComparator($collection.type->elementType()));
    $library->j_invoke($collection.type->elementType(), 'sort', [$collection, $newComp], javaList($collection.type->elementType()));
 }
 
-function meta::pure::executionPlan::engine::java::sortKeyComp(collection:Code[1], key:Code[1], comp:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::sortKeyComp(collection:Code[1], key:Code[1], comp:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    let adapted = $library->j_invoke('adaptPureComparator',$comp, javaComparator($collection.type->elementType()));
    let newComp = javaComparator()->j_invoke('comparing', [$key, $adapted], javaComparator($collection.type->elementType()));
    $library->j_invoke($collection.type->elementType(), 'sort', [$collection, $newComp], javaList($collection.type->elementType()));
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::pinToZero(n:Code[1]) : Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::collection::pinToZero(n:Code[1]) : Code[1]
 {
    j_conditional($n->j_lt(j_long(0)), j_long(0), $n);
 }
 
-function meta::pure::executionPlan::engine::java::javaFold(ctx: FuncCoderContext[1], collection:Code[1], acc:Code[1], identity:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::javaFold(ctx: FuncCoderContext[1], collection:Code[1], acc:Code[1], identity:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    if($collection->isNull(),
       | $identity, // a fold of an empty list is the identity element
@@ -132,7 +132,7 @@ function meta::pure::executionPlan::engine::java::javaFold(ctx: FuncCoderContext
    );
 }
 
-function meta::pure::executionPlan::engine::java::javaFoldNonEmptyList(ctx: FuncCoderContext[1], collection:Code[1], acc:Code[1], identity:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::javaFoldNonEmptyList(ctx: FuncCoderContext[1], collection:Code[1], acc:Code[1], identity:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    let rtn = $ctx.returnType();
    // The identity may be a subtype of the return type but we can treat it as the supertype and avoid Nil
@@ -149,7 +149,7 @@ function meta::pure::executionPlan::engine::java::javaFoldNonEmptyList(ctx: Func
    $library->j_invoke('fold', [$safeCol, $safeAcc, $safeIdentity], $ctx.returnType());
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::upcastIdentity(identity:Code[1], rtn:meta::external::language::java::metamodel::Type[1]): Code[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::collection::upcastIdentity(identity:Code[1], rtn:meta::external::language::java::metamodel::Type[1]): Code[1]
 {
    // The identity may be a subtype (type and/or multiplicity) of the function return type (which is also it's 2nd parameter input)
    // Here we upcast the identity to that type to safely act as the initial input.
@@ -162,7 +162,7 @@ function <<access.private>> meta::pure::executionPlan::engine::java::upcastIdent
    ));
 }
 
-function meta::pure::executionPlan::engine::java::IsDistinctFetchTreeCoder(fe:FunctionExpression[1], conventions:Conventions[1], debug:meta::pure::tools::DebugContext[1]):Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::IsDistinctFetchTreeCoder(fe:FunctionExpression[1], conventions:Conventions[1], debug:meta::pure::tools::DebugContext[1]):Code[1]
 {   
    let args = $fe.parametersValues->evaluateAndDeactivate();
    let coll = $args->at(0)->generateJava($conventions, $debug);
@@ -200,7 +200,7 @@ function meta::pure::executionPlan::engine::java::IsDistinctFetchTreeCoder(fe:Fu
    $invoke->dependsOn($dep->concatenate($coll.requires));
 }
 
-function meta::pure::executionPlan::engine::java::IsEqualCoder(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::collection::IsEqualCoder(fe: FunctionExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
    print(if($debug.debug,|$debug.space+'process isEqual: \n',|''));
    let args = $fe.parametersValues->evaluateAndDeactivate();
@@ -231,7 +231,7 @@ function meta::pure::executionPlan::engine::java::IsEqualCoder(fe: FunctionExpre
    $invoke->dependsOn($dep);
 }
 
-function <<access.private>> meta::pure::executionPlan::engine::java::generateIsEqualMethod(type:meta::external::language::java::metamodel::Type[1], gf:meta::pure::graphFetch::RootGraphFetchTree<Any>[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Method[1]
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::collection::generateIsEqualMethod(type:meta::external::language::java::metamodel::Type[1], gf:meta::pure::graphFetch::RootGraphFetchTree<Any>[1], conventions:Conventions[1]):meta::external::language::java::metamodel::Method[1]
 {
    let o1 = j_parameter($type, 'o1');
    let o2 = j_parameter($type, 'o2');

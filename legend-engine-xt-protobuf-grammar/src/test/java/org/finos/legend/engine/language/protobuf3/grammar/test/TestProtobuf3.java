@@ -157,6 +157,44 @@ public class TestProtobuf3
         check(bookService);
     }
 
+    @Test
+    public void testOptionalField()
+    {
+        String grammar = "syntax = \"proto3\";\n" +
+                "package tutorial;\n" +
+                "\n" +
+                "import \"google/protobuf/timestamp.proto\";\n" +
+                "\n" +
+                "option java_multiple_files = true;\n" +
+                "option java_package = \"com.example.tutorial.protos\";\n" +
+                "option java_outer_classname = \"AddressBookProtos\";\n" +
+                "option csharp_namespace = \"Google.Protobuf.Examples.AddressBook\";\n" +
+                "option go_package = \"github.com/protocolbuffers/protobuf/examples/go/tutorialpb\";\n" +
+                "\n" +
+                "message AddressBook {\n" +
+                "  repeated Person people = 1;\n" +
+                "}\n" +
+                "\n" +
+                "message Person {\n" +
+                "  string name = 1;\n" +
+                "  int32 id = 2;\n" +
+                "  string email = 3;\n" +
+                "enum PhoneType {\n" +
+                "  MOBILE = 0;\n" +
+                "  HOME = 1;\n" +
+                "  WORK = 2;\n" +
+                "}\n" +
+                "message PhoneNumber {\n" +
+                "  string number = 1;\n" +
+                "  PhoneType type = 2;\n" +
+                "}\n" +
+                "  optional PhoneNumber phones = 4;\n" +
+                "  google.protobuf.Timestamp last_updated = 5;\n" +
+                "}";
+
+        check(grammar);
+    }
+
     protected void check(String value)
     {
         Protobuf3GrammarParser parser = Protobuf3GrammarParser.newInstance();

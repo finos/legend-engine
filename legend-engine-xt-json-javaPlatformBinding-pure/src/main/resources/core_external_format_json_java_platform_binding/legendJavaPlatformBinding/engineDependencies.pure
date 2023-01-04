@@ -30,7 +30,7 @@ Class meta::external::format::json::executionPlan::platformBinding::legendJava::
  */
 function meta::external::format::json::executionPlan::platformBinding::legendJava::extendJavaEngineDependencies(conventions:Conventions[1]):Conventions[1]
 {
-   let jIStoreStreamReader = $conventions->className(meta::pure::executionPlan::engine::StoreStreamReader);
+   let jIStoreStreamReader = $conventions->className(meta::pure::executionPlan::platformBinding::legendJava::StoreStreamReader);
 
    let jIJsonDeserializeExecutionNodeSpecifics = javaClass('public', 'org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics')
       ->addMethod(javaMethod('public', $jIStoreStreamReader, 'streamReader', [javaParam(javaClass('java.io.InputStream'), 'p0')]));

@@ -13,12 +13,13 @@
 // limitations under the License.
 
 import meta::external::language::java::factory::*;
-import meta::pure::executionPlan::engine::java::*;
-import meta::pure::executionPlan::engine::java::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::*;
+import meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::*;
+import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testCast() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testCast() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('cast one', {|5->cast(@Number)}, '(Number) new Long(5L)', javaNumber())
@@ -29,15 +30,15 @@ meta::pure::executionPlan::engine::java::tests::testCast() : Boolean[1]
       ->runTests();
 }
 
-Class meta::pure::executionPlan::engine::java::tests::A 
+Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::A 
 {
    <<equality.Key>> id: Integer[1];
 }
-Class meta::pure::executionPlan::engine::java::tests::B extends A {}
-Class meta::pure::executionPlan::engine::java::tests::C extends A {}
-Class meta::pure::executionPlan::engine::java::tests::D extends A {}
+Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::B extends A {}
+Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::C extends A {}
+Class meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::D extends A {}
 
-function meta::pure::executionPlan::engine::java::tests::doTestWhenSubType() : Boolean[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::doTestWhenSubType() : Boolean[1]
 {
   let objects = [ ^A(id=1), ^B(id=2), ^C(id=3) ];
   assertEquals(2, $objects->whenSubType(@B).id);
@@ -48,7 +49,7 @@ function meta::pure::executionPlan::engine::java::tests::doTestWhenSubType() : B
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_24_0' }
-meta::pure::executionPlan::engine::java::tests::testSubType() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testSubType() : Boolean[1]
 {
    javaPureTests(engineConventions([]), [
       doTestWhenSubType__Boolean_1_
@@ -62,7 +63,7 @@ meta::pure::executionPlan::engine::java::tests::testSubType() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testNot() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testNot() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('not', {|!true}, '!true', javaBoolean())
@@ -72,7 +73,7 @@ meta::pure::executionPlan::engine::java::tests::testNot() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testAnd() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testAnd() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('and', {|true && true}, 'true && true', javaBoolean())
@@ -82,7 +83,7 @@ meta::pure::executionPlan::engine::java::tests::testAnd() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testIf() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testIf() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('if then', {|if(true, |1, |2)}, 'true ? ((java.util.function.Supplier<Long>) () -> 1L).get() : ((java.util.function.Supplier<Long>) () -> 2L).get()', javaLong())
@@ -98,7 +99,7 @@ meta::pure::executionPlan::engine::java::tests::testIf() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testOr() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testOr() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('or', {|false || true}, 'false || true', javaBoolean())
@@ -108,7 +109,7 @@ meta::pure::executionPlan::engine::java::tests::testOr() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testGreaterThan() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testGreaterThan() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number greaterThan', {|1 > 2}, '1L > 2L', javaBoolean())->assert('%s == false')
@@ -118,7 +119,7 @@ meta::pure::executionPlan::engine::java::tests::testGreaterThan() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testGreaterThanEqual() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testGreaterThanEqual() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number greaterThanEqual', {|1 >= 2}, '1L >= 2L', javaBoolean())->assert('%s == false')
@@ -128,7 +129,7 @@ meta::pure::executionPlan::engine::java::tests::testGreaterThanEqual() : Boolean
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testLessThan() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLessThan() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number lessThan', {|1 < 2}, '1L < 2L', javaBoolean())->assert('%s == true')
@@ -138,7 +139,7 @@ meta::pure::executionPlan::engine::java::tests::testLessThan() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testLessThanEqual() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLessThanEqual() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Number lessThanEqual', {|1 < 2}, '1L < 2L', javaBoolean())->assert('%s == true')
@@ -150,7 +151,7 @@ meta::pure::executionPlan::engine::java::tests::testLessThanEqual() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testIsEmpty() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testIsEmpty() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('isEmpty false', {|'A'->isEmpty()}, '"A" == null', javaBoolean())
@@ -164,7 +165,7 @@ meta::pure::executionPlan::engine::java::tests::testIsEmpty() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testIsNotEmpty() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testIsNotEmpty() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('isNotEmpty false', {|'A'->isNotEmpty()}, '"A" != null', javaBoolean())
@@ -178,7 +179,7 @@ meta::pure::executionPlan::engine::java::tests::testIsNotEmpty() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testLet() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLet() : Boolean[1]
 {
    let expectedForLambda = 
       'java.util.Arrays.asList("a", "aa", "aaa").stream().map((String s) -> { long l = (long) s.length(); return java.util.Arrays.asList(s, org.finos.legend.engine.plan.dependencies.util.Library.pureToString(l)).stream().collect(java.util.stream.Collectors.joining("")); }).filter((String x) -> x != null).collect(java.util.stream.Collectors.toList())';
@@ -199,7 +200,7 @@ meta::pure::executionPlan::engine::java::tests::testLet() : Boolean[1]
          ->assert('%s.contains("aa2")')
          ->assert('%s.contains("aaa3")')
          ->assert('%s.size() == 3')
-      ->addTest('let in functions', {|['a', 'aa', 'aaa']->oddLengths()}, '_pure.functions.Functions__meta_pure_executionPlan_engine_java_tests.oddLengths_String_MANY__String_MANY_(java.util.Arrays.asList("a", "aa", "aaa"))', javaList(javaString()))
+      ->addTest('let in functions', {|['a', 'aa', 'aaa']->oddLengths()}, '_pure.functions.Functions__meta_pure_executionPlan_platformBinding_legendJava_library_lang_tests.oddLengths_String_MANY__String_MANY_(java.util.Arrays.asList("a", "aa", "aaa"))', javaList(javaString()))
          ->assert('%s.contains("a1")')
          ->assert('%s.contains("aaa3")')
          ->assert('%s.size() == 2')         
@@ -208,7 +209,7 @@ meta::pure::executionPlan::engine::java::tests::testLet() : Boolean[1]
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testCompare() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testCompare() : Boolean[1]
 {
    javaExpressionTests(engineConventions([]))
       ->addTest('Compare Strings',  {|'abc'->compare('abc')}, '(long) org.finos.legend.engine.plan.dependencies.util.Library.compareInt("abc", "abc")', javaLong())->assert('%s == 0')
@@ -219,13 +220,13 @@ meta::pure::executionPlan::engine::java::tests::testCompare() : Boolean[1]
 }
 
 
-function meta::pure::executionPlan::engine::java::tests::oddLengths(strings:String[*]): String[*]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::oddLengths(strings:String[*]): String[*]
 {
    let oddLengthStrings = $strings->filter(s| $s->length()->rem(2) != 0);
    $oddLengthStrings->map(s| $s->appendLength());
 }
 
-function meta::pure::executionPlan::engine::java::tests::appendLength(s:String[1]): String[1]
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::appendLength(s:String[1]): String[1]
 {
    let l = $s->length(); 
    $s+$l->toString();
@@ -233,9 +234,9 @@ function meta::pure::executionPlan::engine::java::tests::appendLength(s:String[1
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
-meta::pure::executionPlan::engine::java::tests::testLangPureTests() : Boolean[1]
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testLangPureTests() : Boolean[1]
 {
-   javaPureTests(meta::pure::executionPlan::engine::java::engineConventions([]), [
+   javaPureTests(engineConventions([]), [
       meta::pure::functions::lang::tests::match::testMatchOneWithZeroOne__Boolean_1_,
       meta::pure::functions::lang::tests::match::testMatchOneWith__Boolean_1_,
       meta::pure::functions::lang::tests::match::testMatchOneWithMany__Boolean_1_,

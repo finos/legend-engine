@@ -1,0 +1,19 @@
+[
+  {
+    "_type": "RelationalDatabaseConnection",
+    "datasourceSpecification": {
+      "_type": "athena",
+      "awsRegion": "ap-northeast-1",
+      "s3OutputLocation": "s3://aws-athena-query-results-finos/",
+      "databaseName": "demo"
+    },
+    "authenticationStrategy": {
+      "_type": "userNamePassword",
+      "userNameVaultReference": "AWS_ACCESS_KEY_ID",
+      "passwordVaultReference": "AWS_SECRET_ACCESS_KEY"
+    },
+    "databaseType": "Athena",
+    "type": "Athena",
+    "element": "firstConn"
+  }
+]
