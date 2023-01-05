@@ -27,7 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 
 import java.util.List;
 
@@ -40,27 +39,21 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with(
-            (elements, context, sectionName) ->
+        return Lists.mutable.with((elements, context, sectionName) ->
+        {
+            if (!ServiceParserExtension.NAME.equals(sectionName))
             {
-                if (!ServiceParserExtension.NAME.equals(sectionName))
-                {
-                    return null;
-                }
-                return ListIterate.collect(elements, element ->
-                {
-                    if (element instanceof Service)
-                    {
-                        return renderService((Service) element, context);
-                    }
-                    else if (element instanceof ExecutionEnvironmentInstance)
-                    {
-                        return renderExecutionEnvironment((ExecutionEnvironmentInstance) element, context);
-                    }
-                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                }).makeString("\n\n");
+                return null;
             }
-        );
+            return ListIterate.collect(elements, element ->
+            {
+                if (element instanceof Service)
+                {
+                    return renderService((Service) element, context);
+                }
+                return "/* Can't transform element '" + element.getPath() + "' in this section */";
+            }).makeString("\n\n");
+        });
     }
 
     @Override
@@ -114,14 +107,5 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             serviceBuilder.append(getTabString()).append("]\n");
         }
         return serviceBuilder.append("}").toString();
-    }
-
-    private String renderExecutionEnvironment(ExecutionEnvironmentInstance execEnv, PureGrammarComposerContext context)
-    {
-        StringBuilder execEnvBuilder = new StringBuilder().append("ExecutionEnvironment").append(" ").append(PureGrammarComposerUtility.convertPath(execEnv.getPath()));
-        execEnvBuilder.append("\n{\n");
-        execEnvBuilder.append(HelperExecutionEnvironmentGrammarComposer.renderExecutionEnvironmentDetails(execEnv.executionParameters, 1, context));
-        execEnvBuilder.append("}");
-        return execEnvBuilder.toString();
     }
 }

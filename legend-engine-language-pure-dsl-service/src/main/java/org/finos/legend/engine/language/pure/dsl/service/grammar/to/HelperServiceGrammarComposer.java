@@ -74,20 +74,14 @@ public class HelperServiceGrammarComposer
             StringBuilder builder = new StringBuilder().append("Multi\n");
             appendTabString(builder, baseIndentation).append("{\n");
             appendTabString(builder, baseIndentation + 1).append("query: ").append(pureMultiExecution.func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).append(";\n");
-            if (pureMultiExecution.executionKey != null)
-            {
-                appendTabString(builder, baseIndentation + 1).append("key: ").append(convertString(pureMultiExecution.executionKey, true)).append(";\n");
-            }
-            if (pureMultiExecution.executionParameters != null && !pureMultiExecution.executionParameters.isEmpty())
-            {
-                builder.append(LazyIterate.collect(pureMultiExecution.executionParameters, executionParameter -> renderKeyedExecutionParameter(executionParameter, context)).makeString("\n")).append("\n");
-            }
-            return builder.append(getTabString(baseIndentation)).append("}\n").toString();
+            appendTabString(builder, baseIndentation + 1).append("key: ").append(convertString(pureMultiExecution.executionKey, true)).append(";\n");
+            builder.append(LazyIterate.collect(pureMultiExecution.executionParameters, executionParameter -> renderKeyedExecutionParameter(executionParameter, context)).makeString("\n"));
+            return builder.append("\n").append(getTabString(baseIndentation)).append("}\n").toString();
         }
         return unsupported(execution.getClass());
     }
 
-    protected static String renderServiceExecutionRuntime(Runtime runtime, int baseIndentation, PureGrammarComposerContext context)
+    private static String renderServiceExecutionRuntime(Runtime runtime, int baseIndentation, PureGrammarComposerContext context)
     {
         if (runtime instanceof LegacyRuntime)
         {

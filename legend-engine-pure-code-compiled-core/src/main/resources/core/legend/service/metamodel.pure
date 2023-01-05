@@ -22,7 +22,7 @@ import meta::pure::runtime::*;
 
 Class meta::legend::service::metamodel::Service extends PackageableElement, meta::pure::test::Testable
 [
-   multiExecutionKeyMustBePartOfPattern: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution) && $this.execution->cast(@meta::legend::service::metamodel::PureMultiExecution).executionParameters->isNotEmpty() ,|$this.pattern->contains('{'+ $this.execution->cast(@PureMultiExecution).executionKey+'}'),|true),
+   multiExecutionKeyMustBePartOfPattern: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution),|$this.pattern->contains('{'+ $this.execution->cast(@PureMultiExecution).executionKey+'}'),|true),
 
    executionAndTestTypesMatch: if($this.execution->instanceOf(meta::legend::service::metamodel::PureMultiExecution),
                                   | assert($this.test->instanceOf(MultiExecutionTest),'Service with multiple executions requires a MultiExecution test'),
@@ -76,28 +76,6 @@ Class meta::legend::service::metamodel::PureMultiExecution extends PureExecution
    getExecution(key:String[1]){$this.getExecutionForgiving($key)->toOne()}:KeyedExecutionParameter[1];
 
    getExecutionForgiving(key:String[1]){$this.executionParameters->filter(e|$e.key==$key)->first()}:KeyedExecutionParameter[0..1];
-}
-
-Class meta::legend::service::metamodel::ExecutionEnvironmentInstance extends PackageableElement
-{
-    executionParameters: ExecutionParameters[*];
-}
-
-Class meta::legend::service::metamodel::ExecutionParameters
-{
-}
-
-Class meta::legend::service::metamodel::SingleExecutionParameters extends ExecutionParameters
-{
-    key : String[1];
-    mapping : Mapping[1];
-    runtime : Runtime[1];
-}
-
-Class meta::legend::service::metamodel::MultiExecutionParameters extends ExecutionParameters
-{
-    masterKey: String[1];
-    singleExecutionParameters: SingleExecutionParameters[*];
 }
 
 Class  meta::legend::service::metamodel::KeyedExecutionParameter
