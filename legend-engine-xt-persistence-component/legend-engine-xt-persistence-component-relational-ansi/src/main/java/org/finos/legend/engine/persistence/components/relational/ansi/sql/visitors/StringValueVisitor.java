@@ -25,7 +25,7 @@ public class StringValueVisitor implements LogicalPlanVisitor<StringValue>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, StringValue current, VisitorContext context)
     {
-        prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(current.value().orElse(null), current.alias().orElse(null)));
+        prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.StringValue(current.value().orElse(null), current.alias().orElse(null), context.quoteIdentifier()));
         return new VisitorResult();
     }
 }

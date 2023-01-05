@@ -59,7 +59,7 @@ class SelectExpressionTest
                 Collections.emptyList());
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
-        String expected = "SELECT DISTINCT \"item1\",\"item2\" as my_item FROM \"mydb\".\"mytable\"";
+        String expected = "SELECT DISTINCT \"item1\",\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\"";
         assertEquals(expected, sql1);
     }
 
@@ -71,7 +71,7 @@ class SelectExpressionTest
         SelectExpression selectExpression =
             new SelectStatement(
                 null,
-                Collections.singletonList(new All()),
+                Collections.singletonList(new All(BaseTest.QUOTE_IDENTIFIER)),
                 Collections.singletonList(table),
                 null,
                 Collections.emptyList());
@@ -89,8 +89,8 @@ class SelectExpressionTest
         Value item1 = new Field(null, "item1", BaseTest.QUOTE_IDENTIFIER, null);
         Value item2 = new Field(null, "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
 
-        Value value1 = new ObjectValue(100);
-        Value value2 = new ObjectValue(50);
+        Value value1 = new ObjectValue(100, BaseTest.QUOTE_IDENTIFIER);
+        Value value2 = new ObjectValue(50, BaseTest.QUOTE_IDENTIFIER);
         Condition condition = new AndCondition(Arrays.asList(new EqualityCondition(item1, value1), new NotEqualCondition(item2, value2)));
 
         SelectExpression selectExpression =
@@ -102,7 +102,7 @@ class SelectExpressionTest
                 Collections.emptyList());
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
-        String expected = "SELECT \"item1\",\"item2\" as my_item FROM \"mydb\".\"mytable\" WHERE (\"item1\" = 100) AND (\"item2\" <> 50)";
+        String expected = "SELECT \"item1\",\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\" WHERE (\"item1\" = 100) AND (\"item2\" <> 50)";
         assertEquals(expected, sql1);
     }
 
@@ -130,7 +130,7 @@ class SelectExpressionTest
                 Collections.emptyList());
 
         String sql1 = BaseTest.genSqlIgnoringErrors(selectExpression);
-        String expected = "SELECT DISTINCT A.\"id\",A.\"item2\",B.\"item3\" as my_item FROM \"mydb\".\"left\" as A INNER JOIN \"mydb\".\"right\" as B ON A.\"id\" = B.\"id\"";
+        String expected = "SELECT DISTINCT A.\"id\",A.\"item2\",B.\"item3\" as \"my_item\" FROM \"mydb\".\"left\" as A INNER JOIN \"mydb\".\"right\" as B ON A.\"id\" = B.\"id\"";
         assertEquals(expected, sql1);
     }
 
@@ -163,8 +163,8 @@ class SelectExpressionTest
 
         Field item1 = new Field(null, "item1", BaseTest.QUOTE_IDENTIFIER, null);
         Field item2 = new Field(null, "item2", BaseTest.QUOTE_IDENTIFIER, "my_item");
-        Condition condition = new NotEqualCondition(item2, new NumericalValue(50L));
-        Function countFunction = new Function(FunctionName.COUNT, Collections.singletonList(item1));
+        Condition condition = new NotEqualCondition(item2, new NumericalValue(50L, BaseTest.QUOTE_IDENTIFIER));
+        Function countFunction = new Function(FunctionName.COUNT, Collections.singletonList(item1), BaseTest.QUOTE_IDENTIFIER);
 
         SelectExpression selectExpression =
             new SelectStatement(
@@ -175,7 +175,7 @@ class SelectExpressionTest
                 Collections.singletonList(item2));
 
         String sql = BaseTest.genSqlIgnoringErrors(selectExpression);
-        String expected = "SELECT COUNT(\"item1\"),\"item2\" as my_item FROM \"mydb\".\"mytable\" WHERE \"item2\" <> 50 GROUP BY \"item2\"";
+        String expected = "SELECT COUNT(\"item1\"),\"item2\" as \"my_item\" FROM \"mydb\".\"mytable\" WHERE \"item2\" <> 50 GROUP BY \"item2\"";
         assertEquals(expected, sql);
     }
 }

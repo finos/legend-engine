@@ -21,14 +21,15 @@ public class StringValue extends Value
 {
     private String value;
 
-    public StringValue(String value)
+    public StringValue(String value, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.value = value;
     }
 
-    public StringValue(String value, String alias)
+    public StringValue(String value, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.value = value;
     }
 

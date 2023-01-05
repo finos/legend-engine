@@ -30,8 +30,9 @@ public class HashFunction extends Value
     private HashAlgorithm algorithm;
     private List<Value> values;
 
-    public HashFunction(HashAlgorithm hashAlgorithm)
+    public HashFunction(HashAlgorithm hashAlgorithm, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.algorithm = hashAlgorithm;
         this.values = new ArrayList<>();
     }
@@ -47,10 +48,10 @@ public class HashFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        Function concatFunction = new Function(FunctionName.CONCAT, values);
+        Function concatFunction = new Function(FunctionName.CONCAT, values, getQuoteIdentifier());
         Function hashFunction = new Function(FunctionName.HASH, Arrays.asList(
-            new StringValue(algorithm.name()), concatFunction));
-        Function md5Function = new Function(FunctionName.RAW_TO_HEX, Arrays.asList(hashFunction));
+            new StringValue(algorithm.name(), getQuoteIdentifier()), concatFunction), getQuoteIdentifier());
+        Function md5Function = new Function(FunctionName.RAW_TO_HEX, Arrays.asList(hashFunction), getQuoteIdentifier());
         md5Function.genSqlWithoutAlias(builder);
     }
 

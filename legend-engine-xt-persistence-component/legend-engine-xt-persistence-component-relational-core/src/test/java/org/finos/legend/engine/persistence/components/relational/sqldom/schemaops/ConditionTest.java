@@ -104,8 +104,8 @@ public class ConditionTest
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        ObjectValue value1 = new ObjectValue(1);
-        ObjectValue value2 = new ObjectValue(10);
+        ObjectValue value1 = new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER);
+        ObjectValue value2 = new ObjectValue(10, BaseTest.QUOTE_IDENTIFIER);
 
         String expected = "sink.\"column_varchar\" BETWEEN 1 AND 10";
         Condition condition = new BetweenCondition(field1, value1, value2);
@@ -118,7 +118,7 @@ public class ConditionTest
     {
         Table table = new Table("mydb", null, "mytable", null, BaseTest.QUOTE_IDENTIFIER);
         Value item = new Field(null, "item1", BaseTest.QUOTE_IDENTIFIER, null);
-        ObjectValue value = new ObjectValue(1);
+        ObjectValue value = new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER);
         Condition condition = new EqualityCondition(item, value);
 
         SelectExpression selectExpression = new SelectStatement(
@@ -140,7 +140,7 @@ public class ConditionTest
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Value field1 = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        ArrayExpression expression = new ArrayExpression(Arrays.asList(new Value[]{new StringValue("IN"), new StringValue("SG"), new StringValue("ID")}));
+        ArrayExpression expression = new ArrayExpression(Arrays.asList(new Value[]{new StringValue("IN", BaseTest.QUOTE_IDENTIFIER), new StringValue("SG", BaseTest.QUOTE_IDENTIFIER), new StringValue("ID", BaseTest.QUOTE_IDENTIFIER)}));
 
         String expected = "sink.\"column_varchar\" IN ('IN','SG','ID')";
         Condition condition = new InCondition(field1, expression);
@@ -199,7 +199,7 @@ public class ConditionTest
     {
         Table tableA = new Table("mydb", null, "mytable1", "sink", BaseTest.QUOTE_IDENTIFIER);
         Value field = new Field(tableA.getAlias(), "column_varchar", BaseTest.QUOTE_IDENTIFIER, null);
-        StringValue value = new StringValue("%value");
+        StringValue value = new StringValue("%value", BaseTest.QUOTE_IDENTIFIER);
 
         String expected = "sink.\"column_varchar\" LIKE '%value'";
         Condition condition = new LikeCondition(field, value);
