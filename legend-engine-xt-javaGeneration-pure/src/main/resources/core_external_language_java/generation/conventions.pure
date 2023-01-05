@@ -21,6 +21,8 @@ import meta::external::language::java::transform::utils::*;
 import meta::external::language::java::transform::functions::date::pure::*;
 import meta::external::language::java::serialization::*;
 
+import meta::pure::metamodel::serialization::grammar::*;
+
 Enum meta::external::language::java::transform::ClassPurpose
 {
    ENUMERATION,
@@ -154,18 +156,35 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
 
 function meta::external::language::java::transform::pureTypeToJavaType(conventions:Conventions[1], g:GenericType[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
 {
-   if($g.rawType == Function,
+   if($g.rawType->isEmpty(),
+      {| 
+         let typeName = $g.typeParameter.name->toOne('Only one type parameter supported but found: ' + $g->printGenericType());
+         $typeName->javaTypeVar()->listIfMulti($mult);
+      },
+  |if($g.rawType == Function,
       {|
          let fType = $g.typeArguments->at(0).rawType->toOne()->cast(@meta::pure::metamodel::type::FunctionType);
          let rtn   = $conventions->pureTypeToJavaType($fType.returnType, $fType.returnMultiplicity);
          assert($fType.parameters->isEmpty(), | 'Function with parameters not yet handled');
          javaSupplier($rtn)->listIfMulti($mult);
       },
-      | $conventions->pureTypeToJavaType($g.rawType->toOne(), $mult)
-   );
+  |if($g.rawType == LambdaFunction,
+      | $conventions->pureTypeToJavaType($g.rawType->toOne(), [], $mult),
+      {|
+          let multArgs = if($g.multiplicityArguments->isEmpty(), |ZeroOne->repeat($g.typeArguments->size()), |$g.multiplicityArguments);
+          assert($g.typeArguments->size() == $multArgs->size());
+          let javaTypeArguments = zip($g.typeArguments, $multArgs)->map(p | $conventions->pureTypeToJavaType($p.first, $p.second));
+          $conventions->pureTypeToJavaType($g.rawType->toOne(), $javaTypeArguments, $mult);
+      }
+  )));
 }
 
 function meta::external::language::java::transform::pureTypeToJavaType(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
+{
+    $conventions->pureTypeToJavaType($type, [], $mult);
+}
+
+function meta::external::language::java::transform::pureTypeToJavaType(conventions:Conventions[1], type:meta::pure::metamodel::type::Type[1], typeArgs:meta::external::language::java::metamodel::Type[*], mult:Multiplicity[1]): meta::external::language::java::metamodel::Type[1]
 {
    let t = if($type == Nil,
               | javaList(javaWildcard()),
@@ -197,11 +216,21 @@ function meta::external::language::java::transform::pureTypeToJavaType(conventio
            if($type == Date,
               | $conventions->dateType($mult),
               |
+           if($type == Map,
+              | javaMap($typeArgs->at(0), $typeArgs->at(1))->listIfMulti($mult),
+              |   
            if($type->instanceOf(meta::pure::metamodel::type::Enumeration) || $type->instanceOf(meta::pure::metamodel::type::Class) || $type->instanceOf(Unit) || $type->instanceOf(Measure),
-              | $conventions->className($type)->listIfMulti($mult),
-              | fail('Unsupported type: ' + $type.name->toOne());
+              {| 
+                let class = $conventions->className($type);
+                let classWithTypes = if($typeArgs->isEmpty(),
+                  |$class,
+                  |$class->javaParameterizedType($typeArgs);
+                );
+                $classWithTypes->listIfMulti($mult);
+              },
+              | fail('Unsupported type: ' + $type->printType());
                 ^meta::external::language::java::metamodel::Type();
-   )))))))))));
+   ))))))))))));
 }
 
 function meta::external::language::java::transform::stringType(     conventions:Conventions[1]): meta::external::language::java::metamodel::Type[1] { $conventions->stringType(     PureOne); }
