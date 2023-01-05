@@ -29,7 +29,7 @@ public class CaseVisitor implements LogicalPlanVisitor<org.finos.legend.engine.p
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.values.Case current, VisitorContext context)
     {
-        Case caseFunction = new Case();
+        Case caseFunction = new Case(context.quoteIdentifier());
         prev.push(caseFunction);
 
         List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();

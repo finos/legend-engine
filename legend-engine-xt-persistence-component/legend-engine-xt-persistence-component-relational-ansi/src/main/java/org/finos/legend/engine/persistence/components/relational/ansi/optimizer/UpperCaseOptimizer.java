@@ -38,6 +38,7 @@ public class UpperCaseOptimizer implements CaseConversionOptimizer
         {
             Field field = (Field) component;
             field.setName(field.getName() != null ? field.getName().toUpperCase() : field.getName());
+            field.setAlias(field.getAlias() != null ? field.getAlias().toUpperCase() : field.getAlias());
             return field;
         }
         else if (component instanceof Column)

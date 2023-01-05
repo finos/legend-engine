@@ -26,7 +26,7 @@ public class HashFunctionVisitor implements LogicalPlanVisitor<org.finos.legend.
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction current, VisitorContext context)
     {
-        HashFunction hashFunction = new HashFunction(HashAlgorithm.valueOf(current.hashAlgorithm().name()));
+        HashFunction hashFunction = new HashFunction(HashAlgorithm.valueOf(current.hashAlgorithm().name()), context.quoteIdentifier());
         prev.push(hashFunction);
 
         if (current.value() != null)
