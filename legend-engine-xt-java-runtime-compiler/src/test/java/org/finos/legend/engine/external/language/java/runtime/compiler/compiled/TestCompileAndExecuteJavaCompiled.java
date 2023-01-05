@@ -12,18 +12,19 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.external.language.java.runtime.compiler.interpreted;
+package org.finos.legend.engine.external.language.java.runtime.compiler.compiled;
 
 import org.finos.legend.engine.external.language.java.runtime.compiler.AbstractTestCompileAndExecuteJava;
-import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
+import org.finos.legend.pure.generated.CoreJavaModelFactoryRegistry;
+import org.finos.legend.pure.runtime.java.compiled.execution.FunctionExecutionCompiledBuilder;
 import org.junit.BeforeClass;
 
-public class TestCompileAndExecuteJavaInterpreted extends AbstractTestCompileAndExecuteJava
+public class TestCompileAndExecuteJavaCompiled extends AbstractTestCompileAndExecuteJava
 {
     @BeforeClass
     public static void setUp()
     {
-        setUpRuntime(new FunctionExecutionInterpreted(), getCodeStorage(), getFactoryRegistryOverride(), getOptions(), getExtra());
+        setUpRuntime(new FunctionExecutionCompiledBuilder().build(), getCodeStorage(), CoreJavaModelFactoryRegistry.REGISTRY, getOptions(), getExtra());
         runtime.loadAndCompileSystem();
     }
 }

@@ -48,7 +48,9 @@
                         <repository>core_external_language_java_compiler</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_external_language_java_compiler.definition.json</extraRepository>
+                        <extraRepository>
+                            ${project.basedir}/src/main/resources/core_external_language_java_compiler.definition.json
+                        </extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -72,6 +74,39 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-java-compiled</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_external_language_java_compiler</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
 
@@ -79,6 +114,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
             <scope>runtime</scope>
         </dependency>
 
@@ -93,6 +132,10 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
 
         <dependency>
