@@ -21,13 +21,14 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT | SERVICE_TEST | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
                                         | SERVICE_POST_VALIDATION_PARAMETERS | SERVICE_POST_VALIDATION_ASSERTIONS
+                                        | EXEC_ENV
 ;
 
 
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                             imports
-                                            (service)*
+                                            (service | execEnvs)*
                                         EOF
 ;
 imports:                                (importStatement)*
@@ -231,4 +232,23 @@ testSingleValueParam:                        primitiveValue
 ;
 
 testParam:                              testListValueParam | testSingleValueParam
+;
+
+// ----------------------------------- EXECUTION_ENVIRONMENT ------------------------------------------------------
+execEnvs:                               EXEC_ENV qualifiedName
+                                            BRACE_OPEN
+                                                executions
+                                            BRACE_CLOSE
+;
+executions:                             SERVICE_EXECUTION_EXECUTIONS COLON BRACKET_OPEN execParams (COMMA execParams)* BRACKET_CLOSE SEMI_COLON
+;
+execParams:                             singleExecEnv | multiExecEnv
+;
+singleExecEnv:                          identifier COLON
+                                            BRACE_OPEN
+                                                serviceMapping
+                                                serviceRuntime
+                                            BRACE_CLOSE
+;
+multiExecEnv:                           identifier COLON BRACKET_OPEN singleExecEnv (COMMA singleExecEnv)* BRACKET_CLOSE
 ;
