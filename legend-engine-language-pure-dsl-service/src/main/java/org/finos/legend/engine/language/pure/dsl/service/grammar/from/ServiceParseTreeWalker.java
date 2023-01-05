@@ -29,7 +29,6 @@ import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperT
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
@@ -41,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidationAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
@@ -52,9 +52,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -86,15 +83,8 @@ public class ServiceParseTreeWalker
 
     public void visit(ServiceParserGrammar.DefinitionContext ctx)
     {
-        if (ctx.service() != null && !ctx.service().isEmpty())
-        {
-            this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
-            ctx.service().stream().map(this::visitService).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-        }
-        if (ctx.execEnvs() != null && !ctx.execEnvs().isEmpty())
-        {
-            ctx.execEnvs().stream().map(this::visitExecutionEnvironment).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-        }
+        this.section.imports = ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()));
+        ctx.service().stream().map(this::visitService).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
     public Service visitService(ServiceParserGrammar.ServiceContext ctx)
@@ -317,17 +307,10 @@ public class ServiceParseTreeWalker
             ServiceParserGrammar.ServiceFuncContext funcContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureMultiExecContext.serviceFunc(), "query", pureMultiExecution.sourceInformation);
             pureMultiExecution.func = visitLambda(funcContext.combinedExpression());
             // execution key
-            ServiceParserGrammar.ExecKeyContext execKeyContext = PureGrammarParserUtility.validateAndExtractOptionalField(pureMultiExecContext.execKey(), "key", pureMultiExecution.sourceInformation);
-            if (execKeyContext != null)
-            {
-                pureMultiExecution.executionKey = PureGrammarParserUtility.fromGrammarString(execKeyContext.STRING().getText(), true);
-            }
-            if (pureMultiExecContext.execParameter() != null && !pureMultiExecContext.execParameter().isEmpty())
-            {
-                // execution parameters (indexed by execution key)
-                PureGrammarParserUtility.validateAndExtractRequiredField(pureMultiExecContext.execKey(), "key", pureMultiExecution.sourceInformation);
-                pureMultiExecution.executionParameters = ListIterate.collect(pureMultiExecContext.execParameter(), this::visitKeyedExecutionParameter);
-            }
+            ServiceParserGrammar.ExecKeyContext execKeyContext = PureGrammarParserUtility.validateAndExtractRequiredField(pureMultiExecContext.execKey(), "key", pureMultiExecution.sourceInformation);
+            pureMultiExecution.executionKey = PureGrammarParserUtility.fromGrammarString(execKeyContext.STRING().getText(), true);
+            // execution parameters (indexed by execution key)
+            pureMultiExecution.executionParameters = ListIterate.collect(pureMultiExecContext.execParameter(), this::visitKeyedExecutionParameter);
             return pureMultiExecution;
         }
         throw new UnsupportedOperationException();
@@ -516,50 +499,5 @@ public class ServiceParseTreeWalker
         postValidationAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         postValidationAssertion.assertion = visitLambda(ctx.combinedExpression());
         return postValidationAssertion;
-    }
-
-    //execution environment parsing
-    private ExecutionEnvironmentInstance visitExecutionEnvironment(ServiceParserGrammar.ExecEnvsContext ctx)
-    {
-        ExecutionEnvironmentInstance execEnv = new ExecutionEnvironmentInstance();
-        execEnv.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        execEnv._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
-        List<ServiceParserGrammar.ExecParamsContext> execEnvCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.executions().execParams(), "executions", walkerSourceInformation.getSourceInformation(ctx.executions()));
-        if (execEnvCtxList.stream().anyMatch(x -> x.singleExecEnv() != null))
-        {
-            execEnv.executionParameters = ListIterate.collect(execEnvCtxList, execEnvContext -> this.visitSingleExecutionParameters(execEnvContext.singleExecEnv()));
-        }
-        else if (execEnvCtxList.stream().anyMatch(x -> x.multiExecEnv() != null))
-        {
-            execEnv.executionParameters = ListIterate.collect(execEnvCtxList, execEnvContext -> this.visitMultiExecutionParameters(execEnvContext.multiExecEnv()));
-        }
-        else
-        {
-            throw new EngineException("Valid types for ExecutionEnvironment are: Single, Multi");
-        }
-        return execEnv;
-    }
-
-    private SingleExecutionParameters visitSingleExecutionParameters(ServiceParserGrammar.SingleExecEnvContext ctx)
-    {
-        SingleExecutionParameters singleExecParams = new SingleExecutionParameters();
-        singleExecParams.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        singleExecParams.key = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        ServiceParserGrammar.ServiceMappingContext mappingContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceMapping()), "mapping", singleExecParams.sourceInformation);
-        singleExecParams.mapping = PureGrammarParserUtility.fromQualifiedName(mappingContext.qualifiedName().packagePath() == null ? Collections.emptyList() : mappingContext.qualifiedName().packagePath().identifier(), mappingContext.qualifiedName().identifier());
-        singleExecParams.mappingSourceInformation = walkerSourceInformation.getSourceInformation(mappingContext.qualifiedName());
-        // runtime
-        ServiceParserGrammar.ServiceRuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(Collections.singletonList(ctx.serviceRuntime()), "runtime", singleExecParams.sourceInformation);
-        singleExecParams.runtime = this.visitRuntime(runtimeContext);
-        return singleExecParams;
-    }
-
-    private MultiExecutionParameters visitMultiExecutionParameters(ServiceParserGrammar.MultiExecEnvContext ctx)
-    {
-        MultiExecutionParameters multiExecParams = new MultiExecutionParameters();
-        multiExecParams.masterKey = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        List<ServiceParserGrammar.SingleExecEnvContext> singleExecCtxList = PureGrammarParserUtility.validateRequiredListField(ctx.singleExecEnv(), "executions", walkerSourceInformation.getSourceInformation(ctx));
-        multiExecParams.singleExecutionParameters = ListIterate.collect(singleExecCtxList, this::visitSingleExecutionParameters);
-        return multiExecParams;
     }
 }

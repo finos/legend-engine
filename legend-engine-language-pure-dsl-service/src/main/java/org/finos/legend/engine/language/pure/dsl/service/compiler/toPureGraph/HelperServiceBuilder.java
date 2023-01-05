@@ -41,9 +41,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionParameters;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ConnectionTestData_Impl;
@@ -52,10 +49,6 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedE
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedSingleExecutionTest_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionParameters;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl;
-import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionParameters_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionTest_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ParameterValue;
@@ -133,26 +126,15 @@ public class HelperServiceBuilder
         else if (execution instanceof PureMultiExecution)
         {
             PureMultiExecution pureMultiExecution = (PureMultiExecution) execution;
-            LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(pureMultiExecution.func, context);
-            //TODO: a more robust validation
-            if ((pureMultiExecution.executionParameters != null && pureMultiExecution.executionParameters.isEmpty()) || (pureMultiExecution.executionParameters == null && !org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_isFromFunctionPresent_FunctionDefinition_1__Boolean_1_(lambda, context.getExecutionSupport())))
+            if (pureMultiExecution.executionParameters.isEmpty())
             {
                 throw new EngineException("Service multi execution must not be empty", pureMultiExecution.sourceInformation, EngineErrorType.COMPILATION);
             }
             Set<String> executionKeyValues = new HashSet<>();
-            if (pureMultiExecution.executionParameters != null && !pureMultiExecution.executionParameters.isEmpty())
-            {
-                return new Root_meta_legend_service_metamodel_PureMultiExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureMultiExecution"))
-                        ._executionKey(pureMultiExecution.executionKey)
-                        ._func(lambda)
-                        ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, context, executionKeyValues)));
-            }
-            else
-            {
-                return new Root_meta_legend_service_metamodel_PureMultiExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureMultiExecution"))
-                        ._executionKey(org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_getKeyFromFunctionDefinition_FunctionDefinition_1__String_1_(lambda, context.getExecutionSupport()))
-                        ._func(lambda);
-            }
+            return new Root_meta_legend_service_metamodel_PureMultiExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureMultiExecution"))
+                    ._executionKey(pureMultiExecution.executionKey)
+                    ._func(HelperValueSpecificationBuilder.buildLambda(pureMultiExecution.func, context))
+                    ._executionParameters(ListIterate.collect(pureMultiExecution.executionParameters, executionParameter -> processServiceKeyedExecutionParameter(executionParameter, context, executionKeyValues)));
         }
         return getServiceCompilerExtensions(context).stream().flatMap(extension -> extension.getExtraServiceExecutionProcessors().stream()).map(processor -> processor.value(execution, context)).filter(Objects::nonNull).findFirst()
                 .orElseThrow(() -> new UnsupportedOperationException("Unsupported service execution type '" + execution.getClass().getSimpleName() + "'"));
@@ -308,30 +290,5 @@ public class HelperServiceBuilder
         return new Root_meta_legend_service_metamodel_TestContainer_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::TestContainer"))
                 ._parametersValues(ListIterate.collect(testContainer.parametersValues, parameterValue -> parameterValue.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))))
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));
-    }
-
-    public static Root_meta_legend_service_metamodel_ExecutionParameters processExecutionParameters(ExecutionParameters params, CompileContext context)
-    {
-        if (params instanceof SingleExecutionParameters)
-        {
-            SingleExecutionParameters execParams = (SingleExecutionParameters) params;
-            Mapping mapping = context.resolveMapping(execParams.mapping, execParams.mappingSourceInformation);
-            inferEmbeddedRuntimeMapping(execParams.runtime, execParams.mapping);
-            org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
-            HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, execParams.runtime.sourceInformation);
-            return new Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionParameters"))
-                    ._key(execParams.key)
-                    ._mapping(mapping)
-                    ._runtime(runtime);
-        }
-        else if (params instanceof MultiExecutionParameters)
-        {
-            MultiExecutionParameters execParams = (MultiExecutionParameters) params;
-            return new Root_meta_legend_service_metamodel_MultiExecutionParameters_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::MultiExecutionParameters"))
-                    ._masterKey(execParams.masterKey)
-                    ._singleExecutionParameters(ListIterate.collect(execParams.singleExecutionParameters,
-                            param -> (Root_meta_legend_service_metamodel_SingleExecutionParameters) processExecutionParameters(param, context)));
-        }
-        throw new UnsupportedOperationException("Unsupported service execution type '" + params.getClass().getSimpleName() + "'");
     }
 }

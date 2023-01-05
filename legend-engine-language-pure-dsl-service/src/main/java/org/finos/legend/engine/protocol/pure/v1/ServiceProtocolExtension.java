@@ -29,10 +29,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionTest;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
@@ -49,7 +45,6 @@ public class ServiceProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.mutable.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(Service.class, "service")
-                        .withSubtype(ExecutionEnvironmentInstance.class, "executionEnvironmentInstance")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Execution.class)
                         .withDefaultSubType(PureSingleExecution.class)
@@ -63,11 +58,6 @@ public class ServiceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(TestSuite.class)
                         .withSubtype(ServiceTestSuite.class, "serviceTestSuite")
-                        .build(),
-                ProtocolSubTypeInfo.newBuilder(ExecutionParameters.class)
-                        .withDefaultSubType(SingleExecutionParameters.class)
-                        .withSubtype(SingleExecutionParameters.class, "singleExecutionParameters")
-                        .withSubtype(MultiExecutionParameters.class, "multiExecutionParameters")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Test.class)
                         .withSubtype(ServiceTest.class, "serviceTest")

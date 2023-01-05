@@ -44,7 +44,3 @@ SERVICE_POST_VALIDATION_ASSERTIONS: 'assertions';
 // -------------------------------------- LEGACY --------------------------------------
 
 SERVICE_TEST:                       'test';
-
-// -------------------------------------- EXECUTION_ENVIRONMENT-------------------------
-
-EXEC_ENV:                             'ExecutionEnvironment';

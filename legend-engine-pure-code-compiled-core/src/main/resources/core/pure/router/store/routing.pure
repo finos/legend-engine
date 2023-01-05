@@ -238,32 +238,6 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                                                         ]);
                 ^$processedFunction(value = $wrappedValueSpec);
         }
-    ),
-    pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_]),
-        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-                let resolvedParameters = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
-                                                                                                                 f:FunctionExpression[1] |let r = $f->reprocessRuntimeWithVariablePlaceHolder($inScopeVars).value->cast(@ValueSpecification);
-                                                                                                                                          $r->reactivate($inScopeVars);,
-                                                                                                                 i:InstanceValue[1]      |$i.values]));
-                let fromSingleExecParams           = $resolvedParameters->at(0)->cast(@meta::legend::service::metamodel::SingleExecutionParameters);
-                let fromMapping                    = $fromSingleExecParams.mapping;
-                let fromRuntime                    = $fromSingleExecParams.runtime; 
-
-                let currentRoutingStrategy = $state.routingStrategy;
-                let newRoutingStrategy     = if($currentRoutingStrategy->instanceOf(StoreMappingRoutingStrategy),
-                                               | let storeMapStrategy = $currentRoutingStrategy->cast(@StoreMappingRoutingStrategy);
-                                                 ^$storeMapStrategy(mapping = $fromMapping, runtime = $fromRuntime, classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());,
-                                               | getRoutingStrategyFromMappingAndRuntime($fromMapping, $fromRuntime));
-                let newState               = ^$state(routingStrategy = $newRoutingStrategy);
-
-                let processedFunction      = routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $executionContext, $vars, $inScopeVars, $extensions, $debug);
-                let valueSpec              = $processedFunction.value;
-                let wrappedValueSpec       = $valueSpec->evaluateAndDeactivate()->match([
-                                                          evs: ExtendedRoutedValueSpecification[1] | $evs,
-                                                          vs: ValueSpecification[1]                | $processedFunction.routingStrategy.wrapValueSpec($vs, 'from wrapper', $executionContext, $extensions, $debug)
-                                                        ]);
-                ^$processedFunction(value = $wrappedValueSpec);
-        }
     )
   ]
 }
