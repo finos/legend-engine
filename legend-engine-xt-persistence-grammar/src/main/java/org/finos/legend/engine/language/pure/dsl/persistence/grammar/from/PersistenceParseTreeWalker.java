@@ -15,7 +15,6 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.misc.Interval;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
@@ -290,7 +289,7 @@ public class PersistenceParseTreeWalker
         serviceOutput.path = visitPath(path);
 
         // keys
-        PersistenceParserGrammar.GraphFetchDatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.graphFetchDatasetKeys(), "keys", sourceInformation);
+        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
         serviceOutput.keys = visitGraphFetchDatasetKeys(datasetKeysContext);
 
         // deduplication (optional)
@@ -310,7 +309,7 @@ public class PersistenceParseTreeWalker
         serviceOutput.sourceInformation = sourceInformation;
 
         // keys
-        PersistenceParserGrammar.TdsDatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.tdsDatasetKeys(), "keys", sourceInformation);
+        PersistenceParserGrammar.DatasetKeysContext datasetKeysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.datasetKeys(), "keys", sourceInformation);
         serviceOutput.keys = visitTdsDatasetKeys(datasetKeysContext);
 
         // deduplication (optional)
@@ -396,16 +395,22 @@ public class PersistenceParseTreeWalker
         throw new EngineException("Unable to parse path [" + pathString + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
     }
 
-    private List<Path> visitGraphFetchDatasetKeys(PersistenceParserGrammar.GraphFetchDatasetKeysContext ctx)
+    private List<Path> visitGraphFetchDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
     {
-        List<PersistenceParserGrammar.DslNavigationPathContext> dslNavigationPathContexts = ctx.dslNavigationPath();
-        return Lists.immutable.ofAll(dslNavigationPathContexts).collect(this::visitPath).castToList();
+        //TODO: ledav -- validate
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::dslNavigationPath)
+                .collect(this::visitPath).castToList();
     }
 
-    private List<String> visitTdsDatasetKeys(PersistenceParserGrammar.TdsDatasetKeysContext ctx)
+    private List<String> visitTdsDatasetKeys(PersistenceParserGrammar.DatasetKeysContext ctx)
     {
-        List<PersistenceParserGrammar.IdentifierContext> identifierContexts = ctx.identifier();
-        return Lists.immutable.ofAll(identifierContexts).collect(PureGrammarParserUtility::fromIdentifier).castToList();
+        //TODO: ledav -- validate
+        List<PersistenceParserGrammar.ServiceOutputValueContext> serviceOutputValueContexts = ctx.serviceOutputValue();
+        return Lists.immutable.ofAll(serviceOutputValueContexts)
+                .collect(PersistenceParserGrammar.ServiceOutputValueContext::identifier)
+                .collect(PureGrammarParserUtility::fromIdentifier).castToList();
     }
 
     private Deduplication visitDeduplication(PersistenceParserGrammar.DeduplicationContext ctx)

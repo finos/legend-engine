@@ -189,10 +189,12 @@ pagerDutyUrl:                               NOTIFYEE_PAGER_DUTY_URL COLON STRING
 
 serviceOutput:                              (graphFetchServiceOutput | tdsServiceOutput)
 ;
+serviceOutputValue:                         (identifier | dslNavigationPath)
+;
 graphFetchServiceOutput:                    dslNavigationPath
                                                 BRACE_OPEN
                                                     (
-                                                        graphFetchDatasetKeys
+                                                        datasetKeys
                                                         | deduplication
                                                         | datasetType
                                                     )*
@@ -201,7 +203,7 @@ graphFetchServiceOutput:                    dslNavigationPath
 tdsServiceOutput:                           SERVICE_OUTPUT_ROOT
                                                 BRACE_OPEN
                                                     (
-                                                        tdsDatasetKeys
+                                                        datasetKeys
                                                         | deduplication
                                                         | datasetType
                                                     )*
@@ -218,14 +220,9 @@ targetValue:                                ISLAND_OPEN (targetValueContent)* IS
 ;
 targetValueContent:                         ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_BRACE_CLOSE
 ;
-graphFetchDatasetKeys:                      DATASET_KEYS COLON
+datasetKeys:                                DATASET_KEYS COLON
                                                 BRACKET_OPEN
-                                                    (dslNavigationPath (COMMA dslNavigationPath)*)?
-                                                BRACKET_CLOSE
-;
-tdsDatasetKeys:                             DATASET_KEYS COLON
-                                                BRACKET_OPEN
-                                                    (identifier (COMMA identifier)*)?
+                                                    (serviceOutputValue (COMMA serviceOutputValue)*)?
                                                 BRACKET_CLOSE
 ;
 deduplication:                              DATASET_DEDUPLICATION COLON

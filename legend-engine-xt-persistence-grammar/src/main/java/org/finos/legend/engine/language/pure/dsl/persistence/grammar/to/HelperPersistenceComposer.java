@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.eclipse.collections.impl.utility.Iterate;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
@@ -508,7 +507,7 @@ public class HelperPersistenceComposer
             builder.append(getTabString(indentLevel)).append("deleteValues: ");
             if (!deleteIndicator.deleteValues.isEmpty())
             {
-                builder.append("[").append(LazyIterate.collect(deleteIndicator.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
+                builder.append("[").append(ListIterate.collect(deleteIndicator.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
             }
             else
             {
@@ -1068,7 +1067,7 @@ public class HelperPersistenceComposer
             builder.append(getTabString(indentLevel)).append("deleteValues: ");
             if (!strategy.deleteValues.isEmpty())
             {
-                builder.append("[").append(LazyIterate.collect(strategy.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
+                builder.append("[").append(ListIterate.collect(strategy.deleteValues, d -> convertString(d, true)).makeString(", ")).append("];\n");
             }
             else
             {
