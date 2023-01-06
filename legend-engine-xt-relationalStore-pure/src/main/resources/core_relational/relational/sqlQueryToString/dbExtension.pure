@@ -26,6 +26,7 @@ Class meta::relational::functions::sqlQueryToString::Config
    useQuotesForTableAliasColumn : Boolean[0..1];
    generateJoin:Boolean[0..1];
    generateJoinTarget : TableAlias[0..1];
+   isBooleanNotAllowed : Boolean[0..1];
 }
 
 Class meta::relational::functions::sqlQueryToString::Format
@@ -575,7 +576,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         let config = $sgc.config;
         let generationState = $sgc.generationState;
         let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
-        let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
+        let paramWiseSgcsForWithinWhenClause = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
+        let paramWiseSgcs = if($result.toSql.isBooleanNotAllowed->isEmpty(),|$paramWiseSgcsForWithinWhenClause,| $result.toSql.isBooleanNotAllowed->zip($paramWiseSgcsForWithinWhenClause)->map(b|let sgc = $b.second; ^$sgc(config = ^$config(isBooleanNotAllowed = $b.first));));
         $result->toOne().toSql($params, $paramWiseSgcs);
    )));
 }
@@ -722,7 +724,8 @@ Class meta::relational::functions::sqlQueryToString::DynaFunctionToSql
 
    toSql(parameters:RelationalOperationElement[*], sgcs:SqlGenerationContext[*])
    {
-      let processedParams = $parameters->zip($sgcs)->map(p | $p.first->processOperation($p.second));
+      let processedParams = $parameters->zip($sgcs)->map(p |assert($p.second.config.isBooleanNotAllowed->isEmpty() || $p.second.config.isBooleanNotAllowed == false, '[unsupported-api] Boolean expression is not allowed');
+                                                            $p.first->processOperation($p.second););
       let params = if($this.toSql.transform->isEmpty(), | $processedParams, | $this.toSql.transform->toOne()->eval($processedParams));
 
       format($this.toSql.format, $params);
@@ -737,6 +740,7 @@ Class meta::relational::functions::sqlQueryToString::ToSql
    format:String[1];
    transform:meta::pure::metamodel::function::Function<{String[*]->String[*]}>[0..1];
    parametersWithinWhenClause : Boolean[*];
+   isBooleanNotAllowed : Boolean[*];
 }
 
 Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry

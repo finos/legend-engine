@@ -35,7 +35,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
      getDynaFunctionToSqlForSqlServer()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
-      isBooleanLiteralSupported = true,
+      isBooleanLiteralSupported = false,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       joinStringsProcessor = processJoinStringsOperationForSqlServer_JoinStrings_1__SqlGenerationContext_1__String_1_,
@@ -54,16 +54,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::processSelectSQLQueryForSqlServer(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
-   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+    let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
     let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
-    assert($s.fromRow == [] && $s.toRow == [], '[unsupported-api] slice/limit operations are not implemented');
-    assert($s.groupBy == [] && $havingStr == '', '[unsupported-api] groupBy/having operations are not implemented');
+    assert($s.fromRow == [] , '[unsupported-api] slice/limit with non-zero offset operations are not implemented');
 
     $format.separator + 'select ' + processTop($s, $format) + if($s.distinct == true,|'distinct ',|'') +
-    processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+    processSelectColumns($s.columns, $dbConfig, $format->indent(), false, $extensions) +
     if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
     if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+    if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+    if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
     if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','));
 }
 
@@ -143,6 +144,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, getdate()), 0)')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='dateadd(yy, datediff(yy, 0, %s), 0)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='datepart(hour, %s)')),
+    dynaFnToSql('if',                     $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false], isBooleanNotAllowed = [false, true, true])),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='len(%s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')),
