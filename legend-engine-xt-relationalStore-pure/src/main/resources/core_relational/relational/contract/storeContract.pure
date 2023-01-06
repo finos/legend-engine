@@ -146,6 +146,9 @@ function meta::relational::contract::execution(sq:meta::pure::mapping::StoreQuer
 // Functions supported by relational execution
 function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1]
 {
+  if($f->meta::pure::router::utils::isUnionOnGraphFetch(true),
+    | false,
+    |
       !meta::relational::functions::pureToSqlQuery::findSupportedFunction(
                         $f,
                         meta::relational::functions::pureToSqlQuery::getSupportedFunctions(),
@@ -157,6 +160,7 @@ function meta::relational::contract::supports(f:FunctionExpression[1]):Boolean[1
             meta::pure::functions::math::sum_Integer_MANY__Integer_1_,
             meta::pure::functions::math::sum_Number_MANY__Number_1_
          ]->contains($f.func);
+  );
 }
 
 function meta::relational::contract::supportsStream(f:FunctionExpression[1]):Boolean[1]

@@ -1,0 +1,532 @@
+
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+ 
+ /*
+  Test cases where ( forking at root level)
+
+  1) Only Forking : there are two sets for root level prop and below properties belong to correpsonding joint sets 
+                             {}
+                           /    \
+                        set11    set12                    (root level property)
+                        
+  
+                             {}
+                           /    \
+                        set11   set12                    (root level property)
+                        /          \
+                      set21       set22                   (level 1 property)
+
+
+ 2) Forking and merging : there are two disjoint sets for root level and below property is from same set
+                             {}
+                           /    \
+                        set11   set12                    (root level property)
+                          \       /
+                            set21                         (level 1 property)
+ 
+ 
+ */
+
+
+
+import meta::relational::graphFetch::tests::union::rootLevel::*;
+ 
+Class meta::relational::graphFetch::tests::union::rootLevel::Trade
+{
+   tradeId : Integer[1];
+   traderKerb: String[0..1];
+   quantity : Integer[1];
+}
+ 
+Class meta::relational::graphFetch::tests::union::rootLevel::Product
+{
+   productId : String[1];
+   productName : String[1];
+   description : String[1];
+}
+ 
+Association meta::relational::graphFetch::tests::union::rootLevel::Trade_Product
+{
+   product : Product[1];
+   trades : Trade[*];
+}
+
+
+
+###Relational
+Database meta::relational::graphFetch::tests::union::rootLevel::dbUnion
+(
+   Table tradeTable (tradeId INT PRIMARY KEY, quantity INT, productId VARCHAR(100), traderKerb VARCHAR(100))
+   Table tradeTable2 (tradeId INT PRIMARY KEY, quantity INT, productId VARCHAR(100), traderKerb VARCHAR(100))
+
+   Table productTable (productId VARCHAR(100) PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
+   Table productTable2 (productId VARCHAR(100) PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
+
+   Join trade_product(productTable.productId = tradeTable.productId)
+   Join trade2_product2(productTable2.productId = tradeTable2.productId)
+   Join trade2_product1(productTable.productId = tradeTable2.productId)
+)
+
+###Relational
+Database meta::relational::graphFetch::tests::union::rootLevel::dbUnion_XStore
+(
+   Table tradeTable_XStore (tradeId INT PRIMARY KEY, quantity INT, productId VARCHAR(100), traderKerb VARCHAR(100))
+   Table productTable_XStore (productId VARCHAR(100) PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
+   Join trade_product_XStore(productTable_XStore .productId = tradeTable_XStore.productId)
+)
+
+// ================================================================================
+//         Same Store 
+// ==================================================================================
+
+###Mapping
+import meta::relational::graphFetch::tests::union::rootLevel::*;
+
+//there are two disjoint sets for root level and below properties
+Mapping meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping
+(
+   Trade[trade_set_relational1] : Relational
+   {
+      tradeId : [dbUnion]tradeTable.tradeId,
+      traderKerb : [dbUnion]tradeTable.traderKerb,
+      quantity : [dbUnion]tradeTable.quantity,
+      product[prod_set_relational1] : [dbUnion]@trade_product
+   }
+
+   Trade[trade_set_relational2] : Relational
+   {
+      tradeId : [dbUnion]tradeTable2.tradeId,
+      traderKerb : [dbUnion]tradeTable2.traderKerb,
+      quantity : [dbUnion]tradeTable2.quantity,
+      product[prod_set_relational2] : [dbUnion]@trade2_product2
+   }
+
+
+   Product[prod_set_relational1] : Relational
+   {
+      productId : [dbUnion]productTable.productId,
+      productName : [dbUnion]productTable.productName,
+      description : [dbUnion]productTable.description
+   }
+
+   Product[prod_set_relational2] : Relational
+   {
+      productId : [dbUnion]productTable2.productId,
+      productName : [dbUnion]productTable2.productName,
+      description : [dbUnion]productTable2.description
+   }
+
+
+   *Product: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(prod_set_relational1, prod_set_relational2)
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_relational1, trade_set_relational2)
+   }
+)
+
+//there are two disjoint sets for root level and below properties are same set
+Mapping meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping2
+(
+   Trade[trade_set_relational1] : Relational
+   {
+      tradeId : [dbUnion]tradeTable.tradeId,
+      traderKerb : [dbUnion]tradeTable.traderKerb,
+      quantity : [dbUnion]tradeTable.quantity,
+      product : [dbUnion]@trade_product
+   }
+
+   Trade[trade_set_relational2] : Relational
+   {
+      tradeId : [dbUnion]tradeTable2.tradeId,
+      traderKerb : [dbUnion]tradeTable2.traderKerb,
+      quantity : [dbUnion]tradeTable2.quantity,
+      product: [dbUnion]@trade2_product1
+   }
+
+
+   Product: Relational
+   {
+      productId : [dbUnion]productTable.productId,
+      productName : [dbUnion]productTable.productName,
+      description : [dbUnion]productTable.description
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_relational1, trade_set_relational2)
+   }
+)
+
+
+###Pure
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::graphFetch::tests::union::rootLevel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::pure::graphFetcha::tests::XStore::*;
+import meta::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::rootLevel::createTablesInDb():Boolean[1]
+{
+  // dbUnion
+   let dbConn  = ^TestDatabaseConnection(element=dbUnion, type=DatabaseType.H2);
+
+   dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
+   dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);
+   dropAndCreateTableInDb(dbUnion, 'tradeTable2', $dbConn);
+   dropAndCreateTableInDb(dbUnion, 'productTable2', $dbConn);
+
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (1, 100, 30, \'abc\');', $dbConn);
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (2, 200, 31, \'abc\');', $dbConn);
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (5, 100, 40, \'abc\');', $dbConn);
+   executeInDb('insert into tradeTable (tradeId, quantity, productId, traderkerb) values (6, 200, 41, \'abc\');', $dbConn);
+
+   executeInDb('insert into tradeTable2 (tradeId, quantity, productId, traderkerb) values (3, 300, 30, \'xyz\');', $dbConn);
+   executeInDb('insert into tradeTable2 (tradeId, quantity, productId, traderkerb) values (4, 400, 31, \'xyz\');', $dbConn);
+   executeInDb('insert into tradeTable2 (tradeId, quantity, productId, traderkerb) values (7, 300, 40, \'xyz\');', $dbConn);
+   executeInDb('insert into tradeTable2 (tradeId, quantity, productId, traderkerb) values (8, 400, 41, \'xyz\');', $dbConn);
+
+
+   executeInDb('insert into productTable (productId, productname, description) values (30, \'Prod_1\', \'Product 1 description\');', $dbConn);
+   executeInDb('insert into productTable (productId, productname, description) values (31, \'Prod_2\', \'Product 2 description\');', $dbConn);
+
+   executeInDb('insert into productTable2 (productId, productname, description) values (40, \'Prod_3\', \'Product 3 description\');', $dbConn);
+   executeInDb('insert into productTable2 (productId, productname, description) values (41, \'Prod_4\', \'Product 4 description\');', $dbConn);
+
+   //dbUnionXStore
+   let dbConn_XStore  = ^TestDatabaseConnection(element=dbUnion_XStore, type=DatabaseType.H2);
+
+   dropAndCreateTableInDb(dbUnion_XStore, 'tradeTable_XStore', $dbConn_XStore);
+   dropAndCreateTableInDb(dbUnion_XStore, 'productTable_XStore', $dbConn_XStore);
+
+   executeInDb('insert into tradeTable_XStore (tradeId, quantity, productId, traderkerb) values (9, 100, 30, \'abc_XStore\');', $dbConn);
+   executeInDb('insert into tradeTable_XStore (tradeId, quantity, productId, traderkerb) values (10, 200, 31, \'abc_XStore\');', $dbConn);
+
+   executeInDb('insert into productTable_XStore (productId, productname, description) values (30, \'Prod_5\', \'Product 5 description XStore\');', $dbConn);
+   executeInDb('insert into productTable_XStore (productId, productname, description) values (31, \'Prod_6\', \'Product 6 description XStore\');', $dbConn);
+
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_SameStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping;
+   let runtime = meta::relational::tests::testRuntime();
+   
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"quantity":400,"traderKerb":"xyz","tradeId":8}]',
+      $result
+   );
+
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_SameStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping =  meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping;
+
+   let runtime = meta::relational::tests::testRuntime();
+ let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+
+ assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"product":null,"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"product":null,"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"product":null,"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"product":null,"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"product":{"productId":"40","description":"Product 3 description","productName":"Prod_3"},"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"product":{"productId":"41","description":"Product 4 description","productName":"Prod_4"},"quantity":400,"traderKerb":"xyz","tradeId":8}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_SameStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping =  meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping2;
+
+   let runtime = meta::relational::tests::testRuntime();
+ let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+
+ assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"product":null,"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"product":null,"quantity":200,"traderKerb":"abc","tradeId":6},'+
+       '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":300,"traderKerb":"xyz","tradeId":3},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":400,"traderKerb":"xyz","tradeId":4},'+
+       '{"product":null,"quantity":300,"traderKerb":"xyz","tradeId":7},'+
+       '{"product":null,"quantity":400,"traderKerb":"xyz","tradeId":8}]',
+      $result
+   );
+}
+
+
+// ================================================================================
+//        Cross Store Union
+// ==================================================================================
+
+###Mapping
+import meta::relational::graphFetch::tests::union::rootLevel::*;
+
+//there are two disjoint sets for root level (and below properties belong to those corresponding disjoint sets)
+Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
+(
+   Trade[trade_set_relational1] : Relational
+   {
+      tradeId : [dbUnion]tradeTable.tradeId,
+      traderKerb : [dbUnion]tradeTable.traderKerb,
+      quantity : [dbUnion]tradeTable.quantity,
+      product[prod_set_relational1] : [dbUnion]@trade_product
+   }
+
+   Trade[trade_set_relational2] : Relational
+   {
+      tradeId : [dbUnion_XStore]tradeTable_XStore.tradeId,
+      traderKerb : [dbUnion_XStore]tradeTable_XStore.traderKerb,
+      quantity : [dbUnion_XStore]tradeTable_XStore.quantity,
+      product[prod_set_relationa2] : [dbUnion_XStore]@trade_product_XStore
+   }
+
+
+   Product[prod_set_relational1] : Relational
+   {
+      productId : [dbUnion]productTable.productId,
+      productName : [dbUnion]productTable.productName,
+      description : [dbUnion]productTable.description
+   }
+
+   Product[prod_set_relational2] : Relational
+   {
+      productId : [dbUnion_XStore]productTable_XStore.productId,
+      productName : [dbUnion_XStore]productTable_XStore.productName,
+      description : [dbUnion_XStore]productTable_XStore.description
+   }
+
+
+   *Product: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(prod_set_relational1, prod_set_relational2)
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_relational1, trade_set_relational2)
+   }
+)
+
+//there are two disjoint sets for root level and below property comes from Same 3rd set 
+Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping2
+(
+   Trade[trade_set_relational1] : Relational
+   {
+      tradeId : [dbUnion]tradeTable.tradeId,
+      traderKerb : [dbUnion]tradeTable.traderKerb,
+      quantity : [dbUnion]tradeTable.quantity,
+      +prodId : String[1] : [dbUnion]tradeTable.productId
+   }
+
+   Trade[trade_set_relational2] : Relational
+   {
+      tradeId : [dbUnion_XStore]tradeTable_XStore.tradeId,
+      traderKerb : [dbUnion_XStore]tradeTable_XStore.traderKerb,
+      quantity : [dbUnion_XStore]tradeTable_XStore.quantity,
+      +prodId : String[1] : [dbUnion_XStore]tradeTable_XStore.productId
+   }
+
+   Product[prod_set]: Relational
+   {
+      productId : [dbUnion]productTable.productId,
+      productName : [dbUnion]productTable.productName,
+      description : [dbUnion]productTable.description
+   }
+
+   *Trade: Operation
+   {
+     meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(trade_set_relational1, trade_set_relational2)
+   }
+
+    Trade_Product : XStore {
+      product[trade_set_relational1, prod_set] : $this.prodId == $that.productId,
+      trades[prod_set, trade_set_relational1]  : $this.productId == $that.prodId,
+      product[trade_set_relational1, prod_set] : $this.prodId == $that.productId,
+      trades[prod_set, trade_set_relational1]  : $this.productId == $that.prodId
+   }
+)
+
+
+
+###Pure
+import meta::pure::runtime::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::executionPlan::toString::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::relational::graphFetch::tests::union::rootLevel::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::toDDL::*;
+import meta::pure::graphFetcha::tests::XStore::*;
+import meta::relational::runtime::*;
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_CrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping;
+   let runtime = meta::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"quantity":200,"traderKerb":"abc","tradeId":6},'+
+
+       '{"quantity":100,"traderKerb":"abc_XStore","tradeId":9},'+
+       '{"quantity":200,"traderKerb":"abc_XStore","tradeId":10}]',
+      $result
+   );
+
+   true;
+}
+
+function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_CrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping =  meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping;
+
+   let runtime = meta::relational::tests::testRuntime();
+ let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+
+ assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"product":{"productId":"40","description":"Product 3 description","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"product":{"productId":"41","description":"Product 4 description","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":6},'+
+
+       
+       '{"product":{"productId":"30","description":"Product 5 description XStore","productName":"Prod_5"},"quantity":100,"traderKerb":"abc_XStore","tradeId":9},'+
+       '{"product":{"productId":"31","description":"Product 6 description XStore","productName":"Prod_6"},"quantity":200,"traderKerb":"abc_XStore","tradeId":10}]',
+      $result
+   );
+}
+
+function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_CrossStore():Boolean[1]
+{
+   let tree = #{
+      Trade {
+         tradeId,
+         traderKerb,
+         quantity,
+         product {
+            productId,
+            productName,
+            description
+         }
+      }
+   }#;
+   let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
+   let mapping =  meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping2;
+
+   let runtime = meta::relational::tests::testRuntime();
+ let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+
+ 
+ assertJsonStringsEqual(
+      '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
+       '{"product":{"productId":"40","description":"Product 3 description","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":5},'+
+       '{"product":{"productId":"41","description":"Product 4 description","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":6}'+
+
+       
+       '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc_XStore","tradeId":9},'+
+       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc_XStore","tradeId":10}]',
+      $result
+   );
+}
