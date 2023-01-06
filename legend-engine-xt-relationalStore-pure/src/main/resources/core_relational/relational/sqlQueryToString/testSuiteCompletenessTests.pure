@@ -7,7 +7,7 @@ function <<test.Test>> meta::relational::tests::testSuite::ensureEveryDynaFnIsTe
     meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns
   ];
   let testedDynaFnNames = $packagesContainingDynaFnTests.children->filter(c| $c->instanceOf(Package)).name;
-  let testingIgnoredDynaFnNames = ['add', 'averageRank', 'case', 'convertDate', 'convertDateTime', 'convertVarchar128', 'dayOfWeek', 'decodeBase64', 'denseRank', 'distinct', 'divide', 'encodeBase64', 'exists', 'group', 'if', 'isAlphaNumeric', 'isDistinct', 'isNumeric', 'minus', 'not', 'objectReferenceIn', 'parseDate', 'parseDecimal', 'parseFloat', 'parseInteger', 'parseJson', 'percentile', 'plus', 'rank', 'rowNumber', 'sub', 'times', 'toOne', 'toString'];
+  let testingIgnoredDynaFnNames = ['add', 'averageRank', 'case', 'convertDate', 'convertDateTime', 'convertVarchar128', 'dayOfWeek', 'decodeBase64', 'denseRank', 'distinct', 'divide', 'encodeBase64', 'exists', 'group', 'if', 'isAlphaNumeric', 'isDistinct', 'isNumeric', 'minus', 'not', 'objectReferenceIn', 'parseDate', 'parseDecimal', 'parseFloat', 'parseInteger', 'parseJson', 'percentile', 'plus', 'rank', 'rowNumber', 'sub', 'times', 'toOne', 'toString', 'sqlTrue', 'sqlFalse'];
   let incorrectlyMarkedDynaFnNames = $testingIgnoredDynaFnNames->filter(n| $n->in($testedDynaFnNames));
   assert($incorrectlyMarkedDynaFnNames->isEmpty(), |'dyna fns ' + $incorrectlyMarkedDynaFnNames->makeString('[', ', ', ']') + ' are incorrectly marked as ignored even though they are tested in sqlQueryToString/testSuite');
   let untestedDynaFnNames = $dynaFnNames->filter(d| !$d->in($testedDynaFnNames) && !$d->in($testingIgnoredDynaFnNames));

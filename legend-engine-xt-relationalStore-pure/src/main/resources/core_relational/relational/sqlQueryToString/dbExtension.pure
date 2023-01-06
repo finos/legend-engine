@@ -725,7 +725,7 @@ Class meta::relational::functions::sqlQueryToString::DynaFunctionToSql
 
    toSql(parameters:RelationalOperationElement[*], sgcs:SqlGenerationContext[*])
    {
-      let processedParams = $parameters->zip($sgcs)->map(p |assert($p.second.config.isBooleanNotAllowed->isEmpty() || $p.second.config.isBooleanNotAllowed == false, '[unsupported-api] Boolean expression is not allowed in non-boolean contexts of dyna fn "' + $this.funcName + '"');
+      let processedParams = $parameters->zip($sgcs)->map(p |assert($p.second.config.isBooleanNotAllowed != true || !$p.first->isBooleanOperation($p.second.extensions), '[unsupported-api] boolean expression is not allowed in non-boolean contexts of dyna fn "' + $this.funcName + '"');
                                                             $p.first->processOperation($p.second););
       let params = if($this.toSql.transform->isEmpty(), | $processedParams, | $this.toSql.transform->toOne()->eval($processedParams));
 
