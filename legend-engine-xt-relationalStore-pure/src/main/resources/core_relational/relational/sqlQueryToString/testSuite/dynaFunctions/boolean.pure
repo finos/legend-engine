@@ -18,20 +18,6 @@ import meta::pure::test::*;
 
 //operations on booleans
 
-function <<paramTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqlTrue::testSqlTrue(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name= 'sqlTrue');
-  let expected = ^Literal(value=true);
-  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
-}
-
-function <<paramTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::sqlFalse::testSqlFalse(config:DbTestConfig[1]):Boolean[1]
-{
-  let dynaFunc = ^DynaFunction(name='sqlFalse');
-  let expected = ^Literal(value=false);
-  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
-}
-
 //TODO activate these tests once we have stabilised boolean datatype by providing custom boolean literal propcessors for dbs that dont support boolean datatypes
 function <<paramTest.Ignore>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::and::testAnd(config:DbTestConfig[1]):Boolean[1]
 {

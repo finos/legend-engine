@@ -35,7 +35,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
      getDynaFunctionToSqlForSqlServer()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
-      isBooleanLiteralSupported = false,
+      isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       joinStringsProcessor = processJoinStringsOperationForSqlServer_JoinStrings_1__SqlGenerationContext_1__String_1_,
