@@ -24,23 +24,25 @@ public class SelectValue extends Value
 {
     private SelectStatement selectStatement;
 
-    public SelectValue()
+    public SelectValue(String quoteIdentifier)
     {
+        super(quoteIdentifier);
     }
 
-    public SelectValue(String alias)
+    public SelectValue(String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
     }
 
-    public SelectValue(SelectStatement selectStatement)
+    public SelectValue(SelectStatement selectStatement, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.selectStatement = selectStatement;
     }
 
-    public SelectValue(SelectStatement selectStatement, String alias)
+    public SelectValue(SelectStatement selectStatement, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.selectStatement = selectStatement;
     }
 

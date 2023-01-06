@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.ShowCommand;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.TruncateTable;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
 import java.util.stream.Collectors;
 
@@ -38,7 +39,13 @@ public class UpperCaseOptimizer implements CaseConversionOptimizer
         {
             Field field = (Field) component;
             field.setName(field.getName() != null ? field.getName().toUpperCase() : field.getName());
+            field.setAlias(field.getAlias() != null ? field.getAlias().toUpperCase() : field.getAlias());
             return field;
+        }
+        else if (component instanceof Value)
+        {
+            Value value = (Value) component;
+            value.setAlias(value.getAlias() != null ? value.getAlias().toUpperCase() : value.getAlias());
         }
         else if (component instanceof Column)
         {

@@ -20,14 +20,15 @@ public class NumericalValue extends Value
 {
     private Long value;
 
-    public NumericalValue(Long value)
+    public NumericalValue(Long value, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.value = value;
     }
 
-    public NumericalValue(Long value, String alias)
+    public NumericalValue(Long value, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.value = value;
     }
 

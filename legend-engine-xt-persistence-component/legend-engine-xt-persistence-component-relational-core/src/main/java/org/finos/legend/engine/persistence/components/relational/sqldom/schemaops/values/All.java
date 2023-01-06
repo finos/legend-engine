@@ -20,6 +20,11 @@ public class All extends Value
 {
     public static final String ALL = "*";
 
+    public All(String quoteIdentifier)
+    {
+        super(quoteIdentifier);
+    }
+
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
