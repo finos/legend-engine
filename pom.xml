@@ -34,6 +34,14 @@
             With our current CI, we must make sure test-report module do not run last,
             otherwise, publishing could fail
         -->
+        <module>legend-engine-xt-authentication-pure</module>
+        <module>legend-engine-xt-authentication-protocol</module>
+        <module>legend-engine-xt-authentication-grammar</module>
+        <module>legend-engine-xt-authentication-implementation-core</module>
+        <module>legend-engine-xt-authentication-implementation-vault-aws</module>
+        <module>legend-engine-xt-authentication-implementation-gcp-federation</module>
+        <module>legend-engine-xt-authentication-example</module>
+
         <module>legend-engine-test-reports</module>
 
         <module>legend-engine-xt-graphQL-grammar</module>
@@ -673,6 +681,43 @@
             </dependency>
 
             <!-- ENGINE -->
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-vault-aws</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-implementation-gcp-federation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-authentication-example</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-graphQL-query</artifactId>
