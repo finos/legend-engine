@@ -113,6 +113,13 @@ Database meta::relational::tests::db
     Table otherNamesTable(PERSON_ID INT, OTHER_NAME VARCHAR(200))
 
     Table tableWithQuotedColumns(ID INT PRIMARY KEY, "FIRST NAME" VARCHAR(200) PRIMARY KEY, "LAST NAME" VARCHAR(200) PRIMARY KEY, "1columnStartsWithNumber" VARCHAR(200))
+    Table testTable(quantity INT PRIMARY KEY, Class VARCHAR(200),boolean  INT, abstract  INT, assert  INT, break  INT, byte  INT, catch  INT, char  INT, const  INT, continue  INT,
+                    default  INT, do  INT, double  INT, else  INT, enum  INT, final  INT, finally  INT, float  INT, for  INT, goto  INT, implements  INT, instanceof  INT, interface VARCHAR(100),
+                    long VARCHAR(100), new VARCHAR(100), package VARCHAR(100), private VARCHAR(100), protected VARCHAR(100), public VARCHAR(100), return VARCHAR(100), short VARCHAR(100),
+                    static VARCHAR(100), strictfp VARCHAR(100), super VARCHAR(100), switch VARCHAR(100), synchronized VARCHAR(100), this VARCHAR(100), throw VARCHAR(100), throws VARCHAR(100),
+                    transient VARCHAR(100), try VARCHAR(100), void VARCHAR(100), volatile VARCHAR(100), while VARCHAR(100))
+
+    Table testClassTable(desks INT PRIMARY KEY, students INT)
 
     View interactionViewMaxTime
     (
@@ -660,6 +667,60 @@ Mapping meta::relational::tests::simpleRelationalMapping
                     active : case(equal([db]interactionTable.active,'Y'), 'true', 'false'),
                     longestInteractionBetweenSourceAndTarget : [db]@InteractionTable_InteractionViewMaxTime | interactionViewMaxTime.maxTime
                  }
+                
+   testReservedWords : Relational
+                 {
+                     quantity: [db]testTable.quantity,
+                     class: [db]testTable.Class,
+                     boolean  : [db]testTable.boolean,
+                     abstract  : [db]testTable.abstract,
+                     assert  : [db]testTable.assert,
+                     break  : [db]testTable.break,
+                     byte  : [db]testTable.byte,
+                     catch  : [db]testTable.catch,
+                     char  : [db]testTable.char,
+                     const  : [db]testTable.const,
+                     continue  : [db]testTable.continue,
+                     default  : [db]testTable.default,
+                     do  : [db]testTable.do,
+                     double  : [db]testTable.double,
+                     else  : [db]testTable.else,
+                     enum  : [db]testTable.enum,
+                     final  : [db]testTable.final,
+                     finally  : [db]testTable.finally,
+                     float  : [db]testTable.float,
+                     goto  : [db]testTable.goto,
+                     implements  : [db]testTable.implements,
+                     instanceof  : [db]testTable.instanceof,
+                     interface : [db]testTable.interface,
+                     long : [db]testTable.long,
+                     new : [db]testTable.new,
+                     package : [db]testTable.package,
+                     private : [db]testTable.private,
+                     protected : [db]testTable.protected,
+                     public : [db]testTable.public,
+                     return : [db]testTable.return,
+                     short : [db]testTable.short,
+                     static : [db]testTable.static,
+                     strictfp : [db]testTable.strictfp,
+                     super : [db]testTable.super,
+                     switch : [db]testTable.switch,
+                     synchronized : [db]testTable.synchronized,
+                     this : [db]testTable.this,
+                     throw : [db]testTable.throw,
+                     throws : [db]testTable.throws,
+                     transient : [db]testTable.transient,
+                     try : [db]testTable.try,
+                     void : [db]testTable.void,
+                     volatile : [db]testTable.volatile,
+                     while : [db]testTable.while 
+                 }
+                
+   class : Relational
+         {
+           desks : [db]testClassTable.desks,
+           students : [db]testClassTable.students
+        }
 )
 
 
@@ -998,6 +1059,26 @@ function meta::relational::tests::createTradeTableAndFillDb(connection : Databas
    true;
 }
 
+function meta::relational::tests::createtestTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+{
+   executeInDb('Drop table if exists testTable;', $connection);
+   executeInDb('Create Table testTable(quantity INT, Class VARCHAR(200),boolean  INT, abstract  INT, assert  INT, break  INT, byte  INT, catch  INT, char  INT, const  INT, continue  INT, default  INT, do  INT, double  INT, else  INT, enum  INT, final  INT, finally  INT, float  INT, goto  INT, implements  INT, instanceof  INT, interface VARCHAR(100), long VARCHAR(100), new VARCHAR(100), package VARCHAR(100), private VARCHAR(100), protected VARCHAR(100), public VARCHAR(100), return VARCHAR(100), short VARCHAR(100), static VARCHAR(100), strictfp VARCHAR(100), super VARCHAR(100), switch VARCHAR(100), synchronized VARCHAR(100), this VARCHAR(100), throw VARCHAR(100), throws VARCHAR(100), transient VARCHAR(100), try VARCHAR(100), void VARCHAR(100), volatile VARCHAR(100), while VARCHAR(100));', $connection);
+   executeInDb('insert into testTable (quantity, Class, boolean, abstract, assert, break, byte, catch, char, const, continue, default, do, double, else, enum, final, finally, float, goto, implements, instanceof, interface, long, new, package, private, protected, public, return, short, static, strictfp, super, switch, synchronized, this, throw, throws, transient, try, void, volatile, while ) values (1, \'Department A\',1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,\'a\',\'b\',\'c\',\'d\',\'e\',\'f\',\'g\',\'h\',\'i\',\'j\',\'k\',\'l\',\'m\',\'n\',\'o\',\'p\',\'q\',\'r\',\'s\',\'t\',\'u\',\'v\');', $connection);
+   executeInDb('insert into testTable (quantity, Class, boolean, abstract, assert, break, byte, catch, char, const, continue, default, do, double, else, enum, final, finally, float, goto, implements, instanceof, interface, long, new, package, private, protected, public, return, short, static, strictfp, super, switch, synchronized, this, throw, throws, transient, try, void, volatile, while ) values (2, \'Department B\',20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,\'v\',\'u\',\'t\',\'s\',\'r\',\'q\',\'p\',\'o\',\'n\',\'m\',\'l\',\'k\',\'j\',\'i\',\'h\',\'g\',\'f\',\'e\',\'d\',\'c\',\'b\',\'a\');', $connection);
+   
+   true;
+}
+
+function meta::relational::tests::createtestClassTableAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
+{
+   executeInDb('Drop table if exists testClassTable;', $connection);
+   executeInDb('Create Table testClassTable(desks INT, students INT);', $connection);
+   executeInDb('insert into testClassTable (desks, students) values (10, 20);', $connection);
+   executeInDb('insert into testClassTable (desks, students) values (25, 40);', $connection);
+
+   true;
+}
+
 function meta::relational::tests::createProductSchemaTablesAndFillDb(connection : DatabaseConnection[1]) : Boolean[1]
 {
    executeInDb('Drop schema if exists productSchema cascade;', $connection);
@@ -1130,6 +1211,8 @@ function meta::relational::tests::createTablesAndFillDb():Boolean[1]
    executeInDb('insert into orderTable (id, prodid, accountId, quantity, orderDate, settlementDateTime) values (4, 1, 2, 300, \'2014-12-02\', \'2014-12-03 21:00:00\');', $connection);
 
    meta::relational::tests::createTradeTableAndFillDb($connection);
+   meta::relational::tests::createtestTableAndFillDb($connection);
+   meta::relational::tests::createtestClassTableAndFillDb($connection);
 
    executeInDb('Drop table if exists orderPnlTable;', $connection);
    executeInDb('Create Table orderPnlTable(ORDER_ID INT, pnl FLOAT);', $connection);

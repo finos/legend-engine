@@ -38,5 +38,8 @@ public abstract class Connection
     public SourceInformation elementSourceInformation;
     public SourceInformation sourceInformation;
 
-    public abstract <T> T accept(ConnectionVisitor<T> connectionVisitor);
+    public <T> T accept(ConnectionVisitor<T> connectionVisitor)
+    {
+        return connectionVisitor.visit(this);
+    }
 }
