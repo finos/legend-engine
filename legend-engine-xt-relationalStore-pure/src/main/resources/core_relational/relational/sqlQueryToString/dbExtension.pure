@@ -218,11 +218,18 @@ function meta::relational::functions::sqlQueryToString::literalTransform<K>(t: m
   {x:K[1], dbTimeZone:String[0..1]| $t->eval($x)};
 }
 
+Class meta::relational::functions::sqlQueryToString::LiteralReplacement
+{
+   old : String[1];
+   new : String[1];
+}
+
 Class meta::relational::functions::sqlQueryToString::LiteralProcessor
 {
    types:Type[*];
    format: String[1];
    transform: meta::pure::metamodel::function::Function<{Nil[1], String[0..1] -> String[1]}>[1];
+   literalReplacements: LiteralReplacement[*];
 
    formatValue(value:Any[1], dbTimeZone:String[0..1]) {
       $this.format->format($this.transformValue($value, $dbTimeZone))
@@ -416,10 +423,12 @@ function meta::relational::functions::sqlQueryToString::convertPlaceHolderToSQLS
    let prefixSuffix = getPrefixAndSuffixForType($vType, $literalProcessor);
    let prefix       = $prefixSuffix.first;
    let suffix       = $prefixSuffix.second;
-   let value        = processPlaceHolder($v, $vType, $prefix, $suffix, $dbTimeZone);
+
+   let replacePairs = getReplacePairsForType($vType, $literalProcessor);
+   processPlaceHolder($v, $vType, $prefix, $suffix, $replacePairs, $dbTimeZone);
 }
 
-function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], dbTimeZone:String[0..1]): String[1]
+function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:VarPlaceHolder[1], type:Type[1], prefix:String[1], suffix:String[1], replacePairs:LiteralReplacement[*], dbTimeZone:String[0..1]): String[1]
 {
    let noPropertyPath              = $v.propertyPath->isEmpty();
    let optionalHandler             = if($v->isOptionalPlaceHolder() && $noPropertyPath,|'![]',|'');
@@ -433,15 +442,15 @@ function meta::relational::functions::sqlQueryToString::processPlaceHolder(v:Var
 
    if($v->isCollectionPlaceHolder(),
       |if($resolvedPlaceHolder == $possiblyApplyDateTzFunction,
-         |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}',
+         |'${renderCollection('+ $resolvedPlaceHolder + ' \",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + $replacePairs->map(kv | '\"' + $kv.old + '\" : \"' + $kv.new + '\" ')->joinStrings('{', ', ', '} ') + placeHolderDefaultValue() +')}',
          |'${renderCollectionWithTz('+ $resolvedPlaceHolder + ' "['+ $dbTimeZone->toOne() + ']" ' + '\",\" \"' + $prefix + '\" \"' + $suffix + '\" ' + placeHolderDefaultValue() +')}'),
       |if($v->isOptionalPlaceHolder(),
           |if($type->instanceOf(Enumeration),
-              |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"\'\" \"\'\" '+ placeHolderDefaultValue()+')}',
-              |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" '+ placeHolderDefaultValue()+')}'),
+              |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"\'\" \"\'\" {} '+ placeHolderDefaultValue()+')}',
+              |'${varPlaceHolderToString(' + $possiblyApplyDateTzFunction + ' \"' + $prefix + '\" \"'+ $suffix + '\" ' + $replacePairs->map(kv | '\"' + $kv.old + '\" : \"' + $kv.new + '\"')->joinStrings('{', ', ', '} ') + placeHolderDefaultValue()+')}'),
           |if($type->instanceOf(Enumeration),
               |$prefix + '\'${'+$possiblyApplyDateTzFunction+'}\'' + $suffix,
-              |$prefix + '${'+$possiblyApplyDateTzFunction+'}' + $suffix))
+              |$prefix + '${'+$possiblyApplyDateTzFunction+$replacePairs->map(kv | '?replace(\"' + $kv.old + '\", \"' + $kv.new + '\")')->joinStrings() + '}' + $suffix))
       );
 }
 
@@ -457,6 +466,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::getPr
    let suffix       = $lpFormat->substring($index+2);
 
    ^Pair<String, String>(first = $prefix, second = $suffix);
+}
+
+function meta::relational::functions::sqlQueryToString::getReplacePairsForType(type:Type[1], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]):LiteralReplacement[*]
+{
+   $literalProcessor->eval($type).literalReplacements;
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processFreeMarkerOperationHolder(freeMarkerOp:FreeMarkerOperationHolder[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config: Config[1], nestedFreeMarkerOperationHolder: Boolean[1], extensions:Extension[*]):String[1]
@@ -525,6 +539,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::place
 function meta::relational::functions::sqlQueryToString::convertStringToSQLString(s:String[1]):String[1]
 {
    $s->replace('\'', '\'\'')->replace('\@@','\'')
+}
+
+function meta::relational::functions::sqlQueryToString::convertStringToSQLString(literalReplacements:LiteralReplacement[*]):meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[1]
+{
+   {s:String[1] | $literalReplacements->fold({replacement, input | $input->replace($replacement.old, $replacement.new)}, $s)};
 }
 
 function meta::relational::functions::sqlQueryToString::convertSQLNullToSQLString(s:SQLNull[1]):String[1]
