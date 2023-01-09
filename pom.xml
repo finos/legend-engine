@@ -165,6 +165,7 @@
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-pure-ide-light</module>
+        <module>legend-engine-pure-ide-light-pure</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-runtime-compiler</module>
 
@@ -790,9 +791,9 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
                 <version>${project.version}</version>
-                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module 
-                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of 
-                it's published pom.xml. As expected, the problem goes away when the same dependency comes 
+                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module
+                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of
+                it's published pom.xml. As expected, the problem goes away when the same dependency comes
                 from a different project.-->
                 <exclusions>
                     <exclusion>
@@ -1483,6 +1484,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-ide-light-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

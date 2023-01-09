@@ -18,14 +18,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine-xt-relationalStore-${dbtype}</artifactId>
-        <version>${legendEngineVersion}</version>
+        <artifactId>legend-engine</artifactId>
+        <version>3.31.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-relationalStore-${dbtype}-pure</artifactId>
+    <artifactId>legend-engine-pure-ide-light-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Relational Store - ${DbType} - Pure</name>
+    <name>Legend Engine - Pure IDE Light - PAR/JAVA</name>
 
     <build>
         <plugins>
@@ -35,14 +35,8 @@
                 <configuration>
                     <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
-                    <repositories>
-                        <repository>platform</repository>
-                        <repository>core</repository>
-                        <repository>core_relational</repository>
-                        <repository>core_relational_${dbtype}</repository>
-                    </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_relational_${dbtype}.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/pure_ide.definition.json</extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -64,11 +58,6 @@
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -86,7 +75,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_relational_${dbtype}</repository>
+                                <repository>pure_ide</repository>
                             </repositories>
                         </configuration>
                     </execution>
@@ -100,11 +89,6 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
@@ -123,6 +107,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-platform</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
         <dependency>
@@ -131,87 +119,20 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-store-relational</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+            <artifactId>legend-pure-m2-dsl-diagram</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-platform</artifactId>
+            <artifactId>legend-pure-m2-dsl-mapping</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
-
-
-        <!-- TEST -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-external-json</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- TEST -->
-
-        <!-- FOR PURE IDE -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-ide-light</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-ide-light-pure</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
-            <version>${legend.pure.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-pure-runtime-compiler</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <!-- FOR PURE IDE -->
     </dependencies>
 </project>
