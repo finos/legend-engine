@@ -19,7 +19,8 @@ Class meta::pure::data::DataElement extends PackageableElement
   !$this.data->instanceOf(DataElementReference)
 ]
 {
-  data: EmbeddedData[1];
+  documentation : String[0..1];
+  data          : EmbeddedData[1];
 }
 
 // We aim to model subTypes of EmbeddedData based on following strategy

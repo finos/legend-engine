@@ -266,6 +266,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
             throw new EngineException("Cannot use Data element reference in a Data element", dataElement.data.sourceInformation, EngineErrorType.COMPILATION);
         }
         compiled._data(compiledData);
+        compiled._documentation(dataElement.documentation);
         return null;
     }
 }

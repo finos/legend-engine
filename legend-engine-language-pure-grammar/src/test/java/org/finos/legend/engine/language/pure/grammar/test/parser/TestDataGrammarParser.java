@@ -99,4 +99,23 @@ public class TestDataGrammarParser extends TestGrammarParser.TestGrammarParserTe
                 "PARSER error at [6:6-12:8]: Multiple entries found for type: 'meta::Demo'"
         );
     }
+
+    @Test
+    public void testDuplicateFields()
+    {
+        test("###Data\n" +
+                        "Data meta::data::MyData\n" +
+                        "{\n" +
+                        "   documentation: 'doc1';" +
+                        "   documentation: 'doc2';" +
+                        "   ModelStore\n" +
+                        "   #{\n" +
+                        "     meta::Demo:\n" +
+                        "       [\n" +
+                        "       ]\n" +
+                        "   }#\n" +
+                        "}\n",
+                "PARSER error at [2:1-10:1]: Field 'documentation' should be specified only once"
+        );
+    }
 }

@@ -29,6 +29,8 @@ public class DataElement extends PackageableElement
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
 
+    public String documentation;
+
     @JsonProperty(required = true)
     public EmbeddedData data;
 

@@ -81,6 +81,22 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
     }
 
     @Test
+    public void testDataElementWithDocumentation()
+    {
+        test("###Data\n" +
+                "Data meta::data::MyData\n" +
+                "{\n" +
+                "  documentation: 'doc1';" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'application/json';\n" +
+                "    data: '{\"some\":\"data\"}';\n" +
+                "  }#\n" +
+                "}\n"
+        );
+    }
+
+    @Test
     public void testExternalFormatData()
     {
         Pair<PureModelContextData, PureModel> result = test("###Data\n" +

@@ -345,4 +345,19 @@ public class TestDataGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
         );
     }
 
+    @Test
+    public void testDataWithDocumentation()
+    {
+        test("###Data\n" +
+                "Data meta::data::MyData\n" +
+                "{\n" +
+                "  documentation: 'Dummy Documentation';\n" +
+                "  Reference\n" +
+                "  #{\n" +
+                "    meta::data::MyData\n" +
+                "  }#\n" +
+                "}\n"
+        );
+    }
+
 }

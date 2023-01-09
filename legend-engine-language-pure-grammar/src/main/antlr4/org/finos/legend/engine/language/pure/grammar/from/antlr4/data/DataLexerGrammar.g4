@@ -19,3 +19,5 @@ import CoreLexerGrammar;
 // ------------------------------------ KEYWORD --------------------------------------
 
 DATA:                           'Data';
+
+DATA_ELEMENT_DOCUMENTATION:     'documentation';

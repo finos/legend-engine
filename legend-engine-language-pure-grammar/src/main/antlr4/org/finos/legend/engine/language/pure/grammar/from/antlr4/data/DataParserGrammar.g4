@@ -33,7 +33,9 @@ identifier:                 VALID_STRING | STRING
 definition:                 (dataElement)*
                             EOF
 ;
-dataElement:                DATA stereotypes? taggedValues? qualifiedName BRACE_OPEN embeddedData BRACE_CLOSE
+dataElement:                DATA stereotypes? taggedValues? qualifiedName BRACE_OPEN (documentation | embeddedData)* BRACE_CLOSE
+;
+documentation:              DATA_ELEMENT_DOCUMENTATION COLON STRING SEMI_COLON
 ;
 embeddedData:               identifier ISLAND_OPEN (embeddedDataContent)*
 ;

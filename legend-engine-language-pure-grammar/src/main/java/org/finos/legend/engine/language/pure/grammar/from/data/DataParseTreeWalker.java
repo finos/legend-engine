@@ -60,7 +60,16 @@ public class DataParseTreeWalker
         dataElement.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         dataElement.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
         dataElement.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
-        dataElement.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), walkerSourceInformation, extensions);
+
+        DataParserGrammar.DocumentationContext documentationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.documentation(), "documentation", this.walkerSourceInformation.getSourceInformation(ctx));
+        if (!documentationContext.isEmpty())
+        {
+            dataElement.documentation = PureGrammarParserUtility.fromGrammarString(documentationContext.STRING().getText(), true);
+        }
+
+        DataParserGrammar.EmbeddedDataContext embeddedDataContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.embeddedData(), "embeddedData", this.walkerSourceInformation.getSourceInformation(ctx));
+        dataElement.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(embeddedDataContext, walkerSourceInformation, extensions);
+
         return dataElement;
     }
 

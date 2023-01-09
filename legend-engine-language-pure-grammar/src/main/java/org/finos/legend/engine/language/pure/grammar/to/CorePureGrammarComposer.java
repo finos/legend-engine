@@ -30,6 +30,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAsserti
 
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+
 public class CorePureGrammarComposer implements PureGrammarComposerExtension
 {
     @Override
@@ -88,6 +91,10 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
                 .append("\n");
 
         str.append("{\n");
+        if (dataElement.documentation != null)
+        {
+            str.append(getTabString()).append("documentation: ").append(convertString(dataElement.documentation, true)).append(";\n");
+        }
         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(dataElement.data, updatedContext));
         str.append("\n}");
 
