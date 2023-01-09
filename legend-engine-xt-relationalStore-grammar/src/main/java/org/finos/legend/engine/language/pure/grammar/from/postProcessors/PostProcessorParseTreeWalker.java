@@ -56,14 +56,9 @@ public class PostProcessorParseTreeWalker
     public MapperPostProcessor visitMapperPostProcessor(PostProcessorSpecificationSourceCode code, PostProcessorParserGrammar.MapperPostProcessorContext ctx)
     {
         List<Mapper> mappers = ListIterate.collect(ctx.mappers().mapper(), mapper -> visitMapper(code, mapper));
-        MapperPostProcessor processor = new MapperPostProcessor();
 
-        PostProcessorParserGrammar.OrderContext orderCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.order(), "order", code.getWalkerSourceInformation().getSourceInformation(ctx));
+        MapperPostProcessor processor = new MapperPostProcessor();
         processor.mappers = mappers;
-        if (orderCtx != null)
-        {
-            processor.order = Integer.parseInt(orderCtx.INTEGER().getText());
-        }
 
         return processor;
     }

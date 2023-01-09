@@ -9,4 +9,3 @@ TO:                 'to';
 SCHEMA_FROM:        'schemaFrom';
 SCHEMA_TO:          'schemaTo';
 MAPPERS:            'mappers';
-ORDER:              'order';
