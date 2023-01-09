@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2023 Goldman Sachs
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine</artifactId>
+        <version>3.30.2-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
+    <packaging>jar</packaging>
+    <name>Legend Engine - XT - Non-Relational Store - MongoDB - Pure</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-compilation-par</artifactId>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
+                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
+                    <repositories>
+                        <repository>platform</repository>
+                        <repository>core</repository>
+                        <repository>core_external_format_json</repository>
+                        <repository>core_nonrelational_mongodb</repository>
+                    </repositories>
+                    <extraRepositories>
+                        <extraRepository>${project.basedir}/src/main/resources/core_nonrelational_mongodb.definition.json</extraRepository>
+                    </extraRepositories>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>build-pure-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-json-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-java-compiled</artifactId>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>build-pure-compiled-jar</goal>
+                        </goals>
+                        <configuration>
+                            <generateSources>true</generateSources>
+                            <preventJavaCompilation>true</preventJavaCompilation>
+                            <generationType>modular</generationType>
+                            <useSingleDir>true</useSingleDir>
+                            <repositories>
+                                <repository>core_nonrelational_mongodb</repository>
+                            </repositories>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-json-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredUnusedDeclaredDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-store-relational</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-external-json</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.pure</groupId>-->
+<!--            <artifactId>legend-pure-m3-platform</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.pure</groupId>-->
+<!--            <artifactId>legend-pure-m2-dsl-mapping</artifactId>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-platform-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+
+        <!--        <dependency>-->
+        <!--            <groupId>junit</groupId>-->
+        <!--            <artifactId>junit</artifactId>-->
+        <!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-code-compiled-tests</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

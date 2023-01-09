@@ -1,0 +1,155 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::mongodb::metamodel::*;
+
+Class meta::external::store::mongodb::metamodel::BaseType
+{
+  allOf: BaseType[*];
+  anyOf: BaseType[*];
+  bsonType: BaseType[1];
+  enum: String[*];
+  not: BaseType[*];
+  oneOf: BaseType[*];
+  type: String[1];
+  title: String[0..1];
+}
+
+
+Class meta::external::store::mongodb::metamodel::PropertyType
+{
+  key: String[1];
+  value: BaseType[1];
+}
+
+Class meta::external::store::mongodb::metamodel::ArrayType extends BaseType
+{
+  additionalItemsAllowed: Boolean[1];
+  additionalItems: BaseType[0..1];
+  items: BaseType[1..*];
+  maxItems: Integer[0..1];
+  minItems: Integer[0..1];
+  uniqueItems: Boolean[1];
+}
+
+Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
+{
+  properties: PropertyType[1..*];
+  required: String[*];  // Refers to properties, should it be ObjectType[*]??
+  additionalPropertiesAllowed: Boolean[1];
+  additionalProperties: ObjectType[0..1]; 
+  dependencies: ObjectType[0..1];
+  description: String[0..1];
+  maxProperties: Integer[0..1];
+  minProperties: Integer[0..1];
+  patternProperties: RegExType[0..1];
+
+}
+
+Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
+{  
+}
+
+Class {doc.doc = 'UTF 8'} meta::external::store::mongodb::metamodel::StringType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::DoubleType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::BinaryType extends BsonType
+{
+  subType: Integer[1]; // https://www.mongodb.com/docs/manual/reference/bson-types/#binary-data
+}
+
+Class meta::external::store::mongodb::metamodel::ObjectIdType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::BoolType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::DateType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::NullType extends BsonType
+{
+}
+
+Class meta::external::store::mongodb::metamodel::RegExType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::JavaScriptType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::IntType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::TimeStampType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::LongType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::DecimalType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::MinKeyType extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::MaxKeyype extends BsonType
+{  
+}
+
+Class meta::external::store::mongodb::metamodel::Collection extends ObjectType
+{
+  owner: MongoDatabase[1];
+  name: String[1];
+} 
+
+Class meta::external::store::mongodb::metamodel::CollectionView extends ObjectType
+{
+  owner: MongoDatabase[1];
+  name: String[1];
+  collation: Collation[0..1];
+  source: Collection[1];
+  pipeLine: ViewPipeline[1..*];
+} 
+
+Class meta::external::store::mongodb::metamodel::MongoDatabase
+{
+  collections: Collection[*];
+  views: CollectionView[*];
+}
+
+Class meta::external::store::mongodb::metamodel::Collation
+{
+  locale: String[1];
+}
+
+Class meta::external::store::mongodb::metamodel::ViewPipeline
+{
+}
+
+
