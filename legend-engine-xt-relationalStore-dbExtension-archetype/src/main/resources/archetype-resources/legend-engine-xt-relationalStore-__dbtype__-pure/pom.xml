@@ -192,6 +192,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-ide-light-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
             <version>${legend.pure.version}</version>

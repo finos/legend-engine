@@ -28,25 +28,28 @@ public class GenerateMetaClasses extends GenerateJavaProject
 {
     public static void main(String[] args)
     {
-        List<String> elementsToBeExcluded = args.length == 4 ? Arrays.asList(args[3].split(",")) : Collections.emptyList();
-        new GenerateMetaClasses(args[0], args[1], args[2], elementsToBeExcluded).execute();
+        List<String> elementsToBeExcluded = args.length >= 4 && args[3] != null ? Arrays.asList(args[3].split(",")) : Collections.emptyList();
+        List<String> customConventionConfigFuncs = args.length >= 5 ? Arrays.asList(args[4].split(",")) : Collections.emptyList();
+        new GenerateMetaClasses(args[0], args[1], args[2], elementsToBeExcluded, customConventionConfigFuncs).execute();
     }
 
     private final String fromPurePackage;
     private final String toJavaPackage;
     private final List<String> elementsToBeExcluded;
+    private final List<String> customConventionConfigFuncs;
 
-    protected GenerateMetaClasses(String fromPurePackage, String toJavaPackage, String outputDirectory, List<String> elementsToBeExcluded)
+    protected GenerateMetaClasses(String fromPurePackage, String toJavaPackage, String outputDirectory, List<String> elementsToBeExcluded, List<String> customConventionConfigFuncs)
     {
         super(outputDirectory);
         this.fromPurePackage = fromPurePackage;
         this.toJavaPackage = toJavaPackage;
         this.elementsToBeExcluded = elementsToBeExcluded;
+        this.customConventionConfigFuncs = customConventionConfigFuncs;
     }
 
     @Override
     protected Root_meta_external_language_java_metamodel_project_Project doExecute(CompiledExecutionSupport executionSupport)
     {
-        return core_external_language_java_protocol_generation_generation.Root_meta_protocols_generation_java_generateProtocolClasses_String_1__String_1__String_MANY__Project_1_(fromPurePackage, toJavaPackage, Lists.mutable.withAll(elementsToBeExcluded), executionSupport);
+        return core_external_language_java_protocol_generation_generation.Root_meta_protocols_generation_java_generateProtocolClasses_String_1__String_1__String_MANY__String_MANY__Project_1_(fromPurePackage, toJavaPackage, Lists.mutable.withAll(elementsToBeExcluded), Lists.mutable.withAll(customConventionConfigFuncs), executionSupport);
     }
 }
