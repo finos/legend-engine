@@ -63,7 +63,7 @@ jobs:
       - name: Configure GCP credentials With Github Actions
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.SPANNER_INTEGRATION_SA1_JSON }}
+          credentials_json: ${{ secrets.SPANNER_INTEGRATION_TEST_RO1_JSON }}
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v0"
       - name: "Use gcloud CLI"
