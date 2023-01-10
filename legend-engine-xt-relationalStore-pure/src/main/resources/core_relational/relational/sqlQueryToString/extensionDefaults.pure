@@ -121,9 +121,11 @@ function meta::relational::functions::sqlQueryToString::default::processTakeDefa
 
 function meta::relational::functions::sqlQueryToString::default::getDefaultLiteralProcessors():Map<Type,LiteralProcessor>[1]
 {
+   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
+
    newMap([
       pair(Enum,           ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
-      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString_String_1__String_1_->literalTransform(), literalReplacements = ^LiteralReplacement(old = '\'', new = '\'\''))),
+      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
       pair(Number,         ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
       pair(Integer,        ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),
       pair(Float,          ^LiteralProcessor(format = '%s',     transform = toString_Any_1__String_1_->literalTransform())),

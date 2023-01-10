@@ -537,13 +537,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::place
 }
 
 function meta::relational::functions::sqlQueryToString::convertStringToSQLString(s:String[1]):String[1]
-{
-   $s->replace('\'', '\'\'')->replace('\@@','\'')
+{  
+   convertStringToSQLString(^LiteralReplacement(old='\'',new='\'\''))->eval($s);
 }
 
 function meta::relational::functions::sqlQueryToString::convertStringToSQLString(literalReplacements:LiteralReplacement[*]):meta::pure::metamodel::function::Function<{String[1] -> String[1]}>[1]
 {
-   {s:String[1] | $literalReplacements->fold({replacement, input | $input->replace($replacement.old, $replacement.new)}, $s)};
+   //TODO: Clean up this hack
+   let updatedLiteralReplacements = $literalReplacements->concatenate(^LiteralReplacement(old='\@@',new='\''));
+   {s:String[1] | $updatedLiteralReplacements->fold({replacement, input | $input->replace($replacement.old, $replacement.new)}, $s)};
 }
 
 function meta::relational::functions::sqlQueryToString::convertSQLNullToSQLString(s:SQLNull[1]):String[1]

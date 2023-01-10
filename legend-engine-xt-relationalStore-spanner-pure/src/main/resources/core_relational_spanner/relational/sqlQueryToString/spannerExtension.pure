@@ -54,14 +54,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getLiteralProcessorsForSpanner():Map<Type,LiteralProcessor>[1]
 {
+   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\'\'');
+
    newMap([
       pair(Enum,           ^LiteralProcessor(format = 'Text%s',          transform = toString_Any_1__String_1_->literalTransform())),
-      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',      transform = convertStringToSQLString_String_1__String_1_->literalTransform(), literalReplacements = ^LiteralReplacement(old = '\'', new = '\'\''))),
+      pair(String,         ^LiteralProcessor(format = 'Text\'%s\'',      transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
       pair(Boolean,        ^LiteralProcessor(format = 'Boolean\'%s\'',   transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'Date\'%s\'',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'Timestamp\'%s\'', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
-   ])
+   ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::getDynaFunctionToSqlForSpanner(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
