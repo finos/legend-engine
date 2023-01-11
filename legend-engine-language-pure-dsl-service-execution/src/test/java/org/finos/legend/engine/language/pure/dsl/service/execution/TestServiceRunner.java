@@ -718,7 +718,7 @@ public class TestServiceRunner
                 .withSerializationFormat(SerializationFormat.PURE);
 
         // Service with default batch size - 1000 (for relational)
-        SimpleRelationalServiceRunner simpleRelationalServiceRunner = new SimpleRelationalServiceRunner();
+        SimpleRelationalServiceRunnerWithDefaultBatchSize simpleRelationalServiceRunner = new SimpleRelationalServiceRunnerWithDefaultBatchSize();
 
         simpleRelationalServiceRunner.setGraphFetchBatchMemoryLimit(1);
         Exception e1 = Assert.assertThrows(RuntimeException.class, () -> simpleRelationalServiceRunner.run(serviceRunnerInput));
@@ -827,9 +827,9 @@ public class TestServiceRunner
         }
     }
 
-    private static class SimpleRelationalServiceRunner extends AbstractServicePlanExecutor
+    private static class SimpleRelationalServiceRunnerWithDefaultBatchSize extends AbstractServicePlanExecutor
     {
-        SimpleRelationalServiceRunner()
+        SimpleRelationalServiceRunnerWithDefaultBatchSize()
         {
             super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::graphFetchWithBatchMemoryLimit__String_1_"), true);
         }
