@@ -1227,7 +1227,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                     long currentBatch = batchIndex.incrementAndGet();
                     try (Scope ignored = GlobalTracer.get().buildSpan("graph fetch batch").withTag("storeType", "relational").withTag("batchIndex", currentBatch).withTag("class", ((RootGraphFetchTree) node.graphFetchTree)._class).asChildOf(graphFetchSpan).startActive(true))
                     {
-                        RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch);
+                        RelationalGraphObjectsBatch relationalGraphObjectsBatch = new RelationalGraphObjectsBatch(currentBatch, executionState.getGraphFetchBatchMemoryLimit());
 
                         List<Object> resultObjects = new ArrayList<>();
                         List<Pair<IGraphInstance<? extends IReferencedObject>, ExecutionCache<GraphFetchCacheKey, Object>>> instancesToDeepFetchAndCache = new ArrayList<>();

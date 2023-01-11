@@ -165,6 +165,16 @@ function test::fetchOptionalDateTimeWithTZMany(optionalDateTime:DateTime[*]):Any
     test::Employment.all()->filter(e|$e.employmentDateTime->in($optionalDateTime))->graphFetch(#{test::Employment{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Employment{firstName,lastName,employmentDateTime}}#)
 }
 
+function test::graphFetchWithBatchMemoryLimit():String[1]
+{
+    test::Person.all()->graphFetch(#{test::Person{firstName,lastName,employmentDateTime}}#)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
+}
+
+function test::graphFetchWithBatchMemoryLimitAndBatchSize():String[1]
+{
+    test::Person.all()->graphFetch(#{test::Person{firstName,lastName,employmentDateTime}}#, 1)->serialize(#{test::Person{firstName,lastName,employmentDateTime}}#)
+}
+
 ###Mapping
 Mapping test::Map
 (
