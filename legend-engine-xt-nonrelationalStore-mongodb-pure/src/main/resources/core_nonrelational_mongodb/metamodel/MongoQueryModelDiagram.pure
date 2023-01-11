@@ -297,19 +297,6 @@ Diagram meta::external::store::mongodb::metamodel::aggregation::Mongo_QueryModel
         nameVisible=true,
         lineStyle=SIMPLE)
 
-    PropertyView pview_3(
-        property=meta::external::store::mongodb::metamodel::aggregation::ExpressionObject.argument,
-        source=cview_19,
-        target=cview_12,
-        points=[(-523.44784,676.31893),(-520.58203,828.70630)],
-        label='',
-        propertyPosition=(0.0,0.0),
-        multiplicityPosition=(0.0,0.0),
-        color=#000000,
-        lineWidth=-1.0,
-        stereotypesVisible=true,
-        nameVisible=true,
-        lineStyle=SIMPLE)
 
     PropertyView pview_4(
         property=meta::external::store::mongodb::metamodel::aggregation::OperatorExpression.operationExpression,

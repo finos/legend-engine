@@ -231,7 +231,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::LiteralExpression 
 Class meta::external::store::mongodb::metamodel::aggregation::ExpressionObject extends ArgumentExpression
 {
   field: FieldPathExpression[1];
-  argument: BaseTypeValue[1];
+  argument: ArgumentExpression[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue 
@@ -240,6 +240,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue
 
 Class meta::external::store::mongodb::metamodel::aggregation::StringTypeValue extends BaseTypeValue
 {
+  value: String[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::IntTypeValue extends BaseTypeValue
