@@ -45,10 +45,12 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
     );
   )->meta::pure::functions::collection::sortBy(t|$t->match([o:ObjectTypeDefinition[1]|$o.name,e:EnumTypeDefinition[1]|$e.name])->toOne())
   ->concatenate(
-    ^SchemaDefinition
+    if($query->concatenate($mutation)->concatenate($subscription)->isNotEmpty(),
+    |^SchemaDefinition
     (
       rootOperationTypeDefinitions = $query->concatenate($mutation)->concatenate($subscription)
-    )
+    ),
+    |[])
   );
 }
 

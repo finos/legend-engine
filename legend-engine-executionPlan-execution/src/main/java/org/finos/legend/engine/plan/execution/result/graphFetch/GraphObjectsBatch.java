@@ -31,12 +31,6 @@ public class GraphObjectsBatch
     protected long totalObjectMemoryUtilization;
     protected long rowCount;
 
-    @Deprecated
-    public GraphObjectsBatch(long batchIndex)
-    {
-        this(batchIndex, PlanExecutor.DEFAULT_GRAPH_FETCH_BATCH_MEMORY_LIMIT);
-    }
-
     public GraphObjectsBatch(long batchIndex, long graphFetchBatchMemoryLimit)
     {
         this.graphFetchBatchMemoryLimit = graphFetchBatchMemoryLimit;

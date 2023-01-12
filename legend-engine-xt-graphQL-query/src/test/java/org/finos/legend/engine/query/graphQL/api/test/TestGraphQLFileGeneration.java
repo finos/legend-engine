@@ -45,7 +45,7 @@ public class TestGraphQLFileGeneration
             Assert.assertEquals(outputs.size(), 4);
             outputs.forEach(o ->
             {
-                Assert.assertEquals(o._content(), getResourceAsString("schema.graphql"));
+                Assert.assertEquals(getResourceAsString("schema.graphql"), o._content());
             });
         }
         catch (Exception e)
