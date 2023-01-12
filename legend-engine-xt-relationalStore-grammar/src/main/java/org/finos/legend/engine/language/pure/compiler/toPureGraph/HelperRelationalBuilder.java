@@ -464,7 +464,26 @@ public class HelperRelationalBuilder
     public static Table processDatabaseTable(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table databaseTable, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema)
     {
         Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name)._name(databaseTable.name);
-        RichIterable<Column> columns = ListIterate.collect(databaseTable.columns, column -> new Root_meta_relational_metamodel_Column_Impl(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(table));
+        MutableList<Column> columns = Lists.mutable.empty();
+        MutableSet<String> validColumnNames = Sets.mutable.empty();
+        MutableSet<String> duplicateColumns = Sets.mutable.empty();
+        for (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Column column : databaseTable.columns)
+        {
+            if (validColumnNames.contains(column.name))
+            {
+                duplicateColumns.add(column.name);
+            }
+            else
+            {
+                validColumnNames.add(column.name);
+                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name)._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type,context))._owner(table));
+            }
+        }
+
+        if (!duplicateColumns.isEmpty())
+        {
+            context.pureModel.addWarnings(org.eclipse.collections.impl.factory.Lists.mutable.with(new Warning(null, "Duplicate column definitions " + duplicateColumns + " in table: " + table._name())));
+        }
         RichIterable<Column> pk = ListIterate.collect(databaseTable.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         RichIterable<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning> milestoning = ListIterate.collect(databaseTable.milestoning, m -> processMilestoning(m, context, columns.groupBy(ColumnAccessor::_name)));
         return table._columns(columns)._primaryKey(pk)._schema(schema)._milestoning(milestoning);
