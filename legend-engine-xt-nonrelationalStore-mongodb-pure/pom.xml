@@ -22,12 +22,12 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>3.30.2-SNAPSHOT</version>
+        <version>3.32.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - Non-Relational Store - MongoDB - Pure</name>
+    <name>Legend Engine - XT - Non-Relational Store - MongoDB - PAR/JAVA</name>
 
     <build>
         <plugins>
