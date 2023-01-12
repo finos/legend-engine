@@ -64,6 +64,9 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run: mvn clean install -DskipTests=true
+      - name: Download Athena Driver Jar
+        run: |
+          wget --output-document=athenaDriver.jar http://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar
       - name: Run Connection Protocol Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g

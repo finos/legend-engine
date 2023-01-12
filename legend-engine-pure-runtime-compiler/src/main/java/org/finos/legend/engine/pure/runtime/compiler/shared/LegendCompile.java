@@ -15,7 +15,7 @@
 package org.finos.legend.engine.pure.runtime.compiler.shared;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.ListAdapter;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -50,21 +50,20 @@ public class LegendCompile
         // Compile
         PureModel pm = org.finos.legend.engine.language.pure.compiler.Compiler.compile(data, DeploymentMode.PROD, null, "", metadata);
         // Extract Compiled created elements
-        return ((ConcreteFunctionDefinition<Object>) extractCreatedElementFromCompiledGraph(data, pm).getFirst())._expressionSequence().getFirst();
+        return ((ConcreteFunctionDefinition<?>) extractCreatedElementFromCompiledGraph(data, pm).getFirst())._expressionSequence().getFirst();
     }
 
     private static MutableList<PackageableElement> extractCreatedElementFromCompiledGraph(PureModelContextData pureModelContextData, PureModel pureModel)
     {
-        return ListAdapter.adapt(pureModelContextData.getElements())
-                .select(x -> !(x instanceof SectionIndex) && !(x instanceof Package))
-                .collect(x ->
+        return ListIterate.collectIf(pureModelContextData.getElements(),
+                x -> !(x instanceof SectionIndex) && !(x instanceof Package),
+                x ->
                 {
                     Package elementGraphPackage = (Package) pureModel.getPackageableElement(x._package);
                     String elementId = x instanceof Function ? HelperModelBuilder.getSignature((Function) x) : x.name;
-                    PackageableElement graphElement = elementGraphPackage._children().select(s -> s._name().equals(elementId)).getFirst();
-                    Assert.assertTrue(graphElement != null, () -> "Element " + elementId + " can't be found in package " + x._package + " children:" + elementGraphPackage._children().collect(ModelElementAccessor::_name).makeString(", "));
+                    PackageableElement graphElement = elementGraphPackage._children().detect(s -> elementId.equals(s._name()));
+                    Assert.assertTrue(graphElement != null, () -> "Element " + elementId + " can't be found in package " + x._package + " children: " + elementGraphPackage._children().collect(ModelElementAccessor::_name).makeString(", "));
                     return graphElement;
                 });
     }
-
 }

@@ -1,0 +1,66 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::compiler::*;
+import meta::external::language::java::serialization::*;
+
+Class meta::external::language::java::compiler::CompilationConfiguration
+{
+    classpath:String[*];
+}
+
+Class meta::external::language::java::compiler::CompilationResult
+{
+    successful : Boolean[1];
+    errors : String[*];
+}
+
+Class meta::external::language::java::compiler::ExecutionConfiguration
+{
+    class:String[1];
+    method:String[1];
+}
+
+Class meta::external::language::java::compiler::ExecutionResult
+{
+    successful : Boolean[1];
+    error : String[0..1];
+}
+
+Class meta::external::language::java::compiler::CompileAndExecuteResult
+{
+    compilationResult : meta::external::language::java::compiler::CompilationResult[1];
+    executionResult : ExecutionResult[0..1];
+}
+
+Class meta::external::language::java::compiler::JavaSource
+{
+    package : String[1];
+    name : String[1];
+    content : String[1];
+}
+
+function meta::external::language::java::compiler::compileJava(classes:meta::external::language::java::metamodel::Class[*], config:CompilationConfiguration[0..1]):meta::external::language::java::compiler::CompilationResult[1]
+{
+    compileJava($classes->map(c | ^JavaSource(package=$c.package->packageToString(), name=$c.simpleName, content=$c->classToString())), $config);
+}
+
+function meta::external::language::java::compiler::compileAndExecuteJava(classes:meta::external::language::java::metamodel::Class[*], compConfig:CompilationConfiguration[0..1], execConfig:ExecutionConfiguration[1]):CompileAndExecuteResult[1]
+{
+    compileAndExecuteJava($classes->map(c | ^JavaSource(package=$c.package->packageToString(), name=$c.simpleName, content=$c->classToString())), $compConfig, $execConfig);
+}
+
+native function meta::external::language::java::compiler::compileJava(classes:JavaSource[*], config:CompilationConfiguration[0..1]):meta::external::language::java::compiler::CompilationResult[1];
+
+native function meta::external::language::java::compiler::compileAndExecuteJava(classes:JavaSource[*], compConfig:CompilationConfiguration[0..1], execConfig:ExecutionConfiguration[1]):CompileAndExecuteResult[1];

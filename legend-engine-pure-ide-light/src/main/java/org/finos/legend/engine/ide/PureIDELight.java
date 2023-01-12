@@ -38,7 +38,7 @@ public class PureIDELight extends PureIDEServer
     @Override
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
-        String ideFilesLocation = Optional.ofNullable(sourceLocationConfiguration).map(s -> s.ideFilesLocation).orElse("legend-engine-pure-ide-light/src/main/resources/pure_ide");
+        String ideFilesLocation = Optional.ofNullable(sourceLocationConfiguration).map(s -> s.ideFilesLocation).orElse("legend-engine-pure-ide-light-pure/src/main/resources/pure_ide");
         return Lists.mutable.<RepositoryCodeStorage>empty()
                 .with(this.buildCore("legend-engine-xt-persistence-pure", "persistence"))
                 .with(this.buildCore("legend-engine-xt-mastery-pure", "mastery"))

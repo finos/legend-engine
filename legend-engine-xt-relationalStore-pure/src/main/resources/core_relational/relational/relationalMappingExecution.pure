@@ -193,11 +193,15 @@ function meta::relational::mapping::relationalPlanSupportFunctions(c:DatabaseCon
 
 function meta::relational::mapping::varPlaceHolderToStringFunction():String[*]
 {
-   '<#function varPlaceHolderToString optionalParameter prefix suffix defaultValue>' +
+   '<#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue>' +
          '<#if optionalParameter?is_enumerable && !optionalParameter?has_content>'+               
                '<#return defaultValue>'+                    
          '<#else>' +
-               '<#return prefix + optionalParameter + suffix></#if>'+
+         '<#assign newParam = optionalParameter>' +
+         '<#list replacementMap as oldValue, newValue>' +
+         '   <#assign newParam = newParam?replace(oldValue, newValue)>' +
+         '</#list>' +
+         '<#return prefix + newParam + suffix></#if>'+
    '</#function>';
 }
 
@@ -229,11 +233,15 @@ function meta::relational::mapping::collectionSizeFunction():String[1]
 
 function meta::relational::mapping::collectionRenderFunction():String[1]
 {
-   '<#function renderCollection collection separator prefix suffix defaultValue>'+
+   '<#function renderCollection collection separator prefix suffix replacementMap defaultValue>'+
         '<#if collection?size == 0>' +
            '<#return defaultValue>' +
         '</#if>' +
-        '<#return prefix + collection?join(suffix + separator + prefix) + suffix>'+
+        '<#assign newCollection = collection>' +
+        '<#list replacementMap as oldValue, newValue>' +
+        '   <#assign newCollection = collection?map(ele -> ele?replace(oldValue, newValue))>' +
+        '</#list>' +
+        '<#return prefix + newCollection?join(suffix + separator + prefix) + suffix>'+
    '</#function>';
 }
 
