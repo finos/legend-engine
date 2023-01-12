@@ -125,7 +125,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    '  type = String\n'+
    '  expression =  -> serialize(#{meta::pure::mapping::modelToModel::test::units::dest::HealthProfile {weight}}#)\n'+
    '  (\n'+
-   '    GlobalGraphFetch\n'+
+   '    StoreMappingGlobalGraphFetch\n'+
    '    (\n'+
    '      type = PartialClass[impls=[(meta::pure::mapping::modelToModel::test::units::dest::HealthProfile | instanceIdentityMapping.meta_pure_mapping_modelToModel_test_units_dest_HealthProfile)], propertiesWithParameters = [weight]]\n'+
    '      resultSizeRange = *\n'+
@@ -155,6 +155,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    '      children = [\n'+
    '         \n'+
    '      ]\n'+
+   '      localTreeIndices = [0, 1]\n'+
+   '      dependencyIndices = []\n'+
    '    )\n'+
    '  )\n'+
    ')\n';

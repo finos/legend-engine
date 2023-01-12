@@ -19,7 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExe
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.XStorePropertyFetchDetails;
 
 import java.util.List;
@@ -134,8 +134,8 @@ public class GraphFetchCrossAssociationKeys
         List<ExecutionNode> executionNodes = allChildNodes(plan.rootExecutionNode);
 
         return executionNodes.stream()
-                .filter(GlobalGraphFetchExecutionNode.class::isInstance)
-                .map(GlobalGraphFetchExecutionNode.class::cast)
+                .filter(StoreMappingGlobalGraphFetchExecutionNode.class::isInstance)
+                .map(StoreMappingGlobalGraphFetchExecutionNode.class::cast)
                 .filter(g -> g.xStorePropertyFetchDetails != null && g.xStorePropertyFetchDetails.supportsCaching)
                 .map(g ->
                 {
