@@ -512,7 +512,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
    '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n' +
-   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n' +
+   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype?replace("\'", "\'\'")}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n' +
    '      connection = TestDatabaseConnection(type = \"H2\")\n' +
    '    )\n' +
    '  )\n' +

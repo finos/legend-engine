@@ -253,3 +253,12 @@ meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::
       ->addTestsWithin(meta::pure::functions::string::tests::matches)
       ->runTests();
 }
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::testGetMethodName() : Boolean[1]
+{
+  let testList = ['class','Class',  'quantity','property','function'];
+  let result = $testList->map(v| if($v->meta::external::language::java::transform::checkForReservedWordsForGet(),|'get'+ '_' + $v,|'get'+ $v));
+  meta::pure::functions::asserts::assertEquals(['get_class', 'get_Class', 'getquantity', 'getproperty', 'getfunction'],$result);
+}

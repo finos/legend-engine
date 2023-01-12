@@ -114,6 +114,9 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P3',null,null,'2020-12-14 20:00:00');");
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P4',null,'A3','2020-12-15 20:00:00');");
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P5','F1','A1','2020-12-16 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('SpecialName''1','F2','A2','2020-12-13 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('SpecialName''2','F2','A2','2020-12-13 20:00:00');");
+        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('SpecialName&3','F2','A2','2022-12-13 20:00:00');");
         statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P10','F1','A1','2020-12-17 20:00:00');");
 
         statement.execute("Drop table if exists Address;");
@@ -142,6 +145,51 @@ public class TestPlanExecutionForIn extends AlloyTestServer
     }
 
     @Test
+    public void testInExecutionWithString()
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {name:String[1] | test::Person.all()\n" +
+                "                        ->filter(p:test::Person[1] | $p.fullName->in($name))\n" +
+                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
+                "}";
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
+        Map<String, ?> params = Maps.mutable.with("name", "P1");
+        String expected = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('P1')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]}]}}";
+        Assert.assertEquals(expected, executePlan(plan, params));
+
+        Map<String, ?> paramsWithQuotes = Maps.mutable.with("name", "SpecialName'1");
+        String expectedWithQuotes = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('SpecialName''1')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"SpecialName'1\"]}]}}";
+        Assert.assertEquals(expectedWithQuotes, executePlan(plan, paramsWithQuotes));
+    }
+
+    @Test
+    public void testInExecutionWithOptionalStringParam()
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {name:String[0..1] | test::Person.all()\n" +
+                "                        ->filter(p:test::Person[1] | $p.fullName->in($name))\n" +
+                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
+                "}";
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
+
+        Map<String, ?> paramWithValue = Maps.mutable.with("name", "P1");
+        String expectedWithValue = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('P1')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]}]}}";
+        Assert.assertEquals(expectedWithValue, executePlan(plan, paramWithValue));
+
+        Map<String, ?> paramWithQuotes = Maps.mutable.with("name", "SpecialName'1");
+        String expectedWithQuotes = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('SpecialName''1')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"SpecialName'1\"]}]}}";
+        Assert.assertEquals(expectedWithQuotes, executePlan(plan, paramWithQuotes));
+
+        Map<String, ?> paramWithoutValue = Maps.mutable.with("name", Lists.mutable.empty());
+        String expectedWithoutValue = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in (null)\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : []}}";
+        Assert.assertEquals(expectedWithoutValue, executePlan(plan, paramWithoutValue));
+    }
+
+    @Test
     public void testInExecutionWithStringList()
     {
         String fetchFunction = "###Pure\n" +
@@ -156,14 +204,23 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Map<String, ?> paramWithEmptyList = Maps.mutable.with("names", Lists.mutable.empty());
         Map<String, ?> paramWithSingleValue = Maps.mutable.with("names", Lists.mutable.with("P1"));
         Map<String, ?> paramWithMultipleValues = Maps.mutable.with("names", Lists.mutable.with("P1", "P2"));
+        Map<String, ?> paramWithQuotes = Maps.mutable.with("names", Lists.mutable.with("SpecialName'1"));
+        Map<String, ?> paramListWithQuotes = Maps.mutable.with("names", Lists.mutable.with("SpecialName'1", "SpecialName'2"));
+        Map<String, ?> paramWithAmpersand = Maps.mutable.with("names", Lists.mutable.with("SpecialName&3"));
 
         String expectedResWithEmptyList = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in (null)\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : []}}";
         String expectedResWithSingleValue = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('P1')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]}]}}";
         String expectedResWithMultipleValues = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('P1','P2')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]},{\"values\": [\"P2\"]}]}}";
+        String expectedResWithQuotes = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('SpecialName''1')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"SpecialName'1\"]}]}}";
+        String expectedResListWithQuotes = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('SpecialName''1','SpecialName''2')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"SpecialName'1\"]},{\"values\": [\"SpecialName'2\"]}]}}";
+        String expectedResListWithAmpersand = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in ('SpecialName&3')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"SpecialName&3\"]}]}}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan, paramWithEmptyList));
         Assert.assertEquals(expectedResWithSingleValue, executePlan(plan, paramWithSingleValue));
         Assert.assertEquals(expectedResWithMultipleValues, executePlan(plan, paramWithMultipleValues));
+        Assert.assertEquals(expectedResWithQuotes, executePlan(plan, paramWithQuotes));
+        Assert.assertEquals(expectedResListWithQuotes, executePlan(plan, paramListWithQuotes));
+        Assert.assertEquals(expectedResListWithAmpersand, executePlan(plan, paramWithAmpersand));
     }
 
     @Test
@@ -209,7 +266,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
 
         String expectedResWithEmptyList = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (null)\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : []}}";
         String expectedResWithSingleValue = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]}]}}";
-        String expectedResWithMultipleValues = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]},{\"values\": [\"P2\"]}]}}";
+        String expectedResWithMultipleValues = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]},{\"values\": [\"P2\"]},{\"values\": [\"SpecialName'1\"]},{\"values\": [\"SpecialName'2\"]}]}}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan, paramWithEmptyList));
         Assert.assertEquals(expectedResWithSingleValue, executePlan(plan, paramWithSingleValue));
@@ -234,7 +291,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
 
         String expectedResWithEmptyList = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in (null)\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : []}}";
         String expectedResWithSingleValue = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]}]}}";
-        String expectedResWithMultipleValues = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]},{\"values\": [\"P2\"]}]}}";
+        String expectedResWithMultipleValues = "{\"builder\": {\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]}, \"activities\": [{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".birthTime in ('2020-12-12 20:00:00','2020-12-13 20:00:00')\"}], \"result\" : {\"columns\" : [\"fullName\"], \"rows\" : [{\"values\": [\"P1\"]},{\"values\": [\"P2\"]},{\"values\": [\"SpecialName'1\"]},{\"values\": [\"SpecialName'2\"]}]}}";
 
         Assert.assertEquals(expectedResWithEmptyList, executePlan(plan, paramWithEmptyList));
         Assert.assertEquals(expectedResWithSingleValue, executePlan(plan, paramWithSingleValue));

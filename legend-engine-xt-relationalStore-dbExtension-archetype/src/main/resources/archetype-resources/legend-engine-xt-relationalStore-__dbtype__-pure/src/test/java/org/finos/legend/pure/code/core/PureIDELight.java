@@ -17,7 +17,6 @@ package org.finos.legend.pure.code.core;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
-import org.finos.legend.pure.ide.light.PureIDECodeRepository;
 import org.finos.legend.pure.ide.light.PureIDEServer;
 import org.finos.legend.pure.ide.light.SourceLocationConfiguration;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
@@ -26,7 +25,6 @@ import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.fs.Muta
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 
 import java.nio.file.Paths;
-import java.util.Optional;
 
 public class PureIDELight extends PureIDEServer
 {
@@ -38,12 +36,9 @@ public class PureIDELight extends PureIDEServer
     @Override
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
-        String ideFilesLocation = Optional.ofNullable(sourceLocationConfiguration).map(s -> s.ideFilesLocation)
-                .orElse("legend-engine-xt-relationalStore-${dbtype}-pure/src/test/resources/pure_ide");
         String ${dbtype}Repo = "legend-engine-xt-relationalStore-${dbtype}-pure/src/main/resources/core_relational_${dbtype}";
         return Lists.mutable.<RepositoryCodeStorage>empty()
-                .with(new MutableFSCodeStorage(GenericCodeRepository.build(Paths.get(${dbtype}Repo + ".definition.json")), Paths.get(${dbtype}Repo)))
-                .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
+                .with(new MutableFSCodeStorage(GenericCodeRepository.build(Paths.get(${dbtype}Repo + ".definition.json")), Paths.get(${dbtype}Repo)));
     }
 
     @Override

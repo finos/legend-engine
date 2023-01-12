@@ -68,7 +68,7 @@ public class TestFreemarker
     @Test
     public void testRenderCollectionOfIntegersWithDefaultValue() throws Exception
     {
-        String query = "final collection : ${renderCollectionWithDefaultValue(testCollection \",\" \"\" \"\" \"null\")}";
+        String query = "final collection : ${renderCollectionWithDefaultValue(testCollection \",\" \"\" \"\" {} \"null\")}";
         List collection = new ArrayList();
         Map rootMap = new HashMap();
         rootMap.put("testCollection", collection);
@@ -98,7 +98,7 @@ public class TestFreemarker
     @Test
     public void testRenderCollectionOfStringsWithDefaultValue() throws Exception
     {
-        String query = "final collection : ${renderCollectionWithDefaultValue(testCollection \",\" \"'\" \"'\" \"null\")}";
+        String query = "final collection : ${renderCollectionWithDefaultValue(testCollection \",\" \"'\" \"'\" {\"'\" : \"''\"} \"null\")}";
         List collection = new ArrayList();
         Map rootMap = new HashMap();
         rootMap.put("testCollection", collection);
@@ -107,15 +107,16 @@ public class TestFreemarker
 
         collection.add("a");
         collection.add("b");
+        collection.add("c'c");
         rootMap.put("testCollection", collection);
         String result = RelationalExecutor.process(query, rootMap, functionTemplates());
-        Assert.assertEquals("final collection : 'a','b'", result.trim());
+        Assert.assertEquals("final collection : 'a','b','c''c'", result.trim());
     }
 
     @Test
     public void testRenderCollectionOfDateTimeWithDefaultValue() throws Exception
     {
-        String query = "final collection : ${renderCollectionWithDefaultValue(testCollection \",\" \"convert(DATETIME, \'\" \"\', 121)\" \"null\")}";
+        String query = "final collection : ${renderCollectionWithDefaultValue(testCollection \",\" \"convert(DATETIME, \'\" \"\', 121)\" {} \"null\")}";
         List collection = new ArrayList();
         Map rootMap = new HashMap();
         rootMap.put("testCollection", collection);
@@ -282,11 +283,15 @@ public class TestFreemarker
 
     public static String renderCollectionWithDefaultTemplate()
     {
-        return "<#function renderCollectionWithDefaultValue collection separator prefix suffix defaultValue>" +
+        return "<#function renderCollectionWithDefaultValue collection separator prefix suffix replacementMap defaultValue>" +
                 "<#if collection?size == 0>" +
                 "<#return defaultValue>" +
                 "</#if>" +
-                "<#return prefix + collection?join(suffix + separator + prefix) + suffix>" +
+                "<#assign newCollection = collection>" +
+                "<#list replacementMap as oldValue, newValue>" +
+                "   <#assign newCollection = collection?map(ele -> ele?replace(oldValue, newValue))>" +
+                "</#list>" +
+                "<#return prefix + newCollection?join(suffix + separator + prefix) + suffix>" +
                 "</#function>";
     }
 

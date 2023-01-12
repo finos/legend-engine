@@ -711,6 +711,42 @@ public class TestServiceRunner
     }
 
     @Test
+    public void testServiceRunnerGraphFetchBatchMemoryLimitForRelational()
+    {
+        ServiceRunnerInput serviceRunnerInput = ServiceRunnerInput
+                .newInstance()
+                .withSerializationFormat(SerializationFormat.PURE);
+
+        // Service with default batch size - 1000 (for relational)
+        SimpleRelationalServiceRunnerWithDefaultBatchSize simpleRelationalServiceRunner = new SimpleRelationalServiceRunnerWithDefaultBatchSize();
+
+        simpleRelationalServiceRunner.setGraphFetchBatchMemoryLimit(1);
+        Exception e1 = Assert.assertThrows(RuntimeException.class, () -> simpleRelationalServiceRunner.run(serviceRunnerInput));
+        Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e1.getMessage());
+
+        simpleRelationalServiceRunner.setGraphFetchBatchMemoryLimit(300);
+        Exception e2 = Assert.assertThrows(RuntimeException.class, () -> simpleRelationalServiceRunner.run(serviceRunnerInput));
+        Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e2.getMessage());
+
+        simpleRelationalServiceRunner.setGraphFetchBatchMemoryLimit(700);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}]", simpleRelationalServiceRunner.run(serviceRunnerInput));
+
+
+        // Service which has graph fetch batch size set - 1
+        SimpleRelationalServiceWithBatchSizeRunner simpleRelationalServiceWithBatchSizeRunner = new SimpleRelationalServiceWithBatchSizeRunner();
+
+        simpleRelationalServiceWithBatchSizeRunner.setGraphFetchBatchMemoryLimit(1);
+        Exception e3 = Assert.assertThrows(RuntimeException.class, () -> simpleRelationalServiceWithBatchSizeRunner.run(serviceRunnerInput));
+        Assert.assertEquals("Maximum memory reached when processing the graphFetch. Try reducing batch size of graphFetch fetch operation.", e3.getMessage());
+
+        simpleRelationalServiceWithBatchSizeRunner.setGraphFetchBatchMemoryLimit(300);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}]", simpleRelationalServiceWithBatchSizeRunner.run(serviceRunnerInput));
+
+        simpleRelationalServiceWithBatchSizeRunner.setGraphFetchBatchMemoryLimit(700);
+        Assert.assertEquals("[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"},{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}]", simpleRelationalServiceWithBatchSizeRunner.run(serviceRunnerInput));
+    }
+
+    @Test
     public void testSimpleRelationalServiceWithUserId()
     {
         SimpleRelationalServiceWithUserRunner simpleRelationalServiceWithUserRunner = new SimpleRelationalServiceWithUserRunner();
@@ -788,6 +824,34 @@ public class TestServiceRunner
         public List<ServiceVariable> getServiceVariables()
         {
             return Collections.singletonList(new ServiceVariable("input", String.class, Multiplicity.PURE_ONE));
+        }
+    }
+
+    private static class SimpleRelationalServiceRunnerWithDefaultBatchSize extends AbstractServicePlanExecutor
+    {
+        SimpleRelationalServiceRunnerWithDefaultBatchSize()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::graphFetchWithBatchMemoryLimit__String_1_"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
+        }
+    }
+
+    private static class SimpleRelationalServiceWithBatchSizeRunner extends AbstractServicePlanExecutor
+    {
+        SimpleRelationalServiceWithBatchSizeRunner()
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/simpleRelationalService.pure", "test::graphFetchWithBatchMemoryLimitAndBatchSize__String_1_"), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
         }
     }
 
