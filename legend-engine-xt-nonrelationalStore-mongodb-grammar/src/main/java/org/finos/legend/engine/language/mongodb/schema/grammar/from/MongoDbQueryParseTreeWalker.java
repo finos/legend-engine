@@ -12,11 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
+
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
 
 public class MongoDbQueryParseTreeWalker
 {
+    public DatabaseCommand databaseCommand;
 
+    public DatabaseCommand getCommand()
+    {
+        return this.databaseCommand;
+    }
+
+
+    public void visit(MongoDbQueryParser.DatabaseCommandContext ctx)
+    {
+        this.databaseCommand = new DatabaseCommand();
+        this.databaseCommand.type = "aggregate";
+
+    }
 }

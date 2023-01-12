@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.mongodb.schema.grammar.from;
+package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson;
 
-public class Command
+public class IntType extends BsonType
 {
 }
