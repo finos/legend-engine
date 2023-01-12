@@ -228,6 +228,7 @@
         <module>legend-engine-xt-sql-query</module>
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
     </modules>
 
     <properties>
