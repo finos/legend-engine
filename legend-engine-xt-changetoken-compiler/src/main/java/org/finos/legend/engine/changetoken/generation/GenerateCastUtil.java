@@ -54,7 +54,7 @@ public class GenerateCastUtil
             catch (RuntimeException ex)
             {
                 throw new RuntimeException(
-                        ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")));
+                        ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")), ex);
             }
             ++i;
         }
@@ -94,7 +94,7 @@ public class GenerateCastUtil
             catch (RuntimeException ex)
             {
                 throw new RuntimeException(
-                        ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")));
+                        ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")), ex);
             }
             ++i;
         }
@@ -116,7 +116,7 @@ public class GenerateCastUtil
         catch (RuntimeException ex)
         {
             throw new RuntimeException(
-                    ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")));
+                    ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")), ex);
         }
     }
 
@@ -137,7 +137,7 @@ public class GenerateCastUtil
                 {
                     throw new RuntimeException("Relative reference escapes root ("
                             + path.stream().map(Object::toString).collect(Collectors.joining("/"))
-                            + ") at index " + i + " of " + relativeReference);
+                            + ") at index " + i + " of " + relativeReference, e);
                 }
             }
             else

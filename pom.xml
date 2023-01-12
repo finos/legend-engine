@@ -165,7 +165,7 @@
         <module>legend-engine-pure-code-compiled-core</module>
 
         <module>legend-engine-xt-changetoken-pure</module>
-        <module>legend-engine-xt-changetoken-compile</module>
+        <module>legend-engine-xt-changetoken-compiler</module>
 
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
@@ -1537,7 +1537,7 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-changetoken-compile</artifactId>
+                <artifactId>legend-engine-xt-changetoken-compiler</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

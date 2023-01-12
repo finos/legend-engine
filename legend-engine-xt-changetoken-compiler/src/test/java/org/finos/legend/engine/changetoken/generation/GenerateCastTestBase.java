@@ -36,6 +36,8 @@ import java.util.Collections;
 
 public abstract class GenerateCastTestBase
 {
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GenerateCastTestBase.class);
+
     protected static Class<?> compiledClass;
     protected static final ObjectMapper mapper = new ObjectMapper();
 
@@ -45,7 +47,7 @@ public abstract class GenerateCastTestBase
     public static void setupSuite(String versionsFuncName) throws IOException, ClassNotFoundException
     {
         Path generatedSourcesDirectory = tmpFolder.newFolder("generated-sources", "java").toPath();
-        String CLASSPATH = new ClassGraph().getClasspath();
+        String classpath = new ClassGraph().getClasspath();
 
         String baseClassName = "TestCastFunction";
         GenerateCast.main(generatedSourcesDirectory.toString(), versionsFuncName, baseClassName);
@@ -53,14 +55,14 @@ public abstract class GenerateCastTestBase
         Path fileName = generatedSourcesDirectory.resolve(
                 "org/finos/legend/engine/generated/meta/pure/changetoken/cast_generation/" + baseClassName + ".java");
         Assert.assertTrue(Files.exists(fileName));
-        System.out.println("==== Generated Class ====\n" + new String(Files.readAllBytes(fileName)));
+        LOGGER.debug("==== Generated Class ====\n" + new String(Files.readAllBytes(fileName)));
         String fullClassName = "org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation." + baseClassName;
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
         MemoryFileManager fileManager = new MemoryFileManager(compiler);
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector,
-                Arrays.asList("-classpath", CLASSPATH), null,
+                Arrays.asList("-classpath", classpath), null,
                 Collections.singletonList(new SourceFile(fileName)));
         if (!task.call())
         {

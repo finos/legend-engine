@@ -25,9 +25,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-xt-changetoken-compile</artifactId>
+    <artifactId>legend-engine-xt-changetoken-compiler</artifactId>
     <packaging>jar</packaging>
-    <name>Legend Engine - XT - ChangeToken - Compile</name>
+    <name>Legend Engine - XT - ChangeToken - Compiler</name>
 
     <dependencies>
         <dependency>
@@ -87,6 +87,16 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-code-compiled-tests</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
             <scope>test</scope>
         </dependency>
         <!-- TEST -->
