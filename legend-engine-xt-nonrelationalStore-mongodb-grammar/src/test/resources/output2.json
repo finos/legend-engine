@@ -1,0 +1,9 @@
+{
+  "aggregate" : {
+    "collectionName" : "'firms'",
+    "pipelines" : [ {
+      "name" : "$match",
+      "query" : null
+    } ]
+  }
+}

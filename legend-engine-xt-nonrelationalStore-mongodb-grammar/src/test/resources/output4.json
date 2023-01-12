@@ -1,0 +1,23 @@
+{
+  "aggregate" : {
+    "collectionName" : "'firms'",
+    "pipelines" : [ {
+      "name" : "$match",
+      "query" : {
+        "filterValues" : [ {
+          "fieldName" : "test",
+          "fieldValue" : {
+            "operator" : "$eq",
+            "value" : "'USA'"
+          }
+        }, {
+          "fieldName" : "test2",
+          "fieldValue" : {
+            "operator" : "$eq",
+            "value" : "'GB'"
+          }
+        } ]
+      }
+    } ]
+  }
+}

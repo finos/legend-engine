@@ -1,0 +1,14 @@
+{
+  "aggregate" : {
+    "collectionName" : "'firms'",
+    "pipelines" : [ {
+      "name" : "$match",
+      "query" : {
+        "filterValues" : [ {
+          "fieldName" : "test",
+          "fieldValue" : "'testing'"
+        } ]
+      }
+    } ]
+  }
+}
