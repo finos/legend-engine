@@ -79,6 +79,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                     protected void runTest() throws Throwable
                     {
                         Throwable failureException = null;
+                        boolean ignoreTest = false;
                         String dbTestName = dbSuiteName + "::" + testCase.getName().substring(0, testCase.getName().indexOf("["));
                         try
                         {
@@ -89,7 +90,8 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                         {
                             if (ArrayIterate.anySatisfy(e.getStackTrace(), x -> x.getMethodName().contains(PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD)))
                             {
-                                System.out.println("| " + dbTestName + " | deviates-from-standard :ballot_box_with_check: |");
+                                ignoreTest = true;
+                                System.out.println("| **" + dbTestName + "** | deviates-from-standard :ballot_box_with_check: |");
                                 if (e instanceof PureAssertFailException)
                                 {
                                     throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
@@ -98,7 +100,8 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                             }
                             if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
                             {
-                                System.out.println("| " + dbTestName + " | not-implemented :eight_spoked_asterisk: |");
+                                ignoreTest = true;
+                                System.out.println("| **" + dbTestName + "** | not-implemented :eight_spoked_asterisk: |");
                                 throw e;
                             }
                             failureException = e;
@@ -111,10 +114,13 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                         {
                             if (failureException != null)
                             {
-                                System.out.println("| " + dbTestName + " | failing :x: |");
+                                System.out.println("| **" + dbTestName + "** | failing :x: |");
                                 throw failureException;
                             }
-                            System.out.println("| " + dbTestName + " | working :white_check_mark: |");
+                            if (!ignoreTest)
+                            {
+                                System.out.println("| **" + dbTestName + "** | working :white_check_mark: |");
+                            }
                         }
                     }
                 });
