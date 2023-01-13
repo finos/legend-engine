@@ -79,6 +79,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                     {
                         try
                         {
+                            System.out.println("Running TestSuite Test " + testCase.getName());
                             testCase.runBare();
                         }
                         catch (PureException e)

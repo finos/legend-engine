@@ -33,7 +33,7 @@ jobs:
   build:
     # NOTE: we cannot run this action in fork because secrets are not accessible from forks
     # See https://community.sonarsource.com/t/github-action-ci-build-fail-with-set-the-sonar-token-env-variable/38997
-    if: github.repository == 'finos/legend-engine'
+    # if: github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -70,7 +70,7 @@ jobs:
           MAVEN_OPTS: -Xmx4g
         run: |
           set -o pipefail
-          mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
+          mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt) | tee >(grep -o "Running TestSuite Test .*" >> sql_test_summary.txt)
       - name: Write Summary
         if: always()
         run: |
