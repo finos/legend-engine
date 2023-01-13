@@ -25,7 +25,7 @@ Service testModelStoreTestSuites::service::DocM2MService
   autoActivateUpdates: true;
   execution: Multi
   {
-    query: {param:String[1]|testModelStoreTestSuites::model::Doc.all()->filter(x| $x.firstName == $param)->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)};
+    query: {param:String[1]|testModelStoreTestSuites::model::Doc.all()->graphFetchChecked(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)->serialize(#{testModelStoreTestSuites::model::Doc{firm_tbl{addressId,firmId,legalName,ceoId},person_tbl{addressId,age,firmId,firstName,id,lastName}}}#)};
     key: 'env';
     executions['QA']:
     {
