@@ -30,6 +30,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SelectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -113,10 +114,10 @@ public class UpdateTest
                 FieldValue.builder().datasetRef(joinDataset).fieldName("pk").build()))
             .addKeyValuePairs(Pair.of(
                 FieldValue.builder().datasetRef(dataset).fieldName("col1").build(),
-                FieldValue.builder().datasetRef(joinDataset).fieldName("col1").build()))
+                FieldValue.builder().datasetRef(joinDataset).fieldName("col1").alias("alias_col1").build()))
             .addKeyValuePairs(Pair.of(
                 FieldValue.builder().datasetRef(dataset).fieldName("col2").build(),
-                FieldValue.builder().datasetRef(joinDataset).fieldName("col2").build()))
+                FieldValue.builder().datasetRef(joinDataset).fieldName("col2").alias("alias_col2").build()))
             .build();
 
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
@@ -129,9 +130,85 @@ public class UpdateTest
         }
 
         String expected = "UPDATE \"mydb\".\"tableA\" as A " +
-            "SET A.\"col1\" = (SELECT B.\"col1\" FROM \"mydb\".\"tableB\" as B WHERE A.\"pk\" = B.\"pk\")," +
-            "A.\"col2\" = (SELECT B.\"col2\" FROM \"mydb\".\"tableB\" as B WHERE A.\"pk\" = B.\"pk\") " +
+            "SET A.\"col1\" = (SELECT B.\"col1\" as \"alias_col1\" FROM \"mydb\".\"tableB\" as B WHERE A.\"pk\" = B.\"pk\")," +
+            "A.\"col2\" = (SELECT B.\"col2\" as \"alias_col2\" FROM \"mydb\".\"tableB\" as B WHERE A.\"pk\" = B.\"pk\") " +
             "WHERE EXISTS (SELECT * FROM \"mydb\".\"tableB\" as B WHERE A.\"pk\" = B.\"pk\")";
+        assert (sb.toString().equals(expected));
+    }
+
+    @Test
+    void updateWithJoinTestWithUpperCase()
+    {
+        DatasetReference dataset = DatasetReferenceImpl.builder().database("mydb").name("tableA").alias("A").build();
+        DatasetReference joinDataset = DatasetReferenceImpl.builder().database("mydb").name("tableB").alias("B").build();
+
+        Operation op = Update.builder()
+            .dataset(dataset)
+            .joinDataset(joinDataset)
+            .joinCondition(Equals.of(
+                FieldValue.builder().datasetRef(dataset).fieldName("pk").build(),
+                FieldValue.builder().datasetRef(joinDataset).fieldName("pk").build()))
+            .addKeyValuePairs(Pair.of(
+                FieldValue.builder().datasetRef(dataset).fieldName("col1").build(),
+                FieldValue.builder().datasetRef(joinDataset).fieldName("col1").alias("alias_col1").build()))
+            .addKeyValuePairs(Pair.of(
+                FieldValue.builder().datasetRef(dataset).fieldName("col2").build(),
+                FieldValue.builder().datasetRef(joinDataset).fieldName("col2").alias("alias_col2").build()))
+            .build();
+
+        RelationalTransformer transformer = new RelationalTransformer(
+            AnsiSqlSink.get(),
+            TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(op).build();
+        PhysicalPlan<SqlGen> physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        StringBuilder sb = new StringBuilder();
+        for (SqlGen token : physicalPlan.ops())
+        {
+            token.genSql(sb);
+        }
+
+        String expected = "UPDATE \"MYDB\".\"TABLEA\" as A " +
+            "SET A.\"COL1\" = (SELECT B.\"COL1\" as \"ALIAS_COL1\" FROM \"MYDB\".\"TABLEB\" as B WHERE A.\"PK\" = B.\"PK\")," +
+            "A.\"COL2\" = (SELECT B.\"COL2\" as \"ALIAS_COL2\" FROM \"MYDB\".\"TABLEB\" as B WHERE A.\"PK\" = B.\"PK\") " +
+            "WHERE EXISTS (SELECT * FROM \"MYDB\".\"TABLEB\" as B WHERE A.\"PK\" = B.\"PK\")";
+        assert (sb.toString().equals(expected));
+    }
+
+    @Test
+    void updateWithJoinTestWithLowerCase()
+    {
+        DatasetReference dataset = DatasetReferenceImpl.builder().database("MYDB").name("TABLEA").alias("A").build();
+        DatasetReference joinDataset = DatasetReferenceImpl.builder().database("MYDB").name("TABLEB").alias("B").build();
+
+        Operation op = Update.builder()
+            .dataset(dataset)
+            .joinDataset(joinDataset)
+            .joinCondition(Equals.of(
+                FieldValue.builder().datasetRef(dataset).fieldName("PK").build(),
+                FieldValue.builder().datasetRef(joinDataset).fieldName("PK").build()))
+            .addKeyValuePairs(Pair.of(
+                FieldValue.builder().datasetRef(dataset).fieldName("COL1").build(),
+                FieldValue.builder().datasetRef(joinDataset).fieldName("COL1").alias("ALIAS_COL1").build()))
+            .addKeyValuePairs(Pair.of(
+                FieldValue.builder().datasetRef(dataset).fieldName("COL2").build(),
+                FieldValue.builder().datasetRef(joinDataset).fieldName("COL2").alias("ALIAS_COL2").build()))
+            .build();
+
+        RelationalTransformer transformer = new RelationalTransformer(
+            AnsiSqlSink.get(),
+            TransformOptions.builder().addOptimizers(new LowerCaseOptimizer()).build());
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(op).build();
+        PhysicalPlan<SqlGen> physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        StringBuilder sb = new StringBuilder();
+        for (SqlGen token : physicalPlan.ops())
+        {
+            token.genSql(sb);
+        }
+
+        String expected = "UPDATE \"mydb\".\"tablea\" as A " +
+            "SET A.\"col1\" = (SELECT B.\"col1\" as \"alias_col1\" FROM \"mydb\".\"tableb\" as B WHERE A.\"pk\" = B.\"pk\")," +
+            "A.\"col2\" = (SELECT B.\"col2\" as \"alias_col2\" FROM \"mydb\".\"tableb\" as B WHERE A.\"pk\" = B.\"pk\") " +
+            "WHERE EXISTS (SELECT * FROM \"mydb\".\"tableb\" as B WHERE A.\"pk\" = B.\"pk\")";
         assert (sb.toString().equals(expected));
     }
 

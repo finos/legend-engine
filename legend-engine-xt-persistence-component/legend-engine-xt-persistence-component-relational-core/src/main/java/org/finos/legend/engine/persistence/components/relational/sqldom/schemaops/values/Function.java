@@ -28,15 +28,16 @@ public class Function extends Value
     private FunctionName name;
     private List<Value> values;
 
-    public Function(FunctionName name, List<Value> values)
+    public Function(FunctionName name, List<Value> values, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.name = name;
         this.values = values;
     }
 
-    public Function(FunctionName name, List<Value> values, String alias)
+    public Function(FunctionName name, List<Value> values, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.name = name;
         this.values = values;
     }
