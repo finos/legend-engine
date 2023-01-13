@@ -62,7 +62,8 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
     private static TestSuite wrapTestCases(TestSuite suite)
     {
         TestSuite wrappedSuite = new TestSuite(suite.getName());
-        String dbSuiteName = wrappedSuite.getName().substring(wrappedSuite.getName().indexOf("sqlQueryTests::") + 15, wrappedSuite.getName().indexOf("["));
+        String suiteName = wrappedSuite.getName();
+        String dbSuiteName = suiteName.substring(suiteName.contains("sqlQueryTests::") ? suiteName.indexOf("sqlQueryTests::") + 15 : 0, suiteName.contains("[") ? suiteName.indexOf("[") : suiteName.length());
         for (int i = 0; i < suite.testCount(); i++)
         {
             Test test = suite.testAt(i);
@@ -80,7 +81,8 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                     {
                         Throwable failureException = null;
                         boolean ignoreTest = false;
-                        String dbTestName = dbSuiteName + "::" + testCase.getName().substring(0, testCase.getName().indexOf("["));
+                        String testName = testCase.getName();
+                        String dbTestName = dbSuiteName + "::" + testName.substring(0, testName.contains("[") ? testName.indexOf("[") : testName.length());
                         try
                         {
                             System.out.println("Running db test " + dbTestName);
