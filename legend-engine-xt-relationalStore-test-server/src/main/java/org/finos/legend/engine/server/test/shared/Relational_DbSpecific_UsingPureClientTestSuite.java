@@ -77,22 +77,42 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                     @Override
                     protected void runTest() throws Throwable
                     {
+                        Throwable failureException = null;
                         try
                         {
-                            System.out.println("Running TestSuite Test " + testCase.getName());
+                            System.out.println("Running db test " + testCase.getName());
                             testCase.runBare();
                         }
                         catch (PureException e)
                         {
                             if (ArrayIterate.anySatisfy(e.getStackTrace(), x -> x.getMethodName().contains(PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD)))
                             {
+                                System.out.println("Db feature required for " + testCase.getName() + " is supported but deviates from standard");
                                 if (e instanceof PureAssertFailException)
                                 {
                                     throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
                                 }
                                 throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), e);
                             }
-                            throw e;
+                            if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
+                            {
+                                System.out.println("Db feature required for " + testCase.getName() + " is not implemented yet");
+                                throw e;
+                            }
+                            failureException = e;
+                        }
+                        catch (Throwable e)
+                        {
+                            failureException = e;
+                        }
+                        finally
+                        {
+                            if (failureException != null)
+                            {
+                                System.out.println("Db feature required for " + testCase.getName() + " does not works correctly");
+                                throw failureException;
+                            }
+                            System.out.println("Db feature required for " + testCase.getName() + " is supported");
                         }
                     }
                 });
