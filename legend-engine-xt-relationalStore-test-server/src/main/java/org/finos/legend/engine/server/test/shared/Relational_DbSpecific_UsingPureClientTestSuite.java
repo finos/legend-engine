@@ -62,6 +62,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
     private static TestSuite wrapTestCases(TestSuite suite)
     {
         TestSuite wrappedSuite = new TestSuite(suite.getName());
+        String dbSuiteName = wrappedSuite.getName().substring(wrappedSuite.getName().indexOf("sqlQueryTests::") + 15, wrappedSuite.getName().indexOf("["));
         for (int i = 0; i < suite.testCount(); i++)
         {
             Test test = suite.testAt(i);
@@ -72,7 +73,6 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
             else
             {
                 TestCase testCase = (TestCase) test;
-                String dbSuiteName = wrappedSuite.getName().substring(wrappedSuite.getName().indexOf("sqlQueryTests::") + 15, wrappedSuite.getName().indexOf("["));
                 wrappedSuite.addTest(new TestCase(testCase.getName())
                 {
                     @Override
