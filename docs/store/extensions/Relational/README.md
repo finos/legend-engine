@@ -3,7 +3,7 @@
 Relational store specifications can be used to model and query SQL based databases. An example model can be found [here](Databases/bigquery/bigquery-example-model.pure).
 To support new databases, we need to implement connector extensions for them.
 
-Developing a new relational connector has 5 main parts: :x: :heavy_check_mark: :white_check_mark: :heavy_multiplication_x: :ballot_box_with_check: :no_entry_sign: :eight_spoked_asterisk: :white_circle: :grey_question: :grey_exclamation:
+Developing a new relational connector has 5 main parts: :x: :white_check_mark: :ballot_box_with_check: :eight_spoked_asterisk:
 
 1. Db Specific Sql generation logic.
 2. Modelling the connector specific data source and authentication strategy specifications.
