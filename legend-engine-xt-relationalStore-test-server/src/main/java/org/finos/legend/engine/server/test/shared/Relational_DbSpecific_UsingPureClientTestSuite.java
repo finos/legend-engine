@@ -87,7 +87,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                         {
                             if (ArrayIterate.anySatisfy(e.getStackTrace(), x -> x.getMethodName().contains(PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD)))
                             {
-                                System.out.println("Db feature required for **" + testCase.getName() + "** is supported but deviates from standard :ballot_box_with_check:");
+                                System.out.println("| " + testCase.getName() + " | deviates-from-standard :ballot_box_with_check: |");
                                 if (e instanceof PureAssertFailException)
                                 {
                                     throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
@@ -96,7 +96,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                             }
                             if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
                             {
-                                System.out.println("Db feature required for **" + testCase.getName() + "** is not implemented yet :eight_spoked_asterisk:");
+                                System.out.println("| " + testCase.getName() + " | not-implemented :eight_spoked_asterisk: |");
                                 throw e;
                             }
                             failureException = e;
@@ -109,10 +109,10 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                         {
                             if (failureException != null)
                             {
-                                System.out.println("Db feature required for **" + testCase.getName() + "** does not works correctly :x:");
+                                System.out.println("| " + testCase.getName() + " | failing :x: |");
                                 throw failureException;
                             }
-                            System.out.println("Db feature required for **" + testCase.getName() + "** is supported :white_check_mark:");
+                            System.out.println("| " + testCase.getName() + " | working :white_check_mark: |");
                         }
                     }
                 });

@@ -11,9 +11,6 @@ Developing a new relational connector has 5 main parts:
 4. Testing 1 + 3 by writing an integration test that runs test suite against a test db instance.
 5. Testing 2 + 3 by writing connection acquisition tests, which run against a test db instance.
 
-|first|second|
-|third|forth|
-
 Module structure of a relational connector:
 
 1. **\<dbType\>-protocol** module defines the POJOs representing connector specific data source and authentication strategy specifications.
