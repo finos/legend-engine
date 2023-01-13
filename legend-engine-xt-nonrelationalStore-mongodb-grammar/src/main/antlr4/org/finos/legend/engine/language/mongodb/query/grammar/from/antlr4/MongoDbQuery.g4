@@ -8,27 +8,48 @@ grammar MongoDbQuery;
 // some grammar examples https://raw.githubusercontent.com/mongodb-js/mongodb-language-model/master/grammar.pegjs
 // examples from mongo java driver, in legend project search for com.mongodb.client.model.Aggregates class and $match there
 
-
 databaseCommand:
     command
     EOF
 ;
 
 command:
-OPEN_CURLY
-    AGGREGATE COLON stringValue COMMA
-    PIPELINE COLON pipelines
-CLOSE_CURLY;
+BRACE_OPEN
+    AGGREGATE COLON STRING COMMA
+    PIPELINE COLON pipelines COMMA
+    CURSOR COLON '{' '}'
+BRACE_CLOSE;
 
-pipelines: '[' ']'
-    | stageList
-    ;
+pipelines: '[' aggregationPipelineStage? ( ',' aggregationPipelineStage)* ']';
 
-stageList: '[' matchStage ( ',' matchStage)* ']'; // one item or several separate by comma
+// Aggregation Pipeline Stages
+//https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/
 
+aggregationPipelineStage: matchStage;
 
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/#mongodb-pipeline-pipe.-match
 matchStage:
-    '{' MATCH ':' ( OPEN_CURLY CLOSE_CURLY | queryFilter) '}';
+    '{' MATCH ':' ( BRACE_OPEN BRACE_CLOSE | queryExpression | logicalOperatorExpression) '}';
+
+// TODO: handle taking in $exp as part of $match value
+
+
+
+// Aggregation Operator expressions
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/
+
+
+// Logical Query Operator Expressions
+
+//https://www.mongodb.com/docs/manual/reference/operator/query-logical/
+
+logicalOperatorExpression: andAggregationExpression | orAggregationExpression;
+
+andAggregationExpression: BRACE_OPEN AND ':' (BRACKET_OPEN queryExpression? ( ',' queryExpression )* BRACKET_CLOSE ) BRACE_CLOSE;
+orAggregationExpression: BRACE_OPEN OR ':' (BRACKET_OPEN queryExpression? ( ',' queryExpression )* BRACKET_CLOSE ) BRACE_CLOSE;
+
+// TODO: add others..
+
 
 
 //Document mongo.queryFilters.QueryFilter Filter
@@ -40,97 +61,86 @@ matchStage:
 //  ...
 //}
 
-queryFilter: OPEN_CURLY filterExpression ( ',' filterExpression )* CLOSE_CURLY;
+queryExpression: BRACE_OPEN expression ( ',' expression )* BRACE_CLOSE;
 
-filterExpression: simpleFilterExpression | filterExpressionWithOperator;
-
-//{
-//  <field1>: <value1>,
-simpleFilterExpression: WORD ':' STRING;
-//  <field2>: { <operator>: <value> },
-//  ...
-//}
-filterExpressionWithOperator: WORD ':' OPEN_CURLY QUERY_SELECTOR ':' STRING CLOSE_CURLY;
+expression: WORD ':' expressionValue | COMPARISON_QUERY_OPERATOR ':' complexExpressionValue;
+expressionValue: STRING | NUMBER | complexExpressionValue;
+complexExpressionValue: complexObjectExpressionValue | complexArrayExpressionValue;
 
 
-//https://spec.graphql.org/June2018/#sec-String-Value
-stringValue : STRING;
-
-// mongo.queryFilters.QueryFilter Operation Commands
-// https://www.mongodb.com/docs/manual/reference/command/nav-crud/
+complexObjectExpressionValue: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' expressionValue BRACE_CLOSE;
+complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexExpressionValue )* BRACKET_CLOSE;
 
 
-// Database Commands
-
-// Aggregration Commands
-//https://www.mongodb.com/docs/manual/reference/operator/aggregation/interface/
-
-// Aggregate
-//https://www.mongodb.com/docs/manual/reference/command/aggregate/#mongodb-dbcommand-dbcmd.aggregate
-
-
-// mongo.queryFilters.QueryFilter Operators
-
-// Comparison
-
-//mongo.queryFilters.QueryFilter Selectors
-//https://www.mongodb.com/docs/manual/reference/operator/query/
 
 // LEXER
 
-
-QUERY_SELECTOR: EQ;
+// Comparison Query Operators
+// https://www.mongodb.com/docs/manual/reference/operator/query-comparison/
+COMPARISON_QUERY_OPERATOR: EQ | GT | GTE;
 
 EQ : '$eq';
+GT: '$gt';
+GTE: '$gte';
+
+//... add others
 
 
-OPEN_CURLY : '{';
-CLOSE_CURLY : '}';
+// Logical Query Operators
+// https://www.mongodb.com/docs/manual/reference/operator/query-logical/
+
+AND : '$and';
+OR : '$or';
+
+//... add others
+
+
+BRACE_OPEN : '{';
+BRACE_CLOSE : '}';
+
+BRACKET_OPEN : '[';
+BRACKET_CLOSE : ']';
 
 AGGREGATE : 'aggregate';
 PIPELINE : 'pipeline';
 CURSOR : 'cursor';
-
-
-//Aggregation pipeline stages
-//https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/
-
-//https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/#mongodb-pipeline-pipe.-match
-
-//AGGREGATION_PIPELINE_STAGE_TYPE : MATCH;
-
 MATCH : '$match';
-
-
-//
-//fragment CHARACTER: ( ESC | ~ ["\\]);
-//STRING: '\'' CHARACTER* '\'';
 
 
 // TODO: Is this the correct way to do this? GQL G4 does it differently, search for 'STRING:'
 STRING: '\'' WORD '\'';
 
-//BLOCK_STRING
-//    :   '"""' .*? '"""'
-//    ;
+NUMBER
+   : '-'? INT ('.' [0-9] +)? EXP?
+   ;
 
-//fragment LOWERCASE : [a-z] ;
-//fragment UPPERCASE : [A-Z] ;
+fragment INT
+   : '0' | [1-9] [0-9]*
+   ;
 
+// no leading zeros
 
-//WORD : (LOWERCASE | UPPERCASE | '_')+ ;
+fragment EXP
+   : [Ee] [+\-]? INT
+   ;
+
+fragment ESC
+   : '\\' (["\\/bfnrt] | UNICODE)
+   ;
+fragment UNICODE
+   : 'u' HEX HEX HEX HEX
+   ;
+fragment HEX
+   : [0-9a-fA-F]
+   ;
+fragment SAFECODEPOINT
+   : ~ ["\\\u0000-\u001F]
+   ;
+
 
 WORD: [_A-Za-z] [_0-9A-Za-z]*;
 COLON: ':';
 
 WS: [ \t\n\r]+ -> skip;
 
-//WHITESPACE : (' ' | '\t')+;
 COMMA: ',';
-
-//
-//WHITESPACE : (' ' | '\t')+ ;
-//
-//NEWLINE : ('\r'? '\n' | '\r')+ ;
-//
-//TEXT : ('[' | '(') ~[\])]+ (']' | ')') ;

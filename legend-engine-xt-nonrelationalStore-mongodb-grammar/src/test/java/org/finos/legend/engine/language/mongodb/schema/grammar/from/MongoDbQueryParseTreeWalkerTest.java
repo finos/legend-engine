@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.antlr.v4.runtime.CharStreams;
@@ -33,9 +34,9 @@ public class MongoDbQueryParseTreeWalkerTest
     private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 
     @Test
-    public void testEmptyAggregate() throws Exception
+    public void testEmptyAggregate() throws JsonProcessingException
     {
-        String input = "{ aggregate: 'firms', pipeline: [  ] }";
+        String input = "{ aggregate: 'firms', pipeline: [  ], cursor: { } }";
 
 
         MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
