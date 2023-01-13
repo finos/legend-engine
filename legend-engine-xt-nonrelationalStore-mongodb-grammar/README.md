@@ -12,4 +12,4 @@
 3. Verify you have antlr correctly set up by running antlr4 in a terminal, you should be able to the version installed as output
 
 
-4. From "legend-engine-xt-nonrelationalStore-mongodb-grammar" folder, invoke: mvn clean install && cd ./target/classes && grun org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQuery databaseCommand -tokens ../../src/test/resources/input1.js
+4. From "legend-engine-xt-nonrelationalStore-mongodb-grammar" folder, invoke: mvn clean install && cd ./target/classes && grun org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQuery databaseCommand -tokens '../../src/test/resources/input1.js' -gui
