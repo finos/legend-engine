@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
@@ -49,6 +50,14 @@ public class ValueSpecificationBuilderForFuncExpr extends ValueSpecificationBuil
                     ._genericType(runtimeGenericType)
                     ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                     ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith(resolvedRuntime));
+        }
+        else if (packageableElement instanceof Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance)
+        {
+            GenericType execEnvGenericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::legend::service::metamodel::ExecutionEnvironmentInstance"));
+            return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                        ._genericType(execEnvGenericType)
+                        ._multiplicity(this.context.pureModel.getMultiplicity("one"))
+                        ._values(this.processingContext.peek().equals("Applying new") ? FastList.newList() : FastList.newListWith((Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance) packageableElement));
         }
 
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
