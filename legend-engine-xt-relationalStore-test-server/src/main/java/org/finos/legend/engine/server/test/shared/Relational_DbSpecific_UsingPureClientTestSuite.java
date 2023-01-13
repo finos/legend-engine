@@ -72,22 +72,24 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
             else
             {
                 TestCase testCase = (TestCase) test;
+                String dbSuiteName = wrappedSuite.getName().substring(wrappedSuite.getName().indexOf("sqlQueryTests::") + 15, wrappedSuite.getName().indexOf("["));
                 wrappedSuite.addTest(new TestCase(testCase.getName())
                 {
                     @Override
                     protected void runTest() throws Throwable
                     {
                         Throwable failureException = null;
+                        String dbTestName = dbSuiteName + "::" + testCase.getName().substring(0, testCase.getName().indexOf("["));
                         try
                         {
-                            System.out.println("Running db test " + testCase.getName());
+                            System.out.println("Running db test " + dbTestName);
                             testCase.runBare();
                         }
                         catch (PureException e)
                         {
                             if (ArrayIterate.anySatisfy(e.getStackTrace(), x -> x.getMethodName().contains(PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD)))
                             {
-                                System.out.println("| " + testCase.getName() + " | deviates-from-standard :ballot_box_with_check: |");
+                                System.out.println("| " + dbTestName + " | deviates-from-standard :ballot_box_with_check: |");
                                 if (e instanceof PureAssertFailException)
                                 {
                                     throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
@@ -96,7 +98,7 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                             }
                             if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
                             {
-                                System.out.println("| " + testCase.getName() + " | not-implemented :eight_spoked_asterisk: |");
+                                System.out.println("| " + dbTestName + " | not-implemented :eight_spoked_asterisk: |");
                                 throw e;
                             }
                             failureException = e;
@@ -109,10 +111,10 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                         {
                             if (failureException != null)
                             {
-                                System.out.println("| " + testCase.getName() + " | failing :x: |");
+                                System.out.println("| " + dbTestName + " | failing :x: |");
                                 throw failureException;
                             }
-                            System.out.println("| " + testCase.getName() + " | working :white_check_mark: |");
+                            System.out.println("| " + dbTestName + " | working :white_check_mark: |");
                         }
                     }
                 });

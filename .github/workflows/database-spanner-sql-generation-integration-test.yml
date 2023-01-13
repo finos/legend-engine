@@ -63,7 +63,7 @@ jobs:
       - name: Configure GCP credentials With Github Actions
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.SPANNER_INTEGRATION_SA1_JSON }}
+          credentials_json: ${{ secrets.SPANNER_INTEGRATION_TEST_RO1_JSON }}
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v0"
       - name: "Use gcloud CLI"
@@ -77,7 +77,9 @@ jobs:
           MAVEN_OPTS: -Xmx4g
         run: |
           set -o pipefail
-          mvn -pl legend-engine-xt-relationalStore-spanner-execution-tests -Dtest=Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
+          echo "| Test Representing Db Feature | Support Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| ---------------------------- | -------------- |" >> $GITHUB_STEP_SUMMARY
+          mvn -pl legend-engine-xt-relationalStore-spanner-execution-tests -Dtest=Test_Relational_DbSpecific_Spanner_UsingPureClientTestSuite test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt) | tee >(grep -o "[|] test.*" >> $GITHUB_STEP_SUMMARY)
       - name: Write Summary
         if: always()
         run: |
