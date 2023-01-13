@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation;
 
+import java.util.List;
+
 public class AggregateExpression
 {
+    public List<ArgumentExpression> arguments;
 }

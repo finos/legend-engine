@@ -18,5 +18,5 @@ import java.util.List;
 
 public class MatchStage extends Stage
 {
-    List<AggregateExpression> expression;
+    public List<AggregateExpression> expression;
 }

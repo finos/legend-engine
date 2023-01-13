@@ -16,4 +16,12 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggre
 
 public class ExpressionObject
 {
+    public FieldPathExpression field;
+    public ArgumentExpression argument;
+
+    public ExpressionObject(FieldPathExpression field, ArgumentExpression argument)
+    {
+        this.field = field;
+        this.argument = argument;
+    }
 }

@@ -16,4 +16,10 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggre
 
 public class FieldPathExpression
 {
+    public String path;
+
+    public FieldPathExpression(String path)
+    {
+        this.path = path;
+    }
 }

@@ -16,5 +16,10 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson;
 
 public class StringType extends BsonType
 {
-    String pattern;
+    public String pattern;
+
+    public StringType(String pattern)
+    {
+        this.pattern = pattern;
+    }
 }

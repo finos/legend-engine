@@ -18,5 +18,5 @@ import java.util.List;
 
 public class AggregationPipeline
 {
-    List<Stage> stages;
+    public List<Stage> stages;
 }

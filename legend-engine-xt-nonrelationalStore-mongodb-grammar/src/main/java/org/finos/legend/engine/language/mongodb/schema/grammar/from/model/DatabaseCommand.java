@@ -14,8 +14,11 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from.model;
 
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AggregationPipeline;
+
 public class DatabaseCommand
 {
     public String type;
-
+    public String collectionName;
+    public AggregationPipeline aggregationPipeline;
 }

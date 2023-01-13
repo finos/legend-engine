@@ -54,9 +54,137 @@ public class MongoDbQueryParseTreeWalkerTest
         DatabaseCommand databaseCommand = walker.getCommand();
 
         assertEquals("{\n" +
-                "  \"type\" : \"aggregate\"\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n    \"stages\" : null\n  }\n" +
                 "}", mapper.writeValueAsString(databaseCommand));
 
     }
 
+    @Test
+    public void testAggregateWithEmptyMatch() throws Exception
+    {
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { } } ] }";
+
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"expression\" : null\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithMatchSimpleExpression() throws Exception
+    {
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : 'testingg' } } ] }";
+
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"expression\" : [ {\n" +
+                "        \"arguments\" : [ {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'testingg'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        } ]\n" +
+                "      } ]\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithMatchExpressionWithOperator() throws Exception
+    {
+        //String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: 'USA' }, test2 : { $eq: 'GB' } } } ] }";
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: 'testingg' } } } ] }";
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"expression\" : [ {\n" +
+                "        \"arguments\" : [ {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'testingg'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        } ]\n" +
+                "      } ]\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
 }
