@@ -45,7 +45,7 @@ public class RelationalDatabaseConnection extends DatabaseConnection
 
     public List<PostProcessor> getPostProcessors()
     {
-        return this.postProcessors.stream().sorted(Comparator.comparingInt(PostProcessor::getOrder)).collect(Collectors.toList());
+        return this.postProcessors != null ? this.postProcessors.stream().sorted(Comparator.comparingInt(PostProcessor::getOrder)).collect(Collectors.toList()) : Collections.emptyList();
     }
 
     @Override
