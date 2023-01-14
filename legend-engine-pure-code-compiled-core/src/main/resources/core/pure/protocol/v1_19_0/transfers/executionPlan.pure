@@ -92,7 +92,7 @@ function meta::protocols::pure::v1_19_0::transformation::fromPureGraph::executio
               resultType = $exp.resultType->transformResultType($mapping, $extensions),
               functionParameters = $exp.functionParameters->map(p | ^meta::protocols::pure::v1_19_0::metamodel::valueSpecification::Variable(_type='var', name=$p.name, supportsStream=$p.supportsStream, class=$p.type->elementToPath(), multiplicity=$p.multiplicity->isEmpty()->if(| [],| $p.multiplicity->toOne()->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::domain::transformMultiplicity())))
            ),
-         g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1]|
+         g:meta::pure::graphFetch::executionPlan::StoreMappingGlobalGraphFetchExecutionNode[1]|
             ^meta::protocols::pure::v1_19_0::metamodel::executionPlan::graphFetch::GlobalGraphFetchExecutionNode
             (
                _type = 'globalGraphFetchExecutionNode',

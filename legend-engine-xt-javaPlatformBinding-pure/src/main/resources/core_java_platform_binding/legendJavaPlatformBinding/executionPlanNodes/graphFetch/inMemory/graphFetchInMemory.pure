@@ -126,14 +126,65 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let constraintsToExclude = $node.graphFetchTree.constraintsExclusions;
 
    let allQualifiers        = $context.typeInfos->allQualifiedProperties($currentClass);
-   let qualifiersProject    = $class->createQualifiedPropertiesForClass($allQualifiers, $conventions, $debug->indent());
+   let qpGetterProject      = $class->updateImplementationClassWithQualifiedPropertyGetters($node->typeFromStoreLocalNode(), $context, $debug->indent());
    let constraintsProject   = $class->createConstraintCheckingForClass($currentClass, $constraintsToExclude, $context, $debug->indent());
    let sourceReferenceClass = $class
                                  ->addPropertyWithGetterAndSetter('setId$', javaString(), $conventions)
                                  ->addPropertyWithGetterAndSetter(inMemorySource(), javaObject(), $conventions)
                                  ->addPropertyWithGetterAndSetter($conventions->referencedObjectReference(), javaString(), $conventions);
 
-   [$qualifiersProject, $constraintsProject, newProject()->addClass($sourceReferenceClass)]->mergeProjects();
+   [$qpGetterProject, $constraintsProject, newProject()->addClass($sourceReferenceClass)]->mergeProjects();
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::updateImplementationClassWithQualifiedPropertyGetters(implClass: meta::external::language::java::metamodel::Class[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1], debug: DebugContext[1]): Project[1]
+{
+   let conventions = $context.conventions;
+   let typeInfo = $context.typeInfos->forClass($nodeType);
+   let jThis = j_this($implClass);
+
+   let projects = $context.typeInfos->allQualifiedProperties($typeInfo)->map({q |
+      let fieldName = $conventions->fieldName($q);
+      let mapName = $fieldName + '_QualifierMap';
+      let keyType = javaList(javaList(javaWildcard()));
+      let fieldType = $conventions->pureTypeToJavaType($q);
+
+      let field = $jThis->j_field($fieldName, $fieldType);
+      let mapField = $jThis->j_field($mapName, javaMap($keyType, $fieldType));
+      let keyVar = $keyType->j_variable('qualifierKey$');
+
+      let body = $q.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+
+      let updatedClass = $implClass
+         ->addMethod(
+            javaMethod(
+               ['private'], $fieldType, $conventions->getterName($q) + '_Computed$', [$q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))],
+               $body
+            )
+         )
+         ->addMethod(
+            javaMethod(
+               ['public'], $fieldType, $conventions->getterName($q), [$q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))],
+               [
+                  $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
+                  j_return($mapField->j_invoke(
+                     'computeIfAbsent', 
+                     [
+                        $keyVar,
+                        j_lambda(
+                           [j_parameter($keyType, 'key')],
+                           [$jThis->j_invoke($conventions->getterName($q) + '_Computed$', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | $conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity)->j_variable($p.name)), $fieldType)]
+                        )
+                     ],
+                     $fieldType
+                  ))
+               ]
+            )
+         );
+
+      newProject()->addClasses($updatedClass)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany()->mergeProjects();
+   });
+
+   newProject()->concatenate($projects)->toOneMany()->mergeProjects();
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreRootNodeProject(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]

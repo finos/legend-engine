@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.LocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
@@ -43,7 +43,7 @@ public interface ExecutionNodeVisitor<T>
     @Deprecated
     T visit(GraphFetchExecutionNode graphFetchExecutionNode);
 
-    T visit(GlobalGraphFetchExecutionNode globalGraphFetchExecutionNode);
+    T visit(StoreMappingGlobalGraphFetchExecutionNode storeMappingGlobalGraphFetchExecutionNode);
 
     T visit(LocalGraphFetchExecutionNode localGraphFetchExecutionNode);
 

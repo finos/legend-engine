@@ -874,7 +874,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
             let tree          = $crossRootNode.graphFetchTree;
             let xStoreMapping = $tree->cast(@RoutedPropertyGraphFetchTree).propertyMapping->toOne()->cast(@XStorePropertyMapping);
             let isMultiEqual  = $xStoreMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->isExpressionMultiEqual();
-            let propertyPairs = if ($isMultiEqual, | $xStoreMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->propertyPairsInMultiEqual(), | []);
+            let propertyPairs = if ($isMultiEqual, | $xStoreMapping.crossExpression.expressionSequence->evaluateAndDeactivate()->toOne()->propertyOrNoArgQualifierPairsInMultiEqual(), | []);
             let javaException = j_parameter(javaException(), 'e');
 
             $exe
@@ -992,14 +992,14 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
 function meta::relational::executionPlan::platformBinding::legendJava::graphFetch::enrichForRelationalGraphExecution(cl: meta::external::language::java::metamodel::Class[1], node: RelationalGraphFetchExecutionNode[1], context: GenerationContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]):Project[1]
 {
    let constraintsToExclude = $node.graphFetchTree.constraintsExclusions;
-   let qualifiersProject  = $cl->updateImplementationClassWithQualifiedProperties($node->typeFromStoreLocalNode(), $context);
+   let qpGetterProject    = $cl->updateImplementationClassWithQualifiedPropertyGetters($node->typeFromStoreLocalNode(), $context);
    let constraintsProject = $cl->createConstraintCheckingForClass($node->typeFromStoreLocalNode(), $constraintsToExclude, $context, $debug->indent());
    let primaryKeyProject  = $cl->updateImplementationClassWithPrimaryKeys($node, $context);
    let additionalProject  = $cl->updateImplementationClassWithSetConnectionAndReference($node, $context);
-   mergeProjects([$qualifiersProject, $constraintsProject, $primaryKeyProject, $additionalProject]);
+   mergeProjects([$qpGetterProject, $constraintsProject, $primaryKeyProject, $additionalProject]);
 }
 
-function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::updateImplementationClassWithQualifiedProperties(implClass: meta::external::language::java::metamodel::Class[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
+function <<access.private>> meta::relational::executionPlan::platformBinding::legendJava::graphFetch::updateImplementationClassWithQualifiedPropertyGetters(implClass: meta::external::language::java::metamodel::Class[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
 {
    let conventions = $context.conventions;
    let typeInfo = $context.typeInfos->forClass($nodeType);
@@ -1013,17 +1013,9 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
 
       let field     = $jThis->j_field($fieldName, $fieldType);
       let mapField     = $jThis->j_field($mapName, javaMap($keyType, $fieldType));
-      let param     = j_parameter($fieldType, $fieldName);
       let keyVar = $keyType->j_variable('qualifierKey$');
-      let existingVar = javaObject()->j_variable('existing$');
-      let singlePropertyType = if ($q->functionReturnMultiplicity()->hasToOneUpperBound(), | $fieldType, | $fieldType->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0));
 
       $cl
-         ->addField(
-            javaField(
-               ['private'], javaMap($keyType, $fieldType), $mapName, j_new(javaParameterizedType(javaClass('java.util.HashMap'), [$keyType, $fieldType->toBoxed()]), [])
-            )
-         )
          ->addMethod(
             javaMethod(
                ['public'], $fieldType, $conventions->getterName($q), [$q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))],
@@ -1031,55 +1023,6 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                   $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
                   j_return($mapField->j_invoke('get', [$keyVar], $fieldType))
                ]
-            )
-         )
-         ->addMethod(
-            javaMethod(
-               ['public'], javaMap($keyType, $fieldType), $conventions->getterName($q.name->toOne() + '_QualifierMap'), [],
-               j_return($mapField)
-            )
-         )
-         ->addMethod(
-            javaMethod(
-               ['public'], javaVoid(), $conventions->setterName($q), $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))->concatenate(javaParam($fieldType, 'qualifierValue$')),
-               [
-                  $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
-                  $existingVar->j_declare($mapField->j_invoke('put', [$keyVar, j_parameter($fieldType, 'qualifierValue$')], javaObject()))
-               ]
-               ->concatenate(
-                  if ($q->functionReturnMultiplicity()->hasToOneUpperBound(),
-                      | j_if($existingVar->j_ne(j_null()), j_throw(j_new(javaRuntimeException(), j_string('Found multiple objects for property \'' + $q.name->toOne() + '\' of multiplicity with bound 1')))),
-                      | []
-                  )
-               )
-            )
-         )
-         ->addMethod(
-            javaMethod(
-               ['public'], javaVoid(), $conventions->setterName($q.name->toOne() + '_QualifierMap'), [javaParam(javaMap($keyType, $fieldType), 'qualifierMap$')],
-               $mapField->j_assign(j_parameter(javaMap($keyType, $fieldType), 'qualifierMap$'))
-            )
-         )
-         ->addMethod(
-            javaMethod(
-               ['public'], javaVoid(), 'add' + $fieldName->toUpperFirstCharacter()->toOne(), $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))->concatenate(javaParam($singlePropertyType, 'qualifierValue$')),
-               [
-                  $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
-                  $existingVar->j_declare($mapField->j_invoke('get', [$keyVar], javaObject()))
-               ]
-               ->concatenate(
-                  if (!$q->functionReturnMultiplicity()->hasToOneUpperBound(),
-                      | j_if(
-                           $existingVar->j_eq(j_null()),
-                           $mapField->j_invoke('put', [$keyVar, j_new(javaArrayList($singlePropertyType), javaArrays()->j_invoke('asList', [j_parameter($fieldType, 'qualifierValue$')], $fieldType))], javaObject()),
-                           $mapField->j_invoke('get', [$keyVar], javaObject())->j_invoke('add', j_parameter($fieldType, 'qualifierValue$'), javaVoid())
-                        ),
-                      | [
-                            j_if($existingVar->j_ne(j_null()), j_throw(j_new(javaRuntimeException(), j_string('Found multiple objects for property \'' + $q.name->toOne() + '\' of multiplicity with bound 1')))),
-                            $mapField->j_invoke('put', [$keyVar, j_parameter($fieldType, 'qualifierValue$')], javaObject())
-                        ]
-                  )
-               )
             )
          );
    }, $implClass);
