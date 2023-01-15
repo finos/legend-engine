@@ -16,8 +16,10 @@ package org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toP
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.IPersistenceCompilerExtension;
+import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.ValidationContext;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
@@ -30,6 +32,12 @@ import java.util.List;
 
 public class PersistenceCloudCompilerExtension implements IPersistenceCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new PersistenceCloudCompilerExtension();
+    }
+
     public static final ValidationRuleSet<ValidationContext> VALIDATION_RULE_SET = new ValidationRuleSet<>(
             "AWS Glue",
             context -> context.persistenceContextProtocol().platform instanceof AwsGluePersistencePlatform,

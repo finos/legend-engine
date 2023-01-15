@@ -32,6 +32,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionExpressionBuilderRegistrationInfo;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.FunctionHandlerDispatchBuilderInfo;
@@ -63,24 +64,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProcessor;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalDatabaseConnection_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_GroupByMapping_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_RelationalAssociationImplementation_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Database_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAlias_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_runtime_RelationalExecutionContext_Impl;
-import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -98,7 +83,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlia
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.runtime.PostProcessorWithParameter;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Collections;
@@ -110,6 +94,12 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperM
 
 public class RelationalCompilerExtension implements IRelationalCompilerExtension
 {
+    @Override
+    public CompilerExtension build()
+    {
+        return new RelationalCompilerExtension();
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
@@ -325,7 +315,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function2<Connection, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Lists.mutable.with(
                 (connectionValue, context) ->
@@ -351,7 +341,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                         List<PostProcessor> postProcessors = relationalDatabaseConnection.postProcessors == null ? FastList.newList() : relationalDatabaseConnection.postProcessors;
 
-                        MutableList<Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>> pp = ListIterate.collect(postProcessors, p -> IRelationalCompilerExtension.process(
+                        MutableList<Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter>> pp = ListIterate.collect(postProcessors, p -> IRelationalCompilerExtension.process(
                                 relationalDatabaseConnection,
                                 p,
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraConnectionPostProcessor),
@@ -361,11 +351,11 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         //and _postProcessors is used for serialization of plan to protocol
                         relational._datasourceSpecification(datasource);
                         relational._authenticationStrategy(authenticationStrategy);
-                        List<PostProcessorWithParameter> postProcessorWithParameters = ListIterate.collect(relationalDatabaseConnection.postProcessorWithParameter, p -> IRelationalCompilerExtension.process(
+                        List<Root_meta_relational_runtime_PostProcessorWithParameter> postProcessorWithParameters = ListIterate.collect(relationalDatabaseConnection.postProcessorWithParameter, p -> IRelationalCompilerExtension.process(
                                 p,
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraLegacyPostProcessors),
                                 context));
-                        List<PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
+                        List<Root_meta_relational_runtime_PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
                         relational._queryPostProcessorsWithParameter(Lists.mutable.withAll(postProcessorWithParameters).withAll(translatedForPlanGeneration));
                         relational._postProcessors(ListIterate.collect(pp, Pair::getOne));
 
@@ -394,7 +384,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function2<ExecutionContext, CompileContext, org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext>> getExtraExecutionContextProcessors()
+    public List<Function2<ExecutionContext, CompileContext, Root_meta_pure_runtime_ExecutionContext>> getExtraExecutionContextProcessors()
     {
         return Collections.singletonList((executionContext, context) ->
         {
@@ -533,7 +523,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     }
 
     @Override
-    public List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
+    public List<Function3<Connection, PostProcessor, CompileContext, Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter>>> getExtraConnectionPostProcessor()
     {
         return Lists.mutable.with((connection, processor, context) ->
         {
@@ -543,7 +533,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                 Root_meta_pure_alloy_connections_MapperPostProcessor p = HelperRelationalDatabaseConnectionBuilder.createMapperPostProcessor(mapper, context);
 
-                PostProcessorWithParameter f =
+                Root_meta_relational_runtime_PostProcessorWithParameter f =
                         core_relational_relational_runtime_connection_postprocessor.Root_meta_pure_alloy_connections_tableMapperPostProcessor_MapperPostProcessor_1__PostProcessorWithParameter_1_(p, context.pureModel.getExecutionSupport());
 
                 return Tuples.pair(p, f);

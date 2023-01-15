@@ -44,6 +44,7 @@
                             <libDirectory>
                                 src/main/antlr4/org/finos/legend/engine/language/graphQL/grammar/from/antlr4
                             </libDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

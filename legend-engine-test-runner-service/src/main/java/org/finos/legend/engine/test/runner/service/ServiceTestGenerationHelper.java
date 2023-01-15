@@ -67,6 +67,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_relational_runtime_DatabaseConnection;
 import org.finos.legend.pure.generated.core_relational_relational_helperFunctions_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -150,7 +152,7 @@ public class ServiceTestGenerationHelper
         }
         if (runtime instanceof RuntimePointer)
         {
-            RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections();
+            RichIterable<? extends Root_meta_pure_runtime_Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections();
             return (connections != null) && connections.size() > 1;
         }
         throw new UnsupportedOperationException("Unsupported runtime type: " + runtime.getClass().getName());
@@ -340,8 +342,8 @@ public class ServiceTestGenerationHelper
         }
         if (runtime instanceof RuntimePointer)
         {
-            List<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections().toList();
-            return (connections != null) && (connections.size() == 1) && !(connections.get(0) instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.runtime.DatabaseConnection);
+            List<? extends Root_meta_pure_runtime_Connection> connections = pureModel.getRuntime(((RuntimePointer) runtime).runtime)._connections().toList();
+            return (connections != null) && (connections.size() == 1) && !(connections.get(0) instanceof Root_meta_relational_runtime_DatabaseConnection);
         }
         throw new UnsupportedOperationException("Unsupported runtime type: " + runtime.getClass().getName());
     }
@@ -500,7 +502,7 @@ public class ServiceTestGenerationHelper
                         .collect(vs -> ValueSpecificationProcessor.createFunctionForLambda(null, (CoreInstance) vs._values().getAny(), processorSupport, processorContext))
                         .zipWithIndex()
                         .collect(tuple ->
-                                "    public static boolean " + getAssertMethodName(tuple.getTwo()) + "(org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Result _res, ExecutionSupport es)\n" +
+                                "    public static boolean " + getAssertMethodName(tuple.getTwo()) + "(Root_meta_pure_mapping_Result _res, ExecutionSupport es)\n" +
                                         "    {\n" +
                                         "        return " + tuple.getOne() + ".value(_res, es);\n" +
                                         "    }\n")

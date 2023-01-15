@@ -82,6 +82,7 @@
                             <libDirectory>
                                 src/main/antlr4/org/finos/legend/engine/language/pure/grammar/from/antlr4/core
                             </libDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

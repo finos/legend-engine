@@ -119,9 +119,9 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
    let pms = if ($propertyMappings->isEmpty(),
                  |if ($modelPayload.static.setImplementation->isEmpty(),
                      |[],
-                     |let setImpls = $mapping.rootClassMappingByClass($targetGenericType.rawType->toOne()->cast(@Class<Any>))->resolveOperation($mapping);
+                     |let setImpls = $mapping->rootClassMappingByClass($targetGenericType.rawType->toOne()->cast(@Class<Any>))->resolveOperation($mapping);
                       let setImplds = $setImpls.id;
-                      let pms = $modelPayload.static.setImplementation->toOne().propertyMappingsByPropertyName($property.name->toOne())->cast(@PurePropertyMapping);
+                      let pms = $modelPayload.static.setImplementation->toOne()->_propertyMappingsByPropertyName($property.name->toOne())->cast(@PurePropertyMapping);
                       $pms->filter(p|$setImplds->contains($p.targetSetImplementationId));
                   );,
                  |$propertyMappings
@@ -136,7 +136,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
         if ($foundProperties->isEmpty(),
           |[],
           |let srcRes = $foundProperties->toOne()->evaluate(list($modelPayload.src));
-           let setImpl = $mapping.rootClassMappingByClass($targetGenericType.rawType->toOne()->cast(@Class<Any>));
+           let setImpl = $mapping->rootClassMappingByClass($targetGenericType.rawType->toOne()->cast(@Class<Any>));
 
            if($setImpl->isEmpty(),
              |let static = ^StaticMappingInstanceData
@@ -167,7 +167,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
        |$pms->cast(@PurePropertyMapping)
             ->filter(pm | $modelPayload.src->toOne()->instanceOf($pm.owner->cast(@PureInstanceSetImplementation).srcClass->toOne()))
             ->map(pm|
-                    let targetImpl = $modelPayload.static.mapping.classMappingById($pm->toOne().targetSetImplementationId)->toOne();
+                    let targetImpl = $modelPayload.static.mapping->classMappingById($pm->toOne().targetSetImplementationId)->toOne();
                     let src= $pm->toOne().transform->evaluate(list($modelPayload.src));
                     let resolved   = if($targetImpl->instanceOf(OperationSetImplementation),
                                         |$targetImpl->cast(@OperationSetImplementation)->resolveOperation($modelPayload.static.mapping)->cast(@PureInstanceSetImplementation),
@@ -207,9 +207,9 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
    let sval = if($impl.srcClass->isEmpty(), |[], |list($src));
    let targetClass = $impl.class;
 
-   let nonMappedProperties = $targetClass.properties->filter(p|$p->functionReturnType().rawType->toOne()->instanceOf(DataType))->removeAll($impl.allPropertyMappings().property);
+   let nonMappedProperties = $targetClass.properties->filter(p|$p->functionReturnType().rawType->toOne()->instanceOf(DataType))->removeAll($impl->allPropertyMappings().property);
 
-   let allTransformedByType = $impl.allPropertyMappings()->filter(p|$p->instanceOf(PurePropertyMapping))->cast(@PurePropertyMapping)
+   let allTransformedByType = $impl->allPropertyMappings()->filter(p|$p->instanceOf(PurePropertyMapping))->cast(@PurePropertyMapping)
                                                     ->filter(pm|$pm.property->functionReturnType().rawType->toOne()->instanceOf(DataType))
                                                     ->partition(pm|!$pm.localMappingProperty->isEmpty() && $pm.localMappingProperty->toOne());
 
@@ -219,7 +219,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
                                                  ->map(pm|
                                                             ^KeyValue(
                                                              key = $pm.property.name->toOne(),
-                                                             value = $pm.transform->evaluate($sval)->map(x | $pm.valueTransform($x))
+                                                             value = $pm.transform->evaluate($sval)->map(x | $pm->valueTransform($x))
                                                           );
                                                       );
 
@@ -229,7 +229,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
                               let inputLists = $propertyMaps->map(propertyMap|list($propertyMap.transform->evaluate($sval)
                                                                                    ->map(v|
                                                                                            ^KeyValue(key = $propertyMap.property.name->toOne(),
-                                                                                                     value = $propertyMap.valueTransform($v)
+                                                                                                     value = $propertyMap->valueTransform($v)
                                                                                            )
                                                                                         )
                                                                                    )
@@ -241,7 +241,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
                                                  ->map(pm|
                                                          ^KeyValue(
                                                              key = $pm.property.name->toOne(),
-                                                             value = $pm.transform->evaluate($sval)->map(x | $pm.valueTransform($x))
+                                                             value = $pm.transform->evaluate($sval)->map(x | $pm->valueTransform($x))
                                                           );
                                                       );
    
@@ -360,7 +360,7 @@ function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:m
    assert(!$class->genericType().typeArguments->at(0)->instanceOf(TabularDataSet),'ExecutionPlan not supported for Alloy ModelToModel queries returning \'TabularDataSet\'');
    
    let setImplementation = if ($e->isEmpty(),
-                               |$mapping->toOne().rootClassMappingByClass($possibleClass->cast(@Class<Any>))->toOne()->cast(@SetImplementation);,
+                               |$mapping->toOne()->rootClassMappingByClass($possibleClass->cast(@Class<Any>))->toOne()->cast(@SetImplementation);,
                                |$e.sets->toOne()->cast(@SetImplementation));
    
    let connection = $runtime->toOne().connections->at(0);
@@ -372,7 +372,7 @@ function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:m
                      );
    
 
-   ^ModelToModelExecutionNode(fd=$fd, classes=$mapping->toOne().classMappings().class, resultType=$resultType, resultSizeRange=ZeroMany, connection=$connection, jsonPropertyPaths=$jsonFeWithPpt.jsonPropertyPaths, mapping=$mapping->toOne());
+   ^ModelToModelExecutionNode(fd=$fd, classes=$mapping->toOne()->classMappings().class, resultType=$resultType, resultSizeRange=ZeroMany, connection=$connection, jsonPropertyPaths=$jsonFeWithPpt.jsonPropertyPaths, mapping=$mapping->toOne());
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::inMemory::zipHorizontally(inputLists:List<KeyValue>[*]):List<KeyValue>[*]

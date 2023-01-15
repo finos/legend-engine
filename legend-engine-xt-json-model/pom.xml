@@ -54,7 +54,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-external-json</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
             <scope>runtime</scope>
         </dependency>
 

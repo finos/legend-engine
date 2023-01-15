@@ -46,4 +46,10 @@ public class CoreCompilerExtension implements CompilerExtension
     {
         return Collections.singletonList(TestAssertionCompilerHelper::compileCoreTestAssertionTypes);
     }
+
+    @Override
+    public CompilerExtension build()
+    {
+        return new CoreCompilerExtension();
+    }
 }

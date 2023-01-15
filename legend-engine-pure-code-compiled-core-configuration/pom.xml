@@ -31,25 +31,11 @@
         <plugins>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-compilation-par</artifactId>
+                <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
                     <sourceDirectory>${project.basedir}/src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>platform</repository>
-                        <repository>core</repository>
-                        <repository>core_external_language_java</repository>
-                        <repository>core_java_platform_binding</repository>
-                        <repository>core_external_format_flatdata</repository>
-                        <repository>core_external_format_flatdata_java_platform_binding</repository>
-                        <repository>core_external_format_json</repository>
-                        <repository>core_external_format_json_java_platform_binding</repository>
-                        <repository>core_external_format_xml</repository>
-                        <repository>core_external_format_xml_java_platform_binding</repository>
-                        <repository>core_relational</repository>
-                        <repository>core_relational_java_platform_binding</repository>
-                        <repository>core_servicestore</repository>
-                        <repository>core_servicestore_java_platform_binding</repository>
                         <repository>core_configuration</repository>
                     </repositories>
                     <extraRepositories>
@@ -69,9 +55,25 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
+                        <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -141,7 +143,7 @@
             </plugin>
             <plugin>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-java-compiled</artifactId>
+                <artifactId>legend-pure-maven-generation-java</artifactId>
                 <executions>
                     <execution>
                         <phase>compile</phase>
@@ -162,9 +164,25 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-par</artifactId>
+                        <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -247,11 +265,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m3-dsl-graph</artifactId>
+            <artifactId>legend-pure-m2-dsl-graph-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping</artifactId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -259,7 +277,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-platform-java</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
             <scope>runtime</scope>
         </dependency>
         <!-- PURE -->
@@ -268,6 +286,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -329,11 +355,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-code-compiled-tests</artifactId>
-            <scope>test</scope>
-        </dependency>
+
         <!-- TEST -->
     </dependencies>
 </project>

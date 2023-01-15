@@ -24,6 +24,12 @@ import java.util.Collections;
 public class TextCompilerExtension implements CompilerExtension
 {
     @Override
+    public CompilerExtension build()
+    {
+        return new TextCompilerExtension();
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(Text.class,

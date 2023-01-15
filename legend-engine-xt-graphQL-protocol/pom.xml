@@ -75,13 +75,18 @@
                         <version>${project.version}</version>
                     </dependency>
                     <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-code-compiled-platform-java</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-xt-graphQL-pure-metamodel</artifactId>
+                        <artifactId>legend-engine-pure-platform-dsl-diagram-java</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                    </dependencies>

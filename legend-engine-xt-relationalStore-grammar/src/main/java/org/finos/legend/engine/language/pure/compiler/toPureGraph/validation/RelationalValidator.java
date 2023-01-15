@@ -44,7 +44,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMappingsImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.DataType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -68,6 +67,8 @@ import org.finos.legend.pure.m4.exception.PureCompilationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping_classMappingById_Mapping_1__String_1__SetImplementation_$0_1$_;
 
 public class RelationalValidator
 {
@@ -137,7 +138,7 @@ public class RelationalValidator
 
             if (targetMapping != null)
             { //an incorrect setID gets thrown as a warning since the set can be referenced in a global scope
-                SetImplementation targetInstanceMapping = targetMapping.classMappingById(targetId, pureModel.getExecutionSupport());
+                SetImplementation targetInstanceMapping = Root_meta_pure_mapping_classMappingById_Mapping_1__String_1__SetImplementation_$0_1$_(targetMapping, targetId, pureModel.getExecutionSupport());
                 boolean invalidSubtype = targetInstanceMapping != null && !org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(targetInstanceMapping._class(), targetClass, pureModel.getExecutionSupport().getProcessorSupport());
 
                 if (invalidSubtype)

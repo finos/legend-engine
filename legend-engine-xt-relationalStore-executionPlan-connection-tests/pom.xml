@@ -40,7 +40,7 @@
                 </dependencies>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                    <argLine>${argLine} ${surefire.vm.params}</argLine>
                     <excludes>
                         <exclude>**/ExternalIntegration*.java</exclude>
                     </excludes>
@@ -112,7 +112,7 @@
                         <!-- Without override, surefire configuration would have skipped our integration tests -->
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <argLine>${argLine} ${surefire.vm.params}</argLine>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -134,7 +134,7 @@
                         <!-- Without override, surefire configuration would have skipped our integration tests -->
                         <configuration combine.self="override">
                             <useSystemClassLoader>false</useSystemClassLoader>
-                            <argLine>${argLine} -Xmx2g -Xms1g -XX:MaxPermSize=1024m -XX:SoftRefLRUPolicyMSPerMB=1</argLine>
+                            <argLine>${argLine} ${surefire.vm.params}</argLine>
                             <!--
                             <environmentVariables>
                                 <REDSHIFT_LEGEND_INTEG_USERNAME></REDSHIFT_LEGEND_INTEG_USERNAME>

@@ -65,6 +65,7 @@
                             <listener>true</listener>
                             <treatWarningsAsErrors>true</treatWarningsAsErrors> <!-- DO NOT CHANGE THIS -->
                             <libDirectory>target/antlr</libDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

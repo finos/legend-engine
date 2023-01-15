@@ -26,6 +26,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_pathToElement.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_;
+
 public class MorphirGenerationConfig extends GenerationConfiguration
 {
     @Override
@@ -38,7 +40,7 @@ public class MorphirGenerationConfig extends GenerationConfiguration
     public Root_meta_external_language_morphir_generation_MorphirConfig process(PureModel pureModel)
     {
         Root_meta_external_language_morphir_generation_MorphirConfig generateMorphirIRConfig = core_external_language_morphir_transformation_integration.Root_meta_external_language_morphir_generation_defaultConfig__MorphirConfig_1_(pureModel.getExecutionSupport());
-        List<PackageableElement> scopeElements = ListIterate.collect(this.generationScope(), e -> core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(e, pureModel.getExecutionSupport()));
+        List<PackageableElement> scopeElements = ListIterate.collect(this.generationScope(), e -> Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(e, pureModel.getExecutionSupport()));
         return generateMorphirIRConfig._scopeElements((RichIterable<? extends PackageableElement>) scopeElements);
     }
 }
