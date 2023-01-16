@@ -33,7 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestAssert;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStoreAssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.mapping.ObjectInputData;
@@ -190,14 +190,14 @@ public class HelperMappingGrammarComposer
         str.append(getTabString(1)).append(mappingTestSuite.id).append(":\n");
         str.append(getTabString(baseIndentation)).append("{\n");
 
-        if (mappingTestSuite.storeTestDatas != null)
+        if (mappingTestSuite.mappingTestDatas != null)
         {
             str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
             str.append(getTabString(baseIndentation + 1)).append("[\n");
 
-            if (!mappingTestSuite.storeTestDatas.isEmpty())
+            if (!mappingTestSuite.mappingTestDatas.isEmpty())
             {
-                str.append(String.join(",\n", ListIterate.collect(mappingTestSuite.storeTestDatas, data -> renderStoreElementTestData(data, transformer)))).append("\n");
+                str.append(String.join(",\n", ListIterate.collect(mappingTestSuite.mappingTestDatas, data -> renderStoreElementTestData(data, transformer)))).append("\n");
             }
             str.append(getTabString(baseIndentation + 1)).append("];\n");
         }
@@ -229,12 +229,12 @@ public class HelperMappingGrammarComposer
         return str.toString();
     }
 
-    public static String renderStoreElementTestData(StoreTestData storeTestData, DEPRECATED_PureGrammarComposerCore transformer)
+    public static String renderStoreElementTestData(MappingTestData mappingTestData, DEPRECATED_PureGrammarComposerCore transformer)
     {
         int baseIndentation = 4;
         StringBuilder str = new StringBuilder();
-        str.append(getTabString(baseIndentation)).append(storeTestData.store).append(":\n");
-        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(storeTestData.data, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 1)).build()));
+        str.append(getTabString(baseIndentation)).append(mappingTestData.store).append(":\n");
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(mappingTestData.data, PureGrammarComposerContext.Builder.newInstance(transformer.toContext()).withIndentationString(getTabString(baseIndentation + 1)).build()));
         return str.toString();
     }
 

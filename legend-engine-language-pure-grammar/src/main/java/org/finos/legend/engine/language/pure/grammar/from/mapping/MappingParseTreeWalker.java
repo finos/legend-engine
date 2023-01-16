@@ -42,7 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -175,16 +175,16 @@ public class MappingParseTreeWalker
         mappingTestSuite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
         List<MappingParserGrammar.MappingTestDataContext> validatedDataCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTestData(), "data", mappingTestSuite.sourceInformation);
-        mappingTestSuite.storeTestDatas = validatedDataCtx.stream().map(validateCtx -> this.visitMappingStoreTestData(validateCtx)).collect(Collectors.toList());
+        mappingTestSuite.mappingTestDatas = validatedDataCtx.stream().map(validateCtx -> this.visitMappingTestData(validateCtx)).collect(Collectors.toList());
         List<MappingParserGrammar.MappingTestContext> validatedTestCtx = PureGrammarParserUtility.validateRequiredListField(ctx.mappingTest(), "tests", mappingTestSuite.sourceInformation);
         mappingTestSuite.tests = ListIterate.collect(validatedTestCtx, atomicTest -> this.visitAtomicTest(atomicTest, mapping));
 
         return mappingTestSuite;
     }
 
-    private StoreTestData visitMappingStoreTestData(MappingParserGrammar.MappingTestDataContext ctx)
+    private MappingTestData visitMappingTestData(MappingParserGrammar.MappingTestDataContext ctx)
     {
-        StoreTestData testData = new StoreTestData();
+        MappingTestData testData = new MappingTestData();
         testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
         testData.store = ctx.qualifiedName().packagePath() == null && testData.data instanceof ModelStoreData ?
                 "ModelStore" :

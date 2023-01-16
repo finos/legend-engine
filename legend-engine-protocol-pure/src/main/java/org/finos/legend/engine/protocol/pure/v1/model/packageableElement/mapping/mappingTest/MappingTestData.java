@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mappin
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 
-public class StoreTestData
+public class MappingTestData
 {
     public String store;
     public EmbeddedData data;

@@ -18,10 +18,10 @@ import meta::pure::test::*;
 //Mapping Test Model
 Class meta::pure::mapping::metamodel::MappingTestSuite extends meta::pure::test::TestSuite
 {
-  storeTestDatas: meta::pure::mapping::metamodel::StoreTestData[*];
+  mappingTestDatas: meta::pure::mapping::metamodel::MappingTestData[*];
 }
 
-Class meta::pure::mapping::metamodel::StoreTestData
+Class meta::pure::mapping::metamodel::MappingTestData
 {
   data: meta::pure::data::EmbeddedData[1];
   store: meta::pure::store::Store[1];
