@@ -63,6 +63,10 @@ WS
    : [ \t\n\r] + -> skip
    ;
 
+STRING
+   : STRINGFRAGMENT
+;
+
 BRACE_OPEN:                                 '{';
 BRACE_CLOSE:                                '}';
 BRACKET_OPEN:                               '[';
@@ -111,32 +115,6 @@ fragment Letter:                        [A-Za-z]
 ;
 fragment Digit:                         [0-9]
 ;
-//fragment Whitespace:                    [ \r\t\n]+
-//;
-//fragment HexDigit:                      [0-9a-fA-F]
-//;
-//fragment String:                        ('\'' ( EscSeq | ~['\r\n\\] )*  '\'' )
-//;
-//fragment UnicodeEsc:	                'u' (HexDigit (HexDigit (HexDigit HexDigit?)?)?)?
-//;
-//fragment Esc:                           '\\'
-//;
-//fragment EscSeq:	                    Esc
-//                        		        (
-//                        		            [btnfr"'\\]	// The standard escaped character set such as tab, newline, etc.
-//		                                    | UnicodeEsc	// A Unicode escape sequence
-//		                                    | .				// Invalid escape character
-//		                                    | EOF			// Incomplete at EOF
-//		                                )
-//;
-//fragment Integer:                       (Digit)+
-//;
-
-
-STRING
-   : STRINGFRAGMENT
-;
-
 fragment STRINGFRAGMENT
    : '"' (ESC | SAFECODEPOINT)* '"'
 ;
