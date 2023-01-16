@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AggregateExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AggregationPipeline;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AndExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArgumentExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ExpressionObject;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.FieldPathExpression;
@@ -26,6 +27,7 @@ import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggreg
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.MatchStage;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.OperatorExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.Operators;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.OrExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.Stage;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.BaseType;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.StringType;
@@ -54,62 +56,97 @@ public class MongoDbQueryParseTreeWalker
 
     private String visitAggregate(MongoDbQueryParser.CommandContext ctx)
     {
-        return ctx.stringValue().getText();
+        return ctx.STRING().getText();
     }
 
     private AggregationPipeline visitPipeline(MongoDbQueryParser.PipelinesContext ctx)
     {
         AggregationPipeline aggregationPipeline = new AggregationPipeline();
-        if (ctx.stageList() == null)
+        if (ctx.aggregationPipelineStage() == null)
         {
             return aggregationPipeline;
         }
-        List<Stage> matchStageList = ctx.stageList().matchStage().stream().map(this::visitMatchStage).collect(Collectors.toList());
+        List<Stage> matchStageList = ctx.aggregationPipelineStage().stream().map(this::visitAggregationPipelineStage).collect(Collectors.toList());
         aggregationPipeline.stages = matchStageList;
         return aggregationPipeline;
     }
 
-    private Stage visitMatchStage(MongoDbQueryParser.MatchStageContext ctx)
+    private Stage visitAggregationPipelineStage(MongoDbQueryParser.AggregationPipelineStageContext ctx)
     {
-        MatchStage matchStage = new MatchStage();
-        if (ctx == null)
+        Stage stage;
+        if (ctx.matchStage() != null)
         {
-            return matchStage;
+            stage = visitMatchStage(ctx.matchStage());
+            return stage;
         }
-        List<AggregateExpression> aggregateExpressions = ctx.queryFilter().filterExpression().stream().map(this::visitAggregateExpression).collect(Collectors.toList());
-        matchStage.expression = aggregateExpressions;
+        else
+        {
+            throw new RuntimeException("No stage was found");
+        }
+
+    }
+
+    private MatchStage visitMatchStage(MongoDbQueryParser.MatchStageContext ctx)
+    {
+        MatchStage matchStage = new MatchStage(Arrays.asList(this.visitExpression(ctx)));
         return matchStage;
-
     }
 
-    private AggregateExpression visitAggregateExpression(MongoDbQueryParser.FilterExpressionContext ctx)
+    private AggregateExpression visitExpression(MongoDbQueryParser.MatchStageContext ctx)
     {
-        AggregateExpression aggregateExpression = new AggregateExpression();
-        if (ctx.simpleFilterExpression() != null)
+        AggregateExpression aggregateExpression;
+        if (ctx.queryExpression() != null)
         {
-            String field = ctx.simpleFilterExpression().WORD().getText();
-            String value = ctx.simpleFilterExpression().STRING().getText();
-            aggregateExpression.arguments = Arrays.asList(buildArgumentExpression(field, new StringType(value), Operators.$eq.toString()));
+            aggregateExpression = new AggregateExpression(this.visitQueryExpression(ctx.queryExpression()));
             return aggregateExpression;
         }
-        else if (ctx.filterExpressionWithOperator() != null)
+        else if (ctx.logicalOperatorExpression() != null)
         {
-            String field = ctx.filterExpressionWithOperator().WORD().getText();
-            String value = ctx.filterExpressionWithOperator().STRING().getText();
-            String operator = ctx.filterExpressionWithOperator().QUERY_SELECTOR().getText();
-            aggregateExpression.arguments = Arrays.asList(buildArgumentExpression(field, new StringType(value), operator));
+            aggregateExpression = new AggregateExpression(Arrays.asList(this.visitLogicalOperatorExpression(ctx.logicalOperatorExpression())));
             return aggregateExpression;
         }
-        throw new RuntimeException("Non of the expected expressions were found");
+        else
+        {
+            return new AggregateExpression();
+        }
     }
 
-    private static ArgumentExpression buildArgumentExpression(String field, BaseType value, String operator)
+    private List<ArgumentExpression> visitQueryExpression(MongoDbQueryParser.QueryExpressionContext ctx)
     {
-        Operators currentOperator = operator == null ? Operators.$eq : Operators.valueOf(operator);
+        return ctx.expression().stream().map(x ->
+        {
+            if (x.expressionValue().complexExpressionValue() != null)
+            {
+                String expressionValue = x.expressionValue().complexExpressionValue().complexObjectExpressionValue().expressionValue().getText();
+                String operator = x.expressionValue().complexExpressionValue().complexObjectExpressionValue().COMPARISON_QUERY_OPERATOR().getText();
+                return buildExpression(x.WORD().getText(), new StringType(expressionValue), operator);
+            }
+            return buildExpression(x.WORD().getText(), new StringType(x.expressionValue().getText()), null);
+        }).collect(Collectors.toList());
+    }
+
+    private ArgumentExpression visitLogicalOperatorExpression(MongoDbQueryParser.LogicalOperatorExpressionContext ctx)
+    {
+        if (ctx.orAggregationExpression() != null)
+        {
+            List<ArgumentExpression> argumentExpressions = ctx.orAggregationExpression().queryExpression().stream().flatMap(x -> visitQueryExpression(x).stream()).collect(Collectors.toList());
+            return new OrExpression(argumentExpressions);
+        }
+        else
+        {
+            List<ArgumentExpression> argumentExpressions = ctx.andAggregationExpression().queryExpression().stream().flatMap(x -> visitQueryExpression(x).stream()).collect(Collectors.toList());
+            return new AndExpression(argumentExpressions);
+        }
+    }
+
+    private static ArgumentExpression buildExpression(String field, BaseType value, String operator)
+    {
         FieldPathExpression fieldPathExpression = new FieldPathExpression(field);
         LiteralExpression literalExpression = new LiteralExpression(value);
         ExpressionObject expressionObject = new ExpressionObject(fieldPathExpression, literalExpression);
-        OperatorExpression operatorExpression = new OperatorExpression(currentOperator, expressionObject);
+        OperatorExpression operatorExpression = operator == null
+                ? new OperatorExpression(expressionObject)
+                : new OperatorExpression(Operators.valueOf(operator), expressionObject);
         return operatorExpression;
     }
 }

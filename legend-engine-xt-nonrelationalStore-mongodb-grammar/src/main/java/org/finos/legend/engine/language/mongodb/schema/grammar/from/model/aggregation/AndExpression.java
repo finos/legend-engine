@@ -14,6 +14,16 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation;
 
-public class AndExpression
+import java.util.List;
+
+public class AndExpression extends ArgumentExpression
 {
+    public List<ArgumentExpression> expressions;
+    public Operators operators;
+
+    public AndExpression(List<ArgumentExpression> expressions)
+    {
+        this.expressions = expressions;
+        this.operators = Operators.$and;
+    }
 }

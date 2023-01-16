@@ -19,4 +19,14 @@ import java.util.List;
 public class AggregateExpression
 {
     public List<ArgumentExpression> arguments;
+
+    public AggregateExpression()
+    {
+
+    }
+
+    public AggregateExpression(List<ArgumentExpression> arguments)
+    {
+        this.arguments = arguments;
+    }
 }

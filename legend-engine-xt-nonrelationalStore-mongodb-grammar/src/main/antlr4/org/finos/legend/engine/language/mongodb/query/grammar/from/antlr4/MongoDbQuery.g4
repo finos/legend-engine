@@ -77,9 +77,10 @@ complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexEx
 
 // Comparison Query Operators
 // https://www.mongodb.com/docs/manual/reference/operator/query-comparison/
-COMPARISON_QUERY_OPERATOR: EQ | GT | GTE;
+COMPARISON_QUERY_OPERATOR: EQ | NE | GT | GTE;
 
 EQ : '$eq';
+NE : '$ne';
 GT: '$gt';
 GTE: '$gte';
 

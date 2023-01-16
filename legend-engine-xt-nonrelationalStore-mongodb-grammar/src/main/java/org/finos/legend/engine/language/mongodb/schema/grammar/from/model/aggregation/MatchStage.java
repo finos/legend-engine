@@ -18,5 +18,12 @@ import java.util.List;
 
 public class MatchStage extends Stage
 {
+    public String stageName;
     public List<AggregateExpression> expression;
+
+    public MatchStage(List<AggregateExpression> expression)
+    {
+        this.stageName = "$match";
+        this.expression = expression;
+    }
 }

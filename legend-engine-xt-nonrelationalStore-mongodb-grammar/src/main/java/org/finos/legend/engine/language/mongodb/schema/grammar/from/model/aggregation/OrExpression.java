@@ -14,6 +14,16 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation;
 
-public class OrExpression
+import java.util.List;
+
+public class OrExpression extends ArgumentExpression
 {
+    public List<ArgumentExpression> expressions;
+    public Operators operators;
+
+    public OrExpression(List<ArgumentExpression> expressions)
+    {
+        this.expressions = expressions;
+        this.operators = Operators.$or;
+    }
 }
