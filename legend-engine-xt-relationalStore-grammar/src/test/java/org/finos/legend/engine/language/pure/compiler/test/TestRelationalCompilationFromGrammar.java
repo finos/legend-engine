@@ -264,6 +264,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     @Test
     public void testRelationalDatabaseFail()
     {
+
         try
         {
             PureModel dbIncModel = test(DB_DUP_INC).getTwo();
