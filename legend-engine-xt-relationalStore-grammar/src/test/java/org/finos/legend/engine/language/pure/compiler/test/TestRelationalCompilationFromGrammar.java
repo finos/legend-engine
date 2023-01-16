@@ -276,6 +276,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
         catch (AssertionError e)
         {
             Assert.assertEquals("expected:<[COMPILATION error: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable, COMPILATION error: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable, COMPILATION error: Duplicate column definitions [LEGALNAME] in table: otherFirmTable]>", e.getMessage());
+        }
     }
 
     @Test
