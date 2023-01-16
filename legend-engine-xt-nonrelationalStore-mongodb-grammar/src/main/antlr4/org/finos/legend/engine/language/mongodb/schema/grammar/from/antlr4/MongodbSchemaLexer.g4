@@ -13,59 +13,20 @@
 // limitations under the License.
 
 /** Taken from "The Definitive ANTLR 4 Reference" by Terence Parr */
+// Derived from http://json.org as starting point.
 
-// Derived from http://json.org
-grammar MongodbSchema;
+lexer grammar MongodbSchemaLexer;
 
-unquotedIdentifier:                         VALID_STRING
-                                            | SCHEMA
+KEYWORDS:                                    SCHEMA
                                             | ID | TITLE | DESCRIPTION | TYPE
                                             | PROPERTIES | REQUIRED
                                             | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS
                                             | ADDITIONAL_PROPERTIES
 ;
 
-identifier:                                 unquotedIdentifier | STRING
-;
-
-json
-   : value EOF
-   ;
-
-obj
-   : '{' pair (',' pair)* '}'
-   | '{' '}'
-   ;
-
-pair
-   : STRING ':' value
-   ;
-
-arr
-   : '[' value (',' value)* ']'
-   | '[' ']'
-   ;
-
-value
-   : STRING
-   | NUMBER
-   | obj
-   | arr
-   | 'true'
-   | 'false'
-   | 'null'
-   ;
-
-
-STRING
-   : '"' (ESC | SAFECODEPOINT)* '"'
-   ;
-
-
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)
    ;
-
 
 fragment UNICODE
    : 'u' HEX HEX HEX HEX
@@ -102,8 +63,6 @@ WS
    : [ \t\n\r] + -> skip
    ;
 
-// LEXER
-
 BRACE_OPEN:                                 '{';
 BRACE_CLOSE:                                '}';
 BRACKET_OPEN:                               '[';
@@ -112,6 +71,7 @@ PAREN_OPEN:                                 '(';
 PAREN_CLOSE:                                ')';
 COLON:                                      ':';
 DOT:                                        '.';
+COMMA:                                      ',';
 DOLLAR:                                     '$';
 
 PLUS:                                       '+';
@@ -123,27 +83,60 @@ LESS_OR_EQUAL:                              '<=';
 GREATER_THAN:                               '>';
 GREATER_OR_EQUAL:                           '>=';
 
-VALID_STRING:                               ValidString;
-SCHEMA:                                     '$schema';
+//VALID_STRING:                               ValidString;
+SCHEMA:                                     '"$schema"';
 ID:                                         '$id';
-TITLE:                                      'title';
-DESCRIPTION:                                'description';
-TYPE:                                       'type';
-PROPERTIES:                                 'properties';
-REQUIRED:                                   'required';
-UNIQUE_ITEMS:                               'uniqueItems';
-MIN_ITEMS:                                  'minItems';
-MAX_ITEMS:                                  'maxItems';
-ADDITIONAL_PROPERTIES:                      'additiionalProperties';
+TITLE:                                      '"title"';
+DESCRIPTION:                                '"description"';
+BSONTYPE:                                   '"bsonType"';
+TYPE:                                       '"type"';
+PROPERTIES:                                 '"properties"';
+REQUIRED:                                   '"required"';
+UNIQUE_ITEMS:                               '"uniqueItems"';
+MIN_ITEMS:                                  '"minItems"';
+MAX_ITEMS:                                  '"maxItems"';
+ADDITIONAL_PROPERTIES:                      '"additionalProperties"';
+TRUE:                                       'true';
+FALSE:                                      'false';
+NULL:                                       'null';
+
 
 
 // Fragments
-fragment ValidString:                       (Letter | Digit | '_' ) (Letter | Digit | '_')*
-;
+//fragment ValidString:                       (Letter | Digit | '_' ) (Letter | Digit | '_')*
+//;
 fragment FieldIdentifier:                   ('$' | '$$') (Letter | Digit | '_' )*
 ;
 fragment Letter:                        [A-Za-z]
 ;
 fragment Digit:                         [0-9]
 ;
+//fragment Whitespace:                    [ \r\t\n]+
+//;
+//fragment HexDigit:                      [0-9a-fA-F]
+//;
+//fragment String:                        ('\'' ( EscSeq | ~['\r\n\\] )*  '\'' )
+//;
+//fragment UnicodeEsc:	                'u' (HexDigit (HexDigit (HexDigit HexDigit?)?)?)?
+//;
+//fragment Esc:                           '\\'
+//;
+//fragment EscSeq:	                    Esc
+//                        		        (
+//                        		            [btnfr"'\\]	// The standard escaped character set such as tab, newline, etc.
+//		                                    | UnicodeEsc	// A Unicode escape sequence
+//		                                    | .				// Invalid escape character
+//		                                    | EOF			// Incomplete at EOF
+//		                                )
+//;
+//fragment Integer:                       (Digit)+
+//;
 
+
+STRING
+   : STRINGFRAGMENT
+;
+
+fragment STRINGFRAGMENT
+   : '"' (ESC | SAFECODEPOINT)* '"'
+;
