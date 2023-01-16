@@ -31,7 +31,9 @@ import static org.junit.Assert.assertEquals;
 public class MongoDbQueryParseTreeWalkerTest
 {
 
-    private final ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private final ObjectMapper mapper = new ObjectMapper()
+            .enable(SerializationFeature.INDENT_OUTPUT)
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
     @Test
     public void testEmptyAggregate() throws JsonProcessingException
@@ -358,6 +360,258 @@ public class MongoDbQueryParseTreeWalkerTest
                 "            }\n" +
                 "          } ],\n" +
                 "          \"operators\" : \"$or\"\n" +
+                "        } ]\n" +
+                "      } ]\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithMultiMatchExpressionWithNumbers() throws Exception
+    {
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: 'USA' }, test2 : { $ne: 'GB' }, test3: { $eq: 5 } } } ] }";
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"stageName\" : \"$match\",\n" +
+                "      \"expression\" : [ {\n" +
+                "        \"arguments\" : [ {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'USA'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }, {\n" +
+                "          \"operator\" : \"$ne\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test2\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'GB'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }, {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test3\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"5\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        } ]\n" +
+                "      } ]\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithMultiMatchExpressionWithNumbersWithoutOperator() throws Exception
+    {
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: 'USA' }, test3: 5, test2 : { $ne: 'GB' } } } ] }";
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"stageName\" : \"$match\",\n" +
+                "      \"expression\" : [ {\n" +
+                "        \"arguments\" : [ {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'USA'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }, {\n" +
+                "          \"operator\" : null,\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test3\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : 5\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }, {\n" +
+                "          \"operator\" : \"$ne\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test2\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'GB'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        } ]\n" +
+                "      } ]\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithMultiMatchExpressionWithArrayWithoutOperator() throws Exception
+    {
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: 'USA' }, test2: [] } } ] }";
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"stageName\" : \"$match\",\n" +
+                "      \"expression\" : [ {\n" +
+                "        \"arguments\" : [ {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'USA'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }, {\n" +
+                "          \"operator\" : null,\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test2\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : null\n" +
+                "            }\n" +
+                "          }\n" +
+                "        } ]\n" +
+                "      } ]\n" +
+                "    } ]\n " +
+                " }\n" +
+                "}", mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithMultiMatchExpressionWithArrayWithoutOperator2() throws Exception
+    {
+        String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: ['ABC', 'DEF'] }, test2: [5, 6], test3: ['one', 'two'] } } ] }";
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals("{\n" +
+                "  \"type\" : \"aggregate\",\n" +
+                "  \"collectionName\" : \"'firms'\",\n" +
+                "  \"aggregationPipeline\" : {\n" +
+                "    \"stages\" : [ {\n" +
+                "      \"stageName\" : \"$match\",\n" +
+                "      \"expression\" : [ {\n" +
+                "        \"arguments\" : [ {\n" +
+                "          \"operator\" : \"$eq\",\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : {\n" +
+                "                \"pattern\" : \"'USA'\"\n" +
+                "              }\n" +
+                "            }\n" +
+                "          }\n" +
+                "        }, {\n" +
+                "          \"operator\" : null,\n" +
+                "          \"expression\" : {\n" +
+                "            \"field\" : {\n" +
+                "              \"path\" : \"test2\"\n" +
+                "            },\n" +
+                "            \"argument\" : {\n" +
+                "              \"value\" : null\n" +
+                "            }\n" +
+                "          }\n" +
                 "        } ]\n" +
                 "      } ]\n" +
                 "    } ]\n " +

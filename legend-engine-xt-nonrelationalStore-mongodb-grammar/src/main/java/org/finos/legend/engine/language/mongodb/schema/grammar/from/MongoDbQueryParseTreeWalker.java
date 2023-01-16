@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggreg
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.OrExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.Stage;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.BaseType;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.IntType;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.StringType;
 
 import java.util.Arrays;
@@ -61,14 +62,12 @@ public class MongoDbQueryParseTreeWalker
 
     private AggregationPipeline visitPipeline(MongoDbQueryParser.PipelinesContext ctx)
     {
-        AggregationPipeline aggregationPipeline = new AggregationPipeline();
         if (ctx.aggregationPipelineStage() == null)
         {
-            return aggregationPipeline;
+            return new AggregationPipeline();
         }
         List<Stage> matchStageList = ctx.aggregationPipelineStage().stream().map(this::visitAggregationPipelineStage).collect(Collectors.toList());
-        aggregationPipeline.stages = matchStageList;
-        return aggregationPipeline;
+        return new AggregationPipeline(matchStageList);
     }
 
     private Stage visitAggregationPipelineStage(MongoDbQueryParser.AggregationPipelineStageContext ctx)
@@ -117,11 +116,15 @@ public class MongoDbQueryParseTreeWalker
         {
             if (x.expressionValue().complexExpressionValue() != null)
             {
+                if (x.expressionValue().complexExpressionValue().complexObjectExpressionValue() == null)
+                {
+                    return buildExpression(x.WORD().getText(), null, null);
+                }
                 String expressionValue = x.expressionValue().complexExpressionValue().complexObjectExpressionValue().expressionValue().getText();
                 String operator = x.expressionValue().complexExpressionValue().complexObjectExpressionValue().COMPARISON_QUERY_OPERATOR().getText();
                 return buildExpression(x.WORD().getText(), new StringType(expressionValue), operator);
             }
-            return buildExpression(x.WORD().getText(), new StringType(x.expressionValue().getText()), null);
+            return buildExpression(x.WORD().getText(), visitLiteral(x.expressionValue()), null);
         }).collect(Collectors.toList());
     }
 
@@ -139,14 +142,26 @@ public class MongoDbQueryParseTreeWalker
         }
     }
 
+    private BaseType visitLiteral(MongoDbQueryParser.ExpressionValueContext ctx)
+    {
+        if (ctx.NUMBER() != null)
+        {
+            return new IntType(Integer.parseInt(ctx.getText()));
+        }
+        else if (ctx.STRING() != null)
+        {
+            return new StringType(ctx.getText());
+        }
+        return new BaseType();
+    }
+
     private static ArgumentExpression buildExpression(String field, BaseType value, String operator)
     {
         FieldPathExpression fieldPathExpression = new FieldPathExpression(field);
         LiteralExpression literalExpression = new LiteralExpression(value);
         ExpressionObject expressionObject = new ExpressionObject(fieldPathExpression, literalExpression);
-        OperatorExpression operatorExpression = operator == null
+        return operator == null
                 ? new OperatorExpression(expressionObject)
                 : new OperatorExpression(Operators.valueOf(operator), expressionObject);
-        return operatorExpression;
     }
 }

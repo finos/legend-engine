@@ -19,4 +19,14 @@ import java.util.List;
 public class AggregationPipeline
 {
     public List<Stage> stages;
+
+    public AggregationPipeline()
+    {
+
+    }
+
+    public AggregationPipeline(List<Stage> stages)
+    {
+        this.stages = stages;
+    }
 }

@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation;
 
-public class ExpressionObject
+public class ExpressionObject extends ArgumentExpression
 {
     public FieldPathExpression field;
     public ArgumentExpression argument;
