@@ -25,13 +25,27 @@ pipelines: '[' aggregationPipelineStage? ( ',' aggregationPipelineStage)* ']';
 // Aggregation Pipeline Stages
 //https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/
 
-aggregationPipelineStage: matchStage;
+aggregationPipelineStage: matchStage | projectStage;
 
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/match/#mongodb-pipeline-pipe.-match
 matchStage:
     '{' MATCH ':' ( BRACE_OPEN BRACE_CLOSE | queryExpression | logicalOperatorExpression) '}';
-
 // TODO: handle taking in $exp as part of $match value
+
+
+//https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/
+projectStage:
+    '{' PROJECT ':'  (BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE) '}';
+
+// TODO: handle taking in $cond as an arguement to $project pipeline https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/
+// TODO: handle taking in $substr https://www.mongodb.com/docs/manual/reference/operator/aggregation/substr/
+// TODO: handle taking in $substrBytes https://www.mongodb.com/docs/manual/reference/operator/aggregation/substrBytes/#mongodb-expression-exp.-substrBytes
+projectExpression: STRING ':' ( ( projectionBooleanValue) | ( BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE ) );
+projectionBooleanValue: '0' | '1' | 'true' | 'false';
+
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
+// TODO: handle taking in computed fields
+//projectionComputedFieldValue: '"$' (ESC | SAFECODEPOINT)* '"'; // Not working
 
 
 
@@ -63,7 +77,7 @@ orAggregationExpression: BRACE_OPEN OR ':' (BRACKET_OPEN queryExpression? ( ',' 
 
 queryExpression: BRACE_OPEN expression ( ',' expression )* BRACE_CLOSE;
 
-expression: WORD ':' expressionValue | COMPARISON_QUERY_OPERATOR ':' complexExpressionValue;
+expression: STRING ':' expressionValue | COMPARISON_QUERY_OPERATOR ':' complexExpressionValue;
 expressionValue: STRING | NUMBER | complexExpressionValue;
 complexExpressionValue: complexObjectExpressionValue | complexArrayExpressionValue;
 
@@ -79,10 +93,10 @@ complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexEx
 // https://www.mongodb.com/docs/manual/reference/operator/query-comparison/
 COMPARISON_QUERY_OPERATOR: EQ | NE | GT | GTE;
 
-EQ : '$eq';
-NE : '$ne';
-GT: '$gt';
-GTE: '$gte';
+EQ : '"' '$eq' '"' |  '$eq';
+NE : '"' '$ne' '"' |  '$ne';
+GT: '"' '$gt' '"'  |  '$gt';
+GTE: '"' '$gte' '"' |  '$gte';
 
 //... add others
 
@@ -90,8 +104,8 @@ GTE: '$gte';
 // Logical Query Operators
 // https://www.mongodb.com/docs/manual/reference/operator/query-logical/
 
-AND : '$and';
-OR : '$or';
+AND : '"' '$and' '"' | '$and';
+OR : '"' '$or' '"' |  '$or';
 
 //... add others
 
@@ -102,14 +116,16 @@ BRACE_CLOSE : '}';
 BRACKET_OPEN : '[';
 BRACKET_CLOSE : ']';
 
-AGGREGATE : 'aggregate';
-PIPELINE : 'pipeline';
-CURSOR : 'cursor';
-MATCH : '$match';
+AGGREGATE : '"' 'aggregate' '"' |  'aggregate';
+PIPELINE : '"' 'pipeline' '"' |  'pipeline';
+CURSOR : '"' 'cursor' '"' |  'cursor';
+MATCH : '"' '$match' '"' |  '$match';
+PROJECT : '"' '$project' '"' |  '$project';
 
 
-// TODO: Is this the correct way to do this? GQL G4 does it differently, search for 'STRING:'
-STRING: '\'' WORD '\'';
+STRING
+   : '"' (ESC | SAFECODEPOINT)* '"'
+   ;
 
 NUMBER
    : '-'? INT ('.' [0-9] +)? EXP?

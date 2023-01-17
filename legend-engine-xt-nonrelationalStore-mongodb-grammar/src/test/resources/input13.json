@@ -1,0 +1,24 @@
+{
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$project": {
+        "address.address1": 0,
+        "address.address2": 1,
+        "address.address3": true,
+        "names": {
+          "officialNames": {
+            "firstName": true,
+            "lastName": 0
+          },
+          "nicknames": {
+            "nickname1": true,
+            "nickname2": 0
+          }
+        },
+        "address.address4": false
+      }
+    }
+  ],
+  "cursor": {}
+}

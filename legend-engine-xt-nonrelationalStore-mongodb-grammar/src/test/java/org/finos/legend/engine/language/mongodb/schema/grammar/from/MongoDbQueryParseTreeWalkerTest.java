@@ -26,6 +26,13 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
+
 import static org.junit.Assert.assertEquals;
 
 public class MongoDbQueryParseTreeWalkerTest
@@ -65,7 +72,8 @@ public class MongoDbQueryParseTreeWalkerTest
     @Test
     public void testAggregateWithEmptyMatch() throws Exception
     {
-        String input = "{ aggregate: 'firms', pipeline: [ { $match: { } } ] }";
+        String input = resourceAsString("input2.json");
+        String expectedOutput = resourceAsString("output2.json");
 
         MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
 
@@ -81,18 +89,7 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = walker.getCommand();
 
-        assertEquals("{\n" +
-                "  \"type\" : \"aggregate\",\n" +
-                "  \"collectionName\" : \"'firms'\",\n" +
-                "  \"aggregationPipeline\" : {\n" +
-                "    \"stages\" : [ {\n" +
-                "      \"stageName\" : \"$match\",\n" +
-                "      \"expression\" : [ {\n" +
-                "        \"arguments\" : null\n" +
-                "      } ]\n " +
-                "   } ]\n " +
-                " }\n" +
-                "}", mapper.writeValueAsString(databaseCommand));
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
 
@@ -618,5 +615,20 @@ public class MongoDbQueryParseTreeWalkerTest
                 " }\n" +
                 "}", mapper.writeValueAsString(databaseCommand));
 
+    }
+
+    protected String resourceAsString(String path)
+    {
+        byte[] bytes;
+        try
+        {
+            bytes = Files.readAllBytes(Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource(path), "Failed to get resource " + path).toURI()));
+        }
+        catch (IOException | URISyntaxException e)
+        {
+            throw new RuntimeException(e);
+        }
+        String string = new String(bytes, StandardCharsets.UTF_8);
+        return string.replaceAll("\\R", "\n");
     }
 }

@@ -1,1 +1,0 @@
-{ aggregate: 'person', pipeline: [{ $match:{ $and : [ { fName: { $eq: 'Peter' }  }, { lName: { $eq: 'Smith' }  }  ]} } ], cursor: { } }

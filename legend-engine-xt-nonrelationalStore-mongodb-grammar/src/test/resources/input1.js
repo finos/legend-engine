@@ -1,1 +1,0 @@
-{ aggregate: 'firms', pipeline: [  ], cursor: { } }

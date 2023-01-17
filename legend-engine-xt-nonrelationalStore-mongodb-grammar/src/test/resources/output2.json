@@ -1,9 +1,12 @@
 {
-  "aggregate" : {
-    "collectionName" : "'firms'",
-    "pipelines" : [ {
-      "name" : "$match",
-      "query" : null
+  "type" : "aggregate",
+  "collectionName" : "\"firms\"",
+  "aggregationPipeline" : {
+    "stages" : [ {
+      "stageName" : "$match",
+      "expression" : [ {
+        "arguments" : null
+      } ]
     } ]
   }
 }
