@@ -40,13 +40,14 @@ projectStage:
 // TODO: handle taking in $cond as an arguement to $project pipeline https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/
 // TODO: handle taking in $substr https://www.mongodb.com/docs/manual/reference/operator/aggregation/substr/
 // TODO: handle taking in $substrBytes https://www.mongodb.com/docs/manual/reference/operator/aggregation/substrBytes/#mongodb-expression-exp.-substrBytes
-projectExpression: STRING ':' ( ( projectionBooleanValue) | ( BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE ) );
-projectionBooleanValue: '0' | '1' | 'true' | 'false';
+projectExpression: STRING ':' ( projectionValue | ( BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE ) );
+
+projectionValue: projectionBooleanValue | projectionComputedFieldValue;
 
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
-// TODO: handle taking in computed fields
-//projectionComputedFieldValue: '"$' (ESC | SAFECODEPOINT)* '"'; // Not working
+projectionComputedFieldValue: STRING_WITH_DOLLAR;
 
+projectionBooleanValue: '0' | '1' | 'true' | 'false';
 
 
 // Aggregation Operator expressions
@@ -122,6 +123,11 @@ CURSOR : '"' 'cursor' '"' |  'cursor';
 MATCH : '"' '$match' '"' |  '$match';
 PROJECT : '"' '$project' '"' |  '$project';
 
+
+// to handle // https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
+STRING_WITH_DOLLAR // TODO: is this the correct way of having precedence for strings with "$field1.field11" ??
+   : '"$' (ESC | SAFECODEPOINT)* '"'
+   ;
 
 STRING
    : '"' (ESC | SAFECODEPOINT)* '"'
