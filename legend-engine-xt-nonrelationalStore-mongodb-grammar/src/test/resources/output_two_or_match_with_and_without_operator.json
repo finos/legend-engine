@@ -1,0 +1,39 @@
+{
+  "type" : "aggregate",
+  "collectionName" : "firms",
+  "aggregationPipeline" : {
+    "stages" : [ {
+      "stageName" : "$match",
+      "expression" : [ {
+        "arguments" : [ {
+          "expressions" : [ {
+            "operator" : "$eq",
+            "expression" : {
+              "field" : {
+                "path" : "\"fName\""
+              },
+              "argument" : {
+                "value" : {
+                  "pattern" : "\"Peter\""
+                }
+              }
+            }
+          }, {
+            "operator" : null,
+            "expression" : {
+              "field" : {
+                "path" : "\"lName\""
+              },
+              "argument" : {
+                "value" : {
+                  "pattern" : "\"Smith\""
+                }
+              }
+            }
+          } ],
+          "operators" : "$or"
+        } ]
+      } ]
+    } ]
+  }
+}

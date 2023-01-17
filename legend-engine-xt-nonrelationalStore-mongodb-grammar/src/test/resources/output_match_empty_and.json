@@ -1,0 +1,15 @@
+{
+  "type" : "aggregate",
+  "collectionName" : "firms",
+  "aggregationPipeline" : {
+    "stages" : [ {
+      "stageName" : "$match",
+      "expression" : [ {
+        "arguments" : [ {
+          "expressions" : [ ],
+          "operators" : "$and"
+        } ]
+      } ]
+    } ]
+  }
+}

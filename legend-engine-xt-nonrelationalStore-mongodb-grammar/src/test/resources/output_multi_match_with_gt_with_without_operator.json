@@ -1,0 +1,48 @@
+{
+  "type" : "aggregate",
+  "collectionName" : "firms",
+  "aggregationPipeline" : {
+    "stages" : [ {
+      "stageName" : "$match",
+      "expression" : [ {
+        "arguments" : [ {
+          "operator" : "$gt",
+          "expression" : {
+            "field" : {
+              "path" : "\"test\""
+            },
+            "argument" : {
+              "value" : {
+                "pattern" : 3
+              }
+            }
+          }
+        }, {
+          "operator" : "$gt",
+          "expression" : {
+            "field" : {
+              "path" : "\"test2\""
+            },
+            "argument" : {
+              "value" : {
+                "pattern" : "\"USA\""
+              }
+            }
+          }
+        }, {
+          "operator" : null,
+          "expression" : {
+            "field" : {
+              "path" : "\"test3\""
+            },
+            "argument" : {
+              "value" : {
+                "pattern" : "\"testingg\""
+              }
+            }
+          }
+        } ]
+      } ]
+    } ]
+  }
+}
