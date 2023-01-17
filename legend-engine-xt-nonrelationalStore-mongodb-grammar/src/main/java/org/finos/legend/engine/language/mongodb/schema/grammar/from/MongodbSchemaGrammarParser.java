@@ -25,15 +25,11 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.FixedSizeList;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.antlr4.MongodbSchemaParser;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 
 public class MongodbSchemaGrammarParser
