@@ -19,6 +19,19 @@ parser grammar MongodbSchemaParser;
 
 options { tokenVocab=MongodbSchemaLexer; }
 
+keywords:                                   (DATABASE | DATABASE_NAME
+                                            | COLLECTIONS | COLLECTION_NAME
+                                            | SCHEMA | OPTIONS | VALIDATOR
+                                            | VALIDATION_LEVEL | VALIDATION_ACTION
+                                            | ID | TITLE | DESCRIPTION
+                                            | TYPE | BSONTYPE
+                                            | PROPERTIES | REQUIRED
+                                            | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS
+                                            | MAXIMUM | MINIMUM
+                                            | MIN_LENGTH | MAX_LENGTH
+                                            | ENUM | ALL_OF | ONE_OF | ANY_OF
+                                            | ADDITIONAL_PROPERTIES)
+;
 
 json
    : value EOF
@@ -33,14 +46,18 @@ pair
    : key ':' value
    ;
 
+
+key
+   : (keywords | STRING)
+   ;
+
+
 arr
    : BRACKET_OPEN value (COMMA value)* BRACKET_CLOSE
    | BRACKET_OPEN BRACKET_CLOSE
    ;
 
-key
-   : (KEYWORDS | STRING)
-;
+
 
 value
    : STRING
@@ -51,5 +68,4 @@ value
    | FALSE
    | NULL
    ;
-
 

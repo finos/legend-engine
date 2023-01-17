@@ -17,17 +17,6 @@
 
 lexer grammar MongodbSchemaLexer;
 
-KEYWORDS:                                   DATABASE | COLLECTION_NAME
-                                            | SCHEMA | OPTIONS | VALIDATOR
-                                            | ID | TITLE | DESCRIPTION
-                                            | TYPE | BSONTYPE
-                                            | PROPERTIES | REQUIRED
-                                            | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS
-                                            | MAXIMUM | MINIMUM
-                                            | ENUM | ALL_OF | ONE_OF | ANY_OF
-                                            | ADDITIONAL_PROPERTIES
-;
-
 fragment ESC
    : '\\' (["\\/bfnrt] | UNICODE)
    ;
@@ -67,9 +56,7 @@ WS
    : [ \t\n\r] + -> skip
    ;
 
-STRING
-   : STRINGFRAGMENT
-;
+
 
 BRACE_OPEN:                                 '{';
 BRACE_CLOSE:                                '}';
@@ -93,10 +80,14 @@ GREATER_OR_EQUAL:                           '>=';
 
 //VALID_STRING:                               ValidString;
 DATABASE:                                   '"database"';
+DATABASE_NAME:                              '"databaseName"';
+COLLECTIONS:                                '"collections"';
 COLLECTION_NAME:                            '"collectionName"';
 SCHEMA:                                     '"$jsonSchema"';
-OPTIONS:                                    '"options';
+OPTIONS:                                    '"options"';
 VALIDATOR:                                  '"validator"';
+VALIDATION_LEVEL:                           '"validationLevel"';
+VALIDATION_ACTION:                          '"validationAction"';
 ID:                                         '$id';
 TITLE:                                      '"title"';
 DESCRIPTION:                                '"description"';
@@ -132,6 +123,12 @@ fragment Letter:                        [A-Za-z]
 ;
 fragment Digit:                         [0-9]
 ;
+
+STRING
+   : STRINGFRAGMENT
+   {setText(getText().substring(1, getText().length()-1));}
+;
+
 fragment STRINGFRAGMENT
    : '"' (ESC | SAFECODEPOINT)* '"'
 ;

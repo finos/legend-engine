@@ -1,6 +1,6 @@
 {
   "database": {
-    "name": "my_database",
+    "databaseName": "my_database",
     "type": "clustered",
     "collections": [
       {
