@@ -20,9 +20,12 @@ import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggreg
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AggregationPipeline;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AndExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArgumentExpression;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArrayArgumentExpression;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArrayArgumentExpressionWithOperator;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ExpressionObject;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.FieldPathExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.LiteralExpression;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.LiteralOnlyExpressionObject;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.MatchStage;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.OperatorExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.Operators;
@@ -119,13 +122,10 @@ public class MongoDbQueryParseTreeWalker
             } else if ( x.expressionValue().value() != null) {
                 return visitValue(x.expressionValue().value(), x.STRING().getText(), null);
             }
-            return buildExpression(x.STRING().getText(), visitLiteral(x.expressionValue().value()), null);
+            //return buildExpression(x.STRING().getText(), visitLiteral(x.expressionValue().value()), null);
+            throw new RuntimeException("visitQueryExpression Runtime Exception");
         }).collect(Collectors.toList());
     }
-
-
-
-
 
     public ArgumentExpression visitExpressionValue(MongoDbQueryParser.ExpressionValueContext ctx, String field, String operator)
     {
@@ -146,27 +146,38 @@ public class MongoDbQueryParseTreeWalker
         if (ctx.STRING() != null || ctx.NUMBER() != null)
         {
             return buildExpression(field, visitLiteral(ctx), operator);
-        } else if (ctx.obj() != null){
-
+        }
+        else if (ctx.obj() != null)
+        {
             return visitObj(ctx.obj());
-
+        }
+        else if (ctx.arr() != null)
+        {
+            return visitArray(ctx.arr(), operator, field);
         }
 
-        // handle array
         throw new RuntimeException("visitExpressionValue error");
 
     }
 
-    // TODO: remove all string checking logic, this is for the G4 file
+    public ArgumentExpression visitArray(MongoDbQueryParser.ArrContext ctx, String operator, String field)
+    {
+        List<ArgumentExpression> argumentExpressions = ctx.value().stream().map(x -> visitValue(x, null, null)).collect(Collectors.toList());
+        return operator == null
+                ? new ArrayArgumentExpression(new FieldPathExpression(field), argumentExpressions)
+                : new ArrayArgumentExpressionWithOperator(Operators.valueOf(operator.substring(1, operator.length() - 1)), new FieldPathExpression(field), argumentExpressions);
+
+    }
+
     public ArgumentExpression visitOperatorExpression(MongoDbQueryParser.OperatorExpressionContext ctx, String field)
     {
 
         String operator = ctx.COMPARISON_QUERY_OPERATOR().getText();
 
-        if (ctx.operatorExpressionValue() != null) {
+        if (ctx.operatorExpressionValue() != null)
+        {
             return visitOperatorExpressionValue(ctx.operatorExpressionValue(), field, operator);
         }
-
 
         throw new RuntimeException("visitOperatorExpression exception");
     }
@@ -186,12 +197,6 @@ public class MongoDbQueryParseTreeWalker
 
     }
 
-//    private ArgumentExpression visitComplexArrayExpressionValue(MongoDbQueryParser.ComplexArrayExpressionValueContext ctx, String field)
-//    {
-//        List<ArgumentExpression> expressions = ctx.complexExpressionValue().stream().map(x -> visitComplexExpressionValue(x, field)).collect(Collectors.toList());
-//        return new ArrayArgumentExpression(new FieldPathExpression(field), expressions);
-//    }
-
     private ArgumentExpression visitLogicalOperatorExpression(MongoDbQueryParser.LogicalOperatorExpressionContext ctx)
     {
         if (ctx.orAggregationExpression() != null)
@@ -206,7 +211,6 @@ public class MongoDbQueryParseTreeWalker
         }
     }
 
-
     private ArgumentExpression visitObj(MongoDbQueryParser.ObjContext ctx)
     {
 
@@ -219,7 +223,6 @@ public class MongoDbQueryParseTreeWalker
        return result;
     }
 
-
     private ArgumentExpression visitPair(MongoDbQueryParser.PairContext ctx)
     {
         if (ctx.value().NUMBER() != null || ctx.value().STRING() != null)
@@ -229,8 +232,6 @@ public class MongoDbQueryParseTreeWalker
         }
         throw new RuntimeException("visitPair exception");
     }
-
-
 
     private BaseType visitLiteral(MongoDbQueryParser.ValueContext ctx)
     {
@@ -249,7 +250,9 @@ public class MongoDbQueryParseTreeWalker
     {
         FieldPathExpression fieldPathExpression = new FieldPathExpression(field);
         LiteralExpression literalExpression = new LiteralExpression(value);
-        ExpressionObject expressionObject = new ExpressionObject(fieldPathExpression, literalExpression);
+        ArgumentExpression expressionObject = field != null
+                ? new ExpressionObject(fieldPathExpression, literalExpression)
+                : new LiteralOnlyExpressionObject(literalExpression);
         return operator == null
                 ? new OperatorExpression(expressionObject)
                 : new OperatorExpression(Operators.valueOf(operator.substring(1, operator.length() - 1)), expressionObject);

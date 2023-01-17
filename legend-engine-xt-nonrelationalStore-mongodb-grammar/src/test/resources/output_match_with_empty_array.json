@@ -25,7 +25,7 @@
                 "field": {
                   "path": "\"test2\""
                 },
-                "expressions": null
+                "expressions": [ ]
               }
             ]
           }

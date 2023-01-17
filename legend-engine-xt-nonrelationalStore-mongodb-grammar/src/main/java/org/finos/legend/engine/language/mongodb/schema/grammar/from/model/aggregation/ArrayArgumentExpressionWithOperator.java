@@ -27,6 +27,12 @@ public class ArrayArgumentExpressionWithOperator extends ArrayArgumentExpression
         this.operator = operator;
     }
 
+    public ArrayArgumentExpressionWithOperator(Operators operator, List<ArgumentExpression> expressions)
+    {
+        super(expressions);
+        this.operator = operator;
+    }
+
     public ArrayArgumentExpressionWithOperator(Operators operator, FieldPathExpression field, List<ArgumentExpression> expressions)
     {
         super(field, expressions);

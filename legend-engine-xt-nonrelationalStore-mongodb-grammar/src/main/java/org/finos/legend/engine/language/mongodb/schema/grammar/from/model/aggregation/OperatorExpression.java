@@ -17,14 +17,14 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggre
 public class OperatorExpression extends ArgumentExpression
 {
     public Operators operator;
-    public ExpressionObject expression;
+    public ArgumentExpression expression;
 
-    public OperatorExpression(ExpressionObject expression)
+    public OperatorExpression(ArgumentExpression expression)
     {
         this.expression = expression;
     }
 
-    public OperatorExpression(Operators operator, ExpressionObject expression)
+    public OperatorExpression(Operators operator, ArgumentExpression expression)
     {
         this.operator = operator;
         this.expression = expression;

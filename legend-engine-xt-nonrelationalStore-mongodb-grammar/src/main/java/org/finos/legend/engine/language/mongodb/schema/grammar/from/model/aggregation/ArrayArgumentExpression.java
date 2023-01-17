@@ -32,6 +32,11 @@ public class ArrayArgumentExpression extends ArgumentExpression
         this.field = field;
     }
 
+    public ArrayArgumentExpression(List<ArgumentExpression> expressions)
+    {
+        this.expressions = expressions;
+    }
+
     public ArrayArgumentExpression(FieldPathExpression field, List<ArgumentExpression> expressions)
     {
         this.field = field;
