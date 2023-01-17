@@ -116,16 +116,63 @@ public class MongoDbQueryParseTreeWalker
         {
             if (x.expressionValue().complexExpressionValue() != null)
             {
-                if (x.expressionValue().complexExpressionValue().complexObjectExpressionValue() == null)
-                {
-                    return buildExpression(x.WORD().getText(), null, null);
-                }
-                String expressionValue = x.expressionValue().complexExpressionValue().complexObjectExpressionValue().expressionValue().getText();
-                String operator = x.expressionValue().complexExpressionValue().complexObjectExpressionValue().COMPARISON_QUERY_OPERATOR().getText();
-                return buildExpression(x.WORD().getText(), new StringType(expressionValue), operator);
+                return visitExpressionValue(x.expressionValue(), x.WORD().getText(), null);
             }
             return buildExpression(x.WORD().getText(), visitLiteral(x.expressionValue()), null);
         }).collect(Collectors.toList());
+    }
+
+//    public ArgumentExpression visitExpression(MongoDbQueryParser.ExpressionContext ctx)
+//    {
+//        if (ctx.complexExpressionValue() != null)
+//        {
+//            return visitComplexExpressionValue(ctx.complexExpressionValue(), null);
+//        }
+//        else
+//        {
+//            return visitExpressionValue(ctx.expressionValue(), ctx.WORD().getText(), null);
+//        }
+//    }
+
+    public ArgumentExpression visitExpressionValue(MongoDbQueryParser.ExpressionValueContext ctx, String field, String operator)
+    {
+        if (ctx.complexExpressionValue() != null)
+        {
+            return visitComplexExpressionValue(ctx.complexExpressionValue(), field);
+        }
+        else if (ctx.STRING() != null)
+        {
+            return buildExpression(field, visitLiteral(ctx), operator);
+        }
+        else if (ctx.NUMBER() != null)
+        {
+            return buildExpression(field, visitLiteral(ctx), operator);
+        }
+        throw new RuntimeException("visitExpressionValue error");
+
+    }
+
+    public ArgumentExpression visitComplexExpressionValue(MongoDbQueryParser.ComplexExpressionValueContext ctx, String field)
+    {
+        if (ctx.complexObjectExpressionValue() != null)
+        {
+            return visitComplexObjectExpressionValue(ctx.complexObjectExpressionValue(), field);
+        }
+        else
+        {
+            return visitComplexObjectExpressionValue(ctx.complexObjectExpressionValue(), field);
+        }
+    }
+
+    private ArgumentExpression visitComplexObjectExpressionValue(MongoDbQueryParser.ComplexObjectExpressionValueContext ctx, String field)
+    {
+        String operator = ctx.COMPARISON_QUERY_OPERATOR().getText();
+        return visitExpressionValue(ctx.expressionValue(), field, operator);
+    }
+
+    private List<ArgumentExpression> visitComplexArrayExpressionValue(MongoDbQueryParser.ComplexArrayExpressionValueContext ctx)
+    {
+        return ctx.complexExpressionValue().stream().map(x -> visitComplexExpressionValue(x, null)).collect(Collectors.toList());
     }
 
     private ArgumentExpression visitLogicalOperatorExpression(MongoDbQueryParser.LogicalOperatorExpressionContext ctx)
@@ -146,11 +193,11 @@ public class MongoDbQueryParseTreeWalker
     {
         if (ctx.NUMBER() != null)
         {
-            return new IntType(Integer.parseInt(ctx.getText()));
+            return new IntType(Integer.parseInt(ctx.NUMBER().getText()));
         }
         else if (ctx.STRING() != null)
         {
-            return new StringType(ctx.getText());
+            return new StringType(ctx.STRING().getText());
         }
         return new BaseType();
     }

@@ -426,7 +426,7 @@ public class MongoDbQueryParseTreeWalkerTest
                 "            },\n" +
                 "            \"argument\" : {\n" +
                 "              \"value\" : {\n" +
-                "                \"pattern\" : \"5\"\n" +
+                "                \"pattern\" : 5\n" +
                 "              }\n" +
                 "            }\n" +
                 "          }\n" +
