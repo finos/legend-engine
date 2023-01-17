@@ -350,7 +350,7 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
       tradeId : [dbUnion_XStore]tradeTable_XStore.tradeId,
       traderKerb : [dbUnion_XStore]tradeTable_XStore.traderKerb,
       quantity : [dbUnion_XStore]tradeTable_XStore.quantity,
-      product[prod_set_relationa2] : [dbUnion_XStore]@trade_product_XStore
+      product[prod_set_relational2] : [dbUnion_XStore]@trade_product_XStore
    }
 
 
@@ -414,8 +414,8 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
     Trade_Product : XStore {
       product[trade_set_relational1, prod_set] : $this.prodId == $that.productId,
       trades[prod_set, trade_set_relational1]  : $this.productId == $that.prodId,
-      product[trade_set_relational1, prod_set] : $this.prodId == $that.productId,
-      trades[prod_set, trade_set_relational1]  : $this.productId == $that.prodId
+      product[trade_set_relational2, prod_set] : $this.prodId == $that.productId,
+      trades[prod_set, trade_set_relational2]  : $this.productId == $that.prodId
    }
 )
 
