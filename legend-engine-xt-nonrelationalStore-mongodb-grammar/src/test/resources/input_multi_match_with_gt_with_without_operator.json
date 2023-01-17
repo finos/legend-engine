@@ -1,1 +1,23 @@
-{ "aggregate": "firms", "pipeline": [ { "$match": { "test" : { "$gt": 3 }, "test2" : { "$gt": "USA" }, "test3" : "testingg" } } ], "cursor": { } }
+{
+  "aggregate": "firms",
+  "pipeline": [
+    {
+      "$match": {
+        "test": {
+          "$gt": 3
+        },
+        "test2": {
+          "$gt": "USA"
+        },
+        "test3": "testingg",
+        "test4": {
+          "$eq" : {
+            "abd": 3,
+            "ade": 4
+          }
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

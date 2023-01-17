@@ -42,12 +42,11 @@ projectStage:
 // TODO: handle taking in $substrBytes https://www.mongodb.com/docs/manual/reference/operator/aggregation/substrBytes/#mongodb-expression-exp.-substrBytes
 projectExpression: STRING ':' ( projectionValue | ( BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE ) );
 
-projectionValue: projectionBooleanValue | projectionComputedFieldValue;
+projectionValue: '0' | '1' | 'true' | 'false' | projectionComputedFieldValue;
 
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
 projectionComputedFieldValue: STRING_WITH_DOLLAR;
 
-projectionBooleanValue: '0' | '1' | 'true' | 'false';
 
 
 // Aggregation Operator expressions
@@ -78,15 +77,44 @@ orAggregationExpression: BRACE_OPEN OR ':' (BRACKET_OPEN queryExpression? ( ',' 
 
 queryExpression: BRACE_OPEN expression ( ',' expression )* BRACE_CLOSE;
 
-expression: STRING ':' expressionValue | COMPARISON_QUERY_OPERATOR ':' complexExpressionValue;
-expressionValue: STRING | NUMBER | complexExpressionValue;
-complexExpressionValue: complexObjectExpressionValue | complexArrayExpressionValue;
+expression: STRING ':' expressionValue;
+expressionValue: value | operatorExpression;
+
+operatorExpression: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' operatorExpressionValue BRACE_CLOSE;
+
+operatorExpressionValue: expressionValue | operatorExpression;
 
 
-complexObjectExpressionValue: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' expressionValue BRACE_CLOSE;
-complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexExpressionValue )* BRACKET_CLOSE;
+
+//complexObjectExpressionValue: BRACE_OPEN COMPARISON_QUERY_OPERATOR ':' expressionValue BRACE_CLOSE;
+//complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexExpressionValue )* BRACKET_CLOSE;
 
 
+
+
+obj
+   : '{' pair (',' pair)* '}'
+   | '{' '}'
+   ;
+
+pair
+   : STRING ':' value
+   ;
+
+arr
+   : '[' value (',' value)* ']'
+   | '[' ']'
+   ;
+
+value
+   : STRING
+   | NUMBER
+   | obj
+   | arr
+   | 'true'
+   | 'false'
+   | 'null'
+   ;
 
 // LEXER
 
@@ -95,9 +123,11 @@ complexArrayExpressionValue: BRACKET_OPEN complexExpressionValue ( ',' complexEx
 COMPARISON_QUERY_OPERATOR: EQ | NE | GT | GTE;
 
 EQ : '"' '$eq' '"' |  '$eq';
-NE : '"' '$ne' '"' |  '$ne';
 GT: '"' '$gt' '"'  |  '$gt';
 GTE: '"' '$gte' '"' |  '$gte';
+NE : '"' '$ne' '"' |  '$ne';
+
+
 
 //... add others
 

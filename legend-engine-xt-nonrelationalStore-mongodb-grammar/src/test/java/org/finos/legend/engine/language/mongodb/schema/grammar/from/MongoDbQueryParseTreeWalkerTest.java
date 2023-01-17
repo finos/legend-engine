@@ -320,6 +320,6 @@ public class MongoDbQueryParseTreeWalkerTest
             throw new RuntimeException(e);
         }
         String string = new String(bytes, StandardCharsets.UTF_8);
-        return string.replaceAll("\\R", "\n");
+        return string;
     }
 }

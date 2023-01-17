@@ -1,12 +1,16 @@
 {
-  "type" : "aggregate",
-  "collectionName" : "firms",
-  "aggregationPipeline" : {
-    "stages" : [ {
-      "stageName" : "$match",
-      "expression" : [ {
-        "arguments" : null
-      } ]
-    } ]
+  "type": "aggregate",
+  "collectionName": "\"firms\"",
+  "aggregationPipeline": {
+    "stages": [
+      {
+        "stageName": "$match",
+        "expression": [
+          {
+            "arguments": null
+          }
+        ]
+      }
+    ]
   }
 }
