@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.dsl.service.generation;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
@@ -36,6 +37,10 @@ import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOpt
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOptionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOptionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_MultiExecutionParameters;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionParameters;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.runtime.ExecutionContext;
@@ -115,10 +120,43 @@ public class ServicePlanGenerator
     public static CompositeExecutionPlan generateCompositeExecutionPlan(PureMultiExecution multiExecution, ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers)
     {
         LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(multiExecution.func.body, multiExecution.func.parameters, pureModel.getContext());
-        Map<String, SingleExecutionPlan> plans = multiExecution.executionParameters.stream().collect(Collectors.toMap(
-                ep -> ep.key,
-                ep -> getSingleExecutionPlan(ep.executionOptions, context, pureModel, clientVersion, platform, (planId != null ? planId + "_" + multiExecution.executionParameters.indexOf(ep) : null), extensions, transformers, pureModel.getMapping(ep.mapping), HelperRuntimeBuilder.buildPureRuntime(ep.runtime, pureModel.getContext()), lambda)));
-        List<String> keys = multiExecution.executionParameters.stream().map(es -> es.key).collect(Collectors.toList());
-        return new CompositeExecutionPlan(plans, multiExecution.executionKey, keys);
+        if (multiExecution.executionParameters != null && !multiExecution.executionParameters.isEmpty())
+        {
+            Map<String, SingleExecutionPlan> plans = multiExecution.executionParameters.stream().collect(Collectors.toMap(
+                    ep -> ep.key,
+                    ep -> getSingleExecutionPlan(ep.executionOptions, context, pureModel, clientVersion, platform, (planId != null ? planId + "_" + multiExecution.executionParameters.indexOf(ep) : null), extensions, transformers, pureModel.getMapping(ep.mapping), HelperRuntimeBuilder.buildPureRuntime(ep.runtime, pureModel.getContext()),lambda)));
+            List<String> keys = multiExecution.executionParameters.stream().map(es -> es.key).collect(Collectors.toList());
+            return new CompositeExecutionPlan(plans, multiExecution.executionKey, keys);
+        }
+        // creating plans for execution environment in the execution plan
+        else
+        {
+            Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance pureExecEnv = org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_getExecutionEnvironmentFromFunctionDefinition_FunctionDefinition_1__ExecutionEnvironmentInstance_1_(lambda, pureModel.getExecutionSupport());
+            RichIterable<? extends Pair<? extends Root_meta_legend_service_metamodel_ExecutionParameters, Integer>> execEnvWithIndex = pureExecEnv._executionParameters().zipWithIndex();
+            if (pureExecEnv._executionParameters().getFirst() instanceof Root_meta_legend_service_metamodel_SingleExecutionParameters)
+            {
+                Map<String, SingleExecutionPlan> plans = execEnvWithIndex.toMap(
+                        ep -> ((Root_meta_legend_service_metamodel_SingleExecutionParameters)ep.getOne())._key(),
+                        ep -> getSingleExecutionPlan(null, context, pureModel, clientVersion, platform, (planId != null ? planId + "_" + ep.getTwo().toString() : null), extensions, transformers, null, null,
+                                (LambdaFunction<?>) org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_assignValueInFunctionDefinitionForKey_FunctionDefinition_1__String_1__FunctionDefinition_1_(lambda, ((Root_meta_legend_service_metamodel_SingleExecutionParameters)ep.getOne())._key(), pureModel.getExecutionSupport())));
+                List<String> keys = execEnvWithIndex.collect(p -> ((Root_meta_legend_service_metamodel_SingleExecutionParameters)p.getOne())._key()).toList();
+                String execKey = org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_getKeyFromFunctionDefinition_FunctionDefinition_1__String_1_(lambda, pureModel.getExecutionSupport());
+                return new CompositeExecutionPlan(plans, execKey, keys);
+            }
+            else if (pureExecEnv._executionParameters().getFirst() instanceof Root_meta_legend_service_metamodel_MultiExecutionParameters)
+            {
+                Map<String, SingleExecutionPlan> plans = execEnvWithIndex.toMap(
+                        ep -> ((Root_meta_legend_service_metamodel_MultiExecutionParameters) ep.getOne())._masterKey(),
+                        ep -> getSingleExecutionPlan(null, context, pureModel, clientVersion, platform, (planId != null ? planId + "_" + ep.getTwo().toString() : null), extensions, transformers, null, null,
+                                        (LambdaFunction<?>) org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_assignValueInFunctionDefinitionForKey_FunctionDefinition_1__String_1__FunctionDefinition_1_(lambda, ((Root_meta_legend_service_metamodel_MultiExecutionParameters)ep.getOne())._masterKey(), pureModel.getExecutionSupport())));
+                List<String> keys = execEnvWithIndex.collect(p -> ((Root_meta_legend_service_metamodel_MultiExecutionParameters)p.getOne())._masterKey()).toList();
+                String execKey = org.finos.legend.pure.generated.core_legend_service_helperFunctions.Root_meta_legend_service_getKeyFromFunctionDefinition_FunctionDefinition_1__String_1_(lambda, pureModel.getExecutionSupport());
+                return new CompositeExecutionPlan(plans, execKey, keys);
+            }
+            else
+            {
+                throw new RuntimeException("Cannot build the execution plan");
+            }
+        }
     }
 }
