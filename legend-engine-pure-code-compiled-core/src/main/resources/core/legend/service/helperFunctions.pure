@@ -1,0 +1,72 @@
+// Copyright 2022 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::legend::service::metamodel::*;
+import  meta::pure::mapping::*;
+import meta::legend::service::*;
+
+function meta::legend::service::isFromFunctionPresent(func: FunctionDefinition<Any>[1]):Boolean[1]
+{
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_]);
+  !$getExprList->isEmpty();
+}
+
+function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], key:String[1]):SingleExecutionParameters[1]
+{
+  assert($execEnv.executionParameters->at(0)->instanceOf(SingleExecutionParameters),| 'Please provide the subkey using function ->get(masterKey,subKey)');
+  let singleExecParam = $execEnv.executionParameters->cast(@SingleExecutionParameters)->filter(x| $x.key == $key->toOne());
+  assert($singleExecParam->isNotEmpty(),| 'The key value provided is not present in the execution environment');
+  $singleExecParam->at(0);
+}
+
+function meta::legend::service::get(execEnv: ExecutionEnvironmentInstance[1], masterKey:String[1], subKey:String[1]):SingleExecutionParameters[1]
+{
+  assert($execEnv.executionParameters->at(0)->instanceOf(MultiExecutionParameters),| 'Please use the function ->get(key)');
+  let multiExecParam = $execEnv.executionParameters->cast(@MultiExecutionParameters)->filter(x| $x.masterKey == $masterKey->toOne());
+  assert($multiExecParam->isNotEmpty(),| 'The master key value provided is not present in the execution environment');
+  let singleExecParam = $multiExecParam.singleExecutionParameters->filter(x| $x.key == $subKey);
+  assert($singleExecParam->isNotEmpty(),| 'The sub key value provided is not present in the execution environment');
+  $singleExecParam->at(0);
+}
+
+function meta::legend::service::getKeyFromFunctionDefinition(func: FunctionDefinition<Any>[1]):String[1]
+{
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_,
+                                                                            meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_]);
+  $getExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(1)->evaluateAndDeactivate()->cast(@VariableExpression).name)->at(0)->cast(@String);
+}
+
+function meta::legend::service::getExecutionEnvironmentFromFunctionDefinition(func: FunctionDefinition<Any>[1]):meta::legend::service::metamodel::ExecutionEnvironmentInstance[1]
+{
+  let getExprList = $func->findExpressionsForFunctionInFunctionDefinition([meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__SingleExecutionParameters_1_,
+                                                                            meta::legend::service::get_ExecutionEnvironmentInstance_1__String_1__String_1__SingleExecutionParameters_1_]);
+  $getExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->at(0)->evaluateAndDeactivate()->cast(@InstanceValue).values)->at(0)->cast(@meta::legend::service::metamodel::ExecutionEnvironmentInstance);
+}
+
+
+function meta::legend::service::assignValueInFunctionDefinitionForKey(func: FunctionDefinition<Any>[1], key:String[1]):FunctionDefinition<Any>[1]
+{
+  let keyInstanceValue = ^InstanceValue(genericType=^GenericType(rawType=String), values=meta::legend::service::getKeyFromFunctionDefinition($func), multiplicity=PureOne);
+  let valueInstanceValue = ^InstanceValue(genericType=^GenericType(rawType=String), values=$key, multiplicity=PureOne);
+  let letExpression = ^SimpleFunctionExpression(func             = letFunction_String_1__T_m__T_m_,
+                                                functionName     = 'letFunction',
+                                                genericType      = ^GenericType(rawType=String),
+                                                multiplicity     = PureOne,
+                                                importGroup      = system::imports::coreImport,
+                                                parametersValues = [$keyInstanceValue, $valueInstanceValue]
+                                            );
+  let expressionSeq = $func->evaluateAndDeactivate().expressionSequence;
+  ^$func(expressionSequence = $letExpression->concatenate($expressionSeq)->toOneMany());
+}

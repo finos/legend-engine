@@ -26,7 +26,7 @@ public class AllVisitor implements LogicalPlanVisitor<org.finos.legend.engine.pe
     public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.values.All current, VisitorContext context)
     {
 
-        All allValue = new All();
+        All allValue = new All(context.quoteIdentifier());
         prev.push(allValue);
 
         return new VisitorResult(null);

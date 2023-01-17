@@ -25,7 +25,7 @@ public class SelectValueVisitor implements LogicalPlanVisitor<SelectValue>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, SelectValue current, VisitorContext context)
     {
-        org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue selectValue = new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue(current.alias().orElse(null));
+        org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue selectValue = new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.SelectValue(current.alias().orElse(null), context.quoteIdentifier());
         prev.push(selectValue);
 
         return new SelectionVisitor().visit(selectValue, current.selection(), context);

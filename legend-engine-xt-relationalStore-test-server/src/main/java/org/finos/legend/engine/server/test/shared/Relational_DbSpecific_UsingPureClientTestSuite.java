@@ -62,6 +62,8 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
     private static TestSuite wrapTestCases(TestSuite suite)
     {
         TestSuite wrappedSuite = new TestSuite(suite.getName());
+        String suiteName = wrappedSuite.getName();
+        String dbSuiteName = suiteName.substring(suiteName.contains("sqlQueryTests::") ? suiteName.indexOf("sqlQueryTests::") + 15 : 0, suiteName.contains("[") ? suiteName.indexOf("[") : suiteName.length());
         for (int i = 0; i < suite.testCount(); i++)
         {
             Test test = suite.testAt(i);
@@ -77,21 +79,50 @@ public abstract class Relational_DbSpecific_UsingPureClientTestSuite extends Tes
                     @Override
                     protected void runTest() throws Throwable
                     {
+                        Throwable failureException = null;
+                        boolean ignoreTest = false;
+                        String testName = testCase.getName();
+                        String dbTestName = dbSuiteName + "::" + testName.substring(0, testName.contains("[") ? testName.indexOf("[") : testName.length());
                         try
                         {
+                            System.out.println("Running db test " + dbTestName);
                             testCase.runBare();
                         }
                         catch (PureException e)
                         {
                             if (ArrayIterate.anySatisfy(e.getStackTrace(), x -> x.getMethodName().contains(PURE_NAME_RUN_DATA_ASSERTION_WHICH_DEVIATES_FROM_STANDARD)))
                             {
+                                ignoreTest = true;
+                                System.out.println("| **" + dbTestName + "** | deviates-from-standard :ballot_box_with_check: |");
                                 if (e instanceof PureAssertFailException)
                                 {
                                     throw new PureAssertFailException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), (PureAssertFailException) e);
                                 }
                                 throw new PureExecutionException(e.getSourceInformation(), "[unsupported-api] [deviating-from-standard] " + e.getInfo(), e);
                             }
-                            throw e;
+                            if ((e.getInfo() == null ? "" : e.getInfo()).toLowerCase().startsWith("[unsupported-api]"))
+                            {
+                                ignoreTest = true;
+                                System.out.println("| **" + dbTestName + "** | not-implemented :eight_spoked_asterisk: |");
+                                throw e;
+                            }
+                            failureException = e;
+                        }
+                        catch (Throwable e)
+                        {
+                            failureException = e;
+                        }
+                        finally
+                        {
+                            if (failureException != null)
+                            {
+                                System.out.println("| **" + dbTestName + "** | failing :x: |");
+                                throw failureException;
+                            }
+                            if (!ignoreTest)
+                            {
+                                System.out.println("| **" + dbTestName + "** | working :white_check_mark: |");
+                            }
                         }
                     }
                 });

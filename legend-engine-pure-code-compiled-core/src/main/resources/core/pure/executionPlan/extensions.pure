@@ -14,8 +14,8 @@ Class meta::pure::executionPlan::extension::ExecutionPlanExtension
   // --------------------------------------------------------------------------- Execution Node - Print
 
   planExecution : Function<{StoreQuery[1], RoutedValueSpecification[0..1], Mapping[0..1], Runtime[0..1], ExecutionContext[1], Extension[*], DebugContext[1]->meta::pure::executionPlan::ExecutionNode[1]}>[0..1];
-  planGraphFetchExecution : Function<{ClusteredGraphFetchTree[1], String[*], Boolean[1], Boolean[1], StoreQuery[1], RoutedValueSpecification[0..1], Mapping[1], Runtime[1], ExecutionContext[1], Extension[*], DebugContext[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
-  planCrossGraphFetchExecution : Function<{ClusteredGraphFetchTree[1], String[*], String[1], Boolean[1], Boolean[1], Map<String, List<Any>>[1], Mapping[1], Runtime[1], ExecutionContext[1], Extension[*], DebugContext[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
+  planGraphFetchExecution : Function<{StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
+  planCrossGraphFetchExecution : Function<{StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput[1] -> LocalGraphFetchExecutionNode[1]}>[0..1];
 
   reprocessConnection : Function<{Connection[1]->Connection[1]}>[0..1];
   extractVariablesFromExecutionOption : Function<{ExecutionOption[1]->PlanVarPlaceHolder[*]}>[0..1];

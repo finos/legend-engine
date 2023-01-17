@@ -29,7 +29,7 @@ public class DiffBinaryValueOperatorVisitor implements LogicalPlanVisitor<DiffBi
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, DiffBinaryValueOperator current, VisitorContext context)
     {
-        Expression e = new Expression(Operator.MINUS, current.alias().orElse(null));
+        Expression e = new Expression(Operator.MINUS, current.alias().orElse(null), context.quoteIdentifier());
         prev.push(e);
         return new VisitorResult(e, Arrays.asList(current.left(), current.right()));
     }

@@ -21,8 +21,10 @@ import org.bson.codecs.pojo.annotations.BsonIgnore;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.map.MutableMap;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.GraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.PlatformGlobalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.PlatformPrimitiveQualifierLocalGraphFetchExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.StoreMappingGlobalGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryCrossStoreGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryPropertyGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
@@ -50,7 +52,10 @@ import java.util.List;
         @JsonSubTypes.Type(value = ErrorExecutionNode.class, name = "error"),
         @JsonSubTypes.Type(value = GraphFetchM2MExecutionNode.class, name = "graphFetchM2M"),
         @JsonSubTypes.Type(value = GraphFetchExecutionNode.class, name = "graphFetchExecutionNode"),
-        @JsonSubTypes.Type(value = GlobalGraphFetchExecutionNode.class, name = "globalGraphFetchExecutionNode"),
+        @JsonSubTypes.Type(value = StoreMappingGlobalGraphFetchExecutionNode.class, name = "globalGraphFetchExecutionNode"),
+        @JsonSubTypes.Type(value = StoreMappingGlobalGraphFetchExecutionNode.class, name = "storeMappingGlobalGraphFetchExecutionNode"),
+        @JsonSubTypes.Type(value = PlatformGlobalGraphFetchExecutionNode.class, name = "platformGlobalGraphFetchExecutionNode"),
+        @JsonSubTypes.Type(value = PlatformPrimitiveQualifierLocalGraphFetchExecutionNode.class, name = "platformPrimitiveQualifierLocalGraphFetchExecutionNode"),
         @JsonSubTypes.Type(value = FreeMarkerConditionalExecutionNode.class, name = "freeMarkerConditionalExecutionNode"),
         @JsonSubTypes.Type(value = StoreStreamReadingExecutionNode.class, name = "storeStreamReading"),
         @JsonSubTypes.Type(value = InMemoryRootGraphFetchExecutionNode.class, name = "inMemoryRootGraphFetch"),

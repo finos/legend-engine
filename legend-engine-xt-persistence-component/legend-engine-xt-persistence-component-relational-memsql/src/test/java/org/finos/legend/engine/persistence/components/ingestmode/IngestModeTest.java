@@ -46,17 +46,10 @@ public class IngestModeTest
     String stagingTableAlias = "stage";
 
     String digestField = "digest";
-    String batchUpdateTimeField = "batch_update_time";
     String batchIdInField = "batch_id_in";
     String batchIdOutField = "batch_id_out";
     String batchTimeInField = "batch_time_in";
     String batchTimeOutField = "batch_time_out";
-    String deleteIndicatorField = "delete_indicator";
-    String[] deleteIndicatorValues = new String[]{"yes", "1", "true"};
-    String validityFromReferenceField = "validity_from_reference";
-    String validityThroughReferenceField = "validity_through_reference";
-    String validityFromTargetField = "validity_from_target";
-    String validityThroughTargetField = "validity_through_target";
 
     String[] partitionKeys = new String[]{"biz_date"};
     HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
@@ -66,34 +59,20 @@ public class IngestModeTest
 
     // Base Columns: Primary keys : id, name
     Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    Field tinyIntId = Field.builder().name("id").type(FieldType.of(DataType.TINYINT, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    Field tinyIntString = Field.builder().name("id").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
     Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    Field nameModified = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, 64, null)).primaryKey(true).build();
     Field amount = Field.builder().name("amount").type(FieldType.of(DataType.DOUBLE, Optional.empty(), Optional.empty())).build();
-    Field floatAmount = Field.builder().name("amount").type(FieldType.of(DataType.FLOAT, Optional.empty(), Optional.empty())).build();
     Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
-
-    // Bitemporal Columns:
-    Field validityFromReference = Field.builder().name(validityFromReferenceField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    Field validityThroughReference = Field.builder().name(validityThroughReferenceField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
-    Field validityFromTarget = Field.builder().name(validityFromTargetField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
-    Field validityThroughTarget = Field.builder().name(validityThroughTargetField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
 
     // Problematic Columns
     Field batchIdInNonPrimary = Field.builder().name(batchIdInField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     Field batchTimeInNonPrimary = Field.builder().name(batchTimeInField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
-    Field idNonPrimary = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
-    Field nameNonPrimary = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
 
     // Milestoning Columns
     Field digest = Field.builder().name(digestField).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
-    Field batchUpdateTime = Field.builder().name(batchUpdateTimeField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
     Field batchIdIn = Field.builder().name(batchIdInField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
     Field batchIdOut = Field.builder().name(batchIdOutField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     Field batchTimeIn = Field.builder().name(batchTimeInField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
     Field batchTimeOut = Field.builder().name(batchTimeOutField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
-    Field deleteIndicator = Field.builder().name(deleteIndicatorField).type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
 
     SchemaDefinition mainTableSchema = SchemaDefinition.builder()
         .addFields(id)
@@ -172,15 +151,6 @@ public class IngestModeTest
         .addFields(name)
         .addFields(amount)
         .addFields(digest)
-        .build();
-
-    SchemaDefinition stagingTableSchemaWithDeleteIndicator = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(deleteIndicator)
         .build();
 
     String expectedMetadataTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS batch_metadata" +

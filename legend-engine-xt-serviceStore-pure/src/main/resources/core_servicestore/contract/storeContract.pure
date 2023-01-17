@@ -36,8 +36,8 @@ function meta::external::store::service::contract::serviceStoreStoreContract():S
      id = 'serviceStore',
      supports = meta::external::store::service::contract::supports_FunctionExpression_1__Boolean_1_,
      planExecution = meta::external::store::service::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
-     planGraphFetchExecution = meta::external::store::service::contract::planGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__Boolean_1__Boolean_1__StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
-     planCrossGraphFetchExecution = meta::external::store::service::contract::planCrossGraphFetchExecution_ClusteredGraphFetchTree_1__String_MANY__String_1__Boolean_1__Boolean_1__Map_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__LocalGraphFetchExecutionNode_1_,
+     planGraphFetchExecution = meta::external::store::service::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
+     planCrossGraphFetchExecution = meta::external::store::service::contract::planCrossGraphFetchExecution_StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
 
      supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RootServiceInstanceSetImplementation) || $s->instanceOf(EmbeddedServiceStoreSetImplementation),
      supportsStore = s:Store[1]|$s->instanceOf(meta::external::store::service::metamodel::ServiceStore),
@@ -82,14 +82,14 @@ function meta::external::store::service::contract::planExecution(sq:StoreQuery[1
    planGraphFetchExecution($sq, $ext, $mapping->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
 }
 
-function meta::external::store::service::contract::planGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], enableConstraints:Boolean[1], checked:Boolean[1], sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+function meta::external::store::service::contract::planGraphFetchExecution(input: StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
 {
-  meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore($sq, $ext, $tree, $orderedPaths, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
+  meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore($input.storeQuery, $input.ext, $input.clusteredTree, $input.orderedPaths, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug)
 }
 
-function meta::external::store::service::contract::planCrossGraphFetchExecution(tree:ClusteredGraphFetchTree[1], orderedPaths:String[*], newParentPath:String[1], enableConstraints:Boolean[1], checked:Boolean[1], inScopeVars: Map<String, List<Any>>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):LocalGraphFetchExecutionNode[1]
+function meta::external::store::service::contract::planCrossGraphFetchExecution(input: StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]
 {
-  meta::external::store::service::executionPlan::generation::planCrossStoreGraphFetchExecutionServiceStore($tree, $orderedPaths, $newParentPath, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug)
+  meta::external::store::service::executionPlan::generation::planCrossStoreGraphFetchExecutionServiceStore($input.clusteredTree, $input.orderedPaths, $input.parentPath, $input.inScopeVars, $input.mapping, $input.runtime, $input.exeCtx, $input.enableConstraints, $input.checked, $input.extensions, $input.debug)
 }
 
 // Functions supported by serviceStore execution

@@ -26,7 +26,7 @@ public class ObjectValueVisitor implements LogicalPlanVisitor<org.finos.legend.e
     public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue current, VisitorContext context)
     {
 
-        ObjectValue value = new ObjectValue(current.value().orElse(null), current.alias().orElse(null));
+        ObjectValue value = new ObjectValue(current.value().orElse(null), current.alias().orElse(null), context.quoteIdentifier());
         prev.push(value);
 
         return new VisitorResult(null);
