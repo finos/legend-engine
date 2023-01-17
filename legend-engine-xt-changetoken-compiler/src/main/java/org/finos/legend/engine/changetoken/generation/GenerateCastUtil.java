@@ -54,7 +54,7 @@ public class GenerateCastUtil
             catch (RuntimeException ex)
             {
                 throw new RuntimeException(
-                        ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")), ex);
+                        ex + ": at index " + i + " of " + pathToString(newPath), ex);
             }
             ++i;
         }
@@ -94,7 +94,7 @@ public class GenerateCastUtil
             catch (RuntimeException ex)
             {
                 throw new RuntimeException(
-                        ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")), ex);
+                        ex + ": at index " + i + " of " + pathToString(newPath), ex);
             }
             ++i;
         }
@@ -116,7 +116,7 @@ public class GenerateCastUtil
         catch (RuntimeException ex)
         {
             throw new RuntimeException(
-                    ex + ": at index " + i + " of " + newPath.stream().map(Object::toString).collect(Collectors.joining("/")), ex);
+                    ex + ": at index " + i + " of " + pathToString(newPath), ex);
         }
     }
 
@@ -136,7 +136,7 @@ public class GenerateCastUtil
                 catch (IndexOutOfBoundsException e)
                 {
                     throw new RuntimeException("Relative reference escapes root ("
-                            + path.stream().map(Object::toString).collect(Collectors.joining("/"))
+                            + pathToString(path)
                             + ") at index " + i + " of " + relativeReference, e);
                 }
             }
@@ -151,5 +151,36 @@ public class GenerateCastUtil
     private static int toInt(Object key)
     {
         return (key instanceof Integer) ? (Integer) key : Integer.valueOf((String)key);
+    }
+
+    private static String pathToString(List<Object> path)
+    {
+        return path.stream().map(Object::toString).collect(Collectors.joining("/"));
+    }
+
+    public static String convertField_IntegerToString(List<Object> path, Object value)
+    {
+        if (!(value instanceof Integer))
+        {
+            throw new RuntimeException("Expected an Integer, not " + value + " at path " + pathToString(path));
+        }
+        return value.toString();
+    }
+
+    public static Integer convertField_StringToInteger(List<Object> path, Object value)
+    {
+        try
+        {
+            if (!(value instanceof String))
+            {
+                throw new RuntimeException("Expected a String, not " + value);
+            }
+
+            return Integer.parseInt((String) value);
+        }
+        catch (RuntimeException ex)
+        {
+            throw new RuntimeException(ex + " at path " + pathToString(path), ex);
+        }
     }
 }
