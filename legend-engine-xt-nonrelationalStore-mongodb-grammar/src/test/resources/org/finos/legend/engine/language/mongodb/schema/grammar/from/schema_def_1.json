@@ -1,0 +1,96 @@
+{
+  "database": {
+    "name": "my_database",
+    "type": "clustered",
+    "collections": [
+      {
+        "options": {
+          "validator": {
+            "$jsonSchema": {
+              "title": "Record of employee",
+              "description": "This document records the details of an employee",
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "A unique identifier for an employee",
+                  "type": "number"
+                },
+                "name": {
+                  "description": "name of the employee",
+                  "type": "string",
+                  "minLength": {
+                    "$numberInt": "2"
+                  }
+                },
+                "age": {
+                  "description": "age of the employee",
+                  "type": "number",
+                  "minimum": {
+                    "$numberInt": "16"
+                  }
+                },
+                "hobbies": {
+                  "description": "hobbies of the employee",
+                  "type": "object",
+                  "properties": {
+                    "indoor": {
+                      "items": {
+                        "description": "List of hobbies",
+                        "type": "string"
+                      },
+                      "minItems": {
+                        "$numberInt": "1"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    },
+                    "outdoor": {
+                      "items": {
+                        "description": "List of hobbies",
+                        "type": "string"
+                      },
+                      "minItems": {
+                        "$numberInt": "1"
+                      },
+                      "uniqueItems": true,
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "indoor",
+                    "outdoor"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "age",
+                "hobbies"
+              ],
+              "additionalProperties": true
+            }
+          },
+          "validationLevel": "strict",
+          "validationAction": "error"
+        },
+        "indexes": [
+          {
+            "v": {
+              "$numberInt": "2"
+            },
+            "key": {
+              "_id": {
+                "$numberInt": "1"
+              }
+            },
+            "name": "_id_"
+          }
+        ],
+        "uuid": "99eb1c3857ae4e2996eb7e2685efbfdc",
+        "collectionName": "firm",
+        "type": "collection"
+      }
+    ]
+  }
+}

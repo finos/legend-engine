@@ -231,6 +231,7 @@
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
     </modules>
 
     <properties>
@@ -1583,6 +1584,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

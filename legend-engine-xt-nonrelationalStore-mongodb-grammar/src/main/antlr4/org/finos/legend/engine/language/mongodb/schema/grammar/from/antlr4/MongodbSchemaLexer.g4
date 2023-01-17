@@ -17,10 +17,14 @@
 
 lexer grammar MongodbSchemaLexer;
 
-KEYWORDS:                                    SCHEMA
-                                            | ID | TITLE | DESCRIPTION | TYPE
+KEYWORDS:                                   DATABASE | COLLECTION_NAME
+                                            | SCHEMA | OPTIONS | VALIDATOR
+                                            | ID | TITLE | DESCRIPTION
+                                            | TYPE | BSONTYPE
                                             | PROPERTIES | REQUIRED
                                             | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS
+                                            | MAXIMUM | MINIMUM
+                                            | ENUM | ALL_OF | ONE_OF | ANY_OF
                                             | ADDITIONAL_PROPERTIES
 ;
 
@@ -88,21 +92,34 @@ GREATER_THAN:                               '>';
 GREATER_OR_EQUAL:                           '>=';
 
 //VALID_STRING:                               ValidString;
-SCHEMA:                                     '"$schema"';
+DATABASE:                                   '"database"';
+COLLECTION_NAME:                            '"collectionName"';
+SCHEMA:                                     '"$jsonSchema"';
+OPTIONS:                                    '"options';
+VALIDATOR:                                  '"validator"';
 ID:                                         '$id';
 TITLE:                                      '"title"';
 DESCRIPTION:                                '"description"';
 BSONTYPE:                                   '"bsonType"';
 TYPE:                                       '"type"';
 PROPERTIES:                                 '"properties"';
+MAX_PROPERTIES:                             '"maxProperties"';
 REQUIRED:                                   '"required"';
 UNIQUE_ITEMS:                               '"uniqueItems"';
 MIN_ITEMS:                                  '"minItems"';
 MAX_ITEMS:                                  '"maxItems"';
+MINIMUM:                                    '"minimum"';
+MAXIMUM:                                    '"maximum"';
+MIN_LENGTH:                                 '"minLength"';
+MAX_LENGTH:                                 '"maxLength"';
 ADDITIONAL_PROPERTIES:                      '"additionalProperties"';
 TRUE:                                       'true';
 FALSE:                                      'false';
 NULL:                                       'null';
+ENUM:                                       '"enum"';
+ALL_OF:                                     '"allOf"';
+ANY_OF:                                     '"anyOf"';
+ONE_OF:                                     '"oneOf"';
 
 
 
