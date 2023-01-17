@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggreg
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AggregationPipeline;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AndExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArgumentExpression;
+import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArrayArgumentExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ExpressionObject;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.FieldPathExpression;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.LiteralExpression;
@@ -122,18 +123,6 @@ public class MongoDbQueryParseTreeWalker
         }).collect(Collectors.toList());
     }
 
-//    public ArgumentExpression visitExpression(MongoDbQueryParser.ExpressionContext ctx)
-//    {
-//        if (ctx.complexExpressionValue() != null)
-//        {
-//            return visitComplexExpressionValue(ctx.complexExpressionValue(), null);
-//        }
-//        else
-//        {
-//            return visitExpressionValue(ctx.expressionValue(), ctx.WORD().getText(), null);
-//        }
-//    }
-
     public ArgumentExpression visitExpressionValue(MongoDbQueryParser.ExpressionValueContext ctx, String field, String operator)
     {
         if (ctx.complexExpressionValue() != null)
@@ -158,10 +147,19 @@ public class MongoDbQueryParseTreeWalker
         {
             return visitComplexObjectExpressionValue(ctx.complexObjectExpressionValue(), field);
         }
-        else
+        else if (ctx.complexArrayExpressionValue() != null && !ctx.getText().equals("[]"))
         {
-            return visitComplexObjectExpressionValue(ctx.complexObjectExpressionValue(), field);
+            return visitComplexArrayExpressionValue(ctx.complexArrayExpressionValue(), field);
         }
+        else if (ctx != null && ctx.getText().equals("[]"))
+        {
+            return new ArrayArgumentExpression(new FieldPathExpression(field));
+        }
+        else if (ctx != null && ctx.getText().equals(""))
+        {
+            return buildExpression(field, new StringType(ctx.getText()), null);
+        }
+        throw new RuntimeException("visitComplexExpressionValue exception");
     }
 
     private ArgumentExpression visitComplexObjectExpressionValue(MongoDbQueryParser.ComplexObjectExpressionValueContext ctx, String field)
@@ -170,9 +168,10 @@ public class MongoDbQueryParseTreeWalker
         return visitExpressionValue(ctx.expressionValue(), field, operator);
     }
 
-    private List<ArgumentExpression> visitComplexArrayExpressionValue(MongoDbQueryParser.ComplexArrayExpressionValueContext ctx)
+    private ArgumentExpression visitComplexArrayExpressionValue(MongoDbQueryParser.ComplexArrayExpressionValueContext ctx, String field)
     {
-        return ctx.complexExpressionValue().stream().map(x -> visitComplexExpressionValue(x, null)).collect(Collectors.toList());
+        List<ArgumentExpression> expressions = ctx.complexExpressionValue().stream().map(x -> visitComplexExpressionValue(x, field)).collect(Collectors.toList());
+        return new ArrayArgumentExpression(new FieldPathExpression(field), expressions);
     }
 
     private ArgumentExpression visitLogicalOperatorExpression(MongoDbQueryParser.LogicalOperatorExpressionContext ctx)

@@ -547,15 +547,10 @@ public class MongoDbQueryParseTreeWalkerTest
                 "            }\n" +
                 "          }\n" +
                 "        }, {\n" +
-                "          \"operator\" : null,\n" +
-                "          \"expression\" : {\n" +
-                "            \"field\" : {\n" +
-                "              \"path\" : \"test2\"\n" +
-                "            },\n" +
-                "            \"argument\" : {\n" +
-                "              \"value\" : null\n" +
-                "            }\n" +
-                "          }\n" +
+                "          \"field\" : {\n" +
+                "            \"path\" : \"test2\"\n" +
+                "          },\n" +
+                "          \"expressions\" : null\n" +
                 "        } ]\n" +
                 "      } ]\n" +
                 "    } ]\n " +
