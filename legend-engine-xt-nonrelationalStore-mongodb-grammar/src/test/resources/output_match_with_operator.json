@@ -1,0 +1,24 @@
+{
+  "type" : "aggregate",
+  "collectionName" : "firms",
+  "aggregationPipeline" : {
+    "stages" : [ {
+      "stageName" : "$match",
+      "expression" : [ {
+        "arguments" : [ {
+          "operator" : "$eq",
+          "expression" : {
+            "field" : {
+              "path" : "\"test\""
+            },
+            "argument" : {
+              "value" : {
+                "pattern" : "\"testingg\""
+              }
+            }
+          }
+        } ]
+      } ]
+    } ]
+  }
+}

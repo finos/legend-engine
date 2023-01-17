@@ -1,6 +1,0 @@
-{
-  "aggregate" : {
-    "collectionName" : "'firms'",
-    "pipelines" : [ ]
-  }
-}

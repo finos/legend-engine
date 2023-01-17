@@ -1,0 +1,7 @@
+{
+  "type" : "aggregate",
+  "collectionName" : "firms",
+  "aggregationPipeline" : {
+    "stages" : [ ]
+  }
+}

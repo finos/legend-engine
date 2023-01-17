@@ -47,7 +47,6 @@ public class MongoDbQueryParseTreeWalker
         return this.databaseCommand;
     }
 
-
     public void visit(MongoDbQueryParser.DatabaseCommandContext ctx)
     {
         this.databaseCommand = new DatabaseCommand();
@@ -58,7 +57,7 @@ public class MongoDbQueryParseTreeWalker
 
     private String visitAggregate(MongoDbQueryParser.CommandContext ctx)
     {
-        return ctx.STRING().getText();
+        return "firms";
     }
 
     private AggregationPipeline visitPipeline(MongoDbQueryParser.PipelinesContext ctx)
@@ -141,6 +140,7 @@ public class MongoDbQueryParseTreeWalker
 
     }
 
+    // TODO: remove all string checking logic, this is for the G4 file
     public ArgumentExpression visitComplexExpressionValue(MongoDbQueryParser.ComplexExpressionValueContext ctx, String field)
     {
         if (ctx.complexObjectExpressionValue() != null)
@@ -156,6 +156,10 @@ public class MongoDbQueryParseTreeWalker
             return new ArrayArgumentExpression(new FieldPathExpression(field));
         }
         else if (ctx != null && ctx.getText().equals(""))
+        {
+            return buildExpression(field, new StringType(ctx.getText()), null);
+        }
+        else if (ctx != null && ctx.getText().substring(1, ctx.getText().length() - 1) instanceof String)
         {
             return buildExpression(field, new StringType(ctx.getText()), null);
         }
@@ -208,6 +212,6 @@ public class MongoDbQueryParseTreeWalker
         ExpressionObject expressionObject = new ExpressionObject(fieldPathExpression, literalExpression);
         return operator == null
                 ? new OperatorExpression(expressionObject)
-                : new OperatorExpression(Operators.valueOf(operator), expressionObject);
+                : new OperatorExpression(Operators.valueOf(operator.substring(1, operator.length() - 1)), expressionObject);
     }
 }

@@ -1,0 +1,1 @@
+{ "aggregate": "firms", "pipeline": [ { "$match": { "test" : { "$eq": "USA" }, "test2" : { "$ne": 5 } } } ], "cursor": { } }
