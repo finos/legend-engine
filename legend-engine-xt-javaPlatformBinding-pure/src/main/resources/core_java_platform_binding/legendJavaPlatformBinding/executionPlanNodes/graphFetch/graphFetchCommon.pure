@@ -100,8 +100,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let implClass         = graphImplClass($node, $path, $context);
    let implProject       = newProject()->addClasses($implClass);
    let propertiesProject = $implClass->updateImplementationClassWithProperties($node, $resultClass, $context);
+   let qualifiersProject = $implClass->updateImplementationClassWithQualifiedProperties($resultClass, $context);
    let storeProject      = $storeSpecificGraphImplUpdates->eval($implClass);
-   let mergedProject     = mergeProjects([$implProject, $propertiesProject, $storeProject]);
+   let mergedProject     = mergeProjects([$implProject, $propertiesProject, $qualifiersProject, $storeProject]);
    let withSizeMethods   = $mergedProject->resolve($implClass)->updateImplementationClassWithInstanceSizeMethods($context);
    let mergedProjectWithSizeMethods = mergeProjects([$mergedProject, $withSizeMethods]);
    let withSerializableMethods      = $mergedProjectWithSizeMethods->resolve($implClass)->updateImplementationClassWithSerializableMethods($context);
@@ -173,6 +174,87 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    newProject()->addClasses($withProperties);
 }
 
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::updateImplementationClassWithQualifiedProperties(implClass: meta::external::language::java::metamodel::Class[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1]): Project[1]
+{
+   // Not adding getter methods (as they can be store specific - getters need to be added as part of store specific implementation update)
+   let conventions = $context.conventions;
+   let typeInfo = $context.typeInfos->forClass($nodeType);
+   let jThis = j_this($implClass);
+
+   let updatedClass = $context.typeInfos->allQualifiedProperties($typeInfo)->fold({q, cl |
+      let fieldName = $conventions->fieldName($q);
+      let mapName = $fieldName + '_QualifierMap';
+      let keyType = javaList(javaList(javaWildcard()));
+      let fieldType = $conventions->pureTypeToJavaType($q);
+
+      let field = $jThis->j_field($fieldName, $fieldType);
+      let mapField = $jThis->j_field($mapName, javaMap($keyType, $fieldType));
+      let param = j_parameter($fieldType, $fieldName);
+      let keyVar = $keyType->j_variable('qualifierKey$');
+      let existingVar = javaObject()->j_variable('existing$');
+      let singlePropertyType = if ($q->functionReturnMultiplicity()->hasToOneUpperBound(), | $fieldType, | $fieldType->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0));
+
+      $cl
+         ->addField(
+            javaField(
+               ['private'], javaMap($keyType, $fieldType), $mapName, j_new(javaParameterizedType(javaClass('java.util.HashMap'), [$keyType, $fieldType->toBoxed()]), [])
+            )
+         )
+         ->addMethod(
+            javaMethod(
+               ['public'], javaMap($keyType, $fieldType), $conventions->getterName($q.name->toOne() + '_QualifierMap'), [],
+               j_return($mapField)
+            )
+         )
+         ->addMethod(
+            javaMethod(
+               ['public'], javaVoid(), $conventions->setterName($q), $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))->concatenate(javaParam($fieldType, 'qualifierValue$')),
+               [
+                  $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
+                  $existingVar->j_declare($mapField->j_invoke('put', [$keyVar, j_parameter($fieldType, 'qualifierValue$')], javaObject()))
+               ]
+               ->concatenate(
+                  if ($q->functionReturnMultiplicity()->hasToOneUpperBound(),
+                      | j_if($existingVar->j_ne(j_null()), j_throw(j_new(javaRuntimeException(), j_string('Found multiple objects for property \'' + $q.name->toOne() + '\' of multiplicity with bound 1')))),
+                      | []
+                  )
+               )
+            )
+         )
+         ->addMethod(
+            javaMethod(
+               ['public'], javaVoid(), $conventions->setterName($q.name->toOne() + '_QualifierMap'), [javaParam(javaMap($keyType, $fieldType), 'qualifierMap$')],
+               $mapField->j_assign(j_parameter(javaMap($keyType, $fieldType), 'qualifierMap$'))
+            )
+         )
+         ->addMethod(
+            javaMethod(
+               ['public'], javaVoid(), 'add' + $fieldName->toUpperFirstCharacter()->toOne(), $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name))->concatenate(javaParam($singlePropertyType, 'qualifierValue$')),
+               [
+                  $keyVar->j_declare(javaArrays()->j_invoke([javaList(javaWildcard())], 'asList', $q->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | let param = j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name); if($p.multiplicity->hasToOneUpperBound(), | javaArrays()->j_invoke('asList', $param, javaList(javaWildcard())), | $param);), $keyType)),
+                  $existingVar->j_declare($mapField->j_invoke('get', [$keyVar], javaObject()))
+               ]
+               ->concatenate(
+                  if (!$q->functionReturnMultiplicity()->hasToOneUpperBound(),
+                      | j_if(
+                           $existingVar->j_eq(j_null()),
+                           $mapField->j_invoke('put', [$keyVar, j_new(javaArrayList($singlePropertyType), javaArrays()->j_invoke('asList', [j_parameter($fieldType, 'qualifierValue$')], $fieldType))], javaObject()),
+                           $mapField->j_invoke('get', [$keyVar], javaObject())->j_invoke('add', j_parameter($fieldType, 'qualifierValue$'), javaVoid())
+                        ),
+                      | [
+                            j_if($existingVar->j_ne(j_null()), j_throw(j_new(javaRuntimeException(), j_string('Found multiple objects for property \'' + $q.name->toOne() + '\' of multiplicity with bound 1')))),
+                            $mapField->j_invoke('put', [$keyVar, j_parameter($fieldType, 'qualifierValue$')], javaObject())
+                        ]
+                  )
+               )
+            )
+         );
+   }, $implClass);
+
+   newProject()->addClasses($updatedClass);
+}
+
+
 function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::passThruProperty(setImpl:SetImplementation[1], property:AbstractProperty<Any>[1]):Boolean[1]
 {
    $setImpl->meta::pure::mapping::modelToModel::inMemory::isNoMappingPassThru($property)
@@ -197,4 +279,145 @@ function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::com
          ->implements(javaSerializable())
          ->addField(javaField(['private', 'static', 'final'], javaLong(), 'serialVersionUID', j_long($uidValue)->codeToString()))
    );
+}
+
+
+function meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::generateImplementationForPlatformPrimitiveQualifierLocalGraphFetchExecutionNode(p: PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1], path:String[1], context:GenerationContext[1], extensions : meta::pure::extension::Extension[*], debug:DebugContext[1]): GeneratedCode[1]
+{
+   let conventions = $context.conventions;
+
+   let execClass = $conventions->planNodeClass('public', $path, 'Execute');
+   let jThis = j_this($execClass);
+   let jIGraphInstance = $conventions->className(GraphInstance);
+
+   let contextParam = j_parameter($conventions->className(IExecutionNodeContext), 'executionNodeContext');
+   let objectsParam = j_parameter(javaList(javaWildcard()), 'graphObjects');
+   let objectParam = j_parameter(javaObject(), 'graphObject');
+
+   let qp = $p.graphFetchTree->cast(@RoutedPropertyGraphFetchTree).property->cast(@QualifiedProperty<Any>);
+   let pureParams = $qp->functionType().parameters->evaluateAndDeactivate();
+   let inputParam = j_parameter($conventions->pureTypeToJavaType($pureParams->first().genericType.rawType->toOne(), PureOne), 'input$');
+   let extraParams = $pureParams->tail()->map(p | j_parameter($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name));
+
+   let setterField = $jThis->j_field('setterMethod', javaReflectMethod());
+   let javaException = j_parameter(javaException(), 'e');
+
+   let valueExtractor = {x: VariableExpression[1] |
+      let javaType = $conventions->pureTypeToJavaType($x.genericType.rawType->toOne(), PureOne);
+      let typeArg  = if($javaType->isJavaList(), |$contextParam->j_invoke('listType', $javaType->elementType()->toBoxed()->j_classField()), |$javaType->toBoxed()->j_classField());
+      j_cast(
+         $contextParam->j_invoke('getResult', [j_string($x.name), $typeArg], $javaType),
+         $javaType
+      );
+   };
+
+   let paramsCodes = $p.graphFetchTree->cast(@PropertyGraphFetchTree).parameters->evaluateAndDeactivate()->map({x |
+      let valCodes = $x->match([
+         iv : InstanceValue[1] | $iv.values->map(x | if($x->instanceOf(VariableExpression), | $valueExtractor->eval($x), | $conventions->primitiveLiteral($x))),
+         v  : VariableExpression[1] | $valueExtractor->eval($v)
+      ]);
+      let param = $pureParams->tail()->at($p.graphFetchTree->cast(@PropertyGraphFetchTree).parameters->evaluateAndDeactivate()->indexOf($x));
+      if($param.multiplicity->hasToOneUpperBound(), | $valCodes->isEmpty()->if(|j_null(), | $valCodes->toOne()), | javaArrays()->j_invoke('asList', $valCodes, javaList(javaObject())));
+   });
+
+   let paramsClassesCodes = $p.graphFetchTree->cast(@PropertyGraphFetchTree).parameters->evaluateAndDeactivate()->map({x |
+      let paramType = $x.genericType.rawType->toOne();
+      let param = $pureParams->tail()->at($p.graphFetchTree->cast(@PropertyGraphFetchTree).parameters->evaluateAndDeactivate()->indexOf($x));
+      if($param.multiplicity->hasToOneUpperBound(), | $conventions->pureTypeToJavaType($paramType, $param.multiplicity), | javaClass('java.util.List'))->j_classField();
+   });
+
+   let qpClassCode = if($qp->functionReturnMultiplicity()->hasToOneUpperBound(), | $conventions->pureTypeToJavaType($qp), | javaClass('java.util.List'))->j_classField();
+   let qpJavaType = $conventions->pureTypeToJavaType($qp);
+   let resVar = j_variable($qpJavaType, 'result');
+   let singlePropertyType = if ($qp->functionReturnMultiplicity()->hasToOneUpperBound(), | $qpJavaType, | $qpJavaType->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->at(0));
+   let streamObjectVar = j_parameter($singlePropertyType->toBoxed(), 'o');
+
+   let getterBody = $qp.expressionSequence->evaluateAndDeactivate()->toOne()->changeThisVariableInValueSpecification('input$')->generateJavaMethodBody($conventions, $debug);
+   let project = newProject()->addClass(
+      $execClass
+         ->implements($conventions->className(IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics))
+         ->addField(javaField(['private'], javaReflectMethod(), 'setterMethod'))
+         ->addMethod(
+            javaMethod(['private'], $qpJavaType, $conventions->getterName($qp), $inputParam->concatenate($extraParams), $getterBody)
+         )
+         ->addMethod(
+            javaMethod(
+               ['public'], javaStream(javaParameterizedType($jIGraphInstance, [javaWildcard()])), 'executeQualifierExpression', [$objectsParam, $contextParam],
+               [
+                  $objectsParam
+                     ->j_streamOf()
+                     ->js_flatMap(
+                        j_lambda(
+                           $objectParam,
+                           [
+                               $resVar->j_declare($jThis->j_invoke($conventions->getterName($qp), [$objectParam->j_cast($inputParam.type)]->concatenate($paramsCodes), $qpJavaType)),
+                               j_try(
+                                 [
+                                     j_if(
+                                       $setterField->j_eq(j_null()),
+                                       $setterField->j_assign($objectParam->j_invoke('getClass', [], javaClassType())->j_invoke('getMethod', [j_string($conventions->setterName($qp))]->concatenate($paramsClassesCodes)->concatenate($qpClassCode), javaReflectMethod()))
+                                     ),
+                                     $setterField->j_invoke('invoke', [$objectParam]->concatenate($paramsCodes)->concatenate($resVar), javaVoid())
+                                 ],
+                                 j_catch($javaException, j_throw(j_new(javaRuntimeException(), [$javaException])))
+                               ),
+                               $resVar->j_streamOf()->js_map(
+                                 j_lambda(
+                                     $streamObjectVar,
+                                     j_newAnon(graphInstanceOf($singlePropertyType->toBoxed(), $conventions), [],
+                                       [
+                                           j_method(['public'], $singlePropertyType->toBoxed(), 'getValue', [], j_return($streamObjectVar)),
+                                           j_method(['public'], javaLong(), 'instanceSize', [], j_return($conventions->getPrimitiveObjectSize($qp.genericType.rawType->toOne())))
+                                       ]
+                                     )
+                                 )
+                               )->j_return()
+                           ]->j_block()
+                        )
+                     )->j_return()
+               ]
+            )
+         )
+   );
+
+   generatedCode(mergeProjects($project->concatenate($getterBody->dependencies()->resolveAndGetProjects())->toOneMany()), $execClass);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::getPrimitiveObjectSize(conventions: Conventions[1], type: meta::pure::metamodel::type::Type[1]): Code[1]
+{
+   let typeMap = newMap([
+      pair(String,     20),
+      pair(Integer,    20),
+      pair(Float,      20),
+      pair(Decimal,    88),
+      pair(Boolean,    13),
+      pair(StrictDate, 60),
+      pair(DateTime,   60),
+      pair(Date,       0)
+   ]);
+
+   if ($type->in([String, Integer, Float, Decimal, Boolean, StrictDate, DateTime, Date]),
+       | $typeMap->get($type)->toOne()->j_long(),
+       | if ($type->instanceOf(meta::pure::metamodel::type::Enumeration),
+             | j_long(4),
+             | fail('Type: ' + $type->elementToPath() + ' is not supported'); j_long(0);
+         )
+   );
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::graphFetch::common::changeThisVariableInValueSpecification(vs: ValueSpecification[1], newVarName: String[1]): ValueSpecification[1]
+{
+   $vs->byPassRouterInfo()->match([
+      fe: FunctionExpression[1] | ^$fe(parametersValues = $fe.parametersValues->evaluateAndDeactivate()->map(p | $p->changeThisVariableInValueSpecification($newVarName))),
+      ve: VariableExpression[1] | if($ve.name == 'this', | ^$ve(name = $newVarName), | $ve),
+      iv: InstanceValue[1]      | ^$iv(
+                                     values = $iv.values->evaluateAndDeactivate()->map(v |
+                                        $v->match([
+                                           l: LambdaFunction<Any>[1] | ^$l(expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->map(p | $p->changeThisVariableInValueSpecification($newVarName))),
+                                           a: Any[1] | $a
+                                        ])
+                                     )
+                                  ),
+      v : ValueSpecification[1] | $v
+   ])
 }

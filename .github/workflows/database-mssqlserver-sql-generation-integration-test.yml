@@ -70,7 +70,9 @@ jobs:
           MAVEN_OPTS: -Xmx4g
         run: |
           set -o pipefail
-          mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
+          echo "| Test Representing Db Feature | Support Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| ---------------------------- | -------------- |" >> $GITHUB_STEP_SUMMARY
+          mvn -pl legend-engine-xt-relationalStore-sqlserver-execution-tests -Dtest="Test_Relational_DbSpecific_SqlServer_UsingPureClientTestSuite" test | tee >(grep -o "Tests run:[^T]*" | head -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo "Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt) | tee >(grep -o "[|] [*][*].*" >> $GITHUB_STEP_SUMMARY)
       - name: Write Summary
         if: always()
         run: |

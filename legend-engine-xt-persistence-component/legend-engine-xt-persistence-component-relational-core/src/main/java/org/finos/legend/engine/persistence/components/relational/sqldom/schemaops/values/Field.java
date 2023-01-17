@@ -22,20 +22,18 @@ public class Field extends Value
 {
     private String name;
     private String datasetReferenceAlias;
-    private String quoteIdentifier;
 
     public Field(String name, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.name = name;
-        this.quoteIdentifier = quoteIdentifier;
     }
 
     public Field(String datasetReferenceAlias, String name, String quoteIdentifier, String alias)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.datasetReferenceAlias = datasetReferenceAlias;
         this.name = name;
-        this.quoteIdentifier = quoteIdentifier;
     }
 
     public String getName()
@@ -63,13 +61,13 @@ public class Field extends Value
         {
             builder.append(datasetReferenceAlias).append(".");
         }
-        builder.append(SqlGenUtils.getQuotedField(name, quoteIdentifier));
+        builder.append(SqlGenUtils.getQuotedField(name, getQuoteIdentifier()));
     }
 
     public void genSqlWithNameOnly(StringBuilder builder) throws SqlDomException
     {
         validate();
-        builder.append(SqlGenUtils.getQuotedField(name, quoteIdentifier));
+        builder.append(SqlGenUtils.getQuotedField(name, getQuoteIdentifier()));
     }
 
     @Override

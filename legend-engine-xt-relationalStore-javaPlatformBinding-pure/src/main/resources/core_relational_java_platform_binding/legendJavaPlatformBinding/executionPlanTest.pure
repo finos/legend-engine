@@ -163,7 +163,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
     '  type = String\n'+
     '  expression =  -> serialize(#{meta::relational::graphFetch::tests::chain::Target_Firm {firmName, employeeCount}}#)\n'+
     '  (\n'+
-    '    GlobalGraphFetch\n'+
+    '    StoreMappingGlobalGraphFetch\n'+
     '    (\n'+
     '      type = PartialClass[impls=[(meta::relational::graphFetch::tests::chain::Target_Firm | M2M_Mapping.meta_relational_graphFetch_tests_chain_Target_Firm)], propertiesWithParameters = [employeeCount, firmName]]\n'+
     '      resultSizeRange = *\n'+
@@ -181,7 +181,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
     '             (\n'+
     '               type = PartialClass[impls=[(meta::relational::tests::model::simple::Firm | simpleRelationalMappingInc.meta_relational_tests_model_simple_Firm)], propertiesWithParameters = [employees, legalName]]\n'+
     '               (\n'+
-    '                 GlobalGraphFetch\n'+
+    '                 StoreMappingGlobalGraphFetch\n'+
     '                 (\n'+
     '                   type = PartialClass[impls=[(meta::relational::tests::model::simple::Firm | simpleRelationalMappingInc.meta_relational_tests_model_simple_Firm)], propertiesWithParameters = [employees, legalName]]\n'+
     '                   resultSizeRange = *\n'+
@@ -230,6 +230,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
     '                   children = [\n'+
     '                      \n'+
     '                   ]\n'+
+    '                   localTreeIndices = [0, 1, 2]\n'+
+    '                   dependencyIndices = []\n'+
     '                 )\n'+
     '               )\n'+
     '             )\n'+
@@ -245,6 +247,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
     '      children = [\n'+
     '         \n'+
     '      ]\n'+
+    '      localTreeIndices = [0, 1, 2]\n'+
+    '      dependencyIndices = []\n'+
     '    )\n'+
     '  )\n'+
     '  implementation\n'+

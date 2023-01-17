@@ -33,8 +33,9 @@ public class Case extends Value
     private List<Pair<Condition, Value>> conditionedValues;
     private Value elseValue;
 
-    public Case()
+    public Case(String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.conditionedValues = new ArrayList<>();
     }
 

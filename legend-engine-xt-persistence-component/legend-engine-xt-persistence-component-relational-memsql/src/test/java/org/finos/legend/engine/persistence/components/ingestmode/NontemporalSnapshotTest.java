@@ -27,11 +27,11 @@ import java.util.List;
 
 public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 {
-    String rowsDeleted = "SELECT COUNT(*) as rowsDeleted FROM `mydb`.`main` as sink";
-    String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-    String rowsUpdated = "SELECT 0 as rowsUpdated";
-    String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM `mydb`.`main` as sink";
-    String rowsTerminated = "SELECT 0 as rowsTerminated";
+    String rowsDeleted = "SELECT COUNT(*) as `rowsDeleted` FROM `mydb`.`main` as sink";
+    String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
+    String rowsUpdated = "SELECT 0 as `rowsUpdated`";
+    String rowsInserted = "SELECT COUNT(*) as `rowsInserted` FROM `mydb`.`main` as sink";
+    String rowsTerminated = "SELECT 0 as `rowsTerminated`";
 
     @Override
     public void verifyNontemporalSnapshotNoAuditingNoDataSplit(GeneratorResult operations)

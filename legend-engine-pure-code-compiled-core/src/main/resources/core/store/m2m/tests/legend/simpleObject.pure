@@ -739,7 +739,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    '  type = String\n'+
    '  expression =  -> serialize(#{meta::pure::mapping::modelToModel::test::shared::dest::Person {firstName, lastName}}#)\n'+
    '  (\n'+
-   '    GlobalGraphFetch\n'+
+   '    StoreMappingGlobalGraphFetch\n'+
    '    (\n'+
    '      type = PartialClass[impls=[(meta::pure::mapping::modelToModel::test::shared::dest::Person | simpleModelMapping.meta_pure_mapping_modelToModel_test_shared_dest_Person)], propertiesWithParameters = [firstName, lastName]]\n'+
    '      resultSizeRange = *\n'+
@@ -769,6 +769,8 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    '      children = [\n'+
    '         \n'+
    '      ]\n'+
+   '      localTreeIndices = [0, 1, 2]\n'+
+   '      dependencyIndices = []\n'+
    '    )\n'+
    '  )\n'+
    ')\n';

@@ -29,11 +29,11 @@ public class BatchIdValueVisitor implements LogicalPlanVisitor<BatchIdValue>
         // If the nextBatchIdPattern is provided, just return that
         if (context.batchIdPattern().isPresent())
         {
-            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.ObjectValue(context.batchIdPattern().get(), current.alias().orElse(null)));
+            prev.push(new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.ObjectValue(context.batchIdPattern().get(), current.alias().orElse(null), context.quoteIdentifier()));
             return new VisitorResult();
         }
 
-        SelectValue selectValue = new SelectValue(current.alias().orElse(null));
+        SelectValue selectValue = new SelectValue(current.alias().orElse(null), context.quoteIdentifier());
         prev.push(selectValue);
         return new SelectionVisitor().visit(selectValue, current.selection(), context);
     }

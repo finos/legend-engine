@@ -43,13 +43,11 @@ public class IngestModeTest
     String stagingTableAlias = "stage";
 
     String digestField = "digest";
-    String batchUpdateTimeName = "batch_update_time";
     String batchIdInField = "batch_id_in";
     String batchIdOutField = "batch_id_out";
     String batchTimeInField = "batch_time_in";
     String batchTimeOutField = "batch_time_out";
     String deleteIndicatorField = "delete_indicator";
-    String[] deleteIndicatorValues = new String[]{"yes", "1", "true"};
 
     String[] partitionKeys = new String[]{"biz_date"};
     HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
@@ -91,23 +89,7 @@ public class IngestModeTest
         .addFields(digest)
         .build();
 
-    SchemaDefinition stagingTableSchemaWithDeleteIndicator = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .build();
-
     String expectedMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS batch_metadata" +
-        "(\"table_name\" VARCHAR(255)," +
-        "\"batch_start_ts_utc\" DATETIME," +
-        "\"batch_end_ts_utc\" DATETIME," +
-        "\"batch_status\" VARCHAR(32)," +
-        "\"table_batch_id\" INTEGER)";
-
-    String expectedCustomMetadataTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"custom_metadata\"" +
         "(\"table_name\" VARCHAR(255)," +
         "\"batch_start_ts_utc\" DATETIME," +
         "\"batch_end_ts_utc\" DATETIME," +
@@ -126,9 +108,6 @@ public class IngestModeTest
 
     protected String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\")" +
         " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as batch_metadata WHERE batch_metadata.\"TABLE_NAME\" = 'main'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";
-
-    String expectedCustomMetadataTableIngestQuery = "INSERT INTO \"mydb\".\"custom_metadata\" (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
-        " (SELECT 'main',(SELECT COALESCE(MAX(custom_metadata.\"table_batch_id\"),0)+1 FROM \"mydb\".\"custom_metadata\" as custom_metadata WHERE custom_metadata.\"table_name\" = 'main'),'2000-01-01 00:00:00',SYSDATE(),'DONE')";
 
 
     String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +

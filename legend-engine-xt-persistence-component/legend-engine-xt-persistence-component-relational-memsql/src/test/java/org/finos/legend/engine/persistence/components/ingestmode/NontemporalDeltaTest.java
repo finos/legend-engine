@@ -27,11 +27,11 @@ import java.util.List;
 
 public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 {
-    protected String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage";
-    protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as incomingRecordCount FROM `mydb`.`staging` as stage WHERE " +
+    protected String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
+    protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE " +
             "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-    protected String rowsTerminated = "SELECT 0 as rowsTerminated";
-    protected String rowsDeleted = "SELECT 0 as rowsDeleted";
+    protected String rowsTerminated = "SELECT 0 as `rowsTerminated`";
+    protected String rowsDeleted = "SELECT 0 as `rowsDeleted`";
 
     @Override
     public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)

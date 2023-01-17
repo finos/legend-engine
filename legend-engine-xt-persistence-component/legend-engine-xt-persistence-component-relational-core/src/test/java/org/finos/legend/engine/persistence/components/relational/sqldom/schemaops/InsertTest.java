@@ -47,8 +47,8 @@ class InsertTest
         );
         Table table = new Table("mydb", null, "mytable", null, BaseTest.QUOTE_IDENTIFIER);
         List<List<Value>> values = new ArrayList<>();
-        values.add(Arrays.asList(new ObjectValue(1), new StringValue("2"), new ObjectValue(3.05), new ObjectValue(4L)));
-        values.add(Arrays.asList(new ObjectValue(11), new StringValue("22"), new ObjectValue(33.05), new ObjectValue(44L)));
+        values.add(Arrays.asList(new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER), new StringValue("2", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.05, BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L, BaseTest.QUOTE_IDENTIFIER)));
+        values.add(Arrays.asList(new ObjectValue(11, BaseTest.QUOTE_IDENTIFIER), new StringValue("22", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(33.05, BaseTest.QUOTE_IDENTIFIER), new ObjectValue(44L, BaseTest.QUOTE_IDENTIFIER)));
 
         ValuesExpression valuesExpression = new ValuesExpression(values);
 
@@ -103,7 +103,7 @@ class InsertTest
 
         String sql = BaseTest.genSqlIgnoringErrors(insertStatement);
 
-        String expected = "INSERT INTO \"CONVOLVE_TEST_SCHEMA\".\"CONVOLVE_TEST_TABLE\" (\"convolve_digest\", \"column_smallint\", \"column_tinyint\", \"column_bigint\", \"column_varchar\", \"column_char\", \"column_timestamp\", \"column_date\", \"column_float\", \"column_real\", \"column_decimal\", \"column_double\") (SELECT stage_left.\"convolve_digest\" as convolve_digest,stage_left.\"column_smallint\" as column_smallint,stage_left.\"column_tinyint\" as column_tinyint,stage_left.\"column_bigint\" as column_bigint,stage_left.\"column_varchar\" as column_varchar,stage_left.\"column_char\" as column_char,stage_left.\"column_timestamp\" as column_timestamp,stage_left.\"column_date\" as column_date,stage_left.\"column_float\" as column_float,stage_left.\"column_real\" as column_real,stage_left.\"column_decimal\" as column_decimal,stage_left.\"column_double\" as column_double FROM \"CONVOLVE_TEST_SCHEMA\".\"CONVOLVE_TEST_TABLE__stage\" as stage_left)";
+        String expected = "INSERT INTO \"CONVOLVE_TEST_SCHEMA\".\"CONVOLVE_TEST_TABLE\" (\"convolve_digest\", \"column_smallint\", \"column_tinyint\", \"column_bigint\", \"column_varchar\", \"column_char\", \"column_timestamp\", \"column_date\", \"column_float\", \"column_real\", \"column_decimal\", \"column_double\") (SELECT stage_left.\"convolve_digest\" as \"convolve_digest\",stage_left.\"column_smallint\" as \"column_smallint\",stage_left.\"column_tinyint\" as \"column_tinyint\",stage_left.\"column_bigint\" as \"column_bigint\",stage_left.\"column_varchar\" as \"column_varchar\",stage_left.\"column_char\" as \"column_char\",stage_left.\"column_timestamp\" as \"column_timestamp\",stage_left.\"column_date\" as \"column_date\",stage_left.\"column_float\" as \"column_float\",stage_left.\"column_real\" as \"column_real\",stage_left.\"column_decimal\" as \"column_decimal\",stage_left.\"column_double\" as \"column_double\" FROM \"CONVOLVE_TEST_SCHEMA\".\"CONVOLVE_TEST_TABLE__stage\" as stage_left)";
         assertEquals(expected, sql);
     }
 
@@ -116,8 +116,8 @@ class InsertTest
             new Field("col3", BaseTest.QUOTE_IDENTIFIER),
             new Field("col4", BaseTest.QUOTE_IDENTIFIER));
         List<List<Value>> values = new ArrayList<>();
-        values.add(Arrays.asList(new ObjectValue(1), new StringValue("2"), new ObjectValue(3.05), new ObjectValue(4L)));
-        values.add(Arrays.asList(new ObjectValue(11), new StringValue("22"), new ObjectValue(33.05), new ObjectValue(44L)));
+        values.add(Arrays.asList(new ObjectValue(1, BaseTest.QUOTE_IDENTIFIER), new StringValue("2", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(3.05, BaseTest.QUOTE_IDENTIFIER), new ObjectValue(4L, BaseTest.QUOTE_IDENTIFIER)));
+        values.add(Arrays.asList(new ObjectValue(11, BaseTest.QUOTE_IDENTIFIER), new StringValue("22", BaseTest.QUOTE_IDENTIFIER), new ObjectValue(33.05, BaseTest.QUOTE_IDENTIFIER), new ObjectValue(44L, BaseTest.QUOTE_IDENTIFIER)));
 
         ValuesExpression valuesExpression = new ValuesExpression(values);
 

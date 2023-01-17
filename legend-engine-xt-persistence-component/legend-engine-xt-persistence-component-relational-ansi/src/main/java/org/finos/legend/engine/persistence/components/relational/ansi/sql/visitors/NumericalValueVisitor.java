@@ -26,7 +26,7 @@ public class NumericalValueVisitor implements LogicalPlanVisitor<org.finos.legen
     public VisitorResult visit(PhysicalPlanNode prev, org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue current, VisitorContext context)
     {
 
-        NumericalValue value = new NumericalValue(current.value().orElse(null), current.alias().orElse(null));
+        NumericalValue value = new NumericalValue(current.value().orElse(null), current.alias().orElse(null), context.quoteIdentifier());
         prev.push(value);
 
         return new VisitorResult(null);

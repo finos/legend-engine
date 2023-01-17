@@ -20,14 +20,15 @@ public class ObjectValue extends Value
 {
     private Object value;
 
-    public ObjectValue(Object value)
+    public ObjectValue(Object value, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.value = value;
     }
 
-    public ObjectValue(Object value, String alias)
+    public ObjectValue(Object value, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.value = value;
     }
 

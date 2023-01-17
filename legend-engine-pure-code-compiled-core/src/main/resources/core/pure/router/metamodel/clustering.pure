@@ -131,3 +131,29 @@ function meta::pure::router::clustering::toString(cluster:ClusteredValueSpecific
                                                        );
   ]);
 }
+
+
+// =========================================================================================
+// Graph Fetch Tree Models
+// =========================================================================================
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+import meta::pure::runtime::*;
+
+Class <<typemodifiers.abstract>> meta::pure::graphFetch::routing::ClusteredGraphFetchTree extends GraphFetchTree
+{
+   tree     : RoutedGraphFetchTree[1];
+   openVars : Map<String, List<Any>>[1];
+   exeCtx   : ExecutionContext[0..1];
+}
+
+function meta::pure::graphFetch::routing::clusteredGraphFetchTreeToString(c: ClusteredGraphFetchTree[1], spaceString: String[1], multiLine: Boolean[1]): String[1]
+{
+   let space = if($multiLine, | $spaceString, | '');
+   $c->match([
+      s:StoreMappingClusteredGraphFetchTree[1] | $space + '{'+$s.store->toOne()->elementToPath()+'> ' + $c.tree->asString($space, $multiLine) + '}',
+      p:PlatformClusteredGraphFetchTree[1]     | $space + '{Platform> ' + $c.tree->asString($space, $multiLine) + '}'
+   ]);
+}

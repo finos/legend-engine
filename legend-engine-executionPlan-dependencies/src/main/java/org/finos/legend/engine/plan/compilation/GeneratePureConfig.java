@@ -46,6 +46,7 @@ import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExp
 import org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.platform.ISerializationWriter;
 import org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions;
+import org.finos.legend.engine.plan.dependencies.store.platform.graphFetch.IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.classResult.IRelationalClassInstantiationNodeExecutor;
 import org.finos.legend.engine.plan.dependencies.store.relational.graphFetch.IRelationalChildGraphNodeExecutor;
@@ -162,6 +163,7 @@ public class GeneratePureConfig
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics", IRelationalClassQueryTempTableGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics", IRelationalPrimitiveQueryGraphFetchExecutionNodeSpecifics.class);
         MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IServiceParametersResolutionExecutionNodeSpecifics", IServiceParametersResolutionExecutionNodeSpecifics.class);
+        MAIN_DEPENDENCIES.put(PURE_PACKAGE + "IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics", IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics.class);
     }
 
     private final Class<?> extensionClass;
