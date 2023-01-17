@@ -117,9 +117,9 @@ public class MongoDbQueryParseTreeWalker
         {
             if (x.expressionValue().complexExpressionValue() != null)
             {
-                return visitExpressionValue(x.expressionValue(), x.WORD().getText(), null);
+                return visitExpressionValue(x.expressionValue(), x.STRING().getText(), null);
             }
-            return buildExpression(x.WORD().getText(), visitLiteral(x.expressionValue()), null);
+            return buildExpression(x.STRING().getText(), visitLiteral(x.expressionValue()), null);
         }).collect(Collectors.toList());
     }
 

@@ -1,0 +1,31 @@
+{
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$match": {
+        "$or": [
+          {
+            "fName": {
+              "$eq": "Peter"
+            }
+          },
+          {
+            "lName": {
+              "$eq": "Johnson"
+            }
+          }
+        ]
+      }},
+    {
+      "$project": {
+        "person": {
+          "names": {
+            "lastName": 1
+          }
+        }
+      }
+    }
+
+  ],
+  "cursor": {}
+}
