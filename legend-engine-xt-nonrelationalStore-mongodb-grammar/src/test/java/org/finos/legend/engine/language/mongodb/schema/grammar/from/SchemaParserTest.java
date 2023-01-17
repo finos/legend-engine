@@ -38,6 +38,6 @@ public class SchemaParserTest
     {
         MongodbSchemaGrammarParser parser = MongodbSchemaGrammarParser.newInstance();
         MongoDatabase database = parser.parseDocument(value);
-        Assert.assertNull(database);
+        Assert.assertNotNull(database);
     }
 }

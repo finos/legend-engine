@@ -73,12 +73,7 @@ public class MongodbSchemaGrammarParser
         ANTLRErrorListener errorListener = new BaseErrorListener()
         {
             @Override
-            public void syntaxError(Recognizer<?, ?> recognizer,
-                                    Object offendingSymbol,
-                                    int line,
-                                    int charPositionInLine,
-                                    String msg,
-                                    RecognitionException e)
+            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine, String msg, RecognitionException e)
             {
                 if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
                 {
@@ -94,32 +89,17 @@ public class MongodbSchemaGrammarParser
                         // so anytime, INVALID token is found, it should cause this error
                         // but because it is a catch-all rule, it only produces a lexer token, which is a symbol
                         // we have to construct the source information manually
-                        SourceInformation sourceInformation = new SourceInformation(
-                                "",
-                                line,
-                                charPositionInLine + 1,
-                                line,
-                                charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
+                        SourceInformation sourceInformation = new SourceInformation("", line, charPositionInLine + 1, line, charPositionInLine + 1 + ((Token) offendingSymbol).getStopIndex() - ((Token) offendingSymbol).getStartIndex());
                         // NOTE: for some reason sometimes ANTLR report the end index of the token to be smaller than the start index so we must reprocess it here
                         sourceInformation.startColumn = Math.min(sourceInformation.endColumn, sourceInformation.startColumn);
                         msg = "Unexpected token";
                         throw new MongodbSchemaParserException(msg, sourceInformation);
                     }
-                    SourceInformation sourceInformation = new SourceInformation(
-                            "",
-                            line,
-                            charPositionInLine + 1,
-                            line,
-                            charPositionInLine + 1);
+                    SourceInformation sourceInformation = new SourceInformation("", line, charPositionInLine + 1, line, charPositionInLine + 1);
                     throw new MongodbSchemaParserException(msg, sourceInformation);
                 }
                 Token offendingToken = e.getOffendingToken();
-                SourceInformation sourceInformation = new SourceInformation(
-                        "",
-                        line,
-                        charPositionInLine + 1,
-                        offendingToken.getLine(),
-                        charPositionInLine + offendingToken.getText().length());
+                SourceInformation sourceInformation = new SourceInformation("", line, charPositionInLine + 1, offendingToken.getLine(), charPositionInLine + offendingToken.getText().length());
                 throw new MongodbSchemaParserException(msg, sourceInformation);
             }
 
@@ -184,12 +164,7 @@ public class MongodbSchemaGrammarParser
         int line = json.getStart().getLine();
         int colStart = json.getStart().getStartIndex() + 1;
         int colEnt = json.getStart().getStopIndex() + 1;
-        SourceInformation sourceInformation = new SourceInformation(
-                "",
-                line,
-                1,
-                line,
-                1);
+        SourceInformation sourceInformation = new SourceInformation("", line, 1, line, 1);
         throw new MongodbSchemaParserException("Top node not object type", sourceInformation);
 
     }
@@ -242,7 +217,7 @@ public class MongodbSchemaGrammarParser
             {
                 pair = iter.next();
 
-                if (pair.key() != null)
+                if (pair.key() != null && pair.key().keywords() != null)
                 {
                     if (pair.key().keywords().COLLECTION_NAME() != null)
                     {
@@ -440,12 +415,7 @@ public class MongodbSchemaGrammarParser
             }
             default:
             {
-                SourceInformation sourceInformation = new SourceInformation(
-                        "",
-                        lineNumber,
-                        1,
-                        lineNumber,
-                        1);
+                SourceInformation sourceInformation = new SourceInformation("", lineNumber, 1, lineNumber, 1);
                 throw new MongodbSchemaParserException("Un-supported data type", sourceInformation);
             }
             // Skipping Timestamp
