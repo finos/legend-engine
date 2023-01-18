@@ -7,9 +7,15 @@
           {
             "fName": {
               "$eq": "Peter"
-              }}, {
-              "lName": "Smith"
-            }]}}],
-        "cursor": {}
+            }
+          },
+          {
+            "lName": "Smith"
+          }
+        ]
+      }
     }
+  ],
+  "cursor": {}
+}
 

@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
 import org.junit.Test;
+import utils.CustomJSONPrettyPrinter;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -37,8 +38,7 @@ import static org.junit.Assert.assertEquals;
 
 public class MongoDbQueryParseTreeWalkerTest
 {
-
-    private final ObjectMapper mapper = new ObjectMapper()
+    private final ObjectMapper mapper = new ObjectMapper().setDefaultPrettyPrinter(new CustomJSONPrettyPrinter())
             .enable(SerializationFeature.INDENT_OUTPUT)
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
@@ -286,7 +286,6 @@ public class MongoDbQueryParseTreeWalkerTest
     @Test
     public void testAggregateWithMultiMatchExpressionWithNonEmptyArraysWithAndWithoutOperators() throws Exception
     {
-        //String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: ['ABC', 'DEF'] }, test2: [5, 6], test3: ['one', 'two'] } } ] }";
         String input = resourceAsString("input_multi_match_non_empty_arrays_with_and_without_operators.json");
         String expectedOutput = resourceAsString("output_multi_match_non_empty_arrays_with_and_without_operators.json");
 
@@ -319,7 +318,6 @@ public class MongoDbQueryParseTreeWalkerTest
         {
             throw new RuntimeException(e);
         }
-        String string = new String(bytes, StandardCharsets.UTF_8);
-        return string;
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }

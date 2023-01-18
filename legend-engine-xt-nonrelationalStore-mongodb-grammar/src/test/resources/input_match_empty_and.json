@@ -1,3 +1,13 @@
-{ "aggregate": "person", "pipeline": [{ "$match":{ "$and" : []} } ], "cursor": { }  }
+{
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$match": {
+        "$and": []
+      }
+    }
+  ],
+  "cursor": {}
+}
 
 

@@ -119,7 +119,9 @@ public class MongoDbQueryParseTreeWalker
             if (x.expressionValue().operatorExpression() != null)
             {
                 return visitOperatorExpression(x.expressionValue().operatorExpression(), x.STRING().getText());
-            } else if ( x.expressionValue().value() != null) {
+            }
+            else if (x.expressionValue().value() != null)
+            {
                 return visitValue(x.expressionValue().value(), x.STRING().getText(), null);
             }
             //return buildExpression(x.STRING().getText(), visitLiteral(x.expressionValue().value()), null);
@@ -185,11 +187,13 @@ public class MongoDbQueryParseTreeWalker
     private ArgumentExpression visitOperatorExpressionValue(MongoDbQueryParser.OperatorExpressionValueContext ctx, String field, String operator)
     {
 
-        if ( ctx.operatorExpression() != null) {
+        if (ctx.operatorExpression() != null)
+        {
             return visitOperatorExpression(ctx.operatorExpression(), field);
         }
 
-        if ( ctx.expressionValue() != null) {
+        if (ctx.expressionValue() != null)
+        {
             return visitExpressionValue(ctx.expressionValue(), field, operator);
         }
 
@@ -220,14 +224,14 @@ public class MongoDbQueryParseTreeWalker
             result.arguments = ctx.pair().stream().map(this::visitPair).collect(Collectors.toList());
         }
 
-       return result;
+        return result;
     }
 
     private ArgumentExpression visitPair(MongoDbQueryParser.PairContext ctx)
     {
         if (ctx.value().NUMBER() != null || ctx.value().STRING() != null)
         {
-            return buildExpression(ctx.STRING().getText(), visitLiteral(ctx.value()), null) ;
+            return buildExpression(ctx.STRING().getText(), visitLiteral(ctx.value()), null);
 
         }
         throw new RuntimeException("visitPair exception");

@@ -1,6 +1,6 @@
 {
   "type": "aggregate",
-  "collectionName": "firms",
+  "collectionName": "\"firms\"",
   "aggregationPipeline": {
     "stages": [
       {
@@ -46,6 +46,36 @@
                     }
                   }
                 }
+              },
+              {
+                "arguments": [
+                  {
+                    "operator": null,
+                    "expression": {
+                      "field": {
+                        "path": "\"abd\""
+                      },
+                      "argument": {
+                        "value": {
+                          "pattern": 3
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "operator": null,
+                    "expression": {
+                      "field": {
+                        "path": "\"ade\""
+                      },
+                      "argument": {
+                        "value": {
+                          "pattern": 4
+                        }
+                      }
+                    }
+                  }
+                ]
               }
             ]
           }
