@@ -160,7 +160,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterEqualsWithOpt
                      '    (\n'+
                      '      type = TDS[(Time, Integer, INT, "")]\n'+
                      '      resultColumns = [("Time", INT)]\n'+
-                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "" "" {} "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
+                     '      sql = select `root`.time as `Time` from interactionTable as `root` where ((${optionalVarPlaceHolderOperationSelector(optionalID![], \'`root`.ID = ${varPlaceHolderToString(optionalID![] "\\\'" "\\\'" {"\\\'" : "\\\'\\\'"} "null")}\', \'`root`.ID is null\')}) and (${optionalVarPlaceHolderOperationSelector(optionalActive![], \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end = ${varPlaceHolderToString(optionalActive![] "\\\'" "\\\'" {} "null")}\', \'case when `root`.active = \\\'Y\\\' then \\\'true\\\' else \\\'false\\\' end is null\')}))\n'+
                      '      connection = DatabaseConnection(type = "MemSQL")\n'+
                      '    )\n'+
                      '  )\n'+
