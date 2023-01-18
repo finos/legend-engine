@@ -115,14 +115,12 @@ public class MongoDbQueryParseTreeWalker
     {
         return ctx.expression().stream().map(x ->
         {
-
             if (x.expressionValue().operatorExpression() != null)
             {
                 return visitOperatorExpression(x.expressionValue().operatorExpression(), x.STRING().getText());
             } else if ( x.expressionValue().value() != null) {
                 return visitValue(x.expressionValue().value(), x.STRING().getText(), null);
             }
-            //return buildExpression(x.STRING().getText(), visitLiteral(x.expressionValue().value()), null);
             throw new RuntimeException("visitQueryExpression Runtime Exception");
         }).collect(Collectors.toList());
     }
@@ -149,11 +147,39 @@ public class MongoDbQueryParseTreeWalker
         }
         else if (ctx.obj() != null)
         {
-            return visitObj(ctx.obj());
+            ArgumentExpression expression = visitObj(ctx.obj());
+            if (operator != null)
+            {
+                Operators currentOperator = Operators.valueOf(operator.substring(1, operator.length() - 1));
+                return new OperatorExpression(currentOperator, expression);
+            }
+//            else if (field != null)
+//            {
+//                return new ExpressionObject(new FieldPathExpression(field), expression);
+//            }
+//            else
+//            {
+//                return expression;
+//            }
+            return expression;
         }
         else if (ctx.arr() != null)
         {
-            return visitArray(ctx.arr(), operator, field);
+            ArgumentExpression expression = visitArray(ctx.arr(), operator, field);
+            if (operator != null)
+            {
+                Operators currentOperator = Operators.valueOf(operator.substring(1, operator.length() - 1));
+                return new OperatorExpression(currentOperator, expression);
+            }
+//            else if (field != null)
+//            {
+//                return new ExpressionObject(new FieldPathExpression(field), expression);
+//            }
+//            else
+//            {
+//                return expression;
+//            }
+            return expression;
         }
 
         throw new RuntimeException("visitExpressionValue error");
@@ -185,11 +211,12 @@ public class MongoDbQueryParseTreeWalker
     private ArgumentExpression visitOperatorExpressionValue(MongoDbQueryParser.OperatorExpressionValueContext ctx, String field, String operator)
     {
 
-        if ( ctx.operatorExpression() != null) {
+        if ( ctx.operatorExpression() != null)
+        {
             return visitOperatorExpression(ctx.operatorExpression(), field);
         }
-
-        if ( ctx.expressionValue() != null) {
+        else if ( ctx.expressionValue() != null)
+        {
             return visitExpressionValue(ctx.expressionValue(), field, operator);
         }
 
@@ -217,20 +244,21 @@ public class MongoDbQueryParseTreeWalker
         AggregateExpression result = new AggregateExpression();
         if (ctx.pair() != null)
         {
-            result.arguments = ctx.pair().stream().map(this::visitPair).collect(Collectors.toList());
+            result.arguments = ctx.pair().stream().map(x -> {
+                boolean isRightSideLiteral = x.value().NUMBER() != null || x.value().STRING() != null;
+                return visitPair(x, isRightSideLiteral);
+            }).collect(Collectors.toList());
         }
 
        return result;
     }
 
-    private ArgumentExpression visitPair(MongoDbQueryParser.PairContext ctx)
+    private ArgumentExpression visitPair(MongoDbQueryParser.PairContext ctx, boolean isRightSideLiteral)
     {
-        if (ctx.value().NUMBER() != null || ctx.value().STRING() != null)
-        {
-            return buildExpression(ctx.STRING().getText(), visitLiteral(ctx.value()), null) ;
-
-        }
-        throw new RuntimeException("visitPair exception");
+        ArgumentExpression expression = visitValue(ctx.value(), ctx.STRING().getText(), null);
+        return isRightSideLiteral
+                ? expression
+                : new ExpressionObject(new FieldPathExpression(ctx.STRING().getText()), expression);
     }
 
     private BaseType visitLiteral(MongoDbQueryParser.ValueContext ctx)

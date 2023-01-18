@@ -1,27 +1,80 @@
 {
   "type" : "aggregate",
-  "collectionName" : "firms",
+  "collectionName" : "\"firms\"",
   "aggregationPipeline" : {
     "stages" : [ {
       "stageName" : "$match",
       "expression" : [ {
         "arguments" : [ {
-          "operator" : "$eq",
-          "expression" : {
-            "field" : {
-              "path" : "\"test\""
-            },
-            "argument" : {
-              "value" : {
-                "pattern" : "\"testingg\""
+          "field" : {
+            "path" : "\"test\""
+          },
+          "expressions" : [ {
+            "operator" : null,
+            "expression" : {
+              "argument" : {
+                "value" : {
+                  "pattern" : "\"ABC\""
+                }
               }
             }
-          }
+          }, {
+            "operator" : null,
+            "expression" : {
+              "argument" : {
+                "value" : {
+                  "pattern" : "\"DEF\""
+                }
+              }
+            }
+          } ],
+          "operator" : "$eq"
         }, {
           "field" : {
             "path" : "\"test2\""
           },
-          "expressions" : null
+          "expressions" : [ {
+            "operator" : null,
+            "expression" : {
+              "argument" : {
+                "value" : {
+                  "pattern" : 5
+                }
+              }
+            }
+          }, {
+            "operator" : null,
+            "expression" : {
+              "argument" : {
+                "value" : {
+                  "pattern" : 6
+                }
+              }
+            }
+          } ]
+        }, {
+          "field" : {
+            "path" : "\"test3\""
+          },
+          "expressions" : [ {
+            "operator" : null,
+            "expression" : {
+              "argument" : {
+                "value" : {
+                  "pattern" : "\"one\""
+                }
+              }
+            }
+          }, {
+            "operator" : null,
+            "expression" : {
+              "argument" : {
+                "value" : {
+                  "pattern" : "\"two\""
+                }
+              }
+            }
+          } ]
         } ]
       } ]
     } ]

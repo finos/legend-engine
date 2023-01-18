@@ -286,9 +286,32 @@ public class MongoDbQueryParseTreeWalkerTest
     @Test
     public void testAggregateWithMultiMatchExpressionWithNonEmptyArraysWithAndWithoutOperators() throws Exception
     {
-        //String input = "{ aggregate: 'firms', pipeline: [ { $match: { test : { $eq: ['ABC', 'DEF'] }, test2: [5, 6], test3: ['one', 'two'] } } ] }";
         String input = resourceAsString("input_multi_match_non_empty_arrays_with_and_without_operators.json");
         String expectedOutput = resourceAsString("output_multi_match_non_empty_arrays_with_and_without_operators.json");
+
+        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
+
+        CommonTokenStream tokens = new CommonTokenStream(programLexer);
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
+        parser.addParseListener(listener);
+
+        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
+
+        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
+        walker.visit(commandContext);
+
+        DatabaseCommand databaseCommand = walker.getCommand();
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateMatchExpressionWithNestedObject() throws Exception
+    {
+        String input = resourceAsString("input_match_with_nested_object.json");
+        String expectedOutput = resourceAsString("output_match_with_nested_object.json");
 
         MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
 
