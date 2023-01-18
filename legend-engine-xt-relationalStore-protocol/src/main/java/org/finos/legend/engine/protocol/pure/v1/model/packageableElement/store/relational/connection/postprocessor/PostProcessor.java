@@ -21,10 +21,4 @@ import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 public abstract class PostProcessor
 {
     public SourceInformation sourceInformation;
-    public int order = Integer.MIN_VALUE;
-
-    public int getOrder()
-    {
-        return order;
-    }
 }
