@@ -7,95 +7,65 @@ import meta::pure::mapping::modelToModel::*;
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp1():Boolean[1]
 {
-   let result = meta::pure::executionPlan::executionPlan({businessDate: Date[1],accountNum: String[1]|
-                                              meta::relational::tests::m2m2r::Entitlement.all()
-                                              ->project([x|$x.name,x|$x.prop1],
+   let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
+                                                          ->project([x|$x.name,x|$x.prop1],
                                                             ['name','prop1']);},
                                               meta::relational::tests::m2m2r::AxionToModelMapping,
                                               meta::relational::tests::m2m2r::runtime(),
                                               meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
-  let expected = 'Sequence\n' +
+  let expected ='Relational\n' +
             '(\n' +
             '  type = TDS[(name, String, "", ""), (prop1, Boolean, "", "")]\n' +
-            '  (\n' +
-            '    FunctionParametersValidationNode\n' +
-            '    (\n' +
-            '      functionParameters = [businessDate:Date[1], accountNum:String[1]]\n' +
-            '    )\n' +
-            '    Relational\n' +
-            '    (\n' +
-            '      type = TDS[(name, String, "", ""), (prop1, Boolean, "", "")]\n' +
-            '      resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n' +
-            '      sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
-            '      connection = RelationalDatabaseConnection(type = "H2")\n' +
-            '    )\n' +
-            '  )\n' +
-            ')\n';
+            '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n' +
+            '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+            '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+            ')\n' ;
   assertEquals($expected, $result);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp2():Boolean[1]
 {
-   let result = meta::pure::executionPlan::executionPlan({businessDate: Date[1],accountNum: String[1]|
-                                              meta::relational::tests::m2m2r::Entitlement.all()
-                                              ->project([x|$x.name,x|$x.prop2],
-                                                            ['name','prop2']);},
+   let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
+                                                          ->project([x|$x.name,x|$x.prop2],
+                                                                    ['name','prop2']);},
 
                                               meta::relational::tests::m2m2r::AxionToModelMapping,
                                               meta::relational::tests::m2m2r::runtime(),
                                               meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
-  let expected = 'Sequence\n' +
+  let expected = 
+                'Relational\n' +
                 '(\n' +
                 '  type = TDS[(name, String, "", ""), (prop2, String, "", "")]\n' +
-                '  (\n' +
-                '    FunctionParametersValidationNode\n' +
-                '    (\n' +
-                '      functionParameters = [businessDate:Date[1], accountNum:String[1]]\n' +
-                '    )\n' +
-                '    Relational\n' +
-                '    (\n' +
-                '      type = TDS[(name, String, "", ""), (prop2, String, "", "")]\n' +
-                '      resultColumns = [("name", VARCHAR(200)), ("prop2", "")]\n' +
-                '      sql = select "root".name as "name", case when "sourceannouncement_0".description like \'%RECEIVE CASH%\' then \'Cash\' else \'Stock\' end as "prop2" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
-                '      connection = RelationalDatabaseConnection(type = "H2")\n' +
-                '    )\n' +
-                '  )\n' +
-                ')\n';
+                '  resultColumns = [("name", VARCHAR(200)), ("prop2", "")]\n' +
+                '  sql = select "root".name as "name", case when "sourceannouncement_0".description like \'%RECEIVE CASH%\' then \'Cash\' else \'Stock\' end as "prop2" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+                '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+                ')\n' ;
+               
     assertEquals($expected, $result);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp3():Boolean[1]
 {
-  let result = meta::pure::executionPlan::executionPlan({businessDate: Date[1],accountNum: String[1]|
-    meta::relational::tests::m2m2r::Entitlement.all()
-    ->project([x|$x.name,x|$x.prop3],
-                  ['name','prop3']);},
+  let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
+                                                          ->project([x|$x.name,x|$x.prop3],
+                                                                    ['name','prop3']);},
     meta::relational::tests::m2m2r::AxionToModelMapping,
     meta::relational::tests::m2m2r::runtime(),
     meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
-    let expected = 'Sequence\n' +
+    let expected = 
+                'Relational\n' +
                 '(\n' +
                 '  type = TDS[(name, String, "", ""), (prop3, Number, "", "")]\n' +
-                '  (\n' +
-                '    FunctionParametersValidationNode\n' +
-                '    (\n' +
-                '      functionParameters = [businessDate:Date[1], accountNum:String[1]]\n' +
-                '    )\n' +
-                '    Relational\n' +
-                '    (\n' +
-                '      type = TDS[(name, String, "", ""), (prop3, Number, "", "")]\n' +
-                '      resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
-                '      sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
-                '      connection = RelationalDatabaseConnection(type = "H2")\n' +
-                '    )\n' +
-                '  )\n' +
-                ')\n';
+                '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
+                '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+                '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+                ')\n' ;
     assertEquals($expected, $result);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp4():Boolean[1]
 {
-   let result = meta::pure::executionPlan::executionPlan({businessDate: Date[1],accountNum: String[1]|
+   let result = meta::pure::executionPlan::executionPlan({accountNum: String[1]|
                                               meta::relational::tests::m2m2r::Entitlement.all()
                                               ->filter(x|$x.prop4($accountNum))
                                               ->project([x|$x.name,x|$x.prop4($accountNum)],
@@ -109,13 +79,13 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
-                '      functionParameters = [businessDate:Date[1], accountNum:String[1]]\n' +
+                '      functionParameters = [accountNum:String[1]]\n' +
                 '    )\n' +
                 '    Relational\n' +
                 '    (\n' +
                 '      type = TDS[(name, String, "", ""), (prop4, Boolean, "", "")]\n' +
                 '      resultColumns = [("name", VARCHAR(200)), ("prop4", "")]\n' +
-                '      sql = select "root".name as "name", "sourceannouncement_0".name = \'${accountNum}\' as "prop4" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) where "sourceannouncement_0".name = \'${accountNum}\'\n' +
+                '      sql = select "root".name as "name", "sourceannouncement_0".name = \'${accountNum?replace("\'", "\'\'")}\' as "prop4" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) where "sourceannouncement_0".name = \'${accountNum?replace("\'", "\'\'")}\'\n' +
                 '      connection = RelationalDatabaseConnection(type = "H2")\n' +
                 '    )\n' +
                 '  )\n' +
