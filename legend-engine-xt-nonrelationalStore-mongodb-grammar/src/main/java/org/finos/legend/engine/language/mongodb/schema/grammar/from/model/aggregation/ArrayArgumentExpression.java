@@ -18,28 +18,10 @@ import java.util.List;
 
 public class ArrayArgumentExpression extends ArgumentExpression
 {
-
-    public FieldPathExpression field;
     public List<ArgumentExpression> expressions;
-
-    public ArrayArgumentExpression()
-    {
-
-    }
-
-    public ArrayArgumentExpression(FieldPathExpression field)
-    {
-        this.field = field;
-    }
 
     public ArrayArgumentExpression(List<ArgumentExpression> expressions)
     {
-        this.expressions = expressions;
-    }
-
-    public ArrayArgumentExpression(FieldPathExpression field, List<ArgumentExpression> expressions)
-    {
-        this.field = field;
         this.expressions = expressions;
     }
 }

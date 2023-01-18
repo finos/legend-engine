@@ -19,11 +19,6 @@ public class OperatorExpression extends ArgumentExpression
     public Operators operator;
     public ArgumentExpression expression;
 
-    public OperatorExpression(ArgumentExpression expression)
-    {
-        this.expression = expression;
-    }
-
     public OperatorExpression(Operators operator, ArgumentExpression expression)
     {
         this.operator = operator;

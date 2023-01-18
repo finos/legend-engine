@@ -42,7 +42,6 @@
                                     "path": "\"test3_3\""
                                   },
                                   "argument": {
-                                    "field": null,
                                     "expressions": [
                                       {
                                         "value": {
@@ -87,7 +86,6 @@
                                           "path": "\"test3_5_1\""
                                         },
                                         "argument": {
-                                          "field": null,
                                           "expressions": [
                                             {
                                               "arguments": [
@@ -110,7 +108,6 @@
                                                     "path": "\"test3_5_1_2\""
                                                   },
                                                   "argument": {
-                                                    "field": null,
                                                     "expressions": [
                                                       {
                                                         "value": {
