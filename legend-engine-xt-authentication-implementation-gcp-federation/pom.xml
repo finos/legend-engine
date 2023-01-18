@@ -183,6 +183,10 @@
                     <groupId>io.netty</groupId>
                     <artifactId>netty-transport-classes-epoll</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>software.amazon.awssdk</groupId>
+                    <artifactId>netty-nio-client</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
