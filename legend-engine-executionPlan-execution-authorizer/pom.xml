@@ -80,7 +80,7 @@
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
                             <logViolationsToConsole>true</logViolationsToConsole>
-                            <failOnViolation>false</failOnViolation>
+                            <failOnViolation>true</failOnViolation>
                             <violationSeverity>warning</violationSeverity>
                             <sourceDirectories>
                                 <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
