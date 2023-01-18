@@ -23,6 +23,7 @@ import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.PureServerConnectionConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
+import java.util.List;
 
 public class PureServerLoader
 {
@@ -44,14 +46,33 @@ public class PureServerLoader
         this.metaDataServerConfiguration = metaDataServerConfiguration;
     }
 
-    public String buildPureMetadataVersionURL(String urlSuffix)
+    public String getBaseUrl(String overrideUrl)
     {
-        return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/pureServerBaseVersion" + urlSuffix;
+        if (overrideUrl == null || overrideUrl.equals(metaDataServerConfiguration.getPure().getBaseUrl()))
+        {
+            return metaDataServerConfiguration.getPure().getBaseUrl();
+        }
+        List<String> allowedOverrideUrls = ((PureServerConnectionConfiguration)metaDataServerConfiguration.getPure()).allowedOverrideUrls;
+        if (allowedOverrideUrls.contains(overrideUrl))
+        {
+            return overrideUrl;
+        }
+        throw new RuntimeException(overrideUrl + " is not a valid metadata server url. Valid Urls are - " + allowedOverrideUrls);
+    }
+
+    public String buildPureMetadataVersionURL(String urlSuffix, String overrideUrl)
+    {
+        return getBaseUrl(overrideUrl) + "/alloy/pureServerBaseVersion" + urlSuffix;
     }
 
     protected String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix)
     {
-        return metaDataServerConfiguration.getPure().getBaseUrl() + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
+        return buildPureMetadataURL(pointer, urlSegment, clientVersion, urlSuffix, null);
+    }
+
+    protected String buildPureMetadataURL(PackageableElementPointer pointer, String urlSegment, String clientVersion, String urlSuffix, String overrideUrl)
+    {
+        return getBaseUrl(overrideUrl) + "/alloy/" + urlSegment + "/" + clientVersion + "/" + pointer.path + urlSuffix;
     }
 
     protected HttpUriRequest buildRequest(String url, MutableList<CommonProfile> profiles)
@@ -61,10 +82,10 @@ public class PureServerLoader
         return httpUriRequest;
     }
 
-    public String getBaseServerVersion(MutableList<CommonProfile> profiles, Subject executionSubject)
+    public String getBaseServerVersion(MutableList<CommonProfile> profiles, Subject executionSubject, String overrideUrl)
     {
         CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-        HttpUriRequest request = buildRequest(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos"), profiles);
+        HttpUriRequest request = buildRequest(buildPureMetadataVersionURL(executionSubject == null ? "" : "?auth=kerberos", overrideUrl), profiles);
         try (CloseableHttpResponse response = httpclient.execute(request))
         {
             int statusCode = response.getStatusLine().getStatusCode();
@@ -85,22 +106,28 @@ public class PureServerLoader
         PureModelContextPointer deepCopy = new PureModelContextPointer();
         PureSDLC sdlc = new PureSDLC();
         sdlc.packageableElementPointers = ((PureSDLC) ((PureModelContextPointer) context).sdlcInfo).packageableElementPointers;
+        sdlc.overrideUrl = getBaseUrl(((PureSDLC) ((PureModelContextPointer) context).sdlcInfo).overrideUrl);
         deepCopy.sdlcInfo = sdlc;
         deepCopy.serializer = ((PureModelContextPointer) context).serializer;
-        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(profiles, executionSubject);
+        deepCopy.sdlcInfo.baseVersion = this.getBaseServerVersion(profiles, executionSubject, ((PureSDLC) ((PureModelContextPointer) context).sdlcInfo).overrideUrl);
         return deepCopy;
     }
 
     public PureModelContextData loadPurePackageableElementPointer(MutableList<CommonProfile> pm, PackageableElementPointer pointer, String clientVersion, String urlSuffix)
     {
+        return loadPurePackageableElementPointer(pm, pointer, clientVersion, urlSuffix, null);
+    }
+
+    public PureModelContextData loadPurePackageableElementPointer(MutableList<CommonProfile> pm, PackageableElementPointer pointer, String clientVersion, String urlSuffix, String overrideUrl)
+    {
         switch (pointer.type)
         {
             case MAPPING:
-                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_MAPPING_START, LoggingEventType.METADATA_REQUEST_MAPPING_STOP, buildPureMetadataURL(pointer, "pureModelFromMapping", clientVersion, urlSuffix));
+                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_MAPPING_START, LoggingEventType.METADATA_REQUEST_MAPPING_STOP, buildPureMetadataURL(pointer, "pureModelFromMapping", clientVersion, urlSuffix, overrideUrl));
             case STORE:
-                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_STORE_START, LoggingEventType.METADATA_REQUEST_STORE_STOP, buildPureMetadataURL(pointer, "pureModelFromStore", clientVersion, urlSuffix));
+                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_STORE_START, LoggingEventType.METADATA_REQUEST_STORE_STOP, buildPureMetadataURL(pointer, "pureModelFromStore", clientVersion, urlSuffix, overrideUrl));
             case SERVICE:
-                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_SERVICE_START, LoggingEventType.METADATA_REQUEST_SERVICE_STOP, buildPureMetadataURL(pointer, "pureModelFromService", clientVersion, urlSuffix));
+                return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_SERVICE_START, LoggingEventType.METADATA_REQUEST_SERVICE_STOP, buildPureMetadataURL(pointer, "pureModelFromService", clientVersion, urlSuffix, overrideUrl));
             default:
                 throw new UnsupportedOperationException(pointer.type + " is not supported!");
         }

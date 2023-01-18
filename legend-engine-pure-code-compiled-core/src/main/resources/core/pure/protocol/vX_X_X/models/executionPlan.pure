@@ -312,6 +312,7 @@ Class meta::protocols::pure::vX_X_X::metamodel::SDLC
 
 Class meta::protocols::pure::vX_X_X::metamodel::PureSDLC extends meta::protocols::pure::vX_X_X::metamodel::SDLC
 {
+   overrideUrl : String[0..1];
    packageableElementPointers : meta::protocols::pure::vX_X_X::metamodel::PackageableElementPointer[*];
 }
 
