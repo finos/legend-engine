@@ -16,16 +16,16 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggre
 
 import java.util.List;
 
-public class AggregateExpression extends ArgumentExpression
+public class ObjectExpression extends ArgumentExpression
 {
     public List<ArgumentExpression> arguments;
 
-    public AggregateExpression()
+    public ObjectExpression()
     {
 
     }
 
-    public AggregateExpression(List<ArgumentExpression> arguments)
+    public ObjectExpression(List<ArgumentExpression> arguments)
     {
         this.arguments = arguments;
     }

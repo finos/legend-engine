@@ -5,94 +5,58 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": [
-              {
-                "field": {
-                  "path": "\"test\""
-                },
-                "expressions": [
-                  {
-                    "operator": null,
-                    "expression": {
-                      "argument": {
-                        "value": {
-                          "pattern": "\"ABC\""
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "operator": null,
-                    "expression": {
-                      "argument": {
-                        "value": {
-                          "pattern": "\"DEF\""
-                        }
-                      }
-                    }
-                  }
-                ],
-                "operator": "$eq"
+        "expression": {
+          "arguments": [
+            {
+              "field": {
+                "path": "\"test4\""
               },
-              {
-                "field": {
-                  "path": "\"test2\""
-                },
+              "argument": {
+                "field": null,
                 "expressions": [
                   {
-                    "operator": null,
-                    "expression": {
-                      "argument": {
-                        "value": {
-                          "pattern": 5
+                    "arguments": [
+                      {
+                        "field": {
+                          "path": "\"test4_1\""
+                        },
+                        "argument": {
+                          "value": {
+                            "pattern": 4
+                          }
+                        }
+                      },
+                      {
+                        "field": {
+                          "path": "\"test4_2\""
+                        },
+                        "argument": {
+                          "value": {
+                            "pattern": "\"value\""
+                          }
                         }
                       }
-                    }
+                    ]
                   },
                   {
-                    "operator": null,
-                    "expression": {
-                      "argument": {
-                        "value": {
-                          "pattern": 6
+                    "arguments": [
+                      {
+                        "field": {
+                          "path": "\"test4_3\""
+                        },
+                        "argument": {
+                          "value": {
+                            "pattern": 5
+                          }
                         }
                       }
-                    }
-                  }
-                ]
-              },
-              {
-                "field": {
-                  "path": "\"test3\""
-                },
-                "expressions": [
-                  {
-                    "operator": null,
-                    "expression": {
-                      "argument": {
-                        "value": {
-                          "pattern": "\"one\""
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "operator": null,
-                    "expression": {
-                      "argument": {
-                        "value": {
-                          "pattern": "\"two\""
-                        }
-                      }
-                    }
+                    ]
                   }
                 ]
               }
-            ]
-          }
-        ]
+            }
+          ]
+        }
       }
     ]
   }

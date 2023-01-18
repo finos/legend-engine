@@ -11,7 +11,7 @@
         },
         "test3": "testingg",
         "test4": {
-          "$eq": {
+          "$gt" : {
             "abd": 3,
             "ade": 4
           }

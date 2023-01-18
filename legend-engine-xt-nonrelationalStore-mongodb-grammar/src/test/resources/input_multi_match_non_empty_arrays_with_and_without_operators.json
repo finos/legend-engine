@@ -3,19 +3,14 @@
   "pipeline": [
     {
       "$match": {
-        "test": {
-          "$eq": [
-            "ABC",
-            "DEF"
-          ]
-        },
-        "test2": [
-          5,
-          6
-        ],
-        "test3": [
-          "one",
-          "two"
+        "test4": [
+          {
+            "test4_1": 4,
+            "test4_2": "value"
+          },
+          {
+            "test4_3": 5
+          }
         ]
       }
     }

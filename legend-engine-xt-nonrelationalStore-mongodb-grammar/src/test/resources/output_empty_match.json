@@ -5,11 +5,7 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": null
-          }
-        ]
+        "expression": null
       }
     ]
   }

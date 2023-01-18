@@ -5,31 +5,32 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": [
-              {
+        "expression": {
+          "arguments": [
+            {
+              "field": {
+                "path": "\"test\""
+              },
+              "argument": {
                 "operator": "$eq",
                 "expression": {
-                  "field": {
-                    "path": "\"test\""
-                  },
-                  "argument": {
-                    "value": {
-                      "pattern": "\"testingg\""
-                    }
+                  "value": {
+                    "pattern": "\"testingg\""
                   }
                 }
+              }
+            },
+            {
+              "field": {
+                "path": "\"test2\""
               },
-              {
-                "field": {
-                  "path": "\"test2\""
-                },
+              "argument": {
+                "field": null,
                 "expressions": []
               }
-            ]
-          }
-        ]
+            }
+          ]
+        }
       }
     ]
   }

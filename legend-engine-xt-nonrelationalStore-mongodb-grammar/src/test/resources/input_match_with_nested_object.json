@@ -1,0 +1,36 @@
+{
+  "aggregate": "firms",
+  "pipeline": [
+    {
+      "$match": {
+        "test": {
+          "$eq": {
+            "test1": {
+              "test2": {
+                "test3_2": "value2",
+                "test3_3": ["value3", "value4"],
+                "test3_4" : {
+                  "test3_4_1": 4
+                },
+                "test3_5": {
+                  "test3_5_1": [
+                    {
+                      "test3_5_1_1": "value5"
+                    },
+                    {
+                      "test3_5_1_2": [
+                        "value6",
+                        "value7"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "cursor": {}
+}

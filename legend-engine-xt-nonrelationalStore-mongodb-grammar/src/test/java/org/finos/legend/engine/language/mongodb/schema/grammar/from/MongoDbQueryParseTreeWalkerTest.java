@@ -139,7 +139,7 @@ public class MongoDbQueryParseTreeWalkerTest
     }
 
     @Test
-    public void testAggregateWithMultiMatchExpressionWithNumbersAndWithWithoutOperator() throws Exception
+    public void testAggregateWithMultiMatchExpressionWithGtWithAndWithoutOperator() throws Exception
     {
         String input = resourceAsString("input_multi_match_with_gt_with_without_operator.json");
         String expectedOutput = resourceAsString("output_multi_match_with_gt_with_without_operator.json");
@@ -153,7 +153,6 @@ public class MongoDbQueryParseTreeWalkerTest
     @Test
     public void testAggregateWithMultiMatchExpressionWithEmptyArrayWithoutOperator() throws JsonProcessingException
     {
-        // TODO: expressions for the empty array should be an empty array
         String input = resourceAsString("input_match_with_empty_array.json");
         String expectedOutput = resourceAsString("output_match_with_empty_array.json");
 
@@ -168,6 +167,18 @@ public class MongoDbQueryParseTreeWalkerTest
     {
         String input = resourceAsString("input_multi_match_non_empty_arrays_with_and_without_operators.json");
         String expectedOutput = resourceAsString("output_multi_match_non_empty_arrays_with_and_without_operators.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testAggregateWithComplicatedNestedStructure() throws Exception
+    {
+        String input = resourceAsString("input_match_with_nested_object.json");
+        String expectedOutput = resourceAsString("output_match_with_nested_object.json");
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 

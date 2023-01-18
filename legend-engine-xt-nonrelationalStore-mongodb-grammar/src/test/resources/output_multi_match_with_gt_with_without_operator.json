@@ -5,53 +5,53 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": [
-              {
+        "expression": {
+          "arguments": [
+            {
+              "field": {
+                "path": "\"test\""
+              },
+              "argument": {
                 "operator": "$gt",
                 "expression": {
-                  "field": {
-                    "path": "\"test\""
-                  },
-                  "argument": {
-                    "value": {
-                      "pattern": 3
-                    }
+                  "value": {
+                    "pattern": 3
                   }
                 }
+              }
+            },
+            {
+              "field": {
+                "path": "\"test2\""
               },
-              {
+              "argument": {
                 "operator": "$gt",
                 "expression": {
-                  "field": {
-                    "path": "\"test2\""
-                  },
-                  "argument": {
-                    "value": {
-                      "pattern": "\"USA\""
-                    }
+                  "value": {
+                    "pattern": "\"USA\""
                   }
                 }
+              }
+            },
+            {
+              "field": {
+                "path": "\"test3\""
               },
-              {
-                "operator": null,
+              "argument": {
+                "value": {
+                  "pattern": "\"testingg\""
+                }
+              }
+            },
+            {
+              "field": {
+                "path": "\"test4\""
+              },
+              "argument": {
+                "operator": "$gt",
                 "expression": {
-                  "field": {
-                    "path": "\"test3\""
-                  },
-                  "argument": {
-                    "value": {
-                      "pattern": "\"testingg\""
-                    }
-                  }
-                }
-              },
-              {
-                "arguments": [
-                  {
-                    "operator": null,
-                    "expression": {
+                  "arguments": [
+                    {
                       "field": {
                         "path": "\"abd\""
                       },
@@ -60,11 +60,8 @@
                           "pattern": 3
                         }
                       }
-                    }
-                  },
-                  {
-                    "operator": null,
-                    "expression": {
+                    },
+                    {
                       "field": {
                         "path": "\"ade\""
                       },
@@ -74,12 +71,12 @@
                         }
                       }
                     }
-                  }
-                ]
+                  ]
+                }
               }
-            ]
-          }
-        ]
+            }
+          ]
+        }
       }
     ]
   }

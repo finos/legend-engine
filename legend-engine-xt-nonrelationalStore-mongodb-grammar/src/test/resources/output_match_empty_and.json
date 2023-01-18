@@ -5,16 +5,10 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": [
-              {
-                "expressions": [],
-                "operators": "$and"
-              }
-            ]
-          }
-        ]
+        "expression": {
+          "expressions": [],
+          "operators": "$and"
+        }
       }
     ]
   }

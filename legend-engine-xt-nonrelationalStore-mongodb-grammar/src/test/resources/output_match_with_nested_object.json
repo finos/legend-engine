@@ -1,0 +1,151 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firms\"",
+  "aggregationPipeline": {
+    "stages": [
+      {
+        "stageName": "$match",
+        "expression": {
+          "arguments": [
+            {
+              "field": {
+                "path": "\"test\""
+              },
+              "argument": {
+                "operator": "$eq",
+                "expression": {
+                  "arguments": [
+                    {
+                      "field": {
+                        "path": "\"test1\""
+                      },
+                      "argument": {
+                        "arguments": [
+                          {
+                            "field": {
+                              "path": "\"test2\""
+                            },
+                            "argument": {
+                              "arguments": [
+                                {
+                                  "field": {
+                                    "path": "\"test3_2\""
+                                  },
+                                  "argument": {
+                                    "value": {
+                                      "pattern": "\"value2\""
+                                    }
+                                  }
+                                },
+                                {
+                                  "field": {
+                                    "path": "\"test3_3\""
+                                  },
+                                  "argument": {
+                                    "field": null,
+                                    "expressions": [
+                                      {
+                                        "value": {
+                                          "pattern": "\"value3\""
+                                        }
+                                      },
+                                      {
+                                        "value": {
+                                          "pattern": "\"value4\""
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "field": {
+                                    "path": "\"test3_4\""
+                                  },
+                                  "argument": {
+                                    "arguments": [
+                                      {
+                                        "field": {
+                                          "path": "\"test3_4_1\""
+                                        },
+                                        "argument": {
+                                          "value": {
+                                            "pattern": 4
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "field": {
+                                    "path": "\"test3_5\""
+                                  },
+                                  "argument": {
+                                    "arguments": [
+                                      {
+                                        "field": {
+                                          "path": "\"test3_5_1\""
+                                        },
+                                        "argument": {
+                                          "field": null,
+                                          "expressions": [
+                                            {
+                                              "arguments": [
+                                                {
+                                                  "field": {
+                                                    "path": "\"test3_5_1_1\""
+                                                  },
+                                                  "argument": {
+                                                    "value": {
+                                                      "pattern": "\"value5\""
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "arguments": [
+                                                {
+                                                  "field": {
+                                                    "path": "\"test3_5_1_2\""
+                                                  },
+                                                  "argument": {
+                                                    "field": null,
+                                                    "expressions": [
+                                                      {
+                                                        "value": {
+                                                          "pattern": "\"value6\""
+                                                        }
+                                                      },
+                                                      {
+                                                        "value": {
+                                                          "pattern": "\"value7\""
+                                                        }
+                                                      }
+                                                    ]
+                                                  }
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

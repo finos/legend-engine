@@ -5,43 +5,42 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": [
-              {
-                "expressions": [
-                  {
+        "expression": {
+          "expressions": [
+            {
+              "arguments": [
+                {
+                  "field": {
+                    "path": "\"fName\""
+                  },
+                  "argument": {
                     "operator": "$eq",
                     "expression": {
-                      "field": {
-                        "path": "\"fName\""
-                      },
-                      "argument": {
-                        "value": {
-                          "pattern": "\"Peter\""
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "operator": null,
-                    "expression": {
-                      "field": {
-                        "path": "\"lName\""
-                      },
-                      "argument": {
-                        "value": {
-                          "pattern": "\"Smith\""
-                        }
+                      "value": {
+                        "pattern": "\"Peter\""
                       }
                     }
                   }
-                ],
-                "operators": "$or"
-              }
-            ]
-          }
-        ]
+                }
+              ]
+            },
+            {
+              "arguments": [
+                {
+                  "field": {
+                    "path": "\"lName\""
+                  },
+                  "argument": {
+                    "value": {
+                      "pattern": "\"Smith\""
+                    }
+                  }
+                }
+              ]
+            }
+          ],
+          "operators": "$or"
+        }
       }
     ]
   }

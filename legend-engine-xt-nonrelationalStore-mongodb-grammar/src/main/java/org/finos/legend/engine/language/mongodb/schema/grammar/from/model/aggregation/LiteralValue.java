@@ -16,11 +16,11 @@ package org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggre
 
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.BaseType;
 
-public class LiteralExpression extends ArgumentExpression
+public class LiteralValue extends ArgumentExpression
 {
     public BaseType value;
 
-    public LiteralExpression(BaseType value)
+    public LiteralValue(BaseType value)
     {
         this.value = value;
     }

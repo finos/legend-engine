@@ -19,11 +19,10 @@ import java.util.List;
 public class MatchStage extends Stage
 {
     public String stageName;
-    public List<AggregateExpression> expression;
+    public ArgumentExpression expression;
 
-    public MatchStage(List<AggregateExpression> expression)
+    public MatchStage()
     {
         this.stageName = "$match";
-        this.expression = expression;
     }
 }

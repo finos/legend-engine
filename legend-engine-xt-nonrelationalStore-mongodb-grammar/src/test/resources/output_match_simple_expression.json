@@ -5,25 +5,20 @@
     "stages": [
       {
         "stageName": "$match",
-        "expression": [
-          {
-            "arguments": [
-              {
-                "operator": null,
-                "expression": {
-                  "field": {
-                    "path": "\"test\""
-                  },
-                  "argument": {
-                    "value": {
-                      "pattern": "\"testingg\""
-                    }
-                  }
+        "expression": {
+          "arguments": [
+            {
+              "field": {
+                "path": "\"test\""
+              },
+              "argument": {
+                "value": {
+                  "pattern": "\"testingg\""
                 }
               }
-            ]
-          }
-        ]
+            }
+          ]
+        }
       }
     ]
   }
