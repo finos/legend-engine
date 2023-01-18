@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
 import org.junit.Test;
+import utils.CustomJSONPrettyPrinter;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -37,8 +38,7 @@ import static org.junit.Assert.assertEquals;
 
 public class MongoDbQueryParseTreeWalkerTest
 {
-
-    private final ObjectMapper mapper = new ObjectMapper()
+    private final ObjectMapper mapper = new ObjectMapper().setDefaultPrettyPrinter(new CustomJSONPrettyPrinter())
             .enable(SerializationFeature.INDENT_OUTPUT)
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
@@ -48,19 +48,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_empty_pipeline.json");
         String expectedOutput = resourceAsString("output_empty_pipeline.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -72,19 +60,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_empty_match.json");
         String expectedOutput = resourceAsString("output_empty_match.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -96,19 +72,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_match_simple_expression.json");
         String expectedOutput = resourceAsString("output_match_simple_expression.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -120,19 +84,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_match_with_operator.json");
         String expectedOutput = resourceAsString("output_match_with_operator.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -144,19 +96,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_two_match_with_operators.json");
         String expectedOutput = resourceAsString("output_two_match_with_operators.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -168,19 +108,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_two_or_match_with_and_without_operator.json");
         String expectedOutput = resourceAsString("output_two_or_match_with_and_without_operator.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -192,19 +120,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_two_and_match_with_and_without_operator.json");
         String expectedOutput = resourceAsString("output_two_and_match_with_and_without_operator.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -216,19 +132,7 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_match_empty_and.json");
         String expectedOutput = resourceAsString("output_match_empty_and.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -240,44 +144,20 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_multi_match_with_gt_with_without_operator.json");
         String expectedOutput = resourceAsString("output_multi_match_with_gt_with_without_operator.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
 
     @Test
-    public void testAggregateWithMultiMatchExpressionWithEmptyArrayWithoutOperator() throws Exception
+    public void testAggregateWithMultiMatchExpressionWithEmptyArrayWithoutOperator() throws JsonProcessingException
     {
         // TODO: expressions for the empty array should be an empty array
         String input = resourceAsString("input_match_with_empty_array.json");
         String expectedOutput = resourceAsString("output_match_with_empty_array.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
@@ -289,34 +169,32 @@ public class MongoDbQueryParseTreeWalkerTest
         String input = resourceAsString("input_multi_match_non_empty_arrays_with_and_without_operators.json");
         String expectedOutput = resourceAsString("output_multi_match_non_empty_arrays_with_and_without_operators.json");
 
-        MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
-
-        CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
-        MongoDbQueryListener listener = new MongoDbQueryBaseListener();
-        parser.addParseListener(listener);
-
-        MongoDbQueryParser.DatabaseCommandContext commandContext = parser.databaseCommand();
-
-        MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
-        walker.visit(commandContext);
-
-        DatabaseCommand databaseCommand = walker.getCommand();
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
 
-    @Test
-    public void testAggregateMatchExpressionWithNestedObject() throws Exception
+
+    private MongoDbQueryParser getParser(CommonTokenStream tokens)
     {
-        String input = resourceAsString("input_match_with_nested_object.json");
-        String expectedOutput = resourceAsString("output_match_with_nested_object.json");
+
+        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+
+        parser.removeErrorListeners();
+        parser.addErrorListener(AntlrThrowingErrorListener.INSTANCE);
+        return parser;
+    }
+
+
+    private DatabaseCommand parseAndWalkDatabaseCommand(String input)
+    {
 
         MongoDbQueryLexer programLexer = new MongoDbQueryLexer(CharStreams.fromString(input));
 
         CommonTokenStream tokens = new CommonTokenStream(programLexer);
-        MongoDbQueryParser parser = new MongoDbQueryParser(tokens);
+        MongoDbQueryParser parser = getParser(tokens);
+
         MongoDbQueryListener listener = new MongoDbQueryBaseListener();
         parser.addParseListener(listener);
 
@@ -325,13 +203,10 @@ public class MongoDbQueryParseTreeWalkerTest
         MongoDbQueryParseTreeWalker walker = new MongoDbQueryParseTreeWalker();
         walker.visit(commandContext);
 
-        DatabaseCommand databaseCommand = walker.getCommand();
-
-        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
-
+        return walker.getCommand();
     }
 
-    protected String resourceAsString(String path)
+    private String resourceAsString(String path)
     {
         byte[] bytes;
         try
@@ -342,7 +217,6 @@ public class MongoDbQueryParseTreeWalkerTest
         {
             throw new RuntimeException(e);
         }
-        String string = new String(bytes, StandardCharsets.UTF_8);
-        return string;
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }

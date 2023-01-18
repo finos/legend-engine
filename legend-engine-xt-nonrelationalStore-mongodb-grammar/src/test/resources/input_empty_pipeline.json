@@ -1,1 +1,5 @@
-{ "aggregate": "firms", "pipeline": [  ], "cursor": { } }
+{
+  "aggregate": "firms",
+  "pipeline": [],
+  "cursor": {}
+}

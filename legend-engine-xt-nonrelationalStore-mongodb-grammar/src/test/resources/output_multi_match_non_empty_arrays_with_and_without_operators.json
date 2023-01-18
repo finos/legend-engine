@@ -1,82 +1,99 @@
 {
-  "type" : "aggregate",
-  "collectionName" : "\"firms\"",
-  "aggregationPipeline" : {
-    "stages" : [ {
-      "stageName" : "$match",
-      "expression" : [ {
-        "arguments" : [ {
-          "field" : {
-            "path" : "\"test\""
-          },
-          "expressions" : [ {
-            "operator" : null,
-            "expression" : {
-              "argument" : {
-                "value" : {
-                  "pattern" : "\"ABC\""
-                }
+  "type": "aggregate",
+  "collectionName": "\"firms\"",
+  "aggregationPipeline": {
+    "stages": [
+      {
+        "stageName": "$match",
+        "expression": [
+          {
+            "arguments": [
+              {
+                "field": {
+                  "path": "\"test\""
+                },
+                "expressions": [
+                  {
+                    "operator": null,
+                    "expression": {
+                      "argument": {
+                        "value": {
+                          "pattern": "\"ABC\""
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "operator": null,
+                    "expression": {
+                      "argument": {
+                        "value": {
+                          "pattern": "\"DEF\""
+                        }
+                      }
+                    }
+                  }
+                ],
+                "operator": "$eq"
+              },
+              {
+                "field": {
+                  "path": "\"test2\""
+                },
+                "expressions": [
+                  {
+                    "operator": null,
+                    "expression": {
+                      "argument": {
+                        "value": {
+                          "pattern": 5
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "operator": null,
+                    "expression": {
+                      "argument": {
+                        "value": {
+                          "pattern": 6
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "field": {
+                  "path": "\"test3\""
+                },
+                "expressions": [
+                  {
+                    "operator": null,
+                    "expression": {
+                      "argument": {
+                        "value": {
+                          "pattern": "\"one\""
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "operator": null,
+                    "expression": {
+                      "argument": {
+                        "value": {
+                          "pattern": "\"two\""
+                        }
+                      }
+                    }
+                  }
+                ]
               }
-            }
-          }, {
-            "operator" : null,
-            "expression" : {
-              "argument" : {
-                "value" : {
-                  "pattern" : "\"DEF\""
-                }
-              }
-            }
-          } ],
-          "operator" : "$eq"
-        }, {
-          "field" : {
-            "path" : "\"test2\""
-          },
-          "expressions" : [ {
-            "operator" : null,
-            "expression" : {
-              "argument" : {
-                "value" : {
-                  "pattern" : 5
-                }
-              }
-            }
-          }, {
-            "operator" : null,
-            "expression" : {
-              "argument" : {
-                "value" : {
-                  "pattern" : 6
-                }
-              }
-            }
-          } ]
-        }, {
-          "field" : {
-            "path" : "\"test3\""
-          },
-          "expressions" : [ {
-            "operator" : null,
-            "expression" : {
-              "argument" : {
-                "value" : {
-                  "pattern" : "\"one\""
-                }
-              }
-            }
-          }, {
-            "operator" : null,
-            "expression" : {
-              "argument" : {
-                "value" : {
-                  "pattern" : "\"two\""
-                }
-              }
-            }
-          } ]
-        } ]
-      } ]
-    } ]
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

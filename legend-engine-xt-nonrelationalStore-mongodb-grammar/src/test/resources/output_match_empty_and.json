@@ -1,15 +1,21 @@
 {
-  "type" : "aggregate",
-  "collectionName" : "\"person\"",
-  "aggregationPipeline" : {
-    "stages" : [ {
-      "stageName" : "$match",
-      "expression" : [ {
-        "arguments" : [ {
-          "expressions" : [ ],
-          "operators" : "$and"
-        } ]
-      } ]
-    } ]
+  "type": "aggregate",
+  "collectionName": "\"person\"",
+  "aggregationPipeline": {
+    "stages": [
+      {
+        "stageName": "$match",
+        "expression": [
+          {
+            "arguments": [
+              {
+                "expressions": [],
+                "operators": "$and"
+              }
+            ]
+          }
+        ]
+      }
+    ]
   }
 }
