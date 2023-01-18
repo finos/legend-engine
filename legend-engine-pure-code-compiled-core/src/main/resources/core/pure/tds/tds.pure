@@ -825,3 +825,8 @@ function meta::pure::tds::groupByWithWindowSubset<K,V,U>(set:K[*], functions:met
    meta::pure::tds::groupBy( $set, $subSetfunctions ,$newAggValues , $newIds  );
 
 }
+
+function meta::pure::tds::testEnumAccess(): SortDirection[1]
+{
+    SortDirection.DESC;
+}

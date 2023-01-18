@@ -68,6 +68,7 @@ public class InterpretedMetadata implements Metadata
     @Override
     public CoreInstance getEnum(String s, String s1)
     {
+//        throw new RuntimeException("TODO - enum not supported!");
         return Enumeration.findEnum(this.getMetadata(MetadataJavaPaths.Enumeration, s), s1);
     }
 }

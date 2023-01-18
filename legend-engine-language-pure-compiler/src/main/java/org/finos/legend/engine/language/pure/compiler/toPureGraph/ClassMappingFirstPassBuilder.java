@@ -101,6 +101,9 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     @Override
     public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(PureInstanceClassMapping classMapping)
     {
+        // test enum access from engine compile into pure generated functions
+        org.finos.legend.pure.generated.core_pure_tds_tds.Root_meta_pure_tds_testEnumAccess__SortDirection_1_(this.context.getExecutionSupport());
+
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = this.context.resolveClass(classMapping._class, classMapping.sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> srcClass = classMapping.srcClass == null ? null : this.context.resolveClass(classMapping.srcClass, classMapping.sourceClassSourceInformation);
         PureInstanceSetImplementation mappingClass = new Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::pure::mapping::modelToModel::PureInstanceSetImplementation"));

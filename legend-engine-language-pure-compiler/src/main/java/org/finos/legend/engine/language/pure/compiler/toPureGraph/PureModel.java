@@ -464,7 +464,6 @@ public class PureModel implements IPureModel
         pure.classes.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
         pure.enumerations.forEach(el -> visitWithErrorHandling(el, new PackageableElementFourthPassBuilder(this.getContext(el))));
         pure.associations.forEach(el -> visitWithErrorHandling(el, new PackageableElementThirdPassBuilder(this.getContext(el))));
-        pure.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
     }
 
     private void loadDataElements(PureModelContextDataIndex pure)
@@ -508,6 +507,7 @@ public class PureModel implements IPureModel
 
     private void loadOtherElementsPostConnectionsAndRuntimes(PureModelContextDataIndex pure)
     {
+        pure.functions.forEach(el -> visitWithErrorHandling(el, new PackageableElementSecondPassBuilder(this.getContext(el))));
         loadOtherElements(pure, p -> p.getPrerequisiteClasses().contains(PackageableConnection.class) || p.getPrerequisiteClasses().contains(PackageableRuntime.class));
     }
 

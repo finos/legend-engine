@@ -1,0 +1,161 @@
+import meta::pure::metamodel::serialization::grammar::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::*;
+import meta::pure::runtime::*;
+function go():Any[*]
+{
+  //fullInterpreted();
+  mixed();
+}
+
+
+function mixed():Any[*]
+{
+    let extensions = meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);
+  let toCompile = 'Class test::_S_Person\n'
+ + '{\n'
+ + '   fullName: String[1];\n'
+ + '   birthDate: DateTime[1];\n'
+ + '}\n'
+ + '\n'
+ + 'Class test::Person\n'
+ + '{\n'
+ + '   firstName : String[1];\n'
+ + '   lastName : String[1];\n'
+ + '   birthDate: DateTime[1];\n'
+ + '   name(sep: String[1], firstNameFirst: Boolean[1]){\n'
+ + '      $firstNameFirst->if(|$this.firstName + $sep + $this.lastName, |$this.lastName + $sep + $this.firstName);\n'
+ + '   }:String[1];\n'
+ + '   age(asOf: Date[1]){\n'
+ + '      dateDiff($this.birthDate, $asOf, DurationUnit.YEARS);\n'
+ + '   }:Integer[1];\n'
+ + '}\n'
+ + '\n'
+ + '###Runtime\n'
+ + 'Runtime test::Runtime\n'
+ + '{\n'
+ + ' mappings: [test::simpleModelMapping];\n'
+ + ' connections:\n'
+ + '  [\n'
+ + '   ModelStore:\n'
+ + '   [\n'
+ + '      connection_1:\n'
+ + '      #{\n'
+ + '        JsonModelConnection\n'
+ + '        {\n'
+ + '          class: test::_S_Person;\n'
+ + '          url: \'data:application/json,\\n{"fullName": "Pierre Doe", "birthDate":"1978-04-12T12:23:00.000"}\\n{"fullName": "Pierre XE", "birthDate":"1989-06-12T12:23:00.000"}\\n{"fullName": "_Hey Yo", "birthDate":"1900-04-12T12:23:00.000"}\';\n'
+ + '        }\n'
+ + '      }#\n'
+ + '    ]\n'
+ + '  ];\n'
+ + '}\n'
+ + '\n'
+ + '\n'
+ + '###Mapping\n'
+ + 'Mapping test::simpleModelMapping\n'
+ + '(\n'
+ + '   test::Person : Pure\n'
+ + '            {\n'
+ + '               ~src test::_S_Person\n'
+ + '               firstName     : $src.fullName->substring(0, $src.fullName->indexOf(\' \')),\n'
+ + '               lastName      : $src.fullName->substring($src.fullName->indexOf(\' \')+1, $src.fullName->length()),\n'
+ + '               birthDate     : $src.birthDate\n'
+ + '            }\n'
+ + ')\n'
+ + '###Pure\n'
+ + 'function test::toExecute(): Any[*]{ |test::Person.all()->from(test::simpleModelMapping, test::Runtime)->graphFetch(#{test::Person{firstName, lastName}}#)}';
+
+  let compiled = meta::legend::compile($toCompile);
+  // $compiled->map(x | $x->elementToPath())->println();
+
+  let toExecute = $compiled
+                 ->filter(x | $x->elementToPath() == 'test::toExecute__Any_MANY_')
+                 ->cast(@Function<{->Any[*]}>)->toOne()
+                 // if uncommented, ends on NPE given missing classifiers on a core instances
+                 // ->eval()->toOne()->cast(@FunctionDefinition<Any>)
+                 ;
+
+  // code will fail with class cass exception
+  /*
+  Caused by: java.lang.ClassCastException: class org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.ValCoreInstance cannot be cast to class org.finos.legend.pure.m4.coreinstance.primitive.StringCoreInstance (org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.ValCoreInstance and org.finos.legend.pure.m4.coreinstance.primitive.StringCoreInstance are in unnamed module of loader 'app')
+	  at org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpressionInstance.addKeyValue(SimpleFunctionExpressionInstance.java:1157)
+	  at org.finos.legend.pure.m3.navigation.Instance.addValueToProperty(Instance.java:90)
+	  at org.finos.legend.pure.runtime.java.interpreted.natives.core.lang.Copy.copy(Copy.java:204)
+	  at org.finos.legend.pure.runtime.java.interpreted.natives.core.lang.Copy.execute(Copy.java:165)
+	  at org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted.executeFunction(FunctionExecutionInterpreted.java:615)
+	... 167 more
+  */
+  printFunctionDefinition($toExecute->cast(@FunctionDefinition<Any>), ' ')->println();
+
+  let plan = meta::pure::executionPlan::executionPlan($toExecute->cast(@FunctionDefinition<Any>), ^ExecutionContext(), $extensions);
+
+  let id = meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId();
+
+  let config = ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig();
+
+  let withCode = meta::pure::executionPlan::generatePlatformCode($plan, $id, $config, $extensions);
+
+  // meta::json::toJSON($plan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions), 1000, meta::json::config(false, false, true, true))->println();
+}
+
+function fullInterpreted():Any[*]
+{
+  let extensions = meta::external::shared::format::executionPlan::platformBinding::legendJava::bindingExtensionsWithLegendJavaPlatformBinding([]);
+
+    let runtime = ^Runtime(
+                      connections = [
+                        ^JsonModelConnection(
+                          element = ^ModelStore(),
+                          class = test2::_S_Person,
+                          url = 'data:application/json,\n{"fullName": "Pierre Doe", "birthDate":"1978-04-12T12:23:00.000"}\n{"fullName": "Pierre XE", "birthDate":"1989-06-12T12:23:00.000"}\n{"fullName": "_Hey Yo", "birthDate":"1900-04-12T12:23:00.000"}'
+                        )
+                      ]
+                    );
+  let toExecute = |test2::Person.all()->from(test2::simpleModelMapping, $runtime)->graphFetch(#{test2::Person{firstName, lastName}}#);
+
+ printFunctionDefinition($toExecute, ' ')->println();
+
+  let plan = meta::pure::executionPlan::executionPlan($toExecute, ^ExecutionContext(), $extensions);
+
+  meta::json::toJSON($plan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions), 1000, meta::json::config(false, false, true, true))->println();
+
+  let id = meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId();
+
+  let config = ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig();
+
+  let withCode = meta::pure::executionPlan::generatePlatformCode($plan, $id, $config, $extensions);
+
+}
+
+Class test2::_S_Person
+{
+   fullName: String[1];
+   birthDate: DateTime[1];
+}
+
+Class test2::Person
+{
+   firstName : String[1];
+   lastName : String[1];
+   birthDate: DateTime[1];
+   name(sep: String[1], firstNameFirst: Boolean[1]){
+      $firstNameFirst->if(|$this.firstName + $sep + $this.lastName, |$this.lastName + $sep + $this.firstName);
+   }:String[1];
+   age(asOf: Date[1]){
+      dateDiff($this.birthDate, $asOf, DurationUnit.YEARS);
+   }:Integer[1];
+}
+
+###Mapping
+Mapping test2::simpleModelMapping
+(
+   test2::Person : Pure
+            {
+               ~src test2::_S_Person
+               firstName     : $src.fullName->substring(0, $src.fullName->indexOf(' ')),
+               lastName      : $src.fullName->substring($src.fullName->indexOf(' ')+1, $src.fullName->length()),
+               birthDate     : $src.birthDate
+            }
+)
