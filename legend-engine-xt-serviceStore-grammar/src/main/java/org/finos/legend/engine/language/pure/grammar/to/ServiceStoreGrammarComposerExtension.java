@@ -137,7 +137,7 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
             {
                 ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
                 return context.getIndentationString() + id + " : ApiKey\n" +
-                        context.getIndentationString() + getTabString(2) +"{\n" +
+                        context.getIndentationString() + getTabString(2) + "{\n" +
                         context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(scheme.location, true) + ";\n" +
                         context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
                         context.getIndentationString() + getTabString(2) + "}";

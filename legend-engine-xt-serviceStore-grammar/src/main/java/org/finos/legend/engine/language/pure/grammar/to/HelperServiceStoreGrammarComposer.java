@@ -81,7 +81,7 @@ public class HelperServiceStoreGrammarComposer
     {
         if (securitySchemes != null && !securitySchemes.isEmpty())
         {
-            builder.append(context.getIndentationString()).append(PureGrammarComposerUtility.getTabString(1)).append("securitySchemes ").append(": ").append("{\n").append(PureGrammarComposerUtility.getTabString(2)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), context)).makeString(",\n"+getTabString(2))).append("\n").append(getTabString()).append("};\n");
+            builder.append(context.getIndentationString()).append(PureGrammarComposerUtility.getTabString(1)).append("securitySchemes ").append(": ").append("{\n").append(PureGrammarComposerUtility.getTabString(2)).append(MapIterate.toListOfPairs(securitySchemes).collect(pair -> renderSecurityScheme(pair.getOne(), pair.getTwo(), context)).makeString(",\n" + getTabString(2))).append("\n").append(getTabString()).append("};\n");
         }
     }
 
