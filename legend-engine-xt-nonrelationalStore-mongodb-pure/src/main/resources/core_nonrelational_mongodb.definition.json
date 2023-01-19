@@ -1,5 +1,5 @@
 {
   "name" : "core_nonrelational_mongodb",
   "pattern" : "(meta::external::store::mongodb|meta::external::store::mongodb::tests|meta::protocols::pure|meta::pure::mapping|meta::pure::executionPlan|meta::pure::legend::connections|meta::pure::alloy::connections|meta::pure::router|meta::pure::graphFetch)(::.*)?",
-  "dependencies" : ["platform", "core", "core_external_format_json"]
+  "dependencies" : ["platform", "core"]
 }

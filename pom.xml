@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.32.1-SNAPSHOT</version>
+    <version>3.33.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -164,6 +164,9 @@
 
         <module>legend-engine-pure-code-compiled-core</module>
 
+        <module>legend-engine-xt-changetoken-pure</module>
+        <module>legend-engine-xt-changetoken-compiler</module>
+
         <module>legend-engine-pure-ide-light</module>
         <module>legend-engine-pure-ide-light-pure</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
@@ -231,6 +234,7 @@
         <module>legend-engine-xt-sql-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-pure</module>
         <module>legend-engine-xt-nonrelationalStore-mongodb-grammar</module>
+        <module>legend-engine-xt-nonrelationalStore-mongodb-protocol</module>
     </modules>
 
     <properties>
@@ -1536,6 +1540,19 @@
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-grammar</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
@@ -1583,6 +1600,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-nonrelationalStore-mongodb-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-nonrelationalStore-mongodb-protocol</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->

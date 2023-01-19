@@ -120,7 +120,7 @@ Class meta::external::store::mongodb::metamodel::MinKeyType extends BsonType
 {  
 }
 
-Class meta::external::store::mongodb::metamodel::MaxKeyype extends BsonType
+Class meta::external::store::mongodb::metamodel::MaxKeyType extends BsonType
 {  
 }
 
@@ -141,6 +141,7 @@ Class meta::external::store::mongodb::metamodel::CollectionView extends ObjectTy
 
 Class meta::external::store::mongodb::metamodel::MongoDatabase
 {
+  name: String[1];
   collections: Collection[*];
   views: CollectionView[*];
 }

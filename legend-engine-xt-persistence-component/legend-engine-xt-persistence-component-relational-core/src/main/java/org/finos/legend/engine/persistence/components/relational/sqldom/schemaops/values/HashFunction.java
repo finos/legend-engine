@@ -29,8 +29,9 @@ public class HashFunction extends Value
     private HashAlgorithm algorithm;
     private List<Value> values;
 
-    public HashFunction(HashAlgorithm algorithm)
+    public HashFunction(HashAlgorithm algorithm, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.algorithm = algorithm;
         this.values = new ArrayList<>();
     }
@@ -45,7 +46,7 @@ public class HashFunction extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        Function concatFunction = new Function(FunctionName.CONCAT, values);
+        Function concatFunction = new Function(FunctionName.CONCAT, values, getQuoteIdentifier());
         builder.append(algorithm.name());
         builder.append(OPEN_PARENTHESIS);
         concatFunction.genSqlWithoutAlias(builder);

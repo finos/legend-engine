@@ -73,6 +73,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             "Class test::Person\n" +
             "{\n" +
             "  fullName: String[1];\n" +
+            "  firmAddressName() { $this.firm.address.name } : String[0..1];\n" +
             "}\n" +
             "\n" +
             "Class test::Firm\n" +
@@ -101,6 +102,11 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             "{\n" +
             "  firms: test::Firm[*];\n" +
             "  address: test::Address[0..1];  \n" +
+            "}\n" +
+            "Association test::Person_FirmAddress\n" +
+            "{\n" +
+            "  firmPersons: test::Person[*];\n" +
+            "  firmAddress: test::Address[0..1];  \n" +
             "}\n\n\n";
 
     private static final String STORE_MODEL = "###Relational\n" +
@@ -161,6 +167,9 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
             "  test::Firm_Address : XStore {\n" +
             "    firms[test_Address, test_Firm]: $this.name == $that.addressName,\n" +
             "    address[test_Firm, test_Address]: $this.addressName == $that.name\n" +
+            "  }\n" +
+            "  test::Person_FirmAddress : XStore {\n" +
+            "    firmAddress[test_Person, test_Address]: $this.firmAddressName() == $that.name\n" +
             "  }\n" +
             ")\n\n\n";
 
@@ -563,6 +572,50 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
         Assert.assertEquals(Sets.mutable.with("RelationalCrossObjectGraphFetchCacheKey{A3}", "RelationalCrossObjectGraphFetchCacheKey{A2}", "RelationalCrossObjectGraphFetchCacheKey{A1}", "RelationalCrossObjectGraphFetchCacheKey{NULL}"), addressGuavaCache.asMap().keySet().stream().map(GraphFetchCacheKey::getStringIdentifier).collect(Collectors.toSet()));
     }
 
+    @Test
+    public void testCachingOnNoArgQualifiers() throws JavaCompileException
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): String[1]\n" +
+                "{\n" +
+                "  test::Person.all()\n" +
+                "    ->graphFetch(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firmAddress {\n" +
+                "          name\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#, 1)\n" +
+                "    ->serialize(#{\n" +
+                "      test::Person {\n" +
+                "        fullName,\n" +
+                "        firmAddress {\n" +
+                "          name\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }#)\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
+        GraphFetchCacheByTargetCrossKeys firmAddressCache = getFirmAddressCache(plan);
+        PlanExecutionContext context = new PlanExecutionContext(plan, Lists.mutable.of(firmAddressCache));
+
+        String expectedRes = "[" +
+                "{\"fullName\":\"P1\",\"firmAddress\":{\"name\":\"A4\"}}," +
+                "{\"fullName\":\"P2\",\"firmAddress\":{\"name\":\"A3\"}}," +
+                "{\"fullName\":\"P3\",\"firmAddress\":null}," +
+                "{\"fullName\":\"P4\",\"firmAddress\":null}," +
+                "{\"fullName\":\"P5\",\"firmAddress\":{\"name\":\"A4\"}}" +
+                "]";
+
+        Assert.assertEquals(expectedRes, executePlan(plan, context));
+        assertCacheStats(firmAddressCache.getExecutionCache(), 3, 5, 2, 3);
+
+        Assert.assertEquals(expectedRes, executePlan(plan, context));
+        assertCacheStats(firmAddressCache.getExecutionCache(), 3, 10, 7, 3);
+    }
+
     private GraphFetchCacheByTargetCrossKeys getFirmEmptyCache(SingleExecutionPlan plan)
     {
         return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
@@ -599,6 +652,14 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                         cache,
                         Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.address>")).findFirst().orElse(null))
                 )
+        );
+    }
+
+    private GraphFetchCacheByTargetCrossKeys getFirmAddressCache(SingleExecutionPlan plan)
+    {
+        return ExecutionCacheBuilder.buildGraphFetchCacheByTargetCrossKeysFromGuavaCache(
+                CacheBuilder.newBuilder().recordStats().expireAfterWrite(10, TimeUnit.MINUTES).build(),
+                Objects.requireNonNull(GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firmAddress>")).findFirst().orElse(null))
         );
     }
 

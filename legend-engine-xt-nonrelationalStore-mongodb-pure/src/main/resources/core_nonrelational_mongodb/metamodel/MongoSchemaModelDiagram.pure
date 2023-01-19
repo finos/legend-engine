@@ -135,17 +135,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_16(
-        type=meta::external::store::mongodb::metamodel::MaxKeyype,
-        position=(-138.88493, 715.38185),
-        width=86.03516,
-        height=30.00000,
-        stereotypesVisible=true,
-        attributesVisible=true,
-        attributeStereotypesVisible=true,
-        attributeTypesVisible=true,
-        color=#FFFFCC,
-        lineWidth=1.0)
 
     TypeView cview_7(
         type=meta::external::store::mongodb::metamodel::DateType,
@@ -375,14 +364,6 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_12(
-        source=cview_16,
-        target=cview_5,
-        points=[(-95.86735,730.38185),(100.58239,375.15923)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_13(
         source=cview_17,

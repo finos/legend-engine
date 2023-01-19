@@ -111,10 +111,13 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 {
    let functionParameters = $f->stubFuncParameters();
    
+   print(if($debugContext.debug,|'\nGenerating Execution Plan:\n',|''));
    let node = if ($clusters->size() == 1,
-       | $clusters->at(0)->plan($inScopeVars, $context, $extensions, $debugContext),
+       | print(if($debugContext.debug,|'Generating plan for cluster: '+$clusters->at(0)->meta::pure::router::printer::asString()+'\n',|''));
+         $clusters->at(0)->plan($inScopeVars, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));,
        | let allNodes = $clusters->fold({c,a|let x = $a.vars;
-                                             let node = $c->plan($x, $context, $extensions, $debugContext);
+                                             print(if($debugContext.debug,|'Generating plan for cluster: '+$c->meta::pure::router::printer::asString()+'\n',|''));
+                                             let node = $c->plan($x, $context, $extensions, ^$debugContext(space = $debugContext.space+'   '));
                                              let nVars = $node->match([a:AllocationExecutionNode[1]|let varValues = if($a.resultType.type == TabularDataSet,
                                                                                                                        |^PlanSetPlaceHolder(name=$a.varName,tdsColumns = $a.resultType->match([x:TDSResultType[1]|$x.tdsColumns, a:Any[1]|[]])),
                                                                                                                        |^PlanVarPlaceHolder(name=$a.varName,type = $a.resultType.type, multiplicity=$a.resultSizeRange));

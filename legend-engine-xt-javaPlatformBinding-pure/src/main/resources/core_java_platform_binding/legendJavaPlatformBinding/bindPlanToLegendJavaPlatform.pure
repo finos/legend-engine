@@ -104,8 +104,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::generateLegendJ
    let generated = if ($supportingExtension.generateLegendJavaCodeForNode->isNotEmpty(),
                        | $supportingExtension.generateLegendJavaCodeForNode->toOne()->eval($node, $path, $context, $extensions, $debug),
                        | $node->match([
-                            p:PureExpressionPlatformExecutionNode[1] | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
-                            e:ExecutionNode[1]                       | ^GeneratedCode()
+                            p:PureExpressionPlatformExecutionNode[1]                    | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
+                            p:PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1] | $p->generateImplementationForPlatformPrimitiveQualifierLocalGraphFetchExecutionNode($path, $context, $extensions, $debug),
+                            e:ExecutionNode[1]                                          | ^GeneratedCode()
                          ])
                    );
 

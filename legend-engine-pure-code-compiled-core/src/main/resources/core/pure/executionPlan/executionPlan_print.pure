@@ -58,7 +58,8 @@ function <<access.public>> meta::pure::executionPlan::toString::planNodeToString
          g:meta::pure::graphFetch::executionPlan::GlobalGraphFetchExecutionNode[1] | $g->meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToString($space, $extensions),
          g:meta::pure::mapping::modelToModel::graphFetch::executionPlan::StoreStreamReadingExecutionNode[1] | $g->meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReadingExecutionNodeToString($space, $extensions),
          i:meta::pure::mapping::modelToModel::graphFetch::executionPlan::InMemoryGraphFetchExecutionNode[1] | $i->meta::pure::mapping::modelToModel::graphFetch::executionPlan::inMemoryGraphFetchExecutionNodeToString($space, $extensions),
-         v:VariableResolutionExecutionNode[1] | 'VariableResolution\n' + $space + '(' + header($v, $space, $extensions) + '\n' + $space + '  varName = ' + $v.varName + '\n' + $v->childrenToString($space+'  ', $extensions) + '\n' + $space + ')\n'
+         v:VariableResolutionExecutionNode[1] | 'VariableResolution\n' + $space + '(' + header($v, $space, $extensions) + '\n' + $space + '  varName = ' + $v.varName + '\n' + $v->childrenToString($space+'  ', $extensions) + '\n' + $space + ')\n',
+         p:meta::pure::graphFetch::executionPlan::PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1] | $p->meta::pure::graphFetch::executionPlan::platformPrimitiveQualifierLocalGraphFetchExecutionNodeToString($space, $extensions)
       ])->toOneMany()
    );
    $space + $root;
