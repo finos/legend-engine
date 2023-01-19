@@ -83,12 +83,14 @@ DATABASE:                                   '"database"';
 DATABASE_NAME:                              '"databaseName"';
 COLLECTIONS:                                '"collections"';
 COLLECTION_NAME:                            '"collectionName"';
+SCHEMAS:                                    '"schemas"';
 SCHEMA:                                     '"$jsonSchema"';
 OPTIONS:                                    '"options"';
 VALIDATOR:                                  '"validator"';
 VALIDATION_LEVEL:                           '"validationLevel"';
 VALIDATION_ACTION:                          '"validationAction"';
 ID:                                         '$id';
+REF:                                        '"$ref"';
 TITLE:                                      '"title"';
 DESCRIPTION:                                '"description"';
 BSONTYPE:                                   '"bsonType"';
@@ -113,6 +115,9 @@ ANY_OF:                                     '"anyOf"';
 ONE_OF:                                     '"oneOf"';
 
 
+INVALID:                                    Invalid;
+
+
 
 // Fragments
 //fragment ValidString:                       (Letter | Digit | '_' ) (Letter | Digit | '_')*
@@ -131,4 +136,14 @@ STRING
 
 fragment STRINGFRAGMENT
    : '"' (ESC | SAFECODEPOINT)* '"'
+;
+
+
+// --------------------------------------- INVALID -------------------------------------------
+
+// Add a rule for INVALID token to the very end of the lexer grammar to make sure your lexer handles all
+// input successfully in order to boost performance
+// See https://github.com/antlr/antlr4/issues/1540#issuecomment-268738030
+
+fragment Invalid:                       .
 ;

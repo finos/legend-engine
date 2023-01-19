@@ -55,8 +55,8 @@ Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
   maxProperties: Integer[0..1];
   minProperties: Integer[0..1];
   patternProperties: RegExType[0..1];
-
 }
+
 
 Class meta::external::store::mongodb::metamodel::BsonType extends BaseType
 {  
@@ -124,13 +124,20 @@ Class meta::external::store::mongodb::metamodel::MaxKeyType extends BsonType
 {  
 }
 
+Class meta::external::store::mongodb::metamodel::Schema extends ObjectType
+{
+    id: String[1];
+    schemaVersion : String[0..1];
+}
+
 Class meta::external::store::mongodb::metamodel::Collection extends ObjectType
 {
   owner: MongoDatabase[1];
   name: String[1];
+  schema: Schema[0..1];
 } 
 
-Class meta::external::store::mongodb::metamodel::CollectionView extends ObjectType
+Class meta::external::store::mongodb::metamodel::CollectionView
 {
   owner: MongoDatabase[1];
   name: String[1];

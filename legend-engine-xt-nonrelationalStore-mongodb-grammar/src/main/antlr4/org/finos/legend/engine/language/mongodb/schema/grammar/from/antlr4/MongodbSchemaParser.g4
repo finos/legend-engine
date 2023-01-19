@@ -22,8 +22,10 @@ options { tokenVocab=MongodbSchemaLexer; }
 keywords:                                   (DATABASE | DATABASE_NAME
                                             | COLLECTIONS | COLLECTION_NAME
                                             | SCHEMA | OPTIONS | VALIDATOR
+                                            | SCHEMAS
                                             | VALIDATION_LEVEL | VALIDATION_ACTION
-                                            | ID | TITLE | DESCRIPTION
+                                            | ID | REF
+                                            | TITLE | DESCRIPTION
                                             | TYPE | BSONTYPE
                                             | PROPERTIES | REQUIRED
                                             | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS
