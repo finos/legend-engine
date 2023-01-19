@@ -14,12 +14,12 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to;
 
-
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,7 +32,12 @@ public interface IAuthenticationGrammarComposerExtension extends PureGrammarComp
         return Lists.mutable.withAll(ServiceLoader.load(IAuthenticationGrammarComposerExtension.class));
     }
 
-    default List<Function2<Pair<String, AuthenticationSpecification>, Integer, String>> getExtraAuthenticationSpecificationComposers()
+    default List<Function2<AuthenticationSpecification, Integer, String>> getExtraAuthenticationSpecificationComposers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function2<CredentialVaultSecret, Integer, String>> getExtraCredentialVaultSecretComposers()
     {
         return Collections.emptyList();
     }

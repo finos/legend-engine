@@ -228,6 +228,7 @@ public class ServiceExecutor
         }
         return ListIterate.collectIf(headerParams, param -> (mappedParameters.contains(param.name) && state.getResult(param.name) != null), param -> new BasicHeader(param.name, serializeHeaderParameter(((ConstantResult) state.getResult(param.name)).getValue(), param)));
     }
+
     private static String serializePathParameter(Object value, ServiceParameter parameter)
     {
         String result;

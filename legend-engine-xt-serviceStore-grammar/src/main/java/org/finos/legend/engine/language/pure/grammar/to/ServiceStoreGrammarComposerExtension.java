@@ -129,18 +129,18 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
             {
                 SimpleHttpSecurityScheme scheme = (SimpleHttpSecurityScheme) _scheme;
                 return context.getIndentationString() + id + " : Http\n" +
-                        context.getIndentationString() + "{\n" +
-                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "scheme : " + convertString(scheme.scheme, true) + ";\n" +
-                        context.getIndentationString() + "}";
+                        context.getIndentationString() + getTabString(2) + "{\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "scheme : " + convertString(scheme.scheme, true) + ";\n" +
+                        context.getIndentationString() + getTabString(2) + "}";
             }
             else if (_scheme instanceof ApiKeySecurityScheme)
             {
                 ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
                 return context.getIndentationString() + id + " : ApiKey\n" +
-                        context.getIndentationString() + "{\n" +
-                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(scheme.location, true) + ";\n" +
-                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
-                        context.getIndentationString() + "}";
+                        context.getIndentationString() + getTabString(2) +"{\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(scheme.location, true) + ";\n" +
+                        context.getIndentationString() + getTabString(3) + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
+                        context.getIndentationString() + getTabString(2) + "}";
             }
 
             return null;
