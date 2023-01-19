@@ -15,25 +15,29 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ObjectExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AggregationPipeline;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.AndExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArgumentExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ArrayArgumentExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.ExpressionObject;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.FieldPathExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.LiteralValue;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.MatchStage;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.OperatorExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.Operators;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.OrExpression;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.aggregation.Stage;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.BaseType;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.IntType;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.bson.StringType;
-
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.NullType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AggregateExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BaseTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayArgumentExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ExpressionObject;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OperatorExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrExpression;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BaseType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.IntType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,14 +63,18 @@ public class MongoDbQueryParseTreeWalker
         return ctx.STRING().getText();
     }
 
-    private AggregationPipeline visitPipeline(MongoDbQueryParser.PipelinesContext ctx)
+    private ViewPipeline visitPipeline(MongoDbQueryParser.PipelinesContext ctx)
     {
-        if (ctx.aggregationPipelineStage() == null)
+        ViewPipeline viewPipeline = new ViewPipeline();
+        if (ctx.aggregationPipelineStage() != null)
         {
-            return new AggregationPipeline();
+            viewPipeline.stages = ctx.aggregationPipelineStage().stream().map(this::visitAggregationPipelineStage).collect(Collectors.toList());
         }
-        List<Stage> matchStageList = ctx.aggregationPipelineStage().stream().map(this::visitAggregationPipelineStage).collect(Collectors.toList());
-        return new AggregationPipeline(matchStageList);
+        else
+        {
+            viewPipeline.stages = Arrays.asList();
+        }
+        return viewPipeline;
     }
 
     private Stage visitAggregationPipelineStage(MongoDbQueryParser.AggregationPipelineStageContext ctx)
@@ -99,8 +107,12 @@ public class MongoDbQueryParseTreeWalker
 
     private ArgumentExpression visitExpression(MongoDbQueryParser.ExpressionContext ctx)
     {
-        ArgumentExpression expression = visitExpressionValue(ctx.expressionValue());
-        return new ExpressionObject(new FieldPathExpression(ctx.STRING().getText()), expression);
+        FieldPathExpression field = new FieldPathExpression();
+        field.path = ctx.STRING().getText();
+        ExpressionObject expressionObject = new ExpressionObject();
+        expressionObject.field = field;
+        expressionObject.argument = visitExpressionValue(ctx.expressionValue());
+        return expressionObject;
     }
 
     private ArgumentExpression visitQueryExpression(MongoDbQueryParser.QueryExpressionContext ctx)
@@ -110,7 +122,9 @@ public class MongoDbQueryParseTreeWalker
         {
             expressions = ctx.expression().stream().map(this::visitExpression).collect(Collectors.toList());
         }
-        return new ObjectExpression(expressions);
+        ArrayArgumentExpression expression = new ArrayArgumentExpression();
+        expression.expressions = expressions;
+        return expression;
     }
 
     public ArgumentExpression visitExpressionValue(MongoDbQueryParser.ExpressionValueContext ctx)
@@ -129,9 +143,12 @@ public class MongoDbQueryParseTreeWalker
 
     public ArgumentExpression visitValue(MongoDbQueryParser.ValueContext ctx)
     {
+
         if (ctx.STRING() != null || ctx.NUMBER() != null)
         {
-            return new LiteralValue(visitLiteral(ctx));
+            LiteralValue literalValue = new LiteralValue();
+            literalValue.value = visitLiteral(ctx);
+            return literalValue;
         }
         else if (ctx.obj() != null)
         {
@@ -148,15 +165,18 @@ public class MongoDbQueryParseTreeWalker
 
     public ArgumentExpression visitArray(MongoDbQueryParser.ArrContext ctx)
     {
-        List<ArgumentExpression> expressions = ctx.value().stream().map(x -> visitValue(x)).collect(Collectors.toList());
-        return new ArrayArgumentExpression(expressions);
+        ArrayArgumentExpression expression = new ArrayArgumentExpression();
+        expression.expressions = ctx.value().stream().map(x -> visitValue(x)).collect(Collectors.toList());;
+        return expression;
     }
 
     public ArgumentExpression visitOperatorExpression(MongoDbQueryParser.OperatorExpressionContext ctx)
     {
         String operator = ctx.COMPARISON_QUERY_OPERATOR().getText();
-        ArgumentExpression expression = visitOperatorExpressionValue(ctx.operatorExpressionValue());
-        return new OperatorExpression(Operators.valueOf(operator.substring(1, operator.length() - 1)), expression);
+        OperatorExpression operatorExpression = new OperatorExpression();
+        operatorExpression.expression = visitOperatorExpressionValue(ctx.operatorExpressionValue());;
+        operatorExpression.operator = Operator.valueOf(operator.toUpperCase().substring(2, operator.length() - 1));
+        return operatorExpression;
     }
 
     private ArgumentExpression visitOperatorExpressionValue(MongoDbQueryParser.OperatorExpressionValueContext ctx)
@@ -179,23 +199,27 @@ public class MongoDbQueryParseTreeWalker
     {
         if (ctx.orAggregationExpression() != null)
         {
-            List<ArgumentExpression> argumentExpressions = ctx.orAggregationExpression().queryExpression().stream().map(x -> visitQueryExpression(x)).collect(Collectors.toList());
-            return new OrExpression(argumentExpressions);
+            OrExpression orExpression = new OrExpression();
+            orExpression.expressions = ctx.orAggregationExpression().queryExpression().stream().map(x -> visitQueryExpression(x)).collect(Collectors.toList());
+            orExpression.operator = Operator.OR;
+            return orExpression;
         }
         else
         {
-            List<ArgumentExpression> argumentExpressions = ctx.andAggregationExpression().queryExpression().stream().map(x -> visitQueryExpression(x)).collect(Collectors.toList());
-            return new AndExpression(argumentExpressions);
+            AndExpression andExpression = new AndExpression();
+            andExpression.expressions = ctx.andAggregationExpression().queryExpression().stream().map(x -> visitQueryExpression(x)).collect(Collectors.toList());
+            andExpression.operator = Operator.AND;
+            return andExpression;
         }
     }
 
     private ArgumentExpression visitObj(MongoDbQueryParser.ObjContext ctx)
     {
 
-        ObjectExpression result = new ObjectExpression();
+        ArrayArgumentExpression result = new ArrayArgumentExpression();
         if (ctx.pair() != null)
         {
-            result.arguments = ctx.pair().stream().map(this::visitPair).collect(Collectors.toList());
+            result.expressions = ctx.pair().stream().map(this::visitPair).collect(Collectors.toList());
         }
 
        return result;
@@ -203,20 +227,30 @@ public class MongoDbQueryParseTreeWalker
 
     private ArgumentExpression visitPair(MongoDbQueryParser.PairContext ctx)
     {
-        ArgumentExpression expression = visitValue(ctx.value());
-        return new ExpressionObject(new FieldPathExpression(ctx.STRING().getText()), expression);
+        FieldPathExpression field = new FieldPathExpression();
+        field.path = ctx.STRING().getText();
+        ExpressionObject expressionObject = new ExpressionObject();
+        expressionObject.field = field;
+        expressionObject.argument = visitValue(ctx.value());;
+        return expressionObject;
     }
 
-    private BaseType visitLiteral(MongoDbQueryParser.ValueContext ctx)
+    private BaseTypeValue visitLiteral(MongoDbQueryParser.ValueContext ctx)
     {
         if (ctx.NUMBER() != null)
         {
-            return new IntType(Integer.parseInt(ctx.NUMBER().getText()));
+            IntTypeValue intType = new IntTypeValue();
+            intType.value = Integer.parseInt(ctx.NUMBER().getText());
+            return intType;
         }
         else if (ctx.STRING() != null)
         {
-            return new StringType(ctx.STRING().getText());
+            StringTypeValue stringType = new StringTypeValue();
+            stringType.value = ctx.STRING().getText();
+            return stringType;
         }
-        return new BaseType();
+
+        StringTypeValue stringType = new StringTypeValue();
+        return stringType;
     }
 }

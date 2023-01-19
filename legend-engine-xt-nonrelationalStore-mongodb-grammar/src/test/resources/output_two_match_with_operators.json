@@ -2,33 +2,45 @@
   "type": "aggregate",
   "collectionName": "\"firms\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": {
-          "arguments": [
+          "_type": "arrayArgumentExpression",
+          "expressions": [
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test\""
               },
               "argument": {
-                "operator": "$eq",
+                "_type": "operatorExpression",
+                "operator": "EQ",
                 "expression": {
+                  "_type": "literalValue",
                   "value": {
-                    "pattern": "\"USA\""
+                    "_type": "stringTypeValue",
+                    "value": "\"USA\""
                   }
                 }
               }
             },
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test2\""
               },
               "argument": {
-                "operator": "$ne",
+                "_type": "operatorExpression",
+                "operator": "NE",
                 "expression": {
+                  "_type": "literalValue",
                   "value": {
-                    "pattern": 5
+                    "_type": "intTypeValue",
+                    "value": 5
                   }
                 }
               }

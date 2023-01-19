@@ -23,7 +23,7 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryLexer;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryListener;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
-import org.finos.legend.engine.language.mongodb.schema.grammar.from.model.DatabaseCommand;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.junit.Test;
 import utils.CustomJSONPrettyPrinter;
 

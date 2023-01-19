@@ -2,12 +2,14 @@
   "type": "aggregate",
   "collectionName": "\"person\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": {
+          "_type": "andExpression",
           "expressions": [],
-          "operators": "$and"
+          "operator": "AND"
         }
       }
     ]

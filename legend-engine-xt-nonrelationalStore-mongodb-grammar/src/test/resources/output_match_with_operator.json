@@ -2,20 +2,27 @@
   "type": "aggregate",
   "collectionName": "\"firms\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": {
-          "arguments": [
+          "_type": "arrayArgumentExpression",
+          "expressions": [
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test\""
               },
               "argument": {
-                "operator": "$eq",
+                "_type": "operatorExpression",
+                "operator": "EQ",
                 "expression": {
+                  "_type": "literalValue",
                   "value": {
-                    "pattern": "\"testingg\""
+                    "_type": "stringTypeValue",
+                    "value": "\"testingg\""
                   }
                 }
               }

@@ -2,9 +2,10 @@
   "type": "aggregate",
   "collectionName": "\"firms\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": null
       }
     ]

@@ -2,72 +2,100 @@
   "type": "aggregate",
   "collectionName": "\"firms\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": {
-          "arguments": [
+          "_type": "arrayArgumentExpression",
+          "expressions": [
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test\""
               },
               "argument": {
-                "operator": "$gt",
+                "_type": "operatorExpression",
+                "operator": "GT",
                 "expression": {
+                  "_type": "literalValue",
                   "value": {
-                    "pattern": 3
+                    "_type": "intTypeValue",
+                    "value": 3
                   }
                 }
               }
             },
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test2\""
               },
               "argument": {
-                "operator": "$gt",
+                "_type": "operatorExpression",
+                "operator": "GT",
                 "expression": {
+                  "_type": "literalValue",
                   "value": {
-                    "pattern": "\"USA\""
+                    "_type": "stringTypeValue",
+                    "value": "\"USA\""
                   }
                 }
               }
             },
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test3\""
               },
               "argument": {
+                "_type": "literalValue",
                 "value": {
-                  "pattern": "\"testingg\""
+                  "_type": "stringTypeValue",
+                  "value": "\"testingg\""
                 }
               }
             },
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test4\""
               },
               "argument": {
-                "operator": "$gt",
+                "_type": "operatorExpression",
+                "operator": "GT",
                 "expression": {
-                  "arguments": [
+                  "_type": "arrayArgumentExpression",
+                  "expressions": [
                     {
+                      "_type": "expressionObject",
                       "field": {
+                        "_type": "fieldPathExpression",
                         "path": "\"abd\""
                       },
                       "argument": {
+                        "_type": "literalValue",
                         "value": {
-                          "pattern": 3
+                          "_type": "intTypeValue",
+                          "value": 3
                         }
                       }
                     },
                     {
+                      "_type": "expressionObject",
                       "field": {
+                        "_type": "fieldPathExpression",
                         "path": "\"ade\""
                       },
                       "argument": {
+                        "_type": "literalValue",
                         "value": {
-                          "pattern": 4
+                          "_type": "intTypeValue",
+                          "value": 4
                         }
                       }
                     }

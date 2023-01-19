@@ -2,73 +2,103 @@
   "type": "aggregate",
   "collectionName": "\"firms\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": {
-          "arguments": [
+          "_type": "arrayArgumentExpression",
+          "expressions": [
             {
+              "_type": "expressionObject",
               "field": {
+                "_type": "fieldPathExpression",
                 "path": "\"test\""
               },
               "argument": {
-                "operator": "$eq",
+                "_type": "operatorExpression",
+                "operator": "EQ",
                 "expression": {
-                  "arguments": [
+                  "_type": "arrayArgumentExpression",
+                  "expressions": [
                     {
+                      "_type": "expressionObject",
                       "field": {
+                        "_type": "fieldPathExpression",
                         "path": "\"test1\""
                       },
                       "argument": {
-                        "arguments": [
+                        "_type": "arrayArgumentExpression",
+                        "expressions": [
                           {
+                            "_type": "expressionObject",
                             "field": {
+                              "_type": "fieldPathExpression",
                               "path": "\"test2\""
                             },
                             "argument": {
-                              "arguments": [
+                              "_type": "arrayArgumentExpression",
+                              "expressions": [
                                 {
+                                  "_type": "expressionObject",
                                   "field": {
+                                    "_type": "fieldPathExpression",
                                     "path": "\"test3_2\""
                                   },
                                   "argument": {
+                                    "_type": "literalValue",
                                     "value": {
-                                      "pattern": "\"value2\""
+                                      "_type": "stringTypeValue",
+                                      "value": "\"value2\""
                                     }
                                   }
                                 },
                                 {
+                                  "_type": "expressionObject",
                                   "field": {
+                                    "_type": "fieldPathExpression",
                                     "path": "\"test3_3\""
                                   },
                                   "argument": {
+                                    "_type": "arrayArgumentExpression",
                                     "expressions": [
                                       {
+                                        "_type": "literalValue",
                                         "value": {
-                                          "pattern": "\"value3\""
+                                          "_type": "stringTypeValue",
+                                          "value": "\"value3\""
                                         }
                                       },
                                       {
+                                        "_type": "literalValue",
                                         "value": {
-                                          "pattern": "\"value4\""
+                                          "_type": "stringTypeValue",
+                                          "value": "\"value4\""
                                         }
                                       }
                                     ]
                                   }
                                 },
                                 {
+                                  "_type": "expressionObject",
                                   "field": {
+                                    "_type": "fieldPathExpression",
                                     "path": "\"test3_4\""
                                   },
                                   "argument": {
-                                    "arguments": [
+                                    "_type": "arrayArgumentExpression",
+                                    "expressions": [
                                       {
+                                        "_type": "expressionObject",
                                         "field": {
+                                          "_type": "fieldPathExpression",
                                           "path": "\"test3_4_1\""
                                         },
                                         "argument": {
+                                          "_type": "literalValue",
                                           "value": {
-                                            "pattern": 4
+                                            "_type": "intTypeValue",
+                                            "value": 4
                                           }
                                         }
                                       }
@@ -76,47 +106,66 @@
                                   }
                                 },
                                 {
+                                  "_type": "expressionObject",
                                   "field": {
+                                    "_type": "fieldPathExpression",
                                     "path": "\"test3_5\""
                                   },
                                   "argument": {
-                                    "arguments": [
+                                    "_type": "arrayArgumentExpression",
+                                    "expressions": [
                                       {
+                                        "_type": "expressionObject",
                                         "field": {
+                                          "_type": "fieldPathExpression",
                                           "path": "\"test3_5_1\""
                                         },
                                         "argument": {
+                                          "_type": "arrayArgumentExpression",
                                           "expressions": [
                                             {
-                                              "arguments": [
+                                              "_type": "arrayArgumentExpression",
+                                              "expressions": [
                                                 {
+                                                  "_type": "expressionObject",
                                                   "field": {
+                                                    "_type": "fieldPathExpression",
                                                     "path": "\"test3_5_1_1\""
                                                   },
                                                   "argument": {
+                                                    "_type": "literalValue",
                                                     "value": {
-                                                      "pattern": "\"value5\""
+                                                      "_type": "stringTypeValue",
+                                                      "value": "\"value5\""
                                                     }
                                                   }
                                                 }
                                               ]
                                             },
                                             {
-                                              "arguments": [
+                                              "_type": "arrayArgumentExpression",
+                                              "expressions": [
                                                 {
+                                                  "_type": "expressionObject",
                                                   "field": {
+                                                    "_type": "fieldPathExpression",
                                                     "path": "\"test3_5_1_2\""
                                                   },
                                                   "argument": {
+                                                    "_type": "arrayArgumentExpression",
                                                     "expressions": [
                                                       {
+                                                        "_type": "literalValue",
                                                         "value": {
-                                                          "pattern": "\"value6\""
+                                                          "_type": "stringTypeValue",
+                                                          "value": "\"value6\""
                                                         }
                                                       },
                                                       {
+                                                        "_type": "literalValue",
                                                         "value": {
-                                                          "pattern": "\"value7\""
+                                                          "_type": "stringTypeValue",
+                                                          "value": "\"value7\""
                                                         }
                                                       }
                                                     ]

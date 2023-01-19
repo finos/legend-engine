@@ -15,6 +15,11 @@
 import meta::external::store::mongodb::metamodel::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 
+Enum meta::external::store::mongodb::metamodel::aggregation::Operator
+{
+    EQ, NE, GT, GTE, LT, LTE, AND, OR
+}
+
 Class meta::external::store::mongodb::metamodel::BaseType
 {
   allOf: BaseType[*];
@@ -101,7 +106,8 @@ Class meta::external::store::mongodb::metamodel::JavaScriptType extends BsonType
 }
 
 Class meta::external::store::mongodb::metamodel::IntType extends BsonType
-{  
+{
+    number: Integer[1];
 }
 
 Class meta::external::store::mongodb::metamodel::TimeStampType extends BsonType
@@ -151,6 +157,13 @@ Class meta::external::store::mongodb::metamodel::Collation
   locale: String[1];
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::DatabaseCommand
+{
+    type: String[1];
+    collectionName: String[1];
+    aggregationPipeline: AggregationPipeline[1];
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::ViewPipeline extends AggregationPipeline
 {
 }
@@ -169,7 +182,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::Stage
 Class {doc.doc = 'Maps to { $match { $expr { <aggregation expression> } } }'}
 meta::external::store::mongodb::metamodel::aggregation::MatchStage extends Stage
 {
-  expression: AggregateExpression[*];
+  expression: ArgumentExpression[1];
 }
 
 Class {doc.doc = 'Maps to { $project { $fieldName { <specification> } } }'}
@@ -183,10 +196,14 @@ meta::external::store::mongodb::metamodel::aggregation::AddFieldsStage extends P
 {
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::LiteralValue extends ArgumentExpression
+{
+  value: BaseTypeValue[1];
+}
 
 Class meta::external::store::mongodb::metamodel::aggregation::AggregateExpression
 {
-    arguments: ArgumentExpression[*];
+  arguments: ArgumentExpression[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
@@ -196,21 +213,25 @@ Class meta::external::store::mongodb::metamodel::aggregation::ArgumentExpression
 Class {doc.doc = 'Operations accessed by $xxx'}
 meta::external::store::mongodb::metamodel::aggregation::OperatorExpression extends ArgumentExpression
 {
-  operatorName: String[1];
-  operationExpression: ExpressionObject[1];
+  operator: Operator[1];
+  expression: ArgumentExpression[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::OrExpression extends OperatorExpression
+Class meta::external::store::mongodb::metamodel::aggregation::OrExpression extends ArgumentExpression
 {
-  // translates to $or [ ...arguments ];
+  expressions: ArgumentExpression[*];
+  operator: Operator[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::AndExpression extends OperatorExpression
+Class meta::external::store::mongodb::metamodel::aggregation::AndExpression extends ArgumentExpression
 {
+  expressions: ArgumentExpression[*];
+  operator: Operator[1];
 }
 
-Class meta::external::store::mongodb::metamodel::aggregation::EqualsExpression extends OperatorExpression
+Class meta::external::store::mongodb::metamodel::aggregation::ArrayArgumentExpression extends ArgumentExpression
 {
+  expressions: ArgumentExpression[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
@@ -246,6 +267,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::StringTypeValue ex
 
 Class meta::external::store::mongodb::metamodel::aggregation::IntTypeValue extends BaseTypeValue
 {
+  value: Integer[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue

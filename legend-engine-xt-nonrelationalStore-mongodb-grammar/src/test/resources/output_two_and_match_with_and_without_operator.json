@@ -2,22 +2,30 @@
   "type": "aggregate",
   "collectionName": "\"person\"",
   "aggregationPipeline": {
+    "_type": "viewPipeline",
     "stages": [
       {
-        "stageName": "$match",
+        "_type": "matchStage",
         "expression": {
+          "_type": "andExpression",
           "expressions": [
             {
-              "arguments": [
+              "_type": "arrayArgumentExpression",
+              "expressions": [
                 {
+                  "_type": "expressionObject",
                   "field": {
+                    "_type": "fieldPathExpression",
                     "path": "\"fName\""
                   },
                   "argument": {
-                    "operator": "$eq",
+                    "_type": "operatorExpression",
+                    "operator": "EQ",
                     "expression": {
+                      "_type": "literalValue",
                       "value": {
-                        "pattern": "\"Peter\""
+                        "_type": "stringTypeValue",
+                        "value": "\"Peter\""
                       }
                     }
                   }
@@ -25,21 +33,26 @@
               ]
             },
             {
-              "arguments": [
+              "_type": "arrayArgumentExpression",
+              "expressions": [
                 {
+                  "_type": "expressionObject",
                   "field": {
+                    "_type": "fieldPathExpression",
                     "path": "\"lName\""
                   },
                   "argument": {
+                    "_type": "literalValue",
                     "value": {
-                      "pattern": "\"Smith\""
+                      "_type": "stringTypeValue",
+                      "value": "\"Smith\""
                     }
                   }
                 }
               ]
             }
           ],
-          "operators": "$and"
+          "operator": "AND"
         }
       }
     ]
