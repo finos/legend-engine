@@ -148,6 +148,7 @@ class AlterTest extends BaseTest
 
     private void insertMainData(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "INSERT INTO \"TEST\".\"main\"(id, name, income, start_time ,expiry_date, digest) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT(\"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\"" +
             " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest', NULL )";

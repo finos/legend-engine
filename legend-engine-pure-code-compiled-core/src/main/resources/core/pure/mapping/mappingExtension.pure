@@ -317,6 +317,11 @@ function  meta::pure::mapping::from(tds:TabularDataSet[1], mapping:Mapping[1], r
    $tds;
 }
 
+function  meta::pure::mapping::from<T|m>(t:T[m], executionParameters: meta::legend::service::metamodel::SingleExecutionParameters[1]):T[m]
+{
+   $t
+}
+
 function  meta::pure::mapping::from(tds:TabularDataSet[1], mapping:Mapping[1], runtime:Runtime[1], executionContext:ExecutionContext[1]):TabularDataSet[1]
 {
    $tds;

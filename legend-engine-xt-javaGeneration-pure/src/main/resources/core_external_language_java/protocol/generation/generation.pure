@@ -21,11 +21,11 @@ import meta::protocols::generation::java::*;
 import meta::protocols::generation::java::translation::*;
 import meta::pure::executionPlan::engine::java::*;
 
-function meta::protocols::generation::java::translation::generateTranslation(purePackage:String[1], javaPackage:String[1], elementsToBeExcluded:String[*]):Project[1]
+function meta::protocols::generation::java::translation::generateTranslation(purePackage:String[1], javaPackage:String[1], elementsToBeExcluded:String[*], customConventionConfigFuncs:String[*]):Project[1]
 {
   let pack = $purePackage->pathToElement()->cast(@Package);
   let basePackageStr = $pack->elementToPath('.');
-  let conventions = conventions($purePackage, $javaPackage, $basePackageStr);
+  let conventions = conventions($purePackage, $javaPackage, $basePackageStr, $customConventionConfigFuncs);
   let taxonomies = $pack->findTaxonomies();
   let package = javaPackage($javaPackage);
 
@@ -36,11 +36,11 @@ function meta::protocols::generation::java::translation::generateTranslation(pur
 }
 
 
-function meta::protocols::generation::java::generateProtocolClasses(purePackage:String[1], javaPackage:String[1], elementsToBeExcluded:String[*]):Project[1]
+function meta::protocols::generation::java::generateProtocolClasses(purePackage:String[1], javaPackage:String[1], elementsToBeExcluded:String[*], customConventionConfigFuncs:String[*]):Project[1]
 {
   let pack = $purePackage->pathToElement()->cast(@Package);
   let basePackageStr = $pack->elementToPath('.');
-  let conventions = conventions($purePackage, $javaPackage, $basePackageStr);
+  let conventions = conventions($purePackage, $javaPackage, $basePackageStr, $customConventionConfigFuncs);
   let taxonomies = $pack->findTaxonomies();
   let package = javaPackage($javaPackage);
 
@@ -59,15 +59,20 @@ function meta::protocols::generation::java::generateProtocolClasses(purePackage:
 }
 
 
-function meta::protocols::generation::java::conventions(purePackage:String[1], javaPackage:String[1], basePackageStr:String[1]):Conventions[1]
+function meta::protocols::generation::java::conventions(purePackage:String[1], javaPackage:String[1], basePackageStr:String[1], customConventionConfigFuncs:String[*]):Conventions[1]
 {
   let library = newConventionsLibrary()
                 ->usesInteger(javaLong(), javaLongBoxed(), {i:Integer[1] | j_long($i)})
                 ->usesFloat(javaDouble(), javaDoubleBoxed(), {f:Float[1] | j_double($f)})
                 ->usesBoolean(javaBoolean(), javaBooleanBoxed(), {b:Boolean[1] | j_boolean($b)})
+                ->usesNumber(javaNumber(), javaNumber(), {n:Number[1] |  ^Literal(literal=$n->toString(), type=javaNumber())})
                 ->usesString(javaString(), javaString(), {s:String[1]| j_string($s)});
 
-  newConventions([], [])
+  let conventions = $customConventionConfigFuncs
+    ->map(x | $x->pathToElement()->cast(@PackageableFunction<{Conventions[1]->Conventions[1]}>))
+    ->fold({f, c | $f->eval($c)}, newConventions([], []));
+
+  $conventions  
   ->registerLibrary($library)
   ->setBasePackageName($javaPackage)
   ->setTypeAndPackageNameStrategy(
@@ -105,10 +110,11 @@ function <<access.private>> meta::protocols::generation::java::translation::gene
 
 function <<access.private>> meta::protocols::generation::java::translation::shouldTranslateReturn(property : AbstractProperty<Any>[1]) : Boolean[1]
 {
-   $property.genericType.rawType->toOne()->match([
+   $property.genericType.rawType->match([
       pt:meta::pure::metamodel::type::PrimitiveType[1]    | false, 
       et:meta::pure::metamodel::type::Enumeration<Any>[1] | true, 
-      a:meta::pure::metamodel::type::Class<Any>[1]        | true
+      a:meta::pure::metamodel::type::Class<Any>[1]        | true,
+      any:Any[0]                                          | false
    ]);
 }
 
@@ -263,7 +269,7 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
   let taxonomy = $c->findTaxonomy($context.taxonomies);
   let isAbstract = !$taxonomy->isEmpty() && !$c.specializations->isEmpty();
 
-  let pbase = javaClass(['public']->concatenate(if($isAbstract,|'abstract',|[])), $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
+  let pbase = javaClass(['public']->concatenate(if($isAbstract,|'abstract',|[])), $c.typeParameters.name->map(t | $t->javaTypeVar()), $typeAndPackages.first->javaPackage(), $typeAndPackages.second)
             ->addFields(
                 $c.properties->map(p|
                       let javaType = pureTypeToJavaType($context.conventions, $p);
@@ -295,9 +301,9 @@ function <<access.private>> meta::protocols::generation::java::generateClass(c:m
     | $pbase
   );
 
-  let superType = $c.generalizations->map(g|$g.general.rawType);
-  assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow ['+$superType->map(c|$c.name)->joinStrings(',')+']');
-  let withExtends = if ($superType == Any,
+  let superType = $c.generalizations.general;
+  assert($superType->size() <= 1, |'More than one super type is not currently supported in this flow ['+$superType.rawType.name->joinStrings(',')+']');  
+  let withExtends = if ($superType.rawType == Any,
     |$base,
     |$base->jextends(pureTypeToJavaType($context.conventions, $superType->toOne(), PureOne))
   );

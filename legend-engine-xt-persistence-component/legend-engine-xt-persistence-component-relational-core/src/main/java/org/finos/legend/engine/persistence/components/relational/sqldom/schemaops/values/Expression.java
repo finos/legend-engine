@@ -23,27 +23,29 @@ public class Expression extends Value
     private Value right;
     private Operator operator;
 
-    public Expression(Operator operator)
+    public Expression(Operator operator, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.operator = operator;
     }
 
-    public Expression(Operator operator, String alias)
+    public Expression(Operator operator, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.operator = operator;
     }
 
-    public Expression(Value left, Value right, Operator operator)
+    public Expression(Value left, Value right, Operator operator, String quoteIdentifier)
     {
+        super(quoteIdentifier);
         this.left = left;
         this.operator = operator;
         this.right = right;
     }
 
-    public Expression(Value left, Value right, Operator operator, String alias)
+    public Expression(Value left, Value right, Operator operator, String alias, String quoteIdentifier)
     {
-        super(alias);
+        super(alias, quoteIdentifier);
         this.left = left;
         this.operator = operator;
         this.right = right;

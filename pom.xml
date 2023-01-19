@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>3.30.2-SNAPSHOT</version>
+    <version>3.34.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -164,7 +164,11 @@
 
         <module>legend-engine-pure-code-compiled-core</module>
 
+        <module>legend-engine-xt-changetoken-pure</module>
+        <module>legend-engine-xt-changetoken-compiler</module>
+
         <module>legend-engine-pure-ide-light</module>
+        <module>legend-engine-pure-ide-light-pure</module>
         <module>legend-engine-pure-ide-light-metadata-pure</module>
         <module>legend-engine-pure-runtime-compiler</module>
 
@@ -213,6 +217,7 @@
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-java-runtime-compiler</module>
         <module>legend-engine-xt-flatdata-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-json-javaPlatformBinding-pure</module>
         <module>legend-engine-xt-xml-javaPlatformBinding-pure</module>
@@ -231,7 +236,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>3.8.2</legend.pure.version>
+        <legend.pure.version>3.8.3</legend.pure.version>
         <legend.shared.version>0.22.5</legend.shared.version>
 
         <!-- SONAR -->
@@ -789,9 +794,9 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-spanner-jdbc-shaded</artifactId>
                 <version>${project.version}</version>
-                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module 
-                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of 
-                it's published pom.xml. As expected, the problem goes away when the same dependency comes 
+                <!-- we need exclusion to satisfy the enforcer plugin, when shaded dependency is a module
+                within the project, as enforcer (incorrectly) relies on module's source pom.xml instead of
+                it's published pom.xml. As expected, the problem goes away when the same dependency comes
                 from a different project.-->
                 <exclusions>
                     <exclusion>
@@ -1486,6 +1491,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-ide-light-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1524,6 +1534,19 @@
                 <artifactId>legend-engine-pure-code-compiled-core-configuration</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-changetoken-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
 
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -1660,6 +1683,11 @@
                         <artifactId>opentracing-jaxrs2</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-engine-interpreted</artifactId>
+                <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>

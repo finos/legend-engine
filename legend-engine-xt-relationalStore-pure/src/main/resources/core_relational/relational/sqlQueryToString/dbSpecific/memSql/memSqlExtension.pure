@@ -17,7 +17,7 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::m
 function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::createDbExtensionForMemSQL():DbExtension[1]
 {
    let reservedWords = memSQLReservedWords();
-   let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForMemSQL());
+   let literalProcessors = getDefaultLiteralProcessors();
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForMemSQL()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
@@ -34,13 +34,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::getLiteralProcessorsForMemSQL():Map<Type,LiteralProcessor>[1]
-{
-   newMap([
-      pair(Boolean, ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
-   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memSql::memSQLReservedWords():String[*]
@@ -119,7 +112,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memSq
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='curdate()')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as char)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampMemSQL()})), 
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)'))
   ];
 }
 

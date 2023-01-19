@@ -1,0 +1,5 @@
+{
+    "name" : "pure_ide",
+    "pattern" : "(meta::pure::ide)(::.*)?",
+    "dependencies" : ["platform", "core"]
+}

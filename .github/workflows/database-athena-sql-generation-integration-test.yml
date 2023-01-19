@@ -64,6 +64,9 @@ jobs:
         env:
           MAVEN_OPTS: -Xmx4g
         run: mvn clean install -DskipTests=true
+      - name: Download Athena Driver Jar
+        run: |
+          wget --output-document=athenaDriver.jar http://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC-2.0.34.1000/AthenaJDBC42-2.0.34.1000.jar
       - name: SQL Generation Integration Tests
         env:
           MAVEN_OPTS: -Xmx4g
@@ -71,7 +74,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_INTEGRATION_USER1_SECRET_ACCESS_KEY }}
         run: |
           set -o pipefail
-          mvn -pl legend-engine-xt-relationalStore-athena-execution-tests -Dtest=Test_Relational_DbSpecific_Athena_UsingPureClientTestSuite test | tee >(grep -o "Tests run.*" | tail -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo ", Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt)
+          echo "| Test Representing Db Feature | Support Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| ---------------------------- | -------------- |" >> $GITHUB_STEP_SUMMARY
+          mvn -pl legend-engine-xt-relationalStore-athena-execution-tests -Dtest=Test_Relational_DbSpecific_Athena_UsingPureClientTestSuite test | tee >(grep -o "Tests run:[^T]*" | head -1 | tr -d '\n' >> sql_test_summary.txt) | tee >(echo "Ignored tests deviating from standard: $(grep -c deviating-from-standard)" >> sql_test_summary.txt) | tee >(grep -o "[|] [*][*].*" >> $GITHUB_STEP_SUMMARY)
       - name: Write Summary
         if: always()
         run: |

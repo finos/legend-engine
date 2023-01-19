@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.io.File;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -190,6 +191,7 @@ public class BaseTest
 
     protected void loadBasicStagingData(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest" +
@@ -199,6 +201,7 @@ public class BaseTest
 
     protected void loadStagingDataForWithPartition(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
             "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", INT), \"digest\"" +
@@ -208,6 +211,7 @@ public class BaseTest
 
     protected void loadStagingDataWithDeleteInd(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, delete_indicator) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", INT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE) ,  \"digest\", \"delete_indicator\"" +
@@ -217,6 +221,7 @@ public class BaseTest
 
     protected void loadStagingDataForBitemp(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest) " +
             "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\"" +
@@ -226,6 +231,7 @@ public class BaseTest
 
     protected void loadStagingDataForBitempValidityFromTimeOnly(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, digest) " +
             "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME),  \"digest\"" +
@@ -235,6 +241,7 @@ public class BaseTest
 
     protected void loadStagingDataForBitempWithDeleteInd(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(key1, key2, value1, date_in, date_out, digest, delete_indicator) " +
             "SELECT \"key1\", \"key2\", CONVERT( \"value1\", INT), CONVERT( \"date_in\", DATETIME), CONVERT( \"date_out\", DATETIME) ,  \"digest\", CONVERT( \"delete_indicator\", INT)" +
@@ -244,6 +251,7 @@ public class BaseTest
 
     protected void loadStagingDataForBitemporalFromOnly(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest) " +
             "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\"" +
@@ -253,6 +261,7 @@ public class BaseTest
 
     protected void loadStagingDataForBitemporalFromOnlyWithDeleteInd(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator) " +
             "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\"" +
@@ -262,6 +271,7 @@ public class BaseTest
 
     protected void loadStagingDataForBitemporalFromOnlyWithDataSplit(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
             "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
@@ -271,10 +281,20 @@ public class BaseTest
 
     protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(String path) throws Exception
     {
+        validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
             "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
             "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
             " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
+    }
+
+    protected void validateFileExists(String path) throws Exception
+    {
+        File f = new File(path);
+        if (!f.exists())
+        {
+            throw new IllegalStateException("File does not exist : " + path);
+        }
     }
 }

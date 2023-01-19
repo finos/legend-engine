@@ -28,11 +28,11 @@ import java.util.List;
 
 public class AppendOnlyTest extends AppendOnlyTestCases
 {
-    String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage";
-    String rowsUpdated = "SELECT 0 as rowsUpdated";
-    String rowsTerminated = "SELECT 0 as rowsTerminated";
-    String rowsDeleted = "SELECT 0 as rowsDeleted";
-    String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"staging\" as stage";
+    String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
+    String rowsUpdated = "SELECT 0 as \"rowsUpdated\"";
+    String rowsTerminated = "SELECT 0 as \"rowsTerminated\"";
+    String rowsDeleted = "SELECT 0 as \"rowsDeleted\"";
+    String rowsInserted = "SELECT COUNT(*) as \"rowsInserted\" FROM \"mydb\".\"staging\" as stage";
 
     @Override
     public void verifyAppendOnlyAllowDuplicatesNoAuditing(GeneratorResult operations)
@@ -81,9 +81,9 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         Assertions.assertEquals(2, generatorResults.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage " +
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage " +
                 "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"staging\" as stage " +
+        String rowsInserted = "SELECT COUNT(*) as \"rowsInserted\" FROM \"mydb\".\"staging\" as stage " +
                 "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
 
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
@@ -169,7 +169,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         assertIfListsAreSameIgnoringOrder(expectedSQL, postActionsSql);
 
         // Stats
-        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
+        String rowsInserted = "SELECT COUNT(*) as \"rowsInserted\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
         Assertions.assertEquals(incomingRecordCount, queries.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsUpdated, queries.postIngestStatisticsSql().get(StatisticName.ROWS_UPDATED));
         Assertions.assertEquals(rowsDeleted, queries.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
@@ -196,9 +196,9 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         Assertions.assertEquals(2, operations.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COUNT(*) as incomingRecordCount FROM \"mydb\".\"staging\" as stage " +
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage " +
                 "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
-        String rowsInserted = "SELECT COUNT(*) as rowsInserted FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
+        String rowsInserted = "SELECT COUNT(*) as \"rowsInserted\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_update_time\" = (SELECT MAX(sink.\"batch_update_time\") FROM \"mydb\".\"main\" as sink)";
 
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCount, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));

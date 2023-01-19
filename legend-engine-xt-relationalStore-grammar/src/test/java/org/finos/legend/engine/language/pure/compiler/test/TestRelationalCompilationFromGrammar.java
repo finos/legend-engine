@@ -206,6 +206,23 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
             "\n" +
             ")\n\n";
 
+    public static String DB_DUP_INC = "###Relational\n" +
+            "Database model::relational::tests::dbInc\n" +
+            "(\n" +
+            "    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200) , FIRSTNAME VARCHAR(200), FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+            "    Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)\n" +
+            "    \n" +
+            "    Table firmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), LEGALNAME VARCHAR(200), LEGALNAME VARCHAR(200), ADDRESSID INT, ADDRESSID INT, CEOID INT)\n" +
+            "    Table PersonToFirm(PERSONID INT PRIMARY KEY, FIRMID INT PRIMARY KEY)\n" +
+
+            "    Table otherFirmTable(ID INT PRIMARY KEY, LEGALNAME VARCHAR(200), LEGALNAME VARCHAR(200), ADDRESSID INT)\n" +
+            "    \n" +
+            "    Table addressTable(ID INT PRIMARY KEY, TYPE INT, NAME VARCHAR(200), STREET VARCHAR(100), COMMENTS VARCHAR(100))\n" +
+            "    Table locationTable(ID INT PRIMARY KEY, PERSONID INT, PLACE VARCHAR(200),date DATE)\n" +
+            "    Table placeOfInterestTable(ID INT PRIMARY KEY,locationID INT PRIMARY KEY, NAME VARCHAR(200))  \n" +
+            "\n" +
+            "   )\n";
+
     String MODEL = "\n" +
             "Class model::LegalEntity \n" +
             "{\n" +
@@ -242,6 +259,19 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
         return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+    }
+
+    @Test
+    public void testRelationalDatabaseFail()
+    {
+        try
+        {
+            PureModel dbIncModel = test(DB_DUP_INC).getTwo();
+        }
+        catch (AssertionError e)
+        {
+            Assert.assertEquals("expected no warnings but found [COMPILATION error: Duplicate column definitions [FIRSTNAME, LASTNAME] in table: personTable, COMPILATION error: Duplicate column definitions [ADDRESSID, LEGALNAME] in table: firmTable, COMPILATION error: Duplicate column definitions [LEGALNAME] in table: otherFirmTable]", e.getMessage());
+        }
     }
 
     @Test

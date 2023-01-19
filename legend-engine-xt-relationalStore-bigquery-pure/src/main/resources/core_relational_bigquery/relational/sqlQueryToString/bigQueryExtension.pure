@@ -36,11 +36,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
 {
+   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\\\'');
+
    newMap([
+      pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
       pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E6S\', \'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
-   ])
+   ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getDynaFunctionToSqlForBigQuery(): DynaFunctionToSql[*]
