@@ -125,18 +125,17 @@
         </dependency>
         <!-- Eclipse -->
 
-        <!-- TODO - epsstan - can we remove the dependency on Snowflake -->
         <dependency>
-            <groupId>net.snowflake</groupId>
-            <artifactId>snowflake-jdbc</artifactId>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.70</version>
         </dependency>
-        <!-- TODO - epsstan - cleanup -->
 
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>1.70</version>
         </dependency>
-        <!-- TODO - epsstan - cleanup -->
 
         <dependency>
             <groupId>junit</groupId>
