@@ -104,6 +104,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-serviceStore-pure</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-pure</artifactId>
+        </dependency>
         <!-- PURE -->
 
         <!-- ENGINE -->
@@ -139,9 +143,16 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-external-shared-format-model</artifactId>
         </dependency>
-
         <!-- ENGINE -->
 
         <!-- ANTLR -->
@@ -197,5 +208,6 @@
             <artifactId>legend-engine-xt-json-model</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 </project>

@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.stores.service;
 
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -23,6 +27,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.LimitExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RestServiceExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ServiceParametersResolutionExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
+import org.finos.legend.engine.shared.core.function.Function5;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
+import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
@@ -41,5 +55,53 @@ public class ServiceStoreExecutionExtension implements IServiceStoreExecutionExt
             }
             return null;
         }));
+    }
+
+    public List<Function5<SecurityScheme, AuthenticationSpecification, Credential, RequestBuilder, HttpClientBuilder, Boolean>> getExtraSecuritySchemeProcessors()
+    {
+        return Collections.singletonList((securityScheme, authenticationSpec, credential, requestBuilder, httpClientBuilder) ->
+        {
+            if (securityScheme instanceof SimpleHttpSecurityScheme && credential instanceof PlaintextUserPasswordCredential)
+            {
+                PlaintextUserPasswordCredential cred = (PlaintextUserPasswordCredential) credential;
+                String encoding = Base64.encodeBase64String((cred.getUser() + ":" + cred.getPassword()).getBytes());
+                requestBuilder.addHeader("Authorization", "Basic " + encoding);
+                return true;
+            }
+
+            else if (securityScheme instanceof ApiKeySecurityScheme && credential instanceof ApiTokenCredential)
+            {
+                ApiTokenCredential cred = (ApiTokenCredential) credential;
+                ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) securityScheme;
+                if (apiKeySecurityScheme.location.equals("cookie"))
+                {
+                    requestBuilder.addHeader("Cookie", String.format("%s=%s", apiKeySecurityScheme.keyName, cred.getApiToken()));
+                }
+                return true;
+            }
+            return null;
+        });
+    }
+
+    public List<Function2<SecurityScheme, AuthenticationSpecification, Boolean>> getExtraSecuritySchemeValidators()
+    {
+        return Collections.singletonList((securityScheme, authenticationSpec) ->
+        {
+            if (securityScheme instanceof SimpleHttpSecurityScheme)
+            {
+                if ((authenticationSpec instanceof UserPasswordAuthenticationSpecification))
+                {
+                    return true;
+                }
+            }
+            else if (securityScheme instanceof ApiKeySecurityScheme)
+            {
+                if ((authenticationSpec instanceof ApiKeyAuthenticationSpecification))
+                {
+                    return true;
+                }
+            }
+            return null;
+        });
     }
 }

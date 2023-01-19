@@ -17,6 +17,7 @@ import meta::pure::mapping::*;
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
+import meta::pure::functions::collection::*;
 
 function meta::protocols::pure::vX_X_X::extension::store::service::getServiceStoreExtension(type:String[1]):meta::pure::extension::SerializerExtension[1]
 {
@@ -31,10 +32,10 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
 {
    ^meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X
    (
-      transfers_store_transformConnection = 
+      transfers_store_transformConnection2 = { extensions:meta::pure::extension::Extension[*] |
           [
-             serviceStoreConnection:ServiceStoreConnection[1] | $serviceStoreConnection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection()
-          ],
+             serviceStoreConnection:ServiceStoreConnection[1] | $serviceStoreConnection->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection($extensions)
+          ]},
       transfers_executionPlan_transformNode = {mapping:Mapping[1], extensions:meta::pure::extension::Extension[*] |
           [
              ser:meta::external::store::service::executionPlan::nodes::RestServiceExecutionNode[1]|
@@ -44,7 +45,9 @@ function meta::protocols::pure::vX_X_X::extension::store::service::getServiceSto
                    url              = $ser.url,
                    method           = $ser.method,
                    mimeType         = $ser.mimeType,
-                   securitySchemes  = $ser.securitySchemes->map(s | $s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)),
+                   securitySchemes  = $ser.securitySchemes->toOne()->keyValues()->map(s | pair($s.first, $s.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions)))->newMap(),
+                   authSpecs        = $ser.authSpecs->toOne()->keyValues()->map(kv | pair($kv.first,$kv.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)))->newMap(),
+
                    requestBodyDescription = if($ser.requestBodyDescription->isEmpty(),
                                                |[],
                                                |^meta::protocols::pure::vX_X_X::metamodel::executionPlan::store::service::RequestBodyDescription(

@@ -2,6 +2,13 @@ lexer grammar ServiceStoreLexerGrammar;
 
 import M3LexerGrammar;
 
+@lexer::members{
+  static int lastTokenType=0;
+public void emit(Token token) {
+  super.emit(token);
+  this.lastTokenType = token.getType();
+}
+}
 
 // -------------------------------------- KEYWORD --------------------------------------
 
@@ -10,6 +17,7 @@ SERVICE_STORE:                                   'ServiceStore';
 DESCRIPTION:                                     'description';
 SERVICE_GROUP:                                   'ServiceGroup';
 SERVICE:                                         'Service';
+SECURITY_SCHEMES:                                'securitySchemes';
 
 PATH:                                            'path';
 
@@ -39,3 +47,12 @@ PARAM_MAPPING:                                   '~paramMapping';
 
 INVERTED_ARROW:                                  '<-';
 QUOTED_STRING:                                   ('"' ( EscSeq | ~["\r\n] )*  '"');
+
+// -------------------------------------- ISLAND ---------------------------------------
+BRACE_OPEN:                             '{' {getVocabulary().getSymbolicName(this.lastTokenType).equals("COLON")}?
+                                        | '{' {pushMode (SECURITY_SCHEME_ISLAND_MODE);};
+
+mode SECURITY_SCHEME_ISLAND_MODE;
+SECURITY_SCHEME_ISLAND_OPEN: '{' -> pushMode (SECURITY_SCHEME_ISLAND_MODE);
+SECURITY_SCHEME_ISLAND_CLOSE: '}' -> popMode;
+SECURITY_SCHEME_CONTENT: (~[{}])+;

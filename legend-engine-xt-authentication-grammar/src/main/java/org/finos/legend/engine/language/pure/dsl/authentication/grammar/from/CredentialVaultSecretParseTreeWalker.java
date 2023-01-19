@@ -28,12 +28,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class CredentialVaultSecretParser
+public class CredentialVaultSecretParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext context;
 
-    public CredentialVaultSecretParser(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
+    public CredentialVaultSecretParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        this.walkerSourceInformation = walkerSourceInformation;
+        this.context = null;
+    }
+
+    public CredentialVaultSecretParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.context = context;
@@ -79,7 +85,7 @@ public class CredentialVaultSecretParser
         return credentialVaultSecret;
     }
 
-    private CredentialVaultSecret visitSystemPropertiesSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public CredentialVaultSecret visitSystemPropertiesSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
     {
         SystemPropertiesSecret credentialVaultSecret = new SystemPropertiesSecret();
         credentialVaultSecret.sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
@@ -90,7 +96,7 @@ public class CredentialVaultSecretParser
     }
 
 
-    private EnvironmentCredentialVaultSecret visitEnvironmentSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public EnvironmentCredentialVaultSecret visitEnvironmentSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
     {
         EnvironmentCredentialVaultSecret credentialVaultSecret = new EnvironmentCredentialVaultSecret();
         credentialVaultSecret.sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
@@ -100,7 +106,7 @@ public class CredentialVaultSecretParser
         return credentialVaultSecret;
     }
 
-    private PropertiesFileSecret visitPropertiesFileSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public PropertiesFileSecret visitPropertiesFileSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
     {
         PropertiesFileSecret credentialVaultSecret = new PropertiesFileSecret();
         credentialVaultSecret.sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
@@ -110,7 +116,7 @@ public class CredentialVaultSecretParser
         return credentialVaultSecret;
     }
 
-    private AWSCredentials visitAWSCredentials(AuthenticationParserGrammar.AwsCredentialsValueContext awsCredentialsContext)
+    public AWSCredentials visitAWSCredentials(AuthenticationParserGrammar.AwsCredentialsValueContext awsCredentialsContext)
     {
         AWSCredentialsParser awsCredentialsParser = new AWSCredentialsParser(walkerSourceInformation, context, this);
         return awsCredentialsParser.visitAWSCredentials(awsCredentialsContext);

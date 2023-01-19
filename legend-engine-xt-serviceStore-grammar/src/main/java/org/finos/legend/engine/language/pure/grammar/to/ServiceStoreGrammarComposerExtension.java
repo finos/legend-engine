@@ -31,11 +31,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
 
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class ServiceStoreGrammarComposerExtension implements IServiceStoreGrammarComposerExtension
@@ -100,8 +104,9 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
                 return Tuples.pair(ServiceStoreGrammarParserExtension.SERVICE_STORE_CONNECTION_TYPE,
                         context.getIndentationString() + "{\n" +
                                 context.getIndentationString() + getTabString() + "store: " + serviceStoreConnection.element + ";\n" +
-                                context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";\n" +
-                                context.getIndentationString() + "}");
+                                context.getIndentationString() + getTabString() + "baseUrl: " + PureGrammarComposerUtility.convertString(serviceStoreConnection.baseUrl, true) + ";" +
+                                HelperServiceStoreGrammarComposer.renderAuthSpecs(serviceStoreConnection, context) +
+                                context.getIndentationString() + "\n}");
             }
             return null;
         });
@@ -111,5 +116,34 @@ public class ServiceStoreGrammarComposerExtension implements IServiceStoreGramma
     public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
     {
         return Collections.singletonList(ServiceStoreEmbeddedDataComposer::composeServiceStoreEmbeddedData);
+    }
+
+    @Override
+    public List<Function2<Pair<String, SecurityScheme>, PureGrammarComposerContext, String>> getExtraSecuritySchemesComposers()
+    {
+        return Lists.mutable.with((securitySchemePair, context) ->
+        {
+            String id = securitySchemePair.getOne();
+            SecurityScheme _scheme = securitySchemePair.getTwo();
+            if (_scheme instanceof SimpleHttpSecurityScheme)
+            {
+                SimpleHttpSecurityScheme scheme = (SimpleHttpSecurityScheme) _scheme;
+                return context.getIndentationString() + id + " : Http\n" +
+                        context.getIndentationString() + "{\n" +
+                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "scheme : " + convertString(scheme.scheme, true) + ";\n" +
+                        context.getIndentationString() + "}";
+            }
+            else if (_scheme instanceof ApiKeySecurityScheme)
+            {
+                ApiKeySecurityScheme scheme = (ApiKeySecurityScheme) _scheme;
+                return context.getIndentationString() + id + " : ApiKey\n" +
+                        context.getIndentationString() + "{\n" +
+                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "location : " + convertString(scheme.location, true) + ";\n" +
+                        context.getIndentationString() + PureGrammarComposerUtility.getTabString(1) + "keyName : " + convertString(scheme.keyName, true) + ";\n" +
+                        context.getIndentationString() + "}";
+            }
+
+            return null;
+        });
     }
 }

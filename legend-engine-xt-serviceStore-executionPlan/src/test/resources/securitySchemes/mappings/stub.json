@@ -1,0 +1,104 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "url": "/trades/allTradesService",
+        "basicAuthCredentials": {
+          "username": "username",
+          "password": "password"
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "s_tradeId,s_traderDetails,s_tradeDetails\n1,abc:F_Name_1:L_Name_1,30:100\n2,abc:F_Name_1:L_Name_1,31:200\n3,abc:F_Name_2:L_Name_2,30:300\n4,abc:F_Name_2:L_Name_2,31:400"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/trades/allTradesService2",
+        "cookies": {
+          "apiKey1": {
+            "equalTo": "value1"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "s_tradeId,s_traderDetails,s_tradeDetails\n1,abc:F_Name_1:L_Name_1,30:100\n2,abc:F_Name_1:L_Name_1,31:200\n3,abc:F_Name_2:L_Name_2,30:300\n4,abc:F_Name_2:L_Name_2,31:400"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/trades/allTradesService3",
+        "cookies": {
+          "apiKey1": {
+            "equalTo": "value1"
+          },
+          "apiKey2": {
+            "equalTo": "value2"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "s_tradeId,s_traderDetails,s_tradeDetails\n1,abc:F_Name_1:L_Name_1,30:100\n2,abc:F_Name_1:L_Name_1,31:200\n3,abc:F_Name_2:L_Name_2,30:300\n4,abc:F_Name_2:L_Name_2,31:400"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getProductById/30"
+      },
+      "response": {
+        "status": 200,
+        "body": "s_productId,s_productName,s_description\n30,Product 30,Product 30 description"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "url": "/products/getProductById/31"
+      },
+      "response": {
+        "status": 200,
+        "body": "s_productId,s_productName,s_description\n31,Product 31,Product 31 description"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/products/getProductByName",
+        "queryParameters": {
+          "name": {
+            "equalTo": "product 30"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "s_productId,s_productName,s_description\n30,Product 30,Product 30 description"
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/products/getProductByNameAndDescription",
+        "queryParameters": {
+          "name": {
+            "equalTo": "product 30"
+          },
+          "description": {
+            "equalTo": "product 30 description"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "s_productId,s_productName,s_description\n30,Product 30,Product 30 description"
+      }
+    }
+  ]
+}

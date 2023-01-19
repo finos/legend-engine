@@ -13,14 +13,17 @@
 // limitations under the License.
 
 ###Pure
+import meta::pure::extension::*;
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::runtime::*;
+import meta::pure::functions::collection::*;
 
-function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection(connection: ServiceStoreConnection[1]):meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ServiceStoreConnection[1]
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::store::service::transformServiceStoreConnection(connection: ServiceStoreConnection[1],extensions:meta::pure::extension::Extension[*]):meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ServiceStoreConnection[1]
 {
    ^meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ServiceStoreConnection(
       _type   = 'serviceStore',
       element = $connection.element->cast(@ServiceStore)->elementToPath(),
-      baseUrl = $connection.baseUrl
+      baseUrl = $connection.baseUrl,
+      authSpecs = $connection.authSpecs->toOne()->keyValues()->map(e | pair($e.first, $e.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)))->newMap()
    );
 }

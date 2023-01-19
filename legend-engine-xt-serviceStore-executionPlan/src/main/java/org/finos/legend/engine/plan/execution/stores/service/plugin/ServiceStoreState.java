@@ -14,11 +14,26 @@
 
 package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProviderBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
+import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 
 public class ServiceStoreState implements StoreState
 {
+    private final ServiceExecutor serviceExecutor;
+
+    public ServiceStoreState()
+    {
+        this.serviceExecutor = new ServiceExecutor(CredentialProviderProviderBuilder.build());
+    }
+
+    public ServiceStoreState(CredentialProviderProvider credentialProviderProvider)
+    {
+        this.serviceExecutor = new ServiceExecutor(credentialProviderProvider);
+    }
+
     @Override
     public StoreType getStoreType()
     {
@@ -29,5 +44,10 @@ public class ServiceStoreState implements StoreState
     public Object getStoreExecutionInfo()
     {
         return null;
+    }
+
+    public ServiceExecutor getServiceExecutor()
+    {
+        return serviceExecutor;
     }
 }

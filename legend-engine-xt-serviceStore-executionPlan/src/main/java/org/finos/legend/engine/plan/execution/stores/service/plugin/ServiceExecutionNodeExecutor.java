@@ -29,6 +29,7 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AggregationAwareExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AllocationExecutionNode;
@@ -93,7 +94,7 @@ public class ServiceExecutionNodeExecutor implements ExecutionNodeVisitor<Result
                 String processedUrl = ServiceExecutor.getProcessedUrl(node.url, node.params, mappedParameters, this.executionState);
                 List<Header> headers = ServiceExecutor.getProcessedHeaders(node.params, mappedParameters, this.executionState);
                 StringEntity requestBodyEntity = ServiceExecutor.getRequestBodyEntity(node.requestBodyDescription, this.executionState);
-                return ServiceExecutor.executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes, this.profiles);
+                return ((ServiceStoreExecutionState) executionState.getStoreExecutionState(StoreType.Service)).getServiceExecutor().executeHttpService(processedUrl, headers, requestBodyEntity, node.method, node.mimeType, node.securitySchemes, node.authSpecs, this.profiles);
             }
         }
         else if (executionNode instanceof ServiceParametersResolutionExecutionNode)

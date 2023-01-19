@@ -20,6 +20,7 @@ import meta::external::store::service::executionPlan::nodes::*;
 import meta::external::store::service::metamodel::*;
 import meta::external::store::service::metamodel::mapping::*;
 import meta::external::store::service::metamodel::runtime::*;
+import meta::pure::runtime::connection::authentication::*;
 
 Class meta::external::store::service::executionPlan::nodes::RestServiceExecutionNode extends ExecutionNode
 {
@@ -28,7 +29,8 @@ Class meta::external::store::service::executionPlan::nodes::RestServiceExecution
    mimeType               : String[1];
    params                 : ServiceParameter[*];
    requestBodyDescription : RequestBodyDescription[0..1];
-   securitySchemes        : SecurityScheme[*];
+   securitySchemes        : Map<String,SecurityScheme>[0..1];
+   authSpecs              : Map<String,AuthenticationSpecification>[0..1];
 }
 
 Class meta::external::store::service::executionPlan::nodes::RequestBodyDescription

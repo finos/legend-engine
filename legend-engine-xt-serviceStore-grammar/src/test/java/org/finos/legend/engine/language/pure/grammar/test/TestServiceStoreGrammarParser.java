@@ -221,23 +221,6 @@ public class TestServiceStoreGrammarParser extends TestGrammarParser.TestGrammar
                 "  )\n" +
                 ")\n", "PARSER error at [4:3-14:3]: Path parameters should be specified in path as '{param_name}'. [serializationFormat] parameters were not found in path /testService");
 
-        // Invalid security scheme
-        test("###ServiceStore\n" +
-                "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +
-                "(\n" +
-                "  Service TestServices\n" +
-                "  (\n" +
-                "    path : '/testService';\n" +
-                "    method : GET;\n" +
-                "    parameters :\n" +
-                "    (\n" +
-                "      serializationFormat : String ( location = path )\n" +
-                "    );\n" +
-                "    response : ExampleClass <- tests::store::exampleBinding;\n" +
-                "    security : [INVALID];\n" +
-                "  )\n" +
-                ")\n", "PARSER error at [13:17-23]: Unsupported SecurityScheme - INVALID");
-
         // Invalid method
         test("###ServiceStore\n" +
                 "ServiceStore test::testServiceStoreGrammarWithSingleService\n" +

@@ -43,8 +43,8 @@ function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::s
                                  requestBody= $s.requestBody->map(b | $b->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformTypeReference()),
                                  method     = $s.method->toString(),
                                  parameters = $s.parameters->map(p | $p->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformServiceStoreParameter()),
-                                 response   = $s.response->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformTypeReference()->cast(@meta::protocols::pure::v1_22_0::metamodel::store::service::ComplexTypeReference),
-                                 security   = $s.security->map(p | $p->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions))
+                                 response   = $s.response->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformTypeReference()->cast(@meta::protocols::pure::v1_22_0::metamodel::store::service::ComplexTypeReference)
+                                 //security   = $s.security->map(p | $p->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::store::service::transformSecurityScheme($extensions))
                              )
    ])
 }

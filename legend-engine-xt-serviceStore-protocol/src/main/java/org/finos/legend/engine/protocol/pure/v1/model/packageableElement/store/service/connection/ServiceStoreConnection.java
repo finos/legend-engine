@@ -14,12 +14,17 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionVisitor;
+
+import java.util.LinkedHashMap;
 
 public class ServiceStoreConnection extends Connection
 {
     public String baseUrl;
+    //TODO: Order of iterating should be same as the order of inserting authSpecs into the map
+    public LinkedHashMap<String, AuthenticationSpecification> authSpecs;
 
     @Override
     public <T> T accept(ConnectionVisitor<T> connectionVisitor)

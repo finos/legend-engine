@@ -349,18 +349,19 @@ Diagram meta::external::store::service::metamodel::ServiceStoreMetamodelDiagram(
         propertyPosition=(171.68437, 696.00000),
         multiplicityPosition=(241.04961, 696.00000))
 
-    PropertyView pview_27(property=meta::external::store::service::metamodel::Service.security,
-        stereotypesVisible=true,
-        nameVisible=true,
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE,
-        points=[(554.27686,396.00000),(894.69043,519.00000)],
-        label='',
-        source=Service_$_3,
-        target=SecurityScheme_$_11,
-        propertyPosition=(877.84354, 438.00000),
-        multiplicityPosition=(853.17361, 438.00000))
+   //TODO: Fix this
+    //PropertyView pview_27(property=meta::external::store::service::metamodel::Service.security,
+    //    stereotypesVisible=true,
+    //    nameVisible=true,
+    //    color=#000000,
+    //    lineWidth=-1.0,
+    //    lineStyle=SIMPLE,
+    //    points=[(554.27686,396.00000),(894.69043,519.00000)],
+    //    label='',
+    //    source=Service_$_3,
+    //    target=SecurityScheme_$_11,
+    //    propertyPosition=(877.84354, 438.00000),
+    //    multiplicityPosition=(853.17361, 438.00000))
 
     PropertyView pview_28(property=meta::external::store::service::metamodel::ServiceParameter.serializationFormat,
         stereotypesVisible=true,

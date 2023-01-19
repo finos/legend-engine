@@ -31,7 +31,7 @@ public class UserPasswordFromVaultRule extends IntermediationRule<UserPasswordAu
     public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification specification, Credential credential) throws Exception
     {
         String password = super.lookupSecret(specification.password);
-        return new PlaintextUserPasswordCredential(specification.userName, password);
+        return new PlaintextUserPasswordCredential(specification.username, password);
     }
 
 }

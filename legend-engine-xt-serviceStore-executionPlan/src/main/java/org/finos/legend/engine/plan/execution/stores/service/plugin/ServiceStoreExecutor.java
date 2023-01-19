@@ -23,7 +23,7 @@ public class ServiceStoreExecutor implements StoreExecutor
 
     private final ServiceStoreState state;
 
-    private ServiceStoreExecutor(ServiceStoreState state)
+    public ServiceStoreExecutor(ServiceStoreState state)
     {
         this.state = state;
     }

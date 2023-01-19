@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Service extends ServiceStoreElement
@@ -22,5 +23,5 @@ public class Service extends ServiceStoreElement
     public HttpMethod method;
     public List<ServiceParameter> parameters;
     public ComplexTypeReference response;
-    public List<SecurityScheme> security;
+    public List<String> security = new ArrayList<>();
 }

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.demo;
 
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AutenticationParseTreeWalker;
+import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -32,7 +32,7 @@ public class AuthenticationDemoParseTreeWalker
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
     private final PureGrammarParserContext context;
-    private final AutenticationParseTreeWalker authenticationParseTreeWalker;
+    private final AuthenticationParseTreeWalker authenticationParseTreeWalker;
 
     public AuthenticationDemoParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, PureGrammarParserContext context)
     {
@@ -40,7 +40,7 @@ public class AuthenticationDemoParseTreeWalker
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.context = context;
-        this.authenticationParseTreeWalker =  new AutenticationParseTreeWalker(walkerSourceInformation, context);
+        this.authenticationParseTreeWalker = new AuthenticationParseTreeWalker(walkerSourceInformation, context);
     }
 
     public void visit(AuthenticationParserGrammar.DefinitionContext ctx)

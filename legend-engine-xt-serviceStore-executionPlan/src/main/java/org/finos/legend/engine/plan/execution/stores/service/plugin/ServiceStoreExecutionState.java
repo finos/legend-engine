@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
+import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -66,5 +67,10 @@ public class ServiceStoreExecutionState implements StoreExecutionState
     public void setRuntimeContext(RuntimeContext runtimeContext)
     {
         this.runtimeContext = runtimeContext;
+    }
+
+    public ServiceExecutor getServiceExecutor()
+    {
+        return this.state.getServiceExecutor();
     }
 }

@@ -31,9 +31,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.connection.ServiceStoreConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.mapping.RootServiceStoreClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ApiKeySecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SimpleHttpSecurityScheme;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SecurityScheme;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
@@ -41,9 +47,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExtension
 {
@@ -62,6 +70,7 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                             pureServiceStore._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                                     ._rawType(context.pureModel.getType("meta::external::store::service::metamodel::ServiceStore")));
 
+                            HelperServiceStoreBuilder.compileAndAddSecuritySchemesToServiceStore(pureServiceStore, serviceStore, context);
                             context.pureModel.storesIndex.put(context.pureModel.buildPackageString(serviceStore._package, serviceStore.name), pureServiceStore);
                             return pureServiceStore;
                         },
@@ -102,7 +111,11 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
                         Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection = new Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::runtime::ServiceStoreConnection"));
                         pureServiceStoreConnection._element(HelperServiceStoreBuilder.getServiceStore(serviceStoreConnection.element, serviceStoreConnection.elementSourceInformation, context));
                         pureServiceStoreConnection._baseUrl(serviceStoreConnection.baseUrl);
-
+                        if (serviceStoreConnection.authSpecs != null)
+                        {
+                            Root_meta_external_store_service_metamodel_ServiceStore pureServiceStore = HelperServiceStoreBuilder.getServiceStore(serviceStoreConnection.element, serviceStoreConnection.elementSourceInformation, context);
+                            pureServiceStoreConnection._authSpecs(new PureMap(HelperServiceStoreBuilder.compileAuthenticationSpecification(serviceStoreConnection, pureServiceStore, context).stream().collect(Collectors.toMap(Pair::getOne, Pair::getTwo))));
+                        }
                         return pureServiceStoreConnection;
                     }
                     return null;
@@ -130,4 +143,28 @@ public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExten
     {
         return Collections.singletonList(ServiceStoreEmbeddedDataCompiler::compileServiceStoreEmbeddedDataCompiler);
     }
+
+    @Override
+    public List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> getExtraSecuritySchemeProcessors()
+    {
+        return Lists.mutable.with((scheme, context) ->
+        {
+            if (scheme instanceof SimpleHttpSecurityScheme)
+            {
+                SimpleHttpSecurityScheme simpleHttpSecurityScheme = (SimpleHttpSecurityScheme) scheme;
+                return new Root_meta_external_store_service_metamodel_SimpleHttpSecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::SimpleHttpSecurityScheme"))
+                        ._scheme(simpleHttpSecurityScheme.scheme);
+
+            }
+            else if (scheme instanceof ApiKeySecurityScheme)
+            {
+                ApiKeySecurityScheme apiKeySecurityScheme = (ApiKeySecurityScheme) scheme;
+                return new Root_meta_external_store_service_metamodel_ApiKeySecurityScheme_Impl("", null, context.pureModel.getClass("meta::external::store::service::metamodel::ApiKeySecurityScheme"))
+                        ._location(apiKeySecurityScheme.location)
+                        ._keyName(apiKeySecurityScheme.keyName);
+            }
+            return null;
+        });
+    }
+
 }

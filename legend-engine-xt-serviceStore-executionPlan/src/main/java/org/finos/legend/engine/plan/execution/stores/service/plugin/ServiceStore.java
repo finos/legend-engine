@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 
 public class ServiceStore
@@ -21,5 +22,10 @@ public class ServiceStore
     public static StoreExecutor build()
     {
         return ServiceStoreExecutor.INSTANCE;
+    }
+
+    public static StoreExecutor build(CredentialProviderProvider credentialProviderProvider)
+    {
+        return new ServiceStoreExecutor(new ServiceStoreState(credentialProviderProvider));
     }
 }

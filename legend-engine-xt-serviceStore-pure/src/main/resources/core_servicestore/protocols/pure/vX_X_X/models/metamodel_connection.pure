@@ -11,8 +11,10 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::*;
 
 Class meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ServiceStoreConnection extends meta::protocols::pure::vX_X_X::metamodel::runtime::Connection
 {
    baseUrl: String[1];
+   authSpecs: Map<String,AuthenticationSpecification>[0..1];
 }
