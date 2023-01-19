@@ -23,7 +23,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentic
    $a->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('AuthenticationSpecification')->cast(@meta::protocols::pure::vX_X_X::extension::runtime::connection::authentication::AuthenticationModuleSerializerExtension).transfers_authentication_transformAuthenticationSpecification->concatenate([
       u:meta::pure::runtime::connection::authentication::UserPasswordAuthenticationSpecification [1] |
                 ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::UserPasswordAuthenticationSpecification(
-                    _type = 'usernamePassword',
+                    _type = 'userPassword',
                     username = $u.username,
                     password = $u.password->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
                 ),
@@ -54,6 +54,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentic
             ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::EnvironmentSecret(
                 _type = 'environment',
                 envVariableName = $e.envVariableName
+            ),
+        s:meta::pure::runtime::connection::authentication::SystemPropertiesSecret[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::SystemPropertiesSecret(
+                _type = 'systemproperties',
+                systemPropertyName = $s.systemPropertyName
             ),
         a:meta::pure::runtime::connection::authentication::AWSSecretsManagerSecret[1] |
             ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSSecretsManagerSecret(

@@ -28,12 +28,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class CredentialVaultSecretParser
+public class CredentialVaultSecretParseTreeWalker
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext context;
 
-    public CredentialVaultSecretParser(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
+    public CredentialVaultSecretParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation)
+    {
+        this.walkerSourceInformation = walkerSourceInformation;
+        this.context = null;
+    }
+
+    public CredentialVaultSecretParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.context = context;
@@ -44,67 +50,67 @@ public class CredentialVaultSecretParser
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
         if (secretContext.propertiesSecret() != null)
         {
-            return this.visitPropertiesFileSecret(secretContext);
+            return this.visitPropertiesFileSecret(secretContext.propertiesSecret());
         }
         else if (secretContext.environmentSecret() != null)
         {
-            return this.visitEnvironmentSecret(secretContext);
+            return this.visitEnvironmentSecret(secretContext.environmentSecret());
         }
         else if (secretContext.systemPropertiesSecret() != null)
         {
-            return this.visitSystemPropertiesSecret(secretContext);
+            return this.visitSystemPropertiesSecret(secretContext.systemPropertiesSecret());
         }
         else if (secretContext.awsSecretsManagerSecret() != null)
         {
-            return this.awsSecretsManagerCredentialVaultSecret(secretContext);
+            return this.visitAwsSecretsManagerCredentialVaultSecret(secretContext.awsSecretsManagerSecret());
         }
         throw new EngineException("Unrecognized secret", sourceInformation, EngineErrorType.PARSER);
     }
 
-    private AWSSecretsManagerSecret awsSecretsManagerCredentialVaultSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public AWSSecretsManagerSecret visitAwsSecretsManagerCredentialVaultSecret(AuthenticationParserGrammar.AwsSecretsManagerSecretContext secretContext)
     {
         AWSSecretsManagerSecret credentialVaultSecret = new AWSSecretsManagerSecret();
-        AuthenticationParserGrammar.AwsSecretsManagerSecret_secretIdContext secretIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.awsSecretsManagerSecret().awsSecretsManagerSecret_secretId(), "secretId", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.AwsSecretsManagerSecret_secretIdContext secretIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.awsSecretsManagerSecret_secretId(), "secretId", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.secretId = PureGrammarParserUtility.fromGrammarString(secretIdContext.STRING().getText(), true);
 
-        AuthenticationParserGrammar.VersionIdContext versionIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.awsSecretsManagerSecret().versionId(), "versionId", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.VersionIdContext versionIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.versionId(), "versionId", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.versionId = PureGrammarParserUtility.fromGrammarString(versionIdContext.STRING().getText(), true);
 
-        AuthenticationParserGrammar.VersionStageContext versionStage = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.awsSecretsManagerSecret().versionStage(), "versionStage", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.VersionStageContext versionStage = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.versionStage(), "versionStage", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.versionStage = PureGrammarParserUtility.fromGrammarString(versionStage.STRING().getText(), true);
 
-        AuthenticationParserGrammar.AwsSecretsManagerSecret_awsCredentialsContext awsCredentialsContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.awsSecretsManagerSecret().awsSecretsManagerSecret_awsCredentials(), "awsCredentials", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.AwsSecretsManagerSecret_awsCredentialsContext awsCredentialsContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.awsSecretsManagerSecret_awsCredentials(), "awsCredentials", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.awsCredentials = this.visitAWSCredentials(awsCredentialsContext.awsCredentialsValue());
 
         return credentialVaultSecret;
     }
 
-    private CredentialVaultSecret visitSystemPropertiesSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public CredentialVaultSecret visitSystemPropertiesSecret(AuthenticationParserGrammar.SystemPropertiesSecretContext secretContext)
     {
         SystemPropertiesSecret credentialVaultSecret = new SystemPropertiesSecret();
         credentialVaultSecret.sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
-        AuthenticationParserGrammar.SystemPropertiesSecret_systemPropertyNameContext systemPropertyNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.systemPropertiesSecret().systemPropertiesSecret_systemPropertyName(), "systemPropertyName", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.SystemPropertiesSecret_systemPropertyNameContext systemPropertyNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.systemPropertiesSecret_systemPropertyName(), "systemPropertyName", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.systemPropertyName = PureGrammarParserUtility.fromGrammarString(systemPropertyNameContext.STRING().getText(), true);
 
         return credentialVaultSecret;
     }
 
 
-    private EnvironmentCredentialVaultSecret visitEnvironmentSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public EnvironmentCredentialVaultSecret visitEnvironmentSecret(AuthenticationParserGrammar.EnvironmentSecretContext secretContext)
     {
         EnvironmentCredentialVaultSecret credentialVaultSecret = new EnvironmentCredentialVaultSecret();
         credentialVaultSecret.sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
-        AuthenticationParserGrammar.EnvironmentSecret_envVariableNameContext envVariableNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.environmentSecret().environmentSecret_envVariableName(), "envVariableName", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.EnvironmentSecret_envVariableNameContext envVariableNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.environmentSecret_envVariableName(), "envVariableName", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.envVariableName = PureGrammarParserUtility.fromGrammarString(envVariableNameContext.STRING().getText(), true);
 
         return credentialVaultSecret;
     }
 
-    private PropertiesFileSecret visitPropertiesFileSecret(AuthenticationParserGrammar.Secret_valueContext secretContext)
+    public PropertiesFileSecret visitPropertiesFileSecret(AuthenticationParserGrammar.PropertiesSecretContext secretContext)
     {
         PropertiesFileSecret credentialVaultSecret = new PropertiesFileSecret();
         credentialVaultSecret.sourceInformation = walkerSourceInformation.getSourceInformation(secretContext);
-        AuthenticationParserGrammar.PropertiesSecret_propertyNameContext propertyNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.propertiesSecret().propertiesSecret_propertyName(), "propertyName", credentialVaultSecret.sourceInformation);
+        AuthenticationParserGrammar.PropertiesSecret_propertyNameContext propertyNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(secretContext.propertiesSecret_propertyName(), "propertyName", credentialVaultSecret.sourceInformation);
         credentialVaultSecret.propertyName = PureGrammarParserUtility.fromGrammarString(propertyNameContext.STRING().getText(), true);
 
         return credentialVaultSecret;

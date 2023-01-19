@@ -29,13 +29,13 @@ public class AWSCredentialsParser
 {
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext context;
-    private final CredentialVaultSecretParser credentialVaultSecretParser;
+    private final CredentialVaultSecretParseTreeWalker credentialVaultSecretParseTreeWalker;
 
-    public AWSCredentialsParser(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context, CredentialVaultSecretParser credentialVaultSecretParser)
+    public AWSCredentialsParser(ParseTreeWalkerSourceInformation walkerSourceInformation, PureGrammarParserContext context, CredentialVaultSecretParseTreeWalker credentialVaultSecretParseTreeWalker)
     {
         this.walkerSourceInformation = walkerSourceInformation;
         this.context = context;
-        this.credentialVaultSecretParser = credentialVaultSecretParser;
+        this.credentialVaultSecretParseTreeWalker = credentialVaultSecretParseTreeWalker;
     }
 
     public AWSCredentials visitAWSCredentials(AuthenticationParserGrammar.AwsCredentialsValueContext awsCredentialsContext)
@@ -65,10 +65,10 @@ public class AWSCredentialsParser
         staticAWSCredentials.sourceInformation = walkerSourceInformation.getSourceInformation(awsStaticCredentialsValue);
 
         AuthenticationParserGrammar.AwsStaticCredentialsValue_accessKeyIdContext accessKeyIdContext = PureGrammarParserUtility.validateAndExtractRequiredField(awsStaticCredentialsValue.awsStaticCredentialsValue_accessKeyId(), "accessKeyId", staticAWSCredentials.sourceInformation);
-        staticAWSCredentials.accessKeyId = this.credentialVaultSecretParser.visitCredentialVaultSecret(accessKeyIdContext.secret_value());
+        staticAWSCredentials.accessKeyId = this.credentialVaultSecretParseTreeWalker.visitCredentialVaultSecret(accessKeyIdContext.secret_value());
 
         AuthenticationParserGrammar.AwsStaticCredentialsValue_secretAccessKeyContext secretAccessKeyContext = PureGrammarParserUtility.validateAndExtractRequiredField(awsStaticCredentialsValue.awsStaticCredentialsValue_secretAccessKey(), "secretAccessKey", staticAWSCredentials.sourceInformation);
-        staticAWSCredentials.secretAccessKey = this.credentialVaultSecretParser.visitCredentialVaultSecret(secretAccessKeyContext.secret_value());
+        staticAWSCredentials.secretAccessKey = this.credentialVaultSecretParseTreeWalker.visitCredentialVaultSecret(secretAccessKeyContext.secret_value());
         return staticAWSCredentials;
     }
 }
