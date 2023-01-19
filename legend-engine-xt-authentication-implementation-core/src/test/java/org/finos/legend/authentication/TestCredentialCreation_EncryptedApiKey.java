@@ -27,6 +27,9 @@ import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredent
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -94,4 +97,13 @@ public class TestCredentialCreation_EncryptedApiKey
             "-----END ENCRYPTED PRIVATE KEY-----";
 
     private static String PASS = "changeme";
+
+    @Test
+    public void testChunk()
+    {
+        String[] tokens = PK.split("\n");
+        String privateKeyData = Arrays.stream(Arrays.copyOfRange(tokens, 1, tokens.length - 1)).collect(Collectors.joining());
+        String chunked = EncryptedPrivateKeyFromVaultRule.chunk(privateKeyData);
+        assertEquals(PK, tokens[0] + "\n" + chunked + "\n" + tokens[tokens.length - 1]);
+    }
 }
