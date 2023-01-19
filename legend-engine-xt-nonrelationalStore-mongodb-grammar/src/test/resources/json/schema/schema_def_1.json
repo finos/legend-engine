@@ -39,86 +39,38 @@
         "properties": {
           "name": {
             "description": "name of the employee",
-            "type": "string",
-            "minLength": {
-              "$numberInt": "2"
-            }
-          },
-          "location": {
-            "description": "location of the employee",
-            "$ref": "https://github.com/finos/legend/geography.schema"
+            "bsonType": "string",
+            "minLength": 2
           },
           "age": {
             "description": "age of the employee",
-            "type": "number",
-            "minimum": {
-              "$numberInt": "16"
-            }
+            "bsonType": "int",
+            "minimum": 16
           },
-          "hobbies": {
-            "description": "hobbies of the employee",
-            "type": "object",
+          "location": {
+            "description" : "Location of Employee",
+            "required" : ["country"],
+            "bsonType" : "object",
             "properties": {
-              "indoor": {
-                "items": {
-                  "description": "List of hobbies",
-                  "type": "string"
-                },
-                "minItems": {
-                  "$numberInt": "1"
-                },
-                "uniqueItems": true,
-                "type": "array"
+              "country": {
+                "description": "country of city",
+                "bsonType": "string"
               },
-              "outdoor": {
-                "items": {
-                  "description": "List of hobbies",
-                  "type": "string"
-                },
-                "minItems": {
-                  "$numberInt": "1"
-                },
-                "uniqueItems": true,
-                "type": "array"
+              "region": {
+                "description": "region of city",
+                "bsontType": "string",
+                "minLength": {
+                  "$numberInt": "2"
+                }
               }
-            },
-            "required": [
-              "indoor",
-              "outdoor"
-            ]
+            }
           }
         },
         "required": [
-          "id",
           "name",
-          "age",
-          "hobbies"
+          "age"
         ],
         "additionalProperties": true
-      },
-      {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "$id": "https://github.com/finos/legend/geography.schema",
-        "title": "Record of City to Region",
-        "description": "This document records the details of an city->country->region hierarchy",
-        "bsonType": "object",
-        "properties": {
-          "country": {
-            "description": "country of city",
-            "bsonType": "string"
-          },
-          "region": {
-            "description": "region of city",
-            "bsontType": "string",
-            "minLength": {
-              "$numberInt": "2"
-            }
-          },
-          "city": {
-            "description": "city",
-            "bsonType": "string"
-          }
-        }
       }
     ]
   }

@@ -265,23 +265,7 @@ Diagram meta::external::store::mongodb::metamodel::Mongo_StoreModel_Diagram(widt
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    GeneralizationView gview_1(
-        source=cview_5,
-        target=cview_1,
-        points=[(100.58239,375.15923),(99.98464,261.65059),(340.02811,264.14260)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
-    GeneralizationView gview_2(
-        source=cview_6,
-        target=cview_4,
-        points=[(356.13210,1026.41751),(356.20023,836.62674)],
-        label='',
-        color=#000000,
-        lineWidth=-1.0,
-        lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
         source=cview_7,

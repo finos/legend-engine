@@ -30,7 +30,9 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.mongodb.schema.grammar.from.antlr4.MongodbSchemaParser;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ArrayType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BaseType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BaseTypeVisitor;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BinaryType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.BoolType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Collection;
@@ -42,6 +44,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MaxKeyType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MinKeyType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectIdType;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.ObjectType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.PropertyType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.Schema;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.StringType;
@@ -233,13 +236,13 @@ public class MongodbSchemaGrammarParser
         return FastList.newList();
     }
 
-    private Collection visitCollection(MongodbSchemaParser.ValueContext dbValue, Map<String, Schema> schemas)
+    private Collection visitCollection(MongodbSchemaParser.ValueContext collectionContext, Map<String, Schema> schemas)
     {
         MongodbSchemaParser.PairContext pair;
-        if (dbValue.obj() != null)
+        if (collectionContext.obj() != null)
         {
             Collection col = new Collection();
-            Iterator<MongodbSchemaParser.PairContext> iter = dbValue.obj().pair().iterator();
+            Iterator<MongodbSchemaParser.PairContext> iter = collectionContext.obj().pair().iterator();
             while (iter.hasNext())
             {
                 pair = iter.next();
@@ -301,9 +304,10 @@ public class MongodbSchemaGrammarParser
         }
         else
         {
-            LOGGER.debug("Collections array should have collections object, but found: " + dbValue.getText());
+            int line = collectionContext.getStart().getLine();
+            SourceInformation sourceInformation = new SourceInformation("", line, 1, line, 1);
+            throw new MongodbSchemaParserException("Collection node is not an Object type, but found: " + collectionContext.getText(), sourceInformation);
         }
-        return null;
     }
 
 
@@ -325,15 +329,15 @@ public class MongodbSchemaGrammarParser
 
     /**
      * @param schemaContext {
-     *               "id": "base-uri",
-     *               "title": "Record of employee",
-     *               "description": "This document records the details of an employee",
-     *               "type": "object",
-     *               "properties": {
-     *               "id": {
-     *               "description": "A unique identifier for an employee",
-     *               "type": "number"
-     *               },...
+     *                      "id": "base-uri",
+     *                      "title": "Record of employee",
+     *                      "description": "This document records the details of an employee",
+     *                      "type": "object",
+     *                      "properties": {
+     *                      "id": {
+     *                      "description": "A unique identifier for an employee",
+     *                      "type": "number"
+     *                      },...
      */
     private Schema visitSchema(MongodbSchemaParser.ValueContext schemaContext)
     {
@@ -351,7 +355,11 @@ public class MongodbSchemaGrammarParser
                     case "\"properties\"":
                         schema.properties = visitProperties(schemaPair.value());
                         break;
-                    case "\"id\"":
+                    case "\"$schema\"":
+                        // Check schemaPair.value().STRING() is not null
+                        schema.schemaVersion = schemaPair.value().getText();
+                        break;
+                    case "\"$id\"":
                         // Check schemaPair.value().STRING() is not null
                         schema.id = schemaPair.value().getText();
                         break;
@@ -372,6 +380,7 @@ public class MongodbSchemaGrammarParser
                         break;
                     case "\"bsonType\"":
                     case "\"type\"":
+                        schema.bsonType = createTypeReferenceFromType(schemaPair.value().getText(), schemaPair.value().getStart().getLine());
                         break;
 
                 }
@@ -451,10 +460,7 @@ public class MongodbSchemaGrammarParser
     {
         if (value.obj() != null)
         {
-            if (getPropertySchemaType(value.obj()).equals(SchemaType.PRIMITIVE))
-            {
-                return visitSchema(value);
-            }
+            return visitSchema(value);
         }
         else
         {
@@ -464,7 +470,7 @@ public class MongodbSchemaGrammarParser
         return null;
     }
 
-    private BaseType createTypeReferenceFromPrimitiveType(String type, int lineNumber)
+    private BaseType createTypeReferenceFromType(String type, int lineNumber)
     {
         switch (type)
         {
@@ -509,10 +515,25 @@ public class MongodbSchemaGrammarParser
             {
                 return new MaxKeyType();
             }
+            case "array":
+            {
+                return new ArrayType();
+            }
+            case "object":
+            {
+                return new ObjectType()
+                {
+                    @Override
+                    public <T> T accept(BaseTypeVisitor<T> visitor)
+                    {
+                        return (visitor.visit(this));
+                    }
+                };
+            }
             default:
             {
                 SourceInformation sourceInformation = new SourceInformation("", lineNumber, 1, lineNumber, 1);
-                throw new MongodbSchemaParserException("Un-supported data type", sourceInformation);
+                throw new MongodbSchemaParserException("Un-supported data type: " + type, sourceInformation);
             }
             // Skipping Timestamp
         }
@@ -530,7 +551,7 @@ public class MongodbSchemaGrammarParser
         while (propTypeIter.hasNext())
         {
             MongodbSchemaParser.PairContext propType = propTypeIter.next();
-            if (propType.key().keywords().TYPE() != null)
+            if (propType.key().keywords().TYPE() != null || propType.key().keywords().BSONTYPE() != null)
             {
                 if ("object".equals(propType.value().getText()))
                 {

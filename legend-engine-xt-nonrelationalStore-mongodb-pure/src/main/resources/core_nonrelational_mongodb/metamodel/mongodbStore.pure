@@ -130,7 +130,7 @@ Class meta::external::store::mongodb::metamodel::Schema extends ObjectType
     schemaVersion : String[0..1];
 }
 
-Class meta::external::store::mongodb::metamodel::Collection extends ObjectType
+Class meta::external::store::mongodb::metamodel::Collection
 {
   owner: MongoDatabase[1];
   name: String[1];
