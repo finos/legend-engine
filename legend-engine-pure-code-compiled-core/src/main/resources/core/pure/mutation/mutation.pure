@@ -1,0 +1,218 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::shared::format::functions::*;
+import meta::external::shared::format::binding::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::mutation::*;
+import meta::pure::mutation::execution::*;
+
+function meta::pure::mutation::execution::mutationFunctions(): Function<Any>[*]
+{
+  [
+    // meta::pure::mutation::execution::insert_T_m__Integer_1_,
+    // meta::pure::mutation::execution::update_Class_1__Function_$0_1$__GraphFetchTree_1__Integer_1_,
+    // meta::pure::mutation::execution::delete_Class_1__Function_$0_1$__Integer_1_
+  ] 
+}
+
+native function meta::pure::mutation::execution::getInstanceId<T>(instance: T[1]): String[1];
+
+// ------------------------ LOCK ----------------------------
+
+// e.g.
+// function meta::pure::mutation::execution::deletePersonById(id: String[1]): Integer[1] {
+//   transaction(| Person->deleteByIds([$id]));
+// }
+
+Enum meta::pure::mutation::execution::LockStrategy {
+  OPTIMISTIC, // should we use some sort of timestamp/versioning (a virtual field?)
+  PESSIMISTIC // should we even support this?
+}
+
+// make it native, marker function, arguably, do we need this at all, or are we always optimistic
+// we don't need worry about it for now
+// e.g. strong isolation vs. optimistic locking
+native function meta::pure::mutation::execution::transaction(fn: Function<{->Integer[1]}>[1], strategy: LockStrategy[0..1]): Integer[1];
+
+// ------------------------ DELETE ----------------------------
+
+// delete(Person, $filter)
+// Person->delete($filter)
+// Person->delete(p|$p.name == 'Kelly')
+
+native function meta::pure::mutation::execution::delete<T>(type: Class<T>[1], filter: Function<{T[1]->Boolean[1]}>[1]): Integer[1];
+
+// --- By IDs
+// We need this set of functions since we don't want to expose IDs at the model level so we can refer to them in the filter
+
+function meta::pure::mutation::execution::deleteByIds<T>(type: Class<T>[1], ids: String[*]): Integer[1] {
+  $type->delete(p|$p->getInstanceId()->in($ids));
+}
+
+// ------------------------ INSERT ----------------------------
+
+// e.g.
+// insert(Person, $binding, '{"name":"John"}')
+// Person->insert($binding, '{"name":"John"}')
+// Person->insert($values, { onConflictPropertyName: 'name', updateStrategy: UpsertUpdateStrategy.REPLACE })
+
+Enum meta::pure::mutation::execution::UpsertUpdateStrategy {
+  REPLACE,
+  MERGE,
+  FAIL_ON_CONFLICT // default
+}
+
+Class meta::pure::mutation::execution::UpsertConfiguration {
+  // NOTE: the `onConflictPropertyName` value should only be primitive/enum properties of multiplicity [1] or [0..1]
+  onConflictPropertyName: String[1]; // when conflict happen on this property, upsert
+  strategy: UpsertUpdateStrategy[0..1]; // default to FAIL_ON_CONFLICT
+
+  // propertiesToUpdate: String[*]; // TODO?: properties to update on conflict
+  // filter: Function<{T[1]->Boolean[1]}>[0..1]; // TODO?: further filter which can be used on conflicting instances
+}
+
+function meta::pure::mutation::execution::insert<T>(type: Class<T>[1], binding: Binding[1], values: String[*]): Integer[1] {
+  $type->insert($binding, $values, []);
+}
+
+function meta::pure::mutation::execution::insert<T>(type: Class<T>[1], binding: Binding[1], values: String[*], upsertConfiguration: UpsertConfiguration[0..1]): Integer[1] {
+  $type->insert($values->map(v| internalize($type, $binding, $v)), $upsertConfiguration);
+}
+
+function meta::pure::mutation::execution::insert<T>(type: Class<T>[1], values: T[*]): Integer[1] {
+  $type->insert($values, []);
+}
+
+native function meta::pure::mutation::execution::insert<T>(type: Class<T>[1], values: T[*], upsertConfiguration: UpsertConfiguration[0..1]): Integer[1];
+
+// ------------------------ UPDATE ----------------------------
+
+// NOTE: this will fully replace the updated instances
+
+// e.g.
+// update(Person, $binding, '{"name":"John"}', $filter)
+// Person->update($binding, '{"name":"John"}', $filter)
+// Person->update($value, p|$p.name == 'An')
+// Person->update($value, p|$p.name == 'An')
+// Person->updateByIds($value, ['id1', 'id2'])
+
+function meta::pure::mutation::execution::update<T>(type: Class<T>[1], binding: Binding[1], value: String[1], filter: Function<{T[1]->Boolean[1]}>[1]): Integer[1] {
+  $type->update(internalize($type, $binding, $value)->toOne(), $filter);
+}
+
+native function meta::pure::mutation::execution::update<T>(type: Class<T>[1], value: T[1], filter: Function<{T[1]->Boolean[1]}>[1]): Integer[1];
+
+// --- By IDs
+// We need this set of functions since we don't want to expose IDs at the model level so we can refer to them in the filter
+
+function meta::pure::mutation::execution::updateByIds<T>(type: Class<T>[1], binding: Binding[1], value: String[1], ids: String[*]): Integer[1] {
+  $type->updateByIds(internalize($type, $binding, $value)->toOne(), $ids);
+}
+
+function meta::pure::mutation::execution::updateByIds<T>(type: Class<T>[1], value: T[1], ids: String[*]): Integer[1] {
+  $type->update($value, p|$p->getInstanceId()->in($ids));
+}
+
+// ------------------------- PATCH -----------------------------
+
+// e.g.
+// Person->patch([^PatchData(field='children', value=[$personA])], p|$p.name == 'Peter')
+// Person->patchByIds([^PatchData(field='children', value=[], strategy=PatchStrategy.REPLACE)], ['id1', 'id2'])
+
+Enum meta::pure::mutation::execution::PatchStrategy
+{
+  // patch add: override on all fields, except for multiple fields, add to the existing list
+  ADD, // default mode
+
+  // same overriding behavior as ADD, but for multiple fields, replace instead of add on to it
+  REPLACE // OR PATCH_REMOVE
+}
+
+Class meta::pure::mutation::execution::PatchData
+{
+  field: String[1]; // we can be creative here if we want to support nested edition?
+  value: Any[*];
+  strategy: PatchStrategy[0..1]; // default to ADD
+}
+
+native function meta::pure::mutation::execution::patch<T>(type: Class<T>[1], data: PatchData[*], filter: Function<{T[1]->Boolean[1]}>[1]): Integer[1];
+
+// --- By IDs
+// We need this set of functions since we don't want to expose IDs at the model level so we can refer to them in the filter
+
+function meta::pure::mutation::execution::patchByIds<T>(type: Class<T>[1], data: PatchData[*], ids: String[*]): Integer[1] {
+  $type->patch($data, p|$p->getInstanceId()->in($ids));
+}
+
+
+// ------------------------------------- EXAMPLE / USE CASES ---------------------------------------
+// Let's consider the following use case and various mutation scenarios and how we use the set of
+// functions defined above to adapt to each case
+
+###Pure
+import meta::pure::mutation::execution::*;
+import meta::pure::mutation::execution::example::*;
+
+Class meta::pure::mutation::execution::example::Person
+{
+  name: String[1];
+  (composite) account: Account[1];
+  children: Person[*];
+}
+
+Class meta::pure::mutation::execution::example::Account
+{
+  username: String[1];
+}
+
+function meta::pure::mutation::execution::example::useCases(): Any[*]
+{
+  let newPerson = ^Person(name='Dave', account=^Account(username='dave07f'));
+
+  // 1. insert a Person
+  Person->insert($newPerson); // assume id is 1
+
+  // we need to think about how to get ID of instances
+  let newPersonId = getInstanceId($newPerson);
+
+  // 2. insert an Account
+  let newAccount = ^Account(username='new_dave');
+  Account->insert($newAccount);
+
+  // 3. update relationship Person-Account
+  Person->patch([
+    ^PatchData(field='account', value=$newAccount)
+  ], p|$p.name == 'Dave');
+
+  // 4. create relationship Person-Person
+  Person->patchByIds([^PatchData(field='children', value=[
+    ^Person(name='Tony',account=^Account(username='toni_123')),
+    ^Person(name='Kevin',account=^Account(username='kev1975'))
+  ])], ['1', $newPersonId]);
+
+  // 5. remove relationship Person-Person
+  Person->patchByIds([
+    ^PatchData(field='children', value=[], strategy=PatchStrategy.REPLACE)
+  ], ['1']);
+
+  // 5. update instance Account
+  // Account->update(^Account(username='new_new_dave'), a|$a.name == 'Dave');
+  Account->updateByIds(^Account(username='new_new_dave'), ['3']);
+
+  // 6. remove instance Account
+  Account->delete(a|$a.username == 'some_account');
+
+  '';
+}
