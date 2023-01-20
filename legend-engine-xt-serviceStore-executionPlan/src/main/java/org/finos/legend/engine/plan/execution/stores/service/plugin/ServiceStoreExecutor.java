@@ -19,19 +19,19 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 
 public class ServiceStoreExecutor implements StoreExecutor
 {
-    static final ServiceStoreExecutor INSTANCE = new ServiceStoreExecutor(new ServiceStoreState());
-
     private final ServiceStoreState state;
+    private final ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration;
 
-    private ServiceStoreExecutor(ServiceStoreState state)
+    public ServiceStoreExecutor(ServiceStoreState state,ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration)
     {
         this.state = state;
+        this.serviceStoreExecutionConfiguration = serviceStoreExecutionConfiguration;
     }
 
     @Override
     public StoreExecutionState buildStoreExecutionState()
     {
-        return new ServiceStoreExecutionState(this.state);
+        return new ServiceStoreExecutionState(this.state, this.serviceStoreExecutionConfiguration.getCredentialProviderProvider());
     }
 
     @Override

@@ -15,10 +15,12 @@
 package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
+import org.finos.legend.engine.plan.execution.stores.service.ServiceExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -26,16 +28,23 @@ public class ServiceStoreExecutionState implements StoreExecutionState
 {
     private final ServiceStoreState state;
     private RuntimeContext runtimeContext;
+    private CredentialProviderProvider credentialProviderProvider;
 
-    public ServiceStoreExecutionState(ServiceStoreState state, RuntimeContext runtimeContext)
+    public ServiceStoreExecutionState(ServiceStoreState state, RuntimeContext runtimeContext,CredentialProviderProvider credentialProviderProvider)
     {
         this.state = state;
         this.runtimeContext = runtimeContext;
+        this.credentialProviderProvider = credentialProviderProvider;
     }
 
     public ServiceStoreExecutionState(ServiceStoreState state)
     {
-        this(state, RuntimeContext.empty());
+        this(state, RuntimeContext.empty(),CredentialProviderProvider.builder().build());
+    }
+
+    public ServiceStoreExecutionState(ServiceStoreState state,CredentialProviderProvider credentialProviderProvider)
+    {
+        this(state, RuntimeContext.empty(),credentialProviderProvider);
     }
 
     @Override
@@ -53,7 +62,7 @@ public class ServiceStoreExecutionState implements StoreExecutionState
     @Override
     public StoreExecutionState copy()
     {
-        return new ServiceStoreExecutionState(this.state, this.runtimeContext);
+        return new ServiceStoreExecutionState(this.state, this.runtimeContext,this.credentialProviderProvider);
     }
 
     @Override
@@ -66,5 +75,10 @@ public class ServiceStoreExecutionState implements StoreExecutionState
     public void setRuntimeContext(RuntimeContext runtimeContext)
     {
         this.runtimeContext = runtimeContext;
+    }
+
+    public CredentialProviderProvider getCredentialProviderProvider()
+    {
+        return credentialProviderProvider;
     }
 }
