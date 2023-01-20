@@ -15,6 +15,7 @@
 package org.finos.legend.authentication.vault.impl;
 
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
@@ -53,10 +54,20 @@ public class TestAWSSecretsManagerVault
     {
         System.setProperty("TestAWSSecretsManagerVault_ACCESS_KEY_ID", this.accessKeyFromGithubEnv);
         System.setProperty("TestAWSSecretsManagerVault_SECRET_ACCESS_KEY", this.secretAccessKeyFromGithubEnv);
-        CredentialVaultProvider credentialVaultProvider = new CredentialVaultProvider();
-        credentialVaultProvider.register(new SystemPropertiesCredentialVault());
 
-        AWSSecretsManagerVault awsSecretsManagerVault = new AWSSecretsManagerVault(credentialVaultProvider);
+        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
+                .with(new SystemPropertiesCredentialVault())
+                .build();
+
+        AWSSecretsManagerVault awsSecretsManagerVault = AWSSecretsManagerVault.builder()
+                .with(platformCredentialVaultProvider)
+                .build();
+
+        CredentialVaultProvider.builder()
+                .with(platformCredentialVaultProvider)
+                .with(awsSecretsManagerVault)
+                .build();
+
         AWSSecretsManagerSecret awsSecretsManagerSecret = new AWSSecretsManagerSecret(
                 this.secretIdFromGithubEnv,
                 null,
