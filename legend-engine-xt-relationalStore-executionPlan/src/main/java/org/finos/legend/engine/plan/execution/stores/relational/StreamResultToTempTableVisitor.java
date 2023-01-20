@@ -55,6 +55,8 @@ import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator.generateId;
+
 public class StreamResultToTempTableVisitor implements RelationalDatabaseCommandsVisitor<Boolean>
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
@@ -136,7 +138,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
         }
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
-            try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
+            try (TemporaryFile tempFile = new TemporaryFile(config.tempPath, generateId()))
             {
                 CsvSerializer csvSerializer;
                 if (result instanceof RelationalResult)

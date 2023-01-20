@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.blockConnection;
 
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ public class BlockConnection implements Connection
     private List<String> rollbackQueries;
     private List<String> commitQueries;
     public BlockConnectionState blockConnectionState;
+    public DatabaseConnection databaseConnection;
 
     public BlockConnection(Connection c)
     {

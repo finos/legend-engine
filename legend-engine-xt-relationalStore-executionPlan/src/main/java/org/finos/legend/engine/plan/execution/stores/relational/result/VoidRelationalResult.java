@@ -30,10 +30,15 @@ import java.sql.Statement;
 
 public class VoidRelationalResult extends Result
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
+    protected static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Execution Server");
 
-    private Connection connection;
-    private Statement statement;
+    protected Connection connection;
+    protected Statement statement;
+
+    public VoidRelationalResult()
+    {
+        super("VOID");
+    }
 
     public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, MutableList<CommonProfile> profiles)
     {
@@ -41,15 +46,10 @@ public class VoidRelationalResult extends Result
 
         try
         {
-            String sql = ((RelationalExecutionActivity) activities.getLast()).sql;
             this.connection = connection;
-            this.statement = connection.createStatement();
-            long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
-            this.statement.execute(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            execute(((RelationalExecutionActivity) activities.getLast()).sql, this.connection, profiles);
         }
-        catch (SQLException e)
+        catch (Exception e)
         {
             throw new RuntimeException(e);
         }
@@ -89,4 +89,21 @@ public class VoidRelationalResult extends Result
             }
         }
     }
+
+    public void execute(String sql, Connection connection,  MutableList<CommonProfile> profiles)
+    {
+        try
+        {
+            this.statement = connection.createStatement();
+            long start = System.currentTimeMillis();
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, sql).toString());
+            this.statement.execute(sql);
+            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
