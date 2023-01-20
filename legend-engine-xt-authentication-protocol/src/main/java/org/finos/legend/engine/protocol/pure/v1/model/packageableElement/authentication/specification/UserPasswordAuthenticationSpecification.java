@@ -18,7 +18,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 
 public class UserPasswordAuthenticationSpecification extends AuthenticationSpecification
 {
-    public String userName;
+    public String username;
     public CredentialVaultSecret password;
 
     public UserPasswordAuthenticationSpecification()
@@ -26,9 +26,9 @@ public class UserPasswordAuthenticationSpecification extends AuthenticationSpeci
 
     }
 
-    public UserPasswordAuthenticationSpecification(String userName, CredentialVaultSecret password)
+    public UserPasswordAuthenticationSpecification(String username, CredentialVaultSecret password)
     {
-        this.userName = userName;
+        this.username = username;
         this.password = password;
     }
 
