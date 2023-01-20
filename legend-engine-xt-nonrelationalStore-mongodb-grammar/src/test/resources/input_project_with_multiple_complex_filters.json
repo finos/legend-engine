@@ -1,0 +1,17 @@
+{
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$project": {
+        "fName": 1,
+        "names.firstName": false,
+        "addresses.homeAddress.city": true,
+        "homeCountry": "$addresses.homeAddress.city",
+       "lastName": "$lName",
+        "address2": false,
+        "lName": 0
+      }
+    }
+  ],
+  "cursor": {}
+}

@@ -186,6 +186,55 @@ public class MongoDbQueryParseTreeWalkerTest
 
     }
 
+    @Test
+    public void testProjectWithSingleFilter() throws Exception
+    {
+        String input = resourceAsString("input_project_with_single_filter.json");
+        String expectedOutput = resourceAsString("output_project_with_single_filter.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testProjectWithMultipleFilters() throws Exception
+    {
+        String input = resourceAsString("input_project_with_multiple_filters.json");
+        String expectedOutput = resourceAsString("output_project_with_multiple_filters.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
+
+    @Test
+    public void testProjectWithMultipleComplexFilters() throws Exception
+    {
+        String input = resourceAsString("input_project_with_multiple_complex_filters.json");
+        String expectedOutput = resourceAsString("output_project_with_multiple_complex_filters.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
+    public void testProjectWithSingleComputedField() throws Exception
+    {
+        String input = resourceAsString("input_project_with_single_computed_field.json");
+        String expectedOutput = resourceAsString("output_project_with_single_computed_field.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
 
     private MongoDbQueryParser getParser(CommonTokenStream tokens)
     {

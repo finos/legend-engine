@@ -188,11 +188,11 @@ meta::external::store::mongodb::metamodel::aggregation::MatchStage extends Stage
 Class {doc.doc = 'Maps to { $project { $fieldName { <specification> } } }'}
 meta::external::store::mongodb::metamodel::aggregation::ProjectStage extends Stage
 {
-  expression: ProjectExpression[*];
+  filters: ArgumentExpression[1];
 }
 
 Class {doc.doc = 'Same as Project stage, and alias for set stage'}
-meta::external::store::mongodb::metamodel::aggregation::AddFieldsStage extends ProjectStage
+meta::external::store::mongodb::metamodel::aggregation::AddFieldsStage extends Stage
 {
 }
 
@@ -256,6 +256,12 @@ Class meta::external::store::mongodb::metamodel::aggregation::ExpressionObject e
   argument: ArgumentExpression[1];
 }
 
+Class {doc.doc = 'Computed field for Project expressions with format $fieldName'}
+meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue extends ArgumentExpression
+{
+  computedValue: StringTypeValue[1];
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue 
 {
 }
@@ -268,6 +274,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::StringTypeValue ex
 Class meta::external::store::mongodb::metamodel::aggregation::IntTypeValue extends BaseTypeValue
 {
   value: Integer[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::BoolTypeValue extends BaseTypeValue
+{
+  value: Boolean[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue

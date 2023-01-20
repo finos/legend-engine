@@ -1,0 +1,73 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"person\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "projectStage",
+        "filters": {
+          "_type": "arrayArgumentExpression",
+          "expressions": [
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"fName\""
+              },
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "intTypeValue",
+                  "value": 1
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"address1\""
+              },
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "boolTypeValue",
+                  "value": true
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"address2\""
+              },
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "boolTypeValue",
+                  "value": false
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"lName\""
+              },
+              "argument": {
+                "_type": "literalValue",
+                "value": {
+                  "_type": "intTypeValue",
+                  "value": 0
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "aggregate": "person",
+  "pipeline": [
+    {
+      "$project": {
+        "fName": "$firstName"
+      }
+    }
+  ],
+  "cursor": {}
+}

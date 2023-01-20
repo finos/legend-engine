@@ -35,17 +35,19 @@ matchStage:
 
 //https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/
 projectStage:
-    '{' PROJECT ':'  (BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE) '}';
+    '{' PROJECT ':'  (BRACE_OPEN BRACE_CLOSE | projectFilterExpression ) '}';
 
 // TODO: handle taking in $cond as an arguement to $project pipeline https://www.mongodb.com/docs/manual/reference/operator/aggregation/cond/
 // TODO: handle taking in $substr https://www.mongodb.com/docs/manual/reference/operator/aggregation/substr/
 // TODO: handle taking in $substrBytes https://www.mongodb.com/docs/manual/reference/operator/aggregation/substrBytes/#mongodb-expression-exp.-substrBytes
-projectExpression: STRING ':' ( projectionValue | ( BRACE_OPEN projectExpression? ( ',' projectExpression )* BRACE_CLOSE ) );
-
-projectionValue: '0' | '1' | 'true' | 'false' | projectionComputedFieldValue;
-
+// equivalent of queryExpression
+projectFilterExpression: BRACE_OPEN projectFilter ( ',' projectFilter )* BRACE_CLOSE;
+// equivalent of expression
+projectFilter: STRING ':' projectFilterValue;
+// equivalent of expressionValue
+projectFilterValue: '0' | '1' | 'true' | 'false' | projectComputedFieldValue | projectFilterExpression;
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
-projectionComputedFieldValue: STRING_WITH_DOLLAR;
+projectComputedFieldValue: STRING_WITH_DOLLAR;
 
 
 
