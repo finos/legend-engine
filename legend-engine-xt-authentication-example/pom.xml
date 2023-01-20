@@ -115,6 +115,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-implementation-vault-aws</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- Drivers -->
@@ -123,13 +127,6 @@
             <artifactId>h2</artifactId>
         </dependency>
         <!-- Drivers -->
-
-        <!-- Eclipse -->
-        <dependency>
-            <groupId>org.eclipse.collections</groupId>
-            <artifactId>eclipse-collections-api</artifactId>
-        </dependency>
-        <!-- Eclipse -->
 
         <dependency>
             <groupId>junit</groupId>

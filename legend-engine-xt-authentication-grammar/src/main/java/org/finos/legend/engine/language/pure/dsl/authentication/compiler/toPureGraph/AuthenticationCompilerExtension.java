@@ -20,22 +20,11 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_ApiKeyAuthenticationSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_CredentialVaultSecret;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_PropertiesFileSecret_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_SystemPropertiesSecret_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_EnvironmentSecret_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_UserPasswordAuthenticationSpecification_Impl;
 
 import java.util.List;
 import java.util.Objects;
@@ -54,24 +43,8 @@ public class AuthenticationCompilerExtension implements IAuthenticationCompilerE
     {
         return Lists.mutable.with((authSpec, context) ->
         {
-            if (authSpec instanceof UserPasswordAuthenticationSpecification)
-            {
-                UserPasswordAuthenticationSpecification userPasswordAuthenticationSpecification = (UserPasswordAuthenticationSpecification) authSpec;
-                return new Root_meta_pure_runtime_connection_authentication_UserPasswordAuthenticationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::UserPasswordAuthenticationSpecification"))
-                        ._username(userPasswordAuthenticationSpecification.username)
-                        ._password(buildSecret(userPasswordAuthenticationSpecification.password, context));
-
-            }
-            else if (authSpec instanceof ApiKeyAuthenticationSpecification)
-            {
-                ApiKeyAuthenticationSpecification apiKeyAuthenticationSpecification = (ApiKeyAuthenticationSpecification) authSpec;
-                String ENUM_PATH = "meta::pure::runtime::connection::authentication::Location";
-                return new Root_meta_pure_runtime_connection_authentication_ApiKeyAuthenticationSpecification_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification"))
-                        ._location(context.resolveEnumValue(ENUM_PATH, apiKeyAuthenticationSpecification.location.name()))
-                        ._keyName(apiKeyAuthenticationSpecification.keyName)
-                        ._value(buildSecret(apiKeyAuthenticationSpecification.value, context));
-            }
-            return null;
+            HelperAuthenticationBuilder.AuthenticationSpecificationBuilder builder = new HelperAuthenticationBuilder.AuthenticationSpecificationBuilder(context);
+            return authSpec.accept(builder);
         });
     }
 
@@ -79,25 +52,8 @@ public class AuthenticationCompilerExtension implements IAuthenticationCompilerE
     {
         return Lists.mutable.with((credentialVaultSecret, context) ->
         {
-            if (credentialVaultSecret instanceof PropertiesFileSecret)
-            {
-                PropertiesFileSecret propertiesFileSecret = (PropertiesFileSecret) credentialVaultSecret;
-                return new Root_meta_pure_runtime_connection_authentication_PropertiesFileSecret_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::PropertiesFileSecret"))
-                        ._propertyName(propertiesFileSecret.propertyName);
-            }
-            else if (credentialVaultSecret instanceof SystemPropertiesSecret)
-            {
-                SystemPropertiesSecret systemPropertiesSecret = (SystemPropertiesSecret) credentialVaultSecret;
-                return new Root_meta_pure_runtime_connection_authentication_SystemPropertiesSecret_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::SystemPropertiesSecret"))
-                        ._systemPropertyName(systemPropertiesSecret.systemPropertyName);
-            }
-            else if (credentialVaultSecret instanceof EnvironmentCredentialVaultSecret)
-            {
-                EnvironmentCredentialVaultSecret environmentCredentialVaultSecret = (EnvironmentCredentialVaultSecret) credentialVaultSecret;
-                return new Root_meta_pure_runtime_connection_authentication_EnvironmentSecret_Impl("", null, context.pureModel.getClass("meta::pure::runtime::connection::authentication::EnvironmentSecret"))
-                        ._envVariableName(environmentCredentialVaultSecret.envVariableName);
-            }
-            return null;
+            HelperAuthenticationBuilder.CredentialVaultSecretBuilder builder = new HelperAuthenticationBuilder.CredentialVaultSecretBuilder(context);
+            return credentialVaultSecret.accept(builder);
         });
     }
 

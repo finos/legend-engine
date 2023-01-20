@@ -42,7 +42,7 @@ public class HelperAuthenticationBuilder
         return authenticationSpecification.accept(new AuthenticationSpecificationBuilder(context));
     }
 
-    private static class AuthenticationSpecificationBuilder implements AuthenticationSpecificationVisitor<Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification>
+    public static class AuthenticationSpecificationBuilder implements AuthenticationSpecificationVisitor<Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification>
     {
         private CompileContext context;
 

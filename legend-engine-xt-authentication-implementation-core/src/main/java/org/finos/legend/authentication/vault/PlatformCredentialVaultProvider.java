@@ -14,31 +14,41 @@
 
 package org.finos.legend.authentication.vault;
 
+import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 
-public class CredentialVaultProvider
+public class PlatformCredentialVaultProvider
 {
-     private MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault> vaults = Maps.mutable.empty();
+     private MutableMap<Class<? extends CredentialVaultSecret>, CredentialVault> vaultsByType = Maps.mutable.empty();
 
-     public CredentialVaultProvider()
+     private ImmutableList<CredentialVault> vaults;
+
+     public PlatformCredentialVaultProvider(ImmutableList<CredentialVault> vaults)
      {
+          this.vaults = vaults;
+          for (CredentialVault vault : vaults)
+          {
+               this.vaultsByType.put(vault.getSecretType(), vault);
+          }
      }
 
-     public void register(CredentialVault credentialVault)
+     public ImmutableList<CredentialVault> getVaults()
      {
-          this.vaults.put(credentialVault.getSecretType(), credentialVault);
+          return vaults;
      }
 
      public CredentialVault getVault(CredentialVaultSecret credentialVaultSecret) throws Exception
      {
           Class<? extends CredentialVaultSecret> secretClass = credentialVaultSecret.getClass();
-          if (!this.vaults.containsKey(secretClass))
+          if (!this.vaultsByType.containsKey(secretClass))
           {
                throw new RuntimeException(String.format("CredentialVault for secret of type '%s' has not been registered in the system", secretClass));
           }
-          return this.vaults.get(secretClass);
+          return this.vaultsByType.get(secretClass);
      }
 
      public static Builder builder()
@@ -48,25 +58,17 @@ public class CredentialVaultProvider
 
      public static class Builder
      {
-          private CredentialVaultProvider credentialVaultProvider = new CredentialVaultProvider();
-          private PlatformCredentialVaultProvider platformCredentialVaultProvider;
-
-          public Builder with(PlatformCredentialVaultProvider platformCredentialVaultProvider)
-          {
-               this.platformCredentialVaultProvider = platformCredentialVaultProvider;
-               this.platformCredentialVaultProvider.getVaults().forEach(vault -> credentialVaultProvider.register(vault));
-               return this;
-          }
+          private MutableList<CredentialVault> vaults = Lists.mutable.empty();
 
           public Builder with(CredentialVault credentialVault)
           {
-               credentialVaultProvider.register(credentialVault);
+               this.vaults.add(credentialVault);
                return this;
           }
 
-          public CredentialVaultProvider build()
+          public PlatformCredentialVaultProvider build()
           {
-               return credentialVaultProvider;
+               return new PlatformCredentialVaultProvider(this.vaults.toImmutable());
           }
      }
 }

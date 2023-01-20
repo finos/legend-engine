@@ -2,4 +2,6 @@
 
 * [Authentication Concepts](concepts.md)
 * [Model Examples](model-examples.md)
-* [Code Organization](code.md)
+* [AWS Model Examples](aws-model-examples.md)
+* [Code Examples](code-examples.md)
+* [Code Organization](code-organization.md)
