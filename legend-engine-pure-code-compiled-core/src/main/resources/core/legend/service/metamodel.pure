@@ -111,7 +111,7 @@ Class  meta::legend::service::metamodel::KeyedExecutionParameter
 // Test Model
 Class meta::legend::service::metamodel::ServiceTestSuite extends meta::pure::test::TestSuite
 {
-  testData   : TestData[1];
+  serviceTestData : ServiceTestData[1];
 }
 
 Class meta::legend::service::metamodel::ServiceTest extends meta::pure::test::AtomicTest
@@ -127,7 +127,7 @@ Class meta::legend::service::metamodel::ParameterValue
   value      : Any[*];
 }
 
-Class meta::legend::service::metamodel::TestData
+Class meta::legend::service::metamodel::ServiceTestData
 {
   connectionsTestData : ConnectionTestData[*];
 }
@@ -189,8 +189,56 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
 {
     TypeView cview_7(
         type=meta::pure::test::TestSuite,
-        position=(1153.40967, 448.00000),
+        position=(1220.40967, 409.00000),
         width=97.38477,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::pure::test::AtomicTest,
+        position=(856.43457, 404.00000),
+        width=179.96191,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::legend::service::metamodel::ServiceTest,
+        position=(853.00000, 548.00000),
+        width=186.86914,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::legend::service::metamodel::ConnectionTestData,
+        position=(1507.94825, 681.00000),
+        width=165.48145,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::pure::data::EmbeddedData,
+        position=(1801.94825, 690.00000),
+        width=107.35156,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -201,8 +249,8 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
 
     TypeView cview_5(
         type=meta::pure::test::Test,
-        position=(1007.43457, 269.00000),
-        width=97.38477,
+        position=(1052.43457, 265.00000),
+        width=127.38965,
         height=58.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -211,11 +259,11 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_4(
-        type=meta::pure::test::AtomicTest,
-        position=(891.43457, 411.00000),
-        width=179.96191,
-        height=58.00000,
+    TypeView cview_14(
+        type=meta::legend::service::metamodel::Service,
+        position=(346.94825, 550.00000),
+        width=197.25146,
+        height=142.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -223,11 +271,11 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_8(
-        type=meta::pure::test::assertion::TestAssertion,
-        position=(629.10205, 411.00000),
-        width=99.13086,
-        height=58.00000,
+    TypeView cview_15(
+        type=meta::pure::test::Testable,
+        position=(410.94825, 279.00000),
+        width=67.79492,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -235,10 +283,10 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_9(
-        type=meta::pure::test::assertion::EqualToJson,
-        position=(512.10205, 554.00000),
-        width=169.76758,
+    TypeView cview_10(
+        type=meta::legend::service::metamodel::ServiceTestSuite,
+        position=(1163.94825, 567.00000),
+        width=210.36230,
         height=44.00000,
         stereotypesVisible=true,
         attributesVisible=true,
@@ -247,11 +295,11 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         color=#FFFFCC,
         lineWidth=1.0)
 
-    TypeView cview_3(
-        type=meta::legend::service::metamodel::ServiceTest,
-        position=(742.00000, 547.00000),
-        width=186.86914,
-        height=58.00000,
+    TypeView cview_16(
+        type=meta::legend::service::metamodel::ServiceTestData,
+        position=(1534.62403, 576.50000),
+        width=112.49609,
+        height=30.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -262,7 +310,7 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
     GeneralizationView gview_0(
         source=cview_3,
         target=cview_4,
-        points=[(835.43457,576.00000),(981.41553,440.00000)],
+        points=[(946.43457,584.00000),(946.41553,440.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -271,7 +319,7 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
     GeneralizationView gview_1(
         source=cview_4,
         target=cview_5,
-        points=[(981.41553,440.00000),(1056.12695,298.00000)],
+        points=[(946.41553,440.00000),(1116.12939,294.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -280,26 +328,35 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
     GeneralizationView gview_2(
         source=cview_7,
         target=cview_5,
-        points=[(1202.10205,470.00000),(1056.12695,298.00000)],
+        points=[(1269.10205,431.00000),(1116.12939,294.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     GeneralizationView gview_3(
-        source=cview_9,
-        target=cview_8,
-        points=[(596.98584,576.00000),(678.66748,440.00000)],
+        source=cview_10,
+        target=cview_7,
+        points=[(1269.12940,589.00000),(1269.10206,431.00000)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_14,
+        target=cview_15,
+        points=[(445.57398,621.00000),(444.84571,294.00000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
     PropertyView pview_0(
-        property=meta::pure::test::TestSuite.tests,
-        source=cview_7,
-        target=cview_4
-,        points=[(1202.10205,470.00000),(981.41553,440.00000)],
+        property=meta::legend::service::metamodel::ConnectionTestData.testData,
+        source=cview_12,
+        target=cview_13,
+        points=[(1590.68897,710.00000),(1855.62403,712.00000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),
@@ -310,10 +367,38 @@ Diagram meta::legend::service::metamodel::ServiceDiagram(width=0.0, height=0.0)
         lineStyle=SIMPLE)
 
     PropertyView pview_1(
-        property=meta::pure::test::AtomicTest.assertions,
-        source=cview_4,
-        target=cview_8
-,        points=[(981.41553,440.00000),(678.66748,440.00000)],
+        property=meta::pure::test::Testable.tests,
+        source=cview_15,
+        target=cview_5,
+        points=[(444.84571,294.00000),(1116.12939,294.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::legend::service::metamodel::ServiceTestData.connectionsTestData,
+        source=cview_16,
+        target=cview_12,
+        points=[(1590.87208,591.50000),(1590.68898,710.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::legend::service::metamodel::ServiceTestSuite.serviceTestData,
+        source=cview_10,
+        target=cview_16,
+        points=[(1269.12940,589.00000),(1590.87208,591.50000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

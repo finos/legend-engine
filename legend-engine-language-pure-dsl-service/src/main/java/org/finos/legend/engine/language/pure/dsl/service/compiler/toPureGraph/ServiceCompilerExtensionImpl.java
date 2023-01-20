@@ -233,7 +233,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 pureServiceTestSuite._id(test.id);
                 if (serviceTestSuite.testData != null)
                 {
-                    pureServiceTestSuite._testData(HelperServiceBuilder.processServiceTestSuiteData(serviceTestSuite.testData, context, processingContext));
+                    pureServiceTestSuite._serviceTestData(HelperServiceBuilder.processServiceTestSuiteData(serviceTestSuite.testData, context, processingContext));
                 }
                 pureServiceTestSuite._tests(tests);
 

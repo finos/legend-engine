@@ -12,14 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.test.result;
+package org.finos.legend.engine.testable.model;
 
-import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.status.AssertionStatus;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class TestFailed extends TestResult
+public class UniqueTestId
 {
-    public List<AssertionStatus> assertStatuses = new ArrayList<>();
+    public String testSuiteId;
+    public String atomicTestId;
 }
