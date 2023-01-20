@@ -45,7 +45,7 @@ projectFilterExpression: BRACE_OPEN projectFilter ( ',' projectFilter )* BRACE_C
 // equivalent of expression
 projectFilter: STRING ':' projectFilterValue;
 // equivalent of expressionValue
-projectFilterValue: '0' | '1' | 'true' | 'false' | projectComputedFieldValue | projectFilterExpression;
+projectFilterValue: '0' | '1' | BOOLEAN | projectComputedFieldValue | projectFilterExpression;
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
 projectComputedFieldValue: STRING_WITH_DOLLAR;
 
@@ -113,9 +113,8 @@ value
    | NUMBER
    | obj
    | arr
-   | 'true'
-   | 'false'
-   | 'null'
+   | BOOLEAN
+   | NULL
    ;
 
 // LEXER
@@ -168,6 +167,13 @@ STRING
 NUMBER
    : '-'? INT ('.' [0-9] +)? EXP?
    ;
+
+NULL: 'null';
+
+BOOLEAN: TRUE | FALSE;
+
+TRUE: 'true';
+FALSE: 'false';
 
 fragment INT
    : '0' | [1-9] [0-9]*

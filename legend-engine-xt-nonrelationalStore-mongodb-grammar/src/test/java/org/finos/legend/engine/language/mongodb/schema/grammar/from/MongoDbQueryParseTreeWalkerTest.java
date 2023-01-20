@@ -23,17 +23,7 @@ import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoD
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryLexer;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryListener;
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ExpressionObject;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FieldPathExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LiteralValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.MatchStage;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Operator;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OperatorExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrExpression;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
 import org.junit.Test;
 import utils.CustomJSONPrettyPrinter;
 
@@ -42,7 +32,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
@@ -186,6 +175,18 @@ public class MongoDbQueryParseTreeWalkerTest
     }
 
     @Test
+    public void testAggregateWithMultiMatchExpressionWithManyValueTypes() throws Exception
+    {
+        String input = resourceAsString("input_match_many_types.json");
+        String expectedOutput = resourceAsString("output_match_many_types.json");
+
+        DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
+
+        assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
+
+    }
+
+    @Test
     public void testAggregateWithComplicatedNestedStructure() throws Exception
     {
         String input = resourceAsString("input_match_with_nested_object.json");
@@ -220,7 +221,6 @@ public class MongoDbQueryParseTreeWalkerTest
 
     }
 
-
     @Test
     public void testProjectWithMultipleComplexFilters() throws Exception
     {
@@ -243,59 +243,6 @@ public class MongoDbQueryParseTreeWalkerTest
 
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
-    }
-
-    @Test
-    public void goBackwards() throws Exception
-    {
-        StringTypeValue stringTypeValue1 = new StringTypeValue();
-        stringTypeValue1.value = "Peter";
-
-        LiteralValue literalValue1 = new LiteralValue();
-        literalValue1.value = stringTypeValue1;
-
-        OperatorExpression operatorExpression = new OperatorExpression();
-        operatorExpression.operator = Operator.EQ;
-        operatorExpression.expression = literalValue1;
-
-        StringTypeValue stringTypeValue2 = new StringTypeValue();
-        stringTypeValue2.value = "Smith";
-
-        LiteralValue literalValue2 = new LiteralValue();
-        literalValue2.value = stringTypeValue2;
-
-        FieldPathExpression fieldPathExpression1 = new FieldPathExpression();
-        fieldPathExpression1.path = "fName";
-
-        FieldPathExpression fieldPathExpression2 = new FieldPathExpression();
-        fieldPathExpression2.path = "lName";
-
-        ExpressionObject expressionObject1 = new ExpressionObject();
-        expressionObject1.field = fieldPathExpression1;
-        expressionObject1.argument = operatorExpression;
-
-        ExpressionObject expressionObject2 = new ExpressionObject();
-        expressionObject2.field = fieldPathExpression2;
-        expressionObject2.argument = literalValue2;
-
-        ArrayArgumentExpression argumentExpression = new ArrayArgumentExpression();
-        argumentExpression.items = Arrays.asList(expressionObject1, expressionObject2);
-
-        OrExpression orExpression = new OrExpression();
-        orExpression.operator = Operator.OR;
-        orExpression.expressions = Arrays.asList(argumentExpression);
-
-        MatchStage matchStage = new MatchStage();
-        matchStage.expression = orExpression;
-
-        ViewPipeline viewPipeline = new ViewPipeline();
-        viewPipeline.stages = Arrays.asList(matchStage);
-
-        DatabaseCommand databaseCommand = new DatabaseCommand();
-        databaseCommand.aggregationPipeline = viewPipeline;
-
-        MongoDbQueryComposer mongoDbQueryComposer = new MongoDbQueryComposer();
-        mongoDbQueryComposer.parser(databaseCommand);
     }
 
     private MongoDbQueryParser getParser(CommonTokenStream tokens)

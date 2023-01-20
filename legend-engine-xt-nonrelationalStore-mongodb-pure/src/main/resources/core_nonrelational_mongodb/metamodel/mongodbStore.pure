@@ -286,12 +286,17 @@ Class meta::external::store::mongodb::metamodel::aggregation::BoolTypeValue exte
   value: Boolean[1];
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::NullTypeValue extends BaseTypeValue
+{
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue
 {
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue extends BaseTypeValue
 {
+  value: Float[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::ObjectTypeTypeValue extends BaseTypeValue

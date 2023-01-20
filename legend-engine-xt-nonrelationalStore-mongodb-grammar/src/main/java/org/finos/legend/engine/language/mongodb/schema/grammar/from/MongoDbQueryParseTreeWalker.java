@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.language.mongodb.query.grammar.from.antlr4.MongoDbQueryParser;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArrayArgumentExpression;
@@ -33,6 +34,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.OrE
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Stage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ViewPipeline;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Item;
@@ -235,7 +237,7 @@ public class MongoDbQueryParseTreeWalker
     public ArgumentExpression visitValue(MongoDbQueryParser.ValueContext ctx)
     {
 
-        if (ctx.STRING() != null || ctx.NUMBER() != null)
+        if (ctx.STRING() != null || ctx.NUMBER() != null || ctx.BOOLEAN() != null || ctx.NULL() != null)
         {
             LiteralValue literalValue = new LiteralValue();
             literalValue.value = visitLiteral(ctx);
@@ -329,15 +331,36 @@ public class MongoDbQueryParseTreeWalker
     {
         if (ctx.NUMBER() != null)
         {
-            IntTypeValue intType = new IntTypeValue();
-            intType.value = Integer.parseInt(ctx.NUMBER().getText());
-            return intType;
+            double value = Double.parseDouble(ctx.NUMBER().getText());
+            if (Math.floor(value) == value)
+            {
+                IntTypeValue intTypeValue = new IntTypeValue();
+                intTypeValue.value = (int) value;
+                return intTypeValue;
+            }
+            else
+            {
+                DecimalTypeValue decimalTypeValue = new DecimalTypeValue();
+                decimalTypeValue.value = Double.parseDouble(ctx.NUMBER().getText());
+                return decimalTypeValue;
+            }
         }
         else if (ctx.STRING() != null)
         {
             StringTypeValue stringType = new StringTypeValue();
             stringType.value = ctx.STRING().getText();
             return stringType;
+        }
+        else if (ctx.BOOLEAN() != null)
+        {
+            BoolTypeValue boolTypeValue = new BoolTypeValue();
+            boolTypeValue.value = Boolean.parseBoolean(ctx.BOOLEAN().getText());
+            return boolTypeValue;
+        }
+        else if (ctx.NULL() != null)
+        {
+            NullTypeValue nullTypeValue = new NullTypeValue();
+            return nullTypeValue;
         }
 
         StringTypeValue stringType = new StringTypeValue();

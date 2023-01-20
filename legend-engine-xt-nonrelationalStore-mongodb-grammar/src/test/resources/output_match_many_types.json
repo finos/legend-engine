@@ -1,0 +1,144 @@
+{
+  "type": "aggregate",
+  "collectionName": "\"firms\"",
+  "aggregationPipeline": {
+    "_type": "viewPipeline",
+    "stages": [
+      {
+        "_type": "matchStage",
+        "expression": {
+          "_type": "item",
+          "objects": [
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "item",
+                  "objects": [
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test1\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "intTypeValue",
+                          "value": 2
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test2\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"a string\""
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test3\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "boolTypeValue",
+                          "value": true
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test4\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"true\""
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test5\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "nullTypeValue"
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test6\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "decimalTypeValue",
+                          "value": 2.44546
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test7\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "decimalTypeValue",
+                          "value": 1.09747567475868
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test8\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "intTypeValue",
+                          "value": 3
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

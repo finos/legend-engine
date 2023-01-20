@@ -1,7 +1,25 @@
+// Copyright 2020 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Item;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
@@ -16,7 +34,8 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Sta
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MongoDbQueryComposer {
+public class MongoDbQueryComposer
+{
 
     public String parser(DatabaseCommand databaseCommand)
     {
@@ -26,70 +45,90 @@ public class MongoDbQueryComposer {
 
     public String visitDatabaseCommand(DatabaseCommand databaseCommand)
     {
-        String pipelineStages = visitPipelineStages(databaseCommand.aggregationPipeline.stages).toString();
+        String pipelineStages = visitPipelineStages(databaseCommand.aggregationPipeline.stages);
         return "\"pipeline\" : [" + pipelineStages + "]";
 
     }
 
-    public StringBuilder visitPipelineStages(List<Stage> stages)
+    public String visitPipelineStages(List<Stage> stages)
     {
-        List<String> strings = stages.stream().map(x -> {
+        List<String> strings = stages.stream().map(x ->
+        {
             if (x instanceof MatchStage)
             {
-                return "{ \"$match\" : " + visitExpression(((MatchStage) x).expression).toString() + " }";
+                return "{ \"$match\" : " + visitExpression(((MatchStage) x).expression) + " }";
             }
             else
             {
-                return new StringBuilder().toString();
+                return "";
             }
         }).collect(Collectors.toList());
-        return new StringBuilder(String.join(",", strings));
+        return String.join(",", strings);
     }
 
-    public StringBuilder visitExpression(ArgumentExpression expression)
+    public String visitExpression(ArgumentExpression expression)
     {
         if (expression instanceof OrExpression || expression instanceof AndExpression)
         {
             if (expression instanceof OrExpression)
             {
-                List<String> strings = ((OrExpression) expression).expressions.stream().map(x -> visitExpression(x).toString()).collect(Collectors.toList());
-                return new StringBuilder("\"$or\": " + String.join("", strings));
+                List<String> strings = ((OrExpression) expression).expressions.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+                return "\"$or\": " + String.join("", strings);
             }
             else
             {
-                List<String> strings = ((AndExpression) expression).expressions.stream().map(x -> visitExpression(x).toString()).collect(Collectors.toList());
-                return new StringBuilder("\"$and\" : [" + String.join("", strings));
+                List<String> strings = ((AndExpression) expression).expressions.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+                return "\"$and\" : [" + String.join("", strings);
             }
         }
         else if (expression instanceof OperatorExpression)
         {
             String operator = String.valueOf(((OperatorExpression) expression).operator);
-            String currentExpression = visitExpression(((OperatorExpression) expression).expression).toString();
-            return new StringBuilder("{ \"" + operator + "\" : " + currentExpression + " }");
+            String currentExpression = visitExpression(((OperatorExpression) expression).expression);
+            return "{ \"" + operator + "\" : " + currentExpression + " }";
         }
         else if (expression instanceof ExpressionObject)
         {
-            String field = visitExpression(((ExpressionObject) expression).field).toString();
-            String argument = visitExpression(((ExpressionObject) expression).argument).toString();
-            return new StringBuilder(field + " : " + argument);
+            String field = visitExpression(((ExpressionObject) expression).field);
+            String argument = visitExpression(((ExpressionObject) expression).argument);
+            return field + " : " + argument;
         }
         else if (expression instanceof ArrayArgumentExpression)
         {
-            List<String> strings = ((ArrayArgumentExpression) expression).items.stream().map(x -> visitExpression(x).toString()).collect(Collectors.toList());
-            return new StringBuilder("[" + String.join(",", strings) + "]");
+            List<String> strings = ((ArrayArgumentExpression) expression).items.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+            return "[" + String.join(",", strings) + "]";
         }
         else if (expression instanceof Item)
         {
-            List<String> strings = ((Item) expression).objects.stream().map(x -> visitExpression(x).toString()).collect(Collectors.toList());
-            return new StringBuilder("{" + String.join(",", strings) + "}");
+            List<String> strings = ((Item) expression).objects.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+            return "{" + String.join(",", strings) + "}";
         }
         else if (expression instanceof FieldPathExpression)
         {
-            return new StringBuilder(((FieldPathExpression) expression).path);
+            return ((FieldPathExpression) expression).path;
         }
         else if (expression instanceof LiteralValue)
         {
-            return new StringBuilder(((StringTypeValue) ((LiteralValue) expression).value).value);
+            if (((LiteralValue) expression).value instanceof StringTypeValue)
+            {
+                return ((StringTypeValue) ((LiteralValue) expression).value).value;
+            }
+            else if (((LiteralValue) expression).value instanceof IntTypeValue)
+            {
+                return String.valueOf(((IntTypeValue) ((LiteralValue) expression).value).value);
+            }
+            else if (((LiteralValue) expression).value instanceof DecimalTypeValue)
+            {
+                return String.valueOf(((DecimalTypeValue) ((LiteralValue) expression).value).value);
+            }
+            else if (((LiteralValue) expression).value instanceof BoolTypeValue)
+            {
+                return String.valueOf(((BoolTypeValue) ((LiteralValue) expression).value).value);
+            }
+            else if (((LiteralValue) expression).value instanceof NullTypeValue)
+            {
+                return null;
+            }
         }
         throw new RuntimeException("something went wrong");
     }
