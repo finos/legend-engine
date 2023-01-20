@@ -8,7 +8,7 @@
         "_type": "projectStage",
         "filters": {
           "_type": "arrayArgumentExpression",
-          "expressions": [
+          "items": [
             {
               "_type": "expressionObject",
               "field": {

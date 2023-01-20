@@ -7,8 +7,8 @@
       {
         "_type": "matchStage",
         "expression": {
-          "_type": "arrayArgumentExpression",
-          "expressions": [
+          "_type": "item",
+          "objects": [
             {
               "_type": "expressionObject",
               "field": {
@@ -19,8 +19,8 @@
                 "_type": "operatorExpression",
                 "operator": "EQ",
                 "expression": {
-                  "_type": "arrayArgumentExpression",
-                  "expressions": [
+                  "_type": "item",
+                  "objects": [
                     {
                       "_type": "expressionObject",
                       "field": {
@@ -28,8 +28,8 @@
                         "path": "\"test1\""
                       },
                       "argument": {
-                        "_type": "arrayArgumentExpression",
-                        "expressions": [
+                        "_type": "item",
+                        "objects": [
                           {
                             "_type": "expressionObject",
                             "field": {
@@ -37,8 +37,8 @@
                               "path": "\"test2\""
                             },
                             "argument": {
-                              "_type": "arrayArgumentExpression",
-                              "expressions": [
+                              "_type": "item",
+                              "objects": [
                                 {
                                   "_type": "expressionObject",
                                   "field": {
@@ -61,7 +61,7 @@
                                   },
                                   "argument": {
                                     "_type": "arrayArgumentExpression",
-                                    "expressions": [
+                                    "items": [
                                       {
                                         "_type": "literalValue",
                                         "value": {
@@ -86,8 +86,8 @@
                                     "path": "\"test3_4\""
                                   },
                                   "argument": {
-                                    "_type": "arrayArgumentExpression",
-                                    "expressions": [
+                                    "_type": "item",
+                                    "objects": [
                                       {
                                         "_type": "expressionObject",
                                         "field": {
@@ -97,8 +97,8 @@
                                         "argument": {
                                           "_type": "literalValue",
                                           "value": {
-                                            "_type": "intTypeValue",
-                                            "value": 4
+                                            "_type": "stringTypeValue",
+                                            "value": "\"4\""
                                           }
                                         }
                                       }
@@ -112,8 +112,8 @@
                                     "path": "\"test3_5\""
                                   },
                                   "argument": {
-                                    "_type": "arrayArgumentExpression",
-                                    "expressions": [
+                                    "_type": "item",
+                                    "objects": [
                                       {
                                         "_type": "expressionObject",
                                         "field": {
@@ -122,10 +122,10 @@
                                         },
                                         "argument": {
                                           "_type": "arrayArgumentExpression",
-                                          "expressions": [
+                                          "items": [
                                             {
-                                              "_type": "arrayArgumentExpression",
-                                              "expressions": [
+                                              "_type": "item",
+                                              "objects": [
                                                 {
                                                   "_type": "expressionObject",
                                                   "field": {
@@ -143,8 +143,8 @@
                                               ]
                                             },
                                             {
-                                              "_type": "arrayArgumentExpression",
-                                              "expressions": [
+                                              "_type": "item",
+                                              "objects": [
                                                 {
                                                   "_type": "expressionObject",
                                                   "field": {
@@ -153,7 +153,7 @@
                                                   },
                                                   "argument": {
                                                     "_type": "arrayArgumentExpression",
-                                                    "expressions": [
+                                                    "items": [
                                                       {
                                                         "_type": "literalValue",
                                                         "value": {
@@ -184,6 +184,182 @@
                           }
                         ]
                       }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test6\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "arrayArgumentExpression",
+                  "items": [
+                    {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "stringTypeValue",
+                        "value": "\"value8\""
+                      }
+                    },
+                    {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "stringTypeValue",
+                        "value": "\"value9\""
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test7\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "literalValue",
+                  "value": {
+                    "_type": "stringTypeValue",
+                    "value": "\"5\""
+                  }
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test8\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "item",
+                  "objects": [
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test8_1\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"8\""
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test9\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "item",
+                  "objects": [
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test9_1\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"9_1\""
+                        }
+                      }
+                    },
+                    {
+                      "_type": "expressionObject",
+                      "field": {
+                        "_type": "fieldPathExpression",
+                        "path": "\"test9_2\""
+                      },
+                      "argument": {
+                        "_type": "literalValue",
+                        "value": {
+                          "_type": "stringTypeValue",
+                          "value": "\"9_2\""
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "_type": "expressionObject",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test10\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "arrayArgumentExpression",
+                  "items": [
+                    {
+                      "_type": "item",
+                      "objects": [
+                        {
+                          "_type": "expressionObject",
+                          "field": {
+                            "_type": "fieldPathExpression",
+                            "path": "\"test10_1\""
+                          },
+                          "argument": {
+                            "_type": "literalValue",
+                            "value": {
+                              "_type": "stringTypeValue",
+                              "value": "\"10_1\""
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_type": "item",
+                      "objects": [
+                        {
+                          "_type": "expressionObject",
+                          "field": {
+                            "_type": "fieldPathExpression",
+                            "path": "\"test10_2\""
+                          },
+                          "argument": {
+                            "_type": "literalValue",
+                            "value": {
+                              "_type": "stringTypeValue",
+                              "value": "\"10_2\""
+                            }
+                          }
+                        }
+                      ]
                     }
                   ]
                 }

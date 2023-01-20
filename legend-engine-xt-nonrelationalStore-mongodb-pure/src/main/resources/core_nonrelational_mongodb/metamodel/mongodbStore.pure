@@ -231,7 +231,7 @@ Class meta::external::store::mongodb::metamodel::aggregation::AndExpression exte
 
 Class meta::external::store::mongodb::metamodel::aggregation::ArrayArgumentExpression extends ArgumentExpression
 {
-  expressions: ArgumentExpression[*];
+  items: ArgumentExpression[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::FieldPathExpression extends ArgumentExpression
@@ -260,6 +260,11 @@ Class {doc.doc = 'Computed field for Project expressions with format $fieldName'
 meta::external::store::mongodb::metamodel::aggregation::ComputedFieldValue extends ArgumentExpression
 {
   computedValue: StringTypeValue[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::Item extends ArgumentExpression
+{
+  objects: ExpressionObject[*];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue 
