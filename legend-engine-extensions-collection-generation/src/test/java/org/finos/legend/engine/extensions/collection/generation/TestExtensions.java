@@ -313,6 +313,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.xsd.XsdExternalFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class)
+                .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLSDLFormatExtension.class)
                 .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class);
     }
 

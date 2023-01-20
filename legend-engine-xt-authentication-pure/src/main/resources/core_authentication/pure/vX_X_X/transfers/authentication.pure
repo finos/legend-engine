@@ -1,0 +1,94 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::extension::*;
+import meta::pure::functions::collection::*;
+import meta::pure::runtime::connection::authentication::*;
+import meta::protocols::pure::vX_X_X::extension::runtime::connection::authentication::*;
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification(a:meta::pure::runtime::connection::authentication::AuthenticationSpecification[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification[1]
+{
+   $a->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).moduleSerializerExtension('AuthenticationSpecification')->cast(@meta::protocols::pure::vX_X_X::extension::runtime::connection::authentication::AuthenticationModuleSerializerExtension).transfers_authentication_transformAuthenticationSpecification->concatenate([
+      u:meta::pure::runtime::connection::authentication::UserPasswordAuthenticationSpecification [1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::UserPasswordAuthenticationSpecification(
+                    _type = 'usernamePassword',
+                    username = $u.username,
+                    password = $u.password->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
+                ),
+      a:meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification [1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::ApiKeyAuthenticationSpecification(
+                      _type = 'apiKey',
+                      location = $a.location->toString(),
+                      keyName = $a.keyName,
+                      value = $a.value->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
+                ),
+      other: meta::pure::runtime::connection::authentication::AuthenticationSpecification[1] |
+               fail('Unsupported AuthenticationSpecification. TODO - epsstan');
+               ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AuthenticationSpecification(
+                      _type = 'unknown'
+                );
+   ])->toOneMany())
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification(s:meta::pure::runtime::connection::authentication::CredentialVaultSecret[1]):meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::CredentialVaultSecret[1]
+{
+    $s->match([
+        p:meta::pure::runtime::connection::authentication::PropertiesFileSecret[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::PropertiesFileSecret(
+                _type = 'properties',
+                propertyName = $p.propertyName
+            ),
+        e:meta::pure::runtime::connection::authentication::EnvironmentSecret[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::EnvironmentSecret(
+                _type = 'environment',
+                envVariableName = $e.envVariableName
+            ),
+        a:meta::pure::runtime::connection::authentication::AWSSecretsManagerSecret[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSSecretsManagerSecret(
+                _type = 'awssecretsmanager',
+                secretId = $a.secretId,
+                versionId = $a.versionId,
+                versionStage = $a.versionStage,
+                awsCredentials = $a.awsCredentials->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAWSCredentials()
+            ),
+        other:meta::pure::runtime::connection::authentication::CredentialVaultSecret[1] |
+            fail('Unsupported CredentialVaultSecret');
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::PropertiesFileSecret(
+                _type = 'unknown',
+                propertyName = 'unknown'
+            );
+    ])
+}
+
+function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAWSCredentials(ac:meta::pure::runtime::connection::authentication::AWSCredentials[1]):meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSCredentials[1]
+{
+    $ac->match([
+        s:meta::pure::runtime::connection::authentication::StaticAWSCredentials[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::StaticAWSCredentials(
+                _type = 'awsStatic',
+                accessKeyId = $s.accessKeyId->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification(),
+                secretAccessKey = $s.secretAccessKey->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
+            ),
+        d:meta::pure::runtime::connection::authentication::AWSDefaultCredentials[1] |
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSDefaultCredentials(
+                _type = 'awsDefault'
+            ),
+        other:meta::pure::runtime::connection::authentication::AWSCredentials[1] |
+            fail('Unsupported AWSCredentials');
+            ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSDefaultCredentials(
+                _type = 'unknown'
+            );
+    ])
+}

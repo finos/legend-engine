@@ -17,10 +17,13 @@ package org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.test;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.pure.runtime.compiler.Tools;
+import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.InterpretedMetadata;
 import org.finos.legend.engine.pure.runtime.compiler.interpreted.natives.LegendCompileMixedProcessorSupport;
 import org.finos.legend.engine.pure.runtime.compiler.test.LegendCompileTest;
 import org.finos.legend.pure.configuration.PureRepositoriesExternal;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.EnumerationInstance;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
+import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.serialization.filesystem.PureCodeStorage;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.classpath.ClassLoaderCodeStorage;
@@ -28,8 +31,11 @@ import org.finos.legend.pure.m3.serialization.runtime.Message;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntime;
 import org.finos.legend.pure.m3.serialization.runtime.PureRuntimeBuilder;
 import org.finos.legend.pure.m3.serialization.runtime.VoidPureRuntimeStatus;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
+import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class TestLegendCompileInterpreted extends LegendCompileTest
 {
@@ -39,5 +45,14 @@ public class TestLegendCompileInterpreted extends LegendCompileTest
         Pair<FunctionExecution, PureRuntime> res = Tools.setUpInterpreted();
         functionExecution = res.getOne();
         runtime = res.getTwo();
+    }
+
+    @Test
+    public void testInterpretedMetadataGetEnum()
+    {
+        InterpretedMetadata interpretedMetadata = new InterpretedMetadata(new LegendCompileMixedProcessorSupport(runtime.getContext(), runtime.getModelRepository(), functionExecution.getProcessorSupport()));
+        CoreInstance enumValue = interpretedMetadata.getEnum("meta::pure::functions::hash::HashType", "MD5");
+        Assert.assertTrue(enumValue.getClassifier() instanceof EnumerationInstance);
+        Assert.assertEquals("MD5", Instance.getValueForMetaPropertyToOneResolved(enumValue, "name", functionExecution.getProcessorSupport()).getName());
     }
 }

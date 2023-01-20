@@ -1,0 +1,268 @@
+import meta::pure::executionPlan::toString::*;
+import meta::pure::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::mapping::modelToModel::*;
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp1():Boolean[1]
+{
+   let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
+                                                          ->project([x|$x.name,x|$x.prop1],
+                                                            ['name','prop1']);},
+                                              meta::relational::tests::m2m2r::AxionToModelMapping,
+                                              meta::relational::tests::m2m2r::runtime(),
+                                              meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+  let expected ='Relational\n' +
+            '(\n' +
+            '  type = TDS[(name, String, "", ""), (prop1, Boolean, "", "")]\n' +
+            '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n' +
+            '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+            '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+            ')\n' ;
+  assertEquals($expected, $result);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp2():Boolean[1]
+{
+   let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
+                                                          ->project([x|$x.name,x|$x.prop2],
+                                                                    ['name','prop2']);},
+
+                                              meta::relational::tests::m2m2r::AxionToModelMapping,
+                                              meta::relational::tests::m2m2r::runtime(),
+                                              meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+  let expected = 
+                'Relational\n' +
+                '(\n' +
+                '  type = TDS[(name, String, "", ""), (prop2, String, "", "")]\n' +
+                '  resultColumns = [("name", VARCHAR(200)), ("prop2", "")]\n' +
+                '  sql = select "root".name as "name", case when "sourceannouncement_0".description like \'%RECEIVE CASH%\' then \'Cash\' else \'Stock\' end as "prop2" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+                '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+                ')\n' ;
+               
+    assertEquals($expected, $result);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp3():Boolean[1]
+{
+  let result = meta::pure::executionPlan::executionPlan({|meta::relational::tests::m2m2r::Entitlement.all()
+                                                          ->project([x|$x.name,x|$x.prop3],
+                                                                    ['name','prop3']);},
+    meta::relational::tests::m2m2r::AxionToModelMapping,
+    meta::relational::tests::m2m2r::runtime(),
+    meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+    let expected = 
+                'Relational\n' +
+                '(\n' +
+                '  type = TDS[(name, String, "", ""), (prop3, Number, "", "")]\n' +
+                '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
+                '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
+                '  connection = RelationalDatabaseConnection(type = "H2")\n' +
+                ')\n' ;
+    assertEquals($expected, $result);
+}
+
+function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp4():Boolean[1]
+{
+   let result = meta::pure::executionPlan::executionPlan({accountNum: String[1]|
+                                              meta::relational::tests::m2m2r::Entitlement.all()
+                                              ->filter(x|$x.prop4($accountNum))
+                                              ->project([x|$x.name,x|$x.prop4($accountNum)],
+                                                            ['name','prop4']);},
+                                              meta::relational::tests::m2m2r::AxionToModelMapping,
+                                              meta::relational::tests::m2m2r::runtime(),
+                                              meta::relational::extension::relationalExtensions(), noDebug())->planToString( meta::relational::extension::relationalExtensions());
+  let expected = 'Sequence\n' +
+                '(\n' +
+                '  type = TDS[(name, String, "", ""), (prop4, Boolean, "", "")]\n' +
+                '  (\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [accountNum:String[1]]\n' +
+                '    )\n' +
+                '    Relational\n' +
+                '    (\n' +
+                '      type = TDS[(name, String, "", ""), (prop4, Boolean, "", "")]\n' +
+                '      resultColumns = [("name", VARCHAR(200)), ("prop4", "")]\n' +
+                '      sql = select "root".name as "name", "sourceannouncement_0".name = \'${accountNum?replace("\'", "\'\'")}\' as "prop4" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) where "sourceannouncement_0".name = \'${accountNum?replace("\'", "\'\'")}\'\n' +
+                '      connection = RelationalDatabaseConnection(type = "H2")\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n';  assertEquals($expected, $result);
+}
+
+function meta::relational::tests::m2m2r::runtimeSimple():meta::pure::runtime::Runtime[1]
+{
+  meta::pure::runtime::getRuntimeWithModelConnection(meta::relational::tests::m2m2r::Entitlement,[])
+}
+
+function meta::relational::tests::m2m2r::runtime():Runtime[1]
+{
+ ^meta::pure::runtime::Runtime(
+      connections=[
+         ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+          element = meta::relational::tests::m2m2r::SourceDB,
+          type = DatabaseType.H2,
+          authenticationStrategy = ^TestDatabaseAuthenticationStrategy(),
+          datasourceSpecification = ^LocalH2DatasourceSpecification()
+        ),
+        ^ModelChainConnection(element = ^ModelStore(), mappings = [meta::relational::tests::m2m2r::AxionToModelMapping])
+
+      ]
+  )
+}
+
+Class  meta::relational::tests::m2m2r::Entitlement
+{
+  name:String[1];
+  entitledQuantity:Integer[0..1];
+
+  prop4(s:String[1])
+  {
+    $this.announcement.name== $s
+  }:Boolean[1];
+
+  prop3()
+  {
+    if($this.announcement.basis==0.0, 
+      |0.0,
+      | ($this.entitledQuantity->toOne()/$this.announcement.basis->toOne())* $this.announcement.grossRate->toOne());
+  }:Number[1];
+
+  prop2()
+  {
+    if($this.announcement.description->contains('RECEIVE CASH'),|'Cash',|'Stock');
+  }:String[1];
+
+
+  prop1()
+  {
+    $this.announcement.name=='ha'
+  }:Boolean[1];
+
+}
+
+Class  meta::relational::tests::m2m2r::Announcement
+{
+  name:String[1];
+  description:String[1];
+  basis: Decimal[1];
+  grossRate:Decimal[0..1];
+}
+
+Association meta::relational::tests::m2m2r::EntitlementAnnouncementAssociation
+{
+  entitlments: meta::relational::tests::m2m2r::Entitlement[*];
+  announcement:  meta::relational::tests::m2m2r::Announcement[1];
+}
+
+
+//source Classes
+Class  meta::relational::tests::m2m2r::SourceEntitlement
+{
+  name:String[1];
+  entitledQuantity:Integer[0..1];
+}
+
+Class  meta::relational::tests::m2m2r::SourceAnnouncement
+{
+  name:String[1];
+  description:String[1];
+  basis: Decimal[1];
+  grossRate:Decimal[0..1];
+}
+
+Association meta::relational::tests::m2m2r::SourceEntitlementAnnouncementAssociation
+{
+  entitlments: meta::relational::tests::m2m2r::SourceEntitlement[1..*];
+  announcement:  meta::relational::tests::m2m2r::SourceAnnouncement[1];
+}
+
+###Mapping
+Mapping meta::relational::tests::m2m2r::AxionToModelMapping
+(
+  include meta::relational::tests::m2m2r::AxionRelational
+  
+  *meta::relational::tests::m2m2r::Entitlement: Pure
+  {
+    ~src meta::relational::tests::m2m2r::SourceEntitlement
+    name: $src.name,
+    entitledQuantity: $src.entitledQuantity,
+    announcement: $src.announcement
+  }
+
+  *meta::relational::tests::m2m2r::Announcement: Pure
+  {
+    ~src meta::relational::tests::m2m2r::SourceAnnouncement
+    name: $src.name,
+    description:$src.description,
+    basis: $src.basis,
+    grossRate:$src.grossRate
+  }
+)
+
+###Mapping 
+Mapping meta::relational::tests::m2m2r::AxionRelational
+(
+
+  *meta::relational::tests::m2m2r::SourceEntitlement: Relational
+  {
+    name:[meta::relational::tests::m2m2r::SourceDB] S.sourceEntitlement.name,
+    entitledQuantity:[meta::relational::tests::m2m2r::SourceDB] S.sourceEntitlement.entitledQuantity,
+
+    announcement: [meta::relational::tests::m2m2r::SourceDB] @entitlement_announcment
+  }
+
+  *meta::relational::tests::m2m2r::SourceAnnouncement: Relational
+  {
+    name:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.name,
+    description:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.description,
+    basis:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.basis,
+    grossRate:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.grossRate
+  }
+)
+
+###Mapping 
+Mapping meta::relational::tests::m2m2r::AxionTargetRelational
+(
+
+  *meta::relational::tests::m2m2r::Entitlement: Relational
+  {
+    name:[meta::relational::tests::m2m2r::SourceDB] S.sourceEntitlement.name,
+    announcement: [meta::relational::tests::m2m2r::SourceDB] @entitlement_announcment
+  }
+
+  *meta::relational::tests::m2m2r::Announcement: Relational
+  {
+    name:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.name,
+    description:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.description,
+    basis:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.basis,
+    grossRate:[meta::relational::tests::m2m2r::SourceDB] S.SourceAnnouncement.grossRate
+  }
+)
+
+###Relational
+Database meta::relational::tests::m2m2r::SourceDB
+(
+  Schema S
+  (
+    Table sourceEntitlement
+    (
+      name VARCHAR(200),
+      entitledQuantity DOUBLE,
+      id INTEGER PRIMARY KEY
+    )
+
+    Table SourceAnnouncement
+    (
+      name VARCHAR(200),
+      description VARCHAR(200),
+      basis DOUBLE,
+      grossRate DOUBLE,
+      id INTEGER PRIMARY KEY
+    )
+  )
+
+  Join entitlement_announcment(S.sourceEntitlement.id  = S.SourceAnnouncement.id)
+)
