@@ -13,12 +13,15 @@
 // limitations under the License.
 
 import meta::pure::runtime::*;
+import meta::pure::runtime::connection::authentication::*;
 import meta::external::store::service::metamodel::*;
+
 
 Class meta::external::store::service::metamodel::runtime::ServiceStoreConnection extends Connection
 [
    $this.element->instanceOf(ServiceStore)
 ]
 {
-   baseUrl: String[1];
+   baseUrl                      : String[1];
+   authenticationSpecifications : Map<String,AuthenticationSpecification>[1];
 }

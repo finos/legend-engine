@@ -15,17 +15,25 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.IAuthenticationCompilerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.HelperServiceStoreGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.AuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.BooleanTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ComplexTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.FloatTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.IntegerTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Location;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecuritySchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroup;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceGroupPtr;
@@ -33,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServicePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStore;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceStoreElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SingleSecuritySchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.StringTypeReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.TypeReference;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -43,6 +52,8 @@ import org.finos.legend.pure.generated.Root_meta_external_store_service_metamode
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_FloatTypeReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_IntegerTypeReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SecurityScheme;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SecuritySchemeRequirement;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SingleSecuritySchemeRequirement_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SerializationFormat;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_SerializationFormat_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_Service;
@@ -55,13 +66,19 @@ import org.finos.legend.pure.generated.Root_meta_external_store_service_metamode
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_ServiceStoreElement;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_StringTypeReference_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_TypeReference;
+import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HelperServiceStoreBuilder
 {
@@ -154,6 +171,30 @@ public class HelperServiceStoreBuilder
         pureServiceStore._elements(FastList.newList(compileServiceStoreElements(serviceStore.elements, pureServiceStore, null, context)).toImmutable());
     }
 
+    public static void compileAndAddSecuritySchemesToServiceStore(Root_meta_external_store_service_metamodel_ServiceStore pureServiceStore, Map<String, SecurityScheme> securitySchemes, CompileContext context)
+    {
+        if (securitySchemes != null)
+        {
+            pureServiceStore._securitySchemes(new PureMap(compileSecuritySchemes(securitySchemes, context)));
+        }
+        else
+        {
+            pureServiceStore._securitySchemes(new PureMap(new HashMap()));
+        }
+    }
+
+    public static void compileAndAddAuthenticationSpecifications(Root_meta_external_store_service_metamodel_runtime_ServiceStoreConnection pureServiceStoreConnection, Map<String, AuthenticationSpecification> authenticationSpecifications, CompileContext context)
+    {
+        if (authenticationSpecifications != null)
+        {
+            pureServiceStoreConnection._authenticationSpecifications(new PureMap(compileAuthenticationSchemes(authenticationSpecifications, context)));
+        }
+        else
+        {
+            pureServiceStoreConnection._authenticationSpecifications(new PureMap(new HashMap()));
+        }
+    }
+
     private static List<Root_meta_external_store_service_metamodel_ServiceStoreElement> compileServiceStoreElements(List<ServiceStoreElement> elements, Root_meta_external_store_service_metamodel_ServiceStore owner, Root_meta_external_store_service_metamodel_ServiceGroup parent, CompileContext context)
     {
         return ListIterate.collect(elements, element ->
@@ -171,6 +212,34 @@ public class HelperServiceStoreBuilder
                 throw new EngineException("Unsupported Service Store Element type : " + element.getClass().getSimpleName(), element.sourceInformation, EngineErrorType.COMPILATION);
             }
         });
+    }
+
+    private static Map<String, Root_meta_external_store_service_metamodel_SecurityScheme> compileSecuritySchemes(Map<String, SecurityScheme> securitySchemeMap, CompileContext context)
+    {
+        return securitySchemeMap.entrySet().stream().map(entry ->
+        {
+            String id = entry.getKey();
+            SecurityScheme scheme = entry.getValue();
+            return Tuples.pair(id, compileSecurityScheme(scheme, context));
+
+        }).collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
+    }
+
+    private static Map<String, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification> compileAuthenticationSchemes(Map<String, AuthenticationSpecification> authenticationSpecificationMap, CompileContext context)
+    {
+        List<Function2<AuthenticationSpecification, CompileContext, Root_meta_pure_runtime_connection_authentication_AuthenticationSpecification>> processors = ListIterate.flatCollect(IAuthenticationCompilerExtension.getExtensions(), ext -> ext.getExtraAuthenticationSpecificationProcessors());
+
+        return authenticationSpecificationMap.entrySet().stream().map(entry ->
+        {
+            String id = entry.getKey();
+            AuthenticationSpecification authenticationSpecification = entry.getValue();
+            return Tuples.pair(id, ListIterate
+                    .collect(processors, processor -> processor.value(authenticationSpecification, context))
+                    .select(Objects::nonNull)
+                    .getFirstOptional()
+                    .orElseThrow(() -> new EngineException("Can't compile Authnetication Specification : " + id, authenticationSpecification.sourceInformation, EngineErrorType.COMPILATION)));
+
+        }).collect(Collectors.toMap(pair -> pair.getOne(), pair -> pair.getTwo()));
     }
 
     private static Root_meta_external_store_service_metamodel_ServiceGroup compileServiceGroup(ServiceGroup serviceGroup, Root_meta_external_store_service_metamodel_ServiceStore owner, Root_meta_external_store_service_metamodel_ServiceGroup parent, CompileContext context)
@@ -214,7 +283,17 @@ public class HelperServiceStoreBuilder
             pureService._parameters(ListIterate.collect(service.parameters, param -> compileServiceParameter(param, context)));
         }
         pureService._response((Root_meta_external_store_service_metamodel_ComplexTypeReference) compileTypeReference(service.response, context));
-        pureService._security(ListIterate.collect(service.security, HelperServiceStoreBuilder::compileSecurityScheme));
+
+        List<Root_meta_external_store_service_metamodel_SecuritySchemeRequirement> securitySchemeRequirements = Lists.mutable.empty();
+        if (service.security != null)
+        {
+            securitySchemeRequirements.addAll(ListIterate.collect(service.security, s -> compileSecurity(s, context)));
+        }
+        if (service.securitySchemeRequirements != null)
+        {
+            securitySchemeRequirements.addAll(ListIterate.collect(service.securitySchemeRequirements, s -> compileSecuritySchemeRequirement(s, context)));
+        }
+        pureService._security((RichIterable<? extends Root_meta_external_store_service_metamodel_SecuritySchemeRequirement>) securitySchemeRequirements);
 
         RichIterable<String> parameters = pureService._parameters().collect(param -> param._name());
         List<String> parametersDefinedMoreThanOnce = parameters.select(e -> Collections.frequency(parameters.toList(), e) > 1).toSet().toList();
@@ -326,14 +405,35 @@ public class HelperServiceStoreBuilder
         return pureTypeReference;
     }
 
-    private static Root_meta_external_store_service_metamodel_SecurityScheme compileSecurityScheme(SecurityScheme securityScheme)
+    private static Root_meta_external_store_service_metamodel_SecuritySchemeRequirement compileSecurity(SecurityScheme securityScheme, CompileContext context)
     {
-        List<Function<SecurityScheme, Root_meta_external_store_service_metamodel_SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreCompilerExtension.getExtensions(), ext -> ext.getExtraSecuritySchemeProcessors());
+        Root_meta_external_store_service_metamodel_SecurityScheme scheme = compileSecurityScheme(securityScheme, context);
+
+        return new Root_meta_external_store_service_metamodel_SingleSecuritySchemeRequirement_Impl("")
+                ._id(securityScheme.getClass().getSimpleName())
+                ._securityScheme(scheme);
+    }
+
+    private static Root_meta_external_store_service_metamodel_SecuritySchemeRequirement compileSecuritySchemeRequirement(SecuritySchemeRequirement securitySchemeRequirement, CompileContext context)
+    {
+        SingleSecuritySchemeRequirement singleSecuritySchemeRequirement = (SingleSecuritySchemeRequirement) securitySchemeRequirement;
+
+        Root_meta_external_store_service_metamodel_SecurityScheme scheme = compileSecurityScheme(singleSecuritySchemeRequirement.securityScheme, context);
+
+        return new Root_meta_external_store_service_metamodel_SingleSecuritySchemeRequirement_Impl("")
+                ._id(singleSecuritySchemeRequirement.securitySchemeId)
+                ._securityScheme(scheme);
+    }
+
+    private static Root_meta_external_store_service_metamodel_SecurityScheme compileSecurityScheme(SecurityScheme securityScheme, CompileContext context)
+    {
+        List<Function2<SecurityScheme, CompileContext, Root_meta_external_store_service_metamodel_SecurityScheme>> processors = ListIterate.flatCollect(IServiceStoreCompilerExtension.getExtensions(), ext -> ext.getExtraSecurityProcessors());
 
         return ListIterate
-                .collect(processors, processor -> processor.apply(securityScheme))
+                .collect(processors, processor -> processor.apply(securityScheme, context))
                 .select(Objects::nonNull)
                 .getFirstOptional()
                 .orElseThrow(() -> new EngineException("Unsupported SecurityScheme - " + securityScheme.getClass().getSimpleName(), securityScheme.sourceInformation, EngineErrorType.COMPILATION));
     }
+
 }
