@@ -24,7 +24,7 @@
             "name": "_id_"
           }
         ],
-        "uuid": "99eb1c3857ae4e2996eb7e2685efbfde",
+        "uuid": "99eb1c3857ae4e2996eb7e2685efbfdc",
         "collectionName": "firm",
         "type": "collection"
       }
@@ -37,47 +37,50 @@
         "description": "This document records the details of an employee",
         "type": "object",
         "properties": {
-          "id": {
-            "description": "employee ID",
-            "bsonType": "long",
-            "minimum": 100000
-          },
           "name": {
             "description": "name of the employee",
-            "bsonType": "string",
-            "minLength": 2
+            "type": "string",
+            "minLength": {
+              "$numberInt": "2"
+            }
+          },
+          "location": {
+            "description": "location of the employee",
+            "$ref": "https://github.com/finos/legend/geography.schema"
           },
           "age": {
             "description": "age of the employee",
-            "bsonType": "int",
-            "minimum": 16
+            "type": "number",
+            "minimum": {
+              "$numberInt": "16"
+            }
           },
           "hobbies": {
-            "description" : "Two lists of indoor & outdoor hobbies",
+            "description": "hobbies of the employee",
             "type": "object",
             "properties": {
               "indoor": {
                 "items": {
-                  "description": "indoor hobby",
+                  "description": "List of hobbies",
                   "type": "string"
                 },
-                "minItems": 2,
-                "maxItems" : 10,
+                "minItems": {
+                  "$numberInt": "1"
+                },
                 "uniqueItems": true,
-                "type": "array",
-                "description" : "List of indoor hobbies"
+                "type": "array"
               },
               "outdoor": {
                 "items": {
-                  "description": "outdoor hobby",
+                  "description": "List of hobbies",
                   "type": "string"
                 },
-                "minItems": 1,
-                "maxItems" : 5,
+                "minItems": {
+                  "$numberInt": "1"
+                },
                 "uniqueItems": true,
-                "type": "array",
-                "description" : "List of outdoor hobbies"
-               }
+                "type": "array"
+              }
             },
             "required": [
               "indoor",
@@ -92,6 +95,30 @@
           "hobbies"
         ],
         "additionalProperties": true
+      },
+      {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/finos/legend/geography.schema",
+        "title": "Record of City to Region",
+        "description": "This document records the details of an city->country->region hierarchy",
+        "bsonType": "object",
+        "properties": {
+          "country": {
+            "description": "country of city",
+            "bsonType": "string"
+          },
+          "region": {
+            "description": "region of city",
+            "bsontType": "string",
+            "minLength": {
+              "$numberInt": "2"
+            }
+          },
+          "city": {
+            "description": "city",
+            "bsonType": "string"
+          }
+        }
       }
     ]
   }

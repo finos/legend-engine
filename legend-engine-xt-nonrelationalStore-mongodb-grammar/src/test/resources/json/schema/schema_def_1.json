@@ -35,7 +35,7 @@
         "$id": "https://github.com/finos/legend/employee.schema",
         "title": "Record of employee",
         "description": "This document records the details of an employee",
-        "type": "object",
+        "bsonType": "object",
         "properties": {
           "name": {
             "description": "name of the employee",
@@ -58,12 +58,18 @@
               },
               "region": {
                 "description": "region of city",
-                "bsontType": "string",
-                "minLength": {
-                  "$numberInt": "2"
-                }
+                "bsonType": "string",
+                "minLength": 2
               }
             }
+          },
+          "otherNames" : {
+            "description" : "Alternative Names",
+            "bsonType": "array",
+            "items" : {
+              "bsonType" : "string"
+            },
+            "uniqueItems": true
           }
         },
         "required": [

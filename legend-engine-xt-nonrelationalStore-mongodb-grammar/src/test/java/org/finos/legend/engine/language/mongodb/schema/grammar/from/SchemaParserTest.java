@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -25,8 +26,12 @@ import java.util.Objects;
 
 public class SchemaParserTest
 {
+
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("Alloy Tests");
+
+
     @Test
-    public void testSingleCollectionSchema() throws Exception
+    public void testSimpleCollectionSchema() throws Exception
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("json/schema/schema_def_1.json"));
         String payload = new String(Files.readAllBytes(Paths.get(url.toURI())));
@@ -34,7 +39,15 @@ public class SchemaParserTest
     }
 
 
-    protected void check(String value)
+    @Test
+    public void testComplexCollectionSchema() throws Exception
+    {
+        URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("json/schema/schema_def_2.json"));
+        String payload = new String(Files.readAllBytes(Paths.get(url.toURI())));
+        check(payload);
+    }
+
+    protected void check(String value) throws JsonProcessingException
     {
         MongodbSchemaGrammarParser parser = MongodbSchemaGrammarParser.newInstance();
         MongoDatabase database = parser.parseDocument(value);

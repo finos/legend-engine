@@ -19,12 +19,12 @@ Class meta::external::store::mongodb::metamodel::BaseType
 {
   allOf: BaseType[*];
   anyOf: BaseType[*];
-  bsonType: BaseType[1];
+  //bsonType: BaseType[1];
   enum: String[*];
   not: BaseType[0..1];
   oneOf: BaseType[*];
-  type: String[1];
   title: String[0..1];
+  description: String[0..1];
 }
 
 
@@ -51,7 +51,6 @@ Class meta::external::store::mongodb::metamodel::ObjectType extends BaseType
   additionalPropertiesAllowed: Boolean[1];
   additionalProperties: ObjectType[0..1]; 
   dependencies: ObjectType[0..1];
-  description: String[0..1];
   maxProperties: Integer[0..1];
   minProperties: Integer[0..1];
   patternProperties: RegExType[0..1];

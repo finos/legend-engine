@@ -28,9 +28,10 @@ keywords:                                   (DATABASE | DATABASE_NAME
                                             | TITLE | DESCRIPTION
                                             | TYPE | BSONTYPE
                                             | PROPERTIES | REQUIRED
-                                            | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS
+                                            | UNIQUE_ITEMS | MIN_ITEMS | MAX_ITEMS | ITEMS
                                             | MAXIMUM | MINIMUM
                                             | MIN_LENGTH | MAX_LENGTH
+                                            | MAX_PROPERTIES | MIN_PROPERTIES
                                             | ENUM | ALL_OF | ONE_OF | ANY_OF
                                             | ADDITIONAL_PROPERTIES)
 ;
