@@ -14,6 +14,7 @@
 
 import meta::pure::executionPlan::*;
 import meta::pure::functions::io::http::*;
+import meta::pure::runtime::connection::authentication::*;
 
 import meta::external::store::service::executionPlan::nodes::*;
 
@@ -28,7 +29,7 @@ Class meta::external::store::service::executionPlan::nodes::RestServiceExecution
    mimeType               : String[1];
    params                 : ServiceParameter[*];
    requestBodyDescription : RequestBodyDescription[0..1];
-   securitySchemes        : SecurityScheme[*];
+   authenticationSchemes  : AuthenticationSchemeRequirement[*];
 }
 
 Class meta::external::store::service::executionPlan::nodes::RequestBodyDescription
@@ -46,4 +47,19 @@ Class meta::external::store::service::executionPlan::nodes::ServiceParametersRes
 Class meta::external::store::service::executionPlan::nodes::LimitExecutionNode extends ExecutionNode
 {
    limit : Integer[1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::service::executionPlan::nodes::AuthenticationSchemeRequirement
+{
+}
+
+Class meta::external::store::service::executionPlan::nodes::SingleAuthenticationSchemeRequirement extends meta::external::store::service::executionPlan::nodes::AuthenticationSchemeRequirement
+{
+    securityScheme              : SecurityScheme[1];
+    authenticationSpecification : AuthenticationSpecification[0..1];
+}
+
+Class meta::external::store::service::executionPlan::nodes::MultiAuthenticationSchemeRequirement extends meta::external::store::service::executionPlan::nodes::AuthenticationSchemeRequirement
+{
+    authenticationSchemes : SingleAuthenticationSchemeRequirement[*];
 }
