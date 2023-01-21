@@ -28,6 +28,7 @@ import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 import javax.crypto.EncryptedPrivateKeyInfo;
@@ -47,7 +48,7 @@ public class EncryptedPrivateKeyFromVaultRule extends IntermediationRule<Encrypt
     }
 
     @Override
-    public PrivateKeyCredential makeCredential(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification, Credential credential) throws Exception
+    public PrivateKeyCredential makeCredential(EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification, Credential credential, Identity identity) throws Exception
     {
         String encryptedPrivateKey = super.lookupSecret(authenticationSpecification.privateKey);
         String passphrase = super.lookupSecret(authenticationSpecification.passphrase);

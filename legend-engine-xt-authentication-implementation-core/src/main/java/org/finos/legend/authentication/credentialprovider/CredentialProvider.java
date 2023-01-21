@@ -147,7 +147,7 @@ public abstract class CredentialProvider<SPEC extends AuthenticationSpecificatio
 
         IntermediationRule intermediationRule = matchingRuleHolder.get();
         Credential credential = (Credential) identity.getCredential(intermediationRule.getInputCredentialType()).get();
-        return intermediationRule.makeCredential(specification, credential);
+        return intermediationRule.makeCredential(specification, credential, identity);
     }
 
     public FastList<IntermediationRule> getIntermediationRules()

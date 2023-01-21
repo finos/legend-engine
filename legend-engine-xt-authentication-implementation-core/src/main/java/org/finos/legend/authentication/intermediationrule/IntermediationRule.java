@@ -42,7 +42,7 @@ public abstract class IntermediationRule<SPEC extends AuthenticationSpecificatio
         this.credentialVaultProvider = credentialVaultProvider;
     }
 
-    public abstract OUTPUT_CRED makeCredential(SPEC spec, INPUT_CRED cred) throws Exception;
+    public abstract OUTPUT_CRED makeCredential(SPEC spec, INPUT_CRED cred, Identity identity) throws Exception;
 
     public Class<? extends AuthenticationSpecification> getAuthenticationSpecificationType()
     {

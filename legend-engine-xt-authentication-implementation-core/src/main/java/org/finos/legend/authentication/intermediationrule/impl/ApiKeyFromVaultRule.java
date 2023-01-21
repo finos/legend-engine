@@ -19,6 +19,7 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
 
 public class ApiKeyFromVaultRule extends IntermediationRule<ApiKeyAuthenticationSpecification, Credential, ApiTokenCredential>
@@ -29,7 +30,7 @@ public class ApiKeyFromVaultRule extends IntermediationRule<ApiKeyAuthentication
     }
 
     @Override
-    public ApiTokenCredential makeCredential(ApiKeyAuthenticationSpecification specification, Credential credential) throws Exception
+    public ApiTokenCredential makeCredential(ApiKeyAuthenticationSpecification specification, Credential credential, Identity identity) throws Exception
     {
         CredentialVaultSecret credentialVaultSecret = specification.value;
         String apiKey = super.lookupSecret(credentialVaultSecret);

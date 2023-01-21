@@ -18,6 +18,7 @@ import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
 public class UserPasswordFromVaultRule extends IntermediationRule<UserPasswordAuthenticationSpecification, Credential, PlaintextUserPasswordCredential>
@@ -28,7 +29,7 @@ public class UserPasswordFromVaultRule extends IntermediationRule<UserPasswordAu
     }
 
     @Override
-    public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification specification, Credential credential) throws Exception
+    public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification specification, Credential credential, Identity identity) throws Exception
     {
         String password = super.lookupSecret(specification.password);
         return new PlaintextUserPasswordCredential(specification.username, password);
