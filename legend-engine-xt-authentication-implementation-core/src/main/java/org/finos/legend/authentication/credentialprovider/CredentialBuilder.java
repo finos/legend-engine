@@ -28,7 +28,7 @@ public class CredentialBuilder
         ImmutableSet<? extends Class<? extends Credential>> inputCredentialTypes = identity.getCredentials().collect(c -> c.getClass()).toSet().toImmutable();
         Optional<CredentialProvider> matchingCredentialProvider = credentialProviderProvider.findMatchingCredentialProvider(authenticationSpecification.getClass(), inputCredentialTypes);
 
-        String message = String.format("Did not find a credential provider for specification type=%s, input credential types=%s", authenticationSpecification.getClass(), inputCredentialTypes);
+        String message = String.format("Did not find a credential provider for specification type=%s, input credential types=%s.", authenticationSpecification.getClass(), inputCredentialTypes);
         CredentialProvider credentialProvider = matchingCredentialProvider.orElseThrow(() -> new RuntimeException(message));
         return credentialProvider.makeCredential(authenticationSpecification, identity);
     }
