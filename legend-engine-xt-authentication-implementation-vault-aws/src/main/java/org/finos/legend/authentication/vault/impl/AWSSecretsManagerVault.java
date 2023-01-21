@@ -17,7 +17,7 @@ package org.finos.legend.authentication.vault.impl;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.FixedSizeList;
 import org.finos.legend.authentication.vault.CredentialVault;
-import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
@@ -38,11 +38,16 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 
 public class AWSSecretsManagerVault extends CredentialVault<AWSSecretsManagerSecret>
 {
-    private CredentialVaultProvider credentialVaultProvider;
+    private PlatformCredentialVaultProvider platformCredentialVaultProvider;
 
-    AWSSecretsManagerVault(CredentialVaultProvider credentialVaultProvider)
+    public static Builder builder()
     {
-        this.credentialVaultProvider = credentialVaultProvider;
+        return new Builder();
+    }
+
+    public AWSSecretsManagerVault(PlatformCredentialVaultProvider platformCredentialVaultProvider)
+    {
+        this.platformCredentialVaultProvider = platformCredentialVaultProvider;
     }
 
     @Override
@@ -83,8 +88,8 @@ public class AWSSecretsManagerVault extends CredentialVault<AWSSecretsManagerSec
             CredentialVaultSecret accessKeyIdSecret = validate(staticAWSCredentials.accessKeyId);
             CredentialVaultSecret secretAccessKeySecret = validate(staticAWSCredentials.secretAccessKey);
 
-            String accessKeyIdValue = this.credentialVaultProvider.getVault(accessKeyIdSecret).lookupSecret(accessKeyIdSecret, null);
-            String secretAccessKeyValue = this.credentialVaultProvider.getVault(accessKeyIdSecret).lookupSecret(secretAccessKeySecret, null);
+            String accessKeyIdValue = this.platformCredentialVaultProvider.getVault(accessKeyIdSecret).lookupSecret(accessKeyIdSecret, null);
+            String secretAccessKeyValue = this.platformCredentialVaultProvider.getVault(accessKeyIdSecret).lookupSecret(secretAccessKeySecret, null);
             return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyIdValue, secretAccessKeyValue));
         }
 
@@ -100,5 +105,26 @@ public class AWSSecretsManagerVault extends CredentialVault<AWSSecretsManagerSec
             throw new UnsupportedOperationException("Unsupported secret of type=" + secret.getClass().getCanonicalName() + ". Only supported type is=" + PropertiesFileSecret.class.getCanonicalName());
         }
         return secret;
+    }
+
+    public static class Builder
+    {
+        private PlatformCredentialVaultProvider platformCredentialVaultProvider;
+
+        public Builder()
+        {
+
+        }
+
+        public Builder with(PlatformCredentialVaultProvider platformCredentialVaultProvider)
+        {
+            this.platformCredentialVaultProvider = platformCredentialVaultProvider;
+            return this;
+        }
+
+        public AWSSecretsManagerVault build()
+        {
+            return new AWSSecretsManagerVault(this.platformCredentialVaultProvider);
+        }
     }
 }

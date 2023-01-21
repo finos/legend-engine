@@ -19,6 +19,8 @@ import org.finos.legend.authentication.credentialprovider.impl.UserPasswordCrede
 import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
 import org.finos.legend.authentication.intermediationrule.impl.UserPasswordFromVaultRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.AWSSecretsManagerVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.engine.connection.jdbc.JdbcConnectionProvider;
 import org.finos.legend.engine.connection.jdbc.JdbcConnectionSpecification;
@@ -63,9 +65,19 @@ public class TestJdbcConnectionProvider
     {
         Properties properties = new Properties();
         properties.put("passwordRef1", "");
+        PropertiesFileCredentialVault propertiesFileCredentialVault = new PropertiesFileCredentialVault(properties);
+
+        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
+                .with(propertiesFileCredentialVault)
+                .build();
+
+        AWSSecretsManagerVault awsSecretsManagerVault = AWSSecretsManagerVault.builder()
+                .with(platformCredentialVaultProvider)
+                .build();
 
         CredentialVaultProvider credentialVaultProvider = CredentialVaultProvider.builder()
-                .with(new PropertiesFileCredentialVault(properties))
+                .with(platformCredentialVaultProvider)
+                .with(awsSecretsManagerVault)
                 .build();
 
         IntermediationRuleProvider intermediationRuleProvider = IntermediationRuleProvider.builder()

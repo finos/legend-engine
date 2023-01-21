@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.from;
 
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
@@ -30,9 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-
-import java.util.List;
-import java.util.Objects;
 
 public class AuthenticationParseTreeWalker
 {
