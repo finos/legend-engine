@@ -318,7 +318,7 @@ function meta::pure::mapping::modelToModel::chain::reprocessVar(v:Any[1], oldVar
   $v->match(
     [
       s:SimpleFunctionExpression[1]| ^$s(parametersValues = $s.parametersValues->map(p| $p->reprocessVar($oldVar))->cast(@ValueSpecification)),
-      v:VariableExpression[1]| if($oldVar->isNotEmpty() && $v.genericType.rawType == $oldVar->toOne().second.rawType,| ^$v(name=$oldVar->toOne().first);, |$v);,
+      v:VariableExpression[1]| if(($oldVar->isNotEmpty() && $v.genericType.rawType == $oldVar->toOne().second.rawType) && $v.name=='this' ,| ^$v(name=$oldVar->toOne().first);, |$v);,
       srv: StoreMappingRoutedValueSpecification[1]|  ^$srv(value= $srv.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
       f:FunctionRoutedValueSpecification[1]|^$f(value=$f.value->reprocessVar($oldVar)->cast(@ValueSpecification));,
       l:LambdaFunction<Any>[1]|^$l(expressionSequence=$l.expressionSequence->map(es| $es->reprocessVar($oldVar))->cast(@ValueSpecification));, 
