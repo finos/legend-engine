@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDatabase;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,7 +46,7 @@ public class SchemaParserTest
         check(payload);
     }
 
-    protected void check(String value) throws JsonProcessingException
+    protected void check(String value)
     {
         MongodbSchemaGrammarParser parser = MongodbSchemaGrammarParser.newInstance();
         MongoDatabase database = parser.parseDocument(value);
