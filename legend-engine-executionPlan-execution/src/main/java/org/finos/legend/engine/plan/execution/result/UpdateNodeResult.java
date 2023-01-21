@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,25 +14,28 @@
 
 package org.finos.legend.engine.plan.execution.result;
 
-import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
-import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 
-public interface ResultVisitor<T>
+public class UpdateNodeResult extends Result
 {
-    T visit(ErrorResult errorResult);
+    private MutableList<Result> results;
 
-    T visit(StreamingObjectResult tStreamingObjectResult);
-
-    T visit(JsonStreamingResult jsonStreamingResult);
-
-    T visit(ConstantResult constantResult);
-
-    T visit(MultiResult multiResult);
-
-    T visit(UpdateNodeResult updateNodeResult);
-
-    default T visit(StreamingResult multiResult)
+    public UpdateNodeResult(MutableList<Result> results)
     {
-        throw new UnsupportedOperationException("Not supported");
+        super("success");
+        this.results =  Lists.mutable.empty();
+        results.stream().forEach(result -> this.results.add(result));
+    }
+
+    public MutableList<Result> getResults()
+    {
+        return this.results;
+    }
+
+    @Override
+    public <T> T accept(ResultVisitor<T> resultVisitor)
+    {
+        return resultVisitor.visit(this);
     }
 }
