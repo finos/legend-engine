@@ -172,6 +172,9 @@ public class AuthenticationParseTreeWalker
         EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification = new EncryptedPrivateKeyPairAuthenticationSpecification();
         authenticationSpecification.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
+        AuthenticationParserGrammar.EncryptedPrivateKeyAuthentication_userNameContext userNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.encryptedPrivateKeyAuthentication_userName(), "userName", authenticationSpecification.sourceInformation);
+        authenticationSpecification.userName = PureGrammarParserUtility.fromGrammarString(userNameContext.STRING().getText(), true);
+
         AuthenticationParserGrammar.EncryptedPrivateKeyAuthentication_privateKeyContext privateKeyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.encryptedPrivateKeyAuthentication_privateKey(), "privateKey", authenticationSpecification.getSourceInformation());
         authenticationSpecification.privateKey = visitCredentialVaultSecret(privateKeyContext.secret_value());
 

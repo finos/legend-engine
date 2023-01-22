@@ -90,10 +90,14 @@ apiKeyAuthentication_value:    API_KEY_AUTHENTICATION_VALUE COLON secret_value
 encryptedPrivateKeyAuthentication :     ENCRYPTED_PRIVATE_KEY_AUTHENTICATION
                                 BRACE_OPEN
                                 (
+                                    encryptedPrivateKeyAuthentication_userName |
                                     encryptedPrivateKeyAuthentication_privateKey |
                                     encryptedPrivateKeyAuthentication_passphrase
                                 )*
                                 BRACE_CLOSE
+;
+
+encryptedPrivateKeyAuthentication_userName:     ENCRYPTED_PRIVATE_KEY_USERNAME COLON STRING SEMI_COLON
 ;
 
 encryptedPrivateKeyAuthentication_privateKey:    ENCRYPTED_PRIVATE_KEY_PRIVATE_KEY COLON secret_value

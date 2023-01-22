@@ -16,6 +16,7 @@ import meta::pure::runtime::connection::authentication::*;
 
 Class {doc.doc = 'Authentication using an encrypted key pair'}  meta::pure::runtime::connection::authentication::EncryptedKeyPairAuthenticationSpecification extends meta::pure::runtime::connection::authentication::AuthenticationSpecification
 {
+    userName:String[1];
     privateKey:CredentialVaultSecret[1];
     passphrase:CredentialVaultSecret[1];
 }

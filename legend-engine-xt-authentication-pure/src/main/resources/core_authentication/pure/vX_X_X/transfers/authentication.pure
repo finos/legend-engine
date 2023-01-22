@@ -27,6 +27,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentic
                     username = $u.username,
                     password = $u.password->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
                 ),
+      e:meta::pure::runtime::connection::authentication::EncryptedKeyPairAuthenticationSpecification [1] |
+                ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::EncryptedKeyPairAuthenticationSpecification(
+                    _type = 'encryptedPrivateKey',
+                    userName = $e.userName,
+                    privateKey = $e.privateKey->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification(),
+                    passphrase = $e.passphrase->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformSecretSpecification()
+                ),
       a:meta::pure::runtime::connection::authentication::ApiKeyAuthenticationSpecification [1] |
                 ^meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::ApiKeyAuthenticationSpecification(
                       _type = 'apiKey',

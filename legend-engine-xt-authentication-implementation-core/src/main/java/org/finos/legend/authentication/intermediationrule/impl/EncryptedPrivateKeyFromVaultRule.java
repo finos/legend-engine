@@ -53,8 +53,7 @@ public class EncryptedPrivateKeyFromVaultRule extends IntermediationRule<Encrypt
         String encryptedPrivateKey = super.lookupSecret(authenticationSpecification.privateKey);
         String passphrase = super.lookupSecret(authenticationSpecification.passphrase);
         PrivateKey privateKey = this.getDecryptedPrivateKey(encryptedPrivateKey, passphrase);
-        // TODO - epsstan - remove "alice"
-        return new PrivateKeyCredential("alice", privateKey);
+        return new PrivateKeyCredential(authenticationSpecification.userName, privateKey);
     }
 
     private PrivateKey getDecryptedPrivateKey(String privateKey, String passPhrase)

@@ -71,6 +71,7 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     {
         return getTabString(indentLevel) + "authentication: EncryptedPrivateKey\n" +
                 getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "userName: '" + authenticationSpecification.userName + "';\n" +
                 getTabString(indentLevel + 1) + "privateKey: " + renderCredentialVaultSecret(authenticationSpecification.privateKey, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel + 1) + "passphrase: " + renderCredentialVaultSecret(authenticationSpecification.passphrase, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel) + "}\n";
