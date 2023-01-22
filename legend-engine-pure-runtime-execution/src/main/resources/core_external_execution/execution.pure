@@ -1,0 +1,38 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::runtime::*;
+import meta::pure::extension::*;
+
+native function meta::legend::execute(planAsJson: String[1], vars: Pair<String, Any>[*]):String[1];
+
+function meta::legend::execute(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], context: ExecutionContext[1], extensions: Extension[*]):String[1]
+{
+    // generate plan
+    let rawPlan = meta::pure::executionPlan::executionPlan($f, $context, $extensions);
+
+    // bind to java
+    let javaPlatformBindingId = meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId();
+    let javaPlatformBindingConfig = ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig();
+    let planBindToJava = $rawPlan->meta::pure::executionPlan::generatePlatformCode($javaPlatformBindingId, $javaPlatformBindingConfig, $extensions);
+
+    // transform to vX_X_X
+    let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions);
+
+    // serialize to json
+    let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+
+    // execute plan
+    $planAsJson->meta::legend::execute($vars);
+}
