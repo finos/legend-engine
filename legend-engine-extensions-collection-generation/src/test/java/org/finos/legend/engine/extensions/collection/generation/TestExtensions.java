@@ -219,7 +219,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.flatdata.FlatDataProtocolExtension.class)
                 .with(org.finos.legend.engine.external.format.json.JsonProtocolExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
-                .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class);
+                .with(org.finos.legend.engine.external.format.xml.XmlProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class);
     }
 
     protected Iterable<? extends Class<? extends GenerationExtension>> getExpectedGenerationExtensions()
@@ -360,6 +361,7 @@ public class TestExtensions
                 .with("core_external_format_flatdata_java_platform_binding")
                 .with("core_external_format_json_java_platform_binding")
                 .with("core_external_format_xml_java_platform_binding")
-                .with("core_configuration");
+                .with("core_configuration")
+                .with("core_authentication");
     }
 }

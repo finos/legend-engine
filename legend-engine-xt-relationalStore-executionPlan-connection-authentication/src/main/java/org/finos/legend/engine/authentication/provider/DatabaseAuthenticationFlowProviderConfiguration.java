@@ -15,9 +15,11 @@
 package org.finos.legend.engine.authentication.provider;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class DatabaseAuthenticationFlowProviderConfiguration
 {
     public String _type;
+    public CredentialProviderProvider credentialProviderProvider;
 }

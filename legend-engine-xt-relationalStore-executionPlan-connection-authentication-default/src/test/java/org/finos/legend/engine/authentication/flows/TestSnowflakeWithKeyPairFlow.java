@@ -21,6 +21,12 @@ import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JcaPKC
 import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.operator.OutputEncryptor;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.util.io.pem.PemObject;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
+import org.finos.legend.authentication.credentialprovider.impl.PrivateKeyCredentialProvider;
+import org.finos.legend.authentication.intermediationrule.IntermediationRuleProvider;
+import org.finos.legend.authentication.intermediationrule.impl.EncryptedPrivateKeyFromVaultRule;
+import org.finos.legend.authentication.vault.CredentialVaultProvider;
+import org.finos.legend.authentication.vault.impl.CredentialVaultProviderForTest;
 import org.finos.legend.engine.authentication.vaults.InMemoryVaultForTesting;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
@@ -29,19 +35,13 @@ import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredent
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.PrivateKey;
 import java.security.SecureRandom;
 import java.security.Security;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -58,18 +58,11 @@ public class TestSnowflakeWithKeyPairFlow
         Vault.INSTANCE.registerImplementation(inMemoryVault);
     }
 
-    /*
-        To run this test, first generate a private key and add it to src/test/resources/test_encrypted_privatekey.p8.
-        The key should be encrypted with the passphrase "test"
-
-        Key gen instructions : https://docs.snowflake.com/en/user-guide/key-pair-auth.html
-     */
-
-    @Ignore
+    @Test
     public void testFlow() throws Exception
     {
-        String passphrase = "test";
-        String privateKeyFromFile = this.loadEncryptedPrivateKey("/test-secrets/encrypted_privatekey1.p8");
+        String privateKeyFromFile = PK;
+        String passphrase = PASS;
         inMemoryVault.setValue("key1", privateKeyFromFile);
         inMemoryVault.setValue("passphrase1", passphrase);
 
@@ -88,11 +81,44 @@ public class TestSnowflakeWithKeyPairFlow
         assertNotNull(privateKeyFromFlow);
     }
 
-    private String loadEncryptedPrivateKey(String file) throws URISyntaxException, IOException
+    public CredentialProviderProvider buildCredentialProvider()
     {
-        URL resource = TestSnowflakeWithKeyPairFlow.class.getResource(file);
-        List<String> lines = Files.readAllLines(Paths.get(resource.toURI()));
-        return lines.stream().collect(Collectors.joining(System.lineSeparator()));
+        CredentialVaultProvider credentialVaultProvider = CredentialVaultProviderForTest.buildForTest()
+                .withProperties("key1", PK)
+                .withProperties("passphrase1", PASS)
+                .build();
+
+        IntermediationRuleProvider ruleProvider = IntermediationRuleProvider.builder()
+                .with(new EncryptedPrivateKeyFromVaultRule(credentialVaultProvider))
+                .build();
+
+        PrivateKeyCredentialProvider credentialProvider = new PrivateKeyCredentialProvider();
+
+        CredentialProviderProvider credentialProviderProvider = CredentialProviderProvider.builder()
+                .with(ruleProvider)
+                .with(credentialProvider)
+                .build();
+
+        return credentialProviderProvider;
+    }
+
+    @Test
+    public void testFlowWithCredentialProvider() throws Exception
+    {
+        SnowflakeDatasourceSpecification datasourceSpec = new SnowflakeDatasourceSpecification();
+        SnowflakePublicAuthenticationStrategy authSpec = new SnowflakePublicAuthenticationStrategy();
+        authSpec.passPhraseVaultReference = "passphrase1";
+        authSpec.privateKeyVaultReference = "key1";
+        authSpec.publicUserName = identity1.getName();
+
+        SnowflakeWithKeyPairFlow flow = new SnowflakeWithKeyPairFlow();
+        flow.credentialProviderProvider  = this.buildCredentialProvider();
+        PrivateKeyCredential credential = (PrivateKeyCredential) flow.makeCredential(identity1, datasourceSpec, authSpec);
+
+        assertEquals(identity1.getName(), credential.getUser());
+        String privateKeyFromFlow = this.serializePrivateKey(credential.getPrivateKey());
+        // TODO : need a better assert
+        assertNotNull(privateKeyFromFlow);
     }
 
     private String encryptAndSerializePrivateKey(PrivateKey privateKey, String passphrase) throws Exception
@@ -124,4 +150,37 @@ public class TestSnowflakeWithKeyPairFlow
         }
         return stringWriter.toString();
     }
+
+    private static String PK = "-----BEGIN ENCRYPTED PRIVATE KEY-----\n" +
+            "MIIFHDBOBgkqhkiG9w0BBQ0wQTApBgkqhkiG9w0BBQwwHAQIFHVXMxWCnpYCAggA\n" +
+            "MAwGCCqGSIb3DQIJBQAwFAYIKoZIhvcNAwcECPOF7ZWgWMA5BIIEyFJUV/G78SDU\n" +
+            "x4snwHIJiE9f0b9TZ2Rz6cISMSuDp+PJrdM4YKFSgZPDSNW4VUryTjYatsOgKROT\n" +
+            "osw5S+Ynvw0PQjXFS1p93hsWjBdTmW956/xtt1qAQS9LdZRZaH+mAEk+efXiF3cP\n" +
+            "+n+KGmJLF0EvuA9EuJdAGegx8WnKn8nO4Dy/a/eOYYJZ34K+CoId4EWvq5yhPi68\n" +
+            "6F/THZagiNbVCx7GzneSjbPnlvZUvxNxnQ5blHM0KNp2xC6PT7F5upfD0+gxIrV1\n" +
+            "sRaUATlDuIEl0bUinQKTzEOWO+sNPRM3z+kUN5lNSTJ1QvocjE5PuDJkqgGiHMop\n" +
+            "iogY95IcmyyxlizH9qwvDbbogcl6oFoHFdzz8ikEITFmb1PDzGlx/iG81TBM5G9o\n" +
+            "vOr7J5nLKLV9NpPtp66oMbcgvq8duou5mRDzXPxhdlsZ6/u03ybI3WDvw7EnRx7C\n" +
+            "DZ+m9IiSxtUFebd2Ef2JMlIKyQNnC7TKGxdadVXJwWS6B5IVf0c7lxeIWGXyuoeV\n" +
+            "LmzVldBInyhA50cHjGx4Te+e7iAbP1qz/lfevgDeUlV8Upv0RhgT/sHLViuc22Kb\n" +
+            "iO9Ck+Pm+AKAIXsj28Npvsv7rxauOGrwEP4D/u1BAqQ5XcG5ihdMhpylNNQwo2XH\n" +
+            "KQvcu5Q7rEixS5TaKAtngnuX9x6f72rIVt9bhwIM/kH+MUCEdM4bnG3FXtZGVnAK\n" +
+            "RNtRzLVN6ognb8B+6DQPYIMa6FBDYgNa6AkVJZZs9YL8+FnJCq6pkyyckgIZ9x6w\n" +
+            "QUfwVU6JRnaGKyoJClcXjP+uMi2po8BuzWQwxWPa8YvxQDg/BK1C7WS+mzIfr4gx\n" +
+            "bch5hsFRtRGPS7ggbTqcvaCtEJbFkopC7HPTfLLeTdnOtfRALFPJst2xCBl7Otl6\n" +
+            "3Rr+WCDnr4rAXgcsSxN2Bllv4sC8fWO+4F1vq5Awi7nxauBq/pah1Ojfeuuoi0e6\n" +
+            "JLxUlQJu+MceY/OuQN0BayZsEGKQC/ufhenM6zhFbchvk92ZFTuC0mV7MJ2cYc2w\n" +
+            "PfoeRRIoMy0shlhKBOm+YyjoM8xvFPazqPNZVdCqbvJSmkeuG8TypnlsW8wy/Y1P\n" +
+            "U19pWasbom4ltt3gv06FrSzH9bTx2vcokhHBPlixWtXvWfFNXm5ZAAdWDNhYb8mD\n" +
+            "X+N6i3IXlLGKaFBzAM0InjEV6HOtEIFqVLoXaGTfAVn4JviqpBno++GI2N5U1vKl\n" +
+            "TA0V1ahjOC492Mft16H4H3OXR0mSKc32dMY+w8QwtByIlXDmGV+NpfZiTHcMzuKP\n" +
+            "M6uDbPSw9li4tyLmDe1T75HlJjjeFmFMFqFAGHApS1yq69SMNAlv3mv/Rt+SiUpr\n" +
+            "Wj59mz9QMkQOtDxMxNEPpeaEr6tNeMTV+DPU+zUeXFU/uNXR2yHmmzvNKUKSitYp\n" +
+            "91TdOjXHCl3Fqdf5aeOfbwa0xpnNQzOcdwrm4KSOUsoMv1OZ222XH6DNauLCRbf/\n" +
+            "4s5XrEq69OpIjMMa4jXKGw47nKj4S/C4Zqo1W2UP9z+VY8+v2vlzAAPzWEmA+Rg7\n" +
+            "0a3ddHiaMNBVAGkaFzlIM7CbwVUwvGydCBgixPcwBNtMRmp/11a4UBh/HQqF7DmL\n" +
+            "Sfa3ElWgijNkMqCKqry96g==\n" +
+            "-----END ENCRYPTED PRIVATE KEY-----";
+
+    private static String PASS = "changeme";
 }
