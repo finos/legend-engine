@@ -24,7 +24,11 @@ import net.snowflake.client.jdbc.internal.org.bouncycastle.openssl.jcajce.JceOpe
 import net.snowflake.client.jdbc.internal.org.bouncycastle.operator.InputDecryptorProvider;
 import net.snowflake.client.jdbc.internal.org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.authentication.credentialprovider.CredentialBuilder;
+import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.EncryptedPrivateKeyPairAuthenticationSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
@@ -44,6 +48,17 @@ import java.security.spec.PKCS8EncodedKeySpec;
 
 public class SnowflakeWithKeyPairFlow implements DatabaseAuthenticationFlow<SnowflakeDatasourceSpecification, SnowflakePublicAuthenticationStrategy>
 {
+    public CredentialProviderProvider credentialProviderProvider = null;
+
+    public SnowflakeWithKeyPairFlow()
+    {
+    }
+
+    public SnowflakeWithKeyPairFlow(CredentialProviderProvider credentialProviderProvider)
+    {
+        this.credentialProviderProvider = credentialProviderProvider;
+    }
+
     @Override
     public Class<SnowflakeDatasourceSpecification> getDatasourceClass()
     {
@@ -65,7 +80,29 @@ public class SnowflakeWithKeyPairFlow implements DatabaseAuthenticationFlow<Snow
     @Override
     public Credential makeCredential(Identity identity, SnowflakeDatasourceSpecification datasourceSpecification, SnowflakePublicAuthenticationStrategy authenticationStrategy) throws Exception
     {
-        return makeCredential(authenticationStrategy);
+        if (this.credentialProviderProvider != null)
+        {
+            return this.makeCredentialWithCredentialProvider(authenticationStrategy, identity);
+        }
+        else
+        {
+            return this.makeCredential(authenticationStrategy);
+        }
+    }
+
+    protected EncryptedPrivateKeyPairAuthenticationSpecification adapt(SnowflakePublicAuthenticationStrategy authenticationStrategy)
+    {
+        EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification = new EncryptedPrivateKeyPairAuthenticationSpecification();
+        authenticationSpecification.userName = authenticationStrategy.publicUserName;
+        authenticationSpecification.privateKey = new PropertiesFileSecret(authenticationStrategy.privateKeyVaultReference);
+        authenticationSpecification.passphrase = new PropertiesFileSecret(authenticationStrategy.passPhraseVaultReference);
+        return authenticationSpecification;
+    }
+
+    private PrivateKeyCredential makeCredentialWithCredentialProvider(SnowflakePublicAuthenticationStrategy authenticationStrategy, Identity identity) throws Exception
+    {
+        EncryptedPrivateKeyPairAuthenticationSpecification authenticationSpecification = this.adapt(authenticationStrategy);
+        return (PrivateKeyCredential)CredentialBuilder.makeCredential(this.credentialProviderProvider, authenticationSpecification, identity);
     }
 
     private PrivateKeyCredential makeCredential(SnowflakePublicAuthenticationStrategy authenticationStrategy)
