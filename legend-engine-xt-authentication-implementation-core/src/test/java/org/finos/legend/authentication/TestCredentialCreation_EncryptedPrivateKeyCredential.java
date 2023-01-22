@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class TestCredentialCreation_EncryptedApiKey
+public class TestCredentialCreation_EncryptedPrivateKeyCredential
 {
     private Identity identity;
 
