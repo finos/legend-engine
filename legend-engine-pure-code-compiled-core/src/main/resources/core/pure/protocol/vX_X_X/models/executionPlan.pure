@@ -247,14 +247,6 @@ Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::VoidResultType ex
 {
 }
 
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::LazyVoidResultType extends ResultType
-{
-}
-
-Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::UpdateNodeResultType extends ResultType
-{
-}
-
 Class meta::protocols::pure::vX_X_X::metamodel::executionPlan::ClassResultType extends ResultType
 {
    class : String[1];

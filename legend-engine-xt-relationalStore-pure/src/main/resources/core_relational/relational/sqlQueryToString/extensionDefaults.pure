@@ -154,11 +154,6 @@ function meta::relational::functions::sqlQueryToString::default::processJoinStri
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
-function  meta::relational::functions::sqlQueryToString::stringToPlaceHolder(s:String[1]):String[1]
-{
-   ^VarPlaceHolder(name= $s, type = $s->type())->processPlaceHolder(String,'','',[],[]);
-}
-
 function meta::relational::functions::sqlQueryToString::default::getDynaFunctionToSqlDefault(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
