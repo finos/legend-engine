@@ -28,12 +28,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSDefaultCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSTSAssumeRoleCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSStaticCredentials;
 
 import java.util.List;
 import java.util.Map;
@@ -66,8 +67,9 @@ public class AuthenticationProtocolExtension implements PureProtocolExtension
                         .build(),
                 // aws credentials
                 ProtocolSubTypeInfo.newBuilder(AWSCredentials.class)
-                        .withSubtype(StaticAWSCredentials.class, "awsStatic")
+                        .withSubtype(AWSStaticCredentials.class, "awsStatic")
                         .withSubtype(AWSDefaultCredentials.class, "awsDefault")
+                        .withSubtype(AWSSTSAssumeRoleCredentials.class, "awsSTSAssumeRole")
                         .build()
         ));
     }

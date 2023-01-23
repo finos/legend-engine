@@ -127,4 +127,27 @@ public class CredentialProviderProvider
             return new CredentialProviderProvider(credentialProviders, intermediationRuleProvider);
         }
     }
+
+    /*
+        Generates a human readable 'explanation' of the configured providers and their rules.
+        Note : This is an internal/debug API.
+     */
+    public String explain()
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (CredentialProvider credentialProvider : this.credentialProviders)
+        {
+            stringBuilder.append("CredentialProvider : " + credentialProvider.getClass().getCanonicalName() + "\n");
+            FastList<IntermediationRule> intermediationRules = credentialProvider.getIntermediationRules();
+            for (IntermediationRule rule : intermediationRules)
+            {
+                stringBuilder.append("\tRule   : " + rule.getClass().getCanonicalName() + "\n");
+                stringBuilder.append("\t\tSpec   : " + rule.getAuthenticationSpecificationType().getCanonicalName() + "\n");
+                stringBuilder.append("\t\tInput  : " + rule.getInputCredentialType().getCanonicalName() + "\n");
+                stringBuilder.append("\t\tOutput : " + rule.getOutputCredentialType().getCanonicalName() + "\n");
+            }
+        }
+        return stringBuilder.toString();
+    }
+
 }

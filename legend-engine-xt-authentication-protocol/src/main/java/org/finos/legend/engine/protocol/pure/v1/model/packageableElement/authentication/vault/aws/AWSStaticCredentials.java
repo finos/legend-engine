@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2022 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,30 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
 
-public class EncryptedPrivateKeyPairAuthenticationSpecification extends AuthenticationSpecification
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+public class AWSStaticCredentials extends AWSCredentials
 {
-    public String userName;
-    public CredentialVaultSecret privateKey;
-    public CredentialVaultSecret passphrase;
+    public CredentialVaultSecret accessKeyId;
+    public CredentialVaultSecret secretAccessKey;
 
-    public EncryptedPrivateKeyPairAuthenticationSpecification()
+    public AWSStaticCredentials()
     {
-        // Jackson
     }
 
-    public EncryptedPrivateKeyPairAuthenticationSpecification(String userName, CredentialVaultSecret privateKey, CredentialVaultSecret passphrase)
+    public AWSStaticCredentials(CredentialVaultSecret accessKeyId, CredentialVaultSecret secretAccessKey)
     {
-        this.userName = userName;
-        this.privateKey = privateKey;
-        this.passphrase = passphrase;
+        this.accessKeyId = accessKeyId;
+        this.secretAccessKey = secretAccessKey;
     }
 
     @Override
-    public <T> T accept(AuthenticationSpecificationVisitor<T> visitor)
+    public <T> T accept(AWSCredentialsVisitor<T> visitor)
     {
         return visitor.visit(this);
     }

@@ -27,7 +27,5 @@ public class UserPasswordCredentialProvider extends CredentialProvider<UserPassw
 
         return (PlaintextUserPasswordCredential) super.makeCredential(AuthenticationSpecification, identity, PlaintextUserPasswordCredential.class);
 
-
-
     }
 }

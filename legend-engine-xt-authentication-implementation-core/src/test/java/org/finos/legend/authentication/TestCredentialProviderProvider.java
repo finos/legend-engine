@@ -91,6 +91,35 @@ public class TestCredentialProviderProvider
     }
 
     @Test
+    public void explain()
+    {
+        ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider();
+        UserPasswordCredentialProvider userPasswordCredentialProvider = new UserPasswordCredentialProvider();
+        FastList<CredentialProvider> credentialProviders = FastList.newListWith(apikeyCredentialProvider, userPasswordCredentialProvider);
+
+        CannedApiKeyRuleForTesting apiKeyRule = new CannedApiKeyRuleForTesting(null);
+        CannedUserPasswordRuleForTesting userPasswordRule = new CannedUserPasswordRuleForTesting(null);
+        IntermediationRuleProvider intermediationRuleProvider = new IntermediationRuleProvider(FastList.newListWith(apiKeyRule, userPasswordRule));
+
+        CredentialProviderProvider credentialProviderProvider = new CredentialProviderProvider(credentialProviders, intermediationRuleProvider);
+        String explain = credentialProviderProvider.explain();
+
+        String expected =
+                "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.ApikeyCredentialProvider\n" +
+                "\tRule   : org.finos.legend.authentication.testrules.CannedApiKeyRuleForTesting\n" +
+                "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.ApiKeyAuthenticationSpecification\n" +
+                "\t\tInput  : org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential\n" +
+                "\t\tOutput : org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential\n" +
+                "CredentialProvider : org.finos.legend.authentication.credentialprovider.impl.UserPasswordCredentialProvider\n" +
+                "\tRule   : org.finos.legend.authentication.testrules.CannedUserPasswordRuleForTesting\n" +
+                "\t\tSpec   : org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification\n" +
+                "\t\tInput  : org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential\n" +
+                "\t\tOutput : org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential\n";
+
+        assertEquals(expected, explain);
+    }
+
+    @Test
     public void testMatching()
     {
         ApikeyCredentialProvider apikeyCredentialProvider = new ApikeyCredentialProvider();

@@ -21,7 +21,7 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.GCPWIFWithAWSIdPAuthenticationSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSStaticCredentials;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
@@ -79,7 +79,7 @@ public class TestCredentialCreation_GCPWIFWithAWSIdPOAuthCredential
                 "us-east-1",
                 this.accountIdFromGithub,
                 "integration-wif-role1",
-                new StaticAWSCredentials(
+                new AWSStaticCredentials(
                         new SystemPropertiesSecret("GCPWIFWithAWSIdP_AWS_ACCESS_KEY_ID"),
                         new SystemPropertiesSecret("GCPWIFWithAWSIdP_AWS_SECRET_ACCESS_KEY")
                 ));

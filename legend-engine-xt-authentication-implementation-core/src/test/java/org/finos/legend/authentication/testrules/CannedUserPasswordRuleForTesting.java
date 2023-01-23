@@ -17,6 +17,7 @@ package org.finos.legend.authentication.testrules;
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification.UserPasswordAuthenticationSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
@@ -40,7 +41,7 @@ public class CannedUserPasswordRuleForTesting extends IntermediationRule<UserPas
     }
 
     @Override
-    public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification authenticationSpecification, AnonymousCredential credential) throws Exception
+    public PlaintextUserPasswordCredential makeCredential(UserPasswordAuthenticationSpecification authenticationSpecification, AnonymousCredential credential, Identity identity) throws Exception
     {
         return new PlaintextUserPasswordCredential(this.user, this.password);
     }

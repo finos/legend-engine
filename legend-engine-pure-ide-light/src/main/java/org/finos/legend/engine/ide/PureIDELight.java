@@ -77,6 +77,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-pure-code-compiled-core-configuration", "configuration"))
                 .with(this.buildCore("legend-engine-xt-sql-pure-metamodel", "external-query-sql-metamodel"))
                 .with(this.buildCore("legend-engine-xt-sql-pure", "external-query-sql"))
+                .with(this.buildCore("legend-engine-xt-authentication-pure", "authentication"))
                 .with(new MutableFSCodeStorage(new PureIDECodeRepository(), Paths.get(ideFilesLocation)));
     }
 

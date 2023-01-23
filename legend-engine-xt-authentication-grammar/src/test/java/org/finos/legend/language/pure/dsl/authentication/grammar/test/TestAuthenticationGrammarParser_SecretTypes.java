@@ -144,4 +144,40 @@ public class TestAuthenticationGrammarParser_SecretTypes extends TestGrammarPars
                 "  }\n" +
                 "}\n");
     }
+
+    @Test
+    public void awsSecretsManagerSecret_WithSTSAssumeRoleCredentials()
+    {
+        PureModelContextData test = test("###AuthenticationDemo\n" +
+                "import test::*;\n" +
+                "AuthenticationDemo demo::demo1\n" +
+                "{\n" +
+                "  authentication: UserPassword\n" +
+                "  {\n" +
+                "    username: 'alice';\n" +
+                "    password: AWSSecretsManagerSecret\n" +
+                "    {\n" +
+                "      secretId: 'secret1';\n" +
+                "      versionId: 'versionId1';\n" +
+                "      versionStage: 'versionStage1';\n" +
+                "      awsCredentials: STSAssumeRole\n" +
+                "      {\n" +
+                "           roleArn: 'role1';\n" +
+                "           roleSessionName: 'session1';\n" +
+                "           awsCredentials: Static\n" +
+                "           {\n" +
+                "                   accessKeyId: PropertiesFileSecret\n" +
+                "                   {\n" +
+                "                       propertyName: 'property1';\n" +
+                "                   }\n" +
+                "                   secretAccessKey: PropertiesFileSecret\n" +
+                "                   {\n" +
+                "                       propertyName: 'property1';\n" +
+                "                   }\n" +
+                "           }" +
+                "      }" +
+                "    }\n" +
+                "  }\n" +
+                "}\n");
+    }
 }

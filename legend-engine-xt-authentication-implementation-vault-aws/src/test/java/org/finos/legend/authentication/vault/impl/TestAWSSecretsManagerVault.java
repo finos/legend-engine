@@ -17,9 +17,11 @@ package org.finos.legend.authentication.vault.impl;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.PlatformCredentialVaultProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSTSAssumeRoleCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSStaticCredentials;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -30,6 +32,7 @@ public class TestAWSSecretsManagerVault
     private String accessKeyFromGithubEnv;
     private String secretAccessKeyFromGithubEnv;
     private String secretIdFromGithubEnv;
+    private String accountIdFromGithub;
 
     @Before
     public void setup()
@@ -37,8 +40,9 @@ public class TestAWSSecretsManagerVault
         this.accessKeyFromGithubEnv = System.getenv("TestAWSSecretsManagerVault_ACCESS_KEY_ID");
         this.secretAccessKeyFromGithubEnv = System.getenv("TestAWSSecretsManagerVault_SECRET_ACCESS_KEY");
         this.secretIdFromGithubEnv = System.getenv("TestAWSSecretsManagerVault_SECRET_ID");
+        this.accountIdFromGithub = System.getenv("TestAWSSecretsManagerVault_AWS_ACCOUNT_ID");
 
-        if (isEmpty(accessKeyFromGithubEnv) || isEmpty(secretAccessKeyFromGithubEnv) || isEmpty(secretIdFromGithubEnv))
+        if (isEmpty(accountIdFromGithub) || isEmpty(accessKeyFromGithubEnv) || isEmpty(secretAccessKeyFromGithubEnv) || isEmpty(secretIdFromGithubEnv))
         {
             assumeTrue("One/more secrets were not injected into the test environment", false);
         }
@@ -72,9 +76,49 @@ public class TestAWSSecretsManagerVault
                 this.secretIdFromGithubEnv,
                 null,
                 null,
-                new StaticAWSCredentials(
+                new AWSStaticCredentials(
                         new SystemPropertiesSecret("TestAWSSecretsManagerVault_ACCESS_KEY_ID"),
                         new SystemPropertiesSecret("TestAWSSecretsManagerVault_SECRET_ACCESS_KEY")
+                )
+        );
+        String rawSecret = awsSecretsManagerVault.lookupSecret(awsSecretsManagerSecret, null);
+        assertTrue(rawSecret != null);
+    }
+
+    // TODO - epsstan - Configure AWS Account with the proper assume role policy
+    @Ignore
+    public void testLookupSecretWithSTSAssumeRoleCredentials() throws Exception
+    {
+        System.setProperty("TestAWSSecretsManagerVault_ACCESS_KEY_ID", this.accessKeyFromGithubEnv);
+        System.setProperty("TestAWSSecretsManagerVault_SECRET_ACCESS_KEY", this.secretAccessKeyFromGithubEnv);
+
+        PlatformCredentialVaultProvider platformCredentialVaultProvider = PlatformCredentialVaultProvider.builder()
+                .with(new SystemPropertiesCredentialVault())
+                .build();
+
+        AWSSecretsManagerVault awsSecretsManagerVault = AWSSecretsManagerVault.builder()
+                .with(platformCredentialVaultProvider)
+                .build();
+
+        CredentialVaultProvider.builder()
+                .with(platformCredentialVaultProvider)
+                .with(awsSecretsManagerVault)
+                .build();
+
+        String roleName = "integration-wif-role1";
+        String roleArn = String.format("arn:aws:iam::%s:role/%s", this.accountIdFromGithub, roleName);
+
+        AWSSecretsManagerSecret awsSecretsManagerSecret = new AWSSecretsManagerSecret(
+                this.secretIdFromGithubEnv,
+                null,
+                null,
+                new AWSSTSAssumeRoleCredentials(
+                        new AWSStaticCredentials(
+                                new SystemPropertiesSecret("TestAWSSecretsManagerVault_ACCESS_KEY_ID"),
+                                new SystemPropertiesSecret("TestAWSSecretsManagerVault_SECRET_ACCESS_KEY")
+                        ),
+                        roleArn,
+                        roleName
                 )
         );
         String rawSecret = awsSecretsManagerVault.lookupSecret(awsSecretsManagerSecret, null);

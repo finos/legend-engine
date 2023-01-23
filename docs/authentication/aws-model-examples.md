@@ -38,7 +38,7 @@ In this mode, at runtime, Legend simply wires the AWS SDK to use the AWS `Defaul
 
 In some cases, AWS secrets are explicitly configured. 
 
-To allow Legend to use these secrets, configure the ``awsCredentials``` to use "static" credentials as follows. Since the credentials are static, they can be injected via one of the supported static injection schemes.
+To allow Legend to use these secrets, configure the ``awsCredentials``` to use "Static" credentials as follows. Since the credentials are static, they can be injected via one of the supported static injection schemes.
 
 ```
 {
@@ -57,9 +57,30 @@ To allow Legend to use these secrets, configure the ``awsCredentials``` to use "
 }
 ```
 
-## Other AWS Integrations
+## AWS STS Assume Role
 
-There are probably other ways to configure the AWS Secrets Manager SDK to make use of the secrets already configured in the environment.
+In some cases, long lives AWS secrets are used to get temporary STS secrets. These are in turn used to fetch secrets from secrets manager. 
 
-We can add support for these integrations as we encounter more use cases.
+To allow Legend to use STS, configure ``awsCredentials`` to use "STSAssumeRole" credentials as follows. The long lived credentials can be injected via one of the supported static injection schemes.
 
+
+```
+{
+    mySecret: AWSSecretsManagerSecret
+    {
+        secretId: 'arn:aws:secretsmanager:us-east-1:123456789:secret:foo-bar';
+        awsCredentials: STSAssumeRole {
+            roleArn: 'role1';
+            roleSessionName: 'roleSession1';
+            awsCredentials: Static {
+                accessKeyId: SystemPropertySecret {
+                    systemPropertyName: 'my.accessKeyId';
+                }
+                secretAccessKey: SystemPropertySecret {
+                    systemPropertyName: 'my.secretAccessKey';
+                }
+            }            
+        }      
+    }
+}
+```

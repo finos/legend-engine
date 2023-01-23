@@ -16,7 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authen
 
 public interface AWSCredentialsVisitor<T>
 {
-    T visit(StaticAWSCredentials staticAWSCredentials);
+    T visit(AWSStaticCredentials awsStaticCredentials);
 
     T visit(AWSDefaultCredentials awsDefaultCredentials);
+
+    T visit(AWSSTSAssumeRoleCredentials awsSTSAssumeRoleCredentials);
 }

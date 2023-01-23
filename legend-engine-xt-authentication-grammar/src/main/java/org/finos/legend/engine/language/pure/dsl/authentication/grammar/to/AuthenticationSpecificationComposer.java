@@ -28,8 +28,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentialsVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSDefaultCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSTSAssumeRoleCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSStaticCredentials;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
@@ -71,6 +72,7 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
     {
         return getTabString(indentLevel) + "authentication: EncryptedPrivateKey\n" +
                 getTabString(indentLevel) + "{\n" +
+                getTabString(indentLevel + 1) + "userName: '" + authenticationSpecification.userName + "';\n" +
                 getTabString(indentLevel + 1) + "privateKey: " + renderCredentialVaultSecret(authenticationSpecification.privateKey, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel + 1) + "passphrase: " + renderCredentialVaultSecret(authenticationSpecification.passphrase, indentLevel + 1, context) + "\n" +
                 getTabString(indentLevel) + "}\n";
@@ -177,12 +179,12 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
         }
 
         @Override
-        public String visit(StaticAWSCredentials staticAWSCredentials)
+        public String visit(AWSStaticCredentials awsStaticCredentials)
         {
             return "Static\n" +
                     getTabString(indentLevel) + "{\n" +
-                    getTabString(indentLevel + 1) + "accessKeyId: " + renderCredentialVaultSecret(staticAWSCredentials.accessKeyId, indentLevel + 1, context) + "\n" +
-                    getTabString(indentLevel + 1) + "secretAccessKey: " + renderCredentialVaultSecret(staticAWSCredentials.secretAccessKey, indentLevel + 1, context) + "\n" +
+                    getTabString(indentLevel + 1) + "accessKeyId: " + renderCredentialVaultSecret(awsStaticCredentials.accessKeyId, indentLevel + 1, context) + "\n" +
+                    getTabString(indentLevel + 1) + "secretAccessKey: " + renderCredentialVaultSecret(awsStaticCredentials.secretAccessKey, indentLevel + 1, context) + "\n" +
                     getTabString(indentLevel) + "}";
         }
 
@@ -193,6 +195,24 @@ public class AuthenticationSpecificationComposer implements AuthenticationSpecif
                     getTabString(indentLevel) + "{\n" +
                     getTabString(indentLevel) + "}";
         }
+
+        @Override
+        public String visit(AWSSTSAssumeRoleCredentials awsSTSAssumeRoleCredentials)
+        {
+            String roleSessionNameLine = "";
+            if (awsSTSAssumeRoleCredentials.roleSessionName != null)
+            {
+                roleSessionNameLine = getTabString(indentLevel + 1) + "roleSessionName: '" + awsSTSAssumeRoleCredentials.roleSessionName + "';\n";
+            }
+
+            return "STSAssumeRole\n" +
+                    getTabString(indentLevel) + "{\n" +
+                    getTabString(indentLevel + 1) + "roleArn: '" + awsSTSAssumeRoleCredentials.roleArn + "';\n" +
+                    roleSessionNameLine +
+                    getTabString(indentLevel + 1) + "awsCredentials: " + renderAWSCredentials(awsSTSAssumeRoleCredentials.awsCredentials, indentLevel + 1, context) + "\n" +
+                    getTabString(indentLevel) + "}";
+        }
+
     }
 
     private static String renderAWSCredentials(AWSCredentials awsCredentials, int indentLevel, PureGrammarComposerContext context)
