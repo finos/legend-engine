@@ -24,8 +24,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authent
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSDefaultCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSTSAssumeRoleCredentials;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSSecretsManagerSecret;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.StaticAWSCredentials;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.aws.AWSStaticCredentials;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
@@ -35,6 +36,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
+import software.amazon.awssdk.services.sts.StsClient;
+import software.amazon.awssdk.services.sts.auth.StsAssumeRoleCredentialsProvider;
+import software.amazon.awssdk.services.sts.model.AssumeRoleRequest;
 
 public class AWSSecretsManagerVault extends CredentialVault<AWSSecretsManagerSecret>
 {
@@ -54,7 +58,7 @@ public class AWSSecretsManagerVault extends CredentialVault<AWSSecretsManagerSec
     public String lookupSecret(AWSSecretsManagerSecret vaultSecret, Identity identity) throws Exception
     {
         SecretsManagerClient secretsManagerClient = SecretsManagerClient.builder()
-                .credentialsProvider(this.configureStsClient(vaultSecret.awsCredentials))
+                .credentialsProvider(this.configureCredentialsProvider(vaultSecret.awsCredentials))
                 .region(Region.US_EAST_1)
                 .build();
 
@@ -75,22 +79,52 @@ public class AWSSecretsManagerVault extends CredentialVault<AWSSecretsManagerSec
         return secretValue.secretString();
     }
 
-    private AwsCredentialsProvider configureStsClient(AWSCredentials awsCredentials) throws Exception
+    private AwsCredentialsProvider configureCredentialsProvider(AWSCredentials awsCredentials) throws Exception
     {
         if (awsCredentials instanceof AWSDefaultCredentials)
         {
             return DefaultCredentialsProvider.builder().build();
         }
 
-        if (awsCredentials instanceof StaticAWSCredentials)
+        if (awsCredentials instanceof AWSStaticCredentials)
         {
-            StaticAWSCredentials staticAWSCredentials  = (StaticAWSCredentials)awsCredentials;
-            CredentialVaultSecret accessKeyIdSecret = validate(staticAWSCredentials.accessKeyId);
-            CredentialVaultSecret secretAccessKeySecret = validate(staticAWSCredentials.secretAccessKey);
+            AWSStaticCredentials awsStaticCredentials = (AWSStaticCredentials)awsCredentials;
+            CredentialVaultSecret accessKeyIdSecret = validate(awsStaticCredentials.accessKeyId);
+            CredentialVaultSecret secretAccessKeySecret = validate(awsStaticCredentials.secretAccessKey);
 
             String accessKeyIdValue = this.platformCredentialVaultProvider.getVault(accessKeyIdSecret).lookupSecret(accessKeyIdSecret, null);
             String secretAccessKeyValue = this.platformCredentialVaultProvider.getVault(accessKeyIdSecret).lookupSecret(secretAccessKeySecret, null);
             return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKeyIdValue, secretAccessKeyValue));
+        }
+
+        if (awsCredentials instanceof AWSSTSAssumeRoleCredentials)
+        {
+            AWSSTSAssumeRoleCredentials awsstsAssumeRoleCredentials = (AWSSTSAssumeRoleCredentials) awsCredentials;
+            String roleArn = awsstsAssumeRoleCredentials.roleArn;
+            String roleSessionName = awsstsAssumeRoleCredentials.roleSessionName;
+            AWSCredentials awsLongLivedCredentials = awsstsAssumeRoleCredentials.awsCredentials;
+            if (awsLongLivedCredentials instanceof AWSSTSAssumeRoleCredentials)
+            {
+                throw new UnsupportedOperationException("Recursive model definition. AWSSTSAssumeRoleCredentials's awsCredentials attribute cannot also be of type AWSSTSAssumeRoleCredentials");
+            }
+
+            AssumeRoleRequest.Builder assumeRoleRequestBuilder = AssumeRoleRequest.builder()
+                    .roleArn(roleArn);
+            if (roleSessionName != null)
+            {
+                assumeRoleRequestBuilder = assumeRoleRequestBuilder.roleSessionName(roleSessionName);
+            }
+
+            AwsCredentialsProvider awsCredentialsProviderForSTSClient = this.configureCredentialsProvider(awsLongLivedCredentials);
+            StsClient stsClient = StsClient.builder()
+                    .credentialsProvider(awsCredentialsProviderForSTSClient)
+                    .region(Region.US_EAST_1)
+                    .build();
+
+            return StsAssumeRoleCredentialsProvider.builder()
+                    .refreshRequest(assumeRoleRequestBuilder.build())
+                    .stsClient(stsClient)
+                    .build();
         }
 
         throw new UnsupportedOperationException("Unsupported AWSCredentials of type " + awsCredentials.getClass().getCanonicalName());

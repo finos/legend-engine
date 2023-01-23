@@ -43,3 +43,10 @@ Class {doc.doc = 'Specification of AWS credentials sourced from the default AWS 
 {
 
 }
+
+Class {doc.doc = 'Specification of AWS credentials sourced from AWS STS Assume Role Credentials Provider'} meta::pure::runtime::connection::authentication::AWSSTSAssumeRoleCredentials extends meta::pure::runtime::connection::authentication::AWSCredentials
+{
+    awsCredentials: meta::pure::runtime::connection::authentication::AWSCredentials[1];
+    roleArn: String[1];
+    roleSessionName: String[0..1];
+}

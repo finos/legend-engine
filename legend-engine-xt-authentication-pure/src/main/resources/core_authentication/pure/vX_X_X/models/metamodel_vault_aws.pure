@@ -37,3 +37,10 @@ Class meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authenticat
 {
 
 }
+
+Class meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSSTSAssumeRoleCredentials extends meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSCredentials
+{
+    awsCredentials: meta::protocols::pure::vX_X_X::metamodel::runtime::connection::authentication::AWSCredentials[1];
+    roleArn: String[1];
+    roleSessionName: String[0..1];
+}
