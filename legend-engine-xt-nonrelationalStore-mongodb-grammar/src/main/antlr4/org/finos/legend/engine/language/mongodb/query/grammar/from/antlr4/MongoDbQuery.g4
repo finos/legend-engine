@@ -45,7 +45,7 @@ projectFilterExpression: BRACE_OPEN projectFilter ( ',' projectFilter )* BRACE_C
 // equivalent of expression
 projectFilter: STRING ':' projectFilterValue;
 // equivalent of expressionValue
-projectFilterValue: '0' | '1' | BOOLEAN | projectComputedFieldValue | projectFilterExpression;
+projectFilterValue: NUMBER | BOOLEAN | projectComputedFieldValue | projectFilterExpression;
 // https://www.mongodb.com/docs/manual/reference/operator/aggregation/project/#include-computed-fields
 projectComputedFieldValue: STRING_WITH_DOLLAR;
 

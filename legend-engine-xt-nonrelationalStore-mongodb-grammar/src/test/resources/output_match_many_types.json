@@ -127,8 +127,8 @@
                       "argument": {
                         "_type": "literalValue",
                         "value": {
-                          "_type": "intTypeValue",
-                          "value": 3
+                          "_type": "decimalTypeValue",
+                          "value": 3.0
                         }
                       }
                     }

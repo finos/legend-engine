@@ -50,6 +50,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -62,6 +66,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -74,6 +82,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -86,6 +98,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -98,6 +114,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -110,6 +130,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -122,6 +146,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -134,6 +162,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -146,6 +178,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -158,6 +194,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -170,6 +210,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -182,6 +226,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -194,6 +242,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
     }
 
@@ -205,6 +257,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -217,6 +273,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -229,6 +289,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }
@@ -241,6 +305,10 @@ public class MongoDbQueryParseTreeWalkerTest
 
         DatabaseCommand databaseCommand = parseAndWalkDatabaseCommand(input);
 
+        MongoDbQueryComposer composer = new MongoDbQueryComposer();
+        String queryString = composer.parseDatabaseCommand(databaseCommand);
+
+        assertEquals(mapper.readTree(input), mapper.readTree(queryString));
         assertEquals(expectedOutput, mapper.writeValueAsString(databaseCommand));
 
     }

@@ -17,7 +17,7 @@ import meta::external::store::mongodb::metamodel::aggregation::*;
 
 Enum meta::external::store::mongodb::metamodel::aggregation::Operator
 {
-    EQ, NE, GT, GTE, LT, LTE, AND, OR
+    EQ, GT, GTE, IN, LT, LTE, NE, NIN, AND, NOT, NOR, OR
 }
 
 Class meta::external::store::mongodb::metamodel::BaseType

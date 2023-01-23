@@ -7,8 +7,8 @@
       {
         "_type": "projectStage",
         "filters": {
-          "_type": "arrayExpression",
-          "items": [
+          "_type": "item",
+          "objects": [
             {
               "_type": "objectExpression",
               "field": {

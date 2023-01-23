@@ -15,11 +15,13 @@
 package org.finos.legend.engine.language.mongodb.schema.grammar.from;
 
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ComputedFieldValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DatabaseCommand;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Item;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ProjectStage;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.AndExpression;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ArgumentExpression;
@@ -37,7 +39,7 @@ import java.util.stream.Collectors;
 public class MongoDbQueryComposer
 {
 
-    public String parser(DatabaseCommand databaseCommand)
+    public String parseDatabaseCommand(DatabaseCommand databaseCommand)
     {
         String collectionName = databaseCommand.collectionName;
         return "{ \"aggregate\": " + collectionName + " , " + visitDatabaseCommand(databaseCommand) + ", \"cursor\": {} }";
@@ -58,10 +60,11 @@ public class MongoDbQueryComposer
             {
                 return "{ \"$match\" : " + visitExpression(((MatchStage) x).expression) + " }";
             }
-            else
+            else if (x instanceof ProjectStage)
             {
-                return "";
+                return "{ \"$project\" : " + visitExpression(((ProjectStage) x).filters) + " }";
             }
+            throw new RuntimeException("Unknown Stage at visitPipelineStages");
         }).collect(Collectors.toList());
         return String.join(",", strings);
     }
@@ -72,18 +75,18 @@ public class MongoDbQueryComposer
         {
             if (expression instanceof OrExpression)
             {
-                List<String> strings = ((OrExpression) expression).expressions.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
-                return "\"$or\": " + String.join("", strings);
+                List<String> strings = ((OrExpression) expression).expressions.stream().map(this::visitExpression).collect(Collectors.toList());
+                return "{ \"$or\": [" + String.join(",", strings) + "] }";
             }
             else
             {
-                List<String> strings = ((AndExpression) expression).expressions.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
-                return "\"$and\" : [" + String.join("", strings);
+                List<String> strings = ((AndExpression) expression).expressions.stream().map(this::visitExpression).collect(Collectors.toList());
+                return "{ \"$and\" : [" + String.join(",", strings) + "] }";
             }
         }
         else if (expression instanceof OperatorExpression)
         {
-            String operator = String.valueOf(((OperatorExpression) expression).operator);
+            String operator = MongoOperator.valueOf(String.valueOf(((OperatorExpression) expression).operator)).label;
             String currentExpression = visitExpression(((OperatorExpression) expression).expression);
             return "{ \"" + operator + "\" : " + currentExpression + " }";
         }
@@ -95,17 +98,21 @@ public class MongoDbQueryComposer
         }
         else if (expression instanceof ArrayExpression)
         {
-            List<String> strings = ((ArrayExpression) expression).items.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+            List<String> strings = ((ArrayExpression) expression).items.stream().map(this::visitExpression).collect(Collectors.toList());
             return "[" + String.join(",", strings) + "]";
         }
         else if (expression instanceof Item)
         {
-            List<String> strings = ((Item) expression).objects.stream().map(x -> visitExpression(x)).collect(Collectors.toList());
+            List<String> strings = ((Item) expression).objects.stream().map(this::visitExpression).collect(Collectors.toList());
             return "{" + String.join(",", strings) + "}";
         }
         else if (expression instanceof FieldPathExpression)
         {
             return ((FieldPathExpression) expression).path;
+        }
+        else if (expression instanceof ComputedFieldValue)
+        {
+            return ((ComputedFieldValue) expression).computedValue.value;
         }
         else if (expression instanceof LiteralValue)
         {
@@ -130,6 +137,10 @@ public class MongoDbQueryComposer
                 return null;
             }
         }
-        throw new RuntimeException("something went wrong");
+        else
+        {
+            return "{}";
+        }
+        throw new RuntimeException("Unknown expression at visitExpression");
     }
 }

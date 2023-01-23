@@ -126,17 +126,17 @@ public class MongoDbQueryParseTreeWalker
 
     private ArgumentExpression visitProjectFilterExpression(MongoDbQueryParser.ProjectFilterExpressionContext ctx)
     {
-        List<ArgumentExpression> expressions = new ArrayList<>();
+        List<ObjectExpression> expressions = new ArrayList<>();
         if (ctx.projectFilter().size() > 0)
         {
             expressions = ctx.projectFilter().stream().map(this::visitProjectFilter).collect(Collectors.toList());
         }
-        ArrayExpression expression = new ArrayExpression();
-        expression.items = expressions;
+        Item expression = new Item();
+        expression.objects = expressions;
         return expression;
     }
 
-    private ArgumentExpression visitProjectFilter(MongoDbQueryParser.ProjectFilterContext ctx)
+    private ObjectExpression visitProjectFilter(MongoDbQueryParser.ProjectFilterContext ctx)
     {
         FieldPathExpression field = new FieldPathExpression();
         field.path = ctx.STRING().getText();
@@ -151,43 +151,37 @@ public class MongoDbQueryParseTreeWalker
 
     public ArgumentExpression visitProjectFilterValue(MongoDbQueryParser.ProjectFilterValueContext ctx)
     {
-
         ArgumentExpression val = null;
         if (ctx.projectComputedFieldValue() != null)
         {
             ComputedFieldValue computedFieldValue = new ComputedFieldValue();
             StringTypeValue stringType = new StringTypeValue();
             stringType.value = ctx.projectComputedFieldValue().getText();
-            ;
 
             computedFieldValue.computedValue = stringType;
             val = computedFieldValue;
         }
-        else if (ctx.getText() != null)
-        {
-            if (ctx.getText().equals("0") || ctx.getText().equals("1"))
-            {
-                IntTypeValue intType = new IntTypeValue();
-                intType.value = Integer.parseInt(ctx.getText());
-
-                LiteralValue literalValue = new LiteralValue();
-                literalValue.value = intType;
-                val = literalValue;
-            }
-            else if (ctx.getText().equals("false") || ctx.getText().equals("true"))
-            {
-
-                BoolTypeValue boolTypeValue = new BoolTypeValue();
-                boolTypeValue.value = parseBoolean(ctx.getText());
-
-                LiteralValue literalValue = new LiteralValue();
-                literalValue.value = boolTypeValue;
-                val = literalValue;
-            }
-        }
         else if (ctx.projectFilterExpression() != null)
         {
             val = visitProjectFilterExpression(ctx.projectFilterExpression());
+        }
+        else if (ctx.BOOLEAN() != null)
+        {
+            BoolTypeValue boolTypeValue = new BoolTypeValue();
+            boolTypeValue.value = parseBoolean(ctx.getText());
+
+            LiteralValue literalValue = new LiteralValue();
+            literalValue.value = boolTypeValue;
+            val = literalValue;
+        }
+        else if (ctx.NUMBER() != null)
+        {
+            IntTypeValue intType = new IntTypeValue();
+            intType.value = Integer.parseInt(ctx.getText());
+
+            LiteralValue literalValue = new LiteralValue();
+            literalValue.value = intType;
+            val = literalValue;
         }
         else
         {
@@ -259,7 +253,7 @@ public class MongoDbQueryParseTreeWalker
     public ArgumentExpression visitArray(MongoDbQueryParser.ArrContext ctx)
     {
         ArrayExpression expression = new ArrayExpression();
-        expression.items = ctx.value().stream().map(x -> visitValue(x)).collect(Collectors.toList());;
+        expression.items = ctx.value().stream().map(this::visitValue).collect(Collectors.toList());;
         return expression;
     }
 
@@ -293,14 +287,14 @@ public class MongoDbQueryParseTreeWalker
         if (ctx.orAggregationExpression() != null)
         {
             OrExpression orExpression = new OrExpression();
-            orExpression.expressions = ctx.orAggregationExpression().queryExpression().stream().map(x -> visitQueryExpression(x)).collect(Collectors.toList());
+            orExpression.expressions = ctx.orAggregationExpression().queryExpression().stream().map(this::visitQueryExpression).collect(Collectors.toList());
             orExpression.operator = Operator.OR;
             return orExpression;
         }
         else
         {
             AndExpression andExpression = new AndExpression();
-            andExpression.expressions = ctx.andAggregationExpression().queryExpression().stream().map(x -> visitQueryExpression(x)).collect(Collectors.toList());
+            andExpression.expressions = ctx.andAggregationExpression().queryExpression().stream().map(this::visitQueryExpression).collect(Collectors.toList());
             andExpression.operator = Operator.AND;
             return andExpression;
         }
@@ -331,11 +325,10 @@ public class MongoDbQueryParseTreeWalker
     {
         if (ctx.NUMBER() != null)
         {
-            double value = Double.parseDouble(ctx.NUMBER().getText());
-            if (Math.floor(value) == value)
+            if (checkIfNumberIsInteger(ctx.NUMBER().getText()))
             {
                 IntTypeValue intTypeValue = new IntTypeValue();
-                intTypeValue.value = (int) value;
+                intTypeValue.value = Integer.parseInt(ctx.NUMBER().getText());
                 return intTypeValue;
             }
             else
@@ -365,5 +358,17 @@ public class MongoDbQueryParseTreeWalker
 
         StringTypeValue stringType = new StringTypeValue();
         return stringType;
+    }
+
+    private static boolean checkIfNumberIsInteger(String number)
+    {
+        try
+        {
+            Integer.parseInt(number);
+            return true;
+        } catch (NumberFormatException e)
+        {
+            return false;
+        }
     }
 }

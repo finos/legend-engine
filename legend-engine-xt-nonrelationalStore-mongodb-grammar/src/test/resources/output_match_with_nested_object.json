@@ -364,6 +364,43 @@
                   ]
                 }
               }
+            },
+            {
+              "_type": "objectExpression",
+              "field": {
+                "_type": "fieldPathExpression",
+                "path": "\"test11\""
+              },
+              "argument": {
+                "_type": "operatorExpression",
+                "operator": "EQ",
+                "expression": {
+                  "_type": "arrayExpression",
+                  "items": [
+                    {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "intTypeValue",
+                        "value": 0
+                      }
+                    },
+                    {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "intTypeValue",
+                        "value": 1
+                      }
+                    },
+                    {
+                      "_type": "literalValue",
+                      "value": {
+                        "_type": "intTypeValue",
+                        "value": 2
+                      }
+                    }
+                  ]
+                }
+              }
             }
           ]
         }
